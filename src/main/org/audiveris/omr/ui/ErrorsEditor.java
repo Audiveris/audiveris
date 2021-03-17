@@ -49,9 +49,11 @@ import javax.swing.event.ListSelectionListener;
  */
 public class ErrorsEditor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorsEditor.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -70,6 +72,7 @@ public class ErrorsEditor
     /** Facade model for the JList */
     private final DefaultListModel<Record> model = new DefaultListModel<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of ErrorsEditor (one per sheet / score).
      *
@@ -85,6 +88,7 @@ public class ErrorsEditor
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //    //----------//
     //    // addError //
     //    //----------//
@@ -248,80 +252,7 @@ public class ErrorsEditor
         return scrollPane;
     }
 
-    //    //----------------//
-    //    // getCurrentStep //
-    //    //----------------//
-    //    /**
-    //     * Retrieve the step being performed on the sheet.
-    //     * Beware, during SCORE step and following steps, just the first sheet has a current step
-    //     * assigned.
-    //     *
-    //     * @return the step being done
-    //     */
-    //    private Step getCurrentStep ()
-    //    {
-    //        return sheet.getCurrentStep();
-    //    }
-    //
-    //------------//
-    // MyListener //
-    //------------//
-    /**
-     * A specific listener to handle user selection in the list of errors.
-     */
-    private class MyListener
-            implements ListSelectionListener
-    {
-
-        @Override
-        public void valueChanged (ListSelectionEvent e)
-        {
-            //            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
-            //                Record record = list.getSelectedValue();
-            //
-            //                if (record != null) {
-            //                    logger.debug("value={}", record);
-            //
-            //                    // Use glyph location if available
-            //                    if (record.glyph != null) {
-            //                        sheet.getGlyphNest().getGlyphService().publish(
-            //                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
-            //                    } else {
-            //                        // Otherwise use node location as possible
-            //                        try {
-            //                            Point pixPt = null;
-            //
-            //                            try {
-            //                                pixPt = record.node.getCenter();
-            //                            } catch (Exception ex) {
-            //                            }
-            //
-            //                            if (pixPt == null) {
-            //                                if (record.node instanceof OldMeasureNode) {
-            //                                    OldMeasureNode mn = (OldMeasureNode) record.node;
-            //                                    OldMeasure measure = mn.getMeasure();
-            //
-            //                                    if (measure != null) {
-            //                                        pixPt = measure.getCenter();
-            //                                    }
-            //                                }
-            //                            }
-            //
-            //                            sheet.getLocationService().publish(
-            //                                    new LocationEvent(
-            //                                            ErrorsEditor.this,
-            //                                            SelectionHint.LOCATION_INIT,
-            //                                            null,
-            //                                            new Rectangle(pixPt)));
-            //                        } catch (Exception ex) {
-            //                            logger.warn("Failed pointing to " + record.node, ex);
-            //                        }
-            //                    }
-            //                }
-            //            }
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Record //
     //--------//
@@ -401,6 +332,80 @@ public class ErrorsEditor
             sb.append(" ").append(text);
 
             return sb.toString();
+        }
+    }
+
+    //    //----------------//
+    //    // getCurrentStep //
+    //    //----------------//
+    //    /**
+    //     * Retrieve the step being performed on the sheet.
+    //     * Beware, during SCORE step and following steps, just the first sheet has a current step
+    //     * assigned.
+    //     *
+    //     * @return the step being done
+    //     */
+    //    private Step getCurrentStep ()
+    //    {
+    //        return sheet.getCurrentStep();
+    //    }
+    //
+    //------------//
+    // MyListener //
+    //------------//
+    /**
+     * A specific listener to handle user selection in the list of errors.
+     */
+    private class MyListener
+            implements ListSelectionListener
+    {
+
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            //            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
+            //                Record record = list.getSelectedValue();
+            //
+            //                if (record != null) {
+            //                    logger.debug("value={}", record);
+            //
+            //                    // Use glyph location if available
+            //                    if (record.glyph != null) {
+            //                        sheet.getGlyphNest().getGlyphService().publish(
+            //                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
+            //                    } else {
+            //                        // Otherwise use node location as possible
+            //                        try {
+            //                            Point pixPt = null;
+            //
+            //                            try {
+            //                                pixPt = record.node.getCenter();
+            //                            } catch (Exception ex) {
+            //                            }
+            //
+            //                            if (pixPt == null) {
+            //                                if (record.node instanceof OldMeasureNode) {
+            //                                    OldMeasureNode mn = (OldMeasureNode) record.node;
+            //                                    OldMeasure measure = mn.getMeasure();
+            //
+            //                                    if (measure != null) {
+            //                                        pixPt = measure.getCenter();
+            //                                    }
+            //                                }
+            //                            }
+            //
+            //                            sheet.getLocationService().publish(
+            //                                    new LocationEvent(
+            //                                            ErrorsEditor.this,
+            //                                            SelectionHint.LOCATION_INIT,
+            //                                            null,
+            //                                            new Rectangle(pixPt)));
+            //                        } catch (Exception ex) {
+            //                            logger.warn("Failed pointing to " + record.node, ex);
+            //                        }
+            //                    }
+            //                }
+            //            }
         }
     }
 }

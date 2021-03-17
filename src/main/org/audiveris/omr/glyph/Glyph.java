@@ -81,9 +81,11 @@ public class Glyph
         extends AbstractWeightedEntity
         implements NearLine
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Glyph.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -127,6 +129,7 @@ public class Glyph
     /** Absolute slope of the line WRT abscissa axis. */
     protected Double slope;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicGlyph} object.
      *
@@ -156,6 +159,7 @@ public class Glyph
         this.runTable = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // contains //
     //----------//
@@ -383,7 +387,6 @@ public class Glyph
         checkLine();
 
         return basicLine.toCenterLine();
-
     }
 
     @Override
@@ -534,11 +537,7 @@ public class Glyph
                     for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
                         final Run run = it.next();
 
-                        if (shape.intersects(
-                                left + run.getStart(),
-                                top + iSeq,
-                                run.getLength(),
-                                1)) {
+                        if (shape.intersects(left + run.getStart(), top + iSeq, run.getLength(), 1)) {
                             return true;
                         }
                     }
@@ -551,11 +550,7 @@ public class Glyph
                     for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
                         Run run = it.next();
 
-                        if (shape.intersects(
-                                left + iSeq,
-                                top + run.getStart(),
-                                1,
-                                run.getLength())) {
+                        if (shape.intersects(left + iSeq, top + run.getStart(), 1, run.getLength())) {
                             return true;
                         }
                     }

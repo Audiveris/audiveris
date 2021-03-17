@@ -33,6 +33,7 @@ import java.util.List;
 public class SegmentInfo
         extends Curve
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SegmentInfo object.

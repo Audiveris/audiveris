@@ -39,9 +39,11 @@ import java.awt.geom.Rectangle2D;
 public class HeadsSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int count;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeadsSymbol object.
      *
@@ -59,6 +61,7 @@ public class HeadsSymbol
         this.count = count;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -78,9 +81,10 @@ public class HeadsSymbol
         p.layout = layout(font);
 
         p.dy = font.getStaffInterline();
+
         Rectangle2D r = p.layout.getBounds();
         p.rect = new Rectangle2D.Double();
-        p.rect.setRect(r.getX(), r.getY(), r.getWidth(), r.getHeight() + (count - 1) * p.dy);
+        p.rect.setRect(r.getX(), r.getY(), r.getWidth(), r.getHeight() + ((count - 1) * p.dy));
 
         return p;
     }
@@ -103,6 +107,7 @@ public class HeadsSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

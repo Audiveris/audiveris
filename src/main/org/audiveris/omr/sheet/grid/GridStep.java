@@ -47,11 +47,13 @@ import org.slf4j.LoggerFactory;
 public class GridStep
         extends AbstractStep
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GridStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GridStep object.
      */
@@ -59,6 +61,7 @@ public class GridStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -99,6 +102,7 @@ public class GridStep
         ///watch.print();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

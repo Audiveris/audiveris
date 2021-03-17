@@ -50,11 +50,22 @@ public class SheetPath
     private final Integer sheetNumber;
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code SheetPath} object.
+     *
+     * @param bookPath DOCUMENT ME!
+     */
     public SheetPath (Path bookPath)
     {
         this(bookPath, null);
     }
 
+    /**
+     * Creates a new {@code SheetPath} object.
+     *
+     * @param bookPath    DOCUMENT ME!
+     * @param sheetNumber DOCUMENT ME!
+     */
     public SheetPath (Path bookPath,
                       Integer sheetNumber)
     {
@@ -118,13 +129,16 @@ public class SheetPath
                 final String sheetString = str.substring(sep + 1);
                 final Path bookPath = Paths.get(bookString);
                 final Integer sheetNumber = Integer.decode(sheetString);
+
                 return new SheetPath(bookPath, sheetNumber);
             } catch (Throwable ex) {
                 logger.warn("Illegal SheetPath {}, trying as a standard path.", str, ex);
+
                 return new SheetPath(Paths.get(str));
             }
         } else {
             final Path bookPath = Paths.get(str);
+
             return new SheetPath(bookPath);
         }
     }

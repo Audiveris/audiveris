@@ -37,6 +37,7 @@ import javax.swing.text.DefaultFormatterFactory;
 public class LHexaSpinner
         extends LIntegerSpinner
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an editable labeled hexa spinner with provided
@@ -52,6 +53,7 @@ public class LHexaSpinner
         spinner.setEditor(new HexaEditor(spinner));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // HexaEditor //
     //------------//

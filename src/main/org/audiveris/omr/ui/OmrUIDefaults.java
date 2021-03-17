@@ -43,6 +43,7 @@ import javax.swing.UIDefaults;
 public class OmrUIDefaults
         extends UIDefaults
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //------------//
     // getKeyCode //
@@ -135,6 +136,7 @@ public class OmrUIDefaults
         return LazySingleton.INSTANCE;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // LazySingleton //
     //---------------//
@@ -143,5 +145,4 @@ public class OmrUIDefaults
 
         static final OmrUIDefaults INSTANCE = new OmrUIDefaults();
     }
-
 }

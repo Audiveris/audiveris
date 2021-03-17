@@ -36,9 +36,11 @@ import org.audiveris.omr.ui.selection.EntityService;
 public class SampleModel
         extends GlyphsModel
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SampleRepository repository;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleModel} object.
      *
@@ -52,6 +54,7 @@ public class SampleModel
         this.repository = repository;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add a sample.
      *

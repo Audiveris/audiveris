@@ -39,9 +39,11 @@ import org.slf4j.LoggerFactory;
 public class StemsStep
         extends AbstractSystemStep<Void>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StemsStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemsStep object.
      */
@@ -49,6 +51,7 @@ public class StemsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//

@@ -33,6 +33,7 @@ import java.util.List;
  */
 public class ArcView
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** True arc underneath. */
     private final Arc arc;
@@ -41,6 +42,7 @@ public class ArcView
 
     private List<Point> points;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArcView object.
      *
@@ -54,6 +56,7 @@ public class ArcView
         this.reversed = reversed;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the underlying arc.
      *

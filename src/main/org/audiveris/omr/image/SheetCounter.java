@@ -44,6 +44,7 @@ import java.util.List;
  */
 public class SheetCounter
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Main entry point.
@@ -95,6 +96,7 @@ public class SheetCounter
         System.out.println(String.format("%3d %3d %s", all, valid, path));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     ///private static void result()
     //------------//
     // Parameters //

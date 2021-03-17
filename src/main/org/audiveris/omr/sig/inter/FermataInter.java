@@ -68,21 +68,17 @@ public class FermataInter
         extends AbstractInter
         implements InterEnsemble
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FermataInter.class);
 
-    private static Comparator<Inter> byFermataOrder = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter o1,
-                            Inter o2)
-        {
-            return (o1 instanceof FermataArcInter) ? (-1) : (+1); // Arc then dot
-        }
-    };
+    // Arc then dot
+    private static Comparator<Inter> byFermataOrder = (Inter o1, Inter o2)
+            -> (o1 instanceof FermataArcInter) ? (-1) : (+1);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FermataInter} object.
      *
@@ -102,6 +98,7 @@ public class FermataInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -326,7 +323,7 @@ public class FermataInter
         StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
 
         // Fermata and staff bar bounds must intersect horizontally
-        if (staffBar == null || GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) <= 0) {
+        if ((staffBar == null) || (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) <= 0)) {
             return null;
         }
 
@@ -359,6 +356,7 @@ public class FermataInter
                                   int profile)
     {
         getBounds();
+
         final Point center = getCenter();
         final MeasureStack stack = system.getStackAt(center);
 
@@ -366,8 +364,8 @@ public class FermataInter
             return null;
         }
 
-        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW) ? stack
-                .getStandardChordsAbove(center, bounds)
+        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW)
+                ? stack.getStandardChordsAbove(center, bounds)
                 : stack.getStandardChordsBelow(center, bounds);
 
         // Look for a suitable chord related to this fermata
@@ -447,6 +445,7 @@ public class FermataInter
         return fermata;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -33,6 +33,7 @@ import java.awt.event.MouseListener;
 public abstract class AbstractMouseListener
         implements MouseListener
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     @Override
     public void mouseClicked (MouseEvent e)

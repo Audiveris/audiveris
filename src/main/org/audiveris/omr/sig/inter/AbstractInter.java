@@ -289,9 +289,7 @@ public abstract class AbstractInter
     @Override
     public boolean checkAbnormal ()
     {
-        boolean abnormal = false;
-
-        return abnormal;
+        return false;
     }
 
     //----------//
@@ -326,7 +324,7 @@ public abstract class AbstractInter
         Point center = getCenter();
 
         if (center != null) {
-            return center.distanceSq(point) <= bounds.width * bounds.height / 4.0;
+            return center.distanceSq(point) <= ((bounds.width * bounds.height) / 4.0);
         }
 
         return false;
@@ -1125,7 +1123,7 @@ public abstract class AbstractInter
         Rectangle thisBounds = this.getBounds();
         Rectangle thatBounds = that.getBounds();
 
-        if (thisBounds == null || thatBounds == null) {
+        if ((thisBounds == null) || (thatBounds == null)) {
             return false;
         }
 
@@ -1165,7 +1163,8 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that) && that.overlaps(thisMember)
+                if (thisMember.overlaps(that)
+                            && that.overlaps(thisMember)
                             && sig.noSupport(thisMember, that)) {
                     return true;
                 }
@@ -1486,6 +1485,7 @@ public abstract class AbstractInter
         sb.append(String.format("(%.3f", grade));
 
         Double cg = getContextualGrade();
+
         if (cg != null) {
             sb.append(String.format("/%.3f", cg));
         }
@@ -1523,7 +1523,7 @@ public abstract class AbstractInter
     }
 
     //------------//
-    // getStaffId //
+    // setStaffId //
     //------------//
     /**
      * Meant for JAXB.
@@ -1564,7 +1564,7 @@ public abstract class AbstractInter
         return Grades.minInterGrade;
     }
 
-    //~ Inner classes ------------------------------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

@@ -40,12 +40,14 @@ import java.awt.geom.Line2D;
  */
 public abstract class CurveGap
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CurveGap.class);
 
     /** Pixels added on both sides of connection line to get some thickness. */
     protected static final int MARGIN = 1;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** End point of curve. */
     protected final Point p1;
 
@@ -58,6 +60,7 @@ public abstract class CurveGap
     /** Gap vector to check empty locations. */
     protected int[] vector;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CurveGap object.
      *
@@ -71,6 +74,7 @@ public abstract class CurveGap
         this.p2 = p2;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Compute the gap vector based on foreground pixels found in gap area.
      *
@@ -172,6 +176,7 @@ public abstract class CurveGap
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * For rather horizontal gaps.
      */

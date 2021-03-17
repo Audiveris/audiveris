@@ -32,10 +32,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarGroupRelation
         extends Relation
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Horizontal white gap (in interline) between the two bar lines. */
     private final double xGap;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarGroupRelation object.
      *
@@ -52,6 +54,7 @@ public class BarGroupRelation
         this.xGap = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//

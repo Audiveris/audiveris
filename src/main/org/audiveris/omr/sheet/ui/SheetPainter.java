@@ -35,11 +35,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-
-import org.audiveris.omr.ui.ViewParameters;
-import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.OmrFont;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.sheet.curve.Curves;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -78,9 +73,12 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
@@ -89,6 +87,7 @@ import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -118,6 +117,7 @@ import java.util.ConcurrentModificationException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -421,36 +421,6 @@ public abstract class SheetPainter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer basicFontSize = new Constant.Integer(
-                "points",
-                30,
-                "Standard font size for annotations");
-
-        private final Constant.Integer chordFontSize = new Constant.Integer(
-                "points",
-                5,
-                "Font size for chord annotations");
-
-        private final Constant.Boolean drawPartLimits = new Constant.Boolean(
-                false,
-                "Should we draw part upper and lower core limits");
-
-        private final Constant.Boolean chordVoiceAppended = new Constant.Boolean(
-                false,
-                "Should the chords voices be appended to ID?");
-
-        private final Constant.Ratio minZoomForChordId = new Constant.Ratio(
-                0.75,
-                "Minimum zoom value to display chords ID");
-    }
-
     //------------//
     // SigPainter //
     //------------//
@@ -473,7 +443,6 @@ public abstract class SheetPainter
             extends AbstractInterVisitor
     {
 
-        //~ Instance fields ------------------------------------------------------------------------
         /** Music font for large staves. */
         protected final MusicFont musicFontLarge;
 
@@ -495,7 +464,6 @@ public abstract class SheetPainter
         /** Global stroke for ledgers, with no glyph. */
         protected final Stroke ledgerStroke;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code SigPainter} object.
          */
@@ -533,7 +501,6 @@ public abstract class SheetPainter
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------//
         // process //
         //---------//
@@ -604,7 +571,7 @@ public abstract class SheetPainter
             g.setColor(Colors.ANNOTATION_CHORD);
 
             Rectangle box = chord.getBounds();
-            Point pt = new Point(box.x, box.y + box.height / 2);
+            Point pt = new Point(box.x, box.y + (box.height / 2));
 
             // Chord ID
             String str = Integer.toString(chord.getId());
@@ -949,9 +916,8 @@ public abstract class SheetPainter
                 staff = system.getClosestStaff(center);
             }
 
-            center
-                    .setLocation(center.getX(), staff.pitchToOrdinate(center.getX(), inter
-                                                                      .getPitch()));
+            center.setLocation(center.getX(),
+                               staff.pitchToOrdinate(center.getX(), inter.getPitch()));
 
             final Shape shape = inter.getShape();
             final ShapeSymbol symbol = Symbols.getSymbol(shape);
@@ -1324,5 +1290,35 @@ public abstract class SheetPainter
 
             paint(layout, word.getLocation(), BASELINE_LEFT);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer basicFontSize = new Constant.Integer(
+                "points",
+                30,
+                "Standard font size for annotations");
+
+        private final Constant.Integer chordFontSize = new Constant.Integer(
+                "points",
+                5,
+                "Font size for chord annotations");
+
+        private final Constant.Boolean drawPartLimits = new Constant.Boolean(
+                false,
+                "Should we draw part upper and lower core limits");
+
+        private final Constant.Boolean chordVoiceAppended = new Constant.Boolean(
+                false,
+                "Should the chords voices be appended to ID?");
+
+        private final Constant.Ratio minZoomForChordId = new Constant.Ratio(
+                0.75,
+                "Minimum zoom value to display chords ID");
     }
 }

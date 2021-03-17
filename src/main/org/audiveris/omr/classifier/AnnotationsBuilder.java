@@ -93,6 +93,7 @@ import javax.xml.stream.XMLStreamException;
  */
 public class AnnotationsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationsBuilder.class);
 
@@ -122,6 +123,7 @@ public class AnnotationsBuilder
         excludedInterClasses.add(WordInter.class);
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The sheet to process. */
     private final Sheet sheet;
 
@@ -131,6 +133,7 @@ public class AnnotationsBuilder
     /** The annotations structure being built. */
     private final SheetAnnotations annotations = new SheetAnnotations();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationsBuilder} object.
      *
@@ -144,6 +147,7 @@ public class AnnotationsBuilder
         this.path = path;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Process the sheet to generate the corresponding annotations.
      *
@@ -192,6 +196,7 @@ public class AnnotationsBuilder
         return false;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // SystemAnnotator //
     //-----------------//
@@ -252,12 +257,7 @@ public class AnnotationsBuilder
                 for (Inter item : items) {
                     OmrShape oShape = OmrShapeMapping.omrShapeOf(item.getShape());
                     inners.add(
-                            new SymbolInfo(
-                                    oShape,
-                                    interline,
-                                    item.getId(),
-                                    null,
-                                    item.getBounds()));
+                            new SymbolInfo(oShape, interline, item.getId(), null, item.getBounds()));
                 }
 
                 // Determine the outer shape

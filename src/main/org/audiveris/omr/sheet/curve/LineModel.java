@@ -38,10 +38,12 @@ import java.util.List;
 public class LineModel
         implements Model
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying line. */
     private final BasicLine line;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineModel object.
      *
@@ -52,6 +54,7 @@ public class LineModel
         line = new BasicLine(points);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int above ()
     {
@@ -138,5 +141,4 @@ public class LineModel
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

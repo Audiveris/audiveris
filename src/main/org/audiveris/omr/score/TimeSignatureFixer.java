@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +46,11 @@ import java.util.Map;
  */
 public class TimeSignatureFixer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimeSignatureFixer.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeSignatureFixer object.
      */
@@ -57,6 +58,7 @@ public class TimeSignatureFixer
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -137,15 +139,7 @@ public class TimeSignatureFixer
 
         // Sort them by decreasing occurrences
         List<TimeRational> sigs = new ArrayList<>(sigMap.keySet());
-        Collections.sort(sigs, new Comparator<TimeRational>()
-                 {
-                     @Override
-                     public int compare (TimeRational t1,
-                                         TimeRational t2)
-                     {
-                         return Integer.compare(sigMap.get(t2), sigMap.get(t1));
-                     }
-                 });
+        Collections.sort(sigs, (t1, t2) -> Integer.compare(sigMap.get(t2), sigMap.get(t1)));
         logger.debug(
                 "Best inferred time sigs in [M#{},M#{}]: {}",
                 startStack.getIdValue(),

@@ -68,6 +68,7 @@ import javax.swing.event.ChangeListener;
  */
 public abstract class AdvancedTopics
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -83,48 +84,7 @@ public abstract class AdvancedTopics
 
     private static final ResourceMap resource = context.getResourceMap(AdvancedTopics.class);
 
-    /** Not meant to be instantiated. */
-    private AdvancedTopics ()
-    {
-    }
-
-    //------//
-    // show //
-    //------//
-    public static void show ()
-    {
-        OMR.gui.displayMessage(getMessage(),
-                               resource.getString("AdvancedTopics.title"));
-    }
-
-    //------------//
-    // getMessage //
-    //------------//
-    /**
-     * Report the message panel to be displayed to the user
-     *
-     * @return the panel
-     */
-    private static JPanel getMessage ()
-    {
-        Panel panel = new Panel();
-        panel.setName("AdvancedTopicsPanel");
-
-        FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout, panel);
-        CellConstraints cst = new CellConstraints();
-        int r = 1;
-        builder.add(new EarlyPane(), cst.xy(1, r));
-
-        r += 2;
-        builder.add(new PluginPane(), cst.xy(1, r));
-
-        r += 2;
-        builder.add(new AllTopicsPane(), cst.xy(1, r));
-
-        return panel;
-    }
-
+    //~ Enumerations -------------------------------------------------------------------------------
     //-------//
     // Topic //
     //-------//
@@ -165,6 +125,50 @@ public abstract class AdvancedTopics
         }
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private AdvancedTopics ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // show //
+    //------//
+    public static void show ()
+    {
+        OMR.gui.displayMessage(getMessage(), resource.getString("AdvancedTopics.title"));
+    }
+
+    //------------//
+    // getMessage //
+    //------------//
+    /**
+     * Report the message panel to be displayed to the user
+     *
+     * @return the panel
+     */
+    private static JPanel getMessage ()
+    {
+        Panel panel = new Panel();
+        panel.setName("AdvancedTopicsPanel");
+
+        FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout, panel);
+        CellConstraints cst = new CellConstraints();
+        int r = 1;
+        builder.add(new EarlyPane(), cst.xy(1, r));
+
+        r += 2;
+        builder.add(new PluginPane(), cst.xy(1, r));
+
+        r += 2;
+        builder.add(new AllTopicsPane(), cst.xy(1, r));
+
+        return panel;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // AllTopicsPane //
     //---------------//
@@ -370,8 +374,8 @@ public abstract class AdvancedTopics
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            PluginsManager.defaultPluginId.setSpecific(pluginBox.getItemAt(pluginBox
-                    .getSelectedIndex()));
+            PluginsManager.defaultPluginId.setSpecific(
+                    pluginBox.getItemAt(pluginBox.getSelectedIndex()));
         }
     }
 
@@ -406,7 +410,8 @@ public abstract class AdvancedTopics
             // Define slider
             slider.setToolTipText(sliderText);
             slider.addChangeListener(this);
-            slider.addMouseListener(new MouseAdapter()
+            slider.addMouseListener(
+                    new MouseAdapter()
             {
                 @Override
                 public void mouseReleased (MouseEvent e)
@@ -438,12 +443,12 @@ public abstract class AdvancedTopics
 
         private double ratioOf (int tick)
         {
-            return min + tick * (max - min) / 100;
+            return min + ((tick * (max - min)) / 100);
         }
 
         private int tickOf (double ratio)
         {
-            return (int) Math.rint(100 * (ratio - min) / (max - min));
+            return (int) Math.rint((100 * (ratio - min)) / (max - min));
         }
 
         private void adjustLabelFont (double ratio)

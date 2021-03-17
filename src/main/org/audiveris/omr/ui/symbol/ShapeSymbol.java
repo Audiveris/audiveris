@@ -52,6 +52,7 @@ public class ShapeSymbol
         extends BasicSymbol
         implements Transferable
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The symbol meta data. */
     public static final DataFlavor DATA_FLAVOR = new DataFlavor(SymbolIcon.class, "shape-symbol");
@@ -61,6 +62,7 @@ public class ShapeSymbol
             AlphaComposite.SRC_OVER,
             0.15f);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related shape. */
     protected final Shape shape;
 
@@ -70,6 +72,7 @@ public class ShapeSymbol
     /** Decorated version if any. */
     protected ShapeSymbol decoratedSymbol;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a ShapeSymbol with the provided shape and codes
      *
@@ -101,6 +104,7 @@ public class ShapeSymbol
         this(false, shape, false, codes);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // getDecoratedSymbol //
     //--------------------//

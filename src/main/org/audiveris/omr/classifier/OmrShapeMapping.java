@@ -37,11 +37,18 @@ import java.util.Map;
  */
 public abstract class OmrShapeMapping
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Map<Shape, OmrShape> SHAPE_TO_OMRSHAPE = buildShapeMap();
 
     private static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
 
+    //~ Constructors -------------------------------------------------------------------------------
+    private OmrShapeMapping ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the mapped OmrShape, if any, for a given TimePairInter.
      *
@@ -324,9 +331,5 @@ public abstract class OmrShapeMapping
         map.put(Shape.FERMATA_BELOW, OmrShape.fermataBelow);
 
         return map;
-    }
-
-    private OmrShapeMapping ()
-    {
     }
 }

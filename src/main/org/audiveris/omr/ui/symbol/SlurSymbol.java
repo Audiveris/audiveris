@@ -40,9 +40,11 @@ import java.awt.geom.Rectangle2D;
 public class SlurSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     final boolean above;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a SlurSymbol.
      *
@@ -66,6 +68,7 @@ public class SlurSymbol
         this.above = above;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -107,7 +110,7 @@ public class SlurSymbol
                 ? new CubicCurve2D.Double(0, h, w / 5, 0, 4 * w / 5, 0, w, h)
                 : new CubicCurve2D.Double(0, 0, w / 5, h, 4 * w / 5, h, w, 0));
 
-        p.offset = new Point2D.Double(0, above ? h / 2 : -h / 2);
+        p.offset = new Point2D.Double(0, above ? (h / 2) : (-h / 2));
 
         return p;
     }
@@ -124,11 +127,13 @@ public class SlurSymbol
         MyParams p = (MyParams) params;
         Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
         p.model.translate(loc.getX(), loc.getY());
+
         CubicCurve2D curve = new CubicCurve2D.Double();
         curve.setCurve(p.model.points, 0);
         g.draw(curve);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

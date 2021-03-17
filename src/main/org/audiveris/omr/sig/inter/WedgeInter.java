@@ -31,10 +31,10 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -73,6 +73,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class WedgeInter
         extends AbstractDirectionInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -84,6 +85,7 @@ public class WedgeInter
     /** Location of handle below, with respect to wedge line length. */
     private static final double HANDLE_RATIO = constants.handleRatio.getValue();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Top line. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
@@ -94,6 +96,7 @@ public class WedgeInter
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D l2;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgeInter object.
      *
@@ -140,6 +143,7 @@ public class WedgeInter
         super(null, null, null, 0.0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -165,11 +169,11 @@ public class WedgeInter
             return true;
         }
 
-        if (l1.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+        if (l1.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
             return true;
         }
 
-        if (l2.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+        if (l2.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
             return true;
         }
 
@@ -231,6 +235,7 @@ public class WedgeInter
                 l1 = new Line2D.Double(b.x, b.y + 0.5 + dy,
                                        b.x + b.width, b.y + b.height / 2.0);
             }
+
             if (shape == Shape.CRESCENDO) {
                 l2 = new Line2D.Double(b.x, b.y + b.height / 2.0,
                                        b.x + b.width, b.y + b.height - 0.5 - dy);
@@ -356,6 +361,7 @@ public class WedgeInter
         return searchObsoletelinks(links, ChordWedgeRelation.class);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
@@ -387,6 +393,41 @@ public class WedgeInter
         }
     }
 
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public final Point2D top1;
+
+        public final Point2D top2;
+
+        public final Point2D bot1;
+
+        public final Point2D bot2;
+
+        public Model (Line2D l1,
+                      Line2D l2)
+        {
+            top1 = l1.getP1();
+            top2 = l1.getP2();
+            bot1 = l2.getP1();
+            bot2 = l2.getP2();
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(top1, dx, dy);
+            PointUtil.add(top2, dx, dy);
+            PointUtil.add(bot1, dx, dy);
+            PointUtil.add(bot2, dx, dy);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -406,7 +447,6 @@ public class WedgeInter
         private final Constant.Ratio handleRatio = new Constant.Ratio(
                 0.1,
                 "Ratio of handle below with respect to line length");
-
     }
 
     //--------//
@@ -496,7 +536,8 @@ public class WedgeInter
             });
 
             // Right handle: move horizontally only
-            handles.add(new InterEditor.Handle(mid2)
+            handles.add(
+                    new InterEditor.Handle(mid2)
             {
                 @Override
                 public boolean move (Point vector)
@@ -584,41 +625,6 @@ public class WedgeInter
 
             inter.setBounds(null);
             super.undo();
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        public final Point2D top1;
-
-        public final Point2D top2;
-
-        public final Point2D bot1;
-
-        public final Point2D bot2;
-
-        public Model (Line2D l1,
-                      Line2D l2)
-        {
-            top1 = l1.getP1();
-            top2 = l1.getP2();
-            bot1 = l2.getP1();
-            bot2 = l2.getP2();
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(top1, dx, dy);
-            PointUtil.add(top2, dx, dy);
-            PointUtil.add(bot1, dx, dy);
-            PointUtil.add(bot2, dx, dy);
         }
     }
 }

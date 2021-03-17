@@ -36,12 +36,15 @@ import java.awt.event.MouseMotionAdapter;
 public class GhostMotionAdapter
         extends MouseMotionAdapter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GhostMotionAdapter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related glass pane. */
     protected GhostGlassPane glassPane;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new GhostMotionAdapter object
      *
@@ -52,6 +55,7 @@ public class GhostMotionAdapter
         this.glassPane = glassPane;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // mouseDragged //
     //--------------//

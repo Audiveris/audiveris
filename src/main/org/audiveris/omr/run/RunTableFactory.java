@@ -41,15 +41,18 @@ import java.util.List;
  */
 public class RunTableFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTableFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The desired orientation. */
     private final Orientation orientation;
 
     /** The filter, if any, to be applied on run candidates. */
     private final Filter filter;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an RunsTableFactory, with its specified orientation and no filtering.
      *
@@ -76,6 +79,7 @@ public class RunTableFactory
         this.filter = filter;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     // ------------//
     // createTable //
     // ------------//
@@ -114,6 +118,101 @@ public class RunTableFactory
         retriever.retrieveRuns(roi);
 
         return table;
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+    //--------//
+    // Filter //
+    //--------//
+    /**
+     * This class is able to filter a run candidate.
+     */
+    public static interface Filter
+    {
+
+        /**
+         * Perform the filter on the provided run candidate.
+         *
+         * @param x      abscissa at beginning of run candidate
+         * @param y      ordinate at beginning of run candidate
+         * @param length the length of the run candidate
+         * @return true if candidate is to be kept
+         */
+        boolean check (int x,
+                       int y,
+                       int length);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // LengthFilter //
+    //--------------//
+    /**
+     * A convenient run filter, that checks whether the run length is sufficient.
+     */
+    public static class LengthFilter
+            implements Filter
+    {
+
+        private final int minLength;
+
+        /**
+         * Creates a length-based filter.
+         *
+         * @param minLength the minimum acceptable run length (specified in pixels)
+         */
+        public LengthFilter (int minLength)
+        {
+            this.minLength = minLength;
+        }
+
+        @Override
+        public boolean check (int x,
+                              int y,
+                              int length)
+        {
+            return length >= minLength;
+        }
+    }
+
+    //-------------------//
+    // HorizontalAdapter //
+    //-------------------//
+    /**
+     * Adapter for horizontal runs.
+     */
+    private class HorizontalAdapter
+            extends MyAdapter
+    {
+
+        HorizontalAdapter (ByteProcessor source,
+                           RunTable table,
+                           Point tableOffset)
+        {
+            super(source, table, tableOffset);
+        }
+
+        @Override
+        public void endPosition (int pos,
+                                 List<Run> runs)
+        {
+            table.setSequence(pos - tableOffset.y, RunTable.encode(runs));
+        }
+
+        @Override
+        public final boolean isFore (int coord,
+                                     int pos)
+        {
+            return source.get(coord, pos) == 0;
+        }
+
+        @Override
+        protected boolean checkFilter (int coord,
+                                       int pos,
+                                       int length)
+        {
+            return filter.check(coord - length, pos, length);
+        }
     }
 
     // ----------//
@@ -192,46 +291,6 @@ public class RunTableFactory
                                                 int length);
     }
 
-    //-------------------//
-    // HorizontalAdapter //
-    //-------------------//
-    /**
-     * Adapter for horizontal runs.
-     */
-    private class HorizontalAdapter
-            extends MyAdapter
-    {
-
-        HorizontalAdapter (ByteProcessor source,
-                           RunTable table,
-                           Point tableOffset)
-        {
-            super(source, table, tableOffset);
-        }
-
-        @Override
-        public void endPosition (int pos,
-                                 List<Run> runs)
-        {
-            table.setSequence(pos - tableOffset.y, RunTable.encode(runs));
-        }
-
-        @Override
-        public final boolean isFore (int coord,
-                                     int pos)
-        {
-            return source.get(coord, pos) == 0;
-        }
-
-        @Override
-        protected boolean checkFilter (int coord,
-                                       int pos,
-                                       int length)
-        {
-            return filter.check(coord - length, pos, length);
-        }
-    }
-
     //-----------------//
     // VerticalAdapter //
     //-----------------//
@@ -269,59 +328,6 @@ public class RunTableFactory
                                        int length)
         {
             return filter.check(pos, coord - length, length);
-        }
-    }
-
-    //--------//
-    // Filter //
-    //--------//
-    /**
-     * This class is able to filter a run candidate.
-     */
-    public static interface Filter
-    {
-
-        /**
-         * Perform the filter on the provided run candidate.
-         *
-         * @param x      abscissa at beginning of run candidate
-         * @param y      ordinate at beginning of run candidate
-         * @param length the length of the run candidate
-         * @return true if candidate is to be kept
-         */
-        boolean check (int x,
-                       int y,
-                       int length);
-    }
-
-    //--------------//
-    // LengthFilter //
-    //--------------//
-    /**
-     * A convenient run filter, that checks whether the run length is sufficient.
-     */
-    public static class LengthFilter
-            implements Filter
-    {
-
-        private final int minLength;
-
-        /**
-         * Creates a length-based filter.
-         *
-         * @param minLength the minimum acceptable run length (specified in pixels)
-         */
-        public LengthFilter (int minLength)
-        {
-            this.minLength = minLength;
-        }
-
-        @Override
-        public boolean check (int x,
-                              int y,
-                              int length)
-        {
-            return length >= minLength;
         }
     }
 }

@@ -40,9 +40,11 @@ import java.util.Objects;
  */
 public class GlyphsModel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph service. */
     protected final EntityService<? extends Glyph> glyphService;
 
@@ -52,6 +54,7 @@ public class GlyphsModel
     /** Latest shape assigned, if any. */
     protected Shape latestShape;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of GlyphsModel, with its underlying glyph glyphService.
      *
@@ -67,6 +70,7 @@ public class GlyphsModel
         this.glyphService = glyphService;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // assignGlyph //
     //-------------//

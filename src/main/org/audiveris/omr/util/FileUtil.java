@@ -51,6 +51,7 @@ import java.util.List;
  */
 public abstract class FileUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
@@ -58,10 +59,12 @@ public abstract class FileUtil
 
     private static final int BACKUP_MAX = 99;
 
+    //~ Constructors -------------------------------------------------------------------------------
     private FileUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // avoidExtensions //
     //-----------------//
@@ -176,36 +179,38 @@ public abstract class FileUtil
                                  final Path targetDir)
             throws IOException
     {
-        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>()
-                   {
-                       @Override
-                       public FileVisitResult preVisitDirectory (Path dir,
-                                                                 BasicFileAttributes attrs)
-                               throws IOException
-                       {
-                           Path target = targetDir.resolve(sourceDir.relativize(dir));
+        Files.walkFileTree(
+                sourceDir,
+                new SimpleFileVisitor<Path>()
+        {
+            @Override
+            public FileVisitResult preVisitDirectory (Path dir,
+                                                      BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Path target = targetDir.resolve(sourceDir.relativize(dir));
 
-                           try {
-                               Files.copy(dir, target);
-                           } catch (FileAlreadyExistsException e) {
-                               if (!Files.isDirectory(target)) {
-                                   throw e;
-                               }
-                           }
+                try {
+                    Files.copy(dir, target);
+                } catch (FileAlreadyExistsException e) {
+                    if (!Files.isDirectory(target)) {
+                        throw e;
+                    }
+                }
 
-                           return FileVisitResult.CONTINUE;
-                       }
+                return FileVisitResult.CONTINUE;
+            }
 
-                       @Override
-                       public FileVisitResult visitFile (Path file,
-                                                         BasicFileAttributes attrs)
-                               throws IOException
-                       {
-                           Files.copy(file, targetDir.resolve(sourceDir.relativize(file)));
+            @Override
+            public FileVisitResult visitFile (Path file,
+                                              BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Files.copy(file, targetDir.resolve(sourceDir.relativize(file)));
 
-                           return FileVisitResult.CONTINUE;
-                       }
-                   });
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     //-----------//
@@ -257,28 +262,30 @@ public abstract class FileUtil
             throw new IllegalArgumentException(directory + " is not a directory");
         }
 
-        Files.walkFileTree(directory, new SimpleFileVisitor<Path>()
-                   {
-                       @Override
-                       public FileVisitResult visitFile (Path file,
-                                                         BasicFileAttributes attrs)
-                               throws IOException
-                       {
-                           Files.delete(file);
+        Files.walkFileTree(
+                directory,
+                new SimpleFileVisitor<Path>()
+        {
+            @Override
+            public FileVisitResult visitFile (Path file,
+                                              BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Files.delete(file);
 
-                           return FileVisitResult.CONTINUE;
-                       }
+                return FileVisitResult.CONTINUE;
+            }
 
-                       @Override
-                       public FileVisitResult postVisitDirectory (Path dir,
-                                                                  IOException exc)
-                               throws IOException
-                       {
-                           Files.delete(dir);
+            @Override
+            public FileVisitResult postVisitDirectory (Path dir,
+                                                       IOException exc)
+                    throws IOException
+            {
+                Files.delete(dir);
 
-                           return FileVisitResult.CONTINUE;
-                       }
-                   });
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     //--------------//
@@ -456,44 +463,46 @@ public abstract class FileUtil
         }
 
         try {
-            Files.walkFileTree(folder, new SimpleFileVisitor<Path>()
-                       {
-                           @Override
-                           public FileVisitResult preVisitDirectory (Path dir,
-                                                                     BasicFileAttributes attrs)
-                                   throws IOException
-                           {
-                               if (dir.equals(folder) || dirMatcher.matches(dir)) {
-                                   return FileVisitResult.CONTINUE;
-                               } else {
-                                   return FileVisitResult.SKIP_SUBTREE;
-                               }
-                           }
+            Files.walkFileTree(
+                    folder,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult preVisitDirectory (Path dir,
+                                                          BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    if (dir.equals(folder) || dirMatcher.matches(dir)) {
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
 
-                           @Override
-                           public FileVisitResult visitFile (Path file,
-                                                             BasicFileAttributes attrs)
-                                   throws IOException
-                           {
-                               if (fileMatcher.matches(file)) {
-                                   pathsFound.add(file);
-                               }
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    if (fileMatcher.matches(file)) {
+                        pathsFound.add(file);
+                    }
 
-                               return FileVisitResult.CONTINUE;
-                           }
+                    return FileVisitResult.CONTINUE;
+                }
 
-                           @Override
-                           public FileVisitResult postVisitDirectory (Path dir,
-                                                                      IOException exc)
-                                   throws IOException
-                           {
-                               if (dirMatcher.matches(dir)) {
-                                   pathsFound.add(dir);
-                               }
+                @Override
+                public FileVisitResult postVisitDirectory (Path dir,
+                                                           IOException exc)
+                        throws IOException
+                {
+                    if (dirMatcher.matches(dir)) {
+                        pathsFound.add(dir);
+                    }
 
-                               return FileVisitResult.CONTINUE;
-                           }
-                       });
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         } catch (IOException ex) {
             logger.warn("Error in browsing " + folder + " " + ex, ex);
         }

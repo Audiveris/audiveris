@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class FilterParam
         extends Param<FilterDescriptor>
 {
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     /**
      * JAXB adapter.

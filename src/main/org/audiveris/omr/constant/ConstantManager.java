@@ -125,6 +125,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ThreadSafe
 public class ConstantManager
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ConstantManager.class);
 
@@ -134,6 +135,7 @@ public class ConstantManager
     /** The singleton */
     private static final ConstantManager INSTANCE = new ConstantManager();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Map of all constants created in the application, regardless whether these
      * constants are enclosed in a ConstantSet or defined as standalone entities.
@@ -144,10 +146,12 @@ public class ConstantManager
     private final UserHolder userHolder = new UserHolder(
             WellKnowns.CONFIG_FOLDER.resolve(USER_FILE_NAME));
 
+    //~ Constructors -------------------------------------------------------------------------------
     private ConstantManager ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addConstant //
     //-------------//
@@ -274,6 +278,7 @@ public class ConstantManager
         return userHolder.getProperty(qName);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // AbstractHolder //
     //----------------//

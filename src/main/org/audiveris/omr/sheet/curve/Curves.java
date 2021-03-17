@@ -57,6 +57,7 @@ import java.util.Set;
  */
 public class Curves
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -67,6 +68,7 @@ public class Curves
 
     private static final List<Point> breakPoints = getBreakPoints();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -86,6 +88,7 @@ public class Curves
     /** Builder for slurs (also used to evaluate arcs). */
     private SlursBuilder slursBuilder;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Curves object.
      *
@@ -110,6 +113,7 @@ public class Curves
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // buildCurves //
     //-------------//
@@ -276,6 +280,32 @@ public class Curves
         return points;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displayCurves = new Constant.Boolean(
+                false,
+                "Should we display the view on curves?");
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.String breakPointCoordinates = new Constant.String(
+                "",
+                "(Debug) Comma-separated coordinates of curve break points if any");
+
+        private final Constant.Double defaultThickness = new Constant.Double(
+                "pixels",
+                2.0,
+                "Default thickness for a curve display");
+    }
+
     //--------//
     // MyView //
     //--------//
@@ -302,30 +332,5 @@ public class Curves
                 renderer.renderItems(g);
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displayCurves = new Constant.Boolean(
-                false,
-                "Should we display the view on curves?");
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Constant.String breakPointCoordinates = new Constant.String(
-                "",
-                "(Debug) Comma-separated coordinates of curve break points if any");
-
-        private final Constant.Double defaultThickness = new Constant.Double(
-                "pixels",
-                2.0,
-                "Default thickness for a curve display");
     }
 }

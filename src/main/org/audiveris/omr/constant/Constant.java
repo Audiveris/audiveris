@@ -114,6 +114,7 @@ public abstract class Constant<E>
         this.description = description;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDescription //
     //----------------//
@@ -601,8 +602,9 @@ public abstract class Constant<E>
             extends Constant<java.util.Date>
     {
 
-        private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy",
-                                                                           Locale.US);
+        private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
+                "dd-MMM-yyyy",
+                Locale.US);
 
         public Date (java.util.Date defaultValue,
                      java.lang.String description)
@@ -624,6 +626,7 @@ public abstract class Constant<E>
                 return DATE_FORMAT.parse(str);
             } catch (ParseException ex) {
                 logger.error("Error parsing {}", str, ex);
+
                 return null;
             }
         }
@@ -650,6 +653,7 @@ public abstract class Constant<E>
                 return DATE_FORMAT.parse(str);
             } catch (ParseException ex) {
                 logger.error("Error parsing {}", str, ex);
+
                 return null;
             }
         }

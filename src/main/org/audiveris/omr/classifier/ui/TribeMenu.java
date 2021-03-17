@@ -52,9 +52,11 @@ import javax.swing.JMenuItem;
 public class TribeMenu
         extends SeparableMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Selected glyph. */
     private final Glyph glyph;
 
@@ -64,6 +66,7 @@ public class TribeMenu
     /** Related sample sheet, if any. */
     private SampleSheet sampleSheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TribeMenu} object.
      *
@@ -82,6 +85,7 @@ public class TribeMenu
         populateMenu();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addGood //
     //---------//
@@ -185,6 +189,7 @@ public class TribeMenu
         sampleSheet.getTribe(best);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SelectMenu //
     //------------//
@@ -201,16 +206,18 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(this, new ActionListener()
-                          {
-                              @Override
-                              public void actionPerformed (ActionEvent e)
-                              {
-                                  JMenuItem source = (JMenuItem) e.getSource();
-                                  Shape shape = Shape.valueOf(source.getText());
-                                  selectBest(shape);
-                              }
-                          });
+            ShapeSet.addAllShapes(
+                    this,
+                    new ActionListener()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    JMenuItem source = (JMenuItem) e.getSource();
+                    Shape shape = Shape.valueOf(source.getText());
+                    selectBest(shape);
+                }
+            });
         }
     }
 }

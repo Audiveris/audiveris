@@ -46,12 +46,14 @@ import javax.xml.bind.annotation.XmlAccessorType;
 public class ImageHolder
         extends DataHolder<BufferedImage>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ImageHolder.class);
 
     /** Name of image format on disk: {@value}. */
     public static final String IMAGE_FORMAT = "png";
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ImageHolder} object.
      *
@@ -68,6 +70,7 @@ public class ImageHolder
         super();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // load //
     //------//

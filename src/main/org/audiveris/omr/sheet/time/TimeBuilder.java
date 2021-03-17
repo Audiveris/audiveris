@@ -63,6 +63,7 @@ import java.util.List;
  */
 public abstract class TimeBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -74,6 +75,21 @@ public abstract class TimeBuilder
     /** Possible shapes for top or bottom half of time signatures. */
     protected static final EnumSet<Shape> halfShapes = EnumSet.copyOf(ShapeSet.PartialTimes);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * The different parts of a time signature.
+     */
+    public static enum TimeKind
+    {
+        /** Whole signature (common or cut or combo). */
+        WHOLE,
+        /** Upper half (numerator number). */
+        NUM,
+        /** Lower half (denominator number). */
+        DEN;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated staff to analyze. */
     protected final Staff staff;
 
@@ -105,6 +121,7 @@ public abstract class TimeBuilder
     /** The time inter instance chosen for the staff. */
     protected AbstractTimeInter timeInter;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeBuilder} object.
      *
@@ -124,6 +141,7 @@ public abstract class TimeBuilder
         params = new Parameters(scale, staff.getSpecificInterline());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * This is called when we discover that a candidate is wrong,
      * so that all related data inserted in sig is removed.
@@ -304,19 +322,7 @@ public abstract class TimeBuilder
         return !wholes.isEmpty() || !nums.isEmpty();
     }
 
-    /**
-     * The different parts of a time signature.
-     */
-    public static enum TimeKind
-    {
-        /** Whole signature (common or cut or combo). */
-        WHOLE,
-        /** Upper half (numerator number). */
-        NUM,
-        /** Lower half (denominator number). */
-        DEN;
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // Parameters //
     //------------//

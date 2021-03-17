@@ -43,14 +43,17 @@ import java.util.List;
  */
 public abstract class EnsembleHelper
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EnsembleHelper.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private EnsembleHelper ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addMember //
     //-----------//

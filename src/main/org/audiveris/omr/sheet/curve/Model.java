@@ -38,6 +38,7 @@ import java.util.Collection;
  */
 public interface Model
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the item shape as /--\ (above) or \--/ (below) or ---- (flat).

@@ -35,6 +35,7 @@ import java.awt.Rectangle;
  */
 public interface PixelFocus
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Focus on a rectangle

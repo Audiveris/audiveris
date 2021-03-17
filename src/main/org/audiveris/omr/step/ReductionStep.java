@@ -45,8 +45,8 @@ import java.util.List;
 public class ReductionStep
         extends AbstractSystemStep<Void>
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ReductionStep.class);

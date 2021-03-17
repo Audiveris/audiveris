@@ -62,6 +62,7 @@ import javax.swing.event.ChangeListener;
  */
 public class Zoom
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -70,6 +71,7 @@ public class Zoom
     /** To assign a unique Id. */
     private static AtomicInteger globalId = new AtomicInteger(0);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique event, created lazily. */
     protected ChangeEvent changeEvent = null;
 
@@ -85,6 +87,7 @@ public class Zoom
     /** Unique Id (to ease debugging). */
     private final int id = globalId.incrementAndGet();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a zoom entity, with a default ratio value of 1.
      */
@@ -119,6 +122,7 @@ public class Zoom
         setRatio(ratio);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addChangeListener //
     //-------------------//
@@ -347,7 +351,8 @@ public class Zoom
             slider.setFocusable(false);
             slider.setDoubleValue(ratio);
 
-            slider.addChangeListener(new ChangeListener()
+            slider.addChangeListener(
+                    new ChangeListener()
             {
                 @Override
                 public void stateChanged (ChangeEvent e)
@@ -472,6 +477,7 @@ public class Zoom
         fireStateChanged();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

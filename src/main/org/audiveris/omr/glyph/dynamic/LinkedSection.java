@@ -64,6 +64,7 @@ import java.util.List;
 public class LinkedSection
         implements Section
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Concrete underlying section, to which most features are delegated. */
     private final Section section;
@@ -76,6 +77,7 @@ public class LinkedSection
 
     private SectionCompound compound;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LinkedSection} object.
      *
@@ -86,6 +88,7 @@ public class LinkedSection
         this.section = section;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addSource //
     //-----------//

@@ -48,6 +48,7 @@ import java.util.Comparator;
 public abstract class Filament
         extends SectionCompound
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -67,6 +68,7 @@ public abstract class Filament
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Absolute beginning point. */
     protected Point2D startPoint;
 
@@ -76,6 +78,7 @@ public abstract class Filament
     /** Scaling interline. */
     protected int interline;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Filament} object.
      *
@@ -86,6 +89,7 @@ public abstract class Filament
         this.interline = interline;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Force line (re)computation.
      */
@@ -273,6 +277,7 @@ public abstract class Filament
         return constants.probeWidth;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -62,12 +62,11 @@ import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
-import org.jdesktop.application.Task;
-
-import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -313,32 +311,26 @@ public class BookActions
             final String frameTitle = sheetParams.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
-            dialog.setName("SheetParamsDialog");  // For SAF life cycle
+            dialog.setName("SheetParamsDialog"); // For SAF life cycle
 
-            optionPane.addPropertyChangeListener(new PropertyChangeListener()
-            {
-                @Override
-                public void propertyChange (PropertyChangeEvent e)
-                {
-                    String prop = e.getPropertyName();
+            optionPane.addPropertyChangeListener((PropertyChangeEvent e1) -> {
+                String prop = e1.getPropertyName();
+                if (dialog.isVisible() && (e1.getSource() == optionPane) && (prop.equals(
+                        JOptionPane.VALUE_PROPERTY))) {
+                    Object obj = optionPane.getValue();
+                    int value = (Integer) obj;
+                    apply.set(value == JOptionPane.OK_OPTION);
 
-                    if (dialog.isVisible() && (e.getSource() == optionPane)
-                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                        Object obj = optionPane.getValue();
-                        int value = (Integer) obj;
-                        apply.set(value == JOptionPane.OK_OPTION);
-
-                        // Exit only if user gives up or enters correct data
-                        if (!apply.isSet() || sheetParams.commit()) {
-                            dialog.setVisible(false);
-                            dialog.dispose();
-                        } else {
-                            // Incorrect data, so don't exit yet
-                            try {
-                                // TODO: Is there a more civilized way?
-                                optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                            } catch (Exception ignored) {
-                            }
+                    // Exit only if user gives up or enters correct data
+                    if (!apply.isSet() || sheetParams.commit()) {
+                        dialog.setVisible(false);
+                        dialog.dispose();
+                    } else {
+                        // Incorrect data, so don't exit yet
+                        try {
+                            // TODO: Is there a more civilized way?
+                            optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+                        } catch (Exception ignored) {
                         }
                     }
                 }
@@ -1109,6 +1101,7 @@ public class BookActions
                 final String msg = format(resources.getString("resetBookToEnd.pattern"),
                                           book.getRadix(),
                                           Step.LOAD);
+
                 if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
                     book.reset();
                 }
@@ -1133,6 +1126,7 @@ public class BookActions
             final String msg = format(resources.getString("resetBookToEnd.pattern"),
                                       book.getRadix(),
                                       Step.BINARY);
+
             if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
                 book.resetToBinary();
             }
@@ -1156,6 +1150,7 @@ public class BookActions
             final String msg = format(resources.getString("resetBookToEnd.pattern"),
                                       book.getRadix(),
                                       Step.LOAD);
+
             if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
                 book.resetToGray();
             }
@@ -1213,8 +1208,9 @@ public class BookActions
         try {
             final Path bookPath = BookManager.getDefaultSavePath(book);
 
-            if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(
-                    book.getBookPath().toAbsolutePath()) || confirmed(bookPath))) {
+            if ((book.getBookPath() != null)
+                        && (bookPath.toAbsolutePath().equals(book.getBookPath().toAbsolutePath())
+                                    || confirmed(bookPath))) {
                 return new StoreBookTask(book, bookPath);
             }
 
@@ -1455,8 +1451,7 @@ public class BookActions
 
         if (book != null) {
             if (book.hasSpecificRepository()) {
-                return new SampleBrowser.Waiter(
-                        resources.getString("launchingBookSampleBrowser"))
+                return new SampleBrowser.Waiter(resources.getString("launchingBookSampleBrowser"))
                 {
                     @Override
                     protected SampleBrowser doInBackground ()
@@ -1594,7 +1589,7 @@ public class BookActions
         final String bookStatus = book.isModified() ? resources.getString("modified")
                 : (book.isUpgraded() ? resources.getString("upgraded") : null);
 
-        if (bookStatus != null && defaultPrompt.getValue()) {
+        if ((bookStatus != null) && defaultPrompt.getValue()) {
             final int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
                     format(resources.getString("saveBook.pattern"), bookStatus, book.getRadix()));
@@ -1651,16 +1646,6 @@ public class BookActions
         return LazySingleton.INSTANCE;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final BookActions INSTANCE = new BookActions();
-    }
-
     //-----------//
     // confirmed //
     //-----------//
@@ -1673,9 +1658,8 @@ public class BookActions
      */
     private static boolean confirmed (Path target)
     {
-        return (!Files.exists(target))
-                       || OMR.gui.displayConfirmation(
-                        format(resources.getString("overwriteFile.pattern"), target));
+        return (!Files.exists(target)) || OMR.gui.displayConfirmation(
+                format(resources.getString("overwriteFile.pattern"), target));
     }
 
     //--------//
@@ -1753,6 +1737,7 @@ public class BookActions
                 resources.getString("chooseSheetPrint"));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LoadBookTask //
     //--------------//
@@ -2024,10 +2009,6 @@ public class BookActions
             extends ConstantSet
     {
 
-        private final Constant.Boolean promptParameters = new Constant.Boolean(
-                false,
-                "Should we prompt the user for score parameters?");
-
         private final Constant.String validImageExtensions = new Constant.String(
                 ".bmp .gif .jpg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
@@ -2159,6 +2140,15 @@ public class BookActions
 
             return null;
         }
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final BookActions INSTANCE = new BookActions();
     }
 
     //----------------//

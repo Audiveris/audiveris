@@ -29,10 +29,12 @@ package org.audiveris.omr.ui.selection;
 public class PixelEvent
         extends UserEvent<Integer>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The current pixel level, which may be null. */
     private final Integer level;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PixelEvent} object.
      *
@@ -50,6 +52,7 @@ public class PixelEvent
         this.level = level;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

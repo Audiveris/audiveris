@@ -33,11 +33,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SeparateTimeRelation
         extends Relation
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code SeparateTimeRelation} object.
+     */
     public SeparateTimeRelation ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//

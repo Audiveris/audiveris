@@ -236,8 +236,7 @@ public class BookParameters
         // Initially selected tab
         component.addChangeListener(this);
         component.setSelectedComponent(
-                (sheetPanel != null) ? sheetPanel
-                        : ((bookPanel != null) ? bookPanel : defaultPanel));
+                (sheetPanel != null) ? sheetPanel : ((bookPanel != null) ? bookPanel : defaultPanel));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -411,8 +410,9 @@ public class BookParameters
         /** ComboBox for filter kind */
         private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
 
-        private final JLabel kindLabel = new JLabel(resources.getString("kindLabel.text"),
-                                                    SwingConstants.RIGHT);
+        private final JLabel kindLabel = new JLabel(
+                resources.getString("kindLabel.text"),
+                SwingConstants.RIGHT);
 
         // Data for global
         private final SpinData globalData = new SpinData(
@@ -445,8 +445,9 @@ public class BookParameters
         public void actionPerformed (ActionEvent e)
         {
             if ((e != null) && (e.getSource() == kindCombo)) {
-                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL) ? GlobalDescriptor
-                        .getDefault() : AdaptiveDescriptor.getDefault();
+                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL)
+                        ? GlobalDescriptor.getDefault()
+                        : AdaptiveDescriptor.getDefault();
                 display(desc);
             } else {
                 super.actionPerformed(e);
@@ -526,11 +527,10 @@ public class BookParameters
         {
             commitSpinners();
 
-            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
-                    (int) globalData.spinner.getValue())
-                    : new AdaptiveDescriptor(
-                            (double) localDataMean.spinner.getValue(),
-                            (double) localDataDev.spinner.getValue());
+            return (readKind() == FilterKind.GLOBAL)
+                    ? new GlobalDescriptor((int) globalData.spinner.getValue())
+                    : new AdaptiveDescriptor((double) localDataMean.spinner.getValue(),
+                                             (double) localDataDev.spinner.getValue());
         }
 
         @Override

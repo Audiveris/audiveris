@@ -39,9 +39,9 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.util.HorizontalSide.*;
-import org.audiveris.omr.util.VerticalSide;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +98,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Part
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Part.class);
 
@@ -112,6 +113,8 @@ public class Part
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -169,6 +172,7 @@ public class Part
     /** Indicate a dummy physical part. Used only during MusicXML export. */
     private boolean dummy;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of {@code Part}.
      *
@@ -186,6 +190,7 @@ public class Part
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addLyric //
     //----------//
@@ -460,6 +465,7 @@ public class Part
 
         // Part numbering (to be refined)
         int theId = id + 1;
+
         for (Part part : system.getParts().subList(myIndex + 1, system.getParts().size())) {
             part.setId(theId++);
         }
@@ -729,9 +735,9 @@ public class Part
             if (!inter.isRemoved()) {
                 final Rectangle box = inter.getBounds();
                 final int x = inter.getCenter().x;
-                final int y = (side == VerticalSide.TOP) ? box.y : box.y + box.height - 1;
+                final int y = (side == VerticalSide.TOP) ? box.y : ((box.y + box.height) - 1);
                 final int yStaff = line.yAt(x);
-                final int dy = (side == VerticalSide.TOP) ? yStaff - y : y - yStaff;
+                final int dy = (side == VerticalSide.TOP) ? (yStaff - y) : (y - yStaff);
                 maxDy = Math.max(maxDy, dy);
             }
         }

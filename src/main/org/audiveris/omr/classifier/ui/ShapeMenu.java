@@ -45,9 +45,11 @@ import javax.swing.JMenuItem;
 public class ShapeMenu
         extends SeparableMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing sheet. */
     private final Sheet sheet;
 
@@ -56,6 +58,7 @@ public class ShapeMenu
 
     private final ActionListener shapeListener;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ShapeMenu} object.
      *
@@ -82,6 +85,7 @@ public class ShapeMenu
         populateMenu();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getGlyph //
     //----------//
@@ -126,6 +130,7 @@ public class ShapeMenu
         add(new AssignMenu());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AssignMenu //
     //------------//

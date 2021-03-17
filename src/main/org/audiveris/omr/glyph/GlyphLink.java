@@ -29,6 +29,7 @@ package org.audiveris.omr.glyph;
  */
 public interface GlyphLink
 {
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     /**
      * Neighborhood relationship.

@@ -33,6 +33,7 @@ import javax.swing.event.ChangeListener;
 public class LIntegerSpinner
         extends LSpinner
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an editable labeled spinner with provided
@@ -47,6 +48,7 @@ public class LIntegerSpinner
         super(label, tip);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addChangeListener //
     //-------------------//

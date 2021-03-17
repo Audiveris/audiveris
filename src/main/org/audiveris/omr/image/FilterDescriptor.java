@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FilterDescriptor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -46,6 +47,7 @@ public abstract class FilterDescriptor
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -129,6 +131,7 @@ public abstract class FilterDescriptor
         constants.defaultKind.setValue(kind);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

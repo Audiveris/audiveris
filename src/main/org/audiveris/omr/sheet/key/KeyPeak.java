@@ -33,28 +33,20 @@ import java.util.Comparator;
 public class KeyPeak
         extends Range
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To sort peaks by their area value. */
-    public static final Comparator<KeyPeak> byArea = new Comparator<KeyPeak>()
-    {
-        @Override
-        public int compare (KeyPeak p1,
-                            KeyPeak p2)
-        {
-            if (p1 == p2) {
-                return 0;
-            }
+    public static final Comparator<KeyPeak> byArea = (KeyPeak p1, KeyPeak p2)
+            -> (p1 == p2) ? 0 : Integer.compare(p1.area, p2.area);
 
-            return Integer.compare(p1.area, p2.area);
-        }
-    };
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Max cumulated height. */
     protected int height;
 
     /** Weight of peak. */
     protected int area;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyPeak} object.
      *
@@ -75,6 +67,7 @@ public class KeyPeak
         this.area = area;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report peak center abscissa
      *

@@ -34,6 +34,7 @@ import java.util.List;
  */
 public class Parabola
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private double a;
 
@@ -43,6 +44,7 @@ public class Parabola
 
     private final double dist;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Parabola object.
      *
@@ -66,6 +68,7 @@ public class Parabola
         dist = computeDistance(xx, yy);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the mean distance from fitting points to parabola.
      *

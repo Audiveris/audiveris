@@ -91,11 +91,65 @@ import java.util.Set;
 @NotThreadSafe
 public class SlotsRetriever
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SlotsRetriever.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //-----//
+    // Rel //
+    //-----//
+    /**
+     * Describes the oriented relationship between two chords of the measure.
+     */
+    public static enum Rel
+    {
+        /**
+         * Strongly before.
+         * Stem-located before in the same beam group.
+         * Abscissa-located before the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        BEFORE("B"),
+
+        /**
+         * Strongly after.
+         * Stem-located after in the same beam group.
+         * Abscissa-located after the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        AFTER("A"),
+
+        /**
+         * Strongly equal.
+         * Identical thanks to an originating glyph in common.
+         * Adjacency detected in same staff.
+         */
+        EQUAL("="),
+
+        /**
+         * Weakly close.
+         * No important difference, use other separation criteria.
+         */
+        CLOSE("~");
+
+        private final String mnemo;
+
+        Rel (String mnemo)
+        {
+            this.mnemo = mnemo;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return mnemo;
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure. */
     private final Measure measure;
 
@@ -110,36 +164,30 @@ public class SlotsRetriever
             Edge.class);
 
     /** Comparator based on inter-chord relationships, then on timeOffset when known. */
-    private final Comparator<AbstractChordInter> byRel = new Comparator<AbstractChordInter>()
-    {
-        @Override
-        public int compare (AbstractChordInter c1,
-                            AbstractChordInter c2)
-        {
-            if (c1 == c2) {
-                return 0;
-            }
+    private final Comparator<AbstractChordInter> byRel = (c1, c2) -> {
+        if (c1 == c2) {
+            return 0;
+        }
 
-            Rel rel = getRel(c1, c2);
+        Rel rel = getRel(c1, c2);
 
-            if (rel == null) {
-                return 0;
-            } else {
-                switch (rel) {
-                case BEFORE:
-                    return -1;
+        if (rel == null) {
+            return 0;
+        } else {
+            switch (rel) {
+            case BEFORE:
+                return -1;
 
-                case AFTER:
-                    return 1;
+            case AFTER:
+                return 1;
 
-                default:
+            default:
 
-                    // Use time offset difference when known
-                    if ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) {
-                        return c1.getTimeOffset().compareTo(c2.getTimeOffset());
-                    } else {
-                        return 0;
-                    }
+                // Use time offset difference when known
+                if ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) {
+                    return c1.getTimeOffset().compareTo(c2.getTimeOffset());
+                } else {
+                    return 0;
                 }
             }
         }
@@ -148,6 +196,7 @@ public class SlotsRetriever
     /** Candidate measure chords for slots. Whole rests and small chords are excluded. */
     private final List<AbstractChordInter> candidateChords;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlotsBuilder} object for a measure.
      *
@@ -171,6 +220,7 @@ public class SlotsRetriever
         Collections.sort(candidateChords, byRel);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getMaxMergeDx //
     //---------------//
@@ -288,7 +338,8 @@ public class SlotsRetriever
                         for (AbstractChordInter c1 : n1) {
                             for (AbstractChordInter c2 : n2) {
                                 Rel rel = getRel(c1, c2);
-                                if (rel == Rel.AFTER || rel == Rel.BEFORE) {
+
+                                if ((rel == Rel.AFTER) || (rel == Rel.BEFORE)) {
                                     return false;
                                 }
                             }
@@ -409,7 +460,7 @@ public class SlotsRetriever
                 for (AbstractChordInter c1 : candidateChords.subList(iStart, i)) {
                     Rel rel = getRel(c1, c2);
 
-                    if (rel != Rel.EQUAL && rel != Rel.CLOSE) {
+                    if ((rel != Rel.EQUAL) && (rel != Rel.CLOSE)) {
                         // New slot starting here, register previous one
                         MeasureSlot slot = new MeasureSlot(
                                 ++slotCount,
@@ -826,6 +877,7 @@ public class SlotsRetriever
 
                     for (int i1 = iMin; i1 < iMax; i1++) {
                         AbstractChordInter c1 = stdChords.get(i1);
+
                         for (int i2 = i1 + 1; i2 <= iMax; i2++) {
                             AbstractChordInter c2 = stdChords.get(i2);
 
@@ -905,6 +957,27 @@ public class SlotsRetriever
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------//
+    // Edge //
+    //------//
+    /**
+     * Meant to store a relation instance (edge) between two chords (vertices).
+     */
+    protected static class Edge
+    {
+
+        Rel rel; // Relationship carried by the concrete edge
+
+        /**
+         * @param rel
+         */
+        Edge (Rel rel)
+        {
+            this.rel = rel;
+        }
+    }
+
     //-----------//
     // ChordPair //
     //-----------//
@@ -970,26 +1043,6 @@ public class SlotsRetriever
                 "Maximum vertical overlap tolerated");
     }
 
-    //------//
-    // Edge //
-    //------//
-    /**
-     * Meant to store a relation instance (edge) between two chords (vertices).
-     */
-    protected static class Edge
-    {
-
-        Rel rel; // Relationship carried by the concrete edge
-
-        /**
-         * @param rel
-         */
-        Edge (Rel rel)
-        {
-            this.rel = rel;
-        }
-    }
-
     //------------//
     // Parameters //
     //------------//
@@ -1010,57 +1063,6 @@ public class SlotsRetriever
             maxSlotDxLow = scale.toPixels(constants.maxSlotDxLow);
             maxAdjacencyXGap = scale.toPixels(constants.maxAdjacencyXGap);
             maxVerticalOverlap = scale.toPixels(constants.maxVerticalOverlap);
-        }
-    }
-
-    //-----//
-    // Rel //
-    //-----//
-    /**
-     * Describes the oriented relationship between two chords of the measure.
-     */
-    public static enum Rel
-    {
-        /**
-         * Strongly before.
-         * Stem-located before in the same beam group.
-         * Abscissa-located before the vertically overlapping chord.
-         * Important abscissa difference in different staves.
-         */
-        BEFORE("B"),
-        //
-        /**
-         * Strongly after.
-         * Stem-located after in the same beam group.
-         * Abscissa-located after the vertically overlapping chord.
-         * Important abscissa difference in different staves.
-         */
-        AFTER("A"),
-        //
-        /**
-         * Strongly equal.
-         * Identical thanks to an originating glyph in common.
-         * Adjacency detected in same staff.
-         */
-        EQUAL("="),
-        //
-        /**
-         * Weakly close.
-         * No important difference, use other separation criteria.
-         */
-        CLOSE("~");
-
-        private final String mnemo;
-
-        Rel (String mnemo)
-        {
-            this.mnemo = mnemo;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return mnemo;
         }
     }
 }

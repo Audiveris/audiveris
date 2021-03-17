@@ -54,9 +54,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class OrnamentInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OrnamentInter object.
      *
@@ -79,6 +81,7 @@ public class OrnamentInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

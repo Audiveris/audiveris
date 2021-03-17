@@ -33,6 +33,7 @@ import org.audiveris.omr.constant.ConstantSet;
  */
 public abstract class Grades
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -83,13 +84,14 @@ public abstract class Grades
     public static final double minInterGrade = intrinsicRatio * constants.minInterGrade.getValue();
 
     /** Grade for a good interpretation. */
-    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade
-            .getValue();
+    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade.getValue();
 
+    //~ Constructors -------------------------------------------------------------------------------
     private Grades ()
     {
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

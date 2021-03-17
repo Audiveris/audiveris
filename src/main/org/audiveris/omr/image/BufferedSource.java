@@ -33,6 +33,7 @@ import java.awt.image.Raster;
 public class BufferedSource
         implements PixelSource
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The wrapped BufferedImage instance. */
     private final BufferedImage image;
@@ -46,6 +47,7 @@ public class BufferedSource
     /** Buffer to read pixel value. */
     private final int[] pixelArray;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BufferedSource object around a given BufferedImage
      * instance.
@@ -62,6 +64,7 @@ public class BufferedSource
         pixelArray = new int[4];
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int get (int x,
                     int y)

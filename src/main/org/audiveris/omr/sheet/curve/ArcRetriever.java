@@ -77,11 +77,29 @@ import java.util.List;
  */
 public class ArcRetriever
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ArcRetriever.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Status for current move along arc.
+     */
+    private static enum Status
+    {
+        /** One more point on arc. */
+        CONTINUE,
+
+        /** Arrived at a new junction point. */
+        SWITCH,
+
+        /** No more move possible. */
+        END;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -111,6 +129,7 @@ public class ArcRetriever
     /** Are we in a long run part?. */
     boolean longRunPart;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an ArcRetriever object
      *
@@ -126,6 +145,7 @@ public class ArcRetriever
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // scanImage //
     //-----------//
@@ -312,9 +332,8 @@ public class ArcRetriever
             minDy = min(minDy, dist);
         }
 
-        return (maxDist < params.minStaffLineDistance) && ((maxDy
-                                                                    - minDy)
-                                                                   < params.minStaffLineDistance);
+        return (maxDist < params.minStaffLineDistance)
+                       && ((maxDy - minDy) < params.minStaffLineDistance);
     }
 
     //------//
@@ -593,19 +612,7 @@ public class ArcRetriever
         return (vect * vect) / (l1Sq * l2Sq);
     }
 
-    /**
-     * Status for current move along arc.
-     */
-    private static enum Status
-    {
-        /** One more point on arc. */
-        CONTINUE,
-        /** Arrived at a new junction point. */
-        SWITCH,
-        /** No more move possible. */
-        END;
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

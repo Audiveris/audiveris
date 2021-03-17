@@ -21,26 +21,22 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.dynamic;
 
+import java.awt.Point;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.lag.Section;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.grid.BarFilamentFactory;
 import org.audiveris.omr.sheet.grid.StaffFilament;
-import org.audiveris.omr.util.Dumping;
-import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
@@ -55,6 +51,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.audiveris.omr.math.GeoUtil;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Entities;
 
 /**
  * Class {@code FilamentFactory} builds filaments (long series of sections) out of a
@@ -89,11 +89,13 @@ import java.util.Set;
  */
 public class FilamentFactory<F extends Filament>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related scale. */
     private final Scale scale;
 
@@ -115,6 +117,7 @@ public class FilamentFactory<F extends Filament>
     /** Fat sections. unknown/true/false */
     private final Map<Section, Boolean> fatSections = new HashMap<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a factory of filaments.
      *
@@ -145,6 +148,7 @@ public class FilamentFactory<F extends Filament>
         params.initialize();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
@@ -216,10 +220,9 @@ public class FilamentFactory<F extends Filament>
 
                 int stopThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
 
-                return setFat(
-                        section,
-                        (startThickness > params.maxThickness)
-                                || (stopThickness > params.maxThickness));
+                return setFat(section,
+                              (startThickness > params.maxThickness)
+                                      || (stopThickness > params.maxThickness));
             } else {
                 return setFat(section, bounds.height > params.maxThickness);
             }
@@ -710,7 +713,7 @@ public class FilamentFactory<F extends Filament>
     private F createFilament (Section section)
     {
         try {
-            final F fil = (F) filamentConstructor.newInstance(scale.getInterline());
+            final F fil = filamentConstructor.newInstance(scale.getInterline());
 
             if (section != null) {
                 fil.addSection(section);
@@ -959,7 +962,7 @@ public class FilamentFactory<F extends Filament>
      * target line.
      *
      * @param source the input sections
-     * @param line  the imposed skeleton line
+     * @param line   the imposed skeleton line
      */
     private F populateLine (Collection<Section> source,
                             Line line)
@@ -983,9 +986,9 @@ public class FilamentFactory<F extends Filament>
                     }
                 } else {
                     Point centroid = section.getCentroid();
-                    double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x)
-                                                                        - centroid.y) : (line
-                                    .xAtYExt(centroid.y) - centroid.x);
+                    double gap = (orientation == HORIZONTAL)
+                            ? (line.yAtXExt(centroid.x) - centroid.y)
+                            : (line.xAtYExt(centroid.y) - centroid.x);
 
                     if (Math.abs(gap) <= params.maxPosGap) {
                         fil.addSection(section);
@@ -1033,6 +1036,86 @@ public class FilamentFactory<F extends Filament>
     private void setProcessed (Section section)
     {
         processedSections.add(section);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the factory parameters?");
+
+        private final Constant.Double maxGapSlope = new Constant.Double(
+                "tangent",
+                0.5,
+                "Maximum absolute slope for a gap");
+
+        private final Constant.Ratio minSectionAspect = new Constant.Ratio(
+                3,
+                "Minimum section aspect (length / thickness)");
+
+        private final Constant.Ratio maxConsistentRatio = new Constant.Ratio(
+                1.7,
+                "Maximum thickness ratio for consistent merge");
+
+        private final Constant.Ratio maxDeltaSlope = new Constant.Ratio(
+                0.01,
+                "Maximum slope difference between long filaments");
+
+        // Constants specified WRT mean line thickness
+        // -------------------------------------------
+        //
+        private final Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
+                1.5,
+                "Maximum filament thickness WRT mean line height");
+
+        private final Scale.LineFraction maxPosGap = new Scale.LineFraction(
+                0.75,
+                "Maximum delta position for a gap between filaments");
+
+        // Constants specified WRT mean interline
+        // --------------------------------------
+        //
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+                1,
+                "Minimum length for a section to be considered as core");
+
+        private final Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
+                0.5,
+                "Maximum delta position between two overlapping filaments");
+
+        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
+                1,
+                "Maximum delta coordinate for a gap between filaments");
+
+        private final Scale.Fraction maxOverlapSpace = new Scale.Fraction(
+                0.16,
+                "Maximum space between overlapping filaments");
+
+        private final Scale.Fraction maxExpansionSpace = new Scale.Fraction(
+                0.02,
+                "Maximum space when expanding filaments");
+
+        private final Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
+                0.1,
+                "Maximum delta Y to check slope for a gap between filaments");
+
+        private final Scale.Fraction maxInvolvingLength = new Scale.Fraction(
+                2,
+                "Maximum filament length to apply thickness test");
+
+        private final Scale.Fraction minLengthForDeltaSlope = new Scale.Fraction(
+                10,
+                "Minimum filament length to apply delta slope test");
     }
 
     //------------//
@@ -1115,84 +1198,5 @@ public class FilamentFactory<F extends Filament>
                 dump(null);
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the factory parameters?");
-
-        private final Constant.Double maxGapSlope = new Constant.Double(
-                "tangent",
-                0.5,
-                "Maximum absolute slope for a gap");
-
-        private final Constant.Ratio minSectionAspect = new Constant.Ratio(
-                3,
-                "Minimum section aspect (length / thickness)");
-
-        private final Constant.Ratio maxConsistentRatio = new Constant.Ratio(
-                1.7,
-                "Maximum thickness ratio for consistent merge");
-
-        private final Constant.Ratio maxDeltaSlope = new Constant.Ratio(
-                0.01,
-                "Maximum slope difference between long filaments");
-
-        // Constants specified WRT mean line thickness
-        // -------------------------------------------
-        //
-        private final Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
-                1.5,
-                "Maximum filament thickness WRT mean line height");
-
-        private final Scale.LineFraction maxPosGap = new Scale.LineFraction(
-                0.75,
-                "Maximum delta position for a gap between filaments");
-
-        // Constants specified WRT mean interline
-        // --------------------------------------
-        //
-        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                1,
-                "Minimum length for a section to be considered as core");
-
-        private final Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
-                0.5,
-                "Maximum delta position between two overlapping filaments");
-
-        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
-                1,
-                "Maximum delta coordinate for a gap between filaments");
-
-        private final Scale.Fraction maxOverlapSpace = new Scale.Fraction(
-                0.16,
-                "Maximum space between overlapping filaments");
-
-        private final Scale.Fraction maxExpansionSpace = new Scale.Fraction(
-                0.02,
-                "Maximum space when expanding filaments");
-
-        private final Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
-                0.1,
-                "Maximum delta Y to check slope for a gap between filaments");
-
-        private final Scale.Fraction maxInvolvingLength = new Scale.Fraction(
-                2,
-                "Maximum filament length to apply thickness test");
-
-        private final Scale.Fraction minLengthForDeltaSlope = new Scale.Fraction(
-                10,
-                "Minimum filament length to apply delta slope test");
     }
 }

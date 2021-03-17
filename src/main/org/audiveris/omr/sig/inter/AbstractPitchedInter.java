@@ -45,26 +45,20 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractPitchedInter
         extends AbstractInter
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Constants constants = new Constants();
 
     /** To order from bottom to top. */
     public static final Comparator<AbstractPitchedInter> bottomUp
-            = new Comparator<AbstractPitchedInter>()
-    {
-        @Override
-        public int compare (AbstractPitchedInter p1,
-                            AbstractPitchedInter p2)
-        {
-            // Pitch comparison is usable only within the SAME staff
-            if ((p1.getStaff() != null) && (p2.getStaff() == p1.getStaff())) {
-                return Double.compare(p2.pitch, p1.pitch);
-            }
-
-            // Resort to ordinate
-            return Double.compare(p2.getCenter().y, p1.getCenter().y);
+            = (AbstractPitchedInter p1, AbstractPitchedInter p2) -> {
+        // Pitch comparison is usable only within the SAME staff
+        if ((p1.getStaff() != null) && (p2.getStaff() == p1.getStaff())) {
+            return Double.compare(p2.pitch, p1.pitch);
         }
+
+        // Resort to ordinate
+        return Double.compare(p2.getCenter().y, p1.getCenter().y);
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -157,18 +151,25 @@ public abstract class AbstractPitchedInter
         switch (shape) {
         case G_CLEF:
             return constants.areaPitchOffset_G_CLEF.getValue();
+
         case G_CLEF_SMALL:
             return constants.areaPitchOffset_G_CLEF_SMALL.getValue();
+
         case G_CLEF_8VA:
             return constants.areaPitchOffset_G_CLEF_8VA.getValue();
+
         case G_CLEF_8VB:
             return constants.areaPitchOffset_G_CLEF_8VB.getValue();
+
         case F_CLEF:
             return constants.areaPitchOffset_F_CLEF.getValue();
+
         case F_CLEF_SMALL:
             return constants.areaPitchOffset_F_CLEF_SMALL.getValue();
+
         case F_CLEF_8VA:
             return constants.areaPitchOffset_F_CLEF_8VA.getValue();
+
         case F_CLEF_8VB:
             return constants.areaPitchOffset_F_CLEF_8VB.getValue();
 
@@ -267,7 +268,7 @@ public abstract class AbstractPitchedInter
         return super.internals() + String.format(" p:%.1f", pitch);
     }
 
-    //~ Internal Classes ---------------------------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

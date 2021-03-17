@@ -47,12 +47,14 @@ import java.util.Objects;
  */
 public abstract class ZipFileSystem
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
     private ZipFileSystem ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -75,14 +77,14 @@ public abstract class ZipFileSystem
 
         // Make sure the containing folder exists
         Files.createDirectories(path.getParent());
-//
-//        // Make it a zip file
-//        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
-//        zos.close();
-//
-//        // Finally open the file system just created
-//        return open(path);
 
+        //
+        //        // Make it a zip file
+        //        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
+        //        zos.close();
+        //
+        //        // Finally open the file system just created
+        //        return open(path);
         final Map<String, String> env = new HashMap<>();
         env.put("create", "true");
 
@@ -110,9 +112,9 @@ public abstract class ZipFileSystem
     {
         Objects.requireNonNull(path, "ZipFileSystem.open: path is null");
 
-//        FileSystem fileSystem = FileSystems.newFileSystem(path, (ClassLoader) null);
-//
-//        return fileSystem.getPath(fileSystem.getSeparator());
+        //        FileSystem fileSystem = FileSystems.newFileSystem(path, (ClassLoader) null);
+        //
+        //        return fileSystem.getPath(fileSystem.getSeparator());
         final Map<String, String> env = new HashMap<>(); // Empty map
 
         final URI uri = URI.create("jar:" + path.toUri());

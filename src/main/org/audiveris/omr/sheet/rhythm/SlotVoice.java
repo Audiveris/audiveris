@@ -46,7 +46,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "slot-voice")
 public class SlotVoice
 {
+    //~ Enumerations -------------------------------------------------------------------------------
 
+    //--------//
+    // Status //
+    //--------//
+    /**
+     * Voice status of a chord with respect to a slot.
+     */
+    public static enum Status
+    {
+        /** The chord begins at this slot (it's one of slot incoming chords). */
+        BEGIN,
+        /** The chord is still active at this slot. */
+        CONTINUE;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related chord. */
     @XmlIDREF
     @XmlAttribute
@@ -56,6 +72,7 @@ public class SlotVoice
     @XmlAttribute
     public final Status status;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a SlotVoice object.
      *
@@ -76,6 +93,7 @@ public class SlotVoice
         this.status = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {
@@ -94,19 +112,4 @@ public class SlotVoice
 
         return sb.toString();
     }
-
-    //--------//
-    // Status //
-    //--------//
-    /**
-     * Voice status of a chord with respect to a slot.
-     */
-    public static enum Status
-    {
-        /** The chord begins at this slot (it's one of slot incoming chords). */
-        BEGIN,
-        /** The chord is still active at this slot. */
-        CONTINUE
-    }
-
 }

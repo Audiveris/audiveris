@@ -63,6 +63,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 public class PluginsManager
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -77,6 +78,7 @@ public class PluginsManager
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -86,6 +88,7 @@ public class PluginsManager
     /** The current default plugin. */
     private Plugin defaultPlugin;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
      * based on the plugins file discovered in Audiveris user config folder.
@@ -104,6 +107,7 @@ public class PluginsManager
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // setDefaultPlugin //
     //------------------//
@@ -266,53 +270,7 @@ public class PluginsManager
         return jaxbContext;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final PluginsManager INSTANCE = new PluginsManager();
-    }
-
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when menu is entered.
-     * <p>
-     * This is meant to enable menu items only when a sheet is selected,
-     * and to indicate the default plugin if any.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            boolean enabled = StubsController.getCurrentStub() != null;
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem item = menu.getItem(i);
-
-                // Beware of separators (for which returned menuItem is null)
-                if (item != null) {
-                    item.setEnabled(enabled);
-
-                    // Indicate which plugin is the default (if any)
-                    Action action = item.getAction();
-
-                    if (action instanceof PluginAction) {
-                        Plugin plugin = ((PluginAction) action).getPlugin();
-                        item.setText(
-                                plugin.getId() + ((plugin == defaultPlugin) ? " (default)" : ""));
-                    }
-                }
-            }
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -368,6 +326,15 @@ public class PluginsManager
     }
 
     //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final PluginsManager INSTANCE = new PluginsManager();
+    }
+
+    //---------------//
     // PluginsHolder //
     //---------------//
     /**
@@ -385,6 +352,44 @@ public class PluginsManager
         /** No-arg constructor meant for JAXB. */
         private PluginsHolder ()
         {
+        }
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when menu is entered.
+     * <p>
+     * This is meant to enable menu items only when a sheet is selected,
+     * and to indicate the default plugin if any.
+     */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            boolean enabled = StubsController.getCurrentStub() != null;
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem item = menu.getItem(i);
+
+                // Beware of separators (for which returned menuItem is null)
+                if (item != null) {
+                    item.setEnabled(enabled);
+
+                    // Indicate which plugin is the default (if any)
+                    Action action = item.getAction();
+
+                    if (action instanceof PluginAction) {
+                        Plugin plugin = ((PluginAction) action).getPlugin();
+                        item.setText(
+                                plugin.getId() + ((plugin == defaultPlugin) ? " (default)" : ""));
+                    }
+                }
+            }
         }
     }
 }

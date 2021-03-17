@@ -66,11 +66,13 @@ import java.util.TreeMap;
 @NotThreadSafe
 public class MeasuresBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -78,6 +80,7 @@ public class MeasuresBuilder
     /** Sequence of groups of barlines per staff. */
     private final Map<Staff, List<Group>> staffMap = new TreeMap<>(Staff.byId);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasuresBuilder} object.
      *
@@ -88,6 +91,7 @@ public class MeasuresBuilder
         this.system = system;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildMeasures //
     //---------------//
@@ -191,8 +195,10 @@ public class MeasuresBuilder
 
         for (int ig = 0; ig <= igMax; ig++) {
             Group topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
-            Measure measure = ((topGroup != null) && topGroup.get(0).isStaffEnd(
-                    HorizontalSide.LEFT)) ? null : new Measure(part);
+            Measure measure = ((topGroup != null)
+                                       && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT))
+                    ? null
+                    : new Measure(part);
 
             if (measure != null) {
                 part.addMeasure(measure);
@@ -375,6 +381,87 @@ public class MeasuresBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction maxShift = new Scale.Fraction(
+                1.0,
+                "Maximum deskewed abscissa difference within a column");
+
+        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
+                4.0,
+                "Minimum measure width for not being a courtesy measure");
+    }
+
+    //-------//
+    // Group //
+    //-------//
+    /**
+     * A group of barlines in a staff.
+     */
+    private static class Group
+            extends ArrayList<BarlineInter>
+            implements Comparable<Group>
+    {
+
+        /** (Skewed) group center. */
+        final Point2D center;
+
+        /** De-skewed group center. */
+        final Point2D dsk;
+
+        Group (List<BarlineInter> barlines,
+               SystemInfo system)
+        {
+            addAll(barlines);
+
+            center = computeCenter();
+            dsk = system.getSkew().deskewed(center);
+        }
+
+        @Override
+        public int compareTo (Group that)
+        {
+            return Double.compare(this.center.getX(), that.center.getX());
+        }
+
+        public double getDeskewedAbscissa ()
+        {
+            return dsk.getX();
+        }
+
+        public String midString ()
+        {
+            return String.format("G(x:%.0f,y:%.0f)", center.getX(), center.getY());
+        }
+
+        @Override
+        public String toString ()
+        {
+            return midString() + Inters.ids(this);
+        }
+
+        private Point2D computeCenter ()
+        {
+            final int n = size();
+            double xx = 0;
+            double yy = 0;
+
+            for (BarlineInter bar : this) {
+                Point barCenter = bar.getCenter();
+                xx += barCenter.x;
+                yy += barCenter.y;
+            }
+
+            return new Point2D.Double(xx / n, yy / n);
+        }
+    }
+
     //--------//
     // Column //
     //--------//
@@ -526,8 +613,7 @@ public class MeasuresBuilder
                 Group group = groups.get(staff);
 
                 if (group == null) {
-                    double xStaffMiddle = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT))
-                                                  / 2.0;
+                    double xStaffMiddle = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT)) / 2.0;
                     double yStaffMiddle = staff.getFirstLine().yAt(xStaffMiddle);
                     double x = line.xAtY(yStaffMiddle); // Roughly
                     double y1 = staff.getFirstLine().yAt(x);
@@ -560,86 +646,6 @@ public class MeasuresBuilder
             }
 
             return xDsk;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction maxShift = new Scale.Fraction(
-                1.0,
-                "Maximum deskewed abscissa difference within a column");
-
-        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
-                4.0,
-                "Minimum measure width for not being a courtesy measure");
-    }
-
-    //-------//
-    // Group //
-    //-------//
-    /**
-     * A group of barlines in a staff.
-     */
-    private static class Group
-            extends ArrayList<BarlineInter>
-            implements Comparable<Group>
-    {
-
-        /** (Skewed) group center. */
-        final Point2D center;
-
-        /** De-skewed group center. */
-        final Point2D dsk;
-
-        Group (List<BarlineInter> barlines,
-               SystemInfo system)
-        {
-            addAll(barlines);
-
-            center = computeCenter();
-            dsk = system.getSkew().deskewed(center);
-        }
-
-        @Override
-        public int compareTo (Group that)
-        {
-            return Double.compare(this.center.getX(), that.center.getX());
-        }
-
-        public double getDeskewedAbscissa ()
-        {
-            return dsk.getX();
-        }
-
-        public String midString ()
-        {
-            return String.format("G(x:%.0f,y:%.0f)", center.getX(), center.getY());
-        }
-
-        @Override
-        public String toString ()
-        {
-            return midString() + Inters.ids(this);
-        }
-
-        private Point2D computeCenter ()
-        {
-            final int n = size();
-            double xx = 0;
-            double yy = 0;
-
-            for (BarlineInter bar : this) {
-                Point barCenter = bar.getCenter();
-                xx += barCenter.x;
-                yy += barCenter.y;
-            }
-
-            return new Point2D.Double(xx / n, yy / n);
         }
     }
 }

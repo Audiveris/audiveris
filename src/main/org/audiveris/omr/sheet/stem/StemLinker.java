@@ -34,6 +34,7 @@ import java.util.Collection;
  */
 public abstract class StemLinker
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report whether this linker has been closed, preventing any link.

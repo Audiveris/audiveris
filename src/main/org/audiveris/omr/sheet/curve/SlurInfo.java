@@ -46,9 +46,11 @@ import java.util.List;
 public class SlurInfo
         extends Curve
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SlurInfo.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Approximating first side model. */
     protected Model firstModel;
 
@@ -67,6 +69,7 @@ public class SlurInfo
     /** Global Bézier curve for the slur. */
     protected CubicCurve2D curve;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlurInfo object.
      *
@@ -90,6 +93,7 @@ public class SlurInfo
         this.sideLength = sideLength;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // isAbove //
     //---------//

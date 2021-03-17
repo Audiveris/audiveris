@@ -55,11 +55,13 @@ import java.util.List;
  */
 public class ShapeChecker
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeChecker.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     //    /** Small dynamics with no 'P' or 'F' */
     //    private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
     //            shapesOf(DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S, DYNAMICS_CHAR_Z));
@@ -88,12 +90,14 @@ public class ShapeChecker
     /** Map of Shape => Sequence of checkers */
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
+    //~ Constructors -------------------------------------------------------------------------------
     private ShapeChecker ()
     {
         checkerMap = new EnumMap<>(Shape.class);
         registerChecks();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // annotate //
     //----------//
@@ -480,8 +484,9 @@ public class ShapeChecker
             }
         };
 
-        new Checker("StaffGap",
-                    shapesOf(Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes()))
+        new Checker(
+                "StaffGap",
+                shapesOf(Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes()))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -723,13 +728,89 @@ public class ShapeChecker
         return LazySingleton.INSTANCE;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
+    //----------//
+    // shapesOf //
+    //----------//
+    private static List<Shape> shapesOf (Collection<Shape> col1,
+                                         Collection<Shape> col2)
+    {
+        final List<Shape> list = new ArrayList<>();
+        list.addAll(col1);
+        list.addAll(col2);
+
+        return list;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    private static List<Shape> shapesOf (Collection<Shape> col1,
+                                         Collection<Shape> col2,
+                                         Collection<Shape> col3)
+    {
+        final List<Shape> list = new ArrayList<>();
+        list.addAll(col1);
+        list.addAll(col2);
+        list.addAll(col3);
+
+        return list;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
     {
 
-        static final ShapeChecker INSTANCE = new ShapeChecker();
+        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
+                true,
+                "Should we apply specific checks on shape candidates?");
+
+        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
+                4.0,
+                "Maximum normalized height for a title text");
+
+        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum normalized height for a lyrics text");
+
+        private final Constant.Double minDirectionPitchPosition = new Constant.Double(
+                "PitchPosition",
+                -13.0,
+                "Minimum pitch value for a  segno / coda direction");
+
+        private final Constant.Double minTitlePitchPosition = new Constant.Double(
+                "PitchPosition",
+                15.0,
+                "Minimum absolute pitch position for a title");
+
+        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
+                "PitchPosition",
+                17.0,
+                "Maximum absolute pitch position for a tuplet");
+
+        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
+                "PitchPosition",
+                1.0,
+                "Maximum absolute pitch position margin for a time signature");
+
+        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
+                1.5,
+                "Maximum height for small dynamics (no p, no f)");
+
+        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
+                2.0,
+                "Maximum height for small dynamics (with p, no f)");
+
+        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
+                2.5,
+                "Maximum height for tall dynamics (with f)");
+
+        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
+                8.0,
+                "Maximum vertical gap between a note-like glyph and closest staff");
     }
 
     //---------//
@@ -804,87 +885,12 @@ public class ShapeChecker
         }
     }
 
-    //----------//
-    // shapesOf //
-    //----------//
-    private static List<Shape> shapesOf (Collection<Shape> col1,
-                                         Collection<Shape> col2)
-    {
-        final List<Shape> list = new ArrayList<>();
-        list.addAll(col1);
-        list.addAll(col2);
-
-        return list;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    private static List<Shape> shapesOf (Collection<Shape> col1,
-                                         Collection<Shape> col2,
-                                         Collection<Shape> col3)
-    {
-        final List<Shape> list = new ArrayList<>();
-        list.addAll(col1);
-        list.addAll(col2);
-        list.addAll(col3);
-
-        return list;
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
     {
 
-        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
-                true,
-                "Should we apply specific checks on shape candidates?");
-
-        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
-                4.0,
-                "Maximum normalized height for a title text");
-
-        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum normalized height for a lyrics text");
-
-        private final Constant.Double minDirectionPitchPosition = new Constant.Double(
-                "PitchPosition",
-                -13.0,
-                "Minimum pitch value for a  segno / coda direction");
-
-        private final Constant.Double minTitlePitchPosition = new Constant.Double(
-                "PitchPosition",
-                15.0,
-                "Minimum absolute pitch position for a title");
-
-        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
-                "PitchPosition",
-                17.0,
-                "Maximum absolute pitch position for a tuplet");
-
-        private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
-                "PitchPosition",
-                1.0,
-                "Maximum absolute pitch position margin for a time signature");
-
-        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
-                1.5,
-                "Maximum height for small dynamics (no p, no f)");
-
-        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
-                2.0,
-                "Maximum height for small dynamics (with p, no f)");
-
-        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum height for tall dynamics (with f)");
-
-        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
-                8.0,
-                "Maximum vertical gap between a note-like glyph and closest staff");
+        static final ShapeChecker INSTANCE = new ShapeChecker();
     }
 }

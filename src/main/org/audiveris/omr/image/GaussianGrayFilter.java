@@ -37,6 +37,7 @@ import java.awt.image.Kernel;
 public class GaussianGrayFilter
         extends AbstractGrayFilter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Radius of the kernel. */
     private final float radius;
@@ -44,6 +45,7 @@ public class GaussianGrayFilter
     /** The kernel to apply. */
     private final Kernel kernel;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GaussianGrayFilter object with a default radius value.
      */
@@ -63,6 +65,7 @@ public class GaussianGrayFilter
         kernel = makeKernel(radius);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // filter //
     //--------//
@@ -217,5 +220,4 @@ public class GaussianGrayFilter
 
         return val;
     }
-
 }

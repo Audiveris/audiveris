@@ -46,8 +46,8 @@ public abstract class AbstractNumberInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractNumberInter.class);
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Integer value for the number. */
     @XmlAttribute
     protected Integer value;

@@ -55,6 +55,7 @@ import java.util.TreeSet;
 public class LineCluster
         implements Vip
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LineCluster.class);
 
@@ -70,6 +71,7 @@ public class LineCluster
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Id for debug. */
     private final String id;
 
@@ -94,6 +96,7 @@ public class LineCluster
     /** For debugging. */
     private boolean vip = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineCluster object.
      *
@@ -123,6 +126,7 @@ public class LineCluster
         include(seed, 0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // destroy //
     //---------//
@@ -593,6 +597,7 @@ public class LineCluster
                                      double minTablatureLengthRatio)
     {
         logger.debug("Trim {}", this);
+
         final List<StaffFilament> removed = new ArrayList<>();
 
         // Pruning
@@ -626,6 +631,7 @@ public class LineCluster
             // We accept 6-line tablatures, but make sure lines are long enough to avoid
             // 5-line standard staff with ledger line to be mistaken for a 6-line tablature
             final SortedMap<Integer, Integer> trueLengths = new TreeMap<>();
+
             for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
                 trueLengths.put(entry.getKey(), entry.getValue().getTrueLength());
             }
@@ -639,7 +645,7 @@ public class LineCluster
                 sum += trueLengths.get(i);
             }
 
-            final int minLength = (int) Math.rint(minTablatureLengthRatio * sum / nb);
+            final int minLength = (int) Math.rint((minTablatureLengthRatio * sum) / nb);
             final int topWL = trueLengths.get(lines.firstKey());
             final int botWL = trueLengths.get(lines.lastKey());
             StaffFilament line = null; // A line to remove?

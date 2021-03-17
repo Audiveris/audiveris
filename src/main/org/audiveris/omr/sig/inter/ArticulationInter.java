@@ -53,9 +53,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArticulationInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArticulationInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArticulationInter object.
      *
@@ -77,6 +79,7 @@ public class ArticulationInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

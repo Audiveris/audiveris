@@ -105,6 +105,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Staff
         implements AttachmentHolder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -132,6 +133,7 @@ public class Staff
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -197,7 +199,8 @@ public class Staff
     protected boolean dummy;
 
     /** Side barlines, if any. */
-    protected final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<>(HorizontalSide.class);
+    protected final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<>(
+            HorizontalSide.class);
 
     /**
      * Area around the staff.
@@ -232,6 +235,7 @@ public class Staff
     /** Potential attachments. */
     protected final AttachmentHolder attachments = new BasicAttachmentHolder();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create info about a staff, with its contained staff lines.
      *
@@ -274,6 +278,7 @@ public class Staff
         this.lines = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
     //---------------//
@@ -401,7 +406,7 @@ public class Staff
      */
     public boolean contains (Point2D point)
     {
-        if (point.getX() < left || point.getX() > right) {
+        if ((point.getX() < left) || (point.getX() > right)) {
             return false;
         }
 
@@ -1550,8 +1555,8 @@ public class Staff
     public boolean removeBarline (BarlineInter barline)
     {
         // Purge sideBars if needed
-        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator(); it
-                .hasNext();) {
+        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator();
+                it.hasNext();) {
             Entry<HorizontalSide, BarlineInter> entry = it.next();
 
             if (entry.getValue() == barline) {
@@ -1953,6 +1958,7 @@ public class Staff
         return constants.showDefiningPoints.isSet();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

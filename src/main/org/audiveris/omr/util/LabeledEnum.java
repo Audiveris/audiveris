@@ -35,6 +35,7 @@ import java.util.Objects;
  */
 public class LabeledEnum<E extends Enum<E>>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The enum value. */
     public final E value;
@@ -42,6 +43,7 @@ public class LabeledEnum<E extends Enum<E>>
     /** The corresponding label. */
     public final String label;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a LabeledEnum entry.
      *
@@ -55,6 +57,7 @@ public class LabeledEnum<E extends Enum<E>>
         this.label = label;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {
@@ -70,6 +73,7 @@ public class LabeledEnum<E extends Enum<E>>
 
         @SuppressWarnings("unchecked")
         final LabeledEnum<E> that = (LabeledEnum<E>) obj;
+
         return (value == that.value) && label.equals(that.label);
     }
 
@@ -77,8 +81,9 @@ public class LabeledEnum<E extends Enum<E>>
     public int hashCode ()
     {
         int hash = 5;
-        hash = 17 * hash + Objects.hashCode(this.value);
-        hash = 17 * hash + Objects.hashCode(this.label);
+        hash = (17 * hash) + Objects.hashCode(this.value);
+        hash = (17 * hash) + Objects.hashCode(this.label);
+
         return hash;
     }
 

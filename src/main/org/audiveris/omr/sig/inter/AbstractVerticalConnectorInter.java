@@ -22,13 +22,13 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.grid.BarConnection;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.util.Version;
 
 import java.awt.geom.Line2D;
 import java.util.List;
-import org.audiveris.omr.sheet.Versions;
-import org.audiveris.omr.util.Version;
 
 /**
  * Class {@code AbstractVerticalConnectorInter} represents a vertical connector between
@@ -41,6 +41,7 @@ import org.audiveris.omr.util.Version;
 public class AbstractVerticalConnectorInter
         extends AbstractVerticalInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code AbstractVerticalConnectorInter} object.
@@ -80,6 +81,7 @@ public class AbstractVerticalConnectorInter
         super(null, null, (Double) null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // upgradeOldStuff //
     //-----------------//
@@ -92,8 +94,11 @@ public class AbstractVerticalConnectorInter
             if (median != null) {
                 // Height is decreased of halfLine on top and bottom sides
                 final double halfLine = sig.getSystem().getSheet().getScale().getFore() / 2.0;
-                median.setLine(median.getX1() + 0.5, median.getY1() + halfLine,
-                               median.getX2() + 0.5, median.getY2() + 1 - halfLine);
+                median.setLine(
+                        median.getX1() + 0.5,
+                        median.getY1() + halfLine,
+                        median.getX2() + 0.5,
+                        (median.getY2() + 1) - halfLine);
                 computeArea();
                 upgraded = true;
             }

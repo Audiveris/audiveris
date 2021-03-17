@@ -30,6 +30,7 @@ package org.audiveris.omr.classifier;
 public interface TrainingMonitor //        extends IterationListener
 
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Call-back at epoch start.

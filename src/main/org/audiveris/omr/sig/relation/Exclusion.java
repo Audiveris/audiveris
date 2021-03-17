@@ -34,10 +34,24 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Exclusion
         extends Relation
 {
+    //~ Enumerations -------------------------------------------------------------------------------
 
+    /**
+     * Cause of exclusion.
+     */
+    public enum Cause
+    {
+        /** Physical overlap. */
+        OVERLAP,
+        /** Some logical exclusion. */
+        INCOMPATIBLE;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute
     public final Cause cause;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Exclusion object.
      *
@@ -56,6 +70,7 @@ public class Exclusion
         this.cause = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -81,18 +96,5 @@ public class Exclusion
     protected String internals ()
     {
         return super.internals() + cause;
-    }
-
-    /**
-     * Cause of exclusion.
-     */
-    public enum Cause
-    {
-
-        /** Physical overlap. */
-        OVERLAP,
-
-        /** Some logical exclusion. */
-        INCOMPATIBLE
     }
 }

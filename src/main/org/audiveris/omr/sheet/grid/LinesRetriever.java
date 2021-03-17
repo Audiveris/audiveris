@@ -24,48 +24,33 @@ package org.audiveris.omr.sheet.grid;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.OMR;
-import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.dynamic.Compounds;
-import org.audiveris.omr.glyph.dynamic.CurvedFilament;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.lag.JunctionRatioPolicy;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
-import org.audiveris.omr.lag.SectionTally;
-import org.audiveris.omr.lag.Sections;
-import org.audiveris.omr.math.LineUtil;
-import org.audiveris.omr.math.NaturalSpline;
-import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
-import org.audiveris.omr.sheet.OneLineStaff;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
-import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.Tablature;
 import org.audiveris.omr.sheet.ui.RunsViewer;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.UIUtil;
-import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +70,22 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
+import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
+import org.audiveris.omr.glyph.dynamic.Compounds;
+import org.audiveris.omr.glyph.dynamic.CurvedFilament;
+import org.audiveris.omr.lag.SectionTally;
+import org.audiveris.omr.lag.Sections;
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.NaturalSpline;
+import org.audiveris.omr.math.Population;
+import org.audiveris.omr.sheet.OneLineStaff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Tablature;
+import org.audiveris.omr.util.Dumping;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 /**
  * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
@@ -95,11 +95,13 @@ import java.util.function.Predicate;
 public class LinesRetriever
         implements ItemRenderer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LinesRetriever.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -146,6 +148,7 @@ public class LinesRetriever
     /** Companion in charge of bar lines. */
     final BarsRetriever barsRetriever;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -163,6 +166,7 @@ public class LinesRetriever
         params = new Parameters(scale);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -191,14 +195,8 @@ public class LinesRetriever
         // Split horizontal runs into short & long tables
         shortHoriTable = new RunTable(HORIZONTAL, sheet.getWidth(), sheet.getHeight());
 
-        RunTable longHoriTable = horiTable.purge(new Predicate<Run>()
-        {
-            @Override
-            public final boolean test (Run run)
-            {
-                return run.getLength() < params.minRunLength;
-            }
-        }, shortHoriTable);
+        RunTable longHoriTable = horiTable.purge((Run run)
+                -> run.getLength() < params.minRunLength, shortHoriTable);
 
         if (runsViewer != null) {
             runsViewer.display("short-hori", shortHoriTable);
@@ -375,20 +373,12 @@ public class LinesRetriever
                 for (Filament filament : allFils) {
                     Point2D p = filament.getStartPoint();
                     double der = filament.getSlopeAt(p.getX(), HORIZONTAL);
-                    g.draw(
-                            new Line2D.Double(
-                                    p.getX(),
-                                    p.getY(),
-                                    p.getX() - dx,
-                                    p.getY() - (der * dx)));
+                    g.draw(new Line2D.Double(p.getX(), p.getY(),
+                                             p.getX() - dx, p.getY() - (der * dx)));
                     p = filament.getStopPoint();
                     der = filament.getSlopeAt(p.getX(), HORIZONTAL);
-                    g.draw(
-                            new Line2D.Double(
-                                    p.getX(),
-                                    p.getY(),
-                                    p.getX() + dx,
-                                    p.getY() + (der * dx)));
+                    g.draw(new Line2D.Double(p.getX(), p.getY(),
+                                             p.getX() + dx, p.getY() + (der * dx)));
                 }
             }
         }
@@ -458,6 +448,7 @@ public class LinesRetriever
 
             // Check for a small interline
             final Integer smallInterline = scale.getSmallInterline();
+
             if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
@@ -532,22 +523,30 @@ public class LinesRetriever
 
             // Allocate Staff (or Tablature) instance
             List<LineInfo> infos = new ArrayList<>(lines.size());
+
             for (StaffFilament line : lines) {
                 infos.add(line);
             }
 
             final Staff staff;
+
             switch (infos.size()) {
             case 5:
                 staff = new Staff(++staffId, left, right, cluster.getInterline(), infos);
+
                 break;
+
             case 1:
                 staff = new OneLineStaff(++staffId, left, right, cluster.getInterline(), infos);
+
                 break;
+
             default:
                 staff = new Tablature(++staffId, left, right, cluster.getInterline(), infos);
+
                 break;
             }
+
             staffManager.addStaff(staff);
 
             // Flag small staff if any (smaller height than others)
@@ -631,12 +630,8 @@ public class LinesRetriever
 
         if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(
-                        String.format(
-                                "%sRes thickness:%.1f vs %d",
-                                vips,
-                                rThickness,
-                                maxThickness));
+                logger.info(String.format("%sRes thickness:%.1f vs %d",
+                                          vips, rThickness, maxThickness));
             }
 
             return false;
@@ -716,12 +711,8 @@ public class LinesRetriever
 
         if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(
-                        String.format(
-                                "%sRes thickness:%.1f vs %d",
-                                vips,
-                                rThickness,
-                                maxThickness));
+                logger.info(String.format("%sRes thickness:%.1f vs %d",
+                                          vips, rThickness, maxThickness));
             }
 
             return false;
@@ -1391,6 +1382,7 @@ public class LinesRetriever
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     private static class Constants
             extends ConstantSet
     {

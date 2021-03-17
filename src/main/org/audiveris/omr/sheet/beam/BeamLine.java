@@ -36,6 +36,7 @@ import java.util.List;
 public class BeamLine
         implements Vip
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Items that compose the line, from left to right. */
     private final List<BeamItem> items = new ArrayList<>();
@@ -49,6 +50,7 @@ public class BeamLine
     /** The constant height of the line. */
     final double height;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamLine object.
      *
@@ -62,6 +64,7 @@ public class BeamLine
         this.height = height;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the items
      */

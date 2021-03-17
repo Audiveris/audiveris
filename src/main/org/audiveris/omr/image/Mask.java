@@ -40,9 +40,11 @@ import java.awt.geom.Area;
  */
 public class Mask
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Mask.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Mask area. */
     private final Area area;
 
@@ -53,6 +55,7 @@ public class Mask
     /** Number of relevant points. */
     private int pointCount;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Mask object.
      *
@@ -66,6 +69,7 @@ public class Mask
         bitmap = computeRelevantPoints(area);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // apply //
     //-------//
@@ -151,6 +155,7 @@ public class Mask
         return table;
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

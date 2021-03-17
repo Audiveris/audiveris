@@ -35,18 +35,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "range")
 public class Range
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To sort by increasing main. */
-    public static final Comparator<Range> byMain = new Comparator<Range>()
-    {
-        @Override
-        public int compare (Range e1,
-                            Range e2)
-        {
-            return Double.compare(e1.main, e2.main);
-        }
-    };
+    public static final Comparator<Range> byMain = (e1, e2) -> Double.compare(e1.main, e2.main);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Key at beginning of range. */
     @XmlAttribute
     public final int min;
@@ -59,6 +53,7 @@ public class Range
     @XmlAttribute
     public final int max;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Range} object.
      *
@@ -83,6 +78,7 @@ public class Range
         this.max = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getWidth //
     //----------//

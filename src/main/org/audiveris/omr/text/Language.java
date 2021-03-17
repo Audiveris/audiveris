@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import java.io.IOException;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -33,6 +32,7 @@ import org.audiveris.omr.util.param.StringParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -60,6 +60,7 @@ import javax.swing.AbstractListModel;
  */
 public class Language
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -81,11 +82,13 @@ public class Language
     /** Collection of supported languages, lazily created. */
     private static volatile SupportedLanguages supportedLanguages;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Language ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // getSupportedLanguages //
     //-----------------------//
@@ -98,6 +101,7 @@ public class Language
         return supportedLanguages;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ListModel //
     //-----------//

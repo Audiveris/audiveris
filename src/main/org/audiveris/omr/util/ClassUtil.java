@@ -34,13 +34,16 @@ import java.util.function.Predicate;
  */
 public abstract class ClassUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     private ClassUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getCallingFrame //
     //-----------------//

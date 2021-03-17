@@ -37,9 +37,11 @@ import org.audiveris.omr.sheet.SystemInfo;
  */
 class InterCleaner
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SystemInfo system;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterCleaner} object.
      *
@@ -50,6 +52,7 @@ class InterCleaner
         this.system = system;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     public void purgeContainers ()
     {
         // Parts

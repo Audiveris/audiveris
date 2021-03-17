@@ -121,6 +121,7 @@ public class SampleBrowser
         extends SingleFrameApplication
         implements ChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleBrowser.class);
 
@@ -133,6 +134,7 @@ public class SampleBrowser
     /** Events that can be published on the local sample service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Repository of training samples. */
     private final SampleRepository repository;
 
@@ -163,6 +165,7 @@ public class SampleBrowser
     /** Panel for shapes selection. */
     private ShapeSelector shapeSelector;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of {@code SampleBrowser}.
      *
@@ -210,6 +213,7 @@ public class SampleBrowser
         this(SampleRepository.getGlobalInstance());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // checkRepository //
     //-----------------//
@@ -670,7 +674,8 @@ public class SampleBrowser
     {
         logger.debug("SampleBrowser. 3/ready");
 
-        frame.addWindowListener(new WindowAdapter()
+        frame.addWindowListener(
+                new WindowAdapter()
         {
             @Override
             public void windowClosing (WindowEvent e)
@@ -724,6 +729,7 @@ public class SampleBrowser
         JMenu repoMenu = new JMenu();
         repoMenu.setName("SampleBrowserRepoMenu");
         menuBar.add(repoMenu);
+
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
         // Refresh viewer
         repoMenu.add(new JMenuItem(actionMap.get("refresh")));
@@ -731,12 +737,16 @@ public class SampleBrowser
         repoMenu.add(new JMenuItem(actionMap.get("loadImages")));
         repoMenu.addSeparator(); // -----------------------
         // Check for sample duplicates/conflicts
+
         repoMenu.add(new JMenuItem(actionMap.get("checkRepository")));
+
         if (SampleRepository.USE_TRIBES) {
             // Check for tribes classification
             repoMenu.add(new JMenuItem(actionMap.get("checkTribes")));
         }
+
         repoMenu.addSeparator(); // -----------------------
+
         if (repository.isGlobal()) {
             // Launch trainer
             repoMenu.add(new JMenuItem(actionMap.get("launchTrainer")));
@@ -744,14 +754,18 @@ public class SampleBrowser
             // Push local repository to global repository
             repoMenu.add(new JMenuItem(actionMap.get("pushRepository")));
         }
+
         repoMenu.addSeparator(); // -----------------------
         // Save repository
+
         repoMenu.add(new JMenuItem(actionMap.get("save")));
         // Export to CSV file
         repoMenu.add(new JMenuItem(actionMap.get("exportFeatures")));
         repoMenu.addSeparator(); // -----------------------
         // Purge sheets
+
         repoMenu.add(new JMenuItem(actionMap.get("purgeSheets")));
+
         //        // Shrink the whole repository
         //        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("shrinkRepository")));
         //
@@ -959,136 +973,90 @@ public class SampleBrowser
         Application.launch(SampleBrowser.class, args);
     }
 
-    //----------------//
-    // ClosingAdapter //
-    //----------------//
-    private class ClosingAdapter
-            extends WindowAdapter
-    {
-
-        @Override
-        public void windowClosing (WindowEvent e)
-        {
-            // Check for modified repo
-            Application.ExitListener exitListener = repository.getExitListener();
-            boolean ok = exitListener.canExit(e);
-
-            if (ok) {
-                OmrGui.getApplication().removeExitListener(exitListener);
-
-                if (repository.isGlobal()) {
-                    INSTANCE = null;
-                }
-
-                repository.close();
-                frame.dispose(); // Do close
-            }
-        }
-    }
-
-    //---------------//
-    // ShapeSelector //
-    //---------------//
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Waiter //
+    //--------//
     /**
-     * Display a list of available shapes (within selected sheets) and let user make a
-     * selection.
+     * A specific waiting task to display a temporary message while the underlying
+     * SampleBrowser instance is being built.
+     * <p>
+     * Building of the sample browser must be done in method {@code doInBackground} of subclass.
      */
-    private class ShapeSelector
-            extends Selector<Shape>
+    public abstract static class Waiter
+            extends WaitingTask<SampleBrowser, Void>
     {
-
-        ShapeSelector ()
-        {
-            super("Shapes");
-            setMinimumSize(new Dimension(100, 0));
-            list.setCellRenderer(new ShapeRenderer());
-            list.setComponentPopupMenu(new ShapePopup());
-        }
-
-        @Override
-        public void stateChanged (ChangeEvent e)
-        {
-            // Called from sheetSelector: Populate with shape names found in selected sheets
-            final EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
-
-            for (Descriptor desc : sheetSelector.list.getSelectedValuesList()) {
-                shapeSet.addAll(repository.getShapes(desc));
-            }
-
-            populateWith(shapeSet);
-        }
 
         /**
-         * Popup on selected Shape instances (within selected SampleSheet instances).
+         * Create the waiter, and launch proper browser.
+         *
+         * @param dialogMessage waiting message for the specific browser
          */
-        private class ShapePopup
-                extends JPopupMenu
+        public Waiter (String dialogMessage)
         {
-
-            ShapePopup ()
-            {
-                super("ShapePopup");
-                ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
-                        SampleBrowser.this);
-                add(new JMenuItem(actionMap.get("removeShapes")));
-            }
+            super(OmrGui.getApplication(), dialogMessage);
         }
     }
 
-    //---------------//
-    // SheetSelector //
-    //---------------//
+    //-------------//
+    // TitledPanel //
+    //-------------//
     /**
-     * Display a list of available sheets and let user make a selection.
+     * A panel surrounded by an EmptyBorder and a title.
      */
-    private class SheetSelector
-            extends Selector<Descriptor>
+    static class TitledPanel
+            extends Panel
     {
 
-        SheetSelector ()
+        TitledPanel (String title)
         {
-            super("Sheets");
-
-            list.setComponentPopupMenu(new SheetPopup());
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            new EmptyBorder(20, 5, 0, 0), // TLBR
+                            title,
+                            TitledBorder.LEFT,
+                            TitledBorder.TOP));
+            this.setInsets(25, 5, 0, 0);
         }
+    }
 
-        public List<Sample> getTestSamples ()
+    //-----------------------//
+    // SampleEvaluationBoard //
+    //-----------------------//
+    /**
+     * An evaluation board dedicated to evaluation / reassign of samples.
+     */
+    private static class SampleEvaluationBoard
+            extends EvaluationBoard
+    {
+
+        SampleEvaluationBoard (SampleController controller,
+                               Classifier classifier)
         {
-            List<Descriptor> descriptors = list.getSelectedValuesList();
-            List<Sample> samples = new ArrayList<>();
-            for (Descriptor descriptor : descriptors) {
-                for (Shape shape : repository.getShapes(descriptor)) {
-                    samples.addAll(repository.getSamples(descriptor.getName(), shape));
-                }
-            }
-            return samples;
+            super(true, null, classifier, controller.getGlyphService(), null, true);
         }
 
         @Override
-        public void stateChanged (ChangeEvent e)
+        protected void evaluate (Glyph glyph)
         {
-            populateWith(repository.getAllDescriptors());
-        }
-
-        /**
-         * Popup on selected SampleSheet instances.
-         */
-        private class SheetPopup
-                extends JPopupMenu
-        {
-
-            SheetPopup ()
-            {
-                super("SheetPopup");
-                ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
-                        SampleBrowser.this);
-                add(new JMenuItem(actionMap.get("removeSheets")));
-                add(new JMenuItem(actionMap.get("validateSheets")));
+            if (glyph instanceof Sample) {
+                final Sample sample = (Sample) glyph;
+                selector.setEvals(
+                        classifier.evaluate(
+                                glyph,
+                                sample.getInterline(),
+                                selector.evalCount(),
+                                0.0, // minGrade
+                                Classifier.NO_CONDITIONS),
+                        glyph);
+            } else {
+                // Blank the output
+                selector.setEvals(null, null);
             }
         }
     }
 
-    private static abstract class Selector<E>
+    private abstract static class Selector<E>
             extends TitledPanel
             implements ChangeListener
     {
@@ -1128,7 +1096,8 @@ public class SampleBrowser
             setPreferredSize(new Dimension(180, 200));
 
             // To be informed of mouse (de)selections (not programmatic)
-            list.addListSelectionListener(new ListSelectionListener()
+            list.addListSelectionListener(
+                    new ListSelectionListener()
             {
                 @Override
                 public void valueChanged (ListSelectionEvent e)
@@ -1140,7 +1109,8 @@ public class SampleBrowser
             });
 
             // Same action whatever the subclass: select all items
-            selectAll.addActionListener(new ActionListener()
+            selectAll.addActionListener(
+                    new ActionListener()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -1150,7 +1120,8 @@ public class SampleBrowser
             });
 
             // Same action whatever the subclass: deselect all items
-            cancelAll.addActionListener(new ActionListener()
+            cancelAll.addActionListener(
+                    new ActionListener()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -1233,48 +1204,6 @@ public class SampleBrowser
         }
     }
 
-    //-----------------------//
-    // SampleEvaluationBoard //
-    //-----------------------//
-    /**
-     * An evaluation board dedicated to evaluation / reassign of samples.
-     */
-    private static class SampleEvaluationBoard
-            extends EvaluationBoard
-    {
-
-        SampleEvaluationBoard (SampleController controller,
-                               Classifier classifier)
-        {
-            super(
-                    true,
-                    null,
-                    classifier,
-                    controller.getGlyphService(),
-                    null,
-                    true);
-        }
-
-        @Override
-        protected void evaluate (Glyph glyph)
-        {
-            if (glyph instanceof Sample) {
-                final Sample sample = (Sample) glyph;
-                selector.setEvals(
-                        classifier.evaluate(
-                                glyph,
-                                sample.getInterline(),
-                                selector.evalCount(),
-                                0.0, // minGrade
-                                Classifier.NO_CONDITIONS),
-                        glyph);
-            } else {
-                // Blank the output
-                selector.setEvals(null, null);
-            }
-        }
-    }
-
     //---------------//
     // ShapeRenderer //
     //---------------//
@@ -1318,48 +1247,136 @@ public class SampleBrowser
         }
     }
 
-    //-------------//
-    // TitledPanel //
-    //-------------//
-    /**
-     * A panel surrounded by an EmptyBorder and a title.
-     */
-    static class TitledPanel
-            extends Panel
+    //----------------//
+    // ClosingAdapter //
+    //----------------//
+    private class ClosingAdapter
+            extends WindowAdapter
     {
 
-        TitledPanel (String title)
+        @Override
+        public void windowClosing (WindowEvent e)
         {
-            setBorder(BorderFactory.createTitledBorder(
-                    new EmptyBorder(20, 5, 0, 0), // TLBR
-                    title,
-                    TitledBorder.LEFT,
-                    TitledBorder.TOP));
-            this.setInsets(25, 5, 0, 0);
+            // Check for modified repo
+            Application.ExitListener exitListener = repository.getExitListener();
+            boolean ok = exitListener.canExit(e);
+
+            if (ok) {
+                OmrGui.getApplication().removeExitListener(exitListener);
+
+                if (repository.isGlobal()) {
+                    INSTANCE = null;
+                }
+
+                repository.close();
+                frame.dispose(); // Do close
+            }
         }
     }
 
-    //--------//
-    // Waiter //
-    //--------//
+    //---------------//
+    // ShapeSelector //
+    //---------------//
     /**
-     * A specific waiting task to display a temporary message while the underlying
-     * SampleBrowser instance is being built.
-     * <p>
-     * Building of the sample browser must be done in method {@code doInBackground} of subclass.
+     * Display a list of available shapes (within selected sheets) and let user make a
+     * selection.
      */
-    public static abstract class Waiter
-            extends WaitingTask<SampleBrowser, Void>
+    private class ShapeSelector
+            extends Selector<Shape>
     {
 
-        /**
-         * Create the waiter, and launch proper browser.
-         *
-         * @param dialogMessage waiting message for the specific browser
-         */
-        public Waiter (String dialogMessage)
+        ShapeSelector ()
         {
-            super(OmrGui.getApplication(), dialogMessage);
+            super("Shapes");
+            setMinimumSize(new Dimension(100, 0));
+            list.setCellRenderer(new ShapeRenderer());
+            list.setComponentPopupMenu(new ShapePopup());
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e)
+        {
+            // Called from sheetSelector: Populate with shape names found in selected sheets
+            final EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
+
+            for (Descriptor desc : sheetSelector.list.getSelectedValuesList()) {
+                shapeSet.addAll(repository.getShapes(desc));
+            }
+
+            populateWith(shapeSet);
+        }
+
+        /**
+         * Popup on selected Shape instances (within selected SampleSheet instances).
+         */
+        private class ShapePopup
+                extends JPopupMenu
+        {
+
+            ShapePopup ()
+            {
+                super("ShapePopup");
+
+                ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
+                        SampleBrowser.this);
+                add(new JMenuItem(actionMap.get("removeShapes")));
+            }
+        }
+    }
+
+    //---------------//
+    // SheetSelector //
+    //---------------//
+    /**
+     * Display a list of available sheets and let user make a selection.
+     */
+    private class SheetSelector
+            extends Selector<Descriptor>
+    {
+
+        SheetSelector ()
+        {
+            super("Sheets");
+
+            list.setComponentPopupMenu(new SheetPopup());
+        }
+
+        public List<Sample> getTestSamples ()
+        {
+            List<Descriptor> descriptors = list.getSelectedValuesList();
+            List<Sample> samples = new ArrayList<>();
+
+            for (Descriptor descriptor : descriptors) {
+                for (Shape shape : repository.getShapes(descriptor)) {
+                    samples.addAll(repository.getSamples(descriptor.getName(), shape));
+                }
+            }
+
+            return samples;
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e)
+        {
+            populateWith(repository.getAllDescriptors());
+        }
+
+        /**
+         * Popup on selected SampleSheet instances.
+         */
+        private class SheetPopup
+                extends JPopupMenu
+        {
+
+            SheetPopup ()
+            {
+                super("SheetPopup");
+
+                ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
+                        SampleBrowser.this);
+                add(new JMenuItem(actionMap.get("removeSheets")));
+                add(new JMenuItem(actionMap.get("validateSheets")));
+            }
         }
     }
 }

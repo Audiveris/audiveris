@@ -44,6 +44,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordWedgeRelation
         extends Support
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
     //----------------
@@ -52,6 +53,7 @@ public class ChordWedgeRelation
     @XmlAttribute
     private HorizontalSide side;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordWedgeRelation} object.
      *
@@ -69,6 +71,7 @@ public class ChordWedgeRelation
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//

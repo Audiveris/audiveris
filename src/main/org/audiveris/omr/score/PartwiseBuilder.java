@@ -95,7 +95,6 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.OmrExecutors;
 import static org.audiveris.omr.util.VerticalSide.*;
-
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
 import org.audiveris.proxymusic.Arpeggiate;
@@ -236,6 +235,7 @@ import javax.xml.bind.JAXBException;
  */
 public class PartwiseBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -271,6 +271,7 @@ public class PartwiseBuilder
     /** Should be 6, but is 12 to cope with slurs not closed for lack of time slot. */
     private static final int MAX_SLUR_NUMBER = 12;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The ScorePartwise instance to be populated. */
     private final ScorePartwise scorePartwise = new ScorePartwise();
 
@@ -295,6 +296,7 @@ public class PartwiseBuilder
     /** Factory for ProxyMusic entities. */
     private final ObjectFactory factory = new ObjectFactory();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new PartwiseBuilder object, on a related score instance.
      *
@@ -312,6 +314,7 @@ public class PartwiseBuilder
         this.score = score;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addSlur //
     //---------//
@@ -386,7 +389,6 @@ public class PartwiseBuilder
              * We could add:
              * 4 for the C sign (tenor clef)
              */
-            double p = clef.getPitch();
             pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitch() / 2.0))));
         }
 
@@ -464,8 +466,8 @@ public class PartwiseBuilder
 
         PartName partName = factory.createPartName();
         pmScorePart.setPartName(partName);
-        partName.setValue(
-                (logicalPart.getName() != null) ? logicalPart.getName()
+        partName.setValue((logicalPart.getName() != null)
+                ? logicalPart.getName()
                 : logicalPart.getDefaultName());
 
         // Score instrument
@@ -580,8 +582,8 @@ public class PartwiseBuilder
         // Browse the current list of measures backwards within current part
         List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
 
-        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(
-                measures.size()); it.hasPrevious();) {
+        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(measures.size());
+                it.hasPrevious();) {
             ScorePartwise.Part.Measure pmMeasure = it.previous();
 
             for (Object obj : pmMeasure.getNoteOrBackupOrForward()) {
@@ -774,8 +776,8 @@ public class PartwiseBuilder
         // Browse the  current list of measures backwards
         List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
 
-        for (ListIterator<ScorePartwise.Part.Measure> mit = measures.listIterator(
-                measures.size()); mit.hasPrevious();) {
+        for (ListIterator<ScorePartwise.Part.Measure> mit = measures.listIterator(measures.size());
+                mit.hasPrevious();) {
             ScorePartwise.Part.Measure pmMeasure = mit.previous();
 
             // Look backwards in measure items, checking staff
@@ -1086,15 +1088,13 @@ public class PartwiseBuilder
             harmony.setDefaultY(yOf(location, staff));
 
             // font-size
-            harmony.setFontSize("" + chordName.getFontInfo().pointsize * TextFont.TO_POINT);
+            harmony.setFontSize("" + (chordName.getFontInfo().pointsize * TextFont.TO_POINT));
 
             // relative-x
-            harmony.setRelativeX(
-                    toTenths(location.getX() - current.note.getCenterLeft().x));
+            harmony.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
 
             // Placement
-            harmony.setPlacement(
-                    (location.getY() < current.note.getCenter().y)
+            harmony.setPlacement((location.getY() < current.note.getCenter().y)
                     ? AboveBelow.ABOVE
                     : AboveBelow.BELOW);
 
@@ -1632,9 +1632,8 @@ public class PartwiseBuilder
                             new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
                 } catch (Exception ex) {
                     if (current.page.getDurationDivisor() == null) {
-                        logger.warn(
-                                "Not able to infer division value for part {} in {}",
-                                current.logicalPart.getPid(), current.page);
+                        logger.warn("Not able to infer division value for part {} in {}",
+                                    current.logicalPart.getPid(), current.page);
                     } else {
                         logger.warn("Error on divisions in {}", current.page, ex);
                     }
@@ -1945,8 +1944,7 @@ public class PartwiseBuilder
                 if (isFirstInChord) {
                     List<AbstractChordInter> embraced = tuplet.getChords();
 
-                    if ((embraced.get(0) == chord) || (embraced.get(
-                            embraced.size() - 1) == chord)) {
+                    if ((embraced.get(0) == chord) || (embraced.get(embraced.size() - 1) == chord)) {
                         processTuplet(tuplet);
                     }
                 }
@@ -2214,8 +2212,8 @@ public class PartwiseBuilder
             pmPedal.setDefaultY(yOf(refPoint, staff));
 
             // Placement
-            direction.setPlacement(
-                    (refPoint.y < current.note.getCenter().y) ? AboveBelow.ABOVE
+            direction.setPlacement((refPoint.y < current.note.getCenter().y)
+                    ? AboveBelow.ABOVE
                     : AboveBelow.BELOW);
 
             // Everything is OK
@@ -2566,7 +2564,7 @@ public class PartwiseBuilder
             Lyric pmLyric = factory.createLyric();
             BigDecimal defaultY = yOf(syllable.getLocation(), syllable.getStaff());
             pmLyric.setDefaultY(defaultY);
-            pmLyric.setPlacement(defaultY.intValue() >= 0 ? AboveBelow.ABOVE : AboveBelow.BELOW);
+            pmLyric.setPlacement((defaultY.intValue() >= 0) ? AboveBelow.ABOVE : AboveBelow.BELOW);
             pmLyric.setNumber("" + syllable.getLyricLine().getNumber());
 
             TextElementData pmText = factory.createTextElementData();
@@ -2901,10 +2899,149 @@ public class PartwiseBuilder
     private static boolean areEqual (Clef left,
                                      Clef right)
     {
-        return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(
-                left.getSign(),
-                right.getSign()) && Objects.equals(left.getLine(), right.getLine()) && Objects
-                .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+        return Objects.equals(left.getNumber(), right.getNumber())
+                       && Objects.equals(left.getSign(), right.getSign())
+                       && Objects.equals(left.getLine(), right.getLine())
+                       && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page horizontal margin");
+
+        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page vertical margin");
+
+        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+                false,
+                "Should we avoid brackets for all tuplets");
+    }
+
+    //---------//
+    // Current //
+    //---------//
+    /** Keep references of all current entities. */
+    private static class Current
+    {
+
+        // Score dependent
+        Work pmWork;
+
+        // Part dependent
+        LogicalPart logicalPart;
+
+        ScorePartwise.Part pmPart;
+
+        // Page dependent
+        Page page;
+
+        int pageMeasureIdOffset;
+
+        Scale scale;
+
+        // System dependent
+        SystemInfo system;
+
+        // Measure dependent
+        Measure measure;
+
+        ScorePartwise.Part.Measure pmMeasure;
+
+        final TreeMap<Integer, Key> keys = new TreeMap<>();
+
+        Voice voice;
+
+        Attributes pmAttributes;
+
+        // Note dependent
+        AbstractNoteInter note;
+
+        Note pmNote;
+
+        Notations pmNotations;
+
+        // Cleanup at end of measure
+        void endMeasure ()
+        {
+            measure = null;
+            pmMeasure = null;
+            voice = null;
+            pmAttributes = null;
+
+            endVoice();
+        }
+
+        // Cleanup at end of note
+        void endNote ()
+        {
+            note = null;
+            pmNote = null;
+            pmNotations = null;
+        }
+
+        // Cleanup at end of voice
+        void endVoice ()
+        {
+            voice = null;
+            pmAttributes = null;
+
+            endNote();
+        }
+    }
+
+    //---------//
+    // IsFirst //
+    //---------//
+    /** Composite flag to help drive processing of any entity. */
+    private static class IsFirst
+    {
+
+        /** We are writing the first part of the score */
+        boolean part;
+
+        /** We are writing the first page of the score */
+        boolean page;
+
+        /** We are writing the first system in the current page */
+        boolean system;
+
+        /** We are writing the first measure in current system (in current logicalPart) */
+        boolean measure;
+
+        @Override
+        public java.lang.String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (part) {
+                sb.append(" firstPart");
+            }
+
+            if (page) {
+                sb.append(" firstPage");
+            }
+
+            if (system) {
+                sb.append(" firstSystem");
+            }
+
+            if (measure) {
+                sb.append(" firstMeasure");
+            }
+
+            return sb.toString();
+        }
     }
 
     //---------------//
@@ -3069,8 +3206,7 @@ public class PartwiseBuilder
                 systemMargins.setRightMargin(
                         toTenths(
                                 current.page.getDimension().width - current.system.getLeft()
-                                        - current.system.getWidth()).subtract(
-                                pageHorizontalMargin));
+                                        - current.system.getWidth()).subtract(pageHorizontalMargin));
 
                 if (isFirst.system) {
                     // TopSystemDistance
@@ -3102,8 +3238,7 @@ public class PartwiseBuilder
                             if (staffIndexInSystem > 0) {
                                 Staff staffAbove = system.getStaves().get(staffIndexInSystem - 1);
                                 staffLayout.setStaffDistance(
-                                        toTenths(
-                                                staff.getLeftY(TOP) - staffAbove.getLeftY(BOTTOM)));
+                                        toTenths(staff.getLeftY(TOP) - staffAbove.getLeftY(BOTTOM)));
                                 getPrint().getStaffLayout().add(staffLayout);
                             }
                         } catch (Exception ex) {
@@ -3149,143 +3284,4 @@ public class PartwiseBuilder
             }
         }
     }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
-
-        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
-
-        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
-    }
-
-    //---------//
-    // Current //
-    //---------//
-    /** Keep references of all current entities. */
-    private static class Current
-    {
-
-        // Score dependent
-        Work pmWork;
-
-        // Part dependent
-        LogicalPart logicalPart;
-
-        ScorePartwise.Part pmPart;
-
-        // Page dependent
-        Page page;
-
-        int pageMeasureIdOffset;
-
-        Scale scale;
-
-        // System dependent
-        SystemInfo system;
-
-        // Measure dependent
-        Measure measure;
-
-        ScorePartwise.Part.Measure pmMeasure;
-
-        final TreeMap<Integer, Key> keys = new TreeMap<>();
-
-        Voice voice;
-
-        Attributes pmAttributes;
-
-        // Note dependent
-        AbstractNoteInter note;
-
-        Note pmNote;
-
-        Notations pmNotations;
-
-        // Cleanup at end of measure
-        void endMeasure ()
-        {
-            measure = null;
-            pmMeasure = null;
-            voice = null;
-            pmAttributes = null;
-
-            endVoice();
-        }
-
-        // Cleanup at end of note
-        void endNote ()
-        {
-            note = null;
-            pmNote = null;
-            pmNotations = null;
-        }
-
-        // Cleanup at end of voice
-        void endVoice ()
-        {
-            voice = null;
-            pmAttributes = null;
-
-            endNote();
-        }
-    }
-
-    //---------//
-    // IsFirst //
-    //---------//
-    /** Composite flag to help drive processing of any entity. */
-    private static class IsFirst
-    {
-
-        /** We are writing the first part of the score */
-        boolean part;
-
-        /** We are writing the first page of the score */
-        boolean page;
-
-        /** We are writing the first system in the current page */
-        boolean system;
-
-        /** We are writing the first measure in current system (in current logicalPart) */
-        boolean measure;
-
-        @Override
-        public java.lang.String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (part) {
-                sb.append(" firstPart");
-            }
-
-            if (page) {
-                sb.append(" firstPage");
-            }
-
-            if (system) {
-                sb.append(" firstSystem");
-            }
-
-            if (measure) {
-                sb.append(" firstMeasure");
-            }
-
-            return sb.toString();
-        }
-    }
-
 }

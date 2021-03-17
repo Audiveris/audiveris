@@ -41,9 +41,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordArpeggiatoRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoChordRelation} object.
      *
@@ -62,6 +64,7 @@ public class ChordArpeggiatoRelation
         super();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -118,6 +121,7 @@ public class ChordArpeggiatoRelation
         return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

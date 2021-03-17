@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Containment
         extends Relation
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //-------//
     // added //

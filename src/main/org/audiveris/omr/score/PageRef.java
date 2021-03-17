@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class PageRef
         implements Comparable<PageRef>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
     //----------------
@@ -62,6 +63,7 @@ public class PageRef
     //
     private int sheetNumber;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageRef} object.
      *
@@ -90,6 +92,7 @@ public class PageRef
         movementStart = false;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//

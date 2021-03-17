@@ -56,11 +56,13 @@ public class StaffFilament
         extends CurvedFilament
         implements LineInfo
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffFilament.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Combs where this filament appears. map (column index -> comb) */
     private SortedMap<Integer, FilamentComb> combs;
 
@@ -70,6 +72,7 @@ public class StaffFilament
     /** Relative position in cluster. (relevant only if cluster is not null) */
     private int clusterPos;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineFilament object.
      * Nota: this constructor is needed for FilamentFactory which calls this
@@ -82,6 +85,7 @@ public class StaffFilament
         super(interline, InterlineScale.toPixels(interline, constants.segmentLength));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // yTranslated //
     //-------------//
@@ -173,8 +177,7 @@ public class StaffFilament
 
                         for (int i = 1; i <= insert; i++) {
                             int x = (int) Math.rint(holeStart + (i * dx));
-                            Point2D pt = new Filler(x, pos, fils, virtualLength / 2)
-                                    .findInsertion();
+                            Point2D pt = new Filler(x, pos, fils, virtualLength / 2).findInsertion();
 
                             if (pt == null) {
                                 // Take default line point instead
@@ -388,6 +391,7 @@ public class StaffFilament
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

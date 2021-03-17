@@ -55,9 +55,9 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
-import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.symbol.Alignment;
@@ -66,9 +66,9 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
-import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -254,12 +254,14 @@ public class HeadInter
             boolean modified = false;
 
             final Double x = getSnapAbscissa();
+
             if (x != null) {
                 dropLocation.x = (int) Math.rint(x);
                 modified = true;
             }
 
             final Double y = getSnapOrdinate();
+
             if (y != null) {
                 dropLocation.y = (int) Math.rint(y);
                 modified = true;
@@ -621,6 +623,7 @@ public class HeadInter
     public Point2D getStemReferencePoint (Anchor anchor)
     {
         getTemplate(); // Make sure we have the template
+
         Rectangle headBox = getBounds();
         Rectangle templateBox = template.getBounds(headBox);
         Point2D offset = template.getOffset(anchor);
@@ -756,7 +759,8 @@ public class HeadInter
 
             // Check integer pitch distance
             final Integer dPitch = (this.getStaff() == that.getStaff())
-                    ? Math.abs(this.getIntegerPitch() - thatHead.getIntegerPitch()) : null;
+                    ? Math.abs(this.getIntegerPitch() - thatHead.getIntegerPitch())
+                    : null;
 
             if ((dPitch != null) && (dPitch > 1)) {
                 return false;
@@ -820,10 +824,9 @@ public class HeadInter
                     if (stemChords.isEmpty()) {
                         // Create a chord based on stem
                         headChord = new HeadChordInter(null);
-                        tasks.add(
-                                new AdditionTask(
-                                        theSig, headChord, stem.getBounds(),
-                                        Arrays.asList(new Link(stem, new ChordStemRelation(), true))));
+                        tasks.add(new AdditionTask(
+                                theSig, headChord, stem.getBounds(),
+                                Arrays.asList(new Link(stem, new ChordStemRelation(), true))));
                     } else {
                         if (stemChords.size() > 1) {
                             logger.warn("Stem shared by several chords, picked one");
@@ -843,8 +846,12 @@ public class HeadInter
             if (!stemFound) {
                 // Head without stem
                 HeadChordInter headChord = new HeadChordInter(null);
-                tasks.add(new AdditionTask(theSig, headChord, getBounds(),
-                                           Arrays.asList(new Link(this, new Containment(), true))));
+                tasks.add(
+                        new AdditionTask(
+                                theSig,
+                                headChord,
+                                getBounds(),
+                                Arrays.asList(new Link(this, new Containment(), true))));
             }
         }
 
@@ -1008,8 +1015,9 @@ public class HeadInter
                 int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
                 int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
                 Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-                List<Inter> stems = Inters
-                        .intersectedInters(candidateStems, GeoOrder.BY_ABSCISSA, luBox);
+                List<Inter> stems = Inters.intersectedInters(candidateStems,
+                                                             GeoOrder.BY_ABSCISSA,
+                                                             luBox);
                 int xDir = hSide.direction();
 
                 for (Inter inter : stems) {
@@ -1110,8 +1118,8 @@ public class HeadInter
             final int closestIndex = (iLedger != null) ? iLedger.index : 0;
             final Scale scale = staff.getSystem().getSheet().getScale();
             final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
-            final int x1 = center.x - ledgerLength / 2;
-            final int x2 = center.x + ledgerLength / 2;
+            final int x1 = center.x - (ledgerLength / 2);
+            final int x2 = center.x + (ledgerLength / 2);
             final int dir = Integer.signum(thePitch);
 
             for (int p = 6 * dir + 2 * closestIndex; p * dir <= thePitch * dir; p += 2 * dir) {
@@ -1159,7 +1167,7 @@ public class HeadInter
             double halfWidth = getBounds().width / 2.0;
             HorizontalSide headSide = (stemX < getCenter().x) ? LEFT : RIGHT;
 
-            return (headSide == LEFT) ? stemX + halfWidth : stemX - halfWidth;
+            return (headSide == LEFT) ? (stemX + halfWidth) : (stemX - halfWidth);
         }
 
         return null;
@@ -1354,11 +1362,13 @@ public class HeadInter
                     head.setBounds(latestBounds);
 
                     final Double x = head.getSnapAbscissa();
+
                     if (x != null) {
                         latestBounds.x = (int) Math.rint(x - halfWidth);
                     }
 
                     final Double y = head.getSnapOrdinate();
+
                     if (y != null) {
                         latestBounds.y = (int) Math.rint(y - halfHeight);
                     }

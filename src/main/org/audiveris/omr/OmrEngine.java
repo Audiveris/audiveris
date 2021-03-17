@@ -43,6 +43,7 @@ import java.util.List;
  */
 public interface OmrEngine
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the list of all books handled.

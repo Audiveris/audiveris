@@ -37,11 +37,14 @@ import java.util.List;
 public class SuiteImpacts
         extends GradeImpacts
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SuiteImpacts.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final String suiteName;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SuiteImpacts object.
      *
@@ -57,6 +60,7 @@ public class SuiteImpacts
         this.suiteName = suiteName;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getDump //
     //---------//

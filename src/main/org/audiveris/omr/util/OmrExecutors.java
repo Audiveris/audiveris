@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class OmrExecutors
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
 
@@ -83,6 +84,7 @@ public class OmrExecutors
         }
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -90,6 +92,7 @@ public class OmrExecutors
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getCachedLowExecutor //
     //----------------------//
@@ -185,97 +188,26 @@ public class OmrExecutors
         return result;
     }
 
-    //------//
-    // Pool //
-    //------//
-    private abstract static class Pool
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // CachedLows //
+    //------------//
+    /** Cached pool with low priority. */
+    private static class CachedLows
+            extends Pool
     {
 
-        /** The underlying pool of threads. */
-        protected ExecutorService pool;
-
-        /**
-         * Name the pool.
-         */
-        public abstract String getName ();
-
-        /**
-         * Terminate the pool.
-         * <p>
-         * BEWARE, doc on shutdownNow says: There are no guarantees beyond best-effort attempts to
-         * stop processing actively executing tasks. For example, typical implementations will
-         * cancel via {@link Thread#interrupt}, so any task that fails to respond to interrupts may
-         * never terminate.
-         *
-         * @return true if OK, false if timed out
-         */
-        public synchronized boolean close ()
+        @Override
+        public String getName ()
         {
-            boolean result = true;
-
-            if (!isActive()) {
-                return result;
-            }
-
-            logger.debug("Closing pool {}", getName());
-            pool.shutdown(); // Disable new tasks from being submitted
-
-            try {
-                // Wait a while for existing tasks to terminate
-                if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
-                    logger.warn("Pool {} did not terminate", getName());
-                    result = false;
-
-                    // (Try to) cancel currently executing tasks.
-                    pool.shutdownNow();
-                }
-            } catch (InterruptedException ie) {
-                // (Re-)Try to cancel if current thread also got interrupted
-                pool.shutdownNow();
-
-                // Preserve interrupt status
-                Thread.currentThread().interrupt();
-            }
-
-            logger.debug("Pool {} closed.", getName());
-
-            // Let garbage collector work
-            pool = null;
-
-            return result;
+            return "cachedLow";
         }
 
-        /**
-         * Get the pool ready to use.
-         */
-        public synchronized ExecutorService getPool ()
+        @Override
+        protected ExecutorService createPool ()
         {
-            if (!creationAllowed) {
-                logger.info("No longer allowed to create pool: {}", getName());
-
-                throw new ProcessingCancellationException("Executor closed");
-            }
-
-            if (!isActive()) {
-                logger.debug("Creating pool: {}", getName());
-                pool = createPool();
-            }
-
-            return pool;
+            return Executors.newCachedThreadPool(new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
-
-        /**
-         * Is the pool active?.
-         */
-        public synchronized boolean isActive ()
-        {
-            return (pool != null) && !pool.isShutdown();
-        }
-
-        /**
-         * Needed to create the concrete pool.
-         */
-        protected abstract ExecutorService createPool ();
     }
 
     //-----------//
@@ -297,27 +229,6 @@ public class OmrExecutors
                 "seconds",
                 60,
                 "Time to wait for terminating tasks");
-    }
-
-    //------------//
-    // CachedLows //
-    //------------//
-    /** Cached pool with low priority. */
-    private static class CachedLows
-            extends Pool
-    {
-
-        @Override
-        public String getName ()
-        {
-            return "cachedLow";
-        }
-
-        @Override
-        protected ExecutorService createPool ()
-        {
-            return Executors.newCachedThreadPool(new Factory(getName(), Thread.MIN_PRIORITY, 0));
-        }
     }
 
     //---------//
@@ -457,5 +368,98 @@ public class OmrExecutors
                     defaultParallelism.getValue() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
+    }
+
+    //------//
+    // Pool //
+    //------//
+    private abstract static class Pool
+    {
+
+        /** The underlying pool of threads. */
+        protected ExecutorService pool;
+
+        /**
+         * Name the pool.
+         */
+        public abstract String getName ();
+
+        /**
+         * Terminate the pool.
+         * <p>
+         * BEWARE, doc on shutdownNow says: There are no guarantees beyond best-effort attempts to
+         * stop processing actively executing tasks. For example, typical implementations will
+         * cancel via {@link Thread#interrupt}, so any task that fails to respond to interrupts may
+         * never terminate.
+         *
+         * @return true if OK, false if timed out
+         */
+        public synchronized boolean close ()
+        {
+            boolean result = true;
+
+            if (!isActive()) {
+                return result;
+            }
+
+            logger.debug("Closing pool {}", getName());
+            pool.shutdown(); // Disable new tasks from being submitted
+
+            try {
+                // Wait a while for existing tasks to terminate
+                if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
+                    logger.warn("Pool {} did not terminate", getName());
+                    result = false;
+
+                    // (Try to) cancel currently executing tasks.
+                    pool.shutdownNow();
+                }
+            } catch (InterruptedException ie) {
+                // (Re-)Try to cancel if current thread also got interrupted
+                pool.shutdownNow();
+
+                // Preserve interrupt status
+                Thread.currentThread().interrupt();
+            }
+
+            logger.debug("Pool {} closed.", getName());
+
+            // Let garbage collector work
+            pool = null;
+
+            return result;
+        }
+
+        /**
+         * Get the pool ready to use.
+         */
+        public synchronized ExecutorService getPool ()
+        {
+            if (!creationAllowed) {
+                logger.info("No longer allowed to create pool: {}", getName());
+
+                throw new ProcessingCancellationException("Executor closed");
+            }
+
+            if (!isActive()) {
+                logger.debug("Creating pool: {}", getName());
+                pool = createPool();
+            }
+
+            return pool;
+        }
+
+        /**
+         * Is the pool active?.
+         */
+        public synchronized boolean isActive ()
+        {
+            return (pool != null) && !pool.isShutdown();
+        }
+
+        /**
+         * Needed to create the concrete pool.
+         */
+        protected abstract ExecutorService createPool ();
     }
 }

@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Sample
         extends Glyph
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Sample.class);
 
@@ -93,6 +94,7 @@ public class Sample
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -115,6 +117,7 @@ public class Sample
     /** True for artificial (font-based) sample. */
     private boolean symbol;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ShapeSample} object.
      *
@@ -166,6 +169,7 @@ public class Sample
         this(0, 0, null, 0, 0, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * We need equality strictly based on reference.
      *

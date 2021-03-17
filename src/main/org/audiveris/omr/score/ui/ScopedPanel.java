@@ -38,13 +38,16 @@ import java.util.List;
 public class ScopedPanel
         extends Panel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Standard column spec for 4 fields. */
     private static final String colSpec4 = "12dlu,1dlu,100dlu,1dlu,35dlu,1dlu,right:12dlu";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of individual data panes. */
     private final List<XactDataPane> panes = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ScopedPanel} object.
      *
@@ -73,6 +76,7 @@ public class ScopedPanel
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the contained pane of proper class.
      *

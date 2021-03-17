@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+
 import javax.xml.bind.JAXBException;
 
 /**
@@ -51,9 +52,11 @@ import javax.xml.bind.JAXBException;
 public class RunTablatureCheck
         extends RunClass
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTablatureCheck.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTablatureCheck} object.
      *
@@ -66,6 +69,7 @@ public class RunTablatureCheck
         super(book, sheetIds);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void process ()
     {
@@ -83,6 +87,7 @@ public class RunTablatureCheck
                             if (staff.isTablature()) {
                                 logger.info("{} tablature at staff#{}",
                                             sheet.getId(), staff.getId());
+
                                 Area area = StaffManager.getCoreArea(staff, 0, 0);
                                 Rectangle rect = area.getBounds();
                                 areas.add(rect);
@@ -91,6 +96,7 @@ public class RunTablatureCheck
 
                         if (!areas.isEmpty()) {
                             TablatureAreas tabs = new TablatureAreas(areas);
+
                             // Export one xml file per sheet
                             String name = sheet.getId();
                             Path outPath = outDir.resolve(name + ".tablatures.xml");

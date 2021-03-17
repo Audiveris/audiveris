@@ -44,10 +44,12 @@ import javax.swing.WindowConstants;
  */
 public class ChartPlotter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Height of marks below zero line. */
     public static final double MARK = 2.5;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of series. */
     protected final XYSeriesCollection dataset = new XYSeriesCollection();
 
@@ -57,6 +59,7 @@ public class ChartPlotter
     /** Line and item renderer. */
     protected final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChartPlotter} object.
      *
@@ -83,6 +86,7 @@ public class ChartPlotter
         plot.setRenderer(renderer);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//

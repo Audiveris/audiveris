@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
@@ -38,10 +38,12 @@ import java.awt.geom.Rectangle2D;
 public class FlagsDownSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The number of flags. */
     protected final int fn;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FlagsDownSymbol object.
      *
@@ -57,6 +59,7 @@ public class FlagsDownSymbol
         this.fn = flagCount;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -129,6 +132,7 @@ public class FlagsDownSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

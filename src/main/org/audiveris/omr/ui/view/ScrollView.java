@@ -316,6 +316,19 @@ public class ScrollView
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer unitIncrement = new Constant.Integer(
+                "Pixels",
+                20,
+                "Size of mouse wheel increment for ScrollView");
+    }
+
     private class DownAction
             extends AbstractAction
     {
@@ -410,18 +423,5 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() - vertical.getUnitIncrement());
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer unitIncrement = new Constant.Integer(
-                "Pixels",
-                20,
-                "Size of mouse wheel increment for ScrollView");
     }
 }

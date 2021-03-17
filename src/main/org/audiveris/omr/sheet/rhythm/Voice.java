@@ -62,9 +62,49 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "voice")
 public class Voice
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //--------//
+    // Family //
+    //--------//
+    /**
+     * To classify voices (and specifically their ID) according to their "height".
+     */
+    public static enum Family
+    {
+
+        /** Started in first staff, or chord with upward stem in merged grand staff. */
+        HIGH,
+        /** Started in second staff, or chord with downward stem in merged grand staff. */
+        LOW,
+        /** Started in third staff. */
+        INFRA;
+
+        /**
+         * Offset in voice ID, according to voice family.
+         * <ol>
+         * <li>1-4 for HIGH family (first staff in standard part, upward stem in merged part)
+         * <li>5-8 for LOW family (second staff in standard part, downward stem in merged part)
+         * <li>9-12 for INFRA family (third staff in a 3-staff organ system)
+         * </ol>
+         */
+        private static int ID_FAMILY_OFFSET = 4;
+
+        /**
+         * Report the offset to be used for voice IDs within this family.
+         *
+         * @return the family ID offset
+         */
+        public int idOffset ()
+        {
+            return ID_FAMILY_OFFSET * ordinal();
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -124,6 +164,7 @@ public class Voice
     /** Inferred time signature based on this voice content. */
     private TimeRational inferredTimeSig;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Voice object.
      *
@@ -157,6 +198,7 @@ public class Voice
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
@@ -203,7 +245,7 @@ public class Voice
         try {
             if (isWhole()) {
                 setTermination(null); // we can't tell anything
-            } else if (chords != null && !chords.isEmpty()) {
+            } else if ((chords != null) && !chords.isEmpty()) {
                 AbstractChordInter last = chords.get(chords.size() - 1);
 
                 if (last.getTimeOffset() == null) {
@@ -220,8 +262,7 @@ public class Voice
                         excess = delta; // For voice
                         measure.setAbnormal(true);
 
-                        if ((stack.getExcess() == null) || (delta.compareTo(
-                                stack.getExcess()) > 0)) {
+                        if ((stack.getExcess() == null) || (delta.compareTo(stack.getExcess()) > 0)) {
                             stack.setExcess(delta); // For stack
                         }
                     }
@@ -247,8 +288,8 @@ public class Voice
             SlotVoice info = getSlotInfo(slot);
 
             if (info == null) {
-                if ((prevChord != null) && (prevChord.getEndTime().compareTo(
-                        slot.getTimeOffset()) > 0)) {
+                if ((prevChord != null) && (prevChord.getEndTime().compareTo(slot.getTimeOffset())
+                                                    > 0)) {
                     putSlotInfo(slot, new SlotVoice(prevChord, Status.CONTINUE));
                 }
             } else {
@@ -692,7 +733,7 @@ public class Voice
         for (AbstractChordInter chord : chords) {
             final TupletInter tuplet = chord.getTuplet();
 
-            if ((tuplet != null) && (found == null || !found.contains(tuplet))) {
+            if ((tuplet != null) && ((found == null) || !found.contains(tuplet))) {
                 if (found == null) {
                     found = new ArrayList<>();
                 }
@@ -850,6 +891,7 @@ public class Voice
                     // Active chord => busy
                     if (info.status == Status.BEGIN) {
                         sb.append("|Ch#").append(String.format("%-5s", info.chord.getId()));
+
                         Rational chordDuration = info.chord.getDuration();
                         Rational timeOffset = slot.getTimeOffset();
 
@@ -996,42 +1038,4 @@ public class Voice
 
         return voice;
     }
-
-    //--------//
-    // Family //
-    //--------//
-    /**
-     * To classify voices (and specifically their ID) according to their "height".
-     */
-    public static enum Family
-    {
-
-        /** Started in first staff, or chord with upward stem in merged grand staff. */
-        HIGH,
-        /** Started in second staff, or chord with downward stem in merged grand staff. */
-        LOW,
-        /** Started in third staff. */
-        INFRA;
-
-        /**
-         * Offset in voice ID, according to voice family.
-         * <ol>
-         * <li>1-4 for HIGH family (first staff in standard part, upward stem in merged part)
-         * <li>5-8 for LOW family (second staff in standard part, downward stem in merged part)
-         * <li>9-12 for INFRA family (third staff in a 3-staff organ system)
-         * </ol>
-         */
-        private static int ID_FAMILY_OFFSET = 4;
-
-        /**
-         * Report the offset to be used for voice IDs within this family.
-         *
-         * @return the family ID offset
-         */
-        public int idOffset ()
-        {
-            return ID_FAMILY_OFFSET * ordinal();
-        }
-    }
-
 }

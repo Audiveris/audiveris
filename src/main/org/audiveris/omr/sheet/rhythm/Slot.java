@@ -71,9 +71,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Slot
         implements Comparable<Slot>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Slot.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -105,6 +107,7 @@ public class Slot
     /** Chords incoming into this slot, ordered by center ordinate. */
     protected List<AbstractChordInter> incomings;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new (stack) Slot object.
      *
@@ -136,6 +139,7 @@ public class Slot
         this.id = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
@@ -201,6 +205,7 @@ public class Slot
 
         return false;
     }
+
     //
     //    //-------------------//
     //    // getChordJustAbove //
@@ -268,7 +273,6 @@ public class Slot
     //-----------//
     // getChords //
     //-----------//
-
     /**
      * Report the collection of incoming chords in this time slot.
      *
@@ -498,8 +502,8 @@ public class Slot
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("slot#").append(getId()).append(" start=").append(
-                String.format("%5s", getTimeOffset())).append(" [");
+        sb.append("slot#").append(getId())
+                .append(" start=").append(String.format("%5s", getTimeOffset())).append(" [");
 
         SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<>();
 
@@ -573,38 +577,29 @@ public class Slot
         xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
-    //-------------//
-    // MeasureSlot //
-    //-------------//
+    //----------//
+    // chordsOf //
+    //----------//
     /**
-     * A slot which embraces just a measure height.
-     * (whereas a "full" slot embraces a system height).
+     * Report the global list of chords of the provided slots.
+     *
+     * @param slots the provided slots
+     * @return the global sequence of chords
      */
-    public static class MeasureSlot
-            extends Slot
+    private static List<AbstractChordInter> chordsOf (List<MeasureSlot> slots)
     {
+        List<AbstractChordInter> chords = new ArrayList<>();
 
-        /** The containing measure. */
-        @Navigable(false)
-        protected Measure measure;
-
-        /**
-         * Creates a new {@code MeasureSlot} object.
-         *
-         * @param id        the slot id within the containing measure stack
-         * @param measure   the containing measure
-         * @param incomings the chords that start in this slot
-         */
-        public MeasureSlot (int id,
-                            Measure measure,
-                            List<AbstractChordInter> incomings)
-        {
-            super(id, measure.getStack(), incomings);
-
-            this.measure = measure;
+        for (MeasureSlot slot : slots) {
+            chords.addAll(slot.getChords());
         }
+
+        Collections.sort(chords, Inters.byCenterOrdinate);
+
+        return chords;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // CompoundSlot //
     //--------------//
@@ -656,25 +651,35 @@ public class Slot
         }
     }
 
-    //----------//
-    // chordsOf //
-    //----------//
+    //-------------//
+    // MeasureSlot //
+    //-------------//
     /**
-     * Report the global list of chords of the provided slots.
-     *
-     * @param slots the provided slots
-     * @return the global sequence of chords
+     * A slot which embraces just a measure height.
+     * (whereas a "full" slot embraces a system height).
      */
-    private static List<AbstractChordInter> chordsOf (List<MeasureSlot> slots)
+    public static class MeasureSlot
+            extends Slot
     {
-        List<AbstractChordInter> chords = new ArrayList<>();
 
-        for (MeasureSlot slot : slots) {
-            chords.addAll(slot.getChords());
+        /** The containing measure. */
+        @Navigable(false)
+        protected Measure measure;
+
+        /**
+         * Creates a new {@code MeasureSlot} object.
+         *
+         * @param id        the slot id within the containing measure stack
+         * @param measure   the containing measure
+         * @param incomings the chords that start in this slot
+         */
+        public MeasureSlot (int id,
+                            Measure measure,
+                            List<AbstractChordInter> incomings)
+        {
+            super(id, measure.getStack(), incomings);
+
+            this.measure = measure;
         }
-
-        Collections.sort(chords, Inters.byCenterOrdinate);
-
-        return chords;
     }
 }

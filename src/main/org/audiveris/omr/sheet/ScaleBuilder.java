@@ -77,11 +77,13 @@ import java.util.List;
  */
 public class ScaleBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -104,6 +106,7 @@ public class ScaleBuilder
     /** Main beam thickness found, if any. */
     private Integer beamKey;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor to enable scale computation on a given sheet.
      *
@@ -114,6 +117,7 @@ public class ScaleBuilder
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // displayChart //
     //--------------//
@@ -246,14 +250,16 @@ public class ScaleBuilder
             final double rangeRatio = (double) (peak - minHeight) / (maxHeight - minHeight);
 
             if (verbose) {
-                logger.info(String.format(
-                        "Beam measured height: %2d -- %.2f of [%d..%d] range at %d%% of needed quorum",
-                        peak, rangeRatio, minHeight, maxHeight, (int) Math.rint(quorumRatio * 100)));
+                logger.info(String.format("Beam measured height: %2d -- %.2f"
+                                                  + " of [%d..%d] range at %d%% of needed quorum",
+                                          peak, rangeRatio, minHeight, maxHeight, (int) Math.rint(
+                                                  quorumRatio * 100)));
             }
 
             // Quorum reached or measured value close to guess?
             final int diff = Math.abs(peak - guess);
-            if (quorumRatio >= 1.0 || (diff <= constants.beamMaxDiff.getValue())) {
+
+            if ((quorumRatio >= 1.0) || (diff <= constants.beamMaxDiff.getValue())) {
                 beamKey = peak;
 
                 if (verbose) {
@@ -346,8 +352,7 @@ public class ScaleBuilder
 
         if (scl != null) {
             scale = new Scale(
-                    (scl.getInterlineScale() != null) ? scl.getInterlineScale()
-                    : computeInterline(),
+                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
                     (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
                     (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(true),
                     (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
@@ -383,6 +388,62 @@ public class ScaleBuilder
         }
 
         return mainCombo;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer minInterline = new Constant.Integer(
+                "Pixels",
+                11,
+                "Minimum interline value (in pixels)");
+
+        private final Constant.Integer maxInterline = new Constant.Integer(
+                "Pixels",
+                100,
+                "Maximum interline value (in pixels)");
+
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(
+                0.03,
+                "Minimum ratio of peak runs for peak extension");
+
+        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
+                0.025,
+                "Minimum ratio of total runs for derivative acceptance");
+
+        private final Constant.Ratio minBlackRatio = new Constant.Ratio(
+                0.001,
+                "Minimum ratio of foreground pixels in image");
+
+        private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
+                1.9, // 2.0 led to a false second peak in merged grand staff
+                "Maximum ratio between second and first combined peak");
+
+        private final Constant.Ratio beamMinFraction = new Constant.Ratio(
+                0.275,
+                "Minimum ratio between beam height and interline");
+
+        private final Constant.Ratio beamMaxFraction = new Constant.Ratio(
+                0.9,
+                "Maximum ratio between beam height and interline");
+
+        private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
+                0.01,
+                "Minimum ratio of runs for beam height measurement (quorum)");
+
+        private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
+                0.5,
+                "Ratio of beam possible height range for guess");
+
+        private final Constant.Integer beamMaxDiff = new Constant.Integer(
+                "pixels",
+                2,
+                "Maximum difference between beam guess and measurement");
     }
 
     //-------------//
@@ -504,49 +565,49 @@ public class ScaleBuilder
                 comboFunction.print(System.out);
             }
         }
-//
-//        //-----------------//
-//        // retrieveBeamKey //
-//        //-----------------//
-//        /**
-//         * Try to retrieve a suitable beam thickness value.
-//         * <p>
-//         * Take most frequent black local max for which key (beam thickness) is larger than a
-//         * minimum fraction of interline and smaller than main white gap between (large) staff
-//         * lines.
-//         *
-//         * @param minHeight start value for height range
-//         * @param maxHeight stop value for height range
-//         */
-//        public Integer retrieveBeamKey (int minHeight,
-//                                        int maxHeight)
-//        {
-//            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
-//
-//            // Quorum on height histo
-//            final int totalArea = blackFunction.getArea();
-//            final double ratio = constants.minBeamCountRatio.getValue();
-//            final int quorum = (int) Math.rint(totalArea * ratio);
-//            logger.info("Beam minHeight:{} maxHeight:{} quorum:{}", minHeight, maxHeight, quorum);
-//            blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
-//
-//            for (int local : localMaxima) {
-//                if ((local >= minHeight) && (local <= maxHeight)) {
-//                    if (blackFunction.getValue(local) >= quorum) {
-//                        return local;
-//                    }
-//
-//                    break;
-//                }
-//            }
-//
-//            return null;
-//        }
-//
+
+        //
+        //        //-----------------//
+        //        // retrieveBeamKey //
+        //        //-----------------//
+        //        /**
+        //         * Try to retrieve a suitable beam thickness value.
+        //         * <p>
+        //         * Take most frequent black local max for which key (beam thickness) is larger than a
+        //         * minimum fraction of interline and smaller than main white gap between (large) staff
+        //         * lines.
+        //         *
+        //         * @param minHeight start value for height range
+        //         * @param maxHeight stop value for height range
+        //         */
+        //        public Integer retrieveBeamKey (int minHeight,
+        //                                        int maxHeight)
+        //        {
+        //            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
+        //
+        //            // Quorum on height histo
+        //            final int totalArea = blackFunction.getArea();
+        //            final double ratio = constants.minBeamCountRatio.getValue();
+        //            final int quorum = (int) Math.rint(totalArea * ratio);
+        //            logger.info("Beam minHeight:{} maxHeight:{} quorum:{}", minHeight, maxHeight, quorum);
+        //            blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
+        //
+        //            for (int local : localMaxima) {
+        //                if ((local >= minHeight) && (local <= maxHeight)) {
+        //                    if (blackFunction.getValue(local) >= quorum) {
+        //                        return local;
+        //                    }
+        //
+        //                    break;
+        //                }
+        //            }
+        //
+        //            return null;
+        //        }
+        //
         //---------------//
         // getBeamQuorum //
         //---------------//
-
         /**
          * Report the quorum needed to validate beam height measurement.
          *
@@ -639,6 +700,7 @@ public class ScaleBuilder
 
             // If several black peaks were found, pick up the one with highest function value
             int bestCount = 0;
+
             for (Range peak : blackPeaks) {
                 final int count = blackFunction.getValue(peak.main);
 
@@ -749,60 +811,5 @@ public class ScaleBuilder
 
             return total;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer minInterline = new Constant.Integer(
-                "Pixels",
-                11,
-                "Minimum interline value (in pixels)");
-
-        private final Constant.Integer maxInterline = new Constant.Integer(
-                "Pixels",
-                100,
-                "Maximum interline value (in pixels)");
-
-        private final Constant.Ratio minGainRatio = new Constant.Ratio(
-                0.03,
-                "Minimum ratio of peak runs for peak extension");
-
-        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
-                0.025,
-                "Minimum ratio of total runs for derivative acceptance");
-
-        private final Constant.Ratio minBlackRatio = new Constant.Ratio(
-                0.001,
-                "Minimum ratio of foreground pixels in image");
-
-        private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
-                1.9, // 2.0 led to a false second peak in merged grand staff
-                "Maximum ratio between second and first combined peak");
-
-        private final Constant.Ratio beamMinFraction = new Constant.Ratio(
-                0.275,
-                "Minimum ratio between beam height and interline");
-
-        private final Constant.Ratio beamMaxFraction = new Constant.Ratio(
-                0.9,
-                "Maximum ratio between beam height and interline");
-
-        private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
-                0.01,
-                "Minimum ratio of runs for beam height measurement (quorum)");
-
-        private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
-                0.5,
-                "Ratio of beam possible height range for guess");
-
-        private final Constant.Integer beamMaxDiff = new Constant.Integer(
-                "pixels",
-                2,
-                "Maximum difference between beam guess and measurement");
     }
 }

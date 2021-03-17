@@ -29,6 +29,7 @@ package org.audiveris.omr.check;
  */
 public class CheckResult
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Numerical result value. */
     public double value;
@@ -36,6 +37,7 @@ public class CheckResult
     /** The resulting grade, in 0..1 range. */
     public double grade;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

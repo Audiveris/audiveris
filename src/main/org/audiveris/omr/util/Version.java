@@ -44,6 +44,7 @@ package org.audiveris.omr.util;
 public class Version
         implements Comparable<Version>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     public final String value;
 
@@ -55,6 +56,7 @@ public class Version
 
     public final String label;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code Version} object and parse its components.
      *
@@ -95,6 +97,7 @@ public class Version
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -194,9 +197,10 @@ public class Version
     public int hashCode ()
     {
         int hash = 7;
-        hash = 83 * hash + major;
-        hash = 83 * hash + minor;
-        hash = 83 * hash + patch;
+        hash = (83 * hash) + major;
+        hash = (83 * hash) + minor;
+        hash = (83 * hash) + patch;
+
         return hash;
     }
 

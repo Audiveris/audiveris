@@ -35,6 +35,7 @@ import javax.swing.event.ChangeListener;
  */
 public class LSpinner
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The related label
@@ -46,6 +47,7 @@ public class LSpinner
      */
     protected JSpinner spinner;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an editable labeled spinner with provided
      * characteristics.
@@ -65,6 +67,7 @@ public class LSpinner
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addChangeListener //
     //-------------------//

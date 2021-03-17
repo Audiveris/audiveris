@@ -45,15 +45,18 @@ import org.slf4j.LoggerFactory;
  */
 public class GlyphsController
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphsController.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related model. */
     protected final GlyphsModel model;
 
     /** Cached sheet, if any. */
     protected final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of GlyphsController, with its underlying GlyphsModel instance.
      *
@@ -66,6 +69,7 @@ public class GlyphsController
         sheet = model.getSheet();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // asyncAssignGlyphs //
     //-------------------//

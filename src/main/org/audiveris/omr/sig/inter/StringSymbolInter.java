@@ -57,6 +57,7 @@ package org.audiveris.omr.sig.inter;
 public interface StringSymbolInter
         extends Inter
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the string that resembles the symbol.

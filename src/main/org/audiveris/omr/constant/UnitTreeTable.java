@@ -23,6 +23,7 @@ package org.audiveris.omr.constant;
 
 import org.audiveris.omr.ui.treetable.JTreeTable;
 import org.audiveris.omr.ui.treetable.TreeTableModelAdapter;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
-import org.audiveris.omr.ui.util.UIUtil;
 
 /**
  * Class {@code UnitTreeTable} is a user interface that combines a tree to display the
@@ -58,16 +58,19 @@ import org.audiveris.omr.ui.util.UIUtil;
 public class UnitTreeTable
         extends JTreeTable
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitTreeTable.class);
 
     /** Alternate color for zebra appearance */
     private static final Color zebraColor = new Color(248, 248, 255);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final TableCellRenderer valueRenderer = new ValueRenderer();
 
     private final TableCellRenderer pixelRenderer = new PixelRenderer();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a User Interface JTreeTable dedicated to the handling of
      * unit constants.
@@ -97,6 +100,7 @@ public class UnitTreeTable
         preExpandPackages();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getCellEditor //
     //---------------//
@@ -326,6 +330,7 @@ public class UnitTreeTable
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // PixelRenderer //
     //---------------//

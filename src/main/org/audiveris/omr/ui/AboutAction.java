@@ -66,6 +66,7 @@ import javax.swing.text.JTextComponent;
  */
 public class AboutAction
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -73,141 +74,10 @@ public class AboutAction
 
     // Resource injection
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(AboutAction.class);
+            .getResourceMap(
+                    AboutAction.class);
 
-    // Panel
-    private JPanel aboutBox = null;
-
-    //-----------------//
-    // actionPerformed //
-    //-----------------//
-    public void actionPerformed (ActionEvent e)
-    {
-        if (aboutBox == null) {
-            aboutBox = createAboutBox();
-        }
-
-        JOptionPane.showMessageDialog(
-                OMR.gui.getFrame(),
-                aboutBox,
-                resources.getString("AboutDialog.title"),
-                JOptionPane.INFORMATION_MESSAGE);
-
-    }
-
-    //----------------//
-    // createAboutBox //
-    //----------------//
-    private JPanel createAboutBox ()
-    {
-        // Layout
-        final StringBuilder rows = new StringBuilder("pref,10dlu,pref,5dlu");
-
-        for (int i = 0; i < (Topic.values().length); i++) {
-            rows.append(",pref,3dlu");
-        }
-
-        final FormLayout layout = new FormLayout("right:pref, 5dlu, pref", rows.toString());
-        final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
-        final CellConstraints cst = new CellConstraints();
-
-        // Splash logo
-        int iRow = 1;
-        final URI uri = UriUtil.toURI(WellKnowns.RES_URI, "splash.png");
-
-        try {
-            JPanel logoPanel = new ImagePanel(uri);
-            builder.add(logoPanel, cst.xyw(1, iRow, 3));
-        } catch (MalformedURLException ex) {
-            logger.warn("Error on " + uri, ex);
-        }
-
-        // Software title (Audiveris)
-        iRow += 2;
-        final JLabel titleLabel = new JLabel();
-        titleLabel.setFont(new Font("Arial",
-                                    Font.BOLD,
-                                    UIUtil.adjustedSize(constants.titleFontSize.getValue())));
-        titleLabel.setName("aboutTitleLabel");
-        builder.add(titleLabel, cst.xyw(1, iRow, 3));
-
-        // Each topic in turn (description, version, etc)
-        final HyperlinkListener linkListener = new BrowserLinkListener();
-
-        for (Topic topic : Topic.values()) {
-            iRow += 2;
-
-            // Label on left
-            final JLabel label = new JLabel();
-            label.setName(topic + "Label");
-            builder.add(label, cst.xy(1, iRow));
-
-            // Content on right
-            topic.comp.setName(topic + "TextField");
-            if (topic.comp instanceof JTextComponent) {
-                ((JTextComponent) topic.comp).setEditable(false);
-            }
-
-            if (topic.comp instanceof JEditorPane) {
-                ((JEditorPane) topic.comp).addHyperlinkListener(linkListener);
-            } else {
-                topic.comp.setFocusable(false);
-            }
-
-            builder.add(topic.comp, cst.xy(3, iRow));
-        }
-
-        panel.setInsets(10, 10, 10, 10);
-        panel.setOpaque(true);
-        panel.setBackground(Color.WHITE);
-        panel.setName("AboutPanel");
-
-        // Manual injection
-        resources.injectComponents(panel);
-
-        ((JLabel) Topic.version.comp)
-                .setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
-
-        ((JLabel) Topic.classes.comp)
-                .setText(WellKnowns.CLASS_CONTAINER.toString());
-
-        String homePage = resources.getString("Application.homepage");
-        ((JTextComponent) Topic.home.comp).setText(UIUtil.htmlLink(homePage));
-
-        String projectPage = resources.getString("Application.projectpage");
-        ((JTextComponent) Topic.project.comp).setText(UIUtil.htmlLink(projectPage));
-
-        ((JLabel) Topic.license.comp)
-                .setText("GNU Affero GPL v3");
-
-        ((JLabel) Topic.ocr.comp)
-                .setText(TesseractOCR.getInstance().identify());
-
-        ((JLabel) Topic.javaVendor.comp)
-                .setText(System.getProperty("java.vendor"));
-
-        ((JLabel) Topic.javaVersion.comp)
-                .setText(System.getProperty("java.version"));
-
-        ((JLabel) Topic.javaRuntime.comp)
-                .setText(System.getProperty("java.runtime.name")
-                                 + " (build " + System.getProperty("java.runtime.version") + ")");
-
-        ((JLabel) Topic.javaVm.comp)
-                .setText(System.getProperty("java.vm.name") + " (build "
-                                 + System.getProperty("java.vm.version") + ", "
-                                 + System.getProperty("java.vm.info") + ")");
-
-        ((JLabel) Topic.os.comp)
-                .setText(System.getProperty("os.name") + " " + System.getProperty("os.version"));
-
-        ((JLabel) Topic.osArch.comp)
-                .setText(System.getProperty("os.arch"));
-
-        return panel;
-    }
-
+    //~ Enumerations -------------------------------------------------------------------------------
     //-------//
     // Topic //
     //-------//
@@ -248,6 +118,153 @@ public class AboutAction
         }
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    // Panel
+    private JPanel aboutBox = null;
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // actionPerformed //
+    //-----------------//
+    public void actionPerformed (ActionEvent e)
+    {
+        if (aboutBox == null) {
+            aboutBox = createAboutBox();
+        }
+
+        JOptionPane.showMessageDialog(
+                OMR.gui.getFrame(),
+                aboutBox,
+                resources.getString("AboutDialog.title"),
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    //----------------//
+    // createAboutBox //
+    //----------------//
+    private JPanel createAboutBox ()
+    {
+        // Layout
+        final StringBuilder rows = new StringBuilder("pref,10dlu,pref,5dlu");
+
+        for (int i = 0; i < (Topic.values().length); i++) {
+            rows.append(",pref,3dlu");
+        }
+
+        final FormLayout layout = new FormLayout("right:pref, 5dlu, pref", rows.toString());
+        final Panel panel = new Panel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final CellConstraints cst = new CellConstraints();
+
+        // Splash logo
+        int iRow = 1;
+        final URI uri = UriUtil.toURI(WellKnowns.RES_URI, "splash.png");
+
+        try {
+            JPanel logoPanel = new ImagePanel(uri);
+            builder.add(logoPanel, cst.xyw(1, iRow, 3));
+        } catch (MalformedURLException ex) {
+            logger.warn("Error on " + uri, ex);
+        }
+
+        // Software title (Audiveris)
+        iRow += 2;
+
+        final JLabel titleLabel = new JLabel();
+        titleLabel.setFont(new Font("Arial",
+                                    Font.BOLD,
+                                    UIUtil.adjustedSize(constants.titleFontSize.getValue())));
+        titleLabel.setName("aboutTitleLabel");
+        builder.add(titleLabel, cst.xyw(1, iRow, 3));
+
+        // Each topic in turn (description, version, etc)
+        final HyperlinkListener linkListener = new BrowserLinkListener();
+
+        for (Topic topic : Topic.values()) {
+            iRow += 2;
+
+            // Label on left
+            final JLabel label = new JLabel();
+            label.setName(topic + "Label");
+            builder.add(label, cst.xy(1, iRow));
+
+            // Content on right
+            topic.comp.setName(topic + "TextField");
+
+            if (topic.comp instanceof JTextComponent) {
+                ((JTextComponent) topic.comp).setEditable(false);
+            }
+
+            if (topic.comp instanceof JEditorPane) {
+                ((JEditorPane) topic.comp).addHyperlinkListener(linkListener);
+            } else {
+                topic.comp.setFocusable(false);
+            }
+
+            builder.add(topic.comp, cst.xy(3, iRow));
+        }
+
+        panel.setInsets(10, 10, 10, 10);
+        panel.setOpaque(true);
+        panel.setBackground(Color.WHITE);
+        panel.setName("AboutPanel");
+
+        // Manual injection
+        resources.injectComponents(panel);
+
+        ((JLabel) Topic.version.comp).setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
+
+        ((JLabel) Topic.classes.comp).setText(WellKnowns.CLASS_CONTAINER.toString());
+
+        String homePage = resources.getString("Application.homepage");
+        ((JTextComponent) Topic.home.comp).setText(UIUtil.htmlLink(homePage));
+
+        String projectPage = resources.getString("Application.projectpage");
+        ((JTextComponent) Topic.project.comp).setText(UIUtil.htmlLink(projectPage));
+
+        ((JLabel) Topic.license.comp).setText("GNU Affero GPL v3");
+
+        ((JLabel) Topic.ocr.comp).setText(TesseractOCR.getInstance().identify());
+
+        ((JLabel) Topic.javaVendor.comp).setText(System.getProperty("java.vendor"));
+
+        ((JLabel) Topic.javaVersion.comp).setText(System.getProperty("java.version"));
+
+        ((JLabel) Topic.javaRuntime.comp).setText(
+                System.getProperty("java.runtime.name") + " (build " + System.getProperty(
+                "java.runtime.version") + ")");
+
+        ((JLabel) Topic.javaVm.comp).setText(
+                System.getProperty("java.vm.name") + " (build " + System.getProperty(
+                "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")");
+
+        ((JLabel) Topic.os.comp).setText(
+                System.getProperty("os.name") + " " + System.getProperty("os.version"));
+
+        ((JLabel) Topic.osArch.comp).setText(System.getProperty("os.arch"));
+
+        return panel;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer titleFontSize = new Constant.Integer(
+                "Points",
+                14,
+                "Font size for title in about box");
+
+        private final Constant.Integer urlFontSize = new Constant.Integer(
+                "Points",
+                10,
+                "Font size for URL in about box");
+    }
+
     //------------//
     // ImagePanel //
     //------------//
@@ -260,8 +277,8 @@ public class AboutAction
         ImagePanel (Image img)
         {
             this.img = img;
-            Dimension size = new Dimension(1 + img.getWidth(null),
-                                           1 + img.getHeight(null));
+
+            Dimension size = new Dimension(1 + img.getWidth(null), 1 + img.getHeight(null));
             setPreferredSize(size);
             setMinimumSize(size);
             setMaximumSize(size);
@@ -280,23 +297,5 @@ public class AboutAction
         {
             g.drawImage(img, 1, 1, null);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer titleFontSize = new Constant.Integer(
-                "Points",
-                14,
-                "Font size for title in about box");
-
-        private final Constant.Integer urlFontSize = new Constant.Integer(
-                "Points",
-                10,
-                "Font size for URL in about box");
     }
 }

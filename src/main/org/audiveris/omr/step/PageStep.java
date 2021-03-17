@@ -91,6 +91,7 @@ import java.util.Set;
 public class PageStep
         extends AbstractStep
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
 
@@ -177,6 +178,7 @@ public class PageStep
         impactingClasses.addAll(forMeasures);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageStep} object.
      */
@@ -184,6 +186,7 @@ public class PageStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -378,6 +381,7 @@ public class PageStep
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Impact //
     //--------//

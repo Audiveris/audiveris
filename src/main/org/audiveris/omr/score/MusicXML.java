@@ -56,23 +56,16 @@ import javax.xml.bind.JAXBElement;
  */
 public abstract class MusicXML
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MusicXML.class);
 
     /** Names of the various note types used in MusicXML. */
-    private static final String[] noteTypeNames = new String[]{
-        "256th",
-        "128th",
-        "64th",
-        "32nd",
-        "16th",
-        "eighth",
-        "quarter",
-        "half",
-        "whole",
-        "breve",
-        "long"};
+    private static final String[] noteTypeNames = new String[]{"256th", "128th", "64th", "32nd",
+                                                               "16th", "eighth", "quarter", "half",
+                                                               "whole", "breve", "long"};
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -80,6 +73,7 @@ public abstract class MusicXML
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // accidentalTextOf //
     //------------------//
@@ -259,6 +253,7 @@ public abstract class MusicXML
         //
         case DYNAMICS_SF:
             return factory.createDynamicsSf(empty);
+
         //
         //        case DYNAMICS_SFFZ:
         //            return factory.createDynamicsSffz(empty);

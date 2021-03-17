@@ -85,6 +85,7 @@ import java.util.Set;
 public class RhythmsStep
         extends AbstractStep
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RhythmsStep.class);
 
@@ -145,6 +146,7 @@ public class RhythmsStep
         impactingClasses.addAll(forPage);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RhythmsStep} object.
      */
@@ -152,6 +154,7 @@ public class RhythmsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -199,7 +202,7 @@ public class RhythmsStep
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
                             if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
-                                        || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
+                                || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
                                 // Add next stack as well
                                 impact.add(stack.getNextSibling());
                             }
@@ -258,6 +261,7 @@ public class RhythmsStep
         return isImpactedBy(classe, impactingClasses);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Impact //
     //--------//

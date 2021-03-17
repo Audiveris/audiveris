@@ -21,17 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.ui.Colors;
+
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.Task;
+
 import java.awt.BorderLayout;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import org.audiveris.omr.ui.Colors;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.Task;
 
 /**
  * Class {@code WaitingTask} is an application background task that can display a
@@ -51,6 +54,7 @@ import org.jdesktop.application.Task;
 public abstract class WaitingTask<T, V>
         extends Task<T, V>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Timer is used to delay the initial display of the waiting dialog. */
     protected final Timer timer = new Timer();
@@ -58,6 +62,7 @@ public abstract class WaitingTask<T, V>
     /** The waiting dialog to be displayed. */
     protected JDialog dialog;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code WaitingTask} with default dialog title and display delay.
      *
@@ -100,6 +105,7 @@ public abstract class WaitingTask<T, V>
                                 .getString("title");
 
                 dialog = new JDialog(application.getMainFrame(), dialogTitle, false);
+
                 JPanel panel = new JPanel();
                 panel.setLayout(new BorderLayout());
                 panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
@@ -121,6 +127,7 @@ public abstract class WaitingTask<T, V>
         }, delay);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     protected void finished ()
     {

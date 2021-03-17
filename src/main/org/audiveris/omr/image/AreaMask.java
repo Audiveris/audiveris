@@ -35,12 +35,14 @@ import java.awt.geom.Area;
  */
 public class AreaMask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Mask area. */
     private final Area area;
 
     private final Rectangle rect;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AreaMask object.
      *
@@ -52,6 +54,7 @@ public class AreaMask
         rect = area.getBounds();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // apply //
     //-------//
@@ -96,6 +99,7 @@ public class AreaMask
         return apply(new ForeCounter(filter, fore));
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -115,6 +119,7 @@ public class AreaMask
                              int y);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ForeCounter //
     //-------------//

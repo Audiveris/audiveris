@@ -37,6 +37,7 @@ import org.jdesktop.application.Task;
 public abstract class BasicTask<T, V>
         extends Task<T, V>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Audiveris application is injected into this task.

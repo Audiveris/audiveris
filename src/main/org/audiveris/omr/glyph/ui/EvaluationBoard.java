@@ -75,6 +75,7 @@ import javax.swing.SwingConstants;
 public class EvaluationBoard
         extends Board
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -89,6 +90,7 @@ public class EvaluationBoard
     /** Color for hardly recognized glyphs */
     private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph classifier. */
     protected final Classifier classifier;
 
@@ -108,6 +110,7 @@ public class EvaluationBoard
     /** True for active buttons, false for passive fields. */
     protected final boolean isActive;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // EvaluationBoard //
     //-----------------//
@@ -148,6 +151,7 @@ public class EvaluationBoard
         useAnnotations = false; //true;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -287,6 +291,7 @@ public class EvaluationBoard
         return constants.visibleButtons.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Selector //
     //----------//

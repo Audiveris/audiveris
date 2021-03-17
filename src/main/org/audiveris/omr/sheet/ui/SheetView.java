@@ -26,9 +26,9 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetAssembly.ScrollValues;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -97,7 +97,6 @@ public class SheetView
                       BoardsPane boardsPane,
                       ScrollView scrollView)
     {
-
         this.assembly = assembly;
         this.title = title;
         this.boardsPane = boardsPane;
@@ -293,22 +292,24 @@ public class SheetView
 
         // Apply the same scroll bar positions
         final ScrollValues scrollValues = assembly.getScrollValues();
+
         if (scrollValues != null) {
             scrollValues.applyTo(scrollView.getComponent());
         }
-//
-//        // Force update of LocationEvent
-//        if (stub.hasSheet()) {
-//            SelectionService locationService = stub.getSheet().getLocationService();
-//            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-//                    LocationEvent.class);
-//            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
-//
-//            if (location != null) {
-//                locationService.publish(
-//                        new LocationEvent(this, locationEvent.hint, null, location));
-//            }
-//        }
+
+        //
+        //        // Force update of LocationEvent
+        //        if (stub.hasSheet()) {
+        //            SelectionService locationService = stub.getSheet().getLocationService();
+        //            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
+        //                    LocationEvent.class);
+        //            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
+        //
+        //            if (location != null) {
+        //                locationService.publish(
+        //                        new LocationEvent(this, locationEvent.hint, null, location));
+        //            }
+        //        }
     }
 
     //----------//
@@ -355,7 +356,7 @@ public class SheetView
             this.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
 
             final int inset = UIUtil.adjustedSize(6);
-            setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + 2 * inset, 1));
+            setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + (2 * inset), 1));
         }
 
         public void setBoards (JComponent boards)

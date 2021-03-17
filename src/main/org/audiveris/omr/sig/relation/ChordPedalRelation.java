@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordPedalRelation
         extends Support
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //

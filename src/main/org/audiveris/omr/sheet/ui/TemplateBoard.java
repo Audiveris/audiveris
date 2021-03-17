@@ -72,12 +72,14 @@ public class TemplateBoard
         implements ChangeListener // For all spinners
 
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -105,6 +107,7 @@ public class TemplateBoard
     /** Template reference point. */
     private Point refPoint;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TemplateBoard} object.
      *
@@ -144,6 +147,7 @@ public class TemplateBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//

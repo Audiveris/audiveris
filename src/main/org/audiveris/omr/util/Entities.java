@@ -37,6 +37,7 @@ import java.util.List;
  */
 public class Entities
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare Entity instances according to their id. */
     public static final Comparator<Entity> byId = new Comparator<Entity>()
@@ -65,10 +66,12 @@ public class Entities
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     private Entities ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // containedEntities //
     //-------------------//
@@ -233,7 +236,7 @@ public class Entities
         }
 
         for (Entity entity : entities) {
-            if (entity != null && entity.isVip()) {
+            if ((entity != null) && entity.isVip()) {
                 return true;
             }
         }

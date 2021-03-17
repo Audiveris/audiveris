@@ -77,11 +77,13 @@ import java.util.ArrayList;
  */
 public class HeaderBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -101,6 +103,7 @@ public class HeaderBuilder
     /** Manager for column of time signatures. */
     private final HeaderTimeColumn timeColumn;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeaderBuilder object.
      *
@@ -117,6 +120,7 @@ public class HeaderBuilder
         timeColumn = new HeaderTimeColumn(system);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // plot //
     //------//
@@ -320,9 +324,9 @@ public class HeaderBuilder
         }
     }
 
-//------------------//
-// setSystemKeyStop //
-//------------------//
+    //------------------//
+    // setSystemKeyStop //
+    //------------------//
     /**
      * Refine the header end at system level based on key info.
      */
@@ -358,6 +362,7 @@ public class HeaderBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

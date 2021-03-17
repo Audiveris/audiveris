@@ -69,11 +69,13 @@ import javax.imageio.ImageIO;
 public class TargetBuilder
         implements ItemRenderer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TargetBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     @Navigable(false)
     private final Sheet sheet;
@@ -84,7 +86,7 @@ public class TargetBuilder
     /** Target height */
     private double targetHeight;
 
-    /** Transform from initial point to deskewed point */
+    /** Transform from initial point to de-skewed point */
     private AffineTransform at;
 
     /** The target page */
@@ -99,6 +101,7 @@ public class TargetBuilder
     /** Destination points */
     private final List<Point2D> dstPoints = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetBuilder object.
      *
@@ -109,6 +112,7 @@ public class TargetBuilder
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -403,32 +407,7 @@ public class TargetBuilder
         }
     }
 
-    //--------------//
-    // DewarpedView //
-    //--------------//
-    private class DewarpedView
-            extends ImageView
-    {
-
-        DewarpedView (RenderedImage image)
-        {
-            super(image);
-
-            //            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
-            // Location service
-            setLocationService(sheet.getLocationService());
-
-            setName("DewarpedView");
-        }
-
-        @Override
-        protected void renderItems (Graphics2D g)
-        {
-            // Display the Destination Points
-            renderWarpGrid(g, false);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -455,5 +434,31 @@ public class TargetBuilder
         private final Constant.Boolean storeDewarp = new Constant.Boolean(
                 false,
                 "Should we store the dewarped image on disk?");
+    }
+
+    //--------------//
+    // DewarpedView //
+    //--------------//
+    private class DewarpedView
+            extends ImageView
+    {
+
+        DewarpedView (RenderedImage image)
+        {
+            super(image);
+
+            //            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
+            // Location service
+            setLocationService(sheet.getLocationService());
+
+            setName("DewarpedView");
+        }
+
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            // Display the Destination Points
+            renderWarpGrid(g, false);
+        }
     }
 }

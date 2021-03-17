@@ -32,12 +32,14 @@ import org.audiveris.omr.run.Run;
 public class JunctionDeltaPolicy
         implements JunctionPolicy
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * Maximum value acceptable for delta length.
      */
     private final int maxDeltaLength;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an instance of policy based on delta run length.
      *
@@ -49,6 +51,7 @@ public class JunctionDeltaPolicy
         this.maxDeltaLength = maxDeltaLength;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//

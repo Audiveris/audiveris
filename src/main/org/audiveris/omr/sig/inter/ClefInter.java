@@ -55,6 +55,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClefInter
         extends AbstractPitchedInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClefInter.class);
 
@@ -67,10 +68,38 @@ public class ClefInter
             +2.0,
             ClefKind.TREBLE);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Clef kind, based on shape and pitch.
+     */
+    public static enum ClefKind
+    {
+        TREBLE(Shape.G_CLEF, 2),
+        BASS(Shape.F_CLEF, -2),
+        ALTO(Shape.C_CLEF, 0),
+        TENOR(Shape.C_CLEF, -2),
+        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
+
+        /** Symbol shape class. (regardless of ottava mark if any) */
+        public final Shape shape;
+
+        /** Pitch of reference line. */
+        public final int pitch;
+
+        ClefKind (Shape shape,
+                  int pitch)
+        {
+            this.shape = shape;
+            this.pitch = pitch;
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Kind of the clef. */
     @XmlAttribute
     private ClefKind kind;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a <b>ghost</b> ClefInter object.
      *
@@ -112,6 +141,7 @@ public class ClefInter
         super(null, null, null, (Double) null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // absolutePitchOf //
     //-----------------//
@@ -236,7 +266,7 @@ public class ClefInter
             return 34 - intPitch;
 
         case G_CLEF_8VA:
-            return 34 + 7 - intPitch;
+            return (34 + 7) - intPitch;
 
         case G_CLEF_8VB:
             return 34 - 7 - intPitch;
@@ -252,7 +282,7 @@ public class ClefInter
             return 22 - intPitch;
 
         case F_CLEF_8VA:
-            return 22 + 7 - intPitch;
+            return (22 + 7) - intPitch;
 
         case F_CLEF_8VB:
             return 22 - 7 - intPitch;
@@ -287,10 +317,9 @@ public class ClefInter
             return HeadInter.Step.values()[(71 - pitch) % 7];
 
         case C_CLEF:
-
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return HeadInter.Step.values()[(72 + (int) Math.rint(this.pitch) - pitch) % 7];
+            return HeadInter.Step.values()[((72 + (int) Math.rint(this.pitch)) - pitch) % 7];
 
         case F_CLEF:
         case F_CLEF_SMALL:
@@ -334,10 +363,9 @@ public class ClefInter
             return ((34 - intPitch) / 7) - 1;
 
         case C_CLEF:
-
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return (28 + (int) Math.rint(this.pitch) - intPitch) / 7;
+            return ((28 + (int) Math.rint(this.pitch)) - intPitch) / 7;
 
         case F_CLEF:
         case F_CLEF_SMALL:
@@ -530,31 +558,6 @@ public class ClefInter
             return defaultClef.octaveOf(pitch);
         } else {
             return clef.octaveOf(pitch);
-        }
-    }
-
-    /**
-     * Clef kind, based on shape and pitch.
-     */
-    public static enum ClefKind
-    {
-        TREBLE(Shape.G_CLEF, 2),
-        BASS(Shape.F_CLEF, -2),
-        ALTO(Shape.C_CLEF, 0),
-        TENOR(Shape.C_CLEF, -2),
-        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
-
-        /** Symbol shape class. (regardless of ottava mark if any) */
-        public final Shape shape;
-
-        /** Pitch of reference line. */
-        public final int pitch;
-
-        ClefKind (Shape shape,
-                  int pitch)
-        {
-            this.shape = shape;
-            this.pitch = pitch;
         }
     }
 }

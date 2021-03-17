@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarConnectorInter
         extends AbstractVerticalConnectorInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code BarConnectorInter} object.
@@ -78,6 +79,7 @@ public class BarConnectorInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

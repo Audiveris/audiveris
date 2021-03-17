@@ -56,18 +56,21 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "TablatureAreas")
 public class TablatureAreas
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TablatureAreas.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //
     @XmlElement(name = "Area")
     @XmlJavaTypeAdapter(RectangleAdapter.class)
     public ArrayList<Rectangle> areas = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TablatureAreas} object.
      *
@@ -85,6 +88,7 @@ public class TablatureAreas
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // marshall //
     //----------//
@@ -147,6 +151,7 @@ public class TablatureAreas
         return jaxbContext;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // RectangleAdapter //
     //------------------//

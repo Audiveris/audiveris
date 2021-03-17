@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Run
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel. */
     @XmlAttribute
@@ -44,6 +45,7 @@ public class Run
     @XmlAttribute
     protected int length;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Run} instance.
      *
@@ -74,6 +76,7 @@ public class Run
         this(0, 0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLength //
     //-----------//
@@ -192,5 +195,4 @@ public class Run
 
         return sb.toString();
     }
-
 }

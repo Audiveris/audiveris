@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import java.awt.geom.Line2D;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Dumping.Relevance;
 
+import java.awt.geom.Line2D;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -78,12 +78,14 @@ import java.util.Map;
  */
 public class Dumper
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     /** Maximum number of collection items printed */
     private static final int MAX_COLLECTION_INDEX = 9;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** To filter classes and fields */
     protected final Relevance relevance;
 
@@ -107,6 +109,7 @@ public class Dumper
      */
     protected Class<?> classe;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Dumper.
      *
@@ -129,6 +132,7 @@ public class Dumper
         classe = object.getClass();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -330,6 +334,7 @@ public class Dumper
         } while (relevance.isClassRelevant(classe));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
     //--------//
@@ -432,11 +437,10 @@ public class Dumper
             // Style
             final String name = constants.fontName.getValue();
             final int size = UIUtil.adjustedSize(constants.fontSize.getValue());
-            sb.append("<style> td {")
-                    .append(" font-family: ").append(name).append(", Verdana, sans-serif;")
-                    .append(" font-size: ").append(size).append("px;")
-                    .append(" font-style: normal;")
-                    .append("} </style>");
+            sb.append("<style> td {").append(" font-family: ").append(name).append(
+                    ", Verdana, sans-serif;").append(" font-size: ").append(size).append("px;")
+                    .append(
+                            " font-style: normal;").append("} </style>");
 
             // Table begin
             sb.append("<table border=0 cellpadding=3>");
@@ -455,9 +459,8 @@ public class Dumper
         protected void printClassProlog ()
         {
             // Class name
-            sb.append("<tr><td colspan=2><font color='BLUE'>")
-                    .append(classe.getName())
-                    .append("</font></td></tr>");
+            sb.append("<tr><td colspan=2><font color='BLUE'>").append(classe.getName()).append(
+                    "</font></td></tr>");
         }
 
         @Override

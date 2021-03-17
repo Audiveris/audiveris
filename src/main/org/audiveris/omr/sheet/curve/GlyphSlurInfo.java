@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.curve;
 
 import ij.process.ByteProcessor;
+
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.CubicUtil;
 import org.audiveris.omr.math.LineUtil;
@@ -29,6 +30,7 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.run.RunTableFactory;
 
 import java.awt.Point;
 import java.awt.geom.CubicCurve2D;
@@ -38,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.audiveris.omr.run.RunTableFactory;
 
 /**
  * Class {@code GlyphSlurInfo} is a degenerated {@link SlurInfo}, meant for a manual
@@ -49,6 +50,7 @@ import org.audiveris.omr.run.RunTableFactory;
 public class GlyphSlurInfo
         extends SlurInfo
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     private GlyphSlurInfo (Glyph glyph,
                            List<Point> keyPoints)
@@ -57,6 +59,7 @@ public class GlyphSlurInfo
         this.glyph = glyph;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getCurve //
     //----------//
@@ -106,6 +109,7 @@ public class GlyphSlurInfo
         return info;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // KeyPointsBuilder //
     //------------------//

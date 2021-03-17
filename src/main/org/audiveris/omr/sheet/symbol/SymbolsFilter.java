@@ -81,6 +81,7 @@ import java.util.Set;
  */
 public class SymbolsFilter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -89,9 +90,11 @@ public class SymbolsFilter
     /** Orientation chosen for symbol runs. */
     public static final Orientation SYMBOL_ORIENTATION = Orientation.VERTICAL;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsFilter object.
      *
@@ -102,6 +105,7 @@ public class SymbolsFilter
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -196,56 +200,7 @@ public class SymbolsFilter
         }
     }
 
-    //--------//
-    // MyView //
-    //--------//
-    /**
-     * View dedicated to symbols.
-     */
-    private class MyView
-            extends ImageView
-    {
-
-        // All optional glyphs. */
-        private final Set<Glyph> optionals;
-
-        MyView (BufferedImage image,
-                Map<SystemInfo, List<Glyph>> optionalMap)
-        {
-            super(image);
-
-            optionals = new LinkedHashSet<>();
-
-            for (List<Glyph> glyphs : optionalMap.values()) {
-                optionals.addAll(glyphs);
-            }
-        }
-
-        @Override
-        protected void renderItems (Graphics2D g)
-        {
-            final Rectangle clip = g.getClipBounds();
-
-            // Good inters are erased and not taken into account for symbols
-            // Weak ones are temporarily erased and used as optional glyphs for symbols
-            Color oldColor = g.getColor();
-            g.setColor(Color.GREEN);
-
-            for (Glyph glyph : optionals) {
-                final Rectangle box = glyph.getBounds();
-
-                if (box.intersects(clip)) {
-                    glyph.getRunTable().render(g, box.getLocation());
-                }
-            }
-
-            g.setColor(oldColor);
-
-            // Global sheet renderers
-            sheet.renderItems(g);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -521,6 +476,56 @@ public class SymbolsFilter
                     GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
+        }
+    }
+
+    //--------//
+    // MyView //
+    //--------//
+    /**
+     * View dedicated to symbols.
+     */
+    private class MyView
+            extends ImageView
+    {
+
+        // All optional glyphs. */
+        private final Set<Glyph> optionals;
+
+        MyView (BufferedImage image,
+                Map<SystemInfo, List<Glyph>> optionalMap)
+        {
+            super(image);
+
+            optionals = new LinkedHashSet<>();
+
+            for (List<Glyph> glyphs : optionalMap.values()) {
+                optionals.addAll(glyphs);
+            }
+        }
+
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            final Rectangle clip = g.getClipBounds();
+
+            // Good inters are erased and not taken into account for symbols
+            // Weak ones are temporarily erased and used as optional glyphs for symbols
+            Color oldColor = g.getColor();
+            g.setColor(Color.GREEN);
+
+            for (Glyph glyph : optionals) {
+                final Rectangle box = glyph.getBounds();
+
+                if (box.intersects(clip)) {
+                    glyph.getRunTable().render(g, box.getLocation());
+                }
+            }
+
+            g.setColor(oldColor);
+
+            // Global sheet renderers
+            sheet.renderItems(g);
         }
     }
 }

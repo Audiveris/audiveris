@@ -60,6 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TesseractOCR
         implements OCR
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -72,6 +73,7 @@ public class TesseractOCR
     private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
                                                          + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The folder where Tesseract OCR material is stored. */
     private Path OCR_FOLDER;
 
@@ -81,6 +83,7 @@ public class TesseractOCR
     /** To assign a serial number to each image processing order. */
     private final AtomicInteger serial = new AtomicInteger(0);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates the TesseractOCR singleton.
      */
@@ -88,6 +91,7 @@ public class TesseractOCR
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getLanguages //
     //--------------//
@@ -262,10 +266,9 @@ public class TesseractOCR
             return scanOcrLocations(linuxOcrLocations);
         } else if (WellKnowns.MAC_OS_X) {
             // Scan common Macintosh TESSDATA locations
-            final String[] macOcrLocations = {
-                "/opt/local/share", // Macports
-                "/usr/local/opt/tesseract/share" // Homebrew
-            };
+            final String[] macOcrLocations = {"/opt/local/share", // Macports
+                                              "/usr/local/opt/tesseract/share" // Homebrew
+        };
 
             return scanOcrLocations(macOcrLocations);
         }
@@ -336,15 +339,7 @@ public class TesseractOCR
         return constants.minConfidence.getValue();
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final TesseractOCR INSTANCE = new TesseractOCR();
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -359,15 +354,24 @@ public class TesseractOCR
         private final Constant.Boolean keepImages = new Constant.Boolean(
                 false,
                 "Should we keep the images sent to Tesseract?");
-//
-//        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
-//                1.0,
-//                "Maximum width for a dash character");
-//
 
+        //
+        //        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
+        //                1.0,
+        //                "Maximum width for a dash character");
+        //
         private final Constant.Double minConfidence = new Constant.Double(
                 "0..1",
                 0.65,
                 "Minimum confidence for OCR validity");
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final TesseractOCR INSTANCE = new TesseractOCR();
     }
 }

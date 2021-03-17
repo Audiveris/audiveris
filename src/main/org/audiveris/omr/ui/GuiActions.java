@@ -62,13 +62,15 @@ import java.nio.file.Path;
 public class GuiActions
         extends AbstractBean
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GuiActions.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(GuiActions.class);
+            .getResourceMap(
+                    GuiActions.class);
 
     /** Options UI. */
     private static Options options;
@@ -76,6 +78,7 @@ public class GuiActions
     /** Create this action just once. */
     private static volatile AboutAction aboutAction;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // browseGlobalSamples //
     //---------------------//
@@ -95,7 +98,6 @@ public class GuiActions
             {
                 return SampleBrowser.getInstance();
             }
-
         };
     }
 
@@ -256,16 +258,7 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage(
-                "Launching trainer...",
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                Trainer.launch();
-            }
-        });
+        CursorController.launchWithDelayedMessage("Launching trainer...", () -> Trainer.launch());
     }
 
     //-------------------//
@@ -390,15 +383,7 @@ public class GuiActions
         return LazySingleton.INSTANCE;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final GuiActions INSTANCE = new GuiActions();
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // CheckUpdateTask //
     //-----------------//
@@ -411,6 +396,7 @@ public class GuiActions
                 throws Exception
         {
             Versions.poll(true /* manual */);
+
             return null;
         }
     }
@@ -430,9 +416,19 @@ public class GuiActions
                 "https://github.com/Audiveris/audiveris/wiki",
                 "URL of Audiveris wiki");
 
-        private final Constant.String manualUrl = new Constant.String( //"docs/manual/handbook.html",
+        private final Constant.String manualUrl = new Constant.String(
+                //"docs/manual/handbook.html",
                 "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
                 "URL of Audiveris manual");
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final GuiActions INSTANCE = new GuiActions();
     }
 
     //-------------//

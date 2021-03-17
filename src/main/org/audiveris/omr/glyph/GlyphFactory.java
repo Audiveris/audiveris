@@ -57,9 +57,11 @@ import java.util.Map.Entry;
  */
 public class GlyphFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Source runs. */
     private final RunTable runTable;
 
@@ -84,6 +86,7 @@ public class GlyphFactory
     /** Most efficient way to use merging information. */
     private int[] lut;
 
+    //~ Constructors -------------------------------------------------------------------------------
     private GlyphFactory (RunTable runTable,
                           Point offset,
                           GlyphGroup group)
@@ -100,6 +103,7 @@ public class GlyphFactory
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Build all the ancestor glyphs from the markedTable.
      */
@@ -382,6 +386,7 @@ public class GlyphFactory
         return new GlyphFactory(runTable, offset, group).process();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Sequence //
     //----------//

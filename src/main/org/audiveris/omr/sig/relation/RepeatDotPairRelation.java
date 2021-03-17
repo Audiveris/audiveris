@@ -40,9 +40,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotPairRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -110,6 +112,7 @@ public class RepeatDotPairRelation
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

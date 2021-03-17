@@ -37,10 +37,12 @@ import java.awt.geom.Point2D;
 public class TextSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The text string to use. */
     private final String str;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an TextSymbol
      *
@@ -68,6 +70,7 @@ public class TextSymbol
         this.str = str;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -104,6 +107,7 @@ public class TextSymbol
         TextFont textFont = new TextFont(fontSize);
         p.layout = textFont.layout(str);
         p.rect = p.layout.getBounds();
+
         Point2D baseLoc = new Point2D.Double(0, 0);
         FontInfo fontInfo = FontInfo.createDefault(fontSize);
 
@@ -112,6 +116,7 @@ public class TextSymbol
         return p;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

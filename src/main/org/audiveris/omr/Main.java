@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr;
 
-import java.util.ArrayList;
 import org.audiveris.omr.CLI.CliTask;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
@@ -43,6 +42,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -60,8 +60,8 @@ import java.util.concurrent.Future;
  */
 public class Main
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    // Don't move this statement!
     static {
         // We need class WellKnowns to be elaborated before anything else
         WellKnowns.ensureLoaded();
@@ -74,10 +74,12 @@ public class Main
     /** CLI parameters. */
     private static CLI cli;
 
+    //~ Constructors -------------------------------------------------------------------------------
     private Main ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // getCli //
     //--------//
@@ -414,6 +416,7 @@ public class Main
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

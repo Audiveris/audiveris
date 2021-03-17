@@ -36,9 +36,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordSentenceRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -65,6 +67,7 @@ public class ChordSentenceRelation
         return constants.xGapMax;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -32,8 +32,8 @@ import org.audiveris.omr.glyph.Shape;
 public class KeyCancelSymbol
         extends KeySymbol
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new {@code KeyCancelSymbol} object
      *

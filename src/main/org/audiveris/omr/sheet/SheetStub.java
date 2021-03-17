@@ -34,10 +34,10 @@ import org.audiveris.omr.sheet.Picture.TableKey;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.Jaxb;
@@ -45,10 +45,10 @@ import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
-import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -154,11 +153,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SheetStub
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -224,6 +226,7 @@ public class SheetStub
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetStub} object.
      *
@@ -246,6 +249,7 @@ public class SheetStub
         this.number = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addPageRef //
     //------------//
@@ -620,13 +624,14 @@ public class SheetStub
         if (sh == null) {
             synchronized (this) {
                 sh = this.sheet;
+
                 // We have to recheck sheet, which may have just been allocated
                 if (sh == null) {
                     // Actually load the sheet
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
                         try {
-                            this.sheet = sh = new Sheet(this, (BufferedImage) null, false);
+                            this.sheet = sh = new Sheet(this, null, false);
                         } catch (StepException ignored) {
                             logger.info("Could not load sheet for stub {}", this);
                         }
@@ -788,17 +793,12 @@ public class SheetStub
         this.upgraded = upgraded;
 
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    final StubsController controller = StubsController.getInstance();
-                    final SheetStub stub = controller.getSelectedStub();
+            SwingUtilities.invokeLater(() -> {
+                final StubsController controller = StubsController.getInstance();
+                final SheetStub stub = controller.getSelectedStub();
 
-                    if ((stub == SheetStub.this)) {
-                        controller.refresh();
-                    }
+                if ((stub == SheetStub.this)) {
+                    controller.refresh();
                 }
             });
         }
@@ -1040,14 +1040,8 @@ public class SheetStub
     {
         if (OMR.gui != null) {
             try {
-                Runnable runnable = new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        StubsController.getInstance().display(SheetStub.this, false);
-                    }
-                };
+                Runnable runnable = () -> StubsController.getInstance().display(
+                        SheetStub.this, false);
 
                 if (SwingUtilities.isEventDispatchThread()) {
                     runnable.run();
@@ -1113,19 +1107,14 @@ public class SheetStub
             }
 
             if (OMR.gui != null) {
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        // Gray out the related tab
-                        StubsController ctrl = StubsController.getInstance();
-                        ctrl.markTab(SheetStub.this, Colors.SHEET_NOT_LOADED);
+                SwingUtilities.invokeLater(() -> {
+                    // Gray out the related tab
+                    StubsController ctrl = StubsController.getInstance();
+                    ctrl.markTab(SheetStub.this, Colors.SHEET_NOT_LOADED);
 
-                        // Close stub UI, if any
-                        if (assembly != null) {
-                            assembly.reset();
-                        }
+                    // Close stub UI, if any
+                    if (assembly != null) {
+                        assembly.reset();
                     }
                 });
             }
@@ -1215,34 +1204,28 @@ public class SheetStub
             }
 
             // Implement a timeout for this step on the stub
-            future = OmrExecutors.getCachedLowExecutor().submit(new Callable<Void>()
-            {
-                @Override
-                public Void call ()
-                        throws Exception
-                {
-                    LogUtil.start(SheetStub.this);
+            future = OmrExecutors.getCachedLowExecutor().submit(() -> {
+                LogUtil.start(SheetStub.this);
+
+                try {
+                    setCurrentStep(step);
+                    setModified(true); // At beginning of processing
+                    sheet.reset(step); // Reset sheet relevant data
 
                     try {
-                        setCurrentStep(step);
-                        setModified(true); // At beginning of processing
-                        sheet.reset(step); // Reset sheet relevant data
-
-                        try {
-                            step.doit(sheet); // Standard processing on an existing sheet
-                            done(step); // Full completion
-                            StepMonitoring.notifyStep(SheetStub.this, step);
-                        } catch (StepPause sp) {
-                            done(step);
-                            StepMonitoring.notifyStep(SheetStub.this, step);
-                            throw sp;
-                        }
-                    } finally {
-                        LogUtil.stopStub();
+                        step.doit(sheet); // Standard processing on an existing sheet
+                        done(step); // Full completion
+                        StepMonitoring.notifyStep(SheetStub.this, step);
+                    } catch (StepPause sp) {
+                        done(step);
+                        StepMonitoring.notifyStep(SheetStub.this, step);
+                        throw sp;
                     }
-
-                    return null;
+                } finally {
+                    LogUtil.stopStub();
                 }
+
+                return null;
             });
 
             future.get(timeout, TimeUnit.SECONDS);
@@ -1361,6 +1344,7 @@ public class SheetStub
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

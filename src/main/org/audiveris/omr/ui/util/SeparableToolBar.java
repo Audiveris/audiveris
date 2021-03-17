@@ -37,6 +37,7 @@ import javax.swing.JToolBar;
 public class SeparableToolBar
         extends JToolBar
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -47,6 +48,7 @@ public class SeparableToolBar
             constants.separatorWidth.getValue(),
             constants.separatorWidth.getValue());
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SeparableToolBar object.
      */
@@ -87,6 +89,7 @@ public class SeparableToolBar
         super(name, orientation);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//
@@ -120,6 +123,7 @@ public class SeparableToolBar
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

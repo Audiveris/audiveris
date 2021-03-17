@@ -40,18 +40,22 @@ import java.io.IOException;
  */
 public abstract class PoorManAlgebra
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PoorManAlgebra.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     private PoorManAlgebra ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     private static String format (double val)
     {
         return String.format("%.2f", val);
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //----------//
     // INDArray //
     //----------//
@@ -130,6 +134,7 @@ public abstract class PoorManAlgebra
         INDArray subiRowVector (INDArray rowVector);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // DataSet //
     //---------//
@@ -168,6 +173,10 @@ public abstract class PoorManAlgebra
     {
 
         public static final double EPS_THRESHOLD = 1e-5;
+
+        private Nd4j ()
+        {
+        }
 
         /**
          * Create an INDArray based on the given data layout
@@ -228,12 +237,11 @@ public abstract class PoorManAlgebra
         {
             throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.write() not supported.");
         }
-
-        private Nd4j ()
-        {
-        }
     }
 
+    //--------//
+    // Matrix //
+    //--------//
     private static class Matrix
             implements INDArray
     {
@@ -397,6 +405,9 @@ public abstract class PoorManAlgebra
         }
     }
 
+    //--------//
+    // Scalar //
+    //--------//
     private static class Scalar
             implements INDArray
     {
@@ -475,6 +486,9 @@ public abstract class PoorManAlgebra
         }
     }
 
+    //--------//
+    // Vector //
+    //--------//
     private static class Vector
             implements INDArray
     {
@@ -593,5 +607,4 @@ public abstract class PoorManAlgebra
             return sb.toString();
         }
     }
-
 }

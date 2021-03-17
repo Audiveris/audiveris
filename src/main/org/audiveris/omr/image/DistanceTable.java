@@ -40,6 +40,7 @@ import java.util.Arrays;
 public interface DistanceTable
         extends Table
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report an image built with distance data.
@@ -56,6 +57,105 @@ public interface DistanceTable
      * @return the normalizing value
      */
     int getNormalizer ();
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Integer //
+    //---------//
+    public static class Integer
+            extends Abstract
+    {
+
+        private final Table.Integer table;
+
+        public Integer (int width,
+                        int height,
+                        int normalizer)
+        {
+            super(normalizer);
+            table = new Table.Integer(width, height);
+        }
+
+        protected Integer (Table.Integer table,
+                           int normalizer)
+        {
+            super(normalizer);
+            this.table = table;
+        }
+
+        @Override
+        public DistanceTable.Integer getCopy (Rectangle roi)
+        {
+            return new DistanceTable.Integer(table.getCopy(roi), normalizer);
+        }
+
+        @Override
+        public DistanceTable.Integer getView (Rectangle roi)
+        {
+            return new DistanceTable.Integer(table.getView(roi), normalizer);
+        }
+
+        @Override
+        public void dump (String title)
+        {
+            table.dump(title);
+        }
+
+        @Override
+        protected final Table getTable ()
+        {
+            return table;
+        }
+    }
+
+    //-------//
+    // Short //
+    //-------//
+    public static class Short
+            extends Abstract
+    {
+
+        private final Table.Short table;
+
+        public Short (int width,
+                      int height,
+                      int normalizer)
+        {
+            super(normalizer);
+            table = new Table.Short(width, height);
+        }
+
+        protected Short (Table.Short table,
+                         int normalizer)
+        {
+            super(normalizer);
+            this.table = table;
+        }
+
+        @Override
+        public DistanceTable.Short getCopy (Rectangle roi)
+        {
+            return new DistanceTable.Short(table.getCopy(roi), normalizer);
+        }
+
+        @Override
+        public DistanceTable.Short getView (Rectangle roi)
+        {
+            return new DistanceTable.Short(table.getView(roi), normalizer);
+        }
+
+        @Override
+        public void dump (String title)
+        {
+            table.dump(title);
+        }
+
+        @Override
+        protected final Table getTable ()
+        {
+            return table;
+        }
+    }
 
     //----------//
     // Abstract //
@@ -181,104 +281,6 @@ public interface DistanceTable
             }
 
             return lut;
-        }
-    }
-
-    //---------//
-    // Integer //
-    //---------//
-    public static class Integer
-            extends Abstract
-    {
-
-        private final Table.Integer table;
-
-        public Integer (int width,
-                        int height,
-                        int normalizer)
-        {
-            super(normalizer);
-            table = new Table.Integer(width, height);
-        }
-
-        protected Integer (Table.Integer table,
-                           int normalizer)
-        {
-            super(normalizer);
-            this.table = table;
-        }
-
-        @Override
-        public DistanceTable.Integer getCopy (Rectangle roi)
-        {
-            return new DistanceTable.Integer(table.getCopy(roi), normalizer);
-        }
-
-        @Override
-        public DistanceTable.Integer getView (Rectangle roi)
-        {
-            return new DistanceTable.Integer(table.getView(roi), normalizer);
-        }
-
-        @Override
-        public void dump (String title)
-        {
-            table.dump(title);
-        }
-
-        @Override
-        protected final Table getTable ()
-        {
-            return table;
-        }
-    }
-
-    //-------//
-    // Short //
-    //-------//
-    public static class Short
-            extends Abstract
-    {
-
-        private final Table.Short table;
-
-        public Short (int width,
-                      int height,
-                      int normalizer)
-        {
-            super(normalizer);
-            table = new Table.Short(width, height);
-        }
-
-        protected Short (Table.Short table,
-                         int normalizer)
-        {
-            super(normalizer);
-            this.table = table;
-        }
-
-        @Override
-        public DistanceTable.Short getCopy (Rectangle roi)
-        {
-            return new DistanceTable.Short(table.getCopy(roi), normalizer);
-        }
-
-        @Override
-        public DistanceTable.Short getView (Rectangle roi)
-        {
-            return new DistanceTable.Short(table.getView(roi), normalizer);
-        }
-
-        @Override
-        public void dump (String title)
-        {
-            table.dump(title);
-        }
-
-        @Override
-        protected final Table getTable ()
-        {
-            return table;
         }
     }
 }

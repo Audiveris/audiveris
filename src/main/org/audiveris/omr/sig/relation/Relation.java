@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class Relation
         implements Cloneable
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
     //----------------
@@ -55,6 +56,7 @@ public abstract class Relation
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean manual;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//

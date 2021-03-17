@@ -43,6 +43,7 @@ import java.util.Arrays;
 public class LagController
         extends GlyphsController
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying lag. */
     private final Lag lag;
@@ -53,6 +54,7 @@ public class LagController
     /** Related user display if any */
     private MyView view;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagController} object.
      *
@@ -69,6 +71,7 @@ public class LagController
         this.tab = tab;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -101,6 +104,7 @@ public class LagController
                         new SymbolGlyphBoard(this, true)));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//

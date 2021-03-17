@@ -27,11 +27,13 @@ import java.io.IOException;
 public class LoggingStream
         extends ByteArrayOutputStream
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final Logger logger;
 
     private final Level level;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor
      *
@@ -46,6 +48,7 @@ public class LoggingStream
         this.level = level;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Upon flush(), write the existing contents of the OutputStream to
      * the logger as a log record.

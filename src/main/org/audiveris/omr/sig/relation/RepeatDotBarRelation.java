@@ -44,15 +44,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotBarRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RepeatDotBarRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{
-        constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -150,6 +151,7 @@ public class RepeatDotBarRelation
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -166,18 +168,14 @@ public class RepeatDotBarRelation
                 "Maximum horizontal gap between dot center & barline reference point");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                2.2,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(2.2, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between dot center & barline reference point");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                0.75,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(0.75, "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 3,

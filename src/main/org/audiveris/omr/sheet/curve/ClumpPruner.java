@@ -61,15 +61,18 @@ import java.util.Set;
  */
 public class ClumpPruner
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClumpLinker.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     @Navigable(false)
     private final Sheet sheet;
 
     /** The engine which selects the best link pair for a given slur. */
     private final SlurLinker slurLinker;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlursLinker object.
      *
@@ -82,6 +85,7 @@ public class ClumpPruner
         slurLinker = new SlurLinker(sheet);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // prune //
     //-------//
@@ -223,6 +227,68 @@ public class ClumpPruner
         Inter mirror = head.getMirror();
         Objects.requireNonNull(mirror, "switchMirrorHead needs a non-null mirror"); // Safer
         link.partner = mirror;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // SlurEntry //
+    //-----------//
+    /**
+     * Class {@code SlurEntry} handles link data for a slur.
+     */
+    private static class SlurEntry
+    {
+
+        public static Comparator<SlurEntry> byWeightedDist = (SlurEntry s1, SlurEntry s2)
+                -> Double.compare(s1.weightedDist(), s2.weightedDist());
+
+        /** The slur concerned. */
+        public final SlurInter slur;
+
+        /** The two best head links (left and right). */
+        public final Map<HorizontalSide, SlurHeadLink> links;
+
+        SlurEntry (SlurInter slur,
+                   Map<HorizontalSide, SlurHeadLink> links)
+        {
+            this.slur = slur;
+            this.links = links;
+        }
+
+        /**
+         * Compute the mean euclidian-distance of this entry
+         *
+         * @return means euclidian distance
+         */
+        public double meanEuclidianDist ()
+        {
+            double dist = 0;
+            int n = 0;
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                SlurHeadLink link = links.get(side);
+
+                if (link != null) {
+                    dist += ((SlurHeadRelation) link.relation).getEuclidean();
+                    n++;
+                }
+            }
+
+            return dist / n;
+        }
+
+        /**
+         * Temper raw euclidean distance with the slur length.
+         *
+         * @return a more valuable measurement of link quality
+         */
+        public double weightedDist ()
+        {
+            final double dist = meanEuclidianDist();
+            final int nbPoints = slur.getInfo().getPoints().size();
+
+            return dist / nbPoints;
+        }
     }
 
     //-------------//
@@ -438,74 +504,6 @@ public class ClumpPruner
             }
 
             return bestEntry;
-        }
-    }
-
-    //-----------//
-    // SlurEntry //
-    //-----------//
-    /**
-     * Class {@code SlurEntry} handles link data for a slur.
-     */
-    private static class SlurEntry
-    {
-
-        public static Comparator<SlurEntry> byWeightedDist = new Comparator<SlurEntry>()
-        {
-            @Override
-            public int compare (SlurEntry s1,
-                                SlurEntry s2)
-            {
-                return Double.compare(s1.weightedDist(), s2.weightedDist());
-            }
-        };
-
-        /** The slur concerned. */
-        public final SlurInter slur;
-
-        /** The two best head links (left and right). */
-        public final Map<HorizontalSide, SlurHeadLink> links;
-
-        SlurEntry (SlurInter slur,
-                   Map<HorizontalSide, SlurHeadLink> links)
-        {
-            this.slur = slur;
-            this.links = links;
-        }
-
-        /**
-         * Compute the mean euclidian-distance of this entry
-         *
-         * @return means euclidian distance
-         */
-        public double meanEuclidianDist ()
-        {
-            double dist = 0;
-            int n = 0;
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                SlurHeadLink link = links.get(side);
-
-                if (link != null) {
-                    dist += ((SlurHeadRelation) link.relation).getEuclidean();
-                    n++;
-                }
-            }
-
-            return dist / n;
-        }
-
-        /**
-         * Temper raw euclidean distance with the slur length.
-         *
-         * @return a more valuable measurement of link quality
-         */
-        public double weightedDist ()
-        {
-            final double dist = meanEuclidianDist();
-            final int nbPoints = slur.getInfo().getPoints().size();
-
-            return dist / nbPoints;
         }
     }
 }

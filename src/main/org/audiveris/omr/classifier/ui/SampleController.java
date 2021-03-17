@@ -57,15 +57,18 @@ import javax.swing.JPopupMenu;
 public class SampleController
         extends GlyphsController
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final SampleRepository repository;
 
     private final ApplicationAction removeAction;
 
     private final AssignAction assignAction;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleController} object.
      *
@@ -81,6 +84,7 @@ public class SampleController
         assignAction = new AssignAction();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Assign a new shape to a sample.
      *
@@ -94,9 +98,14 @@ public class SampleController
         final SampleSheet sampleSheet = repository.getSampleSheet(sample);
 
         // Add new sample
-        Sample newSample = new Sample(sample.getLeft(), sample.getTop(), sample.getRunTable(),
-                                      sample.getInterline(), sample.getId(), newShape, sample
-                                      .getPitch());
+        Sample newSample = new Sample(
+                sample.getLeft(),
+                sample.getTop(),
+                sample.getRunTable(),
+                sample.getInterline(),
+                sample.getId(),
+                newShape,
+                sample.getPitch());
         sampleModel.addSample(newSample, sampleSheet);
 
         // Remove old sample
@@ -166,6 +175,7 @@ public class SampleController
         SampleController.this.removeSample(sample);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AssignAction //
     //--------------//

@@ -82,6 +82,7 @@ public enum Shape
      * won't detect this and you'll have to retrain them on your own.
      * =============================================================================================
      */
+
     //
     // Sets ---
     //
@@ -336,7 +337,7 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur above or below notes"), // Kept for compatibility with old .omr files
+    SLUR("Slur above or below notes"),
     SLUR_ABOVE("Slur above notes"),
     SLUR_BELOW("Slur below notes"),
 
@@ -429,15 +430,8 @@ public enum Shape
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
     /** A comparator based on shape name. */
-    public static final Comparator<Shape> alphaComparator = new Comparator<Shape>()
-    {
-        @Override
-        public int compare (Shape o1,
-                            Shape o2)
-        {
-            return o1.name().compareTo(o2.name());
-        }
-    };
+    public static final Comparator<Shape> alphaComparator = (Shape o1, Shape o2)
+            -> o1.name().compareTo(o2.name());
 
     /** Explanation of the glyph shape. */
     private final String description;

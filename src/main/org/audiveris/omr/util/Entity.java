@@ -33,6 +33,7 @@ import java.awt.Rectangle;
 public interface Entity
         extends Vip
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Tell whether the entity contains the provided point.

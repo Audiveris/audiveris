@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 public class ScreenPoint
         extends Point
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ScreenPoint object, from provided coordinates.
@@ -61,6 +62,7 @@ public class ScreenPoint
         SwingUtilities.convertPointToScreen(this, component);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getLocalPoint //
     //---------------//

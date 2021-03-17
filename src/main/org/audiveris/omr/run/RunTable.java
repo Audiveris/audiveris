@@ -25,8 +25,8 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.image.PixelSource;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
-import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.moments.ARTMoments;
 import org.audiveris.omr.moments.BasicARTExtractor;
 import org.audiveris.omr.moments.BasicARTMoments;
@@ -103,12 +103,14 @@ import javax.xml.stream.XMLStreamException;
 public class RunTable
         implements Cloneable, PixelSource, Oriented
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTable.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Orientation, the same for this table and all contained runs. */
@@ -135,6 +137,7 @@ public class RunTable
     /** Cached total weight. */
     private Integer weight;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunTable object.
      *
@@ -166,6 +169,7 @@ public class RunTable
         this.sequences = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // addRun //
     //--------//
@@ -1328,9 +1332,9 @@ public class RunTable
 
         if (orientation == HORIZONTAL) {
             final int minSeq = (clip != null) ? Math.max(clip.y - offset.y, 0) : 0;
-            final int maxSeq = (clip != null) ? (Math.min(
-                    ((clip.y + clip.height) - offset.y),
-                    height) - 1) : (height - 1);
+            final int maxSeq = (clip != null)
+                    ? (Math.min(((clip.y + clip.height) - offset.y), height) - 1)
+                    : (height - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1340,8 +1344,8 @@ public class RunTable
             }
         } else {
             final int minSeq = (clip != null) ? Math.max(clip.x - offset.x, 0) : 0;
-            final int maxSeq = (clip != null) ? (Math.min((clip.x + clip.width) - offset.x, width)
-                                                         - 1) : (width - 1);
+            final int maxSeq = (clip != null)
+                    ? (Math.min((clip.x + clip.width) - offset.x, width) - 1) : (width - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1716,6 +1720,7 @@ public class RunTable
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // RunSequence //
     //-------------//

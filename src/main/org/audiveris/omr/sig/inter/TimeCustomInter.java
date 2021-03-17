@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -38,7 +39,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code TimeCustomInter} is a user-populated time signature.
@@ -50,8 +50,8 @@ import org.audiveris.omr.glyph.Shape;
 public class TimeCustomInter
         extends AbstractTimeInter
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(TimeCustomInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -212,6 +212,4 @@ public class TimeCustomInter
 
         return inter;
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

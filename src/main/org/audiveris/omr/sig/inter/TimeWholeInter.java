@@ -48,11 +48,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TimeWholeInter
         extends AbstractTimeInter
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(TimeWholeInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeWholeInter} object.
@@ -157,6 +156,4 @@ public class TimeWholeInter
 
         return time;
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

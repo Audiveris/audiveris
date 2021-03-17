@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SmallChordInter
         extends HeadChordInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code SmallChordInter} object.
@@ -51,6 +52,7 @@ public class SmallChordInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

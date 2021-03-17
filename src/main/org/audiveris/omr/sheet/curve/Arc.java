@@ -43,31 +43,19 @@ import java.util.List;
  */
 public class Arc
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Arc.class);
 
     /** Comparison by decreasing length. */
-    public static final Comparator<Arc> byReverseLength = new Comparator<Arc>()
-    {
-        @Override
-        public int compare (Arc a1,
-                            Arc a2)
-        {
-            return Integer.compare(a2.getLength(), a1.getLength());
-        }
-    };
+    public static final Comparator<Arc> byReverseLength = (Arc a1, Arc a2)
+            -> Integer.compare(a2.getLength(), a1.getLength());
 
     /** Comparison by decreasing x length. */
-    public static final Comparator<Arc> byReverseXLength = new Comparator<Arc>()
-    {
-        @Override
-        public int compare (Arc a1,
-                            Arc a2)
-        {
-            return Double.compare(a2.getXLength(), a1.getXLength());
-        }
-    };
+    public static final Comparator<Arc> byReverseXLength = (Arc a1, Arc a2)
+            -> Double.compare(a2.getXLength(), a1.getXLength());
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of arc points so far. */
     protected final List<Point> points = new ArrayList<>();
 
@@ -86,6 +74,7 @@ public class Arc
     /** Already assigned to a curve?. */
     private boolean assigned;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an arc with perhaps a firstJunction.
      *
@@ -131,6 +120,7 @@ public class Arc
         this.model = model;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // checkOrientation //
     //------------------//

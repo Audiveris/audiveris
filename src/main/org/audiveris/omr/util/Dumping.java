@@ -40,10 +40,12 @@ import java.util.Set;
  */
 public class Dumping
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The relevance filter to be used */
     protected final Relevance relevance;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Dumping service.
      *
@@ -64,6 +66,7 @@ public class Dumping
         relevance = new PackageRelevance(rootPackages);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
@@ -156,6 +159,7 @@ public class Dumping
         return new Html(relevance, obj).toString();
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-----------//
     // Relevance //
     //-----------//
@@ -182,6 +186,7 @@ public class Dumping
         boolean isFieldRelevant (Field field);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // PackageRelevance //
     //------------------//

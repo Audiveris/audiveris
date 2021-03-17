@@ -35,8 +35,8 @@ import java.nio.file.Paths;
 public class PathHistory
         extends AbstractHistory<Path>
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new {@code PathHistory} object.
      *

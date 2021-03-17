@@ -92,11 +92,13 @@ import java.util.Set;
  */
 public class DotFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related inter factory. */
     private final InterFactory interFactory;
 
@@ -110,6 +112,7 @@ public class DotFactory
     /** Dot candidates. Sorted top down, then left to right. */
     private final List<Dot> dots = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DotFactory object.
      *
@@ -125,6 +128,7 @@ public class DotFactory
         scale = system.getSheet().getScale();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // instantDotChecks //
     //------------------//
@@ -378,7 +382,7 @@ public class DotFactory
                         Rectangle dotBox = dot.getBounds();
 
                         for (Inter inter : sig.vertexSet()) {
-                            if (inter == dot || inter.isImplicit()) {
+                            if ((inter == dot) || inter.isImplicit()) {
                                 continue;
                             }
 
@@ -704,18 +708,7 @@ public class DotFactory
         checkStackRepeats();
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
-                0.3,
-                "Minimum vertical distance between dot center and staff line/ledger");
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----//
     // Dot //
     //-----//
@@ -734,24 +727,18 @@ public class DotFactory
          * @param that the other dot
          * @return order sign
          */
-        public static final Comparator<Dot> comparator = new Comparator<Dot>()
-        {
-            @Override
-            public int compare (Dot d1,
-                                Dot d2)
-            {
-                if (d1 == d2) {
-                    return 0;
-                }
+        public static final Comparator<Dot> comparator = (Dot d1, Dot d2) -> {
+            if (d1 == d2) {
+                return 0;
+            }
 
-                final Rectangle b1 = d1.getBounds();
-                final Rectangle b2 = d2.getBounds();
+            final Rectangle b1 = d1.getBounds();
+            final Rectangle b2 = d2.getBounds();
 
-                if (GeoUtil.yOverlap(b1, b2) > 0) {
-                    return Integer.compare(b1.x, b2.x);
-                } else {
-                    return Integer.compare(b1.y, b2.y);
-                }
+            if (GeoUtil.yOverlap(b1, b2) > 0) {
+                return Integer.compare(b1.x, b2.x);
+            } else {
+                return Integer.compare(b1.y, b2.y);
             }
         };
 
@@ -766,6 +753,18 @@ public class DotFactory
         public abstract OmrShape getOmrShape ();
 
         public abstract boolean isVip ();
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
+                0.3,
+                "Minimum vertical distance between dot center and staff line/ledger");
     }
 
     //----------//

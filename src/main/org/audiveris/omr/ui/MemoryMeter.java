@@ -51,12 +51,14 @@ import javax.swing.SwingUtilities;
  */
 public class MemoryMeter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     /** A mega as 2**20 */
     private static final double MEGA = 1_024 * 1_024;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Default foreground color, when under alarm threshold */
     private Color defaultForeground;
 
@@ -81,6 +83,7 @@ public class MemoryMeter
     /** Last value for threshold, in order to save on display */
     private int lastThreshold = 0;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // MemoryMeter //
     //-------------//
@@ -99,6 +102,7 @@ public class MemoryMeter
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // collectGarbage //
     //----------------//
@@ -183,28 +187,23 @@ public class MemoryMeter
     private void initialize ()
     {
         // Displayer
-        displayer = new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                int total = (int) Math.rint(Memory.total() / MEGA);
-                int used = (int) Math.rint(Memory.occupied() / MEGA);
-                int threshold = (int) Math.rint(constants.alarmThreshold.getValue() * total);
+        displayer = () -> {
+            int total = (int) Math.rint(Memory.total() / MEGA);
+            int used = (int) Math.rint(Memory.occupied() / MEGA);
+            int threshold = (int) Math.rint(constants.alarmThreshold.getValue() * total);
 
-                if ((total != lastTotal) || (used != lastUsed) || (threshold != lastThreshold)) {
-                    progressBar.setMaximum(total);
-                    progressBar.setValue(used);
-                    progressBar.setString(String.format("%d/%d MB", used, total));
-                    lastTotal = total;
-                    lastUsed = used;
-                    lastThreshold = threshold;
+            if ((total != lastTotal) || (used != lastUsed) || (threshold != lastThreshold)) {
+                progressBar.setMaximum(total);
+                progressBar.setValue(used);
+                progressBar.setString(String.format("%d/%d MB", used, total));
+                lastTotal = total;
+                lastUsed = used;
+                lastThreshold = threshold;
 
-                    if (used > threshold) {
-                        progressBar.setForeground(Color.red);
-                    } else {
-                        progressBar.setForeground(defaultForeground);
-                    }
+                if (used > threshold) {
+                    progressBar.setForeground(Color.red);
+                } else {
+                    progressBar.setForeground(defaultForeground);
                 }
             }
         };
@@ -234,6 +233,7 @@ public class MemoryMeter
         monitorThread.start();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

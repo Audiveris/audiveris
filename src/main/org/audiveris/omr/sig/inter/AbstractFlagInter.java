@@ -29,12 +29,16 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +49,6 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 /**
  * Class {@code AbstractFlagInter} is the basis for (standard) FlagInter as well as
@@ -59,15 +59,18 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 public abstract class AbstractFlagInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Value of this flag (compound?) in terms of individual flags.
      * (Lazily evaluated)
      */
     protected Integer value;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractFlagInter} object.
      */
@@ -89,6 +92,7 @@ public abstract class AbstractFlagInter
         super(glyph, null, shape, grade);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -171,6 +175,7 @@ public abstract class AbstractFlagInter
     {
         final List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
+
         final int profile = Math.max(getProfile(), system.getProfile());
         final Link link = lookupLink(systemStems, profile);
 
@@ -353,7 +358,8 @@ public abstract class AbstractFlagInter
                                                       List<Inter> systemStems)
     {
         final AbstractFlagInter flag = SmallFlags.contains(shape)
-                ? new SmallFlagInter(glyph, shape, grade) : new FlagInter(glyph, shape, grade);
+                ? new SmallFlagInter(glyph, shape, grade)
+                : new FlagInter(glyph, shape, grade);
         final Link link = flag.lookupLink(systemStems, system.getProfile());
 
         if (link != null) {
@@ -406,6 +412,7 @@ public abstract class AbstractFlagInter
         return 0;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Editor //
     //--------//

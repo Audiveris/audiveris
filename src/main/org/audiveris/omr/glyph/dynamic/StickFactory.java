@@ -568,8 +568,7 @@ public class StickFactory
                     finished.put(reverse, Boolean.TRUE); // We can't go any further on this side
                 }
             }
-        } while (grown && (Math.rint(
-                fil.getMeanThickness(orientation)) < params.maxStickThickness));
+        } while (grown && (Math.rint(fil.getMeanThickness(orientation)) < params.maxStickThickness));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

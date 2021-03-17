@@ -69,6 +69,7 @@ import java.util.Map;
 public class MusicFont
         extends OmrFont
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -103,9 +104,11 @@ public class MusicFont
             getPointSize(DEFAULT_INTERLINE) / 2,
             DEFAULT_INTERLINE / 2);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Interline value of the staves where this font is used. */
     private final int staffInterline;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MusicFont object.
      *
@@ -119,6 +122,7 @@ public class MusicFont
         this.staffInterline = staffInterline;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
     //------------//
@@ -438,8 +442,8 @@ public class MusicFont
     {
         final Scale.MusicFontScale musicFontScale = scale.getMusicFontScale();
         final Scale smallScale = scale.getSmallScale();
-        final boolean isSmallStaff = (smallScale != null) && (smallScale
-                .getInterline() == staffInterline);
+        final boolean isSmallStaff = (smallScale != null)
+                                             && (smallScale.getInterline() == staffInterline);
 
         if (musicFontScale != null) {
             if (isSmallStaff) {
@@ -515,6 +519,7 @@ public class MusicFont
         return 4 * staffInterline;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -74,6 +74,7 @@ import java.util.Set;
  */
 public class ChordsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
 
@@ -91,6 +92,7 @@ public class ChordsBuilder
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -98,6 +100,7 @@ public class ChordsBuilder
     /** System SIG. */
     private final SIGraph sig;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsBuilder} object.
      *
@@ -109,6 +112,7 @@ public class ChordsBuilder
         sig = system.getSig();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // buildHeadChords //
     //-----------------//

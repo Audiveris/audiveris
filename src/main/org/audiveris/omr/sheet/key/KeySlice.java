@@ -43,9 +43,11 @@ import java.awt.Rectangle;
  */
 public class KeySlice
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeySlice.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing Roi. */
     private final KeyRoi roi;
 
@@ -64,6 +66,7 @@ public class KeySlice
     /** If occupied by non-valid material. */
     private boolean stuffed;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeySlice} object.
      *
@@ -77,6 +80,7 @@ public class KeySlice
         this.roi = roi;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Remove the alter in this slice.
      */
@@ -167,8 +171,10 @@ public class KeySlice
     public String getLabel ()
     {
         if (alter != null) {
-            return String.format("%s%+1d %-5d", (alter.getShape() == Shape.FLAT) ? "b" : "#", alter
-                                 .getIntegerPitch(), alter.getId());
+            return String.format("%s%+1d %-5d",
+                                 (alter.getShape() == Shape.FLAT) ? "b" : "#",
+                                 alter.getIntegerPitch(),
+                                 alter.getId());
         } else if (stuffed) {
             return "STUFFED  ";
         } else {
@@ -254,8 +260,9 @@ public class KeySlice
         final int[] clefPitches = KeyInter.getPitches(clef.getKind(), keyShape);
         int pitch = clefPitches[getId() - 1];
         pitch -= AbstractPitchedInter.getAreaPitchOffset(keyShape);
+
         final double yp = staff.pitchToOrdinate(rect.x, pitch);
-        final int y = (int) Math.rint(yp - typicalHeight / 2);
+        final int y = (int) Math.rint(yp - (typicalHeight / 2));
         setRect(new Rectangle(getStart(), y, getWidth(), typicalHeight));
         staff.addAttachment(roi.attachmentKey(getId()), rect);
     }

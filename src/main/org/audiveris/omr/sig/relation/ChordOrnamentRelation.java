@@ -37,9 +37,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordOrnamentRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -101,6 +103,7 @@ public class ChordOrnamentRelation
         return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

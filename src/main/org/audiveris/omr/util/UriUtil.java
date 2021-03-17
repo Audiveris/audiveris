@@ -34,12 +34,14 @@ import java.net.URL;
  */
 public abstract class UriUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
     private UriUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // toFile //
     //--------//

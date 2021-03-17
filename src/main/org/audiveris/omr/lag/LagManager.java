@@ -42,7 +42,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 
 /**
  * Class {@code LagManager} keeps a catalog of Lag instances for a given sheet.
@@ -51,11 +50,13 @@ import java.util.function.Predicate;
  */
 public class LagManager
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LagManager.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -69,6 +70,7 @@ public class LagManager
     /** (Debug)Predefined IDs for VIP sections. */
     private final EnumMap<Orientation, List<Integer>> vipMap;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagManager} object.
      *
@@ -81,6 +83,7 @@ public class LagManager
         vipMap = getVipSections();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -158,14 +161,9 @@ public class LagManager
                 sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
 
         // Remove runs whose height is larger than line thickness
-        RunTable shortVertTable = sourceTable.copy().purge(new Predicate<Run>()
-        {
-            @Override
-            public final boolean test (Run run)
-            {
-                return run.getLength() >= minVerticalRunLength;
-            }
-        }, vertTable);
+        RunTable shortVertTable = sourceTable.copy().purge(
+                (Run run) -> run.getLength() >= minVerticalRunLength,
+                vertTable);
         RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
         RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
 
@@ -355,6 +353,7 @@ public class LagManager
         buildVerticalLag(vertTable);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

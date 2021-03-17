@@ -284,7 +284,7 @@ public class Measure
 
         chord.setStaff(staff);
         chord.setTimeOffset(Rational.ZERO);
-        chord.members = Collections.singletonList((Inter) whole);
+        chord.members = Collections.singletonList(whole);
         whole.chord = chord;
 
         addInter(chord);
@@ -367,11 +367,9 @@ public class Measure
 
             // Clefs, keys, timeSigs to fill measure
             List<Inter> measureInters = filter(
-                    sig.inters(
-                            new Class[]{
-                                ClefInter.class,
-                                KeyInter.class,
-                                AbstractTimeInter.class}));
+                    sig.inters(new Class[]{ClefInter.class,
+                                           KeyInter.class,
+                                           AbstractTimeInter.class}));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -1447,19 +1445,22 @@ public class Measure
             switch (chord.getStemDir()) {
             case -1:
                 return Family.HIGH;
+
             case +1:
                 return Family.LOW;
+
             default:
                 return (startingStaff == part.getFirstStaff()) ? Family.HIGH : Family.LOW;
             }
         } else {
             int index = part.getStaves().indexOf(startingStaff);
 
-            if (index >= 0 && index < Family.values().length) {
+            if ((index >= 0) && (index < Family.values().length)) {
                 return Family.values()[index];
             }
 
             logger.error("{} Weird staff index {} in part", startingStaff, index);
+
             return Family.HIGH;
         }
     }
@@ -1798,7 +1799,6 @@ public class Measure
 
                     if (voice != null) {
                         small.setVoice(voice);
-
                     }
                 }
             }
@@ -1829,9 +1829,9 @@ public class Measure
     public Measure splitAt (Map<Staff, Integer> xRefs)
     {
         final Measure leftMeasure = new Measure(part);
+
         // part: assigned to leftmeasure
         // stack: assigned by caller
-
         // left barline ???
         // mid barline ???
         // right barline: assigned by caller
@@ -1887,9 +1887,11 @@ public class Measure
         if (leftBarline != null) {
             measureBelow.leftBarline = leftBarline.splitBefore(pivotStaff);
         }
+
         if (midBarline != null) {
             measureBelow.midBarline = midBarline.splitBefore(pivotStaff);
         }
+
         if (rightBarline != null) {
             measureBelow.rightBarline = rightBarline.splitBefore(pivotStaff);
         }
@@ -1906,6 +1908,7 @@ public class Measure
 
                     if (stavesBelow.contains(staff)) {
                         measureBelow.beamGroups.add(bg);
+
                         continue BeamGroupLoop;
                     }
                 }
@@ -1913,6 +1916,7 @@ public class Measure
 
             bg.setMeasure(measureBelow);
         }
+
         beamGroups.removeAll(measureBelow.beamGroups);
 
         splitCollectionBefore(stavesBelow, measureBelow, keys);
@@ -1990,6 +1994,7 @@ public class Measure
         switchCollectionPart(newPart, flags);
         switchCollectionPart(newPart, tuplets);
         switchCollectionPart(newPart, augDots);
+
         // voices: no part field
     }
 
@@ -2231,7 +2236,7 @@ public class Measure
                                        Collection<? extends Inter> collection)
     {
         for (Inter item : collection) {
-            if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+            if ((item.getSpecificPart() != null) && (item.getSpecificPart() != newPart)) {
                 item.setPart(newPart);
             }
         }

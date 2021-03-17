@@ -45,9 +45,11 @@ import javax.swing.AbstractSpinnerModel;
 public class SpinnerGlyphModel
         extends AbstractSpinnerModel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SpinnerGlyphModel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph nest */
     private final GlyphIndex nest;
 
@@ -57,6 +59,7 @@ public class SpinnerGlyphModel
     /** Current glyph id */
     private int currentId;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpinnerGlyphModel object, on all nest glyph instances.
      *
@@ -84,6 +87,7 @@ public class SpinnerGlyphModel
         this.predicate = predicate;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getNextValue //
     //--------------//

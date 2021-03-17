@@ -43,13 +43,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class EndingBarRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final double[] WEIGHTS = new double[]{
-        constants.xWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
+                                                         constants.yWeight.getValue()};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of ending is used?. */
     @XmlAttribute(name = "side")
     private HorizontalSide endingSide;
@@ -57,6 +58,7 @@ public class EndingBarRelation
     /** Horizontal delta (in interline) between bar line and ending side. */
     private final double xDistance;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new EndingBarRelation object.
      *
@@ -78,6 +80,7 @@ public class EndingBarRelation
         this.xDistance = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getXGapMaximum //
     //----------------//
@@ -212,6 +215,7 @@ public class EndingBarRelation
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -228,18 +232,14 @@ public class EndingBarRelation
                 "Maximum horizontal gap between ending and barline");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
-                3.0,
-                "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(3.0, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 10.0,
                 "Maximum vertical gap between bottom of ending leg and top of barline");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                15.0,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(15.0, "Idem for profile 1");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 1,

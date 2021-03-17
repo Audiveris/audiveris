@@ -47,13 +47,16 @@ import javax.swing.JMenuItem;
 public class TribesMenu
         extends LocationDependentMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TribesMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final GlyphListener glyphListener = new GlyphListener();
 
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TribeMenu} object.
      *
@@ -65,6 +68,7 @@ public class TribesMenu
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void updateUserLocation (Rectangle rect)
     {
@@ -95,6 +99,7 @@ public class TribesMenu
         super.updateUserLocation(rect);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // GlyphListener //
     //---------------//

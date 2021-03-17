@@ -62,6 +62,7 @@ import java.util.Set;
 public class SegmentsBuilder
         extends CurvesBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -69,12 +70,14 @@ public class SegmentsBuilder
 
     private static final Color SEGMENT = Color.CYAN;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
     /** All segments retrieved in sheet. */
     private final List<SegmentInter> segments;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SegmentsBuilder object.
      *
@@ -87,6 +90,7 @@ public class SegmentsBuilder
         segments = curves.getSegments();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildSegments //
     //---------------//
@@ -342,6 +346,7 @@ public class SegmentsBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

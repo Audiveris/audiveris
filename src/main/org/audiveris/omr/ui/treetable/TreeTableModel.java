@@ -5,6 +5,7 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
+
 /*
  * TreeTableModel.java
  *
@@ -40,6 +41,7 @@ import javax.swing.tree.TreeModel;
 public interface TreeTableModel
         extends TreeModel
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Returns the type for column number.

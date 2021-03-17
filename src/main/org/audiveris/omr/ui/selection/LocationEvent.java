@@ -35,15 +35,18 @@ import java.awt.Rectangle;
 public class LocationEvent
         extends UserEvent<Rectangle>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * The location rectangle, which can be degenerated to a point when both
      * width and height values equal zero.
      */
     private final Rectangle rectangle;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LocationEvent object.
      *
@@ -61,6 +64,7 @@ public class LocationEvent
         this.rectangle = rectangle;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

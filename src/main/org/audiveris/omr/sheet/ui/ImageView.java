@@ -36,9 +36,11 @@ import java.awt.image.RenderedImage;
 public class ImageView
         extends RubberPanel
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final RenderedImage image;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ImageView object.
      *
@@ -54,6 +56,7 @@ public class ImageView
         setModelSize(new Dimension(image.getWidth(), image.getHeight()));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void render (Graphics2D g)
     {

@@ -490,10 +490,11 @@ public abstract class Board
     {
         component.setName(name + " board");
         component.setBorder(new TitledBorder(name));
-        component.setInsets(UIUtil.adjustedSize(12),
-                            UIUtil.adjustedSize(10),
-                            UIUtil.adjustedSize(5),
-                            UIUtil.adjustedSize(5)); // TLBR sides
+        component.setInsets(
+                UIUtil.adjustedSize(12),
+                UIUtil.adjustedSize(10),
+                UIUtil.adjustedSize(5),
+                UIUtil.adjustedSize(5)); // TLBR sides
 
         body.setNoInsets();
 
@@ -583,8 +584,10 @@ public abstract class Board
                 boolean withDump)
         {
             count = withCount ? new JLabel("") : null;
-            vip = withVip ? new LCheckBox(resources.getString("vip.text"),
-                                          resources.getString("vip.toolTipText")) : null;
+            vip = withVip
+                    ? new LCheckBox(
+                            resources.getString("vip.text"),
+                            resources.getString("vip.toolTipText")) : null;
             dump = withDump ? new JButton("Dump") : null;
 
             defineLayout();
@@ -597,12 +600,10 @@ public abstract class Board
             // count label
             sb.append("15dlu:grow");
             // vip label+field
-            sb.append(",")
-                    .append(Panel.getFieldInterval()).append(",12dlu,")
-                    .append(Panel.getLabelInterval()).append(",10dlu");
+            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(
+                    Panel.getLabelInterval()).append(",10dlu");
             // dump button
-            sb.append(",")
-                    .append(Panel.getFieldInterval()).append(",35dlu");
+            sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
 
             FormLayout layout = new FormLayout(sb.toString(), "pref");
             PanelBuilder builder = new PanelBuilder(layout, this);

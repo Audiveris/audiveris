@@ -39,12 +39,14 @@ import javax.swing.SpinnerModel;
  */
 public abstract class SpinnerUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
     private SpinnerUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // fixIntegerList //
     //----------------//

@@ -31,6 +31,7 @@ package org.audiveris.omr.moments;
 public class BasicARTMoments
         implements ARTMoments
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Module values */
     private final double[][] modules = new double[ANGULAR][RADIAL];
@@ -44,6 +45,7 @@ public class BasicARTMoments
     /** Real values */
     private final double[][] reals = new double[ANGULAR][RADIAL];
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicARTMoments object.
      */
@@ -51,6 +53,7 @@ public class BasicARTMoments
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceTo //
     //------------//

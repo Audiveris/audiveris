@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
@@ -40,10 +40,12 @@ import java.awt.geom.Rectangle2D;
 public class OttavaClefSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // True for alta, false for bassa
     private final boolean isAlta;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OttavaClefSymbol object.
      *
@@ -61,6 +63,7 @@ public class OttavaClefSymbol
         this.isAlta = isAlta;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -102,6 +105,7 @@ public class OttavaClefSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

@@ -36,6 +36,7 @@ import org.audiveris.omr.math.Rational;
 public class DurationFactor
         extends Rational
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Actual numerator value, generally 2 or 4. */
     public final int actualNum;
@@ -43,6 +44,7 @@ public class DurationFactor
     /** Actual denominator value, generally 3 or 6. */
     public final int actualDen;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of DurationFactor
      *
@@ -58,6 +60,7 @@ public class DurationFactor
         actualDen = den;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//

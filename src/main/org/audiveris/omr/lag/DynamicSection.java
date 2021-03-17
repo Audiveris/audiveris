@@ -41,9 +41,11 @@ import java.awt.Rectangle;
 public class DynamicSection
         extends BasicSection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicSection.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DynamicSection} object.
      *
@@ -54,6 +56,7 @@ public class DynamicSection
         super(orientation);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // append //
     //--------//

@@ -84,11 +84,13 @@ import java.util.TreeSet;
 public class PeakGraph
         extends SimpleDirectedGraph<StaffPeak, BarAlignment>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PeakGraph.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -105,6 +107,7 @@ public class PeakGraph
     /** Specific builder for peak-based filaments. */
     private final BarFilamentBuilder filamentBuilder;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PeakGraph} object.
      *
@@ -124,6 +127,7 @@ public class PeakGraph
         filamentBuilder = new BarFilamentBuilder(sheet);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSystems //
     //--------------//
@@ -1024,9 +1028,8 @@ public class PeakGraph
                 final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
 
                 if (xOffset > params.maxFirstConnectionXOffset) {
-                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak()) || !areRightConnected(
-                            p1.getStaff(),
-                            p2.getStaff())) {
+                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak())
+                                || !areRightConnected(p1.getStaff(), p2.getStaff())) {
                         continue;
                     }
                 }
@@ -1218,33 +1221,33 @@ public class PeakGraph
             removeAllEdges(toRemove);
         }
     }
-//
-//    //-------------------//
-//    // rectifyAlignments //
-//    //-------------------//
-//    /**
-//     * Remove any alignment between the two groups of same size, and link each peak in
-//     * top group with the corresponding peak in bottom group.
-//     *
-//     * @param topGroup    group of peaks in top staff
-//     * @param bottomGroup group of peaks in bottom staff
-//     */
-//    private void rectifyAlignments (List<StaffPeak> topGroup,
-//                                    List<StaffPeak> bottomGroup)
-//    {
-//        for (int i = 0; i < topGroup.size(); i++) {
-//            StaffPeak top = topGroup.get(i);
-//            StaffPeak bottom = bottomGroup.get(i);
-//            removeAllEdges(new ArrayList<>(outgoingEdgesOf(top)));
-//            removeAllEdges(new ArrayList<>(incomingEdgesOf(bottom)));
-//            addEdge(top, bottom, checkAlignment(top, bottom, false, false));
-//        }
-//    }
-//
+
+    //
+    //    //-------------------//
+    //    // rectifyAlignments //
+    //    //-------------------//
+    //    /**
+    //     * Remove any alignment between the two groups of same size, and link each peak in
+    //     * top group with the corresponding peak in bottom group.
+    //     *
+    //     * @param topGroup    group of peaks in top staff
+    //     * @param bottomGroup group of peaks in bottom staff
+    //     */
+    //    private void rectifyAlignments (List<StaffPeak> topGroup,
+    //                                    List<StaffPeak> bottomGroup)
+    //    {
+    //        for (int i = 0; i < topGroup.size(); i++) {
+    //            StaffPeak top = topGroup.get(i);
+    //            StaffPeak bottom = bottomGroup.get(i);
+    //            removeAllEdges(new ArrayList<>(outgoingEdgesOf(top)));
+    //            removeAllEdges(new ArrayList<>(incomingEdgesOf(bottom)));
+    //            addEdge(top, bottom, checkAlignment(top, bottom, false, false));
+    //        }
+    //    }
+    //
     //-----------------//
     // solveAlignments //
     //-----------------//
-
     /**
      * Solve conflicting alignments that result from merged peaks.
      *
@@ -1380,6 +1383,7 @@ public class PeakGraph
         return total;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

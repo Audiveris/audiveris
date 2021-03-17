@@ -29,6 +29,7 @@ package org.audiveris.omr.util;
  */
 public interface Vip
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * (Debug) Report whether this object is flagged as VIP

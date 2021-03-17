@@ -5,6 +5,7 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
+
 /*
  * @(#)TreeTableModelAdapter.java 1.2 98/10/27
  *
@@ -39,11 +40,13 @@ import javax.swing.tree.TreePath;
 public class TreeTableModelAdapter
         extends AbstractTableModel
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     JTree tree;
 
     TreeTableModel treeTableModel;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TreeTableModelAdapter object.
      *
@@ -105,6 +108,7 @@ public class TreeTableModelAdapter
         });
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getColumnClass //
     //----------------//
@@ -241,13 +245,6 @@ public class TreeTableModelAdapter
      */
     protected void delayedFireTableDataChanged ()
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                fireTableDataChanged();
-            }
-        });
+        SwingUtilities.invokeLater(() -> fireTableDataChanged());
     }
 }

@@ -36,10 +36,12 @@ public class FretInter
         extends AbstractInter
         implements StringSymbolInter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Fret value. */
     private final int value;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FretInter} object.
      *
@@ -63,6 +65,7 @@ public class FretInter
         this.value = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

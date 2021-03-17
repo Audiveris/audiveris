@@ -45,12 +45,15 @@ import java.util.Objects;
  */
 public class ScoreExporter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreExporter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related score. */
     private final Score score;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code ScoreExporter} object, on a related score instance.
      *
@@ -65,6 +68,7 @@ public class ScoreExporter
         this.score = score;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // export //
     //--------//

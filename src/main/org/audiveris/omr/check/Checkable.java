@@ -32,6 +32,7 @@ import org.audiveris.omr.util.Vip;
 public interface Checkable
         extends Vip
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Store the check failure directly into the checkable entity.

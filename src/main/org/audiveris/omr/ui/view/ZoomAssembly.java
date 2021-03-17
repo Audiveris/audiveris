@@ -36,6 +36,7 @@ import javax.swing.KeyStroke;
  */
 public class ZoomAssembly
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The concrete UI component. */
     protected final Panel component = new Panel();
@@ -48,6 +49,8 @@ public class ZoomAssembly
 
     /** Mouse adapter. */
     protected final Rubber rubber = new Rubber(zoom);
+
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code ZoomAssembly} object.
@@ -65,6 +68,8 @@ public class ZoomAssembly
         inputMap.put(KeyStroke.getKeyStroke("UP"), "none");
         inputMap.put(KeyStroke.getKeyStroke("DOWN"), "none");
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
 
     //--------------//
     // getComponent //

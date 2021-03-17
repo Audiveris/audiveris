@@ -23,13 +23,12 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.math.Population;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.Population;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.util.HorizontalSide;
 
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Class {@code HeadSeedTally} records the actual abscissa distance between a head and
@@ -58,6 +58,9 @@ public class HeadSeedTally
     private final Map<HorizontalSide, Map<HeadInter, Double>> data;
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code HeadSeedTally} object.
+     */
     public HeadSeedTally ()
     {
         data = new EnumMap<>(HorizontalSide.class);
@@ -152,6 +155,7 @@ public class HeadSeedTally
 
                 for (Entry<HeadInter, Double> headEntry : sEntry.getValue().entrySet()) {
                     final HeadInter head = headEntry.getKey();
+
                     if (head.isRemoved()) {
                         continue;
                     }
@@ -163,6 +167,7 @@ public class HeadSeedTally
 
                     if (shapeGlobal == null) {
                         global.put(shape, shapeGlobal = new EnumMap<>(HorizontalSide.class));
+
                         for (HorizontalSide hs : HorizontalSide.values()) {
                             shapeGlobal.put(hs, new Population());
                         }
@@ -196,7 +201,6 @@ public class HeadSeedTally
                     if (card >= constants.quorum.getValue()) {
                         hsScale.putDx(shape, hSide, dx);
                     }
-
                 }
             }
         }
@@ -241,7 +245,6 @@ public class HeadSeedTally
         private final Constant.Integer quorum = new Constant.Integer(
                 "samples",
                 10,
-                "Minimum samples per head shape and horizontal side"
-        );
+                "Minimum samples per head shape and horizontal side");
     }
 }

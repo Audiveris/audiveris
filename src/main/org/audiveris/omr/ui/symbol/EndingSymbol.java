@@ -40,9 +40,11 @@ import java.awt.geom.Rectangle2D;
 public class EndingSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     final boolean withRightLeg;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an EndingSymbol.
      *
@@ -66,6 +68,7 @@ public class EndingSymbol
         this.withRightLeg = withRightLeg;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -146,6 +149,7 @@ public class EndingSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

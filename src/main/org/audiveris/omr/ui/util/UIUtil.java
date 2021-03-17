@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.WellKnowns;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -72,6 +72,7 @@ import javax.swing.border.Border;
  */
 public abstract class UIUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -97,6 +98,13 @@ public abstract class UIUtil
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private UIUtil ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // adjustDefaultFonts //
     //--------------------//
@@ -173,9 +181,8 @@ public abstract class UIUtil
      */
     public static void adjustDefaultTexts ()
     {
-
-        final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
-                UIUtil.class);
+        final ResourceMap resources = Application.getInstance().getContext()
+                .getResourceMap(UIUtil.class);
 
         // OptionPane texts
         final String[] keys = new String[]{
@@ -476,10 +483,8 @@ public abstract class UIUtil
 
         final int size = UIUtil.adjustedSize(constants.urlFontSize.getValue());
         final String name = constants.defaultFontName.getValue();
-        sb.append("<style> body ")
-                .append("{font-family: ").append(name).append(';')
-                .append(" font-size: ").append(size).append("px;")
-                .append("} </style>");
+        sb.append("<style> body ").append("{font-family: ").append(name).append(';')
+                .append(" font-size: ").append(size).append("px;").append("} </style>");
 
         sb.append("<A HREF=\"").append(url).append("\">").append(url).append("</A>");
 
@@ -752,11 +757,7 @@ public abstract class UIUtil
         return constants.minGlobalFontRatio.getValue();
     }
 
-    /** Not meant to be instantiated. */
-    private UIUtil ()
-    {
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

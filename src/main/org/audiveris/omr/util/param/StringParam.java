@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class StringParam
         extends Param<String>
 {
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     /**
      * JAXB adapter for StringParam type.

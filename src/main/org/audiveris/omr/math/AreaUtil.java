@@ -36,12 +36,14 @@ import java.awt.geom.Point2D;
  */
 public abstract class AreaUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     // Not meant to be instantiated.
     private AreaUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------------//
     // horizontalParallelogram //
     //-------------------------//
@@ -230,9 +232,7 @@ public abstract class AreaUtil
         final GeoPath path = new GeoPath();
 
         // Left line
-        path.append(
-                median.getPathIterator(AffineTransform.getTranslateInstance(-dx, 0)),
-                false);
+        path.append(median.getPathIterator(AffineTransform.getTranslateInstance(-dx, 0)), false);
 
         // Right line (reversed)
         path.append(
@@ -246,6 +246,7 @@ public abstract class AreaUtil
         return new Area(path);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // CoreData //
     //----------//

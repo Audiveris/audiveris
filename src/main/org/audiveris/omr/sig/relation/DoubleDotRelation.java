@@ -44,15 +44,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DoubleDotRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DoubleDotRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{
-        constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -151,6 +152,7 @@ public class DoubleDotRelation
         return getYGapMaximum(profile);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -167,27 +169,21 @@ public class DoubleDotRelation
                 "Maximum horizontal gap between dots centers");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                2.0,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(2.0, "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMin = new Scale.Fraction(
                 0.2,
                 "Minimum horizontal gap between dot centers");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMin_p1 = new Scale.Fraction(
-                0.1,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMin_p1 = new Scale.Fraction(0.1, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.25,
                 "Maximum vertical gap between dots centers");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                0.4,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(0.4, "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,

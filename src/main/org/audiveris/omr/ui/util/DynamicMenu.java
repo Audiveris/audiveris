@@ -37,9 +37,11 @@ import javax.swing.event.MenuListener;
  */
 public abstract class DynamicMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -57,6 +59,7 @@ public abstract class DynamicMenu
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the dynamic menu.
      *
@@ -101,6 +104,7 @@ public abstract class DynamicMenu
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//

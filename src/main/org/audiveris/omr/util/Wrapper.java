@@ -29,10 +29,12 @@ package org.audiveris.omr.util;
  */
 public class Wrapper<T>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The wrapped value. */
     public T value;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Wrapper} object.
      *
@@ -43,6 +45,7 @@ public class Wrapper<T>
         this.value = value;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

@@ -83,11 +83,13 @@ public abstract class AdaptiveFilter
         extends SourceWrapper
         implements PixelFilter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveFilter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Default value for (half of) window size. */
     protected final int HALF_WINDOW_SIZE = constants.halfWindowSize.getValue();
 
@@ -103,6 +105,7 @@ public abstract class AdaptiveFilter
     /** Table for integrals of squared values. */
     protected Tile sqrTile;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an adaptive wrapper on a pixel source.
      *
@@ -120,6 +123,7 @@ public abstract class AdaptiveFilter
         this.STD_DEV_COEFF = stdDevCoeff;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // filteredImage //
     //---------------//
@@ -205,6 +209,40 @@ public abstract class AdaptiveFilter
     {
         // This is the key formula
         return (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------------//
+    // AdaptiveContext //
+    //-----------------//
+    /**
+     *
+     */
+    public static class AdaptiveContext
+            extends Context
+    {
+
+        /** Mean pixel value in the neighborhood. */
+        public final double mean;
+
+        /** Standard deviation of pixel values in the neighborhood. */
+        public final double standardDeviation;
+
+        /**
+         * Create an AdaptiveContext object.
+         *
+         * @param mean              mean pixel value in neighborhood
+         * @param standardDeviation standard deviation of pixel value in neighborhood
+         * @param threshold         threshold to apply on pixel value
+         */
+        public AdaptiveContext (double mean,
+                                double standardDeviation,
+                                double threshold)
+        {
+            super(threshold);
+            this.mean = mean;
+            this.standardDeviation = standardDeviation;
+        }
     }
 
     //------//
@@ -343,39 +381,6 @@ public abstract class AdaptiveFilter
         protected void shiftTile (int x2)
         {
             // Void by default
-        }
-    }
-
-    //-----------------//
-    // AdaptiveContext //
-    //-----------------//
-    /**
-     *
-     */
-    public static class AdaptiveContext
-            extends Context
-    {
-
-        /** Mean pixel value in the neighborhood. */
-        public final double mean;
-
-        /** Standard deviation of pixel values in the neighborhood. */
-        public final double standardDeviation;
-
-        /**
-         * Create an AdaptiveContext object.
-         *
-         * @param mean              mean pixel value in neighborhood
-         * @param standardDeviation standard deviation of pixel value in neighborhood
-         * @param threshold         threshold to apply on pixel value
-         */
-        public AdaptiveContext (double mean,
-                                double standardDeviation,
-                                double threshold)
-        {
-            super(threshold);
-            this.mean = mean;
-            this.standardDeviation = standardDeviation;
         }
     }
 

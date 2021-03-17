@@ -57,17 +57,20 @@ import java.util.List;
  */
 public class BarFilamentFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BarFilamentFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related scale. */
     private final Scale scale;
 
     /** Scale-dependent constants. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarFilamentFactory} object.
      *
@@ -79,6 +82,7 @@ public class BarFilamentFactory
         params = new Parameters(scale);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // buildBarFilament //
     //------------------//
@@ -212,6 +216,7 @@ public class BarFilamentFactory
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

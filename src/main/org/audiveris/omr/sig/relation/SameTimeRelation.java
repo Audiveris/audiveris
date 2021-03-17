@@ -33,11 +33,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SameTimeRelation
         extends Relation
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code SameTimeRelation} object.
+     */
     public SameTimeRelation ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//

@@ -30,6 +30,7 @@ package org.audiveris.omr.util;
 public class WrappedBoolean
         extends Wrapper<Boolean>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new WrappedBoolean object.
@@ -41,6 +42,7 @@ public class WrappedBoolean
         super(value);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // set //
     //-----//

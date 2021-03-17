@@ -40,15 +40,18 @@ import javax.swing.AbstractSpinnerModel;
 public class SpinnerIdModel<E extends Entity>
         extends AbstractSpinnerModel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SpinnerIdModel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying entity index. */
     private final EntityIndex<E> index;
 
     /** Current entity id value. */
     private Integer currentId;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SpinnerIdModel} object.
      *
@@ -59,6 +62,7 @@ public class SpinnerIdModel<E extends Entity>
         this.index = index;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public Integer getNextValue ()
     {

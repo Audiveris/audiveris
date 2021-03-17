@@ -40,17 +40,19 @@ import java.util.List;
  */
 public class MeasureFiller
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
     /** Filling classes. (Clefs and Key signatures) */
-    private static final Class<?>[] FILLING_CLASSES = new Class<?>[]{
-        ClefInter.class,
-        KeyInter.class};
+    private static final Class<?>[] FILLING_CLASSES
+            = new Class<?>[]{ClefInter.class, KeyInter.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system. */
     private final SystemInfo system;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasureFiller} object.
      *
@@ -61,6 +63,7 @@ public class MeasureFiller
         this.system = system;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Fill all system measures with Clef and Key entities.
      */

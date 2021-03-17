@@ -81,9 +81,11 @@ import java.util.Set;
 public class HeaderTimeBuilder
         extends TimeBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderTimeBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Time range info. */
     private final StaffHeader.Range range;
 
@@ -94,8 +96,9 @@ public class HeaderTimeBuilder
     private final Rectangle roi;
 
     /** 3 adapters for glyph building, one for each kind: whole, num & den. */
-    final Map<TimeKind, TimeAdapter> adapters = new EnumMap<TimeKind, TimeAdapter>(TimeKind.class);
+    final Map<TimeKind, TimeAdapter> adapters = new EnumMap<>(TimeKind.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an instance of {code HeaderTimeBuilder}.
      *
@@ -124,6 +127,7 @@ public class HeaderTimeBuilder
         projection = getProjection();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // cleanup //
     //---------//
@@ -366,7 +370,7 @@ public class HeaderTimeBuilder
     {
         final int xMin = roi.x;
         final int xMax = (roi.x + roi.width) - 1;
-        final List<Space> spaces = new ArrayList<Space>();
+        final List<Space> spaces = new ArrayList<>();
 
         // Space parameters
         int spaceStart = -1; // Space start abscissa
@@ -502,7 +506,6 @@ public class HeaderTimeBuilder
         //        Rectangle core = new Rectangle(rect);
         //        core.grow(-params.xCoreMargin, -params.yCoreMargin);
         //        staff.addAttachment("c", core);
-
         List<Glyph> toRemove = new ArrayList<>();
 
         for (Glyph part : parts) {
@@ -517,33 +520,44 @@ public class HeaderTimeBuilder
         }
     }
 
-    //-------//
-    // Space //
-    //-------//
-    private static class Space
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // TimeAdapter //
+    //-------------//
+    private abstract class TimeAdapter
+            extends GlyphCluster.AbstractAdapter
     {
 
-        /** Left abscissa. */
-        protected final int start;
+        /** Best inter per time shape. */
+        public Map<Shape, Inter> bestMap = new EnumMap<>(Shape.class);
 
-        /** Right abscissa. */
-        protected final int stop;
-
-        public Space (int start,
-                      int stop)
+        public TimeAdapter (List<Glyph> parts)
         {
-            this.start = start;
-            this.stop = stop;
+            super(parts, params.maxPartGap);
+        }
+
+        public void cleanup ()
+        {
+            for (Inter inter : bestMap.values()) {
+                inter.remove();
+            }
+        }
+
+        public Inter getSingleInter ()
+        {
+            for (Inter inter : bestMap.values()) {
+                if (!inter.isRemoved()) {
+                    return inter;
+                }
+            }
+
+            return null;
         }
 
         @Override
-        public String toString ()
+        public boolean isTooLarge (Rectangle bounds)
         {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append("Space(").append(start).append("-").append(stop).append(")");
-
-            return sb.toString();
+            return bounds.width > params.maxTimeWidth;
         }
     }
 
@@ -613,43 +627,33 @@ public class HeaderTimeBuilder
         }
     }
 
-    //-------------//
-    // TimeAdapter //
-    //-------------//
-    private abstract class TimeAdapter
-            extends GlyphCluster.AbstractAdapter
+    //-------//
+    // Space //
+    //-------//
+    private static class Space
     {
 
-        /** Best inter per time shape. */
-        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
+        /** Left abscissa. */
+        protected final int start;
 
-        public TimeAdapter (List<Glyph> parts)
+        /** Right abscissa. */
+        protected final int stop;
+
+        public Space (int start,
+                      int stop)
         {
-            super(parts, params.maxPartGap);
-        }
-
-        public void cleanup ()
-        {
-            for (Inter inter : bestMap.values()) {
-                inter.remove();
-            }
-        }
-
-        public Inter getSingleInter ()
-        {
-            for (Inter inter : bestMap.values()) {
-                if (!inter.isRemoved()) {
-                    return inter;
-                }
-            }
-
-            return null;
+            this.start = start;
+            this.stop = stop;
         }
 
         @Override
-        public boolean isTooLarge (Rectangle bounds)
+        public String toString ()
         {
-            return bounds.width > params.maxTimeWidth;
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("Space(").append(start).append("-").append(stop).append(")");
+
+            return sb.toString();
         }
     }
 

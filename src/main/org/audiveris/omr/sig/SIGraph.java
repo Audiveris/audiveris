@@ -23,8 +23,8 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -82,9 +81,11 @@ public class SIGraph
         extends DefaultListenableGraph<Inter, Relation>
         implements DirectedGraph<Inter, Relation>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated system. */
     @Navigable(false)
     private SystemInfo system;
@@ -92,6 +93,7 @@ public class SIGraph
     /** Content for differed populating after unmarshalling. */
     private SigValue sigValue;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SIGraph object at system level.
      *
@@ -124,6 +126,7 @@ public class SIGraph
         super(new DirectedMultigraph<>(Relation.class), true /* reuseEvents */);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addVertex //
     //-----------//
@@ -178,7 +181,6 @@ public class SIGraph
 
             // Handle migration from older inter implementations
             upgradeInters();
-
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -1256,18 +1258,9 @@ public class SIGraph
      */
     public void sortBySource (List<Relation> rels)
     {
-        Collections.sort(rels, new Comparator<Relation>()
-                 {
-                     @Override
-                     public int compare (Relation r1,
-                                         Relation r2)
-                     {
-                         Inter s1 = getEdgeSource(r1);
-                         Inter s2 = getEdgeSource(r2);
-
-                         return Double.compare(s2.getBestGrade(), s1.getBestGrade());
-                     }
-                 });
+        Collections.sort(rels, (Relation r1, Relation r2)
+                         -> Double.compare(getEdgeSource(r2).getBestGrade(),
+                                           getEdgeSource(r1).getBestGrade()));
     }
 
     //----------//
@@ -1434,6 +1427,7 @@ public class SIGraph
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Sequence //
     //----------//
@@ -1533,7 +1527,8 @@ public class SIGraph
         @Override
         public boolean test (Inter inter)
         {
-            return !inter.isRemoved() && (inter.getStaff() == staff)
+            return !inter.isRemoved()
+                           && (inter.getStaff() == staff)
                            && ((classe == null) || classe.isInstance(inter));
         }
     }

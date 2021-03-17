@@ -42,6 +42,7 @@ public abstract class TextBasedItem
         extends TextItem
         implements Vip
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Baseline. */
     private Line2D baseline;
@@ -55,6 +56,7 @@ public abstract class TextBasedItem
     /** Related staff, if any. */
     private Staff staff;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextBasedItem object.
      *
@@ -74,6 +76,7 @@ public abstract class TextBasedItem
         this.confidence = confidence;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getBaseline //
     //-------------//

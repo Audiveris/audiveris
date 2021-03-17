@@ -52,15 +52,18 @@ import java.util.Set;
  */
 public class GlyphCluster
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphCluster.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Environment adapter. */
     private final Adapter adapter;
 
     /** Group, if any, to be assigned to created glyphs. */
     private final GlyphGroup group;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Cluster object, with an adapter to the environment.
      *
@@ -74,6 +77,7 @@ public class GlyphCluster
         this.group = group;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // decompose //
     //-----------//
@@ -186,20 +190,21 @@ public class GlyphCluster
     // getSubGraph //
     //-------------//
     /**
-     * Extract a subgraph limited to the provided collection of glyphs.
+     * Extract a subgraph limited to the provided set of glyphs.
      *
-     * @param collection the provided collection of glyphs
+     * @param set        the provided set of glyphs
      * @param graph      the global graph to extract from
      * @param checkEdges true if glyph edges may point outside the provided set.
      * @return the graph limited to glyph set and related edges
      */
-    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Collection<Glyph> collection,
+    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
                                                              SimpleGraph<Glyph, GlyphLink> graph,
                                                              boolean checkEdges)
     {
         // Which edges should be extracted for this set?
         Set<GlyphLink> setEdges = new LinkedHashSet<>();
-        for (Glyph glyph : collection) {
+
+        for (Glyph glyph : set) {
             Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
 
             if (!checkEdges) {
@@ -209,18 +214,21 @@ public class GlyphCluster
                 for (GlyphLink link : glyphEdges) {
                     Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
 
-                    if (collection.contains(opposite)) {
+                    if (set.contains(opposite)) {
                         setEdges.add(link);
                     }
                 }
             }
         }
+
         SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<>(GlyphLink.class);
-        Graphs.addAllVertices(subGraph, collection);
+        Graphs.addAllVertices(subGraph, set);
         Graphs.addAllEdges(subGraph, graph, setEdges);
+
         return subGraph;
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -287,6 +295,7 @@ public class GlyphCluster
         boolean isTooSmall (Rectangle bounds);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     public abstract static class AbstractAdapter
             implements Adapter
     {

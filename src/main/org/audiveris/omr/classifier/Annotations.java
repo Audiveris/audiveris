@@ -28,6 +28,7 @@ package org.audiveris.omr.classifier;
  */
 public abstract class Annotations
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** File name extension for whole book annotations: {@value}. */
     public static final String BOOK_ANNOTATIONS_EXTENSION = "-annotations.zip";
@@ -41,6 +42,7 @@ public abstract class Annotations
     /** File name extension for single sheet image: {@value}. */
     public static final String SHEET_IMAGE_EXTENSION = "-image." + SHEET_IMAGE_FORMAT;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */

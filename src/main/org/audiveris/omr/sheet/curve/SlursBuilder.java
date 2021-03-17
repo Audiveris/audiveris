@@ -80,6 +80,7 @@ import java.util.Set;
 public class SlursBuilder
         extends CurvesBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -91,6 +92,7 @@ public class SlursBuilder
 
     private static final Color SLUR_MODELS = new Color(255, 255, 0, 100);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
@@ -106,6 +108,7 @@ public class SlursBuilder
     /** Current maximum length for arcs to be tried. */
     private Integer maxLength = null;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlursBuilder object.
      *
@@ -119,6 +122,7 @@ public class SlursBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildSlurs //
     //------------//
@@ -492,9 +496,8 @@ public class SlursBuilder
             final double r1 = rough.getRadius();
             final double r2 = fitted.getRadius();
 
-            if (Double.isInfinite(r1) || ((abs(r1 - r2) / (max(
-                    r1,
-                    r2))) <= params.similarRadiusRatio)) {
+            if (Double.isInfinite(r1)
+                        || ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio)) {
                 circle = fitted;
                 dist = circle.getDistance();
             } else {
@@ -1074,6 +1077,7 @@ public class SlursBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

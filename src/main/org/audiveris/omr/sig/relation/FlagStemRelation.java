@@ -48,11 +48,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FlagStemRelation
         extends AbstractStemConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -74,8 +76,7 @@ public class FlagStemRelation
         final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
-            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM
-                    : STEM_MIDDLE;
+            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
         } else {
             return (extensionPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
         }
@@ -181,6 +182,7 @@ public class FlagStemRelation
         return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -201,26 +203,20 @@ public class FlagStemRelation
                 "Maximum horizontal overlap between stem & flag");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
-                0.45,
-                "Idem for profile 1");
+        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(0.45, "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal gap between stem & flag");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                0.45,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(0.45, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between stem & flag");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                0.75,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(0.75, "Idem for profile 1");
     }
 }

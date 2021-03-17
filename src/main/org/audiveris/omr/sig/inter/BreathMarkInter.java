@@ -42,9 +42,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BreathMarkInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BreathMarkInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BreathMarkInter} object.
      *
@@ -64,6 +66,7 @@ public class BreathMarkInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

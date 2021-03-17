@@ -29,8 +29,8 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.score.TimeValue;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.ui.HorizontalEditor;
@@ -190,6 +190,7 @@ public abstract class AbstractTimeInter
             boolean modified = false;
 
             final Double y = getSnapOrdinate();
+
             if (y != null) {
                 dropLocation.y = (int) Math.rint(y);
                 modified = true;
@@ -231,7 +232,7 @@ public abstract class AbstractTimeInter
         final int den = timeRational.den;
 
         // Specific case for 6/8, 9/8, 12/8 (but not 3/8)
-        if (num != 3 && num % 3 == 0 && den == 8) {
+        if ((num != 3) && ((num % 3) == 0) && (den == 8)) {
             return new Rational(3, 8);
         }
 
@@ -348,7 +349,7 @@ public abstract class AbstractTimeInter
         // Remove from staff header if relevant
         final StaffHeader header = staff.getHeader();
 
-        if (header != null && header.time == this) {
+        if ((header != null) && (header.time == this)) {
             header.time = null;
         }
 

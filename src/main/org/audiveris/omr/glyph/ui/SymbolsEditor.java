@@ -56,7 +56,6 @@ import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
-import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.sig.ui.InterEditor;
@@ -98,8 +97,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.swing.AbstractAction;
 
+import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -116,11 +115,13 @@ import javax.swing.SwingUtilities;
 public class SymbolsEditor
         implements PropertyChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -138,6 +139,7 @@ public class SymbolsEditor
     /** View parameters. */
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the DATA_TAB view in the sheet assembly tabs, dedicated to the display and
      * handling of glyphs and inters.
@@ -226,6 +228,7 @@ public class SymbolsEditor
         assembly.lockViewTab(SheetTab.DATA_TAB);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // closeEditMode //
     //---------------//
@@ -367,14 +370,7 @@ public class SymbolsEditor
      */
     public void highLight (final Slot slot)
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                view.highLight(slot);
-            }
-        });
+        SwingUtilities.invokeLater(() -> view.highLight(slot));
     }
 
     //--------------//
@@ -453,42 +449,7 @@ public class SymbolsEditor
         setRepetitiveInputMode(!view.repetitiveInputMode);
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
-                false,
-                "Should we select Pixel board by default?");
-
-        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
-                false,
-                "Should we select Horizontal Section board by default?");
-
-        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
-                false,
-                "Should we select Vertical Section board by default?");
-
-        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
-                false,
-                "Should we select Glyph board by default?");
-
-        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
-                true,
-                "Should we select Inter board by default?");
-
-        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
-                true,
-                "Should we select Shape board by default?");
-
-        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
-                true,
-                "Should we select Basic Classifier board by default?");
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
@@ -507,9 +468,6 @@ public class SymbolsEditor
 
         /** Repetitive input mode. */
         private boolean repetitiveInputMode = false;
-
-        /** On-going DnD operation in repetitive input mode. */
-        private InterDnd dnd;
 
         private MyView (GlyphIndex glyphIndex)
         {
@@ -753,7 +711,7 @@ public class SymbolsEditor
                     final Rectangle clip = g.getClipBounds();
                     final Rectangle systemRect = system.getBounds();
 
-                    if (clip == null || clip.intersects(systemRect)) {
+                    if ((clip == null) || clip.intersects(systemRect)) {
                         for (MeasureStack stack : system.getStacks()) {
                             boolean measureSignalled = false;
 
@@ -1096,5 +1054,41 @@ public class SymbolsEditor
                 }
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
+                false,
+                "Should we select Pixel board by default?");
+
+        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Horizontal Section board by default?");
+
+        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Vertical Section board by default?");
+
+        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
+                false,
+                "Should we select Glyph board by default?");
+
+        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
+                true,
+                "Should we select Inter board by default?");
+
+        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
+                true,
+                "Should we select Shape board by default?");
+
+        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
+                true,
+                "Should we select Basic Classifier board by default?");
     }
 }

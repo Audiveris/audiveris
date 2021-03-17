@@ -34,12 +34,14 @@ import java.awt.geom.Rectangle2D;
  */
 public abstract class GeoUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     // Not meant to be instantiated.
     private GeoUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // center2D //
     //----------//

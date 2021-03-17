@@ -40,6 +40,7 @@ import javax.media.jai.JAI;
  */
 public abstract class JaiLoader
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(JaiLoader.class);
 
@@ -57,10 +58,12 @@ public abstract class JaiLoader
     //            return null;
     //        }
     //    });
+    //~ Constructors -------------------------------------------------------------------------------
     private JaiLoader ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // loadJAI //
     //---------//

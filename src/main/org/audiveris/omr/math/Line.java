@@ -31,6 +31,7 @@ import java.awt.Rectangle;
  */
 public interface Line
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Compute the orthogonal distance between the line and the provided point.
@@ -174,6 +175,7 @@ public interface Line
      */
     double yAtXExt (double x);
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Specific exception raised when trying to invert a non-invertible line.
      */

@@ -60,6 +60,7 @@ import javax.swing.JMenuItem;
  */
 public class ShapeSet
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -243,11 +244,9 @@ public class ShapeSet
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             Colors.SCORE_MODIFIERS,
-            shapesOf(/* OTTAVA_ALTA, */
+            shapesOf( /* OTTAVA_ALTA, */
                     /* OTTAVA_BASSA, */
-                    PEDAL_MARK,
-                    PEDAL_UP_MARK,
-                    ARPEGGIATO));
+                    PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
@@ -353,7 +352,13 @@ public class ShapeSet
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
             Colors.SCORE_MODIFIERS,
-            shapesOf(DIGIT_0, DIGIT_1, DIGIT_2, DIGIT_3, DIGIT_4, DIGIT_5 //  ,
+            shapesOf(
+                    DIGIT_0,
+                    DIGIT_1,
+                    DIGIT_2,
+                    DIGIT_3,
+                    DIGIT_4,
+                    DIGIT_5 //  ,
             //                    DIGIT_6,
             //                    DIGIT_7,
             //                    DIGIT_8,
@@ -385,17 +390,11 @@ public class ShapeSet
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
             Colors.SCORE_PHYSICALS,
-            shapesOf(shapesOf(LYRICS,
-                              TEXT,
-                              /// CHARACTER,
-                              SLUR_ABOVE,
-                              SLUR_BELOW,
-                              LEDGER,
-                              STEM,
-                              ENDING,
-                              ENDING_WRL),
-                     constants.addClutterInPhysicals.isSet()
-                     ? shapesOf(CLUTTER) : Collections.emptyList()));
+            shapesOf(
+                    shapesOf(LYRICS, TEXT, /// CHARACTER,
+                             SLUR_ABOVE, SLUR_BELOW, LEDGER, STEM, ENDING, ENDING_WRL),
+                    constants.addClutterInPhysicals.isSet() ? shapesOf(CLUTTER) : Collections
+                    .emptyList()));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -442,6 +441,7 @@ public class ShapeSet
         ///dumpShapeColors();
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the set. */
     private String name;
 
@@ -460,6 +460,7 @@ public class ShapeSet
     /** Related color constant. */
     private Constant.Color constantColor;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ShapeSet object from a collection of shapes.
      *
@@ -489,6 +490,7 @@ public class ShapeSet
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // getRep //
     //--------//
@@ -892,7 +894,7 @@ public class ShapeSet
      */
     public static Collection<Shape> shapesOf (Collection<Shape> col)
     {
-        Collection<Shape> shapes = (col instanceof List) ? new ArrayList<Shape>()
+        Collection<Shape> shapes = (col instanceof List) ? new ArrayList<>()
                 : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col);
@@ -913,7 +915,7 @@ public class ShapeSet
     public static Collection<Shape> shapesOf (Collection<Shape> col1,
                                               Collection<Shape> col2)
     {
-        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<>()
                 : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
@@ -953,7 +955,7 @@ public class ShapeSet
                                               Collection<Shape> col3,
                                               Collection<Shape> col4)
     {
-        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<>()
                 : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
@@ -979,7 +981,7 @@ public class ShapeSet
                                               Collection<Shape> col2,
                                               Collection<Shape> col3)
     {
-        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<>()
                 : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
@@ -1062,6 +1064,19 @@ public class ShapeSet
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean addClutterInPhysicals = new Constant.Boolean(
+                false,
+                "(Hidden feature)");
+    }
+
     //------//
     // Sets //
     //------//
@@ -1090,17 +1105,5 @@ public class ShapeSet
         private Sets ()
         {
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean addClutterInPhysicals = new Constant.Boolean(
-                false,
-                "(Hidden feature)");
     }
 }

@@ -33,11 +33,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SeparateVoiceRelation
         extends Relation
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code SeparateVoiceRelation} object.
+     */
     public SeparateVoiceRelation ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//

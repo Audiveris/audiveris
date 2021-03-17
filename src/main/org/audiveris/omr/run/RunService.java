@@ -45,6 +45,7 @@ public class RunService
         extends SelectionService
         implements EventSubscriber<LocationEvent>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunService.class);
 
@@ -54,9 +55,11 @@ public class RunService
     /** Events observed on location service. */
     private static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying run table. */
     private final RunTable table;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunService} object.
      *
@@ -70,6 +73,7 @@ public class RunService
         this.table = table;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // cutLocationService //
     //--------------------//

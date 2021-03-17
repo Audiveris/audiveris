@@ -41,9 +41,16 @@ import java.util.Set;
  */
 public class CompoundFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CompoundFactory.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
+    private CompoundFactory ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildCompound //
     //---------------//
@@ -150,6 +157,7 @@ public class CompoundFactory
         return compounds;
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------------------//
     // CompoundConstructor //
     //---------------------//
@@ -167,6 +175,7 @@ public class CompoundFactory
         SectionCompound newInstance ();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Touching //
     //----------//
@@ -174,10 +183,6 @@ public class CompoundFactory
      * Represents a "touching" relationship between two sections.
      */
     private static class Touching
-    {
-    }
-
-    private CompoundFactory ()
     {
     }
 }

@@ -54,10 +54,10 @@ import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.BeamSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.util.Jaxb;
-import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -165,6 +165,7 @@ public abstract class AbstractBeamInter
         super(null, null, shape, grade);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -174,7 +175,6 @@ public abstract class AbstractBeamInter
         visitor.visit(this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -529,12 +529,14 @@ public abstract class AbstractBeamInter
             boolean modified = false;
 
             final Double x1 = getSnapAbscissa(LEFT, systemStems);
+
             if (x1 != null) {
                 model.p1.setLocation(x1, model.p1.getY());
                 modified = true;
             }
 
             final Double x2 = getSnapAbscissa(RIGHT, systemStems);
+
             if (x2 != null) {
                 model.p2.setLocation(x2, model.p2.getY());
                 modified = true;
@@ -610,11 +612,10 @@ public abstract class AbstractBeamInter
             group.setManual(true);
             group.setStaff(staff);
 
-            tasks.add(new AdditionTask(
-                    staff.getSystem().getSig(),
-                    group,
-                    getBounds(),
-                    Arrays.asList(new Link(this, new Containment(), true))));
+            tasks.add(new AdditionTask(staff.getSystem().getSig(),
+                                       group,
+                                       getBounds(),
+                                       Arrays.asList(new Link(this, new Containment(), true))));
         }
 
         return tasks;
@@ -640,6 +641,7 @@ public abstract class AbstractBeamInter
                 oldStillOk = true;
             } else {
                 members.remove(this);
+
                 final Scale scale = sig.getSystem().getSheet().getScale();
 
                 for (Inter member : members) {
@@ -661,7 +663,7 @@ public abstract class AbstractBeamInter
                 this, sig.getSystem(), oldGroup);
 
         if (otherGroup != null) {
-            if (oldGroup != null && oldStillOk) {
+            if ((oldGroup != null) && oldStillOk) {
                 // Migrate all beams from oldGroup to otherGroup
                 for (Relation r : sig.outgoingEdgesOf(oldGroup)) {
                     if (r instanceof Containment) {
@@ -682,7 +684,9 @@ public abstract class AbstractBeamInter
             final BeamGroupInter newGroup = new BeamGroupInter();
             newGroup.setManual(true);
             newGroup.setStaff(staff);
-            tasks.add(new AdditionTask(sig, newGroup, getBounds(),
+            tasks.add(new AdditionTask(sig,
+                                       newGroup,
+                                       getBounds(),
                                        Arrays.asList(new Link(this, new Containment(), true))));
         }
 
@@ -998,6 +1002,7 @@ public abstract class AbstractBeamInter
             system = staff.getSystem();
         } else {
             logger.warn("No system nor staff for {}", this);
+
             return null;
         }
 
@@ -1007,6 +1012,7 @@ public abstract class AbstractBeamInter
         if (link != null) {
             final StemInter stem = (StemInter) link.partner;
             final Point2D beamEnd = (side == LEFT) ? median.getP1() : median.getP2();
+
             return LineUtil.xAtY(stem.getMedian(), beamEnd.getY());
         }
 
@@ -1022,12 +1028,7 @@ public abstract class AbstractBeamInter
     {
 
         private static final String[] NAMES = new String[]{
-            "wdth",
-            "minH",
-            "maxH",
-            "core",
-            "belt",
-            "jit"};
+            "wdth", "minH", "maxH", "core", "belt", "jit"};
 
         private static final int DIST_INDEX = 5;
 
@@ -1052,6 +1053,31 @@ public abstract class AbstractBeamInter
         public double getDistImpact ()
         {
             return getImpact(DIST_INDEX);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        // Left point of median line
+        public Point2D p1;
+
+        // Right point of median line
+        public Point2D p2;
+
+        // Beam thickness
+        public double thickness;
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 
@@ -1196,31 +1222,6 @@ public abstract class AbstractBeamInter
             beam.computeArea(); // Set bounds also
 
             super.undo();
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        // Left point of median line
-        public Point2D p1;
-
-        // Right point of median line
-        public Point2D p2;
-
-        // Beam thickness
-        public double thickness;
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
         }
     }
 }

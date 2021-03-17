@@ -43,13 +43,16 @@ import java.util.Set;
  */
 public class Sections
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Sections.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     private Sections ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // byReverseLength //
     //-----------------//

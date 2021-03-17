@@ -32,26 +32,31 @@ public enum ArcShape
      * Not yet known.
      */
     UNKNOWN(false, false),
+
     /**
      * Short arc.
      * Can be tested as slur or wedge extension.
      */
     SHORT(true, true),
+
     /**
      * Long portion of slur.
      * Can be part of slur only.
      */
     SLUR(true, false),
+
     /**
      * Long straight line.
      * Can be part of wedge (and slur).
      */
     LINE(true, true),
+
     /**
      * Short portion of staff line.
      * Can be part of slur only.
      */
     STAFF_ARC(true, false),
+
     /**
      * Long arc, but no shape detected.
      * Cannot be part of slur/wedge

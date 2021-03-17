@@ -51,15 +51,18 @@ import java.util.List;
  */
 public class BookPdfOutput
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BookPdfOutput.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related book. */
     private final Book book;
 
     /** The file to print to. */
     private final File file;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SheetPdfOutput object.
      *
@@ -73,6 +76,7 @@ public class BookPdfOutput
         this.file = file;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Write the PDF output for the provided sheet if any, otherwise for the whole book.
      *

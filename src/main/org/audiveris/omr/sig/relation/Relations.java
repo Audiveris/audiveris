@@ -75,6 +75,7 @@ import java.util.function.Predicate;
  */
 public abstract class Relations
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Relations.class);
 
@@ -88,11 +89,13 @@ public abstract class Relations
         buildMaps();
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Relations ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the defined relation classes between the provided source and target
      * inter classes.
@@ -350,6 +353,7 @@ public abstract class Relations
         getSet(tgt, targetClass).add(relationClass);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------------//
     // RelationClassPredicate //
     //------------------------//

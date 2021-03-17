@@ -42,6 +42,7 @@ import java.awt.geom.Rectangle2D;
 public class TextFont
         extends OmrFont
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -57,6 +58,7 @@ public class TextFont
     /** Name of the chosen underlying text font */
     private static final String fontName = constants.defaultTextFontName.getValue();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextFont object.
      *
@@ -96,6 +98,7 @@ public class TextFont
         super(fontName, Font.PLAIN, size);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // computeFontSize //
     //-----------------//
@@ -154,6 +157,7 @@ public class TextFont
         return fontSize * (width / (float) basicRect.getWidth());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -40,9 +40,11 @@ import javax.swing.event.HyperlinkListener;
 public class BrowserLinkListener
         implements HyperlinkListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BrowserLinkListener.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void hyperlinkUpdate (HyperlinkEvent event)
     {

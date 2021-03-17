@@ -37,6 +37,7 @@ import javax.imageio.ImageIO;
 public class GhostPictureAdapter<A>
         extends GhostDropAdapter<A>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostPictureAdapter object

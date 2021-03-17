@@ -46,7 +46,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -59,11 +58,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestInter
         extends AbstractNoteInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RestInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RestInter object.
      *
@@ -89,6 +90,7 @@ public class RestInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -182,22 +184,15 @@ public class RestInter
             // All head-chords in measure
             final int left = measure.getAbscissa(HorizontalSide.LEFT, staff);
             final int right = measure.getAbscissa(HorizontalSide.RIGHT, staff);
-            measureChords = Inters.inters(
-                    systemHeadChords,
-                    new Predicate<Inter>()
-            {
-                @Override
-                public boolean test (Inter inter)
-                {
-                    if (inter.getStaff() != staff) {
-                        return false;
-                    }
+            measureChords = Inters.inters(systemHeadChords, (Inter inter) -> {
+                                      if (inter.getStaff() != staff) {
+                                          return false;
+                                      }
 
-                    final Point center = inter.getCenter();
+                                      final Point center = inter.getCenter();
 
-                    return (center.x >= left) && (center.x <= right);
-                }
-            });
+                                      return (center.x >= left) && (center.x <= right);
+                                  });
 
             // Pitch value WRT staff
             final double measuredPitch = staff.pitchPositionOf(centroid);
@@ -279,6 +274,7 @@ public class RestInter
         return restInter;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -286,11 +282,13 @@ public class RestInter
             extends ConstantSet
     {
 
-        private final Constant.Double suspiciousPitchPosition = new Constant.Double("PitchPosition",
-                                                                                    2.0,
-                                                                                    "Maximum absolute pitch position for a rest to avoid additional checks");
+        private final Constant.Double suspiciousPitchPosition = new Constant.Double(
+                "PitchPosition",
+                2.0,
+                "Maximum absolute pitch position for a rest to avoid additional checks");
 
-        private final Scale.Fraction minInterChordDx = new Scale.Fraction(0.5,
-                                                                          "Minimum horizontal delta between two chords");
+        private final Scale.Fraction minInterChordDx = new Scale.Fraction(
+                0.5,
+                "Minimum horizontal delta between two chords");
     }
 }

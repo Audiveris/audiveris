@@ -62,9 +62,11 @@ import javax.swing.JProgressBar;
 public class ValidationPanel
         implements Observer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
 
@@ -132,6 +134,7 @@ public class ValidationPanel
     /** User action to investigate on weak negatives. */
     private final WeakNegativeAction weakNegativeAction = new WeakNegativeAction();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ValidationPanel object.
      *
@@ -159,6 +162,7 @@ public class ValidationPanel
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -360,6 +364,7 @@ public class ValidationPanel
         //        }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------------//
     // FalsePositiveAction //
     //---------------------//
@@ -395,7 +400,8 @@ public class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(new Runnable()
+            executor.execute(
+                    new Runnable()
             {
                 @Override
                 public void run ()

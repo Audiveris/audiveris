@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 public class LLabel
         extends LField<JLabel>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code LLabel} object, with default center alignment
@@ -69,6 +70,7 @@ public class LLabel
         getField().setHorizontalAlignment(horizontalAlignment);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getText //
     //---------//

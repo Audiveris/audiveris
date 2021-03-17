@@ -46,12 +46,15 @@ import java.util.List;
  */
 public class OpusExporter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OpusExporter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related book. */
     private final Book book;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code OpusExporter} object on a related book.
      *
@@ -62,6 +65,7 @@ public class OpusExporter
         this.book = book;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // export //
     //--------//

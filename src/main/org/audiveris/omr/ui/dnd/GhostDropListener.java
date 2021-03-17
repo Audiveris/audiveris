@@ -30,6 +30,7 @@ package org.audiveris.omr.ui.dnd;
  */
 public interface GhostDropListener<A>
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Call-back function to receive the drop event

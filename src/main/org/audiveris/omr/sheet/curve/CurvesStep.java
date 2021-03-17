@@ -33,6 +33,7 @@ import org.audiveris.omr.step.StepException;
 public class CurvesStep
         extends AbstractStep
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SlursStep object.
@@ -41,6 +42,7 @@ public class CurvesStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//

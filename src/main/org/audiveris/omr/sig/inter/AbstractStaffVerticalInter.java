@@ -43,6 +43,7 @@ import java.util.List;
 public abstract class AbstractStaffVerticalInter
         extends AbstractVerticalInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code AbstractStaffVerticalInter} object, with its grade.
@@ -80,6 +81,7 @@ public abstract class AbstractStaffVerticalInter
         super(glyph, shape, grade, median, width);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getEditor //
     //-----------//
@@ -113,6 +115,7 @@ public abstract class AbstractStaffVerticalInter
         return upgraded;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//

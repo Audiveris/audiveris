@@ -62,12 +62,14 @@ import java.util.concurrent.ConcurrentSkipListSet;
 @ThreadSafe
 public class UnitManager
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
 
     /** The single instance of this class. */
     private static final UnitManager INSTANCE = new UnitManager();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The root node. */
     private final PackageNode root = new PackageNode("<root>", null);
 
@@ -77,12 +79,14 @@ public class UnitManager
     /** Set of names of ConstantSets that still need to be initialized. */
     private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** This is a singleton. */
     private UnitManager ()
     {
         mapOfNodes.put("<root>", root);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -144,8 +148,8 @@ public class UnitManager
         props.removeAll(constants);
         dumpStrings("Non set-enclosed properties", props);
 
-        dumpStrings("Unused User properties", ConstantManager.getInstance()
-                    .getUnusedUserProperties());
+        dumpStrings("Unused User properties",
+                    ConstantManager.getInstance().getUnusedUserProperties());
     }
 
     //----------------//
@@ -450,8 +454,8 @@ public class UnitManager
 
                 return;
             } else {
-                Exception e = new IllegalStateException("unexpected node type " + obj.getClass()
-                                                                + " in map.");
+                Exception e = new IllegalStateException(
+                        "unexpected node type " + obj.getClass() + " in map.");
                 e.printStackTrace();
 
                 return;

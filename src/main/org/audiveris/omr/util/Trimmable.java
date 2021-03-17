@@ -39,10 +39,8 @@ import java.lang.reflect.Method;
  */
 public abstract class Trimmable
 {
-
-    //~ Static fields/initializers -----------------------------------------------------------------
-    //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
+
     private Trimmable ()
     {
     }
@@ -73,6 +71,7 @@ public abstract class Trimmable
             if (field.isAnnotationPresent(Collection.class)) {
                 Method isEmptyMethod = field.getType().getMethod("isEmpty");
                 field.setAccessible(true);
+
                 Object collection = field.get(obj);
                 boolean isEmpty = (boolean) isEmptyMethod.invoke(collection);
 
@@ -106,6 +105,7 @@ public abstract class Trimmable
         for (Field field : obj.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Collection.class)) {
                 field.setAccessible(true);
+
                 Object collection = field.get(obj);
 
                 if (collection == null) {
@@ -116,7 +116,7 @@ public abstract class Trimmable
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //~ Annotations --------------------------------------------------------------------------------
     /**
      * Annotation {@code Collection} flags a collection field as trimmable.
      * <p>

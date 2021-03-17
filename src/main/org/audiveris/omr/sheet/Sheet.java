@@ -76,7 +76,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
-import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -224,6 +223,7 @@ public class Sheet
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -292,9 +292,6 @@ public class Sheet
 
     /** Related symbols editor, if any. */
     private SymbolsEditor symbolsEditor;
-
-    /** Stroke for slurs, wedges and endings lines. */
-    private Stroke lineStroke;
 
     //-- resettable members ---
     //
@@ -515,14 +512,7 @@ public class Sheet
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        createBinaryView();
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> createBinaryView());
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -1509,15 +1499,8 @@ public class Sheet
             getErrorsEditor().clearStep(step);
 
             if (interController != null) {
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        interController.clearHistory();
-                    }
-                });
+                // To be run on swing thread
+                SwingUtilities.invokeLater(() -> interController.clearHistory());
             }
         }
     }

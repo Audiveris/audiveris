@@ -64,12 +64,14 @@ import javax.xml.stream.XMLStreamException;
 @XmlRootElement(name = "neural-network")
 public class NeuralNetwork
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Size of input layer. */
     @XmlAttribute(name = "input-size")
     private final int inputSize;
@@ -112,6 +114,7 @@ public class NeuralNetwork
     /** To trigger training stop. */
     private transient volatile boolean stopping = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a neural network, with specified number of cells in each
      * layer, and default values.
@@ -204,6 +207,7 @@ public class NeuralNetwork
         outputLabels = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // backup //
     //--------//
@@ -787,6 +791,7 @@ public class NeuralNetwork
         return jaxbContext;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Backup //
     //--------//

@@ -52,11 +52,13 @@ import javax.swing.text.StyleConstants;
  */
 public class LogPane
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LogPane.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The scrolling text area */
     private final JScrollPane component;
 
@@ -67,6 +69,7 @@ public class LogPane
 
     private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the log pane, with a standard mailbox.
      */
@@ -86,6 +89,7 @@ public class LogPane
         component.setViewportView(logArea);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // clearLog //
     //----------//
@@ -120,49 +124,44 @@ public class LogPane
      */
     public void notifyLog ()
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                while (LogGuiAppender.getEventCount() > 0) {
-                    ILoggingEvent event = LogGuiAppender.pollEvent();
+        SwingUtilities.invokeLater(() -> {
+            while (LogGuiAppender.getEventCount() > 0) {
+                ILoggingEvent event = LogGuiAppender.pollEvent();
 
-                    if (event != null) {
-                        // Color
-                        StyleConstants.setForeground(attributes, getLevelColor(event.getLevel()));
+                if (event != null) {
+                    // Color
+                    StyleConstants.setForeground(attributes, getLevelColor(event.getLevel()));
 
-                        // Font name
-                        StyleConstants.setFontFamily(attributes, constants.fontName.getValue());
+                    // Font name
+                    StyleConstants.setFontFamily(attributes, constants.fontName.getValue());
 
-                        // Font size
-                        int fontSize = UIUtil.adjustedSize(constants.fontSize.getValue());
-                        StyleConstants.setFontSize(attributes, fontSize);
+                    // Font size
+                    int fontSize = UIUtil.adjustedSize(constants.fontSize.getValue());
+                    StyleConstants.setFontSize(attributes, fontSize);
 
-                        try {
-                            Map<String, String> mdc = event.getMDCPropertyMap();
-                            String book = mdc.get(LogUtil.BOOK);
-                            String sheet = mdc.get(LogUtil.SHEET);
-                            StringBuilder sb = new StringBuilder();
+                    try {
+                        Map<String, String> mdc = event.getMDCPropertyMap();
+                        String book = mdc.get(LogUtil.BOOK);
+                        String sheet = mdc.get(LogUtil.SHEET);
+                        StringBuilder sb = new StringBuilder();
 
-                            if (book != null) {
-                                sb.append('[');
-                                sb.append(book);
+                        if (book != null) {
+                            sb.append('[');
+                            sb.append(book);
 
-                                if (sheet != null) {
-                                    sb.append(sheet);
-                                }
-
-                                sb.append("] ");
+                            if (sheet != null) {
+                                sb.append(sheet);
                             }
 
-                            document.insertString(
-                                    document.getLength(),
-                                    sb + event.getFormattedMessage() + "\n",
-                                    attributes);
-                        } catch (BadLocationException ex) {
-                            ex.printStackTrace();
+                            sb.append("] ");
                         }
+
+                        document.insertString(
+                                document.getLength(),
+                                sb + event.getFormattedMessage() + "\n",
+                                attributes);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -185,6 +184,7 @@ public class LogPane
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

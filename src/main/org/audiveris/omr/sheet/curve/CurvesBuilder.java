@@ -72,6 +72,7 @@ import java.util.Set;
 public abstract class CurvesBuilder
         implements ItemRenderer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -88,6 +89,7 @@ public abstract class CurvesBuilder
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -122,6 +124,7 @@ public abstract class CurvesBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SequencesBuilder object.
      *
@@ -138,6 +141,7 @@ public abstract class CurvesBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Try to append one arc to an existing curve and thus create a new curve.
      *
@@ -435,19 +439,14 @@ public abstract class CurvesBuilder
 
         double dl1 = params.gapBoxDeltaIn;
         Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
-        path = new GeoPath(
-                new Line2D.Double(
-                        PointUtil.addition(ce, dlVect),
-                        PointUtil.subtraction(ce, dlVect)));
+        path = new GeoPath(new Line2D.Double(PointUtil.addition(ce, dlVect),
+                                             PointUtil.subtraction(ce, dlVect)));
 
         double dl2 = params.gapBoxDeltaOut;
         dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
-        path.append(
-                new Line2D.Double(
-                        PointUtil.subtraction(ce2, dlVect),
-                        PointUtil.addition(ce2, dlVect)),
-                true);
-        //        }
+        path.append(new Line2D.Double(PointUtil.subtraction(ce2, dlVect),
+                                      PointUtil.addition(ce2, dlVect)),
+                    true);
         path.closePath();
 
         Area area = new Area(path);
@@ -530,7 +529,7 @@ public abstract class CurvesBuilder
         for (Inter inter : inters) {
             Rectangle bounds = inter.getBounds();
 
-            if (bounds != null && bounds.intersects(box)) {
+            if ((bounds != null) && bounds.intersects(box)) {
                 Area area = inter.getArea();
 
                 if ((area == null) || area.intersects(box)) {
@@ -830,8 +829,8 @@ public abstract class CurvesBuilder
      * To do so, we use a "line area" between curve and arc and fill it with hidden items.
      * We then check the widest true gap against maximum acceptable value.
      *
-     * @param curve        curve to extend
-     * @param arcView      candidate arc
+     * @param curve   curve to extend
+     * @param arcView candidate arc
      * @return true for acceptable, false otherwise
      */
     private boolean isGapAcceptable (Curve curve,
@@ -1015,57 +1014,7 @@ public abstract class CurvesBuilder
         }
     }
 
-    //-----------//
-    // Extension //
-    //-----------//
-    private class Extension
-    {
-
-        /** Curve quality. */
-        private Double grade;
-
-        /** Curve as defined so far. */
-        Curve curve;
-
-        /** Arcs considered for curve immediate extension. */
-        Set<Arc> browsed;
-
-        Extension (Curve curve,
-                   Set<Arc> browsed)
-        {
-            this.curve = curve;
-            this.browsed = new LinkedHashSet<>(browsed); // Copy is needed
-        }
-
-        public double getGrade ()
-        {
-            if (grade == null) {
-                GradeImpacts impacts = computeImpacts(curve, false);
-
-                if (impacts != null) {
-                    grade = impacts.getGrade();
-                } else {
-                    grade = 0.0;
-                }
-            }
-
-            return grade;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{Ext ");
-            sb.append(String.format("%.3f", getGrade()));
-            sb.append(curve);
-            ///sb.append(" browsed:").append(browsed);
-            sb.append('}');
-
-            return sb.toString();
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -1161,4 +1110,54 @@ public abstract class CurvesBuilder
         }
     }
 
+    //-----------//
+    // Extension //
+    //-----------//
+    private class Extension
+    {
+
+        /** Curve quality. */
+        private Double grade;
+
+        /** Curve as defined so far. */
+        Curve curve;
+
+        /** Arcs considered for curve immediate extension. */
+        Set<Arc> browsed;
+
+        Extension (Curve curve,
+                   Set<Arc> browsed)
+        {
+            this.curve = curve;
+            this.browsed = new LinkedHashSet<>(browsed); // Copy is needed
+        }
+
+        public double getGrade ()
+        {
+            if (grade == null) {
+                GradeImpacts impacts = computeImpacts(curve, false);
+
+                if (impacts != null) {
+                    grade = impacts.getGrade();
+                } else {
+                    grade = 0.0;
+                }
+            }
+
+            return grade;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{Ext ");
+            sb.append(String.format("%.3f", getGrade()));
+            sb.append(curve);
+            ///sb.append(" browsed:").append(browsed);
+            sb.append('}');
+
+            return sb.toString();
+        }
+    }
 }

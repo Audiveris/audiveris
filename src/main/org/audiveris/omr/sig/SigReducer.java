@@ -73,7 +73,8 @@ import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.*;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
@@ -109,15 +110,15 @@ import java.util.function.Predicate;
  */
 public class SigReducer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
     /** Inter classes for which overlap detection is (currently) disabled. */
-    private static final Class<?>[] disabledClasses = new Class<?>[]{
-        LedgerInter.class,
-        WedgeInter.class};
+    private static final Class<?>[] disabledClasses = new Class<?>[]{LedgerInter.class,
+                                                                     WedgeInter.class};
 
     /** Predicate for non-disabled overlap. */
     private static final Predicate<Inter> overlapPredicate = new Predicate<Inter>()
@@ -141,21 +142,27 @@ public class SigReducer
      * Inter classes that can overlap with a beam.
      * NOTA: Barlines are no longer allowed to overlap with a beam
      */
-    private static final Class<?>[] beamCompClasses = new Class<?>[]{
-        AbstractBeamInter.class};
+    private static final Class<?>[] beamCompClasses = new Class<?>[]{AbstractBeamInter.class};
 
     /** Inter classes that can overlap with a slur. */
-    private static final Class<?>[] slurCompClasses = new Class<?>[]{
-        AbstractFlagInter.class,
-        AlterInter.class,
-        BarlineInter.class,
-        StaffBarlineInter.class};
+    private static final Class<?>[] slurCompClasses = new Class<?>[]{AbstractFlagInter.class,
+                                                                     AlterInter.class,
+                                                                     BarlineInter.class,
+                                                                     StaffBarlineInter.class};
 
     /** Inter classes that can overlap with a stem. */
-    private static final Class<?>[] stemCompClasses = new Class<?>[]{
-        SlurInter.class,
-        WedgeInter.class};
+    private static final Class<?>[] stemCompClasses = new Class<?>[]{SlurInter.class,
+                                                                     WedgeInter.class};
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Standard vs Small size. */
+    private static enum Size
+    {
+        STANDARD,
+        SMALL;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -170,6 +177,7 @@ public class SigReducer
     /** Should we purge weak inter instances?. */
     private final boolean purgeWeaks;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SigReducer} object.
      *
@@ -186,6 +194,7 @@ public class SigReducer
         scale = system.getSheet().getScale();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // reduceFoundations //
     //-------------------//
@@ -356,16 +365,15 @@ public class SigReducer
                                     BeamStemRelation.class);
 
                             for (Inter smallHead : smallHeadSet) {
-                                if (sig.getRelation(
-                                        smallBeam,
-                                        smallHead,
-                                        BeamHeadRelation.class) == null) {
+                                if (sig.getRelation(smallBeam, smallHead, BeamHeadRelation.class)
+                                            == null) {
                                     // Use average of beam-stem and head-stem relation grades
                                     HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
                                             smallHead,
                                             stem,
                                             HeadStemRelation.class);
                                     double grade = (bs.getGrade() + hs.getGrade()) / 2;
+
                                     ///sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
                                 }
                             }
@@ -397,6 +405,7 @@ public class SigReducer
                                             stem,
                                             HeadStemRelation.class);
                                     double grade = (bs.getGrade() + hs.getGrade()) / 2;
+
                                     ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
                                 }
                             }
@@ -891,8 +900,8 @@ public class SigReducer
             Part part = staff.getPart();
             Measure measure = part.getMeasureAt(center);
 
-            if ((measure != null) && (measure == part.getLastMeasure())
-                        && (measure.getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
+            if ((measure != null) && (measure == part.getLastMeasure()) && (measure
+                    .getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
                 // Empty measure?
                 // Measure width?
                 continue;
@@ -985,25 +994,16 @@ public class SigReducer
 
         Set<Inter> deleted = new LinkedHashSet<>();
         final int maxSlurWidth = scale.toPixels(constants.maxTupletSlurWidth);
-        final List<Inter> slurs = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean test (Inter inter)
-            {
-                return !inter.isRemoved() && (inter instanceof SlurInter)
-                               && (inter.getBounds().width <= maxSlurWidth);
-            }
-        });
+        final List<Inter> slurs = sig.inters((Inter inter)
+                -> !inter.isRemoved()
+                           && (inter instanceof SlurInter)
+                           && (inter.getBounds().width <= maxSlurWidth));
 
-        final List<Inter> tuplets = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean test (Inter inter)
-            {
-                return !inter.isRemoved() && !inter.isImplicit() && (inter instanceof TupletInter)
-                               && (inter.isContextuallyGood());
-            }
-        });
+        final List<Inter> tuplets = sig.inters((Inter inter)
+                -> !inter.isRemoved()
+                           && !inter.isImplicit()
+                           && (inter instanceof TupletInter)
+                           && (inter.isContextuallyGood()));
 
         for (Inter slurInter : slurs) {
             final SlurInter slur = (SlurInter) slurInter;
@@ -1074,6 +1074,7 @@ public class SigReducer
 
         for (Inter inter : stems) {
             final StemInter stem = (StemInter) inter;
+
             if (stem.isVip()) {
                 logger.info("VIP checkStem {}", stem);
             }
@@ -1082,23 +1083,25 @@ public class SigReducer
                 if (stem.isVip()) {
                     logger.info("VIP deleting stem lacking heads {}", stem);
                 }
+
                 stem.remove();
                 modifs++;
 
                 continue;
             }
-//
-//            if (!stemHasHeadAtEnd(stem)) {
-//                if (stem.isVip()) {
-//                    logger.info("VIP deleting stem lacking starting head {}", stem);
-//                }
-//
-//                stem.remove();
-//                modifs++;
-//
-//                continue;
-//            }
-//
+
+            //
+            //            if (!stemHasHeadAtEnd(stem)) {
+            //                if (stem.isVip()) {
+            //                    logger.info("VIP deleting stem lacking starting head {}", stem);
+            //                }
+            //
+            //                stem.remove();
+            //                modifs++;
+            //
+            //                continue;
+            //            }
+            //
             if (!stemHasSingleHeadEnd(stem)) {
                 modifs++;
             }
@@ -1325,6 +1328,7 @@ public class SigReducer
 
                 if (headMirror != null) {
                     mirrors.add(headMirror);
+
                     HeadChordInter chordMirror = headMirror.getChord();
 
                     if (chordMirror != null) {
@@ -1369,16 +1373,11 @@ public class SigReducer
                     if (left.overlaps(right) && right.overlaps(left)) {
                         // Specific case: Word vs "string" Symbol
                         if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                            if (wordMatchesSymbol(
-                                    (WordInter) left,
-                                    (StringSymbolInter) right)) {
+                            if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
                                 left.decrease(0.5);
                             }
-                        } else if (left instanceof StringSymbolInter
-                                           && right instanceof WordInter) {
-                            if (wordMatchesSymbol(
-                                    (WordInter) right,
-                                    (StringSymbolInter) left)) {
+                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
+                            if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
                                 right.decrease(0.5);
                             }
                         }
@@ -1418,8 +1417,11 @@ public class SigReducer
                           Inter right)
     {
         // Special overlap case between a stem and a standard-size note head
-        if ((left instanceof StemInter && right instanceof HeadInter && !right.getShape().isSmall())
-                    || (right instanceof StemInter && left instanceof HeadInter
+        if ((left instanceof StemInter
+                     && right instanceof HeadInter
+                     && !right.getShape().isSmall())
+                    || (right instanceof StemInter
+                                && left instanceof HeadInter
                                 && !left.getShape().isSmall())) {
             return;
         }
@@ -1487,7 +1489,6 @@ public class SigReducer
     {
         if (head.isVip()) {
             logger.info("VIP checkHeadHasStem for {}", head);
-
         }
 
         // Check if the head has a stem relation
@@ -1586,10 +1587,10 @@ public class SigReducer
         final Part staffPart = staff.getPart();
 
         if (staffPart.isMerged()) {
-            if (staff == staffPart.getFirstStaff() && (pitch == 7)) {
+            if ((staff == staffPart.getFirstStaff()) && (pitch == 7)) {
                 staff = staffPart.getLastStaff();
                 pitch = -5;
-            } else if (staff == staffPart.getLastStaff() && (pitch == -6)) {
+            } else if ((staff == staffPart.getLastStaff()) && (pitch == -6)) {
                 staff = staffPart.getFirstStaff();
                 pitch = 5;
             }
@@ -1852,41 +1853,41 @@ public class SigReducer
 
         return modifs;
     }
-//
-//    //------------------//
-//    // stemHasHeadAtEnd //
-//    //------------------//
-//    /**
-//     * Check if the stem has at least a head at some end.
-//     *
-//     * @param stem the stem inter
-//     * @return true if OK
-//     */
-//    private boolean stemHasHeadAtEnd (StemInter stem)
-//    {
-//        if (stem.isVip()) {
-//            logger.info("VIP stemHasHeadAtEnd for {}", stem);
-//        }
-//
-//        final Line2D stemLine = stem.computeExtendedLine();
-//
-//        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-//            // Check stem portion
-//            HeadStemRelation hsRel = (HeadStemRelation) rel;
-//            Inter head = sig.getOppositeInter(stem, rel);
-//
-//            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-//
+
+    //
+    //    //------------------//
+    //    // stemHasHeadAtEnd //
+    //    //------------------//
+    //    /**
+    //     * Check if the stem has at least a head at some end.
+    //     *
+    //     * @param stem the stem inter
+    //     * @return true if OK
+    //     */
+    //    private boolean stemHasHeadAtEnd (StemInter stem)
+    //    {
+    //        if (stem.isVip()) {
+    //            logger.info("VIP stemHasHeadAtEnd for {}", stem);
+    //        }
+    //
+    //        final Line2D stemLine = stem.computeExtendedLine();
+    //
+    //        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+    //            // Check stem portion
+    //            HeadStemRelation hsRel = (HeadStemRelation) rel;
+    //            Inter head = sig.getOppositeInter(stem, rel);
+    //
+    //            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
+    //                return true;
+    //            }
+    //        }
+    //
+    //        return false;
+    //    }
+    //
     //----------------------//
     // stemHasSingleHeadEnd //
     //----------------------//
-
     /**
      * Check if the stem does not have heads at both ends.
      * <p>
@@ -2005,7 +2006,55 @@ public class SigReducer
         }
 
         return false;
+    }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
+    private abstract static class Adapter
+    {
+
+        Set<Inter> deleted = new LinkedHashSet<>();
+
+        Set<Inter> reduced = new LinkedHashSet<>();
+
+        public int checkConsistencies ()
+        {
+            return 0; // Void by default
+        }
+
+        public void checkFrozens ()
+        {
+            // Void by default
+        }
+
+        public int checkLateConsistencies ()
+        {
+            return 0; // Void by default
+        }
+
+        public Set<Inter> checkSlurs ()
+        {
+            return Collections.emptySet();
+        }
+
+        public void prolog ()
+        {
+            // Void by default
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+                3,
+                "Maximum width for slur around tuplet");
     }
 
     //-----------------------//
@@ -2053,10 +2102,11 @@ public class SigReducer
             analyzeChords(); // Heads size compatibility & beams size compatibility
             reduced.addAll(sig.reduceExclusions());
             deleted.addAll(contextualizeAndPurge());
-//
-//            modifs += checkStemsLengths();
-//            deleted.addAll(contextualizeAndPurge());
-//
+
+            //
+            //            modifs += checkStemsLengths();
+            //            deleted.addAll(contextualizeAndPurge());
+            //
             return modifs;
         }
 
@@ -2125,60 +2175,5 @@ public class SigReducer
             // Still needed because of cue beams
             analyzeChords();
         }
-    }
-
-    /** Standard vs Small size. */
-    private static enum Size
-    {
-        STANDARD,
-        SMALL;
-    }
-
-    //---------//
-    // Adapter //
-    //---------//
-    private static abstract class Adapter
-    {
-
-        Set<Inter> deleted = new LinkedHashSet<>();
-
-        Set<Inter> reduced = new LinkedHashSet<>();
-
-        public int checkConsistencies ()
-        {
-            return 0; // Void by default
-        }
-
-        public void checkFrozens ()
-        {
-            // Void by default
-        }
-
-        public int checkLateConsistencies ()
-        {
-            return 0; // Void by default
-        }
-
-        public Set<Inter> checkSlurs ()
-        {
-            return Collections.emptySet();
-        }
-
-        public void prolog ()
-        {
-            // Void by default
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
-                3,
-                "Maximum width for slur around tuplet");
     }
 }

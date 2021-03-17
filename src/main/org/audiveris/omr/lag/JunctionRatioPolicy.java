@@ -34,6 +34,7 @@ import org.audiveris.omr.run.Run;
 public class JunctionRatioPolicy
         implements JunctionPolicy
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -42,6 +43,7 @@ public class JunctionRatioPolicy
      */
     public static final JunctionRatioPolicy DEFAULT = new JunctionRatioPolicy();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Maximum value acceptable for length ratio.
      */
@@ -52,6 +54,7 @@ public class JunctionRatioPolicy
      */
     private final double minLengthRatio;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a policy based on default length ratio.
      */
@@ -72,6 +75,7 @@ public class JunctionRatioPolicy
         this.minLengthRatio = 1f / maxLengthRatio;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//
@@ -100,9 +104,10 @@ public class JunctionRatioPolicy
     public String toString ()
     {
         return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio + " minLengthRatio="
-                       + minLengthRatio + "}";
+               + minLengthRatio + "}";
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

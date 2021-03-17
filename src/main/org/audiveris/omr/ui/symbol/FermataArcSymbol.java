@@ -40,10 +40,12 @@ import java.awt.geom.Point2D;
 public class FermataArcSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // The DOT_set symbol
     private final ShapeSymbol dotSymbol = Symbols.getSymbol(DOT_set);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a FermataArcSymbol (with decoration?) standard size.
      *
@@ -74,6 +76,7 @@ public class FermataArcSymbol
         super(isIcon, shape, decorated, codes);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -133,6 +136,7 @@ public class FermataArcSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

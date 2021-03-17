@@ -57,11 +57,14 @@ import java.util.List;
  */
 public class PartConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private List<ResultEntry> resultEntries;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartConnection} object.
      *
@@ -72,6 +75,7 @@ public class PartConnection
         resultEntries = connect(sequences);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // dumpResults //
     //-------------//
@@ -243,8 +247,8 @@ public class PartConnection
             resultIndex += dir;
             logger.debug("resultIndex:{}", resultIndex);
 
-            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0)
-                                                                           && (resultIndex < 0))) {
+            if (((dir > 0) && (resultIndex >= results.size()))
+                        || ((dir < 0) && (resultIndex < 0))) {
                 logger.debug("No more entries available");
 
                 // Create a brand new logical part for this candidate
@@ -291,6 +295,7 @@ public class PartConnection
         }
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-----------//
     // Candidate //
     //-----------//
@@ -336,6 +341,7 @@ public class PartConnection
         void setId (int id);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ResultEntry //
     //-------------//

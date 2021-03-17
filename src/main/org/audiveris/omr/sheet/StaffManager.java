@@ -80,11 +80,13 @@ import java.util.List;
 public class StaffManager
         implements ItemRenderer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffManager.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -92,6 +94,7 @@ public class StaffManager
     /** The sequence of staves, ordered by layout position. */
     private final List<Staff> staves = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StaffManager object.
      *
@@ -106,6 +109,7 @@ public class StaffManager
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addStaff //
     //----------//
@@ -211,12 +215,14 @@ public class StaffManager
         // North
         final GeoPath northPath = new GeoPath();
         northPath.append(staff.getFirstLine().getSpline(), true);
+
         final PathIterator northIterator = northPath.getPathIterator(
                 AffineTransform.getTranslateInstance(0, -verticalMargin));
 
         // South
         final GeoPath southPath = new GeoPath();
         southPath.append(staff.getLastLine().getSpline(), true);
+
         final PathIterator southIterator = southPath.getPathIterator(
                 AffineTransform.getTranslateInstance(0, +verticalMargin));
 
@@ -670,6 +676,7 @@ public class StaffManager
                                            List<Staff> theStaves)
     {
         List<Staff> found = new ArrayList<>();
+
         for (Staff staff : theStaves) {
             Area area = staff.getArea();
 
@@ -677,9 +684,11 @@ public class StaffManager
                 found.add(staff);
             }
         }
+
         return found;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -16,6 +16,7 @@ import java.util.LinkedList;
  */
 public class WatershedGrayLevel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of gray level values. */
     private static final int GRAYLEVEL = 256;
@@ -29,6 +30,7 @@ public class WatershedGrayLevel
     /** Ordinate offsets of the 8 neighbors, clockwise. */
     private static final int[] dy8 = new int[]{-1, -1, -1, 0, 1, 1, 1, 0};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Original gray-level image, organized row per row. */
     private final Table image;
 
@@ -52,6 +54,7 @@ public class WatershedGrayLevel
     /** List of pixels (one per level) to process. */
     private ListOfPixels[] exploreList;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WatershedGrayLevel object.
      *
@@ -78,6 +81,7 @@ public class WatershedGrayLevel
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getRegionCount //
     //----------------//
@@ -303,6 +307,7 @@ public class WatershedGrayLevel
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // ListOfPixels //
     //--------------//

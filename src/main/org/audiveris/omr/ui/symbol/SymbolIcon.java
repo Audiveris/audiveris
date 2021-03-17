@@ -55,6 +55,7 @@ import javax.swing.Icon;
 public interface SymbolIcon
         extends Icon
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Paint the symbol that represents the related shape, using the scaled font and

@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Point2D;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -41,9 +42,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class CaesuraInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CaesuraInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CaesuraInter} object.
      *
@@ -63,6 +66,7 @@ public class CaesuraInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

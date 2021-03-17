@@ -32,11 +32,13 @@ import java.util.Arrays;
  */
 public abstract class ByteUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     private ByteUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Fill the ByteProcessor with provided value.
      *

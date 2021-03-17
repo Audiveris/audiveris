@@ -41,9 +41,11 @@ import java.util.SortedSet;
 public class RunSmallStaffCheck
         extends RunClass
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunSmallStaffCheck.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunSmallStaffCheck} object.
      *
@@ -56,6 +58,7 @@ public class RunSmallStaffCheck
         super(book, sheetIds);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void process ()
     {

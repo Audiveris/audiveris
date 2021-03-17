@@ -44,6 +44,7 @@ import java.util.TreeMap;
  */
 public class HeadSpotsBuilder
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
     private final Sheet sheet;
@@ -51,6 +52,7 @@ public class HeadSpotsBuilder
     /** Spot glyphs, per system. */
     Map<SystemInfo, List<Glyph>> glyphMap = new HashMap<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadSpotsBuilder} object.
      *
@@ -61,6 +63,7 @@ public class HeadSpotsBuilder
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getSpots //
     //----------//
