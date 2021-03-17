@@ -97,11 +97,13 @@ public class MainGui
         extends OmrGui
         implements EventSubscriber<StubEvent>, PropertyChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet tabbed pane, which may contain several views. */
     public StubsController stubsController;
 
@@ -129,6 +131,7 @@ public class MainGui
     /** Map of class resources. */
     private ResourceMap resources;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MainGui} instance, to handle any user display and interaction.
      */
@@ -136,6 +139,7 @@ public class MainGui
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // clearLog //
     //----------//
@@ -185,11 +189,7 @@ public class MainGui
     @Override
     public void displayError (Object message)
     {
-        JOptionPane.showMessageDialog(
-                frame,
-                message,
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     //--------------------//
@@ -210,10 +210,7 @@ public class MainGui
     public void displayMessage (Object message,
                                 String title)
     {
-        JOptionPane.showMessageDialog(frame,
-                                      message,
-                                      title,
-                                      JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
     //------------------------//
@@ -245,11 +242,7 @@ public class MainGui
     public void displayWarning (Object message,
                                 String title)
     {
-        JOptionPane.showMessageDialog(
-                frame,
-                message,
-                title,
-                JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -310,25 +303,20 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    final StringBuilder sb = new StringBuilder();
+            SwingUtilities.invokeLater(() -> {
+                final StringBuilder sb = new StringBuilder();
 
-                    if (stub != null) {
-                        Book book = stub.getBook();
-                        // Frame title tells score name
-                        sb.append(book.getRadix());
-                    }
-
-                    // Update frame title
-                    sb.append(" - ");
-
-                    sb.append(resources.getString("Application.title"));
-                    frame.setTitle(sb.toString());
+                if (stub != null) {
+                    Book book = stub.getBook();
+                    // Frame title tells score name
+                    sb.append(book.getRadix());
                 }
+
+                // Update frame title
+                sb.append(" - ");
+
+                sb.append(resources.getString("Application.title"));
+                frame.setTitle(sb.toString());
             });
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -607,6 +595,7 @@ public class MainGui
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

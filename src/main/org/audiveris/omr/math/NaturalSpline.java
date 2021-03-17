@@ -63,13 +63,16 @@ import java.util.Objects;
 public class NaturalSpline
         extends GeoPath
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(NaturalSpline.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private Point2D first; // Cached for faster access. Really useful???
 
     private Point2D last; // Cached for faster access. Really useful???
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes.
      *
@@ -82,6 +85,7 @@ public class NaturalSpline
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFirstPoint //
     //---------------//
@@ -336,10 +340,12 @@ public class NaturalSpline
                     "NaturalSpline interpolation needs at least 2 points");
         }
 
-        if (n == 1) {
+        switch (n) {
+        case 1:
             // Use a Line
             return new NaturalSpline(new Line2D.Double(xx[0], yy[0], xx[1], yy[1]));
-        } else if (n == 2) {
+
+        case 2:
             // Use a Quadratic
             return new NaturalSpline(
                     new QuadCurve2D.Double(
@@ -349,7 +355,8 @@ public class NaturalSpline
                             (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
                             xx[2],
                             yy[2]));
-        } else {
+
+        default:
             // Use a sequence of cubics
             double[] dx = getCubicDerivatives(xx);
             double[] dy = getCubicDerivatives(yy);

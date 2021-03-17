@@ -49,7 +49,44 @@ import java.util.Objects;
 public class StaffPeak
         implements Comparable<StaffPeak>
 {
+    //~ Enumerations -------------------------------------------------------------------------------
 
+    /**
+     * All attributes flags that can be assigned to a StaffPeak instance.
+     */
+    public static enum Attribute
+    {
+        /** This is a thin peak */
+        THIN,
+        /** This is a thick peak */
+        THICK,
+        /** This peak defines staff left end */
+        STAFF_LEFT_END,
+        /** This peak defines staff right end */
+        STAFF_RIGHT_END,
+        /** This peak is a top portion of a bracket */
+        BRACKET_TOP,
+        /** This peak is a middle portion of a bracket */
+        BRACKET_MIDDLE,
+        /** This peak is a bottom portion of a bracket */
+        BRACKET_BOTTOM,
+        /** This peak is the thick one of a C-Clef */
+        CCLEF_ONE,
+        /** This peak is the thin one of a C-Clef */
+        CCLEF_TWO,
+        /** This peak is part of the tail of a C-Clef */
+        CCLEF_TAIL,
+        /** This peak is a portion of a brace */
+        BRACE,
+        /** This peak is a top portion of a brace */
+        BRACE_TOP,
+        /** This peak is a middle portion of a brace */
+        BRACE_MIDDLE,
+        /** This peak is a bottom portion of a brace */
+        BRACE_BOTTOM;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing staff. */
     protected final Staff staff;
 
@@ -89,6 +126,7 @@ public class StaffPeak
     /** Containing column, if any. */
     private BarColumn column;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffPeak} object.
      *
@@ -114,6 +152,7 @@ public class StaffPeak
         this.impacts = impacts;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -634,40 +673,5 @@ public class StaffPeak
         }
 
         return sb.toString();
-    }
-
-    /**
-     * All attributes flags that can be assigned to a StaffPeak instance.
-     */
-    public static enum Attribute
-    {
-        /** This is a thin peak */
-        THIN,
-        /** This is a thick peak */
-        THICK,
-        /** This peak defines staff left end */
-        STAFF_LEFT_END,
-        /** This peak defines staff right end */
-        STAFF_RIGHT_END,
-        /** This peak is a top portion of a bracket */
-        BRACKET_TOP,
-        /** This peak is a middle portion of a bracket */
-        BRACKET_MIDDLE,
-        /** This peak is a bottom portion of a bracket */
-        BRACKET_BOTTOM,
-        /** This peak is the thick one of a C-Clef */
-        CCLEF_ONE,
-        /** This peak is the thin one of a C-Clef */
-        CCLEF_TWO,
-        /** This peak is part of the tail of a C-Clef */
-        CCLEF_TAIL,
-        /** This peak is a portion of a brace */
-        BRACE,
-        /** This peak is a top portion of a brace */
-        BRACE_TOP,
-        /** This peak is a middle portion of a brace */
-        BRACE_MIDDLE,
-        /** This peak is a bottom portion of a brace */
-        BRACE_BOTTOM;
     }
 }

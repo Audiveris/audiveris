@@ -32,6 +32,7 @@ import java.awt.geom.Point2D;
 public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         implements MomentsExtractor<D>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Input abscissae. */
     protected int[] xx;
@@ -51,6 +52,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     /** The target descriptor. */
     protected D descriptor;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // extract //
     //---------//

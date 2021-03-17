@@ -39,6 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class KeyAlterInter
         extends AlterInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new KeyAlterInter object.
@@ -68,6 +69,7 @@ public class KeyAlterInter
         super((Glyph) null, null, 0.0, null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

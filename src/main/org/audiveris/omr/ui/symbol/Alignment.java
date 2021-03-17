@@ -36,6 +36,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class Alignment
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Pre-defined alignment on top left of symbol */
     public static final Alignment TOP_LEFT = new Alignment(Vertical.TOP, Horizontal.LEFT);
@@ -79,157 +80,7 @@ public class Alignment
     /** Pre-defined alignment on bottom right of symbol */
     public static final Alignment BOTTOM_RIGHT = new Alignment(Vertical.BOTTOM, Horizontal.RIGHT);
 
-    /** The vertical alignment */
-    public final Vertical vertical;
-
-    /** The horizontal alignment */
-    public final Horizontal horizontal;
-
-    /**
-     * Create an Alignment instance
-     *
-     * @param vertical   vertical part
-     * @param horizontal horizontal part
-     */
-    public Alignment (Vertical vertical,
-                      Horizontal horizontal)
-    {
-        if ((vertical == null) || (horizontal == null)) {
-            throw new IllegalArgumentException("Cannot create Alignment with null members");
-        }
-
-        this.vertical = vertical;
-        this.horizontal = horizontal;
-    }
-
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
-    {
-        if (obj instanceof Alignment) {
-            Alignment that = (Alignment) obj;
-
-            return (this.horizontal == that.horizontal) && (this.vertical == that.vertical);
-        } else {
-            return false;
-        }
-    }
-
-    //----------//
-    // hashCode //
-    //----------//
-    @Override
-    public int hashCode ()
-    {
-        int hash = 7;
-        hash = (73 * hash) + vertical.hashCode();
-        hash = (73 * hash) + horizontal.hashCode();
-
-        return hash;
-    }
-
-    //---------//
-    // toPoint //
-    //---------//
-    /**
-     * Report the vector needed to translate from this alignment around
-     * a rectangle to that alignment
-     *
-     * @param that the desired alignment
-     * @param rect the symbol bounds
-     * @return the translation vector
-     */
-    public Point toPoint (Alignment that,
-                          Rectangle rect)
-    {
-        return new Point(horizontal.dxToPoint(that.horizontal, rect), vertical.dyToPoint(
-                         that.vertical, rect));
-    }
-
-    //---------//
-    // toPoint //
-    //---------//
-    /**
-     * Report the vector needed to translate from this alignment around
-     * a rectangle to that alignment
-     *
-     * @param that the desired alignment
-     * @param rect the symbol bounds
-     * @return the translation vector
-     */
-    public Point2D toPoint (Alignment that,
-                            Rectangle2D rect)
-    {
-        return new Point2D.Double(horizontal.dxToPoint(that.horizontal, rect), vertical.dyToPoint(
-                                  that.vertical, rect));
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return "[" + vertical + "," + horizontal + "]";
-    }
-
-    //--------------//
-    // toTextOrigin //
-    //--------------//
-    /**
-     * Report the vector needed to translate from this alignment around
-     * a rectangle to the text origin [BASELINE,XORIGIN]
-     *
-     * @param rect the symbol bounds
-     * @return the translation vector
-     */
-    public Point toTextOrigin (Rectangle rect)
-    {
-        return new Point(horizontal.dxToTextOrigin(rect), vertical.dyToTextOrigin(rect));
-    }
-
-    //--------------//
-    // toTextOrigin //
-    //--------------//
-    /**
-     * Report the vector needed to translate from this alignment around
-     * a rectangle to the text origin [BASELINE,XORIGIN]
-     *
-     * @param rect the symbol bounds
-     * @return the translation vector
-     */
-    public Point2D toTextOrigin (Rectangle2D rect)
-    {
-        return new Point2D.Double(horizontal.dxToTextOrigin(rect), vertical.dyToTextOrigin(rect));
-    }
-
-    //-----------------//
-    // translatedPoint //
-    //-----------------//
-    /**
-     * Report the proper translated location, aligned with that alignment
-     *
-     * @param that     the desired alignment
-     * @param rect     the symbol bounds
-     * @param location the provided location
-     * @return the translated point
-     */
-    public Point2D translatedPoint (Alignment that,
-                                    Rectangle2D rect,
-                                    Point2D location)
-    {
-        if (!this.equals(that)) {
-            Point2D toOrigin = toPoint(that, rect);
-            PointUtil.add(toOrigin, location);
-
-            return toOrigin;
-        } else {
-            return new Point2D.Double(location.getX(), location.getY());
-        }
-    }
-
+    //~ Enumerations -------------------------------------------------------------------------------
     //----------//
     // Vertical //
     //----------//
@@ -363,6 +214,160 @@ public class Alignment
         public double dxToTextOrigin (Rectangle2D rect)
         {
             return dxToPoint(XORIGIN, rect);
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** The vertical alignment */
+    public final Vertical vertical;
+
+    /** The horizontal alignment */
+    public final Horizontal horizontal;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Create an Alignment instance
+     *
+     * @param vertical   vertical part
+     * @param horizontal horizontal part
+     */
+    public Alignment (Vertical vertical,
+                      Horizontal horizontal)
+    {
+        if ((vertical == null) || (horizontal == null)) {
+            throw new IllegalArgumentException("Cannot create Alignment with null members");
+        }
+
+        this.vertical = vertical;
+        this.horizontal = horizontal;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj instanceof Alignment) {
+            Alignment that = (Alignment) obj;
+
+            return (this.horizontal == that.horizontal) && (this.vertical == that.vertical);
+        } else {
+            return false;
+        }
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (73 * hash) + vertical.hashCode();
+        hash = (73 * hash) + horizontal.hashCode();
+
+        return hash;
+    }
+
+    //---------//
+    // toPoint //
+    //---------//
+    /**
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to that alignment
+     *
+     * @param that the desired alignment
+     * @param rect the symbol bounds
+     * @return the translation vector
+     */
+    public Point toPoint (Alignment that,
+                          Rectangle rect)
+    {
+        return new Point(horizontal.dxToPoint(that.horizontal, rect),
+                         vertical.dyToPoint(that.vertical, rect));
+    }
+
+    //---------//
+    // toPoint //
+    //---------//
+    /**
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to that alignment
+     *
+     * @param that the desired alignment
+     * @param rect the symbol bounds
+     * @return the translation vector
+     */
+    public Point2D toPoint (Alignment that,
+                            Rectangle2D rect)
+    {
+        return new Point2D.Double(horizontal.dxToPoint(that.horizontal, rect),
+                                  vertical.dyToPoint(that.vertical, rect));
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "[" + vertical + "," + horizontal + "]";
+    }
+
+    //--------------//
+    // toTextOrigin //
+    //--------------//
+    /**
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to the text origin [BASELINE,XORIGIN]
+     *
+     * @param rect the symbol bounds
+     * @return the translation vector
+     */
+    public Point toTextOrigin (Rectangle rect)
+    {
+        return new Point(horizontal.dxToTextOrigin(rect), vertical.dyToTextOrigin(rect));
+    }
+
+    //--------------//
+    // toTextOrigin //
+    //--------------//
+    /**
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to the text origin [BASELINE,XORIGIN]
+     *
+     * @param rect the symbol bounds
+     * @return the translation vector
+     */
+    public Point2D toTextOrigin (Rectangle2D rect)
+    {
+        return new Point2D.Double(horizontal.dxToTextOrigin(rect), vertical.dyToTextOrigin(rect));
+    }
+
+    //-----------------//
+    // translatedPoint //
+    //-----------------//
+    /**
+     * Report the proper translated location, aligned with that alignment
+     *
+     * @param that     the desired alignment
+     * @param rect     the symbol bounds
+     * @param location the provided location
+     * @return the translated point
+     */
+    public Point2D translatedPoint (Alignment that,
+                                    Rectangle2D rect,
+                                    Point2D location)
+    {
+        if (!this.equals(that)) {
+            Point2D toOrigin = toPoint(that, rect);
+            PointUtil.add(toOrigin, location);
+
+            return toOrigin;
+        } else {
+            return new Point2D.Double(location.getX(), location.getY());
         }
     }
 }

@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 
 import org.slf4j.Logger;
@@ -41,7 +42,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.audiveris.omr.sheet.header.StaffHeader;
 
 /**
  * Class {@code KeyRoi} handles the region of interest for key retrieval,
@@ -52,9 +52,11 @@ import org.audiveris.omr.sheet.header.StaffHeader;
 public class KeyRoi
         extends ArrayList<KeySlice>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeyRoi.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying staff. */
     private final Staff staff;
 
@@ -70,6 +72,7 @@ public class KeyRoi
     /** Maximum abscissa distance to theoretical slice. */
     private final int maxSliceDist;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyRoi} object.
      *
@@ -92,6 +95,7 @@ public class KeyRoi
         this.maxSliceDist = maxSliceDist;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // attachmentKey //
     //---------------//
@@ -293,8 +297,8 @@ public class KeyRoi
                                 g.setColor(Color.white);
                             }
 
-                            final Point offset = new Point(glyph.getLeft() - sRect.x, glyph.getTop()
-                                                                                              - sRect.y);
+                            final Point offset = new Point(glyph.getLeft() - sRect.x,
+                                                           glyph.getTop() - sRect.y);
                             logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
                             glyph.getRunTable().render(g, offset);
                         }

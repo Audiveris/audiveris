@@ -49,12 +49,15 @@ import java.awt.Rectangle;
 public class SectionBoard
         extends EntityBoard<Section>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(SectionBoard.class);
+            .getResourceMap(
+                    SectionBoard.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying lag */
     protected final Lag lag;
 
@@ -88,6 +91,7 @@ public class SectionBoard
             resources.getString("weight.text"),
             resources.getString("weight.toolTipText"));
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Section Board
      *
@@ -117,6 +121,7 @@ public class SectionBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//

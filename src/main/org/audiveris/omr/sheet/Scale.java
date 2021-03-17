@@ -163,8 +163,8 @@ public class Scale
     private MusicFontScale musicFontScale;
 
     /** Head-stem scale. */
-//    @XmlElement(name = "head-seed")
-//    @XmlJavaTypeAdapter(HeadSeedScale.Adapter.class)
+    //    @XmlElement(name = "head-seed")
+    //    @XmlJavaTypeAdapter(HeadSeedScale.Adapter.class)
     private HeadSeedScale headSeedScale;
 
     /** Scale for small staves, if any. */

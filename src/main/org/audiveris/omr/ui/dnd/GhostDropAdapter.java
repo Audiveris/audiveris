@@ -37,6 +37,7 @@ import java.util.Set;
 public abstract class GhostDropAdapter<A>
         extends MouseAdapter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related glasspane. */
     protected final GhostGlassPane glassPane;
@@ -50,6 +51,7 @@ public abstract class GhostDropAdapter<A>
     /** The registered listeners. */
     private final Set<GhostDropListener<A>> listeners = new LinkedHashSet<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new GhostDropAdapter object
      *
@@ -63,6 +65,7 @@ public abstract class GhostDropAdapter<A>
         this.action = action;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addDropListener //
     //-----------------//

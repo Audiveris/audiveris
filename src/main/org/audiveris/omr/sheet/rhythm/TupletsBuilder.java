@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.audiveris.omr.sig.SIGraph;
 
 /**
  * Class {@code TupletsBuilder} tries to connect every tuplet symbol in a measure stack
@@ -57,12 +57,15 @@ import org.audiveris.omr.sig.SIGraph;
  */
 public class TupletsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TupletsBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletsBuilder} object.
      *
@@ -73,6 +76,7 @@ public class TupletsBuilder
         this.stack = stack;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // linkStackTuplets //
     //------------------//
@@ -289,6 +293,7 @@ public class TupletsBuilder
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ByEuclidian //
     //-------------//
@@ -321,6 +326,16 @@ public class TupletsBuilder
     //-----------------//
     private static class TupletCollector
     {
+
+        /** Describe the current status of the tuplet collector */
+        public enum Status
+        {
+            TOO_SHORT,
+            OK,
+            TOO_LONG,
+            TOO_MANY,
+            OUTSIDE;
+        }
 
         /** Underlying sign. */
         private final TupletInter tuplet;
@@ -380,8 +395,8 @@ public class TupletsBuilder
         public String getStatusMessage ()
         {
             StringBuilder sb = new StringBuilder();
-            sb.append(status).append(" sequence in ").append(tuplet.getShape()).append(": ").append(
-                    total);
+            sb.append(status).append(" sequence in ").append(tuplet.getShape())
+                    .append(": ").append(total);
 
             if (expectedTotal != Rational.MAX_VALUE) {
                 sb.append(" vs ").append(expectedTotal);
@@ -504,16 +519,6 @@ public class TupletsBuilder
 
             return (signX >= chords.first().getTailLocation().x) && (signX <= chords.last()
                     .getTailLocation().x);
-        }
-
-        /** Describe the current status of the tuplet collector */
-        public enum Status
-        {
-            TOO_SHORT,
-            OK,
-            TOO_LONG,
-            TOO_MANY,
-            OUTSIDE;
         }
     }
 }

@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import java.awt.Graphics2D;
@@ -37,9 +37,11 @@ import java.awt.geom.Point2D;
 public class ArpeggiatosSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int count;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArpeggiatosSymbol object.
      *
@@ -63,6 +65,7 @@ public class ArpeggiatosSymbol
         this.count = count;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

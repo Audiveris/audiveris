@@ -91,8 +91,10 @@ public enum TextRole
      */
     public boolean isCreator ()
     {
-        return (this == CreatorArranger) || (this == CreatorComposer)
-                       || ((this == CreatorLyricist) || (this == Creator));
+        return (this == CreatorArranger)
+                       || (this == CreatorComposer)
+                       || (this == CreatorLyricist)
+                       || (this == Creator);
     }
 
     //-----------//
@@ -160,9 +162,9 @@ public enum TextRole
         int staffDy = staff.distanceTo(boxCenter);
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
         boolean farFromStaff = staffDy >= scale.toPixels(constants.minStaffDy);
+
         ///boolean lyricCloseAboveStaff = staffDy <= scale.toPixels(constants.maxLyricsDyAbove);
         //
-
         // Begins before left side of the part (and stops before staff center abscissa)?
         boolean leftOfStaves = (left.x < system.getLeft()) && (right.x <= staffMidX);
 
@@ -225,9 +227,7 @@ public enum TextRole
             } else if (isAllChords) {
                 return ChordName;
             } else {
-                if (lyricsAllowed
-                            && hasVowel
-                            ///&& lyricCloseAboveStaff
+                if (lyricsAllowed && hasVowel///&& lyricCloseAboveStaff
                             && (switches.getValue(Switch.lyricsAboveStaff))
                             && (!isMainlyItalic)) {
                     return Lyrics;
@@ -242,13 +242,14 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if (lyricsAllowed && hasVowel
+            } else if (lyricsAllowed
+                               && hasVowel
+                               && !isMainlyItalic
                                && (switches.getValue(Switch.lyrics)
                                            || switches.getValue(Switch.lyricsAboveStaff))
                                && ((partPosition == StaffPosition.BELOW_STAVES)
                                            || ((partPosition == StaffPosition.ABOVE_STAVES)
-                                                       && switches.getValue(Switch.lyricsAboveStaff)))
-                       && (!isMainlyItalic)) {
+                                                       && switches.getValue(Switch.lyricsAboveStaff)))) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -269,11 +270,12 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed && hasVowel
+                if (lyricsAllowed
+                            && hasVowel
+                            && !isMainlyItalic
                             && (switches.getValue(Switch.lyrics)
                                         || switches.getValue(Switch.lyricsAboveStaff))
-                            && (partPosition == StaffPosition.BELOW_STAVES)
-                            && !isMainlyItalic) {
+                            && (partPosition == StaffPosition.BELOW_STAVES)) {
                     return Lyrics;
                 }
             }

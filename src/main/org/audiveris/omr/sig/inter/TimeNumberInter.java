@@ -48,8 +48,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TimeNumberInter
         extends AbstractNumberInter
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(TimeNumberInter.class);
 
     private static final Constants constants = new Constants();

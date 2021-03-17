@@ -53,11 +53,13 @@ import java.util.List;
 public class NestView
         extends EntityView<Glyph>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(NestView.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying glyph index */
     protected final GlyphIndex glyphIndex;
 
@@ -68,6 +70,7 @@ public class NestView
     @Navigable(false)
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a nest view.
      *
@@ -89,6 +92,7 @@ public class NestView
         setName("NestView");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // render //
     //--------//
@@ -204,6 +208,7 @@ public class NestView
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //    //---------------------//
     //    // renderGlyphSentence //
     //    //---------------------//

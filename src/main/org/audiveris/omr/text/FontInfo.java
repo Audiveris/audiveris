@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public class FontInfo
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FontInfo.class);
 
@@ -42,6 +43,7 @@ public class FontInfo
     /** Separator in memo between attributes (if any) and point size. */
     private static final char SEPARATOR = '-';
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** True if bold. */
     public final boolean isBold;
 
@@ -66,6 +68,7 @@ public class FontInfo
     /** Font name. */
     public final String fontName;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FontInfo object.
      *
@@ -117,6 +120,7 @@ public class FontInfo
                 org.fontName);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getMnemo //
     //----------//
@@ -221,6 +225,7 @@ public class FontInfo
                 "generic");
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

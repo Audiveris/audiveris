@@ -49,6 +49,7 @@ import javax.xml.stream.XMLStreamWriter;
 public class CustomXMLStreamWriter
         implements XMLStreamWriter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The actual writer, to which any real work is delegated. */
     protected final XMLStreamWriter writer;
@@ -78,6 +79,7 @@ public class CustomXMLStreamWriter
      */
     protected List<Item> items = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IndentingXmlStreamWriter} object with default indent step of
      * 2 spaces.
@@ -103,6 +105,7 @@ public class CustomXMLStreamWriter
         this.indentStep = indentStep;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void close ()
             throws XMLStreamException
@@ -152,12 +155,14 @@ public class CustomXMLStreamWriter
             throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(new Item()
+            items.add(
+                    new Item()
             {
                 public Void call ()
                         throws XMLStreamException
                 {
                     writer.setDefaultNamespace(uri);
+
                     return null;
                 }
             });
@@ -172,12 +177,14 @@ public class CustomXMLStreamWriter
             throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(new Item()
+            items.add(
+                    new Item()
             {
                 public Void call ()
                         throws XMLStreamException
                 {
                     writer.setPrefix(prefix, uri);
+
                     return null;
                 }
             });
@@ -192,12 +199,14 @@ public class CustomXMLStreamWriter
             throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(new Item()
+            items.add(
+                    new Item()
             {
                 public Void call ()
                         throws XMLStreamException
                 {
                     writer.writeAttribute(localName, value);
+
                     return null;
                 }
             });
@@ -214,12 +223,14 @@ public class CustomXMLStreamWriter
             throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(new Item()
+            items.add(
+                    new Item()
             {
                 public Void call ()
                         throws XMLStreamException
                 {
                     writer.writeAttribute(prefix, namespaceURI, localName, value);
+
                     return null;
                 }
             });
@@ -235,19 +246,20 @@ public class CustomXMLStreamWriter
             throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(new Item()
+            items.add(
+                    new Item()
             {
                 public Void call ()
                         throws XMLStreamException
                 {
                     writer.writeAttribute(namespaceURI, localName, value);
+
                     return null;
                 }
             });
         } else {
             writer.writeAttribute(namespaceURI, localName, value);
         }
-
     }
 
     @Override
@@ -381,12 +393,14 @@ public class CustomXMLStreamWriter
             throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(new Item()
+            items.add(
+                    new Item()
             {
                 public Void call ()
                         throws XMLStreamException
                 {
                     writer.writeNamespace(prefix, namespaceURI);
+
                     return null;
                 }
             });
@@ -441,21 +455,25 @@ public class CustomXMLStreamWriter
         flushItems();
         indentStart(localName);
 
-        items.add(new Item()
+        items.add(
+                new Item()
         {
             public Void call ()
                     throws XMLStreamException
             {
                 writer.writeEmptyElement(localName); // Empty saved first
+
                 return null;
             }
         });
-        items.add(new Item()
+        items.add(
+                new Item()
         {
             public Void call ()
                     throws XMLStreamException
             {
                 writer.writeStartElement(localName); // Start saved second
+
                 return null;
             }
         });
@@ -469,21 +487,25 @@ public class CustomXMLStreamWriter
         flushItems();
         indentStart(localName);
 
-        items.add(new Item()
+        items.add(
+                new Item()
         {
             public Void call ()
                     throws XMLStreamException
             {
                 writer.writeEmptyElement(namespaceURI, localName); // Empty saved first
+
                 return null;
             }
         });
-        items.add(new Item()
+        items.add(
+                new Item()
         {
             public Void call ()
                     throws XMLStreamException
             {
                 writer.writeStartElement(namespaceURI, localName); // Start saved second
+
                 return null;
             }
         });
@@ -498,21 +520,25 @@ public class CustomXMLStreamWriter
         flushItems();
         indentStart(localName);
 
-        items.add(new Item()
+        items.add(
+                new Item()
         {
             public Void call ()
                     throws XMLStreamException
             {
                 writer.writeEmptyElement(prefix, localName, namespaceURI); // Empty saved first
+
                 return null;
             }
         });
-        items.add(new Item()
+        items.add(
+                new Item()
         {
             public Void call ()
                     throws XMLStreamException
             {
                 writer.writeStartElement(prefix, localName, namespaceURI); // Start saved second
+
                 return null;
             }
         });
@@ -625,6 +651,7 @@ public class CustomXMLStreamWriter
         }
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //------//
     // Item //
     //------//

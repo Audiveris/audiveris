@@ -53,10 +53,12 @@ import javax.swing.event.MenuListener;
 @ThreadSafe
 public class NameSet
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Separator. */
     private static final String SEPARATOR = ";";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Global name for this set. */
     private final String setName;
 
@@ -72,6 +74,7 @@ public class NameSet
     /** To check names equivalence. */
     private final PairPredicate<String> predicate;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new set of names, with some customizing parameters.
      *
@@ -98,6 +101,7 @@ public class NameSet
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//

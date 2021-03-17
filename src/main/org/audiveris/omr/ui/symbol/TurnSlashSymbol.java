@@ -39,10 +39,12 @@ import java.awt.geom.Rectangle2D;
 public class TurnSlashSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The turn symbol */
     private final ShapeSymbol turnSymbol = Symbols.getSymbol(Shape.TURN);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TurnSlashSymbol object.
      */
@@ -61,6 +63,7 @@ public class TurnSlashSymbol
         super(isIcon, Shape.TURN_SLASH, false);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -81,10 +84,7 @@ public class TurnSlashSymbol
         p.layout = font.layout(turnSymbol.getString());
 
         Rectangle2D rect = p.layout.getBounds();
-        p.rect = new Rectangle2D.Double(0,
-                                        0,
-                                        rect.getWidth(),
-                                        rect.getHeight() * 1.4);
+        p.rect = new Rectangle2D.Double(0, 0, rect.getWidth(), rect.getHeight() * 1.4);
         p.stroke = new BasicStroke(Math.max(1f, (float) p.rect.getWidth() / 20f));
 
         return p;
@@ -112,6 +112,7 @@ public class TurnSlashSymbol
         g.setStroke(oldStroke);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

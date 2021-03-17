@@ -152,9 +152,11 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SigValue
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigValue.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * All CONCRETE inters found in sig, gathered here as true defs. No abstract!
      * For easier review, class names are listed alphabetically.
@@ -222,6 +224,7 @@ public class SigValue
     @XmlElement(name = "relation")
     private final ArrayList<RelationValue> relations = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * No-arg constructor meant for JAXB.
      */
@@ -229,6 +232,7 @@ public class SigValue
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Method to be called only when SigValue IDREFs have been fully unmarshalled,
      * to populate the target SIG.
@@ -284,6 +288,7 @@ public class SigValue
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

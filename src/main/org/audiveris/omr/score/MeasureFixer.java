@@ -47,9 +47,11 @@ import org.slf4j.LoggerFactory;
  */
 public class MeasureFixer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Current stack of measures in current system. */
     private MeasureStack stack;
 
@@ -68,6 +70,7 @@ public class MeasureFixer
     /** The latest id assigned to a measure stack. (in the current system) */
     private Integer lastId;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MeasureFixer object.
      */
@@ -75,6 +78,7 @@ public class MeasureFixer
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // process Page //
     //--------------//
@@ -170,8 +174,8 @@ public class MeasureFixer
         final SystemInfo system = stack.getSystem();
 
         return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
-                       && (stackTermination != null)
-                       && (stackTermination.compareTo(Rational.ZERO) < 0);
+                       && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO)
+                                                                 < 0);
     }
 
     //-------------//
@@ -201,8 +205,7 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevStackTermination == null) || (prevStackTermination.compareTo(
-                Rational.ZERO) >= 0)) {
+        if ((prevStackTermination == null) || (prevStackTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -220,8 +223,8 @@ public class MeasureFixer
         }
 
         // Check for an exact duration sum (TODO: is this too strict?)
-        return prevStackTermination.plus(stackTermination).abs().equals(
-                prevStack.getExpectedDuration());
+        return prevStackTermination.plus(stackTermination).abs()
+                .equals(prevStack.getExpectedDuration());
     }
 
     //----------------//
@@ -243,7 +246,8 @@ public class MeasureFixer
                 stack.checkDuration();
             } else {
                 logger.warn("{} no target duration for measure {}, please check time signature.",
-                            system.getPage(), stack.getPageId());
+                            system.getPage(),
+                            stack.getPageId());
             }
 
             // Check if all voices in all parts exhibit the same termination
@@ -260,7 +264,8 @@ public class MeasureFixer
                 // This whole stack is empty (no notes/rests, hence no voices)
                 // We will merge with the following stack, if any
                 if (stack != system.getLastStack()) {
-                    setId((lastId != null) ? (lastId + 1)
+                    setId((lastId != null)
+                            ? (lastId + 1)
                             : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 } else {
                     // This is just a cautionary stack at right end of system
@@ -275,7 +280,8 @@ public class MeasureFixer
             } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();
-                setId((lastId != null) ? (-lastId)
+                setId((lastId != null)
+                        ? (-lastId)
                         : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
             } else if (isSecondRepeatHalf()) {
                 logger.debug("secondHalf");

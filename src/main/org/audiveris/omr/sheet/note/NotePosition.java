@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Staff.IndexedLedger;
  */
 public class NotePosition
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related staff. */
     private final Staff staff;
@@ -42,6 +43,7 @@ public class NotePosition
     /** The closest ledger if any. */
     private final IndexedLedger indexedLedger;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NotePosition object.
      *
@@ -58,6 +60,7 @@ public class NotePosition
         this.pitchPosition = pitchPosition;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLedger //
     //-----------//

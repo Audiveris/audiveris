@@ -45,6 +45,7 @@ import java.awt.geom.Rectangle2D;
 public class BracketSymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The upper serif
     private static final BasicSymbol upperSymbol = Symbols.SYMBOL_BRACKET_UPPER_SERIF;
@@ -52,6 +53,7 @@ public class BracketSymbol
     // The lower serif
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BracketSymbol (which is made of upper and lower parts).
      */
@@ -70,6 +72,7 @@ public class BracketSymbol
         super(isIcon, Shape.BRACKET, false);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -129,7 +132,7 @@ public class BracketSymbol
                 upperRect.getWidth(),
                 trunkRect.getHeight() - upperRect.getY() + lowerRect.getY() + lowerRect.getHeight());
 
-        p.offset = new Point2D.Double(-p.rect.getWidth() / 2 + width / 2, 0);
+        p.offset = new Point2D.Double((-p.rect.getWidth() / 2) + (width / 2), 0);
 
         return p;
     }
@@ -154,6 +157,7 @@ public class BracketSymbol
         MusicFont.paint(g, p.lowerLayout, loc, BOTTOM_LEFT);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

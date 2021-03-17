@@ -36,6 +36,7 @@ import java.util.Map;
  */
 public abstract class OmrShapes
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** OmrShapes as a list a strings. */
     public static final List<String> NAMES = getNames();
@@ -238,9 +239,9 @@ public abstract class OmrShapes
             dynamicSforzatoPiano,
             dynamicSforzatoFF,
             dynamicRinforzando1,
-            dynamicRinforzando2
-    );
+            dynamicRinforzando2);
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the list of OmrShape values, to be used by DL4J.
      *
@@ -336,6 +337,7 @@ public abstract class OmrShapes
         return map;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // NumDen //
     //--------//

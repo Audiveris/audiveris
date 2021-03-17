@@ -68,6 +68,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BasicClassifier
         extends AbstractClassifier<NeuralNetwork>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -79,12 +80,14 @@ public class BasicClassifier
     /** Model entry name. */
     public static final String MODEL_ENTRY_NAME = "model.xml";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying (old) neural network. */
     private NeuralNetwork model;
 
     /** Training listener, if any. */
     private TrainingMonitor listener;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor, to create a glyph neural network.
      */
@@ -100,6 +103,7 @@ public class BasicClassifier
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getMaxEpochs //
     //--------------//
@@ -464,15 +468,7 @@ public class BasicClassifier
         return LazySingleton.INSTANCE;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final BasicClassifier INSTANCE = new BasicClassifier();
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -496,6 +492,15 @@ public class BasicClassifier
                 "Maximum number of epochs in training");
 
         private final Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final BasicClassifier INSTANCE = new BasicClassifier();
     }
 
     //----------//

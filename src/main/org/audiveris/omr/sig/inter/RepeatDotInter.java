@@ -21,14 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Rectangle;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -36,12 +34,14 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.math.PointUtil;
 
 /**
  * Class {@code RepeatDotInter} represents a repeat dot, near a bar line.
@@ -52,6 +52,7 @@ import org.audiveris.omr.math.PointUtil;
 public class RepeatDotInter
         extends AbstractPitchedInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RepeatDotInter object.
@@ -76,6 +77,7 @@ public class RepeatDotInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -214,11 +216,11 @@ public class RepeatDotInter
             Point2D barCenter = bar.getCenter2D();
 
             // Select proper bar reference point (left or right side and proper vertical side)
-            int yDir = (dotPt.getY() > barCenter.getY()) ? 1 : -1;
+            int yDir = (dotPt.getY() > barCenter.getY()) ? 1 : (-1);
             double barY = barCenter.getY() + ((box.height / 8.0) * yDir);
             double yGap = Math.abs(barY - dotPt.getY());
 
-            int xDir = (dotPt.getX() > barCenter.getX()) ? 1 : -1;
+            int xDir = (dotPt.getX() > barCenter.getX()) ? 1 : (-1);
             double barX = LineUtil.xAtY(bar.getMedian(), barY) + ((bar.getWidth() / 2.0) * xDir);
             double xGap = Math.abs(barX - dotPt.getX());
 
@@ -237,6 +239,7 @@ public class RepeatDotInter
         if (bestRel != null) {
             return new Link(bestBar, bestRel, true);
         }
+
         return null;
     }
 
@@ -254,14 +257,11 @@ public class RepeatDotInter
                                int profile)
     {
         final Rectangle dotLuBox = getDotLuBox(system, profile);
-        final List<Inter> dots = system.getSig().inters((Inter inter) -> (inter
-                                                                                  != RepeatDotInter.this)
-                                                                         && !inter
-                        .isRemoved()
-                                                                                 && (inter
-                        .getShape() == Shape.REPEAT_DOT)
-                                                                                 && (inter
-                        .getBounds().intersects(dotLuBox)));
+        final List<Inter> dots = system.getSig().inters((Inter inter)
+                -> (inter != RepeatDotInter.this)
+                           && !inter.isRemoved()
+                           && (inter.getShape() == Shape.REPEAT_DOT)
+                           && (inter.getBounds().intersects(dotLuBox)));
 
         if (!dots.isEmpty()) {
             return new Link(dots.get(0), new RepeatDotPairRelation(), true);
@@ -291,16 +291,18 @@ public class RepeatDotInter
         Collections.sort(systemBars, Inters.byAbscissa);
 
         final Link barLink = lookupBarLink(system, systemBars, profile);
+
         if (barLink != null) {
             links.add(barLink);
         }
 
         final Link dotLink = lookupDotLink(system, profile);
+
         if (dotLink != null) {
             links.add(dotLink);
         }
 
-        setAbnormal(barLink == null || dotLink == null);
+        setAbnormal((barLink == null) || (dotLink == null));
 
         return links;
     }
@@ -314,5 +316,4 @@ public class RepeatDotInter
     {
         return searchObsoletelinks(links, RepeatDotBarRelation.class, RepeatDotPairRelation.class);
     }
-
 }

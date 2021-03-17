@@ -39,6 +39,7 @@ import java.awt.geom.Rectangle2D;
 public class SlantedSymbol
         extends ShapeSymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SlantedSymbol object, standard size
@@ -66,6 +67,7 @@ public class SlantedSymbol
         super(isIcon, shape, false, codes);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -161,6 +163,7 @@ public class SlantedSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

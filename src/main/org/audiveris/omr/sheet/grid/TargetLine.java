@@ -32,6 +32,7 @@ import java.awt.geom.Point2D;
  */
 public class TargetLine
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related raw information */
     public final LineInfo info;
@@ -48,6 +49,7 @@ public class TargetLine
     /** Cosine of raw line angle */
     private final double cos;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetLine object.
      *
@@ -73,6 +75,7 @@ public class TargetLine
         cos = dx / hypot;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // sourceOf //
     //----------//

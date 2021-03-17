@@ -59,6 +59,7 @@ import java.util.regex.PatternSyntaxException;
 public class TextWord
         extends TextBasedItem
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -95,6 +96,7 @@ public class TextWord
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing TextLine. */
     @Navigable(false)
     private TextLine textLine;
@@ -114,6 +116,7 @@ public class TextWord
     /** Has this word been adjusted?. */
     private boolean adjusted;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // TextWord //
     //----------//
@@ -170,6 +173,7 @@ public class TextWord
         this.fontInfo = fontInfo;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addChar //
     //---------//
@@ -208,12 +212,14 @@ public class TextWord
             // fontinfo
             int size = scale.toPixels(constants.standardFontSize);
             fontInfo = FontInfo.createDefault(size);
+
             Font font = new TextFont(fontInfo);
             TextLayout layout = new TextLayout(dash, font, OmrFont.frc);
             Rectangle2D rect = layout.getBounds();
 
             // chars
             chars.clear();
+
             double meanCharWidth = rect.getWidth();
             int len = (int) Math.rint(bounds.width / rect.getWidth());
 
@@ -330,61 +336,62 @@ public class TextWord
                 return "abnormal-word-value";
             }
         }
-//
-//        final int minWidthForCheck = scale.toPixels(constants.minWidthForCheck);
-//        final int minHeightForCheck = scale.toPixels(constants.minHeightForCheck);
-//
-//        final double minAspectRatio = constants.minAspectRatio.getValue();
-//        final double maxAspectRatio = constants.maxAspectRatio.getValue();
-//
-//        final double minDiagRatio = constants.minDiagRatio.getValue();
-//        final double maxDiagRatio = constants.maxDiagRatio.getValue();
-//
-//        // Check for non-consistent aspect
-//        // (Applicable only for non-tiny width or height)
-//        //
-//        // Warning: a lyric syllable may contain a long horizontal line,
-//        // that OCR sometimes translates as a too short sequence of '-' or '_' chars
-//        // So, it's safer to skip test in that case
-//        if (DASH_WORDS != null) {
-//            Matcher matcher = DASH_WORDS.matcher(value);
-//
-//            if (matcher.matches()) {
-//                logger.debug("      dash word value {}", this);
-//
-//                return null; // OK
-//            }
-//        }
-//
-//        Rectangle box = getBounds();
-//
-//        if ((box.width >= minWidthForCheck) && (box.height >= minHeightForCheck)) {
-//            Font font = new TextFont(getFontInfo());
-//            TextLayout layout = new TextLayout(value, font, frc);
-//            Rectangle2D rect = layout.getBounds();
-//            double xRatio = box.width / rect.getWidth();
-//            double yRatio = box.height / rect.getHeight();
-//            double aRatio = yRatio / xRatio;
-//
-//            if ((aRatio < minAspectRatio) || (aRatio > maxAspectRatio)) {
-//                ///logger.debug("      invalid aspect {} vs [{}-{}] for {}",
-//                ///             aRatio, minAspectRatio, maxAspectRatio, this);
-//
-//                ///return "invalid aspect";
-//            }
-//
-//            // Check size
-//            double boxDiag = Math.hypot(box.width, box.height);
-//            double rectDiag = Math.hypot(rect.getWidth(), rect.getHeight());
-//            double diagRatio = boxDiag / rectDiag;
-//
-//            if ((diagRatio < minDiagRatio) || (diagRatio > maxDiagRatio)) {
-//                ///logger.debug("      invalid diagonal {} vs [{}-{}] for {}",
-//                ///             diagRatio, minDiagRatio, maxDiagRatio, this);
-//                ///return "invalid diagonal";
-//            }
-//        }
-//
+
+        //
+        //        final int minWidthForCheck = scale.toPixels(constants.minWidthForCheck);
+        //        final int minHeightForCheck = scale.toPixels(constants.minHeightForCheck);
+        //
+        //        final double minAspectRatio = constants.minAspectRatio.getValue();
+        //        final double maxAspectRatio = constants.maxAspectRatio.getValue();
+        //
+        //        final double minDiagRatio = constants.minDiagRatio.getValue();
+        //        final double maxDiagRatio = constants.maxDiagRatio.getValue();
+        //
+        //        // Check for non-consistent aspect
+        //        // (Applicable only for non-tiny width or height)
+        //        //
+        //        // Warning: a lyric syllable may contain a long horizontal line,
+        //        // that OCR sometimes translates as a too short sequence of '-' or '_' chars
+        //        // So, it's safer to skip test in that case
+        //        if (DASH_WORDS != null) {
+        //            Matcher matcher = DASH_WORDS.matcher(value);
+        //
+        //            if (matcher.matches()) {
+        //                logger.debug("      dash word value {}", this);
+        //
+        //                return null; // OK
+        //            }
+        //        }
+        //
+        //        Rectangle box = getBounds();
+        //
+        //        if ((box.width >= minWidthForCheck) && (box.height >= minHeightForCheck)) {
+        //            Font font = new TextFont(getFontInfo());
+        //            TextLayout layout = new TextLayout(value, font, frc);
+        //            Rectangle2D rect = layout.getBounds();
+        //            double xRatio = box.width / rect.getWidth();
+        //            double yRatio = box.height / rect.getHeight();
+        //            double aRatio = yRatio / xRatio;
+        //
+        //            if ((aRatio < minAspectRatio) || (aRatio > maxAspectRatio)) {
+        //                ///logger.debug("      invalid aspect {} vs [{}-{}] for {}",
+        //                ///             aRatio, minAspectRatio, maxAspectRatio, this);
+        //
+        //                ///return "invalid aspect";
+        //            }
+        //
+        //            // Check size
+        //            double boxDiag = Math.hypot(box.width, box.height);
+        //            double rectDiag = Math.hypot(rect.getWidth(), rect.getHeight());
+        //            double diagRatio = boxDiag / rectDiag;
+        //
+        //            if ((diagRatio < minDiagRatio) || (diagRatio > maxDiagRatio)) {
+        //                ///logger.debug("      invalid diagonal {} vs [{}-{}] for {}",
+        //                ///             diagRatio, minDiagRatio, maxDiagRatio, this);
+        //                ///return "invalid diagonal";
+        //            }
+        //        }
+        //
         return null; // OK
     }
 
@@ -742,13 +749,16 @@ public class TextWord
     {
         List<TextChar> chars = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
+
         for (TextWord word : words) {
             chars.addAll(word.getChars());
             sb.append(word.getValue());
         }
+
         // Use font info of first word. What else?
         FontInfo fontInfo = words[0].getFontInfo();
         TextLine line = words[0].textLine;
+
         return new TextWord(
                 baselineOf(Arrays.asList(words)),
                 sb.toString(),
@@ -796,6 +806,7 @@ public class TextWord
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -823,32 +834,32 @@ public class TextWord
         private final Constant.Ratio minFontRatio = new Constant.Ratio(
                 0.5,
                 "Minimum ratio between ocr and glyph font sizes");
-//
-//        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(
-//                1.5,
-//                "Maximum ratio between ocr and glyph diagonals");
-//
-//        private final Constant.Ratio minDiagRatio = new Constant.Ratio(
-//                0.5,
-//                "Minimum ratio between ocr and glyph diagonals");
-//
-//        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(
-//                0.15,
-//                "Minimum width to check word aspect");
-//
-//        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(
-//                0.15,
-//                "Minimum height to check word aspect");
-//
-//        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(
-//                1.75,
-//                "Maximum ratio between ocr and glyph aspects");
-//
-//        private final Constant.Ratio minAspectRatio = new Constant.Ratio(
-//                0.4,
-//                "Minimum ratio between ocr and glyph aspects");
-//
 
+        //
+        //        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(
+        //                1.5,
+        //                "Maximum ratio between ocr and glyph diagonals");
+        //
+        //        private final Constant.Ratio minDiagRatio = new Constant.Ratio(
+        //                0.5,
+        //                "Minimum ratio between ocr and glyph diagonals");
+        //
+        //        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(
+        //                0.15,
+        //                "Minimum width to check word aspect");
+        //
+        //        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(
+        //                0.15,
+        //                "Minimum height to check word aspect");
+        //
+        //        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(
+        //                1.75,
+        //                "Maximum ratio between ocr and glyph aspects");
+        //
+        //        private final Constant.Ratio minAspectRatio = new Constant.Ratio(
+        //                0.4,
+        //                "Minimum ratio between ocr and glyph aspects");
+        //
         private final Scale.Fraction standardFontSize = new Scale.Fraction(
                 2.5,
                 "Standard font size");

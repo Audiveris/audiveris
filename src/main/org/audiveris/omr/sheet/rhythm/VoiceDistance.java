@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class VoiceDistance
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(VoiceDistance.class);
 
@@ -53,8 +54,21 @@ public abstract class VoiceDistance
 
     public static final int INCOMPATIBLE = 10_000; // Forbidden
 
+    //~ Instance fields ----------------------------------------------------------------------------
     protected final Scale scale;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code VoiceDistance} object.
+     *
+     * @param scale Sheet global scale
+     */
+    protected VoiceDistance (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the distance between two chords, assumed to be in different time slots.
      *
@@ -67,9 +81,110 @@ public abstract class VoiceDistance
                                      AbstractChordInter right,
                                      StringBuilder details);
 
-    protected VoiceDistance (Scale scale)
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Merged //
+    //--------//
+    /**
+     * This specific distance was initially defined for lute scores, where the
+     * instrument is noted on two staves vertically very close to each other.
+     * <p>
+     * Whereas in standard piano grand staff, the C4 ledger line is just <b>logically</b> shared by
+     * the upper and the lower staves, here this line is really <b>physically</b> shared, resulting
+     * into a kind of <i>merged</i> grand staff of 5 + 1 + 5 = 11 lines.
+     * <p>
+     * The staff on which a note lies is rather secondary.
+     * Instead, chords with upward stem are considered as part of <i>high</i> voices, and chords
+     * with downward stem as part of <i>low</i> voices.
+     * <p>
+     * On the diagram below, notice how voices are rather decoupled from containing staves.
+     * <p>
+     * <img src="doc-files/MergedGrandStaff.png" alt="MergedGrandStaff diagram">
+     */
+    public static class Merged
+            extends VoiceDistance
     {
-        this.scale = scale;
+
+        private static final int NOT_A_REST = 5;
+
+        private static final int NEW_IN_STAFF = 2;
+
+        private static final int STAFF_DIFF = 2;
+
+        private static final int STEM_1_DIFF = 10;
+
+        private static final int STEM_2_DIFF = 100;
+
+        public Merged (Scale scale)
+        {
+            super(scale);
+        }
+
+        @Override
+        public int getDistance (AbstractChordInter left,
+                                AbstractChordInter right,
+                                StringBuilder details)
+        {
+            // Different assigned voices?
+            if ((right.getVoice() != null) && (left.getVoice() != null) && (right.getVoice() != left
+                    .getVoice())) {
+                return INCOMPATIBLE;
+            }
+
+            // Not is same part?
+            if (right.getPart() != left.getPart()) {
+                return INCOMPATIBLE;
+            }
+
+            // Stem direction difference
+            int dif = Math.abs(right.getStemDir() - left.getStemDir());
+            int dStem = (dif == 2) ? STEM_2_DIFF : ((dif == 1) ? STEM_1_DIFF : 0);
+
+            // Different staves?
+            int dStaff = (right.getTopStaff() != left.getTopStaff()) ? STAFF_DIFF : 0;
+
+            // Penalty for a chord which originated in a different staff
+            int nis = (left.getVoice().getStartingStaff() != right.getTopStaff()) ? NEW_IN_STAFF : 0;
+
+            // A rest is a placeholder, hence bonus for rest (implemented by penalty on non-rest)
+            int nar = (left instanceof HeadChordInter) ? NOT_A_REST : 0;
+
+            // Pitch difference
+            int dy = Math.abs(right.getHeadLocation().y - left.getHeadLocation().y) / scale
+                    .getInterline();
+
+            final int d = dStem + dStaff + nis + nar + dy;
+
+            if (left.isVip() && right.isVip()) {
+                logger.info(
+                        "VIP VoiceDistance.Merged ch#{} ch#{} {} {}",
+                        left.getId(),
+                        right.getId(),
+                        d,
+                        detailsOf(dStaff, dStem, nis, nar, dy));
+            }
+
+            if (details != null) {
+                details.append(detailsOf(dStaff, dStem, nis, nar, dy));
+            }
+
+            return d;
+        }
+
+        private String detailsOf (int dStaff,
+                                  int dStem,
+                                  int nis,
+                                  int nar,
+                                  int dy)
+        {
+            return String.format(
+                    "dStaff=%d dStem=%d nis=%d nar=%d dy=%d",
+                    dStaff,
+                    dStem,
+                    nis,
+                    nar,
+                    dy);
+        }
     }
 
     //-----------//
@@ -153,6 +268,7 @@ public abstract class VoiceDistance
 
             // Pitch difference
             final int dp;
+
             if ((left instanceof HeadChordInter) && (right instanceof HeadChordInter)) {
                 // No rest involved, use absolute pitch to cope with potentially different staves
                 int p1 = left.getHighestNote().getAbsolutePitch();
@@ -200,112 +316,6 @@ public abstract class VoiceDistance
                     nis,
                     nar,
                     dp);
-        }
-    }
-
-    //--------//
-    // Merged //
-    //--------//
-    /**
-     * This specific distance was initially defined for lute scores, where the
-     * instrument is noted on two staves vertically very close to each other.
-     * <p>
-     * Whereas in standard piano grand staff, the C4 ledger line is just <b>logically</b> shared by
-     * the upper and the lower staves, here this line is really <b>physically</b> shared, resulting
-     * into a kind of <i>merged</i> grand staff of 5 + 1 + 5 = 11 lines.
-     * <p>
-     * The staff on which a note lies is rather secondary.
-     * Instead, chords with upward stem are considered as part of <i>high</i> voices, and chords
-     * with downward stem as part of <i>low</i> voices.
-     * <p>
-     * On the diagram below, notice how voices are rather decoupled from containing staves.
-     * <p>
-     * <img src="doc-files/MergedGrandStaff.png" alt="MergedGrandStaff diagram">
-     */
-    public static class Merged
-            extends VoiceDistance
-    {
-
-        private static final int NOT_A_REST = 5;
-
-        private static final int NEW_IN_STAFF = 2;
-
-        private static final int STAFF_DIFF = 2;
-
-        private static final int STEM_1_DIFF = 10;
-
-        private static final int STEM_2_DIFF = 100;
-
-        public Merged (Scale scale)
-        {
-            super(scale);
-        }
-
-        @Override
-        public int getDistance (AbstractChordInter left,
-                                AbstractChordInter right,
-                                StringBuilder details)
-        {
-            // Different assigned voices?
-            if ((right.getVoice() != null) && (left.getVoice() != null)
-                        && (right.getVoice() != left.getVoice())) {
-                return INCOMPATIBLE;
-            }
-
-            // Not is same part?
-            if (right.getPart() != left.getPart()) {
-                return INCOMPATIBLE;
-            }
-
-            // Stem direction difference
-            int dif = Math.abs(right.getStemDir() - left.getStemDir());
-            int dStem = (dif == 2) ? STEM_2_DIFF : ((dif == 1) ? STEM_1_DIFF : 0);
-
-            // Different staves?
-            int dStaff = (right.getTopStaff() != left.getTopStaff()) ? STAFF_DIFF : 0;
-
-            // Penalty for a chord which originated in a different staff
-            int nis = (left.getVoice().getStartingStaff() != right.getTopStaff()) ? NEW_IN_STAFF
-                    : 0;
-
-            // A rest is a placeholder, hence bonus for rest (implemented by penalty on non-rest)
-            int nar = (left instanceof HeadChordInter) ? NOT_A_REST : 0;
-
-            // Pitch difference
-            int dy = Math.abs(right.getHeadLocation().y - left.getHeadLocation().y) / scale
-                    .getInterline();
-
-            final int d = dStem + dStaff + nis + nar + dy;
-
-            if (left.isVip() && right.isVip()) {
-                logger.info(
-                        "VIP VoiceDistance.Merged ch#{} ch#{} {} {}",
-                        left.getId(),
-                        right.getId(),
-                        d,
-                        detailsOf(dStaff, dStem, nis, nar, dy));
-            }
-
-            if (details != null) {
-                details.append(detailsOf(dStaff, dStem, nis, nar, dy));
-            }
-
-            return d;
-        }
-
-        private String detailsOf (int dStaff,
-                                  int dStem,
-                                  int nis,
-                                  int nar,
-                                  int dy)
-        {
-            return String.format(
-                    "dStaff=%d dStem=%d nis=%d nar=%d dy=%d",
-                    dStaff,
-                    dStem,
-                    nis,
-                    nar,
-                    dy);
         }
     }
 }

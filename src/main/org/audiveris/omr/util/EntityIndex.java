@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlJavaTypeAdapter(BasicIndex.InterfaceAdapter.class)
 public interface EntityIndex<E extends Entity>
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Look up the index for all entities contained in the provided rectangle.

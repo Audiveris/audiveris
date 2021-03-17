@@ -53,9 +53,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BraceInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BraceInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BraceInter object.
      *
@@ -86,6 +88,7 @@ public class BraceInter
         super(null, null, null, (Double) null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -112,7 +115,7 @@ public class BraceInter
             List<Part> systemParts = myPart.getSystem().getParts();
             int myIndex = systemParts.indexOf(myPart);
 
-            if (systemParts.size() > myIndex + 1) {
+            if (systemParts.size() > (myIndex + 1)) {
                 Part partBelow = systemParts.get(myIndex + 1);
                 myPart.mergeWithBelow(partBelow);
             } else {
@@ -282,6 +285,38 @@ public class BraceInter
         super.remove(extensive);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        // Upper middle point
+        public final Point2D p1;
+
+        // Lower middle point
+        public final Point2D p2;
+
+        public Model (double x1,
+                      double y1,
+                      double x2,
+                      double y2)
+        {
+            p1 = new Point2D.Double(x1, y1);
+            p2 = new Point2D.Double(x2, y2);
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
+        }
+    }
+
     //--------//
     // Editor //
     //--------//
@@ -371,55 +406,24 @@ public class BraceInter
         protected void doit ()
         {
             Rectangle box = inter.getBounds();
-            inter.setBounds(
-                    new Rectangle((int) Math.rint(model.p1.getX() - box.width / 2.0),
-                                  (int) Math.rint(model.p1.getY()),
-                                  box.width,
-                                  (int) Math.rint(model.p2.getY() - model.p1.getY())));
-            super.doit();  // No more glyph
+            inter.setBounds(new Rectangle(
+                    (int) Math.rint(model.p1.getX() - (box.width / 2.0)),
+                    (int) Math.rint(model.p1.getY()),
+                    box.width,
+                    (int) Math.rint(model.p2.getY() - model.p1.getY())));
+            super.doit(); // No more glyph
         }
 
         @Override
         public void undo ()
         {
             Rectangle box = inter.getBounds();
-            inter.setBounds(
-                    new Rectangle((int) Math.rint(originalModel.p1.getX() - box.width / 2.0),
-                                  (int) Math.rint(originalModel.p1.getY()),
-                                  box.width,
-                                  (int) Math.rint(originalModel.p2.getY() - originalModel.p1.getY())));
+            inter.setBounds(new Rectangle(
+                    (int) Math.rint(originalModel.p1.getX() - box.width / 2.0),
+                    (int) Math.rint(originalModel.p1.getY()),
+                    box.width,
+                    (int) Math.rint(originalModel.p2.getY() - originalModel.p1.getY())));
             super.undo();
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        // Upper middle point
-        public final Point2D p1;
-
-        // Lower middle point
-        public final Point2D p2;
-
-        public Model (double x1,
-                      double y1,
-                      double x2,
-                      double y2)
-        {
-            p1 = new Point2D.Double(x1, y1);
-            p2 = new Point2D.Double(x2, y2);
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
         }
     }
 }

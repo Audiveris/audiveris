@@ -31,8 +31,8 @@ import org.audiveris.omr.glyph.dynamic.FilamentView;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.PixelBoard;
-import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
+import org.audiveris.omr.sheet.ui.SheetTab;
 import static org.audiveris.omr.sheet.ui.SheetTab.FILAMENT_TAB;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.step.StepException;
@@ -61,11 +61,13 @@ import java.util.Collection;
  */
 public class GridBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Companion in charge of staff lines. */
     public final LinesRetriever linesRetriever;
 
@@ -76,6 +78,7 @@ public class GridBuilder
     @Navigable(false)
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -94,6 +97,7 @@ public class GridBuilder
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -123,17 +127,17 @@ public class GridBuilder
 
                 // Filament board
                 EntityService<Filament> fService = sheet.getFilamentIndex().getEntityService();
-                assembly.addBoard(SheetTab.DATA_TAB,
-                                  new FilamentBoard(fService, false));
+                assembly.addBoard(SheetTab.DATA_TAB, new FilamentBoard(fService, false));
 
                 // Filament view?
                 if (constants.displayFilaments.isSet()) {
                     final FilamentView view = new FilamentView(fService);
                     view.setLocationService(sheet.getLocationService());
-                    assembly.addViewTab(FILAMENT_TAB,
-                                        new ScrollView(view),
-                                        new BoardsPane(new PixelBoard(sheet),
-                                                       new FilamentBoard(fService, true)));
+                    assembly.addViewTab(
+                            FILAMENT_TAB,
+                            new ScrollView(view),
+                            new BoardsPane(new PixelBoard(sheet),
+                                           new FilamentBoard(fService, true)));
                 }
             }
 
@@ -228,6 +232,7 @@ public class GridBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -236,15 +241,19 @@ public class GridBuilder
     {
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
-                false, "Should we print out the stop watch?");
+                false,
+                "Should we print out the stop watch?");
 
         private final Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-                false, "Should we build a dewarped target?");
+                false,
+                "Should we build a dewarped target?");
 
         private final Constant.Boolean showGrid = new Constant.Boolean(
-                false, "Should we show the details of grid?");
+                false,
+                "Should we show the details of grid?");
 
         private final Constant.Boolean displayFilaments = new Constant.Boolean(
-                false, "Should we show the filaments view?");
+                false,
+                "Should we show the filaments view?");
     }
 }

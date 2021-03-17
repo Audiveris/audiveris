@@ -41,15 +41,18 @@ import org.slf4j.LoggerFactory;
  */
 public class JunctionRetriever
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(JunctionRetriever.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Skeleton buffer. */
     private final ByteProcessor buf;
 
     /** Vicinity of current pixel. */
     private final Vicinity vicinity = new Vicinity();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JunctionRetriever object.
      *
@@ -60,6 +63,7 @@ public class JunctionRetriever
         buf = skeleton.buf;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // scanImage //
     //-----------//
@@ -199,6 +203,7 @@ public class JunctionRetriever
         return vicinity.getCount();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Vicinity //
     //----------//

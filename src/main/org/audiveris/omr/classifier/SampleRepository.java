@@ -58,7 +58,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -96,6 +95,7 @@ import javax.swing.event.ChangeListener;
  */
 public class SampleRepository
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -128,6 +128,7 @@ public class SampleRepository
      */
     private static final Pattern SAMPLES_PATTERN = Pattern.compile("(.*-)?(samples\\.zip)");
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheets, mapped by their unique name. */
     private final Map<String, SampleSheet> nameMap = new TreeMap<>();
 
@@ -161,6 +162,7 @@ public class SampleRepository
     /** To handle save on close. */
     private Application.ExitListener exitListener;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
      * <p>
@@ -194,6 +196,7 @@ public class SampleRepository
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addListener //
     //-------------//
@@ -323,20 +326,14 @@ public class SampleRepository
         List<Sample> allSamples = getAllSamples();
 
         // Sort by weight, then by sheet ID
-        Collections.sort(allSamples, new Comparator<Sample>()
-                 {
-                     @Override
-                     public int compare (Sample s1,
-                                         Sample s2)
-                     {
-                         int comp = Integer.compare(s1.getWeight(), s2.getWeight());
+        Collections.sort(allSamples, (Sample s1, Sample s2) -> {
+                     int comp = Integer.compare(s1.getWeight(), s2.getWeight());
 
-                         if (comp != 0) {
-                             return comp;
-                         }
-
-                         return getSheetName(s1).compareTo(getSheetName(s2));
+                     if (comp != 0) {
+                         return comp;
                      }
+
+                     return getSheetName(s1).compareTo(getSheetName(s2));
                  });
 
         int n = allSamples.size();
@@ -1437,59 +1434,61 @@ public class SampleRepository
     private void loadAllImages (final Path root)
     {
         try {
-            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
-                       {
-                           @Override
-                           public FileVisitResult preVisitDirectory (Path dir,
-                                                                     BasicFileAttributes attrs)
-                                   throws IOException
-                           {
-                               // Check whether we already have an image for this folder
-                               final Path dirFile = dir.getFileName();
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult preVisitDirectory (Path dir,
+                                                          BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    // Check whether we already have an image for this folder
+                    final Path dirFile = dir.getFileName();
 
-                               if (dirFile != null) {
-                                   String dirName = dirFile.toString();
+                    if (dirFile != null) {
+                        String dirName = dirFile.toString();
 
-                                   if (dirName.endsWith("/")) {
-                                       dirName = dirName.substring(0, dirName.length() - 1);
-                                   }
+                        if (dirName.endsWith("/")) {
+                            dirName = dirName.substring(0, dirName.length() - 1);
+                        }
 
-                                   final SampleSheet sampleSheet = nameMap.get(dirName);
+                        final SampleSheet sampleSheet = nameMap.get(dirName);
 
-                                   if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
-                                       return FileVisitResult.SKIP_SUBTREE;
-                                   }
-                               }
+                        if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                    }
 
-                               return FileVisitResult.CONTINUE;
-                           }
+                    return FileVisitResult.CONTINUE;
+                }
 
-                           @Override
-                           public FileVisitResult visitFile (Path file,
-                                                             BasicFileAttributes attrs)
-                                   throws IOException
-                           {
-                               final String fileName = file.getFileName().toString();
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
 
-                               if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
-                                   RunTable runTable = RunTable.unmarshal(file);
+                    if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
+                        RunTable runTable = RunTable.unmarshal(file);
 
-                                   if (runTable != null) {
-                                       Path folder = file.getParent().getFileName();
-                                       SampleSheet sampleSheet = nameMap.get(folder.toString());
+                        if (runTable != null) {
+                            Path folder = file.getParent().getFileName();
+                            SampleSheet sampleSheet = nameMap.get(folder.toString());
 
-                                       if (sampleSheet != null) {
-                                           sampleSheet.setImage(runTable, true);
-                                           logger.debug("Loaded {}", file);
-                                       } else {
-                                           logger.warn("No SampleSheet found for image {}", file);
-                                       }
-                                   }
-                               }
+                            if (sampleSheet != null) {
+                                sampleSheet.setImage(runTable, true);
+                                logger.debug("Loaded {}", file);
+                            } else {
+                                logger.warn("No SampleSheet found for image {}", file);
+                            }
+                        }
+                    }
 
-                               return FileVisitResult.CONTINUE;
-                           }
-                       });
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         } catch (IOException ex) {
             logger.warn("Error loading binaries from " + imagesFile + " " + ex, ex);
         }
@@ -1505,51 +1504,53 @@ public class SampleRepository
                               final LoadListener loadListener)
     {
         try {
-            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
-                       {
-                           @Override
-                           public FileVisitResult visitFile (Path file,
-                                                             BasicFileAttributes attrs)
-                                   throws IOException
-                           {
-                               final String fileName = file.getFileName().toString();
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
 
-                               if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
-                                   Path folder = file.getParent().getFileName();
-                                   Descriptor desc = sheetContainer.getDescriptor(folder.toString());
-                                   SampleSheet sampleSheet = null;
+                    if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
+                        Path folder = file.getParent().getFileName();
+                        Descriptor desc = sheetContainer.getDescriptor(folder.toString());
+                        SampleSheet sampleSheet = null;
 
-                                   if (desc == null) {
-                                       logger.warn(
-                                               "Samples entry {} not declared in {} is ignored.",
-                                               folder,
-                                               SheetContainer.CONTAINER_ENTRY_NAME);
-                                   } else {
-                                       boolean isSymbol = isSymbols(desc.getName());
+                        if (desc == null) {
+                            logger.warn(
+                                    "Samples entry {} not declared in {} is ignored.",
+                                    folder,
+                                    SheetContainer.CONTAINER_ENTRY_NAME);
+                        } else {
+                            boolean isSymbol = isSymbols(desc.getName());
 
-                                       if (isSymbol) {
-                                           logger.info("Skipping symbols entry");
+                            if (isSymbol) {
+                                logger.info("Skipping symbols entry");
 
-                                           return FileVisitResult.CONTINUE;
-                                       }
+                                return FileVisitResult.CONTINUE;
+                            }
 
-                                       sampleSheet = SampleSheet.unmarshal(file, desc);
-                                       nameMap.put(desc.getName(), sampleSheet);
+                            sampleSheet = SampleSheet.unmarshal(file, desc);
+                            nameMap.put(desc.getName(), sampleSheet);
 
-                                       for (Sample sample : sampleSheet.getAllSamples()) {
-                                           sample.setSymbol(isSymbol);
-                                           sampleMap.put(sample, sampleSheet);
-                                       }
-                                   }
+                            for (Sample sample : sampleSheet.getAllSamples()) {
+                                sample.setSymbol(isSymbol);
+                                sampleMap.put(sample, sampleSheet);
+                            }
+                        }
 
-                                   if (loadListener != null) {
-                                       loadListener.loadedSheet(sampleSheet);
-                                   }
-                               }
+                        if (loadListener != null) {
+                            loadListener.loadedSheet(sampleSheet);
+                        }
+                    }
 
-                               return FileVisitResult.CONTINUE;
-                           }
-                       });
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         } catch (IOException ex) {
             logger.warn("Error loading " + samplesFile + " " + ex, ex);
         }
@@ -1564,31 +1565,33 @@ public class SampleRepository
     private void loadTribes (final Path root)
     {
         try {
-            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
-                       {
-                           @Override
-                           public FileVisitResult visitFile (Path file,
-                                                             BasicFileAttributes attrs)
-                                   throws IOException
-                           {
-                               final String fileName = file.getFileName().toString();
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
 
-                               if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
-                                   Path folder = file.getParent().getFileName();
-                                   SampleSheet sampleSheet = nameMap.get(folder.toString());
+                    if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
+                        Path folder = file.getParent().getFileName();
+                        SampleSheet sampleSheet = nameMap.get(folder.toString());
 
-                                   if (sampleSheet != null) {
-                                       TribeList tribeList = TribeList.unmarshal(file);
-                                       sampleSheet.setTribes(tribeList.getTribes());
-                                       logger.debug("Loaded {}", file);
-                                   } else {
-                                       logger.warn("No SampleSheet found for tribes {}", file);
-                                   }
-                               }
+                        if (sampleSheet != null) {
+                            TribeList tribeList = TribeList.unmarshal(file);
+                            sampleSheet.setTribes(tribeList.getTribes());
+                            logger.debug("Loaded {}", file);
+                        } else {
+                            logger.warn("No SampleSheet found for tribes {}", file);
+                        }
+                    }
 
-                               return FileVisitResult.CONTINUE;
-                           }
-                       });
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         } catch (IOException ex) {
             logger.warn("Error loading tribes " + ex, ex);
         }
@@ -1732,50 +1735,7 @@ public class SampleRepository
         return bookFolder.resolve(book.getRadix() + "-" + SAMPLES_FILE_NAME);
     }
 
-    //------------------------//
-    // RepositoryExitListener //
-    //------------------------//
-    /**
-     * Listener called when application asks for exit and does exit.
-     */
-    private class RepositoryExitListener
-            implements Application.ExitListener
-    {
-
-        RepositoryExitListener ()
-        {
-        }
-
-        @Override
-        public boolean canExit (EventObject eo)
-        {
-            // Check whether the repository has been saved (or user has declined)
-            if (isModified()) {
-                SingleFrameApplication appli = (SingleFrameApplication) Application.getInstance();
-                int answer = JOptionPane.showConfirmDialog(
-                        appli.getMainFrame(),
-                        "Save " + SampleRepository.this + "?");
-
-                if (answer == JOptionPane.YES_OPTION) {
-                    storeRepository();
-
-                    return true; // Here user has saved the repository
-                }
-
-                // True: user specifically chooses NOT to save the script
-                // False: user says Oops!, cancelling the current close request
-                return answer == JOptionPane.NO_OPTION;
-            }
-
-            return true;
-        }
-
-        @Override
-        public void willExit (EventObject eo)
-        {
-        }
-    }
-
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------------//
     // LoadListener //
     //-------------//
@@ -1801,6 +1761,7 @@ public class SampleRepository
         void totalSheets (int total);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // AdditionEvent //
     //---------------//
@@ -1896,5 +1857,49 @@ public class SampleRepository
         private final Constant.Boolean useTribes = new Constant.Boolean(
                 false,
                 "Should we support tribes?");
+    }
+
+    //------------------------//
+    // RepositoryExitListener //
+    //------------------------//
+    /**
+     * Listener called when application asks for exit and does exit.
+     */
+    private class RepositoryExitListener
+            implements Application.ExitListener
+    {
+
+        RepositoryExitListener ()
+        {
+        }
+
+        @Override
+        public boolean canExit (EventObject eo)
+        {
+            // Check whether the repository has been saved (or user has declined)
+            if (isModified()) {
+                SingleFrameApplication appli = (SingleFrameApplication) Application.getInstance();
+                int answer = JOptionPane.showConfirmDialog(
+                        appli.getMainFrame(),
+                        "Save " + SampleRepository.this + "?");
+
+                if (answer == JOptionPane.YES_OPTION) {
+                    storeRepository();
+
+                    return true; // Here user has saved the repository
+                }
+
+                // True: user specifically chooses NOT to save the script
+                // False: user says Oops!, cancelling the current close request
+                return answer == JOptionPane.NO_OPTION;
+            }
+
+            return true;
+        }
+
+        @Override
+        public void willExit (EventObject eo)
+        {
+        }
     }
 }

@@ -36,29 +36,15 @@ import java.util.Objects;
  */
 public abstract class PointUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare points on abscissa. */
-    public static final Comparator<Point> byAbscissa = new Comparator<Point>()
-    {
-        @Override
-        public int compare (Point p1,
-                            Point p2)
-        {
-            return Integer.compare(p1.x, p2.x);
-        }
-    };
+    public static final Comparator<Point> byAbscissa = (p1, p2) -> Integer.compare(p1.x, p2.x);
 
     /** To compare points on ordinate. */
-    public static final Comparator<Point> byOrdinate = new Comparator<Point>()
-    {
-        @Override
-        public int compare (Point p1,
-                            Point p2)
-        {
-            return Integer.compare(p1.y, p2.y);
-        }
-    };
+    public static final Comparator<Point> byOrdinate = (p1, p2) -> Integer.compare(p1.y, p2.y);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -66,6 +52,7 @@ public abstract class PointUtil
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addition //
     //----------//
@@ -294,6 +281,7 @@ public abstract class PointUtil
     {
         Objects.requireNonNull(p1, "PointUtil.subtraction. p1 must be non-null");
         Objects.requireNonNull(p2, "PointUtil.subtraction. p2 must be non-null");
+
         return new Point(p1.x - p2.x, p1.y - p2.y);
     }
 

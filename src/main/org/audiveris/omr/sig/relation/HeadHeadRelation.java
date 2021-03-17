@@ -36,13 +36,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadHeadRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code HeadHeadRelation} object.
+     */
     public HeadHeadRelation ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -79,6 +85,7 @@ public class HeadHeadRelation
         return constants.headSupportCoeff.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

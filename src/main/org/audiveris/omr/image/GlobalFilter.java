@@ -36,10 +36,12 @@ public class GlobalFilter
         extends SourceWrapper
         implements PixelFilter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Global threshold. */
     private final int threshold;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a binary wrapper on a raw pixel source.
      *
@@ -53,6 +55,7 @@ public class GlobalFilter
         this.threshold = threshold;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // filteredImage //
     //---------------//

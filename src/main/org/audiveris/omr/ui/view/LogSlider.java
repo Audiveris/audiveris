@@ -41,6 +41,7 @@ import javax.swing.JSlider;
 public class LogSlider
         extends JSlider
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -49,9 +50,11 @@ public class LogSlider
 
     private static final double doubleUnit = unit; // To speed up
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Base of log (generally 2 or 10)
     private final double base;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LogSlider} instance.
      *
@@ -104,8 +107,7 @@ public class LogSlider
             labelTable.put(
                     i * unit,
                     new JLabel(
-                            (i < 0) ? ("1/" + (int) expOf(-i * unit))
-                                    : ("" + (int) expOf(i * unit))));
+                            (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -115,6 +117,7 @@ public class LogSlider
         setSnapToTicks(true);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDoubleValue //
     //----------------//
@@ -193,6 +196,7 @@ public class LogSlider
         return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -28,7 +28,6 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -64,8 +63,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.bind.Marshaller;
 
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -104,6 +103,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "stack")
 public class MeasureStack
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureStack.class);
 
@@ -113,6 +113,20 @@ public class MeasureStack
     /** String suffix for a cautionary id: {@value}. */
     public static final String CAUTIONARY_SUFFIX = "C";
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * All special kinds of measures.
+     */
+    public enum Special
+    {
+        PICKUP,
+        FIRST_HALF,
+        SECOND_HALF,
+        CAUTIONARY;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -188,6 +202,7 @@ public class MeasureStack
     /** Vertical sequence of (Part) measures, from top to bottom. */
     private final List<Measure> measures = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasureStack} object.
      *
@@ -206,6 +221,7 @@ public class MeasureStack
         this.system = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addInter //
     //----------//
@@ -1594,6 +1610,7 @@ public class MeasureStack
 
             for (Measure measure : measures) {
                 sb.append("\n--- P").append(measure.getPart().getId());
+
                 List<Voice> voices = new ArrayList<>(measure.getVoices());
                 Collections.sort(voices, Voices.byId);
 
@@ -1631,7 +1648,7 @@ public class MeasureStack
         }
 
         if (inter instanceof TupletInter) {
-            stackTuplets.remove((TupletInter) inter);
+            stackTuplets.remove(inter);
         }
     }
 
@@ -1669,8 +1686,6 @@ public class MeasureStack
         }
 
         g.setColor(color);
-
-        Sheet sheet = system.getSheet();
 
         // Most inters from first measure
         Staff firstStaff = system.getFirstStaff();
@@ -1944,18 +1959,6 @@ public class MeasureStack
         // excess?
         // abnormal?
         // (no, done by reprocessPageRhythm)
-    }
-
-    /**
-     * All special kinds of measures.
-     */
-    public enum Special
-    {
-
-        PICKUP,
-        FIRST_HALF,
-        SECOND_HALF,
-        CAUTIONARY
     }
 
     //--------------//

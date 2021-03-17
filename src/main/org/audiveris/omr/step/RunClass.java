@@ -32,6 +32,7 @@ import java.util.SortedSet;
  */
 public abstract class RunClass
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Book involved. */
     protected Book book;
@@ -39,6 +40,7 @@ public abstract class RunClass
     /** Specific sheet IDs. */
     protected SortedSet<Integer> sheetIds;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunClass} object.
      *
@@ -52,6 +54,7 @@ public abstract class RunClass
         this.sheetIds = sheetIds;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * The processing to be done.
      */

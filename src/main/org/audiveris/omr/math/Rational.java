@@ -52,6 +52,7 @@ public class Rational
         extends Number
         implements Comparable<Rational>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** 0 rational instance. */
     public static final Rational ZERO = new Rational(0, 1);
@@ -71,6 +72,7 @@ public class Rational
     /** Max rational value. */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Final numerator value. */
     @XmlAttribute
     public final int num;
@@ -79,6 +81,7 @@ public class Rational
     @XmlAttribute
     public final int den;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a final Rational instance
      *
@@ -115,6 +118,7 @@ public class Rational
         num = den = 1;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // abs //
     //-----//
@@ -411,10 +415,13 @@ public class Rational
 
             return new Rational(num, den);
         }
+
         case 1: {
             int num = Integer.decode(tokens[0].trim());
+
             return new Rational(num, 1);
         }
+
         default:
             throw new NumberFormatException(str);
         }
@@ -460,6 +467,7 @@ public class Rational
         return s;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

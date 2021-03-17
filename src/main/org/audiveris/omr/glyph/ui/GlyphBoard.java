@@ -52,18 +52,22 @@ import javax.swing.SwingConstants;
 public class GlyphBoard
         extends EntityBoard<Glyph>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(GlyphBoard.class);
+            .getResourceMap(
+                    GlyphBoard.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related glyph model. */
     protected final GlyphsController controller;
 
     /** Output : group info. */
     protected final JLabel groupField = new JLabel();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Basic constructor, to set common characteristics.
      *
@@ -102,6 +106,7 @@ public class GlyphBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFormLayout //
     //---------------//

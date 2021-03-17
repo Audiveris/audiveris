@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import java.util.List;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
@@ -35,6 +34,8 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -52,15 +53,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AugmentationRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{
-        constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -195,6 +197,7 @@ public class AugmentationRelation
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

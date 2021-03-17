@@ -45,12 +45,15 @@ import java.util.TreeMap;
  */
 public class StackRhythm
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StackRhythm.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StackRhythm} object.
      *
@@ -61,6 +64,7 @@ public class StackRhythm
         this.stack = stack;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//

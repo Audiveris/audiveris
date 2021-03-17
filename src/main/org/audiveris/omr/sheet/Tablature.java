@@ -21,11 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.note.NotePosition;
 
 import java.awt.geom.Point2D;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -42,7 +43,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Tablature
         extends Staff
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code Tablature} object.
+     *
+     * @param id                the id of the tablature
+     * @param left              abscissa of the left side
+     * @param right             abscissa of the right side
+     * @param specificInterline specific interline detected for this tablature
+     * @param lines             the sequence of contained tablature lines
+     */
     public Tablature (int id,
                       double left,
                       double right,
@@ -59,6 +70,7 @@ public class Tablature
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public boolean isTablature ()
     {

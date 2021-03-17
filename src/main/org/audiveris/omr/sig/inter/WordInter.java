@@ -33,8 +33,8 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
-import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.text.TextRole;
+import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -160,9 +160,7 @@ public class WordInter
                       FontInfo fontInfo,
                       Point location)
     {
-        super(glyph, bounds,
-              shape,
-              grade);
+        super(glyph, bounds, shape, grade);
         this.value = value;
         this.fontInfo = fontInfo;
         this.location = location;
@@ -367,11 +365,10 @@ public class WordInter
         sentence.setManual(true);
         sentence.setStaff(staff);
 
-        tasks.add(new AdditionTask(
-                staff.getSystem().getSig(),
-                sentence,
-                getBounds(),
-                Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(new AdditionTask(staff.getSystem().getSig(),
+                                   sentence,
+                                   getBounds(),
+                                   Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }
@@ -399,6 +396,36 @@ public class WordInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public final String value;
+
+        public final Point2D baseLoc;
+
+        public FontInfo fontInfo;
+
+        public Model (String value,
+                      Point2D baseLoc,
+                      FontInfo fontInfo)
+        {
+            this.value = value;
+            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
+            this.fontInfo = fontInfo;
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(baseLoc, dx, dy);
+        }
+    }
+
     //--------//
     // Editor //
     //--------//
@@ -432,8 +459,8 @@ public class WordInter
 
             final Rectangle box = word.getBounds();
 
-            middle = new Point2D.Double(box.x + box.width / 2.0, box.y + box.height / 2.0);
-            right = new Point2D.Double(box.x + box.width, box.y + box.height / 2.0);
+            middle = new Point2D.Double(box.x + (box.width / 2.0), box.y + (box.height / 2.0));
+            right = new Point2D.Double(box.x + box.width, box.y + (box.height / 2.0));
 
             handles.add(selectedHandle = new InterEditor.Handle(middle)
             {
@@ -478,8 +505,8 @@ public class WordInter
                         TextFont textFont = new TextFont(model.fontInfo);
                         TextLayout layout = textFont.layout(value);
                         Rectangle2D rect = layout.getBounds();
-                        double y = model.baseLoc.getY() + rect.getY() + rect.getHeight() / 2;
-                        middle.setLocation(box.x + rect.getWidth() / 2, y);
+                        double y = model.baseLoc.getY() + rect.getY() + (rect.getHeight() / 2);
+                        middle.setLocation(box.x + (rect.getWidth() / 2), y);
                         right.setLocation(box.x + rect.getWidth(), y);
                     }
 
@@ -508,36 +535,6 @@ public class WordInter
 
             inter.setBounds(null);
             super.undo();
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        public final String value;
-
-        public final Point2D baseLoc;
-
-        public FontInfo fontInfo;
-
-        public Model (String value,
-                      Point2D baseLoc,
-                      FontInfo fontInfo)
-        {
-            this.value = value;
-            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
-            this.fontInfo = fontInfo;
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(baseLoc, dx, dy);
         }
     }
 }

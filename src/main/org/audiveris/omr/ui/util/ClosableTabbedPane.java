@@ -41,6 +41,7 @@ import javax.swing.JTabbedPane;
 public class ClosableTabbedPane
         extends JTabbedPane
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //-----------//
     // insertTab //

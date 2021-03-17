@@ -45,8 +45,8 @@ import java.util.List;
 public class SelectionService
         extends ThreadSafeEventService
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);

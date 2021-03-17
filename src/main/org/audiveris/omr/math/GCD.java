@@ -31,12 +31,14 @@ import java.util.Collection;
  */
 public abstract class GCD
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated */
     private GCD ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // gcd //
     //-----//

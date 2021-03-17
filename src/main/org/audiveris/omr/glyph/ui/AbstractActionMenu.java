@@ -52,6 +52,7 @@ import javax.swing.JMenuItem;
 public abstract class AbstractActionMenu
         extends AbstractGlyphMenu
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map action -> tag to update according to context */
     private final Map<DynAction, Integer> dynActions = new LinkedHashMap<>();
@@ -59,6 +60,7 @@ public abstract class AbstractActionMenu
     /** Map action -> menu level */
     private final Map<DynAction, Integer> levels = new LinkedHashMap<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractActionMenu object.
      *
@@ -71,6 +73,7 @@ public abstract class AbstractActionMenu
         super(sheet, text);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // updateMenu //
     //------------//
@@ -153,6 +156,7 @@ public abstract class AbstractActionMenu
         dynActions.put(action, action.tag);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // DynAction //
     //-----------//

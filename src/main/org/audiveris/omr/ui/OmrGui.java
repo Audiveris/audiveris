@@ -43,6 +43,7 @@ import javax.swing.JFrame;
 public abstract class OmrGui
         extends SingleFrameApplication
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Erase the content of the log window (but not the log itself).

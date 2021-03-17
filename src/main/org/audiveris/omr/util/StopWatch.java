@@ -32,6 +32,7 @@ import java.util.List;
  */
 public class StopWatch
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Name for this watch instance. */
     private final String name;
@@ -45,6 +46,7 @@ public class StopWatch
     /** Current sum of tasks durations. */
     private long total;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StopWatch object.
      *
@@ -55,6 +57,7 @@ public class StopWatch
         this.name = name;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -157,6 +160,7 @@ public class StopWatch
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//

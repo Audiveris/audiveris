@@ -41,9 +41,8 @@ import java.util.List;
 public class EntityListEvent<E extends Entity>
         extends UserEvent<List<E>>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The selected entity list, which may be empty but not null. */
     private final List<E> entities;
 

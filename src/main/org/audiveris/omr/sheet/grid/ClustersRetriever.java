@@ -96,6 +96,7 @@ import java.util.TreeSet;
  */
 public class ClustersRetriever
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -129,6 +130,7 @@ public class ClustersRetriever
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * For comparing Filament instances on their (de-skewed) center ordinate.
      */
@@ -232,6 +234,7 @@ public class ClustersRetriever
     /** Collection of clusters. */
     private final List<LineCluster> allClusters = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClustersRetriever object, for a given staff interline.
      *
@@ -250,13 +253,14 @@ public class ClustersRetriever
         skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
-        interlineScale = pass == 1 ? scale.getInterlineScale() : scale.getSmallInterlineScale();
+        interlineScale = (pass == 1) ? scale.getInterlineScale() : scale.getSmallInterlineScale();
         combColor = (pass == 1) ? Colors.COMB : Colors.COMB_MINOR;
         colCombs = new TreeMap<>();
 
         params = new Parameters(scale, interlineScale);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -304,9 +308,7 @@ public class ClustersRetriever
         retrieveClusters(checkConsistency);
 
         logger.info("Retrieved line clusters: {} of sizes {} with {}",
-                    allClusters.size(),
-                    combSizes,
-                    interlineScale);
+                    allClusters.size(), combSizes, interlineScale);
 
         return discardedFilaments;
     }
@@ -419,7 +421,7 @@ public class ClustersRetriever
         final int twoRight = (twoBox.x + twoBox.width) - 1;
         double dist;
 
-        if (one.getSize() > 1 || two.getSize() > 1) {
+        if ((one.getSize() > 1) || (two.getSize() > 1)) {
             final int minRight = Math.min(oneRight, twoRight);
             final int maxLeft = Math.max(oneLeft, twoLeft);
             final int gap = maxLeft - minRight;
@@ -540,7 +542,8 @@ public class ClustersRetriever
         StaffFilament twoAnc = (StaffFilament) two.getAncestor();
 
         if (oneAnc != twoAnc) {
-            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(Orientation.HORIZONTAL)) {
+            if (oneAnc.getLength(Orientation.HORIZONTAL)
+                        >= twoAnc.getLength(Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
                 oneAnc.getCombs().putAll(twoAnc.getCombs());
@@ -1245,18 +1248,18 @@ public class ClustersRetriever
             for (LineCluster cl : allClusters) {
                 if (cl.getBounds().intersects(sBox)) {
                     // Check position WRT first line and last line of standard cluster
-                    final Point2D p1 = new Point2D.Double(sx,
-                                                          cl.getFirstLine().yAt(sPt.getX())
-                                                                  - params.clusterYMargin);
+                    final Point2D p1 = new Point2D.Double(
+                            sx,
+                            cl.getFirstLine().yAt(sPt.getX()) - params.clusterYMargin);
                     final double y1 = skew.deskewed(p1).getY();
 
                     if (sy < y1) {
                         break; // Since clusters are sorted vertically
                     }
 
-                    final Point2D p2 = new Point2D.Double(sx,
-                                                          cl.getLastLine().yAt(sPt.getX())
-                                                                  + params.clusterYMargin);
+                    final Point2D p2 = new Point2D.Double(
+                            sx,
+                            cl.getLastLine().yAt(sPt.getX()) + params.clusterYMargin);
                     final double y2 = skew.deskewed(p2).getY();
 
                     if (sy > y2) {
@@ -1267,6 +1270,7 @@ public class ClustersRetriever
                     logger.debug("Single {} too close to {}", single, cl);
                     single.destroy();
                     it.remove();
+
                     break;
                 }
             }
@@ -1278,6 +1282,7 @@ public class ClustersRetriever
         }
 
         logger.info("OneLine clusters: {}", singles);
+
         return singles;
     }
 
@@ -1306,6 +1311,7 @@ public class ClustersRetriever
         g.setColor(oldColor);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -1376,15 +1382,7 @@ public class ClustersRetriever
     private static class FilY
     {
 
-        public static final Comparator<FilY> byOrdinate = new Comparator<FilY>()
-        {
-            @Override
-            public int compare (FilY f1,
-                                FilY f2)
-            {
-                return Double.compare(f1.y, f2.y);
-            }
-        };
+        public static final Comparator<FilY> byOrdinate = (f1, f2) -> Double.compare(f1.y, f2.y);
 
         final StaffFilament filament;
 

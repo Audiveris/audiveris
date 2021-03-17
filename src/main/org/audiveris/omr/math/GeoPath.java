@@ -36,6 +36,7 @@ import java.awt.geom.Point2D;
 public class GeoPath
         extends Path2D.Double
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new GeoPath object.
@@ -66,6 +67,7 @@ public class GeoPath
         super(s, at);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFirstPoint //
     //---------------//
@@ -151,8 +153,8 @@ public class GeoPath
                     firstCoord = false;
                 }
 
-                sb.append("[").append((float) buffer[ic]).append(",").append((float) buffer[ic + 1])
-                        .append("]");
+                sb.append("[").append((float) buffer[ic]).append(",")
+                        .append((float) buffer[ic + 1]).append("]");
             }
 
             sb.append(")");

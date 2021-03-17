@@ -57,7 +57,6 @@ public class BasicAttachmentHolder
     /** Map for attachments. */
     protected Map<String, java.awt.Shape> attachments = new HashMap<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
@@ -121,6 +120,7 @@ public class BasicAttachmentHolder
 
         if (constants.keyPainting.isSet() && (zoom >= constants.minZoomForKey.getValue())) {
             oldFont = g.getFont();
+
             final double std = constants.keyFontRatio.getValue() * UIUtil.GLOBAL_FONT_RATIO;
             final double z = Math.max(std, zoom);
             final AffineTransform at = AffineTransform.getScaleInstance(std / z, std / z);

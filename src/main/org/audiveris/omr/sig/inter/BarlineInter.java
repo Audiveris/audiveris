@@ -63,11 +63,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarlineInter
         extends AbstractStaffVerticalInter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Does this bar line define a staff side?. */
     @XmlAttribute(name = "staff-end")
     private HorizontalSide staffEnd;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarlineInter object.
      *
@@ -112,6 +114,7 @@ public class BarlineInter
         super(null, null, (Double) null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

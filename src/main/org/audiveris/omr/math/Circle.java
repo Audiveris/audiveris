@@ -53,12 +53,14 @@ import java.util.List;
  */
 public class Circle
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Circle.class);
 
     /** Size for matrices used to compute the circle. */
     private static final int DIM = 4;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Center. */
     private Point2D.Double center;
 
@@ -83,6 +85,7 @@ public class Circle
     /** Bézier curve for circle arc. */
     private CubicCurve2D curve;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of Circle, defined by a sequence of points.
      *
@@ -127,6 +130,7 @@ public class Circle
         computeAngles(first, middle, last);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // ccw //
     //-----//
@@ -374,11 +378,9 @@ public class Circle
         sb.append(String.format(" radius=%.1f", radius));
 
         if ((firstAngle != null) && (lastAngle != null)) {
-            sb.append(
-                    String.format(
-                            " degrees=(%.0f,%.0f)",
-                            toDegrees(firstAngle),
-                            toDegrees(lastAngle)));
+            sb.append(String.format(" degrees=(%.0f,%.0f)",
+                                    toDegrees(firstAngle),
+                                    toDegrees(lastAngle)));
         }
 
         sb.append("}");
@@ -522,27 +524,56 @@ public class Circle
         final double theta = getMidAngle();
 
         ///System.out.println("angleDeg/2=" + toDegrees(theta));
-        final Matrix rotation = new Matrix(
-                new double[][]{{cos(theta), -sin(theta), 0}, {sin(theta), cos(theta), 0}, {0, 0, 1}});
+        final Matrix rotation = new Matrix(new double[][]{
+            {cos(theta), -sin(theta), 0},
+            {sin(theta), cos(theta), 0},
+            {0, 0, 1}
+        });
 
         // Scaling
-        final Matrix scaling = new Matrix(
-                new double[][]{{radius, 0, 0}, {0, radius, 0}, {0, 0, 1}});
+        final Matrix scaling = new Matrix(new double[][]{
+            {radius, 0, 0},
+            {0, radius, 0},
+            {0, 0, 1}
+        });
 
         // Translation
-        final Matrix translation = new Matrix(
-                new double[][]{{1, 0, center.x}, {0, 1, center.y}, {0, 0, 1}});
+        final Matrix translation = new Matrix(new double[][]{
+            {1, 0, center.x},
+            {0, 1, center.y},
+            {0, 0, 1}
+        });
 
         // Composite operation
         final Matrix op = translation.times(scaling).times(rotation);
 
-        final Matrix M0 = op.times(new Matrix(new double[][]{{x0}, {y0}, {1}}));
+        final Matrix M0 = op.times(new Matrix(
+                new double[][]{
+                    {x0},
+                    {y0},
+                    {1}
+                }));
 
-        final Matrix M1 = op.times(new Matrix(new double[][]{{x1}, {y1}, {1}}));
+        final Matrix M1 = op.times(new Matrix(
+                new double[][]{
+                    {x1},
+                    {y1},
+                    {1}
+                }));
 
-        final Matrix M2 = op.times(new Matrix(new double[][]{{x2}, {y2}, {1}}));
+        final Matrix M2 = op.times(new Matrix(
+                new double[][]{
+                    {x2},
+                    {y2},
+                    {1}
+                }));
 
-        final Matrix M3 = op.times(new Matrix(new double[][]{{x3}, {y3}, {1}}));
+        final Matrix M3 = op.times(new Matrix(
+                new double[][]{
+                    {x3},
+                    {y3},
+                    {1}
+                }));
 
         // Bezier curve (make sure the curve goes from left to right)
         if (M0.get(0, 0) <= M3.get(0, 0)) {

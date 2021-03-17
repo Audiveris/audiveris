@@ -36,9 +36,11 @@ import java.awt.geom.Point2D;
 public class NonDraggableSymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final AffineTransform at = AffineTransform.getScaleInstance(2, 2);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an NonDraggableSymbol
      *
@@ -61,6 +63,7 @@ public class NonDraggableSymbol
         super(isIcon, Shape.NON_DRAGGABLE, true, codes); // Decorated
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

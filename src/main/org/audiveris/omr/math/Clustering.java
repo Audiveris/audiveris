@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Clustering
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Clustering.class);
 
@@ -29,11 +30,13 @@ public class Clustering
 
     private static final int MAX_ITER = 10;
 
+    //~ Constructors -------------------------------------------------------------------------------
     // Not meant to be instantiated.
     private Clustering ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Compute the mixture coefficients using Expectation-Maximization algorithm.
      *
@@ -108,6 +111,7 @@ public class Clustering
         return pi;
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     /**
      * Model description.
      */
@@ -132,6 +136,7 @@ public class Clustering
         double proba (double x);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Gaussian implementation of Law.
      */

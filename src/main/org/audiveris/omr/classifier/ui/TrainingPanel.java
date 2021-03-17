@@ -69,11 +69,13 @@ import javax.swing.SwingUtilities;
 class TrainingPanel
         implements TrainingMonitor, Observer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component. */
     protected final Panel component;
 
@@ -118,6 +120,7 @@ class TrainingPanel
     /* Useful? */
     private boolean invoked;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TrainingPanel object.
      *
@@ -152,6 +155,7 @@ class TrainingPanel
         inputParams();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void epochStarted (int epoch)
     {
@@ -348,7 +352,8 @@ class TrainingPanel
                           final int iter,
                           final double score)
     {
-        SwingUtilities.invokeLater(new Runnable()
+        SwingUtilities.invokeLater(
+                new Runnable()
         {
             // This part is run on swing thread
             @Override
@@ -385,6 +390,7 @@ class TrainingPanel
         progressBar.setMaximum(maxEpochs.getValue());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     protected class ResetAction
             extends AbstractAction
     {
@@ -467,6 +473,19 @@ class TrainingPanel
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer listenerPeriod = new Constant.Integer(
+                "period",
+                50,
+                "Period (in iterations) between listener calls");
+    }
+
     private class ParamAction
             extends AbstractAction
     {
@@ -479,18 +498,5 @@ class TrainingPanel
             inputParams();
             displayParams();
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer listenerPeriod = new Constant.Integer(
-                "period",
-                50,
-                "Period (in iterations) between listener calls");
     }
 }

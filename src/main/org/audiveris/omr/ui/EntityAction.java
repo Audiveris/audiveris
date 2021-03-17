@@ -47,10 +47,12 @@ import javax.swing.KeyStroke;
 public class EntityAction
         extends AbstractAction
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Delegation to an existing action, if any */
     private Action delegate = null;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an action, and registers the action in the provided menu as
      * well as in the toolbar (if so desired)
@@ -151,6 +153,7 @@ public class EntityAction
         this(entityActions, menu, toolBar, label, tip, null, icon);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//

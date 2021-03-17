@@ -38,6 +38,7 @@ import java.awt.geom.Rectangle2D;
 public class EvenStepSymbol
         extends ShapeSymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new EvenStepSymbol object.
@@ -51,6 +52,7 @@ public class EvenStepSymbol
         super(shape, codes);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -91,6 +93,7 @@ public class EvenStepSymbol
                                       p.line));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

@@ -42,11 +42,13 @@ import org.slf4j.LoggerFactory;
 public class InterIndex
         extends BasicIndex<Inter>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterIndex.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterIndex object.
      */
@@ -54,6 +56,7 @@ public class InterIndex
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // initTransients //
     //----------------//
@@ -104,6 +107,7 @@ public class InterIndex
         return "interIndex";
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

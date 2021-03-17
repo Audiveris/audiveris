@@ -75,11 +75,13 @@ import java.util.List;
  */
 public class SystemManager
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SystemManager.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
@@ -87,6 +89,7 @@ public class SystemManager
     /** Sheet retrieved systems. */
     private final List<SystemInfo> systems = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SystemManager object.
      *
@@ -105,6 +108,7 @@ public class SystemManager
         this.sheet = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // computeSystemArea //
     //-------------------//
@@ -134,12 +138,13 @@ public class SystemManager
         system.setAreaEnd(LEFT, left);
 
         final SystemInfo rightNeighbor = horizontalNeighbor(system, RIGHT);
-        final int right = (rightNeighbor != null) ? ((system.getRight() + rightNeighbor.getLeft())
-                                                             / 2) : sheetWidth;
+        final int right = (rightNeighbor != null)
+                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
 
-        PathIterator north = aboves.isEmpty() ? new GeoPath(new Line2D.Double(left, 0, right, 0))
-                .getPathIterator(null) : getGlobalLine(aboves, BOTTOM);
+        PathIterator north = aboves.isEmpty()
+                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(null)
+                : getGlobalLine(aboves, BOTTOM);
 
         PathIterator south = belows.isEmpty() ? new GeoPath(
                 new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
@@ -564,6 +569,7 @@ public class SystemManager
 
         if (pageRef != null) {
             sheet.addPage(page.getId() - 1, page);
+
             final SheetStub stub = sheet.getStub();
             stub.addPageRef(pageRef.getId() - 1, pageRef);
         }
@@ -790,9 +796,11 @@ public class SystemManager
                 partNb = Math.max(partNb, system.getParts().size());
 
                 int systemTabs = 0;
+
                 for (Part part : system.getParts()) {
                     systemTabs += part.getTablatures().size();
                 }
+
                 tabNb = Math.max(tabNb, systemTabs);
             }
 
@@ -839,6 +847,7 @@ public class SystemManager
         this.sheet = sheet;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

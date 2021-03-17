@@ -71,9 +71,11 @@ public class BasicSection
         extends AbstractEntity
         implements Section
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicSection.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     protected int firstPos;
@@ -107,6 +109,7 @@ public class BasicSection
     /** Approximating oriented line for this section */
     protected Line orientedLine;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSection.
      *
@@ -136,6 +139,7 @@ public class BasicSection
         orientedLine = ds.getOrientedLine();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // contains //
     //----------//
@@ -730,8 +734,8 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle runBox = (orientation == HORIZONTAL) ? new Rectangle(start, pos, run
-                                                                                 .getLength(), 1)
+            final Rectangle runBox = (orientation == HORIZONTAL)
+                    ? new Rectangle(start, pos, run.getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
             if (shape.intersects(runBox)) {
@@ -962,9 +966,11 @@ public class BasicSection
     public static char[][] allocateTable (Rectangle box)
     {
         char[][] table = new char[box.height + 1][box.width + 1];
+
         for (char[] table1 : table) {
             Arrays.fill(table1, ' ');
         }
+
         return table;
     }
 
@@ -1002,6 +1008,7 @@ public class BasicSection
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

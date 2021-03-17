@@ -68,11 +68,13 @@ import javax.swing.event.ChangeListener;
 class SelectionPanel
         implements SampleSource, SampleRepository.LoadListener, ChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
 
@@ -106,6 +108,7 @@ class SelectionPanel
     /** Sample collection for testing. */
     private List<Sample> tests;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionPanel object.
      */
@@ -130,6 +133,7 @@ class SelectionPanel
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -299,71 +303,7 @@ class SelectionPanel
         return constants.minShapeSampleCount.getValue();
     }
 
-    private class ParamAction
-            extends AbstractAction
-    {
-
-        // Purpose is just to read and remember the data from the various input fields.
-        // Triggered when user presses Enter in one of these fields.
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            inputParams();
-            displayParams();
-        }
-    }
-
-    private class SelectAction
-            extends AbstractAction
-    {
-
-        SelectAction ()
-        {
-            super("Select");
-            putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            executor.execute(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    trains = null;
-                    tests = null;
-
-                    // Get a fresh collection
-                    getTrainSamples();
-                }
-            });
-        }
-    }
-
-    private class StoreAction
-            extends AbstractAction
-    {
-
-        StoreAction ()
-        {
-            super("Store");
-            putValue(Action.SHORT_DESCRIPTION, "Store train/test selections as .csv files");
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
-            imgDesc.export("train", getTrainSamples(), true);
-            imgDesc.export("test", getTestSamples(), false);
-
-            GlyphDescriptor mixDesc = new MixGlyphDescriptor();
-            mixDesc.export("train", getTrainSamples(), true);
-            mixDesc.export("test", getTestSamples(), false);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -421,4 +361,69 @@ class SelectionPanel
         }
     }
 
+    private class ParamAction
+            extends AbstractAction
+    {
+
+        // Purpose is just to read and remember the data from the various input fields.
+        // Triggered when user presses Enter in one of these fields.
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            inputParams();
+            displayParams();
+        }
+    }
+
+    private class SelectAction
+            extends AbstractAction
+    {
+
+        SelectAction ()
+        {
+            super("Select");
+            putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            executor.execute(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    trains = null;
+                    tests = null;
+
+                    // Get a fresh collection
+                    getTrainSamples();
+                }
+            });
+        }
+    }
+
+    private class StoreAction
+            extends AbstractAction
+    {
+
+        StoreAction ()
+        {
+            super("Store");
+            putValue(Action.SHORT_DESCRIPTION, "Store train/test selections as .csv files");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
+            imgDesc.export("train", getTrainSamples(), true);
+            imgDesc.export("test", getTestSamples(), false);
+
+            GlyphDescriptor mixDesc = new MixGlyphDescriptor();
+            mixDesc.export("train", getTrainSamples(), true);
+            mixDesc.export("test", getTestSamples(), false);
+        }
+    }
 }

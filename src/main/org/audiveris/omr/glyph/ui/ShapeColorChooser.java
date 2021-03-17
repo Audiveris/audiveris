@@ -72,11 +72,13 @@ import javax.swing.event.ChangeListener;
 public class ShapeColorChooser
         implements ChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeColorChooser.class);
 
     private static JFrame frame;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The classic color chooser utility */
     private final JColorChooser colorChooser;
 
@@ -92,6 +94,7 @@ public class ShapeColorChooser
     /** To select shape (within selected range) */
     private final ShapesPane shapes;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of ShapeColorChooser (should be improved to always
      * reuse the same instance. TODO)
@@ -119,6 +122,7 @@ public class ShapeColorChooser
         component.add(colorChooser, BorderLayout.EAST);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // showFrame //
     //-----------//
@@ -160,6 +164,7 @@ public class ShapeColorChooser
         shapes.colorChanged();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Pane //
     //------//

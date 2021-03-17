@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import java.io.IOException;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -29,7 +30,6 @@ import org.audiveris.omr.util.UriUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -56,6 +56,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "alias-patterns")
 public class AliasPatterns
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -63,8 +64,10 @@ public class AliasPatterns
 
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final List<Pattern> patterns = loadAliasPatterns();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getAlias //
     //----------//
@@ -159,6 +162,7 @@ public class AliasPatterns
         return constants.useAliasPatterns.isSet();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

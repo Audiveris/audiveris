@@ -44,9 +44,11 @@ import javax.swing.JMenu;
  */
 public class HistoryMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HistoryMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying path history. */
     protected final AbstractHistory history;
 
@@ -56,6 +58,7 @@ public class HistoryMenu
     /** The concrete menu. */
     protected JMenu menu;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HistoryMenu} object.
      *
@@ -70,6 +73,7 @@ public class HistoryMenu
         history.setMenu(this);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // populate //
     //----------//

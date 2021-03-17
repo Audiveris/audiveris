@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 public class ViewParameters
         extends AbstractBean
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -106,6 +107,74 @@ public class ViewParameters
     /** Should the inters be painted with grade-based translucency in input view. */
     public static final String TRANSLUCENT_PAINTING = "translucentPainting";
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Enum {@code PaintingLayer} defines layers to be painted.
+     */
+    public static enum PaintingLayer
+    {
+        /** Input: image or glyphs. */
+        INPUT,
+        /** Union of input and output. */
+        INPUT_OUTPUT,
+        /** Output: score entities. */
+        OUTPUT;
+
+        /** Icon assigned to layer. */
+        private Icon icon;
+
+        /**
+         * Lazily building of layer icon.
+         *
+         * @return the layer icon
+         */
+        public Icon getIcon ()
+        {
+            if (icon == null) {
+                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                        ViewParameters.class);
+
+                String key = getClass().getSimpleName() + "." + this + ".icon";
+                String resourceName = resource.getString(key);
+                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return icon;
+        }
+    }
+
+    /**
+     * Enum {@code SelectionMode} defines type of entities to be selected.
+     */
+    public static enum SelectionMode
+    {
+        MODE_GLYPH,
+        MODE_INTER,
+        MODE_SECTION;
+
+        /** Icon assigned to mode. */
+        private Icon icon;
+
+        /**
+         * Lazily building of mode icon.
+         *
+         * @return the mode icon
+         */
+        public Icon getIcon ()
+        {
+            if (icon == null) {
+                ResourceMap resource = Application.getInstance().getContext()
+                        .getResourceMap(ViewParameters.class);
+                String key = getClass().getSimpleName() + "." + this + ".icon";
+                String resourceName = resource.getString(key);
+                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return icon;
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Action for switching layers. (Must be lazily computed) */
     private ApplicationAction layerAction;
 
@@ -133,6 +202,7 @@ public class ViewParameters
     /** Staff peak painting is chosen to be not persistent. */
     private boolean staffPeakPainting = false;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getPaintingLayer //
     //------------------//
@@ -723,81 +793,7 @@ public class ViewParameters
         return LazySingleton.INSTANCE;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final ViewParameters INSTANCE = new ViewParameters();
-    }
-
-    /**
-     * Enum {@code PaintingLayer} defines layers to be painted.
-     */
-    public static enum PaintingLayer
-    {
-        /** Input: image or glyphs. */
-        INPUT,
-        /** Union of input and output. */
-        INPUT_OUTPUT,
-        /** Output: score entities. */
-        OUTPUT;
-
-        /** Icon assigned to layer. */
-        private Icon icon;
-
-        /**
-         * Lazily building of layer icon.
-         *
-         * @return the layer icon
-         */
-        public Icon getIcon ()
-        {
-            if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                        ViewParameters.class);
-
-                String key = getClass().getSimpleName() + "." + this + ".icon";
-                String resourceName = resource.getString(key);
-                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
-            }
-
-            return icon;
-        }
-    }
-
-    /**
-     * Enum {@code SelectionMode} defines type of entities to be selected.
-     */
-    public static enum SelectionMode
-    {
-        MODE_GLYPH,
-        MODE_INTER,
-        MODE_SECTION;
-
-        /** Icon assigned to mode. */
-        private Icon icon;
-
-        /**
-         * Lazily building of mode icon.
-         *
-         * @return the mode icon
-         */
-        public Icon getIcon ()
-        {
-            if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                        ViewParameters.class);
-                String key = getClass().getSimpleName() + "." + this + ".icon";
-                String resourceName = resource.getString(key);
-                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
-            }
-
-            return icon;
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -844,5 +840,14 @@ public class ViewParameters
         private final Constant.Boolean translucentPainting = new Constant.Boolean(
                 true,
                 "Should the inters be painted with grade-based translucency");
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final ViewParameters INSTANCE = new ViewParameters();
     }
 }

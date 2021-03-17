@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -44,9 +43,11 @@ import java.util.List;
  */
 public class IntegerFunction
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(IntegerFunction.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Minimum x value. */
     protected final int xMin;
 
@@ -56,6 +57,7 @@ public class IntegerFunction
     /** Array of y value for each x. */
     private final int[] values;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an instance of {@code IntegerFunction}.
      *
@@ -70,6 +72,7 @@ public class IntegerFunction
         values = new int[xMax - xMin + 1];
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addValue //
     //----------//
@@ -180,7 +183,7 @@ public class IntegerFunction
         XYSeries derivativeSeries = new XYSeries("Derivative", false); // No autosort
 
         for (int i = x1; i <= x2; i++) {
-            if (i >= xMin && i <= xMax) {
+            if ((i >= xMin) && (i <= xMax)) {
                 derivativeSeries.add(i, getDerivative(i));
             }
         }
@@ -257,15 +260,7 @@ public class IntegerFunction
         }
 
         // Sort by decreasing y values
-        Collections.sort(maxima, new Comparator<Integer>()
-                 {
-                     @Override
-                     public int compare (Integer x1,
-                                         Integer x2)
-                     {
-                         return Integer.compare(getValue(x2), getValue(x1)); // Reverse
-                     }
-                 });
+        Collections.sort(maxima, (x3, x4) -> Integer.compare(getValue(x4), getValue(x3)));
 
         return maxima;
     }
@@ -300,7 +295,7 @@ public class IntegerFunction
         XYSeries valueSeries = new XYSeries("Value", false); // No autosort
 
         for (int x = x1; x <= x2; x++) {
-            if (x >= xMin && x <= xMax) {
+            if ((x >= xMin) && (x <= xMax)) {
                 valueSeries.add(x, getValue(x));
             }
         }

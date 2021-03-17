@@ -74,11 +74,13 @@ import java.util.Set;
  */
 public class EndingsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(EndingsBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -89,6 +91,7 @@ public class EndingsBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -101,6 +104,7 @@ public class EndingsBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildEndings //
     //--------------//
@@ -349,8 +353,9 @@ public class EndingsBuilder
             return null;
         }
 
-        if (length < measure.getWidth() * constants.minMeasureRatio.getValue()) {
+        if (length < (measure.getWidth() * constants.minMeasureRatio.getValue())) {
             logger.debug("Ending {} too short compared with related {}", segment, measure);
+
             return null;
         }
 
@@ -373,9 +378,7 @@ public class EndingsBuilder
                 (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow));
 
         if (impacts.getGrade() >= EndingInter.getMinGrade()) {
-            Line2D leftLine = new Line2D.Double(
-                    leftLeg.getStartPoint(),
-                    leftLeg.getStopPoint());
+            Line2D leftLine = new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
             Line2D rightLine = (rightLeg == null) ? null
                     : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
             EndingInter endingInter = new EndingInter(
@@ -401,6 +404,7 @@ public class EndingsBuilder
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

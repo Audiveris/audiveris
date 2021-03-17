@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
@@ -39,6 +37,9 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -51,9 +52,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordSyllableRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordSyllableRelation.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//

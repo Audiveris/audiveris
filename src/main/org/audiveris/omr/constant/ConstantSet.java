@@ -112,7 +112,8 @@ public abstract class ConstantSet
                             constant.getName(),
                             constant.getClass().getSimpleName(),
                             (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit()
-                                                                            + ")") : "",
+                                                                    + ")")
+                            : "",
                             origin,
                             constant.getStringValue(),
                             constant.getDescription()));
@@ -318,8 +319,12 @@ public abstract class ConstantSet
                     constant.setUnitAndName(unit, name);
                     tempMap.put(name, constant);
                 } else {
-                    logger.error("ConstantSet in unit ''{}'' contains a non"
-                                         + " Constant field ''{}'' obj= {}", unit, name, obj);
+                    logger.error(
+                            "ConstantSet in unit ''{}'' contains a non"
+                            + " Constant field ''{}'' obj= {}",
+                            unit,
+                            name,
+                            obj);
                 }
             }
 

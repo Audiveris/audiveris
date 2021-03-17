@@ -32,6 +32,7 @@ import org.audiveris.omr.ui.OmrGui;
  */
 public abstract class OMR
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The extension used for compressed score output files: {@value}. */
     public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
@@ -60,6 +61,7 @@ public abstract class OMR
     /** Master view, if any. */
     public static OmrGui gui;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Do not instantiate. */
     private OMR ()
     {

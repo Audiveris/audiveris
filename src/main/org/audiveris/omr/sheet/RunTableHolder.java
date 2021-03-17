@@ -46,11 +46,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 public class RunTableHolder
         extends DataHolder<RunTable>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTableHolder.class);
 
     private static JAXBContext jaxbContext;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTableHolder} object.
      *
@@ -67,6 +69,7 @@ public class RunTableHolder
         super();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // load //
     //------//

@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class Link
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * For comparing Link instances by decreasing grade.

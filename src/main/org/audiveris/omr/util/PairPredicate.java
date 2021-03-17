@@ -30,6 +30,7 @@ package org.audiveris.omr.util;
  */
 public interface PairPredicate<E>
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Evaluates this predicate on the given pair of Inter instances.

@@ -29,6 +29,7 @@ package org.audiveris.omr.moments;
 public interface LegendreMoments
         extends OrthogonalMoments<LegendreMoments>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Chosen polynomial order. */
     public static final int ORDER = 10;

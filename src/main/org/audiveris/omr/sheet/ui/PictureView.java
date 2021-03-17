@@ -62,9 +62,11 @@ public class PictureView
         extends ScrollView
         implements PropertyChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Link with sheet. */
     private final Sheet sheet;
 
@@ -74,6 +76,7 @@ public class PictureView
     /** Initial or Binary tab. */
     private final SheetTab sheetTab;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code PictureView} instance, dedicated to a sheet.
      *
@@ -105,6 +108,7 @@ public class PictureView
         pageMenu.getPopup().setName("PicturePopupMenu");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -114,6 +118,7 @@ public class PictureView
         view.repaint();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//

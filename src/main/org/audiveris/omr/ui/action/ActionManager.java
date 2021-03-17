@@ -60,12 +60,14 @@ import javax.xml.bind.JAXBException;
  */
 public class ActionManager
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ActionManager.class);
 
     /** Class loader. */
     private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The map of all menus, so that we can directly provide some. */
     private final Map<String, JMenu> menuMap = new HashMap<>();
 
@@ -75,6 +77,7 @@ public class ActionManager
     /** The menu bar for all actions. */
     private final JMenuBar menuBar = new JMenuBar();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Meant to be instantiated at most once.
      */
@@ -82,6 +85,7 @@ public class ActionManager
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getActionInstance //
     //-------------------//
@@ -399,6 +403,7 @@ public class ActionManager
         return LazySingleton.INSTANCE;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // LazySingleton //
     //---------------//

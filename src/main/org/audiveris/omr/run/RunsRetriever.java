@@ -43,15 +43,18 @@ import java.util.concurrent.Callable;
  */
 public class RunsRetriever
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunsRetriever.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The orientation of desired runs */
     private final Orientation orientation;
 
     /** The adapter for pixel access and call-backs at run level */
     private final Adapter adapter;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunsRetriever object.
      *
@@ -66,6 +69,7 @@ public class RunsRetriever
         this.adapter = adapter;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // retrieveRuns //
     //--------------//
@@ -178,17 +182,10 @@ public class RunsRetriever
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
-                    tasks.add(
-                            new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                                throws Exception
-                        {
-                            processPosition(pp, cMin, cMax);
+                    tasks.add(() -> {
+                        processPosition(pp, cMin, cMax);
 
-                            return null;
-                        }
+                        return null;
                     });
                 }
 
@@ -206,6 +203,7 @@ public class RunsRetriever
         }
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

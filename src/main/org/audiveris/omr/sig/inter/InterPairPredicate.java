@@ -28,6 +28,7 @@ package org.audiveris.omr.sig.inter;
  */
 public interface InterPairPredicate
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Evaluates this predicate on the given pair of Inter instances.
@@ -38,5 +39,4 @@ public interface InterPairPredicate
      */
     boolean test (Inter one,
                   Inter two);
-
 }

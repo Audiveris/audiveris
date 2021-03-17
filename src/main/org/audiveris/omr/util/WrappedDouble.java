@@ -30,6 +30,7 @@ package org.audiveris.omr.util;
 public class WrappedDouble
         extends Wrapper<Double>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new WrappedDouble object.

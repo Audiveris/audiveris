@@ -66,17 +66,20 @@ import java.util.TreeMap;
  */
 public class LedgersFilter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LedgersFilter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     // Debug
     final List<Integer> vipSections;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgersFilter object.
      *
@@ -94,6 +97,7 @@ public class LedgersFilter
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -205,6 +209,7 @@ public class LedgersFilter
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

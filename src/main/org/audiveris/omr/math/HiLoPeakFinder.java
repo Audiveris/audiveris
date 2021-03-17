@@ -49,9 +49,11 @@ import java.util.TreeMap;
  */
 public class HiLoPeakFinder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HiLoPeakFinder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Entity title. */
     public final String name;
 
@@ -93,6 +95,7 @@ public class HiLoPeakFinder
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HiLoPeakFinder} object on (sub-)domain of provided function.
      *
@@ -137,6 +140,7 @@ public class HiLoPeakFinder
         xMax = function.getXMax();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // findPeaks //
     //-----------//
@@ -640,6 +644,7 @@ public class HiLoPeakFinder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Quorum //
     //--------//

@@ -96,6 +96,7 @@ import javax.swing.event.MouseInputAdapter;
 public class Rubber
         extends MouseInputAdapter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -111,6 +112,7 @@ public class Rubber
     /** Factor by which zoom level is increased/decreased for one increment. */
     private static final double ZOOM_FACTOR = Math.pow(BASE, 1d / INTERVALS);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** View from which the rubber will receive physical mouse events. */
     protected JComponent component;
 
@@ -135,6 +137,7 @@ public class Rubber
     // To ease debugging
     private final int id;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a rubber, with no predefined parameter (zoom, component) which are meant
      * to be provided later.
@@ -171,6 +174,7 @@ public class Rubber
         setZoom(zoom);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // connectComponent //
     //------------------//
@@ -254,19 +258,24 @@ public class Rubber
         switch (increment) {
         case -1:
             ratio /= ZOOM_FACTOR;
+
             break;
+
         case 0:
             ratio = 1.0;
+
             break;
+
         case +1:
             ratio *= ZOOM_FACTOR;
+
             break;
+
         default:
             return;
         }
 
         zoom.setRatio(ratio);
-
     }
 
     //--------------//
@@ -313,7 +322,8 @@ public class Rubber
                     (vr.y + rawRect.y) - e.getY(),
                     vr.width,
                     vr.height);
-            SwingUtilities.invokeLater(new Runnable()
+            SwingUtilities.invokeLater(
+                    new Runnable()
             {
                 @Override
                 public void run ()
@@ -859,6 +869,7 @@ public class Rubber
         component.repaint();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

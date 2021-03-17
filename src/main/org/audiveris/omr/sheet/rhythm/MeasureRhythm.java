@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -84,9 +83,11 @@ import java.util.TreeMap;
  */
 public class MeasureRhythm
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureRhythm.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure. */
     private final Measure measure;
 
@@ -108,6 +109,7 @@ public class MeasureRhythm
     /** Companion in charge of tuplet generation. */
     private final TupletGenerator tupletGenerator;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasureRhythm} object.
      *
@@ -127,6 +129,7 @@ public class MeasureRhythm
         tupletGenerator = implicitTuplets ? new TupletGenerator(measure) : null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -152,17 +155,18 @@ public class MeasureRhythm
             // Retrieve slots
             slots.clear();
             narrowSlotsRetriever = new SlotsRetriever(measure, false); // Wide is false
-            List<MeasureSlot> narrowSlots = narrowSlotsRetriever.buildSlots();
-            ///dumpSlots("narrowSlots", narrowSlots);
 
+            List<MeasureSlot> narrowSlots = narrowSlotsRetriever.buildSlots();
+
+            ///dumpSlots("narrowSlots", narrowSlots);
             SlotsRetriever wideSlotsRetriever = new SlotsRetriever(measure, true); // Wide is true
             List<MeasureSlot> wideSlots = wideSlotsRetriever.buildSlots();
             ///dumpSlots("wideSlots", wideSlots);
 
             // Merge narrow into wide compounds
             slots.addAll(buildCompoundSlots(narrowSlots, wideSlots));
-            ///dumpSlots("compoundSlots", slots);
 
+            ///dumpSlots("compoundSlots", slots);
             if (slots.isEmpty()) {
                 return ok;
             }
@@ -190,6 +194,7 @@ public class MeasureRhythm
                 if (!newImplicits.isEmpty()) {
                     // Let's go to pass #2 with the new implicits generated on measure-long voices
                     removeTuplets(oldImplicits);
+
                     continue;
                 }
             }
@@ -235,20 +240,18 @@ public class MeasureRhythm
 
                 if (!intersection(wideChords, narrow.getChords())) {
                     if (i > iStart) {
-                        compounds.add(new CompoundSlot(++slotCount, measure,
-                                                       narrowSlots.subList(iStart, i)));
+                        compounds.add(new CompoundSlot(
+                                ++slotCount, measure, narrowSlots.subList(iStart, i)));
                         iStart = i;
+
                         continue WideSlots;
                     }
                 }
             }
 
             // Register last slot
-            compounds.add(
-                    new CompoundSlot(
-                            ++slotCount,
-                            measure,
-                            narrowSlots.subList(iStart, narrowCount)));
+            compounds.add(new CompoundSlot(
+                    ++slotCount, measure, narrowSlots.subList(iStart, narrowCount)));
         }
 
         return compounds;
@@ -270,7 +273,7 @@ public class MeasureRhythm
             for (AbstractChordInter chord : voice.getChords()) {
                 TupletInter tuplet = chord.getTuplet();
 
-                if (tuplet != null && tuplet.isImplicit()) {
+                if ((tuplet != null) && tuplet.isImplicit()) {
                     if (found == null) {
                         found = new LinkedHashSet<>();
                     }
@@ -317,7 +320,7 @@ public class MeasureRhythm
                 }
             }
 
-            if ((indexLast != -1) && (indexLast < size - 1)) {
+            if ((indexLast != -1) && (indexLast < (size - 1))) {
                 final int index = indexLast + 1;
                 final AbstractChordInter first = chords.get(index);
                 final Rational start = first.getTimeOffset();
@@ -343,8 +346,8 @@ public class MeasureRhythm
                     }
                 } else {
                     // Assume we can apply tuplet to the last portion
-                    logger.info("{} no expected duration, last tuplet portion for {}", measure,
-                                voice);
+                    logger.info("{} no expected duration, last tuplet portion for {}",
+                                measure, voice);
                 }
 
                 if (apply) {
@@ -471,12 +474,13 @@ public class MeasureRhythm
 
             if (time.equals(lastSync)) {
                 iFirst = i;
+
                 break;
             }
         }
 
-        final int iBreak = ((stopChord != null) && chords.contains(stopChord)) ? chords.indexOf(
-                stopChord) : chords.size();
+        final int iBreak = ((stopChord != null) && chords.contains(stopChord))
+                ? chords.indexOf(stopChord) : chords.size();
         final List<AbstractChordInter> group = chords.subList(iFirst, iBreak);
 
         // Generate implicit tuplets for the group
@@ -560,7 +564,6 @@ public class MeasureRhythm
 
         for (AbstractChordInter ch : firstSlot.getChords()) {
             ch.setAndPushTime(Rational.ZERO);
-
         }
     }
 
@@ -589,9 +592,11 @@ public class MeasureRhythm
                         logger.debug("Merge {} with {}", prevTuplet, tuplet);
                         removeTuplet(prevTuplet);
                         removeTuplet(tuplet);
+
                         List<AbstractChordInter> doubleGroup = new ArrayList<>();
                         doubleGroup.addAll(prevGroup);
                         doubleGroup.addAll(group);
+
                         List<AbstractChordInter> extGroup = new ArrayList<>();
                         tupletGenerator.generateTuplets(doubleGroup, extGroup);
                     }
@@ -626,6 +631,7 @@ public class MeasureRhythm
         logger.info("{}", sb);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SlotMapper //
     //------------//
@@ -729,10 +735,11 @@ public class MeasureRhythm
 
                                 if (THREE_OVER_TWO.equals(ratio)) {
                                     Rational lastSync = lastSynchro(best, ch);
-                                    logger.debug("Tuplet1 for {} since {}", entry.getValue(),
-                                                 lastSync);
+                                    logger.debug("Tuplet1 for {} since {}",
+                                                 entry.getValue(), lastSync);
 
                                     final Voice voice;
+
                                     if (mapping != null) {
                                         voice = mapping.ref(ch).getVoice();
                                     } else {
@@ -741,6 +748,7 @@ public class MeasureRhythm
 
                                     if (voice != null) {
                                         rectifyVoice(ch, voice, lastSync);
+
                                         continue;
                                     }
                                 }
@@ -813,6 +821,7 @@ public class MeasureRhythm
                         break;
 
                     case 1:
+
                         // Perfect case
                         Rational time = times.firstKey();
                         narrow.setTimeOffset(time);
@@ -822,7 +831,6 @@ public class MeasureRhythm
                     default:
                         // Several values
                         logger.debug("Slot#{} times {}", slot.getId(), times);
-
                         // Check delta ratio since previous synchro (w/o slot time)
                         ok |= analyzeTimes(times);
 
@@ -863,6 +871,7 @@ public class MeasureRhythm
                             if (sibling.getTimeOffset() != null) {
                                 timeOffset = sibling.getTimeOffset();
                                 ch.setAndPushTime(timeOffset);
+
                                 break;
                             }
                         }
@@ -954,33 +963,27 @@ public class MeasureRhythm
             final List<AbstractChordInter> siblings = new ArrayList<>(slot.getChords());
             siblings.remove(rookie);
 
-            Collections.sort(siblings, new Comparator<AbstractChordInter>()
-                     {
-                         @Override
-                         public int compare (AbstractChordInter c1,
-                                             AbstractChordInter c2)
-                         {
-                             // In fact any SlotsRetriever (narrow or wide) could fit!
-                             Rel r1 = narrowSlotsRetriever.getRel(rookie, c1);
-                             Rel r2 = narrowSlotsRetriever.getRel(rookie, c2);
+            Collections.sort(siblings, (AbstractChordInter c1, AbstractChordInter c2) -> {
+                         // In fact any SlotsRetriever (narrow or wide) could fit!
+                         Rel r1 = narrowSlotsRetriever.getRel(rookie, c1);
+                         Rel r2 = narrowSlotsRetriever.getRel(rookie, c2);
 
-                             if (r1 == Rel.EQUAL) {
-                                 if (r2 == Rel.EQUAL) {
-                                     return 0;
-                                 } else {
-                                     return -1;
-                                 }
+                         if (r1 == Rel.EQUAL) {
+                             if (r2 == Rel.EQUAL) {
+                                 return 0;
                              } else {
-                                 if (r2 == Rel.EQUAL) {
-                                     return +1;
-                                 } else {
-                                     double x1 = stack.getXOffset(c1.getCenter());
-                                     double x2 = stack.getXOffset(c2.getCenter());
-                                     return Double.compare(Math.abs(x1 - x), Math.abs(x2 - x));
-                                 }
+                                 return -1;
+                             }
+                         } else {
+                             if (r2 == Rel.EQUAL) {
+                                 return +1;
+                             } else {
+                                 double x1 = stack.getXOffset(c1.getCenter());
+                                 double x2 = stack.getXOffset(c2.getCenter());
+
+                                 return Double.compare(Math.abs(x1 - x), Math.abs(x2 - x));
                              }
                          }
-
                      });
 
             return siblings;
@@ -1145,8 +1148,8 @@ public class MeasureRhythm
                                         if (THREE_OVER_TWO.equals(ratio)) {
                                             //TODO: check also there is no tuplet yet
                                             Rational lastSync = lastSynchro(act, setCh);
-                                            logger.debug("Tuplet2 for {} since {}", setChords,
-                                                         lastSync);
+                                            logger.debug("Tuplet2 for {} since {}",
+                                                         setChords, lastSync);
                                             rectifyVoice(setCh, null, lastSync);
                                         } else {
                                             // Discard
@@ -1156,6 +1159,7 @@ public class MeasureRhythm
 
                                             blackList.add(pair);
                                             done = false;
+
                                             continue Iteration;
                                         }
                                     }
@@ -1167,6 +1171,7 @@ public class MeasureRhythm
 
                                     blackList.add(pair);
                                     done = false;
+
                                     continue Iteration;
                                 }
                             }
@@ -1275,6 +1280,7 @@ public class MeasureRhythm
                         if ((p.oldChord == lastChord) && (rookies.contains(p.newChord))) {
                             actives.add(lastChord);
                             extinctExplicits.add(p.oldChord);
+
                             break;
                         }
                     }

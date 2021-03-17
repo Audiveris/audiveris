@@ -33,6 +33,7 @@ import javax.swing.JSeparator;
 public class SeparableMenu
         extends JMenu
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SeparableMenu object.
@@ -62,6 +63,7 @@ public class SeparableMenu
         super(s);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//

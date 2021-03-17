@@ -32,11 +32,19 @@ import java.util.Objects;
  */
 public class Pair<E>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     public final E one;
 
     public final E two;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code Pair} object.
+     *
+     * @param one DOCUMENT ME!
+     * @param two DOCUMENT ME!
+     */
     public Pair (E one,
                  E two)
     {
@@ -44,6 +52,7 @@ public class Pair<E>
         this.two = two;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public boolean equals (Object obj)
     {
@@ -60,8 +69,8 @@ public class Pair<E>
     public int hashCode ()
     {
         int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.one);
-        hash = 97 * hash + Objects.hashCode(this.two);
+        hash = (97 * hash) + Objects.hashCode(this.one);
+        hash = (97 * hash) + Objects.hashCode(this.two);
 
         return hash;
     }

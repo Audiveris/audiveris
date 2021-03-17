@@ -32,6 +32,7 @@ import java.awt.image.WritableRaster;
 public class BufferedSink
         implements PixelSink
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The wrapped BufferedImage instance. */
     private final BufferedImage image;
@@ -42,6 +43,7 @@ public class BufferedSink
     /** Buffer to write pixel value. */
     private final int[] pixelArray;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BufferedSink object around a given BufferedImage
      * instance.
@@ -55,6 +57,7 @@ public class BufferedSink
         pixelArray = new int[4];
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int getHeight ()
     {

@@ -74,11 +74,13 @@ import javax.swing.JMenuItem;
 public class EditorMenu
         extends SheetPopupMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the editor page menu.
      *
@@ -91,6 +93,7 @@ public class EditorMenu
         popup.setName("EditorMenu");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // defineLayout //
     //--------------//
@@ -187,6 +190,7 @@ public class EditorMenu
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -632,6 +636,7 @@ public class EditorMenu
                             String.format("Different measure counts %d vs %d",
                                           stacks.size(), stacks2.size()),
                             "Incompatible " + system + " & " + system2);
+
                     return;
                 }
 
@@ -654,15 +659,16 @@ public class EditorMenu
                     double dx = Math.abs(dsk.getX() - dsk2.getX());
 
                     if (dx > maxEndShift) {
-                        OMR.gui.displayWarning("Misaligned left ends between " + measure + " and "
-                                                       + measure2,
-                                               "Incompatible " + system + " & " + system2);
+                        OMR.gui.displayWarning(
+                                "Misaligned left ends between " + measure + " and " + measure2,
+                                "Incompatible " + system + " & " + system2);
+
                         return;
                     }
                 }
 
-                if (OMR.gui.displayConfirmation("Merge " + system.toLongString() + " with "
-                                                        + system2.toLongString() + "?")) {
+                if (OMR.gui.displayConfirmation(
+                        "Merge " + system.toLongString() + " with " + system2.toLongString() + "?")) {
                     sheet.getInterController().mergeSystem(system);
                 }
             }
@@ -675,7 +681,8 @@ public class EditorMenu
                     // Action enabled only if system is not the last in sheet and step >= GRID
                     final List<SystemInfo> systems = sheet.getSystemManager().getSystems();
                     boolean isLast = system == systems.get(systems.size() - 1);
-                    setEnabled(!isLast && sheet.getStub().getLatestStep().compareTo(Step.GRID) >= 0);
+                    setEnabled(!isLast
+                               && (sheet.getStub().getLatestStep().compareTo(Step.GRID) >= 0));
                 }
             }
         }

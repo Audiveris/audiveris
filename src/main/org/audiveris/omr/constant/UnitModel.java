@@ -50,9 +50,11 @@ import org.slf4j.LoggerFactory;
 public class UnitModel
         extends AbstractTreeTableModel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitModel.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Enumeration type to describe each column of the JTreeTable
      */
@@ -127,6 +129,7 @@ public class UnitModel
         }
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Builds the model.
      */
@@ -135,6 +138,7 @@ public class UnitModel
         super(UnitManager.getInstance().getRoot());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChild //
     //----------//
@@ -165,8 +169,8 @@ public class UnitModel
             }
         }
 
-        System.err.println("*** getChild. Unexpected node " + parent + ", type=" + parent.getClass()
-                .getName());
+        System.err.println(
+                "*** getChild. Unexpected node " + parent + ", type=" + parent.getClass().getName());
 
         return null;
     }
@@ -198,8 +202,8 @@ public class UnitModel
             return 0;
         }
 
-        System.err.println("*** getChildCount. Unexpected node " + parent + ", type=" + parent
-                .getClass().getName());
+        System.err.println("*** getChildCount. Unexpected node " + parent
+                                   + ", type=" + parent.getClass().getName());
 
         return 0;
     }
@@ -272,7 +276,7 @@ public class UnitModel
             } else if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                return Boolean.valueOf(!constant.isSourceValue());
+                return !constant.isSourceValue();
             }
 
             return "";
@@ -330,14 +334,13 @@ public class UnitModel
 
                         if (scale != null) {
                             if (constant instanceof Scale.Fraction) {
-                                return String.format("%.1f", scale.toPixelsDouble(
-                                                     (Scale.Fraction) constant));
+                                return String.format(
+                                        "%.1f",
+                                        scale.toPixelsDouble((Scale.Fraction) constant));
                             } else if (constant instanceof Scale.LineFraction) {
-                                return Integer
-                                        .valueOf(scale.toPixels((Scale.LineFraction) constant));
+                                return scale.toPixels((Scale.LineFraction) constant);
                             } else if (constant instanceof Scale.AreaFraction) {
-                                return Integer
-                                        .valueOf(scale.toPixels((Scale.AreaFraction) constant));
+                                return scale.toPixels((Scale.AreaFraction) constant);
                             }
                         }
                     } else {
@@ -382,7 +385,7 @@ public class UnitModel
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                return Boolean.valueOf(!constant.isSourceValue());
+                return !constant.isSourceValue();
 
                 //            } else if (node instanceof UnitNode) {
                 //                return true;
@@ -442,20 +445,20 @@ public class UnitModel
             case VALUE:
 
                 try {
-                    constant.setStringValue(value.toString());
+                constant.setStringValue(value.toString());
 
-                    // Forward modif to the modif status column and to the pixel
-                    // column (brute force!)
-                    fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
-                } catch (NumberFormatException ex) {
-                    OMR.gui.displayError("Illegal number format");
-                }
+                // Forward modif to the modif status column and to the pixel
+                // column (brute force!)
+                fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
+            } catch (NumberFormatException ex) {
+                OMR.gui.displayError("Illegal number format");
+            }
 
-                break;
+            break;
 
             case MODIF:
 
-                if (!((Boolean) value).booleanValue()) {
+                if (!((Boolean) value)) {
                     constant.resetToSource();
                     fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
                 }

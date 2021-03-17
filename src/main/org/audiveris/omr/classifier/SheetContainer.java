@@ -63,6 +63,7 @@ import javax.xml.stream.XMLStreamException;
 @XmlRootElement(name = "container")
 public class SheetContainer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetContainer.class);
 
@@ -75,6 +76,7 @@ public class SheetContainer
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Map (RunTable Hash code => list of sheet descriptors). */
@@ -90,6 +92,7 @@ public class SheetContainer
     /** Descriptors to be deleted from disk. */
     private Set<Descriptor> defunctDescriptors = new LinkedHashSet<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetContainer} object. Needed for JAXB.
      */
@@ -97,6 +100,7 @@ public class SheetContainer
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addDescriptor //
     //---------------//
@@ -405,6 +409,7 @@ public class SheetContainer
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

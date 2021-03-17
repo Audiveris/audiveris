@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Point;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
@@ -48,6 +47,7 @@ import org.audiveris.omr.util.WrappedBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +76,43 @@ public class LyricItemInter
 
     private static final Logger logger = LoggerFactory.getLogger(LyricItemInter.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //----------//
+    // ItemKind //
+    //----------//
+    /**
+     * Describes the kind of this lyrics item.
+     */
+    public static enum ItemKind
+    {
+        /** Just an elision. */
+        Elision,
+        /** Just an extension. */
+        Extension,
+        /** A hyphen between syllables. */
+        Hyphen,
+        /** A real syllable. */
+        Syllable;
+    }
+
+    //--------------//
+    // SyllabicType //
+    //--------------//
+    /**
+     * Describes more precisely a syllable inside a word.
+     */
+    public static enum SyllabicType
+    {
+        /** Single-syllable word */
+        SINGLE,
+        /** Syllable that begins a word */
+        BEGIN,
+        /** Syllable at the middle of a word */
+        MIDDLE,
+        /** Syllable that ends a word */
+        END;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Lyrics kind. */
     @XmlAttribute(name = "kind")
@@ -93,8 +130,14 @@ public class LyricItemInter
      */
     public LyricItemInter (WordInter w)
     {
-        super(w.getGlyph(), w.getBounds(), Shape.LYRICS, w.getGrade(), w.getValue(), w.getFontInfo(),
-              PointUtil.rounded(w.getLocation()));
+        super(
+                w.getGlyph(),
+                w.getBounds(),
+                Shape.LYRICS,
+                w.getGrade(),
+                w.getValue(),
+                w.getFontInfo(),
+                PointUtil.rounded(w.getLocation()));
 
         itemKind = inferItemKind();
     }
@@ -453,6 +496,7 @@ public class LyricItemInter
 
             if (lookAbove) {
                 Collection<HeadChordInter> chords = measure.getHeadChordsAbove(getLocation());
+
                 if (blackList != null) {
                     chords.removeAll(blackList);
                 }
@@ -474,6 +518,7 @@ public class LyricItemInter
                 }
             } else {
                 Collection<HeadChordInter> chords = measure.getHeadChordsBelow(getLocation());
+
                 if (blackList != null) {
                     chords.removeAll(blackList);
                 }
@@ -609,42 +654,6 @@ public class LyricItemInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------//
-    // ItemKind //
-    //----------//
-    /**
-     * Describes the kind of this lyrics item.
-     */
-    public static enum ItemKind
-    {
-        /** Just an elision. */
-        Elision,
-        /** Just an extension. */
-        Extension,
-        /** A hyphen between syllables. */
-        Hyphen,
-        /** A real syllable. */
-        Syllable;
-    }
-
-    //--------------//
-    // SyllabicType //
-    //--------------//
-    /**
-     * Describes more precisely a syllable inside a word.
-     */
-    public static enum SyllabicType
-    {
-        /** Single-syllable word */
-        SINGLE,
-        /** Syllable that begins a word */
-        BEGIN,
-        /** Syllable at the middle of a word */
-        MIDDLE,
-        /** Syllable that ends a word */
-        END;
-    }
-
     //-----------//
     // Constants //
     //-----------//

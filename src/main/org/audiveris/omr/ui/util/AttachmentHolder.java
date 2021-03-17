@@ -33,6 +33,7 @@ import java.util.Map;
  */
 public interface AttachmentHolder
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Register an attachment with a key and a shape.

@@ -37,6 +37,7 @@ import java.util.EnumMap;
  */
 public abstract class Symbols
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
@@ -92,11 +93,13 @@ public abstract class Symbols
         assignSymbols();
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** This is just a functional class, no instance is needed. */
     private Symbols ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getSymbol //
     //-----------//
@@ -222,7 +225,6 @@ public abstract class Symbols
         //        slanted(DYNAMICS_SFP, 83, 112);
         slanted(DYNAMICS_SFZ, 83, 122);
         //        slanted(DYNAMICS_SFPP, 83, 185);
-
         sym.put(ENDING, new EndingSymbol(false));
         sym.put(ENDING_WRL, new EndingSymbol(true));
         mapShape(EIGHTH_REST, 228);

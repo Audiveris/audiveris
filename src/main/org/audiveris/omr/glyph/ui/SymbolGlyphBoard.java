@@ -44,12 +44,14 @@ import org.slf4j.LoggerFactory;
 public class SymbolGlyphBoard
         extends GlyphBoard
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(SymbolGlyphBoard.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
@@ -71,6 +73,7 @@ public class SymbolGlyphBoard
             resources.getString("height.toolTipText"),
             "%.3f");
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the symbol glyph board.
      *
@@ -90,6 +93,7 @@ public class SymbolGlyphBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//

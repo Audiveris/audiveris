@@ -51,11 +51,13 @@ import java.util.TreeMap;
 public class SymbolsStep
         extends AbstractSystemStep<SymbolsStep.Context>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsStep object.
      */
@@ -63,6 +65,7 @@ public class SymbolsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -131,6 +134,7 @@ public class SymbolsStep
         return context;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//

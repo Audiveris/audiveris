@@ -44,11 +44,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AdaptiveDescriptor
         extends FilterDescriptor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveDescriptor.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Coefficient for mean. */
     @XmlAttribute(name = "mean-coeff")
     public final double meanCoeff;
@@ -57,6 +59,7 @@ public class AdaptiveDescriptor
     @XmlAttribute(name = "std-dev-coeff")
     public final double stdDevCoeff;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AdaptiveDescriptor object.
      *
@@ -77,6 +80,7 @@ public class AdaptiveDescriptor
         stdDevCoeff = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getFilter //
     //-----------//
@@ -208,6 +212,7 @@ public class AdaptiveDescriptor
         constants.stdDevCoeff.resetToSource();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

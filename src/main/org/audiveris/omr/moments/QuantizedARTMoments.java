@@ -34,6 +34,7 @@ import java.util.Arrays;
 public class QuantizedARTMoments
         implements ARTMoments
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // Quantization table (17 cells)
     private static final double[] quantTable = {
@@ -55,6 +56,7 @@ public class QuantizedARTMoments
     /** Actual values */
     private final short[][] values = new short[ANGULAR][RADIAL];
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new QuantizedARTMoments object.
      */
@@ -62,6 +64,7 @@ public class QuantizedARTMoments
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceTo //
     //------------//

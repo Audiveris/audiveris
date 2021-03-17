@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MirrorRelation
         extends Support
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //
@@ -54,5 +55,4 @@ public class MirrorRelation
     {
         return true;
     }
-
 }

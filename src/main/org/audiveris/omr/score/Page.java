@@ -64,9 +64,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Page
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -119,6 +121,7 @@ public class Page
     /** Greatest duration divisor (in this page). */
     private Integer durationDivisor;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Page object.
      *
@@ -144,6 +147,7 @@ public class Page
         id = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -783,7 +787,7 @@ public class Page
     {
         final StringBuilder sb = new StringBuilder("{Page");
 
-        if (sheet != null && sheet.getStub() != null) {
+        if ((sheet != null) && (sheet.getStub() != null)) {
             sb.append('#').append(sheet.getStub().getNumber());
         }
 
@@ -816,8 +820,9 @@ public class Page
                 for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
-                            final Rational duration = chord.isWholeRest() ? stack
-                                    .getExpectedDuration() : chord.getDuration();
+                            final Rational duration = chord.isWholeRest()
+                                    ? stack.getExpectedDuration()
+                                    : chord.getDuration();
 
                             if (duration != null) {
                                 durations.add(duration);

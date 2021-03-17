@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 public class PartData
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Name of the part, such as found in left margin of a part. */
     @XmlAttribute
@@ -39,6 +40,7 @@ public class PartData
     @XmlAttribute
     public final int program;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartData} object.
      *
@@ -58,6 +60,7 @@ public class PartData
         program = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {

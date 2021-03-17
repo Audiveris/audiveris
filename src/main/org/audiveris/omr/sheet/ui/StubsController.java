@@ -128,9 +128,8 @@ public class StubsController
         stubsPane.addChangeListener(this);
 
         // Listener on invalid sheets display
-        ViewParameters.getInstance().addPropertyChangeListener(
-                ViewParameters.INVALID_SHEET_DISPLAY,
-                this);
+        ViewParameters.getInstance()
+                .addPropertyChangeListener(ViewParameters.INVALID_SHEET_DISPLAY, this);
 
         // Key binding
         bindKeys();
@@ -1016,17 +1015,21 @@ public class StubsController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
     {
 
-        static final StubsController INSTANCE = new StubsController();
+        private final Constant.Enum<Step> earlyStep = new Constant.Enum<>(
+                Step.class,
+                Step.BINARY,
+                "Early step triggered when an empty stub tab is selected ");
 
-        private LazySingleton ()
-        {
-        }
+        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(
+                0.5,
+                "Initial zoom ratio for displayed sheet pictures");
     }
 
     //---------------//
@@ -1060,6 +1063,19 @@ public class StubsController
             if (stubsPane.getComponentCount() > 0) {
                 stubsPane.setSelectedIndex(0);
             }
+        }
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final StubsController INSTANCE = new StubsController();
+
+        private LazySingleton ()
+        {
         }
     }
 
@@ -1097,22 +1113,5 @@ public class StubsController
                 stubsPane.setSelectedIndex(tabIndex - 1);
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Enum<Step> earlyStep = new Constant.Enum<>(
-                Step.class,
-                Step.BINARY,
-                "Early step triggered when an empty stub tab is selected ");
-
-        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(
-                0.5,
-                "Initial zoom ratio for displayed sheet pictures");
     }
 }

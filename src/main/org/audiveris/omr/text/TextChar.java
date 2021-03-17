@@ -31,6 +31,7 @@ import java.awt.Rectangle;
 public class TextChar
         extends TextItem
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new TextChar object.
@@ -44,6 +45,7 @@ public class TextChar
         super(bounds, value);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void setValue (String value)
     {

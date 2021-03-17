@@ -42,9 +42,9 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
 
-import java.awt.geom.Line2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.List;
 
@@ -63,12 +63,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class LedgerInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     /** Default thickness of a ledger. */
     public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -104,6 +106,7 @@ public class LedgerInter
      */
     private Integer index;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgerInter object.
      *
@@ -170,6 +173,7 @@ public class LedgerInter
         super(null, null, null, (Double) null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -462,6 +466,44 @@ public class LedgerInter
         return constants.defaultLength;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        // Left point of median line
+        public final Point2D p1;
+
+        // Right point of median line
+        public final Point2D p2;
+
+        public Model (double x1,
+                      double y1,
+                      double x2,
+                      double y2)
+        {
+            p1 = new Point2D.Double(x1, y1);
+            p2 = new Point2D.Double(x2, y2);
+        }
+
+        public Model (Line2D line)
+        {
+            p1 = line.getP1();
+            p2 = line.getP2();
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -586,43 +628,6 @@ public class LedgerInter
             ledger.computeArea(); // Set bounds also
 
             super.undo();
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        // Left point of median line
-        public final Point2D p1;
-
-        // Right point of median line
-        public final Point2D p2;
-
-        public Model (double x1,
-                      double y1,
-                      double x2,
-                      double y2)
-        {
-            p1 = new Point2D.Double(x1, y1);
-            p2 = new Point2D.Double(x2, y2);
-        }
-
-        public Model (Line2D line)
-        {
-            p1 = line.getP1();
-            p2 = line.getP2();
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
         }
     }
 }

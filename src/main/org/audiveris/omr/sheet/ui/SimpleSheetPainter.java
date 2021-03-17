@@ -32,6 +32,7 @@ import java.awt.Graphics2D;
  */
 public interface SimpleSheetPainter
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Paint some sheet-related data to the provided graphics context.

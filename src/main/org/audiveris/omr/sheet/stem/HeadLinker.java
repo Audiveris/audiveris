@@ -1382,22 +1382,6 @@ public class HeadLinker
                 return theoLine.getP2();
             }
 
-            //----------//
-            // crossing //
-            //----------//
-            /**
-             * Compute the crossing point between a stem and a beam.
-             *
-             * @param stem the stem
-             * @param beam the beam
-             * @return the precise crossing point
-             */
-            private Point2D crossing (StemInter stem,
-                                      AbstractBeamInter beam)
-            {
-                return LineUtil.intersection(stem.getMedian(), getLimit(beam));
-            }
-
             //--------//
             // expand //
             //--------//

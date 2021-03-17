@@ -34,6 +34,7 @@ import java.util.StringTokenizer;
 public class StructureElement
         implements MorphoConstants
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StructureElement.class);
 
@@ -42,6 +43,7 @@ public class StructureElement
 
     static final String EOL = System.getProperty("line.separator");
 
+    //~ Instance fields ----------------------------------------------------------------------------
     public int type = FREE;
 
     public boolean offsetmodified = false;
@@ -60,6 +62,7 @@ public class StructureElement
 
     private int shift = 1;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StructureElement object.
      *
@@ -181,6 +184,7 @@ public class StructureElement
         vect = calcVect(mask, width);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     public int[] Delta (int[] offset)
     {
         int[] astrel = this.T(offset);
@@ -700,9 +704,7 @@ public class StructureElement
             for (double y = -r; y <= r; y++) {
                 //int index= (int)(r+x+width*(r+y));
                 //   if (x*x+y*y<r2){
-                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y
-                                                                                       - offset[1])))
-                    < r2) {
+                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y - offset[1]))) < r2) {
                     mask[index] = 255;
                 }
 
@@ -737,6 +739,7 @@ public class StructureElement
     {
         float a = k * var;
         int b = (int) (k * var);
+
         return ((a - b) == 0) || (var < 0);
     }
 }

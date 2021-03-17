@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import ij.process.ByteProcessor;
+
 import org.audiveris.omr.check.Check;
 import org.audiveris.omr.check.CheckBoard;
 import org.audiveris.omr.check.CheckSuite;
@@ -46,8 +48,6 @@ import org.audiveris.omr.ui.selection.UserEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -247,6 +247,201 @@ public class StemChecker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction beltMarginDx = new Scale.Fraction(
+                0.15,
+                "Horizontal belt margin checked around stem");
+
+        private final Check.Grade minCheckResult = new Check.Grade(
+                0.2,
+                "Minimum result for suite of check");
+
+        private final Check.Grade goodCheckResult = new Check.Grade(
+                0.5,
+                "Good result for suite of check");
+
+        private final Scale.Fraction lengthHigh = new Scale.Fraction(
+                3.5,
+                "High minimum length for a stem");
+
+        private final Scale.Fraction lengthLow = new Scale.Fraction(
+                1.25,
+                "Low minimum length for a stem");
+
+        private final Scale.Fraction blackHigh = new Scale.Fraction(
+                2.5,
+                "High minimum black length for a stem");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction blackHigh_p1 = new Scale.Fraction(1.25, "Idem for profile 1");
+
+        private final Scale.Fraction blackLow = new Scale.Fraction(
+                1.25,
+                "Low minimum black length for a stem");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction blackLow_p1 = new Scale.Fraction(0.625, "Idem for profile 1");
+
+        private final Constant.Ratio blackRatioLow = new Constant.Ratio(
+                0.5,
+                "Low minimum ratio of black pixels for a stem");
+
+        @SuppressWarnings("unused")
+        private final Constant.Ratio blackRatioLow_p1 = new Constant.Ratio(
+                0.3,
+                "Idem for profile 1");
+
+        @SuppressWarnings("unused")
+        private final Constant.Ratio blackRatioLow_p2 = new Constant.Ratio(
+                0.2,
+                "Idem for profile 2");
+
+        @SuppressWarnings("unused")
+        private final Constant.Ratio blackRatioLow_p3 = new Constant.Ratio(
+                0.1,
+                "Idem for profile 3");
+
+        private final Scale.Fraction cleanHigh = new Scale.Fraction(
+                2.0,
+                "High minimum clean length for a stem");
+
+        private final Scale.Fraction cleanLow = new Scale.Fraction(
+                0.5,
+                "Low minimum clean length for a stem");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction cleanLow_p1 = new Scale.Fraction(0.3, "Idem for profile 1");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction cleanLow_p2 = new Scale.Fraction(0.2, "Idem for profile 2");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction cleanLow_p3 = new Scale.Fraction(0.0, "Idem for profile 3");
+
+        private final Scale.Fraction gapHigh = new Scale.Fraction(
+                0.3,
+                "Maximum vertical gap between stem segments");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction gapHigh_p1 = new Scale.Fraction(0.6, "Idem for profile 1");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction gapHigh_p2 = new Scale.Fraction(2.0, "Idem for profile 2");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction gapHigh_p3 = new Scale.Fraction(4.0, "Idem for profile 3");
+
+        private final Constant.Double slopeHigh = new Constant.Double(
+                "tangent",
+                0.08, // 0.06,
+                "Maximum difference with global slope");
+
+        private final Scale.Fraction straightHigh = new Scale.Fraction(
+                0.2,
+                "High maximum distance to average stem line");
+
+        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for visual check");
+    }
+
+    //--------------//
+    // StickContext //
+    //--------------//
+    private static class StickContext
+    {
+
+        /** The stick being checked. */
+        public final NearLine stick;
+
+        /** Length of largest gap found. */
+        public int gap;
+
+        /** Total length of black portions of stem. */
+        public int black;
+
+        /** Total length of white portions of stem. */
+        public int white;
+
+        public StickContext (NearLine stick)
+        {
+            this.stick = stick;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
+        }
+    }
+
+    //----------------//
+    // VertCheckBoard //
+    //----------------//
+    /**
+     * A board which runs and displays the detailed results of an interactive seed
+     * check suite on the current glyph.
+     */
+    private static class VertCheckBoard
+            extends CheckBoard<StickContext>
+    {
+
+        private final Sheet sheet;
+
+        VertCheckBoard (Sheet sheet,
+                        SelectionService eventService,
+                        Class[] eventList)
+        {
+            super("SeedCheck", null, eventService, eventList);
+            this.sheet = sheet;
+        }
+
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof EntityListEvent) {
+                    @SuppressWarnings("unchecked")
+                    final EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                    final Glyph glyph = listEvent.getEntity();
+
+                    if (glyph != null) {
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck
+                                .getValue()) {
+                            // Apply the check suite on each containing system
+                            SystemManager systemManager = sheet.getSystemManager();
+
+                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                                applySuite(
+                                        new StemChecker(system.getSheet()).getSuite(),
+                                        new StickContext(glyph));
+
+                                return;
+                            }
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warn(getClass().getName() + " onEvent error", ex);
+            }
+        }
+    }
+
     //------------//
     // BlackCheck //
     //------------//
@@ -318,12 +513,13 @@ public class StemChecker
 
         protected CleanCheck (int profile)
         {
-            super("Clean",
-                  "Check total clean length",
-                  (Scale.Fraction) constants.getConstant(constants.cleanLow, profile),
-                  (Scale.Fraction) constants.getConstant(constants.cleanHigh, profile),
-                  true,
-                  TOO_HIGH_ADJACENCY);
+            super(
+                    "Clean",
+                    "Check total clean length",
+                    (Scale.Fraction) constants.getConstant(constants.cleanLow, profile),
+                    (Scale.Fraction) constants.getConstant(constants.cleanHigh, profile),
+                    true,
+                    TOO_HIGH_ADJACENCY);
         }
 
         @Override
@@ -339,8 +535,9 @@ public class StemChecker
                 // Sanity check
                 double invSlope = LineUtil.getInvertedSlope(start, stop);
 
-                if (Double.isNaN(invSlope) || Double.isInfinite(invSlope) || (Math.abs(
-                        invSlope) > 0.5)) {
+                if (Double.isNaN(invSlope)
+                            || Double.isInfinite(invSlope)
+                            || (Math.abs(invSlope) > 0.5)) {
                     if (stick.isVip()) {
                         logger.info("VIP too far from vertical {}", stick);
                     }
@@ -512,6 +709,7 @@ public class StemChecker
             }
 
             final Line2D line = context.stick.getLine();
+
             return scale.pixelsToFrac(line.getY2() - line.getY1());
         }
     }
@@ -544,7 +742,7 @@ public class StemChecker
             // Specific case for BEAM_SIDE profile:
             // Check is run because it is needed by the following checks
             // But its specific result value is not used
-            add((profile >= Profiles.BEAM_SIDE) ? -1 : 2, new CleanCheck(profile));
+            add((profile >= Profiles.BEAM_SIDE) ? (-1) : 2, new CleanCheck(profile));
 
             add(1, new BlackCheck(profile)); // Needs CleanCheck side output
             add(1, new BlackRatioCheck(profile)); // Needs CleanCheck side output
@@ -592,36 +790,6 @@ public class StemChecker
         }
     }
 
-    //--------------//
-    // StickContext //
-    //--------------//
-    private static class StickContext
-    {
-
-        /** The stick being checked. */
-        final public NearLine stick;
-
-        /** Length of largest gap found. */
-        public int gap;
-
-        /** Total length of black portions of stem. */
-        public int black;
-
-        /** Total length of white portions of stem. */
-        public int white;
-
-        public StickContext (NearLine stick)
-        {
-            this.stick = stick;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
-    }
-
     //---------------//
     // StraightCheck //
     //---------------//
@@ -647,184 +815,5 @@ public class StemChecker
         {
             return scale.pixelsToFrac(context.stick.getMeanDistance());
         }
-    }
-
-    //----------------//
-    // VertCheckBoard //
-    //----------------//
-    /**
-     * A board which runs and displays the detailed results of an interactive seed
-     * check suite on the current glyph.
-     */
-    private static class VertCheckBoard
-            extends CheckBoard<StickContext>
-    {
-
-        private final Sheet sheet;
-
-        VertCheckBoard (Sheet sheet,
-                        SelectionService eventService,
-                        Class[] eventList)
-        {
-            super("SeedCheck", null, eventService, eventList);
-            this.sheet = sheet;
-        }
-
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                if (event instanceof EntityListEvent) {
-                    @SuppressWarnings("unchecked")
-                    final EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
-                    final Glyph glyph = listEvent.getEntity();
-
-                    if (glyph != null) {
-                        // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope())
-                                    <= constants.maxCoTangentForCheck.getValue()) {
-                            // Apply the check suite on each containing system
-                            SystemManager systemManager = sheet.getSystemManager();
-
-                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                                applySuite(new StemChecker(system.getSheet()).getSuite(),
-                                           new StickContext(glyph));
-                                return;
-                            }
-                        }
-                    }
-
-                    tellObject(null);
-                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction beltMarginDx = new Scale.Fraction(
-                0.15,
-                "Horizontal belt margin checked around stem");
-
-        private final Check.Grade minCheckResult = new Check.Grade(
-                0.2,
-                "Minimum result for suite of check");
-
-        private final Check.Grade goodCheckResult = new Check.Grade(
-                0.5,
-                "Good result for suite of check");
-
-        private final Scale.Fraction lengthHigh = new Scale.Fraction(
-                3.5,
-                "High minimum length for a stem");
-
-        private final Scale.Fraction lengthLow = new Scale.Fraction(
-                1.25,
-                "Low minimum length for a stem");
-
-        private final Scale.Fraction blackHigh = new Scale.Fraction(
-                2.5,
-                "High minimum black length for a stem");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction blackHigh_p1 = new Scale.Fraction(
-                1.25,
-                "Idem for profile 1");
-
-        private final Scale.Fraction blackLow = new Scale.Fraction(
-                1.25,
-                "Low minimum black length for a stem");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction blackLow_p1 = new Scale.Fraction(
-                0.625,
-                "Idem for profile 1");
-
-        private final Constant.Ratio blackRatioLow = new Constant.Ratio(
-                0.5,
-                "Low minimum ratio of black pixels for a stem");
-
-        @SuppressWarnings("unused")
-        private final Constant.Ratio blackRatioLow_p1 = new Constant.Ratio(
-                0.3,
-                "Idem for profile 1");
-
-        @SuppressWarnings("unused")
-        private final Constant.Ratio blackRatioLow_p2 = new Constant.Ratio(
-                0.2,
-                "Idem for profile 2");
-
-        @SuppressWarnings("unused")
-        private final Constant.Ratio blackRatioLow_p3 = new Constant.Ratio(
-                0.1,
-                "Idem for profile 3");
-
-        private final Scale.Fraction cleanHigh = new Scale.Fraction(
-                2.0,
-                "High minimum clean length for a stem");
-
-        private final Scale.Fraction cleanLow = new Scale.Fraction(
-                0.5,
-                "Low minimum clean length for a stem");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction cleanLow_p1 = new Scale.Fraction(
-                0.3,
-                "Idem for profile 1");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction cleanLow_p2 = new Scale.Fraction(
-                0.2,
-                "Idem for profile 2");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction cleanLow_p3 = new Scale.Fraction(
-                0.0,
-                "Idem for profile 3");
-
-        private final Scale.Fraction gapHigh = new Scale.Fraction(
-                0.3,
-                "Maximum vertical gap between stem segments");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction gapHigh_p1 = new Scale.Fraction(
-                0.6,
-                "Idem for profile 1");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction gapHigh_p2 = new Scale.Fraction(
-                2.0,
-                "Idem for profile 2");
-
-        @SuppressWarnings("unused")
-        private final Scale.Fraction gapHigh_p3 = new Scale.Fraction(
-                4.0,
-                "Idem for profile 3");
-
-        private final Constant.Double slopeHigh = new Constant.Double(
-                "tangent",
-                0.08, // 0.06,
-                "Maximum difference with global slope");
-
-        private final Scale.Fraction straightHigh = new Scale.Fraction(
-                0.2,
-                "High maximum distance to average stem line");
-
-        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
-                "cotangent",
-                0.1,
-                "Maximum cotangent for visual check");
     }
 }

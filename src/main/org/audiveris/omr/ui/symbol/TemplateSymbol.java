@@ -105,8 +105,8 @@ public class TemplateSymbol
         p.rect = new Rectangle2D.Double(
                 0,
                 0,
-                isSmall ? fatSym.width + dx : (rawSym.getWidth() + dx),
-                isSmall ? font.getStaffInterline() + dy : (rawSym.getHeight() + dy));
+                isSmall ? (fatSym.width + dx) : (rawSym.getWidth() + dx),
+                isSmall ? (font.getStaffInterline() + dy) : (rawSym.getHeight() + dy));
 
         // Symbol bounds relative to template rectangle
         p.rawRect = new Rectangle2D.Double(

@@ -90,6 +90,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
@@ -104,6 +105,8 @@ public class SystemInfo
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -187,6 +190,7 @@ public class SystemInfo
     /** Width of the system. */
     private int width = -1;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
@@ -214,6 +218,7 @@ public class SystemInfo
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addFreeGlyph //
     //--------------//
@@ -1298,6 +1303,7 @@ public class SystemInfo
             if (tablatures == null) {
                 tablatures = new ArrayList<>();
             }
+
             tablatures.add(staff);
         }
 
@@ -1435,6 +1441,7 @@ public class SystemInfo
         for (Staff staff : systemBelow.staves) {
             staff.setSystem(this);
         }
+
         staves.addAll(systemBelow.staves);
 
         // sections

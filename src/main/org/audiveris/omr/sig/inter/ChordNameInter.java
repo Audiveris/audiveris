@@ -129,15 +129,13 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat = group(ROOT_STEP, STEP_CLASS) + group(
-            ROOT_ALTER,
-            Alter.CLASS) + "?";
+    private static final String rootPat = group(ROOT_STEP, STEP_CLASS)
+                                                  + group(ROOT_ALTER, Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
     private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS)
                                                   + group(BASS_ALTER, Alter.CLASS)
-                                                  + "?"
-                                                  + ")";
+                                                  + "?" + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
     private static final String majPat = group(MAJ, "(M|[Mm][Aa][Jj]|" + DELTA + ")");
@@ -155,16 +153,8 @@ public class ChordNameInter
     private static final String hdimPat = group(HDIM, "\u00F8");
 
     /** Pattern for any of the indication alternatives. (except sus) */
-    private static final String modePat = "(" + majPat
-                                                  + "|"
-                                                  + minPat
-                                                  + "|"
-                                                  + augPat
-                                                  + "|"
-                                                  + dimPat
-                                                  + "|"
-                                                  + hdimPat
-                                                  + ")";
+    private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat
+                                                  + "|" + hdimPat + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
     private static final String parMajPat = "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
@@ -259,8 +249,14 @@ public class ChordNameInter
                            Pitch bass,
                            List<Degree> degrees)
     {
-        super(w.getGlyph(), w.getBounds(), w.getShape(), w.getGrade(), w.getValue(), w.getFontInfo(),
-              PointUtil.rounded(w.getLocation()));
+        super(
+                w.getGlyph(),
+                w.getBounds(),
+                w.getShape(),
+                w.getGrade(),
+                w.getValue(),
+                w.getFontInfo(),
+                PointUtil.rounded(w.getLocation()));
         this.root = root;
         this.kind = kind;
         this.bass = bass;
@@ -451,11 +447,10 @@ public class ChordNameInter
         sentence.setManual(true);
         sentence.setStaff(staff);
 
-        tasks.add(new AdditionTask(
-                staff.getSystem().getSig(),
-                sentence,
-                getBounds(),
-                Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(new AdditionTask(staff.getSystem().getSig(),
+                                   sentence,
+                                   getBounds(),
+                                   Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }
@@ -499,6 +494,7 @@ public class ChordNameInter
         }
 
         logger.debug("No pattern match for chord text {}", textWord);
+
         return null;
     }
 
@@ -540,7 +536,8 @@ public class ChordNameInter
                         getGroup(matcher, BASS_STEP),
                         getGroup(matcher, BASS_ALTER));
 
-                if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH)
+                if ((firstDeg != null)
+                            && (kind.type != SUSPENDED_FOURTH)
                             && (kind.type != SUSPENDED_SECOND)) {
                     // Remove first degree
                     degrees.remove(firstDeg);
@@ -620,6 +617,11 @@ public class ChordNameInter
         /** Alter class. */
         private static final String CLASS = "[" + FLAT + "b" + SHARP + "#" + "]";
 
+        // For JAXB
+        private Alter ()
+        {
+        }
+
         /**
          * Convert sharp/flat/empty sign to Integer.
          *
@@ -659,11 +661,6 @@ public class ChordNameInter
                 return (alter == 1) ? "#" : ((alter == -1) ? "b" : "");
             }
         }
-
-        // For JAXB
-        private Alter ()
-        {
-        }
     }
 
     //--------//
@@ -671,6 +668,13 @@ public class ChordNameInter
     //--------//
     public static class Degree
     {
+
+        public static enum DegreeType
+        {
+            ADD,
+            ALTER,
+            SUBTRACT;
+        }
 
         //
         /** nth value of the degree, wrt the chord root. */
@@ -782,13 +786,6 @@ public class ChordNameInter
 
             return degrees;
         }
-
-        public static enum DegreeType
-        {
-            ADD,
-            ALTER,
-            SUBTRACT;
-        }
     }
 
     //------//
@@ -796,6 +793,44 @@ public class ChordNameInter
     //------//
     public static class Kind
     {
+
+        public static enum Type
+        {
+            MAJOR,
+            MINOR,
+            AUGMENTED,
+            DIMINISHED,
+            DOMINANT,
+            MAJOR_SEVENTH,
+            MINOR_SEVENTH,
+            DIMINISHED_SEVENTH,
+            AUGMENTED_SEVENTH,
+            HALF_DIMINISHED,
+            MAJOR_MINOR,
+            MAJOR_SIXTH,
+            MINOR_SIXTH,
+            DOMINANT_NINTH,
+            MAJOR_NINTH,
+            MINOR_NINTH,
+            DOMINANT_11_TH,
+            MAJOR_11_TH,
+            MINOR_11_TH,
+            DOMINANT_13_TH,
+            MAJOR_13_TH,
+            MINOR_13_TH,
+            SUSPENDED_SECOND,
+            SUSPENDED_FOURTH,
+
+            //        NEAPOLITAN,
+            //        ITALIAN,
+            //        FRENCH,
+            //        GERMAN,
+            //        PEDAL,
+            //        POWER,
+            //        TRISTAN,
+            OTHER,
+            NONE;
+        }
 
         /** Precise type of kind. (subset of the 33 Music XML values) */
         @XmlAttribute
@@ -1013,44 +1048,6 @@ public class ChordNameInter
                 return null;
             }
         }
-
-        public static enum Type
-        {
-            MAJOR,
-            MINOR,
-            AUGMENTED,
-            DIMINISHED,
-            DOMINANT,
-            MAJOR_SEVENTH,
-            MINOR_SEVENTH,
-            DIMINISHED_SEVENTH,
-            AUGMENTED_SEVENTH,
-            HALF_DIMINISHED,
-            MAJOR_MINOR,
-            MAJOR_SIXTH,
-            MINOR_SIXTH,
-            DOMINANT_NINTH,
-            MAJOR_NINTH,
-            MINOR_NINTH,
-            DOMINANT_11_TH,
-            MAJOR_11_TH,
-            MINOR_11_TH,
-            DOMINANT_13_TH,
-            MAJOR_13_TH,
-            MINOR_13_TH,
-            SUSPENDED_SECOND,
-            SUSPENDED_FOURTH,
-
-            //        NEAPOLITAN,
-            //        ITALIAN,
-            //        FRENCH,
-            //        GERMAN,
-            //        PEDAL,
-            //        POWER,
-            //        TRISTAN,
-            OTHER,
-            NONE;
-        }
     }
 
     //-------//
@@ -1144,6 +1141,5 @@ public class ChordNameInter
             this.bass = bass;
             this.degrees = degrees;
         }
-
     }
 }

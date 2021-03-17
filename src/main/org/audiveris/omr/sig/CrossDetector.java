@@ -53,14 +53,17 @@ import java.util.function.Predicate;
  */
 public class CrossDetector
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(CrossDetector.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CrossDetector} object.
      *
@@ -71,6 +74,7 @@ public class CrossDetector
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -101,19 +105,14 @@ public class CrossDetector
         final Rectangle gutterBounds = gutter.getBounds();
 
         // Build lists of candidates for above and for below
-        Predicate<Inter> predicate = new Predicate<Inter>()
-        {
-            @Override
-            public boolean test (Inter inter)
-            {
-                if (inter.isImplicit() || (inter instanceof SentenceInter)) {
-                    return false;
-                }
-
-                final Point center = inter.getCenter();
-
-                return gutterBounds.contains(center) && gutter.contains(center);
+        Predicate<Inter> predicate = (Inter inter) -> {
+            if (inter.isImplicit() || (inter instanceof SentenceInter)) {
+                return false;
             }
+
+            final Point center = inter.getCenter();
+
+            return gutterBounds.contains(center) && gutter.contains(center);
         };
 
         List<Inter> aboveInters = aboveSystem.getSig().inters(predicate);
@@ -214,8 +213,8 @@ public class CrossDetector
      * We simply delete the weaker if there is any significant difference in grade.
      * Otherwise we deleted the inter farther from its own staff or partnering chord
      *
-     * @param above  an inter (in system above)
-     * @param below  an inter (in system below)
+     * @param above an inter (in system above)
+     * @param below an inter (in system below)
      * @return the discarded inter
      */
     private Inter resolveConflict (Inter above,
@@ -270,6 +269,7 @@ public class CrossDetector
         return staff.distanceTo(center);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

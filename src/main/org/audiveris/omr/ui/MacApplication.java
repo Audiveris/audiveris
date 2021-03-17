@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 public class MacApplication
         implements InvocationHandler
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MacApplication.class);
 
@@ -64,6 +65,7 @@ public class MacApplication
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Invocation handler for
      * <code>

@@ -49,9 +49,11 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 @XmlType(propOrder = {"num", "den"})
 public class TimeRational
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimeRational.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The actual numerator. */
     @XmlAttribute
     public final int num;
@@ -60,6 +62,7 @@ public class TimeRational
     @XmlAttribute
     public final int den;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeRational object.
      *
@@ -79,6 +82,7 @@ public class TimeRational
         den = num = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // duplicate //
     //-----------//
@@ -161,18 +165,19 @@ public class TimeRational
         case 2: {
             int num = Integer.decode(tokens[0].trim());
 
-            if (num < 0 || num > 99) {
+            if ((num < 0) || (num > 99)) {
                 throw new IllegalArgumentException("numerator outside [0..99] range: " + num);
             }
 
             int den = Integer.decode(tokens[1].trim());
 
-            if (den < 0 || den > 99) {
+            if ((den < 0) || (den > 99)) {
                 throw new IllegalArgumentException("denominator outside [0..99] range: " + den);
             }
 
             return new TimeRational(num, den);
         }
+
         default:
             throw new NumberFormatException(str);
         }
@@ -191,6 +196,7 @@ public class TimeRational
     {
         final List<TimeRational> list = new ArrayList<>();
         final String[] tokens = str.split("\\s*,\\s*");
+
         for (String token : tokens) {
             String trimmedToken = token.trim();
 
@@ -202,9 +208,11 @@ public class TimeRational
                 }
             }
         }
+
         return list;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

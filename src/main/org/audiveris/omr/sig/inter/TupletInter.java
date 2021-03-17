@@ -62,17 +62,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TupletInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TupletInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Factor lazily computed
     private DurationFactor durationFactor;
 
     /** Base duration. Lazily computed. */
     private Rational baseDuration;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletInter} object.
      *
@@ -94,6 +97,7 @@ public class TupletInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -350,6 +354,7 @@ public class TupletInter
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

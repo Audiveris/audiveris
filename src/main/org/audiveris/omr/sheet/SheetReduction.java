@@ -51,12 +51,15 @@ import java.util.List;
  */
 public class SheetReduction
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetReduction.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet to process. */
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code SheetReduction} object.
      *
@@ -67,6 +70,7 @@ public class SheetReduction
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -104,6 +108,7 @@ public class SheetReduction
                               SystemInfo system2)
     {
         logger.debug("--- checkGutter {}/{}", system1, system2);
+
         final Area gutter = new Area(system1.getArea());
         gutter.intersect(system2.getArea());
 
@@ -125,6 +130,7 @@ public class SheetReduction
                               Area gutter)
     {
         logger.debug("checkInters");
+
         final Staff staff1 = system1.getLastStaff();
         final Staff staff2 = system2.getFirstStaff();
 
@@ -142,6 +148,7 @@ public class SheetReduction
 
                 if (box1.intersects(box2)) {
                     logger.debug("{} vs {}", inter1, inter2);
+
                     final Glyph g2 = inter2.getGlyph();
 
                     if ((g1 != null) && (g1 == g2)) {
@@ -153,6 +160,7 @@ public class SheetReduction
                         } else {
                             logger.debug("Removing upper {}", inter1);
                             inter1.remove();
+
                             continue Loop1;
                         }
                     } else {
@@ -162,7 +170,6 @@ public class SheetReduction
                 }
             }
         }
-
     }
 
     //-----------------//

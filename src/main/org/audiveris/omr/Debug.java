@@ -48,9 +48,11 @@ import java.io.UnsupportedEncodingException;
 public class Debug
         extends StubDependent
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // checkSources //
     //--------------//

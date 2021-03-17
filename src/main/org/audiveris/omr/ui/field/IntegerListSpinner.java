@@ -33,6 +33,7 @@ import javax.swing.SpinnerListModel;
 public class IntegerListSpinner
         extends JSpinner
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new IntegerListSpinner object.

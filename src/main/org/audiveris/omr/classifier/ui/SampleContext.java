@@ -58,6 +58,7 @@ import java.awt.Rectangle;
 public class SampleContext
         extends ZoomAssembly
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleContext.class);
 
@@ -65,6 +66,7 @@ public class SampleContext
 
     private static final Point NO_OFFSET = new Point(0, 0);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final SampleRepository repository;
 
     private final ContextView contextView;
@@ -75,6 +77,7 @@ public class SampleContext
 
     private EntityService<Sample> sampleService;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleContext} object.
      *
@@ -89,6 +92,7 @@ public class SampleContext
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // connect //
     //---------//
@@ -127,6 +131,7 @@ public class SampleContext
         component.add(new ScrollView(contextView).getComponent(), BorderLayout.CENTER);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ContextView //
     //-------------//
@@ -198,9 +203,8 @@ public class SampleContext
         {
             if (sample != null) {
                 g.setColor(Color.BLUE);
-                sample.getRunTable().render(
-                        g,
-                        (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
+                sample.getRunTable()
+                        .render(g, (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
             }
         }
 

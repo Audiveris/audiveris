@@ -29,7 +29,6 @@ import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.util.ClosableTabbedPane;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.LogSlider;
 import org.audiveris.omr.ui.view.Rubber;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -54,6 +53,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.audiveris.omr.ui.util.UIUtil;
 
 /**
  * Class {@code SheetAssembly} is a UI assembly dedicated to the display of various
@@ -252,7 +252,7 @@ public class SheetAssembly
         // Display the related boards
         displayBoards();
 
-        if (stub.hasSheet() && stub.getLatestStep().compareTo(Step.HEADS) >= 0) {
+        if (stub.hasSheet() && (stub.getLatestStep().compareTo(Step.HEADS) >= 0)) {
             // Update repetitiveInput checkbox
             BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
         }

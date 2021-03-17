@@ -38,6 +38,7 @@ import java.util.Set;
  */
 public class ChordsMapper
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final List<AbstractChordInter> news;
 
@@ -51,6 +52,7 @@ public class ChordsMapper
 
     private final Set<ChordPair> whiteList;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a {@code ChordsMapper} object.
      *
@@ -76,6 +78,7 @@ public class ChordsMapper
         this.whiteList = whiteList;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Perform the mapping.
      *
@@ -103,65 +106,7 @@ public class ChordsMapper
         return output;
     }
 
-    //------------//
-    // MyDistance //
-    //------------//
-    private class MyDistance
-            implements InjectionSolver.Distance
-    {
-
-        @Override
-        public int getDistance (int in,
-                                int ip,
-                                StringBuilder details)
-        {
-            // No link to an old chord
-            if (ip >= olds.size()) {
-                if (details != null) {
-                    details.append("NO_LINK=").append(VoiceDistance.NO_LINK);
-                }
-
-                return VoiceDistance.NO_LINK;
-            }
-
-            AbstractChordInter newChord = news.get(in);
-            AbstractChordInter oldChord = olds.get(ip);
-
-            // White list
-            for (ChordPair pair : whiteList) {
-                if (pair.oldChord == oldChord) {
-                    if (pair.newChord == newChord) {
-                        if (details != null) {
-                            details.append("WHITE");
-                        }
-
-                        return 0;
-                    } else if (extinctExplicits.contains(oldChord)) {
-                        if (details != null) {
-                            details.append("EXTINCT");
-                        }
-
-                        return VoiceDistance.INCOMPATIBLE;
-                    }
-                }
-            }
-
-            // Black list
-            for (ChordPair pair : blackList) {
-                if (pair.newChord == newChord && pair.oldChord == oldChord) {
-                    if (details != null) {
-                        details.append("BLACK");
-                    }
-
-                    return VoiceDistance.INCOMPATIBLE;
-                }
-            }
-
-            // Use of VoiceDistance
-            return vd.getDistance(oldChord, newChord, details);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ChordPair //
     //-----------//
@@ -188,15 +133,15 @@ public class ChordsMapper
 
             final ChordPair that = (ChordPair) obj;
 
-            return newChord == that.newChord && oldChord == that.oldChord;
+            return (newChord == that.newChord) && (oldChord == that.oldChord);
         }
 
         @Override
         public int hashCode ()
         {
             int hash = 3;
-            hash = 79 * hash + Objects.hashCode(this.newChord);
-            hash = 79 * hash + Objects.hashCode(this.oldChord);
+            hash = (79 * hash) + Objects.hashCode(this.newChord);
+            hash = (79 * hash) + Objects.hashCode(this.oldChord);
 
             return hash;
         }
@@ -209,6 +154,7 @@ public class ChordsMapper
             sb.append(',');
             sb.append("o:#").append(oldChord.getId());
             sb.append('}');
+
             return sb.toString();
         }
     }
@@ -269,6 +215,65 @@ public class ChordsMapper
             }
 
             return found;
+        }
+    }
+
+    //------------//
+    // MyDistance //
+    //------------//
+    private class MyDistance
+            implements InjectionSolver.Distance
+    {
+
+        @Override
+        public int getDistance (int in,
+                                int ip,
+                                StringBuilder details)
+        {
+            // No link to an old chord
+            if (ip >= olds.size()) {
+                if (details != null) {
+                    details.append("NO_LINK=").append(VoiceDistance.NO_LINK);
+                }
+
+                return VoiceDistance.NO_LINK;
+            }
+
+            AbstractChordInter newChord = news.get(in);
+            AbstractChordInter oldChord = olds.get(ip);
+
+            // White list
+            for (ChordPair pair : whiteList) {
+                if (pair.oldChord == oldChord) {
+                    if (pair.newChord == newChord) {
+                        if (details != null) {
+                            details.append("WHITE");
+                        }
+
+                        return 0;
+                    } else if (extinctExplicits.contains(oldChord)) {
+                        if (details != null) {
+                            details.append("EXTINCT");
+                        }
+
+                        return VoiceDistance.INCOMPATIBLE;
+                    }
+                }
+            }
+
+            // Black list
+            for (ChordPair pair : blackList) {
+                if ((pair.newChord == newChord) && (pair.oldChord == oldChord)) {
+                    if (details != null) {
+                        details.append("BLACK");
+                    }
+
+                    return VoiceDistance.INCOMPATIBLE;
+                }
+            }
+
+            // Use of VoiceDistance
+            return vd.getDistance(oldChord, newChord, details);
         }
     }
 }

@@ -114,11 +114,13 @@ import java.util.List;
 public class BookManager
         implements OmrEngine
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** All book instances. */
     private final List<Book> books = new ArrayList<>();
 
@@ -131,6 +133,7 @@ public class BookManager
     /** Book file history. (filled only when books are successfully loaded or saved) */
     private SheetPathHistory bookHistory;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor for a singleton.
      */
@@ -138,6 +141,7 @@ public class BookManager
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getAlias //
     //----------//
@@ -470,15 +474,6 @@ public class BookManager
         return LazySingleton.INSTANCE;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final BookManager INSTANCE = new BookManager();
-    }
-
     //--------------//
     // useSignature //
     //--------------//
@@ -526,7 +521,8 @@ public class BookManager
         // Or use global base folder directly
         final Path bookFolder = constants.useInputBookFolder.isSet()
                 ? book.getInputPath().getParent()
-                : (useSeparateBookFolders() ? getBaseFolder().resolve(book.getRadix())
+                : (useSeparateBookFolders()
+                        ? getBaseFolder().resolve(book.getRadix())
                         : getBaseFolder());
 
         try {
@@ -631,6 +627,7 @@ public class BookManager
         return constants.useSeparateBookFolders.isSet();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -678,5 +675,14 @@ public class BookManager
                 "count",
                 10,
                 "Maximum number of files names kept in history");
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final BookManager INSTANCE = new BookManager();
     }
 }

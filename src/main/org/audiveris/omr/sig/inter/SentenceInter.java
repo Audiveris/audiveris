@@ -256,7 +256,6 @@ public class SentenceInter
      */
     public int getLength ()
     {
-
         int length = 0;
 
         for (Inter word : getMembers()) {

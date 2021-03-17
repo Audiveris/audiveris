@@ -52,11 +52,10 @@ public class TimePairInter
         extends AbstractTimeInter
         implements InterEnsemble
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.

@@ -47,15 +47,18 @@ import java.util.List;
  */
 public class BlockScanner
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BlockScanner.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphScanner} object that can work on a glyph or a buffer.
      *
@@ -66,6 +69,7 @@ public class BlockScanner
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // scanBuffer //
     //------------//
@@ -94,6 +98,7 @@ public class BlockScanner
                 sheet.getId() + "-b" + id);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

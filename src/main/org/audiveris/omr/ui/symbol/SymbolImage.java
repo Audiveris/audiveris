@@ -33,10 +33,12 @@ import java.awt.image.BufferedImage;
 public class SymbolImage
         extends BufferedImage
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The reference point for this image. */
     private final Point refPoint;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolImage object.
      *
@@ -53,6 +55,7 @@ public class SymbolImage
         this.refPoint = refPoint;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getRefPoint //
     //-------------//

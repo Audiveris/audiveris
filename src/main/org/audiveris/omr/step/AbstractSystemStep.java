@@ -45,9 +45,11 @@ import java.util.concurrent.Callable;
 public abstract class AbstractSystemStep<C>
         extends AbstractStep
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSystemStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractSystemStep object.
      */
@@ -55,6 +57,7 @@ public abstract class AbstractSystemStep<C>
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // clearErrors //
     //-------------//
@@ -172,35 +175,29 @@ public abstract class AbstractSystemStep<C>
             final Collection<Callable<Void>> tasks = new ArrayList<>();
 
             for (final SystemInfo system : sheet.getSystems()) {
-                tasks.add(new Callable<Void>()
-                {
-                    @Override
-                    public Void call ()
-                            throws Exception
-                    {
-                        // If run on a separate thread (case of parallel), we have to set/unset log
-                        // If not, let's not unset log (it may be needed in following epilog)
-                        try {
-                            if (parallel) {
-                                LogUtil.start(sheet.getStub());
-                            }
-
-                            logger.debug(
-                                    "{} doSystem #{}",
-                                    AbstractSystemStep.this,
-                                    system.getId());
-
-                            doSystem(system, context);
-                        } catch (StepException ex) {
-                            logger.warn(system.getLogPrefix() + ex, ex);
-                        } finally {
-                            if (parallel) {
-                                LogUtil.stopStub();
-                            }
+                tasks.add(() -> {
+                    // If run on a separate thread (case of parallel), we have to set/unset log
+                    // If not, let's not unset log (it may be needed in following epilog)
+                    try {
+                        if (parallel) {
+                            LogUtil.start(sheet.getStub());
                         }
 
-                        return null;
+                        logger.debug(
+                                "{} doSystem #{}",
+                                AbstractSystemStep.this,
+                                system.getId());
+
+                        doSystem(system, context);
+                    } catch (StepException ex) {
+                        logger.warn(system.getLogPrefix() + ex, ex);
+                    } finally {
+                        if (parallel) {
+                            LogUtil.stopStub();
+                        }
                     }
+
+                    return null;
                 });
             }
 

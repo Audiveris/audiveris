@@ -36,6 +36,7 @@ public class WeakGlyph
         extends WeakReference<Glyph>
         implements Entity, Comparable<WeakGlyph>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code WeakGlyph} object.
@@ -47,6 +48,7 @@ public class WeakGlyph
         super(referent);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int compareTo (WeakGlyph that)
     {

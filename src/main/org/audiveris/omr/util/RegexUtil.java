@@ -30,12 +30,14 @@ import java.util.regex.Matcher;
  */
 public abstract class RegexUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
     private RegexUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // escape //
     //--------//

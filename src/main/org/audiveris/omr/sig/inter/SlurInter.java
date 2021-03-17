@@ -98,6 +98,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class SlurInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -189,6 +190,7 @@ public class SlurInter
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -222,6 +224,7 @@ public class SlurInter
     /** Physical characteristics. */
     private SlurInfo info;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurInter} object.
      *
@@ -265,6 +268,7 @@ public class SlurInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -842,6 +846,7 @@ public class SlurInter
     {
         final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
+
         final int profile = Math.max(getProfile(), system.getProfile());
 
         return lookupLinks(systemHeads, system, profile);
@@ -935,7 +940,7 @@ public class SlurInter
             if (a2 != null) {
                 return false;
             }
-        } else if (a2 != null && a2.getShape() != a1.getShape()) {
+        } else if ((a2 != null) && (a2.getShape() != a1.getShape())) {
             return false;
         }
 
@@ -1046,6 +1051,7 @@ public class SlurInter
         return upgraded;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
@@ -1074,6 +1080,43 @@ public class SlurInter
             setImpact(2, width);
             setImpact(3, height);
             setImpact(4, vert);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public final Point2D p1;
+
+        public final Point2D c1;
+
+        public final Point2D c2;
+
+        public final Point2D p2;
+
+        // Array of 4 points used to update cubic curve via setCurve() method
+        public final Point2D[] points;
+
+        public Model (CubicCurve2D curve)
+        {
+            p1 = curve.getP1();
+            c1 = curve.getCtrlP1();
+            c2 = curve.getCtrlP2();
+            p2 = curve.getP2();
+            points = new Point2D[]{p1, c1, c2, p2};
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            for (Point2D pt : points) {
+                PointUtil.add(pt, dx, dy);
+            }
         }
     }
 
@@ -1163,7 +1206,8 @@ public class SlurInter
                 }
             });
 
-            handles.add(new Handle(model.p2)
+            handles.add(
+                    new Handle(model.p2)
             {
                 @Override
                 public boolean move (Point vector)
@@ -1223,6 +1267,7 @@ public class SlurInter
             if (!handles.isEmpty()) {
                 g.setColor(Colors.EDITION_LINE);
                 UIUtil.setAbsoluteStroke(g, 1f);
+
                 Point2D last = null;
 
                 for (Handle handle : handles) {
@@ -1256,6 +1301,7 @@ public class SlurInter
             sb.append(" new:").append(PointUtil.toString(model.p1)).append('-')
                     .append(PointUtil.toString(model.p2));
             sb.append('}');
+
             return sb.toString();
         }
 
@@ -1277,43 +1323,6 @@ public class SlurInter
 
             inter.setBounds(null);
             super.undo();
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        public final Point2D p1;
-
-        public final Point2D c1;
-
-        public final Point2D c2;
-
-        public final Point2D p2;
-
-        // Array of 4 points used to update cubic curve via setCurve() method
-        public final Point2D[] points;
-
-        public Model (CubicCurve2D curve)
-        {
-            p1 = curve.getP1();
-            c1 = curve.getCtrlP1();
-            c2 = curve.getCtrlP2();
-            p2 = curve.getP2();
-            points = new Point2D[]{p1, c1, c2, p2};
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            for (Point2D pt : points) {
-                PointUtil.add(pt, dx, dy);
-            }
         }
     }
 }

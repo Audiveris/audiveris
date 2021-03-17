@@ -63,6 +63,7 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TesseractOrder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
@@ -80,6 +81,7 @@ public class TesseractOrder
                 new com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi());
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Serial number for this order. */
     private final int serial;
 
@@ -101,6 +103,7 @@ public class TesseractOrder
     /** The image being processed. */
     private final PIX image;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // TesseractOrder //
     //----------------//
@@ -143,6 +146,7 @@ public class TesseractOrder
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//

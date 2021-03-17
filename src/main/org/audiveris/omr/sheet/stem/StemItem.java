@@ -23,9 +23,9 @@ package org.audiveris.omr.sheet.stem;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.run.Orientation;
-import org.audiveris.omr.sheet.stem.HeadLinker.SLinker.CLinker;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker.VLinker;
+import org.audiveris.omr.sheet.stem.HeadLinker.SLinker.CLinker;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 
 import org.slf4j.Logger;
@@ -133,15 +133,15 @@ public abstract class StemItem
         public int hashCode ()
         {
             int hash = 7;
+
             return hash;
         }
 
         @Override
         public String toString ()
         {
-            return new StringBuilder("GAP{").append(contrib)
-                    .append(String.format(" %.1f-%.1f", line.getY1(), line.getY2()))
-                    .append('}').toString();
+            return new StringBuilder("GAP{").append(contrib).append(
+                    String.format(" %.1f-%.1f", line.getY1(), line.getY2())).append('}').toString();
         }
     }
 
@@ -173,7 +173,7 @@ public abstract class StemItem
             if (obj instanceof GlyphItem) {
                 final GlyphItem ge = (GlyphItem) obj;
 
-                return ge.contrib == contrib && ge.glyph == glyph;
+                return (ge.contrib == contrib) && (ge.glyph == glyph);
             }
 
             return super.equals(obj);
@@ -183,7 +183,27 @@ public abstract class StemItem
         public int hashCode ()
         {
             int hash = 7;
+
             return hash;
+        }
+    }
+
+    //----------------//
+    // HalfLinkerItem //
+    //----------------//
+    /**
+     * A LinkerItem pointing up or down.
+     * <p>
+     * Either a beam {@link VLinker} or a head {@link CLinker}
+     */
+    public static class HalfLinkerItem
+            extends LinkerItem
+    {
+
+        public HalfLinkerItem (StemHalfLinker linker,
+                               int contrib)
+        {
+            super(linker, contrib);
         }
     }
 
@@ -214,16 +234,13 @@ public abstract class StemItem
          */
         public LinkerItem (StemLinker linker)
         {
-            this(linker,
-                 (linker.getStump() != null) ? linker.getStump().getBounds().height : 0);
+            this(linker, (linker.getStump() != null) ? linker.getStump().getBounds().height : 0);
         }
 
         public LinkerItem (StemLinker linker,
                            int contrib)
         {
-            super(lineOf(linker),
-                  linker.getStump(),
-                  contrib);
+            super(lineOf(linker), linker.getStump(), contrib);
             this.linker = linker;
         }
 
@@ -254,33 +271,16 @@ public abstract class StemItem
             final Point2D refPt = linker.getReferencePoint();
 
             if (linker instanceof BLinker) { // Applies to VLinker as well
+
                 AbstractBeamInter beam = ((BLinker) linker).getSource();
                 final double halfHeight = beam.getHeight() / 2.0;
                 final double rx = refPt.getX();
                 final double ry = refPt.getY();
+
                 return new Line2D.Double(rx, ry - halfHeight, rx, ry + halfHeight);
             }
 
             return new Line2D.Double(refPt, refPt);
-        }
-    }
-
-    //----------------//
-    // HalfLinkerItem //
-    //----------------//
-    /**
-     * A LinkerItem pointing up or down.
-     * <p>
-     * Either a beam {@link VLinker} or a head {@link CLinker}
-     */
-    public static class HalfLinkerItem
-            extends LinkerItem
-    {
-
-        public HalfLinkerItem (StemHalfLinker linker,
-                               int contrib)
-        {
-            super(linker, contrib);
         }
     }
 }

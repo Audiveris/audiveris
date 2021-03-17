@@ -55,6 +55,7 @@ import java.util.Set;
 public class MeasuresStep
         extends AbstractSystemStep<Void>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
 
@@ -66,6 +67,7 @@ public class MeasuresStep
         impactingClasses.add(StaffBarlineInter.class);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasuresStep} object.
      */
@@ -73,6 +75,7 @@ public class MeasuresStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -109,6 +112,7 @@ public class MeasuresStep
 
         if (!staffBarlines.isEmpty()) {
             Collections.sort(staffBarlines, Inters.byCenterOrdinate);
+
             final StaffBarlineInter oneBar = (StaffBarlineInter) staffBarlines.get(0);
             final SystemInfo system = oneBar.getStaff().getSystem();
 

@@ -63,9 +63,11 @@ import javax.swing.event.DocumentListener;
  */
 public class Options
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Options.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The interface window. */
     private final JDialog dialog;
 
@@ -203,6 +205,7 @@ public class Options
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Options object.
      */
@@ -212,7 +215,7 @@ public class Options
         UnitManager.getInstance().preLoadUnits();
 
         dialog = new JDialog(OMR.gui.getFrame());
-        dialog.setName("OptionsFrame");  // For SAF life cycle
+        dialog.setName("OptionsFrame"); // For SAF life cycle
 
         JComponent framePane = (JComponent) dialog.getContentPane();
         framePane.setLayout(new BorderLayout());
@@ -294,6 +297,7 @@ public class Options
         });
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//

@@ -37,6 +37,7 @@ public class LocationDependentMenu
         extends JMenu
         implements LocationDependent
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new LocationDependentMenu object.
@@ -67,6 +68,7 @@ public class LocationDependentMenu
         setAction(action);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void updateUserLocation (Rectangle rect)
     {

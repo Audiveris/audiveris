@@ -33,6 +33,7 @@ import java.util.List;
  */
 public class TargetStaff
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Initial raw information */
     public final Staff info;
@@ -49,6 +50,7 @@ public class TargetStaff
     /** Containing system */
     public final TargetSystem system;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetStaff object.
      *
@@ -67,6 +69,7 @@ public class TargetStaff
         id = info.getId();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

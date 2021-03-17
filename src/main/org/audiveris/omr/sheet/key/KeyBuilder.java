@@ -137,11 +137,13 @@ import java.util.Set;
  */
 public class KeyBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system KeyColumn. */
     private final KeyColumn column;
 
@@ -190,6 +192,7 @@ public class KeyBuilder
     /** Builders per shape. */
     private final Map<Shape, ShapeBuilder> shapeBuilders = new EnumMap<>(Shape.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyBuilder} object.
      *
@@ -229,6 +232,7 @@ public class KeyBuilder
         shapeBuilders.put(FLAT, new ShapeBuilder(FLAT, browseRect));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addPlot //
     //---------//
@@ -304,7 +308,8 @@ public class KeyBuilder
         if (((range != null) && range.hasStart()) || (staff.getKeyStart() != null)) {
             // Area limits
             XYSeries series = new XYSeries("KeyArea", false); // No autosort
-            int start = ((range != null) && range.hasStart()) ? range.getStart()
+            int start = ((range != null) && range.hasStart())
+                    ? range.getStart()
                     : staff.getKeyStart();
             int stop = ((range != null) && range.hasStart()) ? range.getStop() : staff.getKeyStop();
             series.add(start, 0);
@@ -318,7 +323,8 @@ public class KeyBuilder
             // Browse start for peak threshold
             XYSeries series = new XYSeries("KeyBrowse", false); // No autosort
             int start = browseStart;
-            int stop = (staff.getKeyStop() != null) ? staff.getKeyStop()
+            int stop = (staff.getKeyStop() != null)
+                    ? staff.getKeyStop()
                     : ((range != null) ? range.getStop() : projection.getXMax());
             series.add(start, 0);
             series.add(start, params.minPeakCumul);
@@ -670,6 +676,7 @@ public class KeyBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // ShapeBuilder //
     //--------------//

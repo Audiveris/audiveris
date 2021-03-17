@@ -49,7 +49,7 @@ public enum VerticalSide
      */
     public int direction ()
     {
-        return (this == TOP) ? -1 : 1;
+        return (this == TOP) ? (-1) : 1;
     }
 
     /**
@@ -60,6 +60,6 @@ public enum VerticalSide
      */
     public static VerticalSide of (int yDir)
     {
-        return (yDir == -1) ? TOP : (yDir == +1) ? BOTTOM : null;
+        return (yDir == -1) ? TOP : ((yDir == +1) ? BOTTOM : null);
     }
 }

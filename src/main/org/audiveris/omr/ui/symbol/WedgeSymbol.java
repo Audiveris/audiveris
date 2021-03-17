@@ -21,14 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.inter.WedgeInter;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.inter.WedgeInter;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 /**
  * Class {@code WedgeSymbol} implements a wedge symbol.
@@ -40,6 +41,7 @@ import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 public class WedgeSymbol
         extends ShapeSymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a WedgeSymbol.
@@ -63,6 +65,7 @@ public class WedgeSymbol
         super(isIcon, shape, false);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -111,10 +114,7 @@ public class WedgeSymbol
         }
 
         // Hack to fully display lower leg in symbol image
-        p.rect = new Rectangle2D.Double(0,
-                                        0,
-                                        w,
-                                        h + 1);
+        p.rect = new Rectangle2D.Double(0, 0, w, h + 1);
 
         p.model = new WedgeInter.Model(l1, l2);
 
@@ -137,6 +137,7 @@ public class WedgeSymbol
         g.draw(new Line2D.Double(p.model.bot1, p.model.bot2));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
@@ -151,5 +152,4 @@ public class WedgeSymbol
         // model
         WedgeInter.Model model;
     }
-
 }

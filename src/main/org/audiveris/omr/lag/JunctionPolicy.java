@@ -33,6 +33,7 @@ import org.audiveris.omr.run.Run;
  */
 public interface JunctionPolicy
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //---------------//
     // consistentRun //

@@ -40,6 +40,7 @@ import java.util.EnumSet;
  */
 public interface Classifier
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of shapes to differentiate. */
     public static final int SHAPE_COUNT = 1 + Shape.LAST_PHYSICAL_SHAPE.ordinal();
@@ -47,6 +48,7 @@ public interface Classifier
     /** Empty conditions set. */
     public static final EnumSet<Condition> NO_CONDITIONS = EnumSet.noneOf(Condition.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
     /** Optional conditions for evaluation. */
     public static enum Condition
     {
@@ -56,6 +58,7 @@ public interface Classifier
         CHECKED;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add a training listener
      *

@@ -50,6 +50,7 @@ import java.util.List;
 public class TestStep
         extends AbstractStep
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code TestStep} object.
@@ -62,6 +63,7 @@ public class TestStep
         //            "Placeholder for specific tests");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void doit (Sheet aSheet)
             throws StepException
@@ -160,6 +162,7 @@ public class TestStep
         return formatter.format(now);
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//

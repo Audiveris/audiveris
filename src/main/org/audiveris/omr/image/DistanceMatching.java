@@ -32,6 +32,7 @@ import java.util.List;
  */
 public class DistanceMatching
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The DistanceTransform image.
@@ -40,6 +41,7 @@ public class DistanceMatching
      */
     private final DistanceTable distances;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DistanceMatching object from a distant transform image.
      *
@@ -50,6 +52,7 @@ public class DistanceMatching
         this.distances = distances;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // matchAll //
     //----------//

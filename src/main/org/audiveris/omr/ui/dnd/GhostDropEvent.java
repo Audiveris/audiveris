@@ -30,6 +30,7 @@ package org.audiveris.omr.ui.dnd;
  */
 public class GhostDropEvent<A>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The drop location with respect to screen */
     private final ScreenPoint screenPoint;
@@ -37,6 +38,7 @@ public class GhostDropEvent<A>
     /** The action carried by the drop event */
     private final A action;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new GhostDropEvent object.
      *
@@ -50,6 +52,7 @@ public class GhostDropEvent<A>
         this.screenPoint = screenPoint;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getAction //
     //-----------//

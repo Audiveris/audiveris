@@ -49,15 +49,18 @@ import javax.swing.JMenuItem;
 public class SampleMenu
         extends SeparableMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing sheet. */
     private final Sheet sheet;
 
     /** Selected glyph. */
     private final Glyph glyph;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleMenu} object.
      *
@@ -73,6 +76,7 @@ public class SampleMenu
         populateMenu();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getGlyph //
     //----------//
@@ -129,6 +133,7 @@ public class SampleMenu
         add(new SelectMenu());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AssignMenu //
     //------------//
@@ -180,16 +185,18 @@ public class SampleMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(this, new ActionListener()
-                          {
-                              @Override
-                              public void actionPerformed (ActionEvent e)
-                              {
-                                  JMenuItem source = (JMenuItem) e.getSource();
-                                  Shape shape = Shape.valueOf(source.getText());
-                                  addSample(shape);
-                              }
-                          });
+            ShapeSet.addAllShapes(
+                    this,
+                    new ActionListener()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    JMenuItem source = (JMenuItem) e.getSource();
+                    Shape shape = Shape.valueOf(source.getText());
+                    addSample(shape);
+                }
+            });
         }
     }
 }

@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "tribe")
 public class Tribe
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The sample that best defines the tribe underlying symbol. */
     @XmlElement
@@ -54,6 +55,7 @@ public class Tribe
     @XmlElement(name = "member")
     private final List<Sample> members = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Tribe} object.
      *
@@ -72,6 +74,7 @@ public class Tribe
         this.head = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add a good sample.
      *

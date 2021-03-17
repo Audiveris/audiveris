@@ -50,6 +50,7 @@ import org.audiveris.omr.sheet.grid.BarColumn.Chain;
 import org.audiveris.omr.sheet.grid.PartGroup.Symbol;
 import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.*;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractVerticalConnectorInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -60,6 +61,7 @@ import org.audiveris.omr.sig.inter.BracketInter.BracketKind;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
+import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.Colors;
@@ -92,7 +94,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -102,8 +103,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.audiveris.omr.sig.inter.AbstractVerticalConnectorInter;
-import org.audiveris.omr.sig.relation.NoExclusion;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical barlines, brackets
@@ -148,11 +147,13 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 public class BarsRetriever
         implements ItemRenderer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -191,6 +192,7 @@ public class BarsRetriever
     /** All sections suitable for a brace. */
     private List<Section> allBraceSections;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the bar lines of all staves.
      *
@@ -217,6 +219,7 @@ public class BarsRetriever
         peakGraph = new PeakGraph(sheet, projectors);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -405,8 +408,7 @@ public class BarsRetriever
         }
 
         // Right (bottom up)
-        for (ListIterator<StaffPeak> it = portions.listIterator(portions.size()); it
-                .hasPrevious();) {
+        for (ListIterator<StaffPeak> it = portions.listIterator(portions.size()); it.hasPrevious();) {
             StaffPeak peak = it.previous();
             path.lineTo(peak.getStart() - params.braceLeftMargin, peak.getBottom() + 1);
 
@@ -661,19 +663,11 @@ public class BarsRetriever
         if (compounds.size() > 1) {
             // Sort filaments according to their distance from bar/roi vertex
             final Point vertex = new Point(roi.x, roi.y + ((side == TOP) ? (roi.height - 1) : 0));
-            Collections.sort(compounds, new Comparator<SectionCompound>()
-                     {
-                         @Override
-                         public int compare (SectionCompound g1,
-                                             SectionCompound g2)
-                         {
-                             double d1 = PointUtil
-                                     .length(GeoUtil.vectorOf(g1.getCentroid(), vertex));
-                             double d2 = PointUtil
-                                     .length(GeoUtil.vectorOf(g2.getCentroid(), vertex));
+            Collections.sort(compounds, (SectionCompound g1, SectionCompound g2) -> {
+                         double d1 = PointUtil.length(GeoUtil.vectorOf(g1.getCentroid(), vertex));
+                         double d2 = PointUtil.length(GeoUtil.vectorOf(g2.getCentroid(), vertex));
 
-                             return Double.compare(d1, d2);
-                         }
+                         return Double.compare(d1, d2);
                      });
 
             // Pickup the first ones and stop as soon as minimum weight is reached
@@ -736,8 +730,7 @@ public class BarsRetriever
                     } else {
                         connector = new BarConnectorInter(
                                 connection,
-                                topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR
-                                : Shape.THIN_CONNECTOR,
+                                topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR : Shape.THIN_CONNECTOR,
                                 connection.getImpacts());
                     }
 
@@ -939,13 +932,14 @@ public class BarsRetriever
                         continue;
                     }
 
-                    double x = peak.getStart() + peak.getWidth() / 2d;
+                    double x = peak.getStart() + (peak.getWidth() / 2d);
+
                     // At this point in time, peak top & bottom are integers (inside extrema)
                     // and thus these ordinate values must be adjusted
                     Line2D median = new Line2D.Double(x, peak.getTop() - halfLine + 0.5,
                                                       x, peak.getBottom() + halfLine + 0.5);
-                    final Glyph glyph = sheet.getGlyphIndex().registerOriginal(
-                            peak.getFilament().toGlyph(null));
+                    final Glyph glyph = sheet.getGlyphIndex()
+                            .registerOriginal(peak.getFilament().toGlyph(null));
                     final AbstractVerticalInter inter;
 
                     if (peak.isBracket()) {
@@ -1023,7 +1017,7 @@ public class BarsRetriever
 
         // Check of a "merged" part (composed of 2 staves merged into some 11-line grand staff)
         // This is based on the vertical distance between the 2 staves
-        if (system.getStaves().size() == 2 && part.getStaves().size() == 2) {
+        if ((system.getStaves().size() == 2) && (part.getStaves().size() == 2)) {
             int x = Math.max(first.getAbscissa(LEFT), last.getAbscissa(LEFT)); // Safer
             int y1 = first.getLastLine().yAt(x);
             int y2 = last.getFirstLine().yAt(x);
@@ -1271,11 +1265,7 @@ public class BarsRetriever
                         Filament serif;
 
                         if ((ext <= params.maxBracketExtension)
-                                    && (null != (serif = getSerif(
-                                        staff,
-                                        peak,
-                                        rightPeak,
-                                        side)))) {
+                                    && (null != (serif = getSerif(staff, peak, rightPeak, side)))) {
                             logger.debug("Staff#{} {} bracket end", staff.getId(), side);
 
                             peak.setBracketEnd(side, serif);
@@ -2200,10 +2190,12 @@ public class BarsRetriever
                         }
                     } else {
                         measureStart = p1.getStop() + 1;
+
                         ///continue NextStaff; // Process only beginning of staff
                     }
                 } else {
                     measureStart = p1.getStop() + 1;
+
                     ///continue NextStaff; // Process only beginning of staff
                 }
             }
@@ -2539,6 +2531,7 @@ public class BarsRetriever
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

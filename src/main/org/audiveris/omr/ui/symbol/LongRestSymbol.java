@@ -34,6 +34,7 @@ import java.awt.geom.AffineTransform;
 public class LongRestSymbol
         extends RestSymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a LongRestSymbol (with decoration?)
@@ -58,6 +59,7 @@ public class LongRestSymbol
         super(isIcon, Shape.LONG_REST, decorated, 227);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // createDecoratedSymbol //
     //-----------------------//

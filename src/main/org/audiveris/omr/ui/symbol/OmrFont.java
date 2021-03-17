@@ -54,6 +54,7 @@ import java.util.Map;
 public abstract class OmrFont
         extends Font
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
 
@@ -66,6 +67,7 @@ public abstract class OmrFont
     /** Cache for fonts. No style, no size. */
     private static final Map<String, Font> fontCache = new HashMap<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OmrFont object.
      *
@@ -80,6 +82,7 @@ public abstract class OmrFont
         super(createFont(name, style, pointSize));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getLineMetrics //
     //----------------//

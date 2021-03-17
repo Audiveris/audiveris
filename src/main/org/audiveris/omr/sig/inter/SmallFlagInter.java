@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SmallFlagInter
         extends AbstractFlagInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SmallFlagInter object.
@@ -58,6 +59,7 @@ public class SmallFlagInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

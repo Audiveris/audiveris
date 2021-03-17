@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionListener;
 import java.nio.file.Path;
+
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 
@@ -91,7 +92,7 @@ public abstract class AbstractHistory<E>
 
         Path parent = getParent(entity);
 
-        if (parent != null && folderConstant != null) {
+        if ((parent != null) && (folderConstant != null)) {
             folderConstant.setStringValue(parent.toAbsolutePath().toString());
         }
 

@@ -190,6 +190,7 @@ public class TemplateView
                 // Draw slim box
                 UIUtil.setAbsoluteStroke(g, 3f);
                 g.setColor(Color.RED);
+
                 Rectangle slimRect = template.getSlimBoundsAt(refPoint.x, refPoint.y, anchor);
                 g.draw(slimRect);
                 UIUtil.setAbsoluteStroke(g, 1f);

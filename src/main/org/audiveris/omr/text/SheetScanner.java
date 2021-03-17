@@ -77,17 +77,20 @@ import java.util.List;
  */
 public class SheetScanner
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetScanner.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Buffer used by OCR. */
     private ByteProcessor buffer;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TextPageScanner} object.
      *
@@ -98,6 +101,7 @@ public class SheetScanner
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBuffer //
     //-----------//
@@ -185,6 +189,7 @@ public class SheetScanner
         return img;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

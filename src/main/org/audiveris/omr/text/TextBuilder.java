@@ -94,11 +94,13 @@ import java.util.TreeSet;
  */
 public class TextBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -125,6 +127,7 @@ public class TextBuilder
     /** Map with key as staff pair and value as lines partition. */
     private final Map<Pair<Staff>, Pair<List<TextLine>>> gutterMap = new HashMap<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextBuilder object in engine mode (TEXTS step).
      *
@@ -158,6 +161,7 @@ public class TextBuilder
         maxLineDy = scale.toPixels(constants.maxLineDy);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // adjustLines //
     //-------------//
@@ -326,10 +330,12 @@ public class TextBuilder
 
         StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
         watch.start("retrieveRawLines");
+
         List<TextLine> rawLines = getSystemRawLines(sheetLines);
 
         // Gather rawLines into long lines
         watch.start("longLines");
+
         List<TextLine> longLines = mergeRawLines(rawLines);
 
         if (logger.isDebugEnabled()) {
@@ -350,10 +356,12 @@ public class TextBuilder
 
         // Separate additional work on lyric lines and on standard lines
         watch.start("recomposeLines");
+
         List<TextLine> lines = recomposeLines(longLines);
 
         // Retrieve candidate sections (not the usual horizontal or vertical sheet sections)
         watch.start("getSections");
+
         List<Section> relSections = getSections(buffer, lines);
 
         // Map words to section-based glyphs
@@ -395,7 +403,8 @@ public class TextBuilder
         for (TextLine line : textLines) {
             final TextRole role = line.getRole();
             final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
+                    : ((role == TextRole.ChordName)
+                            ? ChordNameInter.create(line)
                             : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
@@ -413,8 +422,10 @@ public class TextBuilder
 
                 // Link sentence and words
                 for (TextWord word : line.getWords()) {
-                    final WordInter wordInter = (role == TextRole.Lyrics) ? new LyricItemInter(word)
-                            : ((role == TextRole.ChordName) ? ChordNameInter.createValid(word)
+                    final WordInter wordInter = (role == TextRole.Lyrics)
+                            ? new LyricItemInter(word)
+                            : ((role == TextRole.ChordName)
+                                    ? ChordNameInter.createValid(word)
                                     : new WordInter(word));
 
                     if (wordInter != null) {
@@ -492,6 +503,7 @@ public class TextBuilder
 
         for (i = 0; i < gaps.length; i++) {
             double dy = gaps[i];
+
             if (breakDy <= dy) {
                 breakDy = dy;
                 breakIndex = i;
@@ -772,7 +784,6 @@ public class TextBuilder
                         staff = staffAbove;
                     }
                 }
-
             }
 
             line.setStaff(staff);
@@ -901,6 +912,7 @@ public class TextBuilder
 
         for (TextLine current : oldStandards) {
             current.setProcessed(false);
+
             TextLine candidate = current;
 
             CandidateLoop:
@@ -980,11 +992,13 @@ public class TextBuilder
         for (TextLine line : lines) {
             Point2D center = line.getCenter2D();
             double y1 = staffLine1.yAt(center.getX());
+
             if (y1 > center.getY()) {
                 continue;
             }
 
             double y2 = staffLine2.yAt(center.getX());
+
             if (y2 < center.getY()) {
                 continue;
             }
@@ -1050,6 +1064,7 @@ public class TextBuilder
         // Retrieve lines located in the gutter area
         final Area gutter = new Area(system1.getArea());
         gutter.intersect(system2.getArea());
+
         final List<TextLine> gutterLines = getGutterLines(lines, gutter);
 
         final Staff staff1 = system1.getLastStaff();
@@ -1124,7 +1139,7 @@ public class TextBuilder
                 purgeGutter(lines,
                             side,
                             (side == TOP) ? alien : system, // Upper
-                            (side == TOP) ? system : alien);// Lower
+                            (side == TOP) ? system : alien); // Lower
             }
         }
     }
@@ -1160,6 +1175,7 @@ public class TextBuilder
             }
 
             logger.debug("splitWords for lyrics");
+
             for (TextLine line : lyrics) {
                 line.splitWords();
             }
@@ -1370,6 +1386,7 @@ public class TextBuilder
         return newStandards;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

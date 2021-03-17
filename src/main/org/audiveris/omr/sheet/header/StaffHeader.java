@@ -45,9 +45,12 @@ import javax.xml.bind.annotation.XmlIDREF;
 @XmlAccessorType(XmlAccessType.NONE)
 public class StaffHeader
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffHeader.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -93,6 +96,7 @@ public class StaffHeader
     /** Abscissa range for time. */
     public Range timeRange;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffHeader} object.
      *
@@ -112,6 +116,7 @@ public class StaffHeader
         this.start = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // freeze //
     //--------//
@@ -168,6 +173,7 @@ public class StaffHeader
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Range //
     //-------//

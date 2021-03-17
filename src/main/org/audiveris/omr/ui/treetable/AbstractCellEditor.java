@@ -23,12 +23,14 @@ import javax.swing.event.EventListenerList;
 public class AbstractCellEditor
         implements CellEditor
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      */
     protected EventListenerList listenerList = new EventListenerList();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // addCellEditorListener //
     //-----------------------//

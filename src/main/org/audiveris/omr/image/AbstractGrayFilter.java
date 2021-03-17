@@ -35,6 +35,7 @@ import java.awt.image.BufferedImage;
  */
 public abstract class AbstractGrayFilter
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     //--------//
     // filter //

@@ -39,6 +39,7 @@ import java.awt.geom.Line2D;
 public class BarConnection
         extends BarAlignment
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
     private final Sheet sheet;
@@ -49,6 +50,7 @@ public class BarConnection
     /** Rather vertical median line. */
     private Line2D median;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarConnection object.
      *
@@ -75,6 +77,7 @@ public class BarConnection
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -117,8 +120,8 @@ public class BarConnection
     {
         if (median == null) {
             final double halfLine = sheet.getScale().getFore() / 2.0;
-            double xTop = topPeak.getStart() + topPeak.getWidth() / 2d;
-            double xBot = bottomPeak.getStart() + bottomPeak.getWidth() / 2d;
+            double xTop = topPeak.getStart() + (topPeak.getWidth() / 2d);
+            double xBot = bottomPeak.getStart() + (bottomPeak.getWidth() / 2d);
             // At this point in time, peak top & bottom are integers (inside extrema)
             // and thus these ordinate values must be adjusted
             median = new Line2D.Double(xTop, topPeak.getBottom() + halfLine + 0.5,
@@ -150,6 +153,7 @@ public class BarConnection
         return super.hashCode();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//

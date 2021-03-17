@@ -33,14 +33,17 @@ import java.util.Objects;
  */
 public abstract class GradeUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GradeUtil.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private GradeUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // clamp //
     //-------//

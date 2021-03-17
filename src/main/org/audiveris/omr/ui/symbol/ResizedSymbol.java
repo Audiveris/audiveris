@@ -35,10 +35,12 @@ import java.awt.geom.AffineTransform;
 public class ResizedSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The display ratio */
     protected final double ratio;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a non decorated standard ResizedSymbol with the provided
      * shape and codes.
@@ -73,6 +75,7 @@ public class ResizedSymbol
         this.ratio = ratio;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

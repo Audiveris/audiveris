@@ -25,6 +25,7 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.TimeRational;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -42,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.audiveris.omr.sheet.Sheet;
 
 /**
  * Class {@code PageRhythm} handles rhythm data on a sheet page.
@@ -76,22 +76,24 @@ import org.audiveris.omr.sheet.Sheet;
  */
 public class PageRhythm
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
-        FlagInter.class,
-        RestChordInter.class,
-        AugmentationDotInter.class,
-        TupletInter.class};
+    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{FlagInter.class,
+                                                                  RestChordInter.class,
+                                                                  AugmentationDotInter.class,
+                                                                  TupletInter.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The page being processed. */
     private final Page page;
 
     /** Sequence of time-sig ranges found in page. */
     private final List<Range> ranges = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageRhythm} object.
      *
@@ -102,6 +104,7 @@ public class PageRhythm
         this.page = page;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -208,14 +211,16 @@ public class PageRhythm
 
             if (range.ts != null) {
                 TimeRational timeRational = range.ts.getTimeRational();
+
                 if (timeRational == null) {
                     logger.info("No timeRational value for {}", range.ts);
+
                     return false;
                 }
 
                 range.timeRational = timeRational;
                 range.duration = timeRational.getValue();
-            } else if (i == 0 && !page.isMovementStart()) {
+            } else if ((i == 0) && !page.isMovementStart()) {
                 // Use time at end of last sheet/page if any
                 SheetStub stub = page.getSheet().getStub();
                 int stubNumber = stub.getNumber();
@@ -345,6 +350,7 @@ public class PageRhythm
                 sn += system.getStacks().size();
             } else {
                 sn += system.getStacks().indexOf(stack);
+
                 break;
             }
         }
@@ -352,6 +358,7 @@ public class PageRhythm
         return sn;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Range //
     //-------//

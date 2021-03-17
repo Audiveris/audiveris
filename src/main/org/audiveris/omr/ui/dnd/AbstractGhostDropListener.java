@@ -39,12 +39,15 @@ import javax.swing.JComponent;
 public abstract class AbstractGhostDropListener<A>
         implements GhostDropListener<A>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractGhostDropListener.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related component */
     protected JComponent component;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new AbstractGhostDropListener object
      *
@@ -55,6 +58,7 @@ public abstract class AbstractGhostDropListener<A>
         this.component = component;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // dropped //
     //---------//

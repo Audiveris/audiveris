@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 public class GhostGlassPane
         extends JPanel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GhostGlassPane.class);
 
@@ -57,6 +58,7 @@ public class GhostGlassPane
             AlphaComposite.SRC_OVER,
             0.25f);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The image to be dragged. */
     protected BufferedImage draggedImage = null;
 
@@ -69,6 +71,7 @@ public class GhostGlassPane
     /** Are we over a droppable target?. */
     protected boolean overTarget = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new GhostGlassPane object.
      */
@@ -78,6 +81,7 @@ public class GhostGlassPane
         setName("GhostGlassPane");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // paintComponent //
     //----------------//

@@ -33,6 +33,7 @@ import org.audiveris.omr.ui.symbol.FlagsDownSymbol.MyParams;
 public class FlagsUpSymbol
         extends FlagsDownSymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new FlagsUpSymbol object.
@@ -48,6 +49,7 @@ public class FlagsUpSymbol
         super(flagCount, isIcon, shape);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

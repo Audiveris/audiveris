@@ -35,6 +35,7 @@ import java.awt.geom.Rectangle2D;
 public class BeamHookSymbol
         extends BeamSymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a BeamHookSymbol.
@@ -72,6 +73,7 @@ public class BeamHookSymbol
         super(isIcon, Shape.BEAM_HOOK, beamThickness, decorated);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // createDecoratedSymbol //
     //-----------------------//
@@ -105,32 +107,32 @@ public class BeamHookSymbol
 
         if (decorated) {
             p.quarterCount = 1;
+
             Rectangle2D qRect = p.layout.getBounds();
             Rectangle2D r = p.rect;
             r.setRect(r.getX(), r.getY(), qRect.getWidth() + width, r.getHeight());
 
             if (yShift >= 0) {
-                p.model.p1 = new Point2D.Double(r.getWidth() - width,
-                                                p.model.thickness / 2.0);
-                p.model.p2 = new Point2D.Double(r.getWidth(), p.model.thickness / 2.0 + absShift);
+                p.model.p1 = new Point2D.Double(r.getWidth() - width, p.model.thickness / 2.0);
+                p.model.p2 = new Point2D.Double(r.getWidth(), (p.model.thickness / 2.0) + absShift);
             } else {
                 p.model.p1 = new Point2D.Double(r.getWidth() - width,
-                                                p.model.thickness / 2.0 + absShift);
+                                                (p.model.thickness / 2.0) + absShift);
                 p.model.p2 = new Point2D.Double(r.getWidth(), p.model.thickness / 2.0);
-
             }
 
             // Modify offset to point at center of beam hook
             p.offset = new Point2D.Double((r.getWidth() - width) / 2,
-                                          (absShift + p.model.thickness - r.getHeight()) / 2.0);
+                                          ((absShift + p.model.thickness) - r.getHeight()) / 2.0);
         } else {
             if (yShift >= 0) {
                 p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0);
-                p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0 + absShift);
+                p.model.p2 = new Point2D.Double(width, (p.model.thickness / 2.0) + absShift);
             } else {
-                p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0 + absShift);
+                p.model.p1 = new Point2D.Double(0, (p.model.thickness / 2.0) + absShift);
                 p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0);
             }
+
             p.rect = new Rectangle((int) Math.ceil(width),
                                    (int) Math.ceil(p.model.thickness + absShift));
         }

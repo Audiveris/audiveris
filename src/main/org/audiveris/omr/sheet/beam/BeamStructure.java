@@ -66,6 +66,7 @@ import java.util.TreeMap;
 public class BeamStructure
         implements Vip
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -82,6 +83,7 @@ public class BeamStructure
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */
     private final Glyph glyph;
 
@@ -103,6 +105,7 @@ public class BeamStructure
     /** VIP flag. */
     private boolean vip;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamItems object.
      *
@@ -120,6 +123,7 @@ public class BeamStructure
         center = glyph.getCentroid();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // adjustSides //
     //-------------//
@@ -533,12 +537,10 @@ public class BeamStructure
                 double xMid = (other.getX1() + other.getX2()) / 2;
                 double yMid = (other.getY1() + other.getY2()) / 2;
                 double height = yMid - LineUtil.yAtX(base, xMid);
-                Point2D p1 = (base.getX1() < other.getX1()) ? new Point2D.Double(
-                        base.getX1(),
-                        base.getY1() + height) : other.getP1();
-                Point2D p2 = (base.getX2() > other.getX2()) ? new Point2D.Double(
-                        base.getX2(),
-                        base.getY2() + height) : other.getP2();
+                Point2D p1 = (base.getX1() < other.getX1())
+                        ? new Point2D.Double(base.getX1(), base.getY1() + height) : other.getP1();
+                Point2D p2 = (base.getX2() > other.getX2())
+                        ? new Point2D.Double(base.getX2(), base.getY2() + height) : other.getP2();
                 double x = (p1.getX() + p2.getX()) / 2;
                 double y = LineUtil.yAtX(p1, p2, x);
                 double offset = y - LineUtil.yAtX(center, globalSlope, x);
@@ -643,7 +645,7 @@ public class BeamStructure
                 for (Run run : section.getRuns()) {
                     sectionLine.includePoint(
                             x,
-                            (side == VerticalSide.TOP) ? run.getStart() : run.getStop() + 1);
+                            (side == VerticalSide.TOP) ? run.getStart() : (run.getStop() + 1));
                     x++;
                 }
 
@@ -854,6 +856,7 @@ public class BeamStructure
         return bestLine.getSlope();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -880,26 +883,12 @@ public class BeamStructure
     private static class SectionBorder
     {
 
-        static Comparator<SectionBorder> byOrdinateOffset = new Comparator<SectionBorder>()
-        {
-            @Override
-            public int compare (SectionBorder o1,
-                                SectionBorder o2)
-            {
-                // Sort by increasing ordinate offset WRT glyph reference line
-                return Double.compare(o1.dy, o2.dy);
-            }
-        };
+        // Sort by increasing ordinate offset WRT glyph reference line
+        static Comparator<SectionBorder> byOrdinateOffset = (SectionBorder o1, SectionBorder o2)
+                -> Double.compare(o1.dy, o2.dy);
 
-        static Comparator<SectionBorder> byReverseLength = new Comparator<SectionBorder>()
-        {
-            @Override
-            public int compare (SectionBorder o1,
-                                SectionBorder o2)
-            {
-                return Integer.compare(o2.section.getRunCount(), o1.section.getRunCount());
-            }
-        };
+        static Comparator<SectionBorder> byReverseLength = (SectionBorder o1, SectionBorder o2)
+                -> Integer.compare(o2.section.getRunCount(), o1.section.getRunCount());
 
         final Section section; // Underlying section
 

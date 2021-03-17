@@ -46,12 +46,15 @@ import java.util.Objects;
  */
 public class ScoreReduction
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreReduction.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related score. */
     private final Score score;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScoreReduction object.
      *
@@ -62,6 +65,7 @@ public class ScoreReduction
         this.score = score;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // reduce //
     //--------//
@@ -148,6 +152,7 @@ public class ScoreReduction
         return false;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // LogicalPartCandidate //
     //----------------------//

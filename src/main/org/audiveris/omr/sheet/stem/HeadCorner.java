@@ -33,21 +33,17 @@ import static org.audiveris.omr.util.VerticalSide.*;
  */
 public enum HeadCorner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
     TOP_RIGHT(TOP, RIGHT),
     BOTTOM_LEFT(BOTTOM, LEFT),
     TOP_LEFT(TOP, LEFT),
     BOTTOM_RIGHT(BOTTOM, RIGHT);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The vertical side. */
     public final VerticalSide vSide;
 
     /** The horizontal side. */
     public final HorizontalSide hSide;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Corner object.
      *
@@ -61,7 +57,6 @@ public enum HeadCorner
         this.hSide = hSide;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the corner ID.
      *
@@ -80,16 +75,21 @@ public enum HeadCorner
     {
         switch (vSide) {
         case TOP:
+
             switch (hSide) {
             case LEFT:
                 return TOP_LEFT;
+
             case RIGHT:
                 return TOP_RIGHT;
             }
+
         case BOTTOM:
+
             switch (hSide) {
             case LEFT:
                 return BOTTOM_LEFT;
+
             case RIGHT:
                 return BOTTOM_RIGHT;
             }

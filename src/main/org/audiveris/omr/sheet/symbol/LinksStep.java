@@ -60,6 +60,7 @@ import java.util.Set;
 public class LinksStep
         extends AbstractSystemStep<Void>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -82,6 +83,7 @@ public class LinksStep
         impactingClasses.addAll(forTexts);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LinksStep} object.
      */
@@ -89,6 +91,7 @@ public class LinksStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -197,6 +200,7 @@ public class LinksStep
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

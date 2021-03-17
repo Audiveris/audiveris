@@ -41,10 +41,12 @@ import java.awt.geom.Rectangle2D;
 public class LedgerSymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head part
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a LedgerSymbol (with decoration?) standard size
      *
@@ -67,6 +69,7 @@ public class LedgerSymbol
         super(isIcon, Shape.LEDGER, decorated);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -155,6 +158,7 @@ public class LedgerSymbol
         g.draw(new Line2D.Double(p.model.p1, p.model.p2));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

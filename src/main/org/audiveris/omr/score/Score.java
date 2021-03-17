@@ -53,6 +53,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "score")
 public class Score
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -61,6 +62,7 @@ public class Score
     /** Number of lines in a staff. */
     public static final int LINE_NB = 5;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -98,6 +100,7 @@ public class Score
     /** The specified sound volume, if any. */
     private Integer volume;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Score.
      */
@@ -106,6 +109,7 @@ public class Score
         tempoParam.setParent(Tempo.defaultTempo);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addPageRef //
     //------------//
@@ -696,58 +700,7 @@ public class Score
         constants.defaultTempo.setValue(tempo);
     }
 
-    //------------//
-    // PartsParam //
-    //------------//
-    private class PartsParam
-            extends Param<List<PartData>>
-    {
-
-        @Override
-        public List<PartData> getSpecific ()
-        {
-            List<LogicalPart> list = getLogicalParts();
-            if (list != null) {
-                List<PartData> data = new ArrayList<>();
-                for (LogicalPart logicalPart : list) {
-                    // Initial setting for part midi program
-                    int prog = (logicalPart.getMidiProgram() != null) ? logicalPart.getMidiProgram()
-                            : logicalPart.getDefaultProgram();
-
-                    data.add(new PartData(logicalPart.getName(), prog));
-                }
-                return data;
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public boolean setSpecific (List<PartData> specific)
-        {
-            try {
-                for (int i = 0; i < specific.size(); i++) {
-                    PartData data = specific.get(i);
-                    LogicalPart logicalPart = getLogicalParts().get(i);
-
-                    // Part name
-                    logicalPart.setName(data.name);
-
-                    // Part midi program
-                    logicalPart.setMidiProgram(data.program);
-                }
-
-                logger.info("Score parts have been updated");
-
-                return true;
-            } catch (Exception ex) {
-                logger.warn("Error updating score parts", ex);
-            }
-
-            return false;
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -803,4 +756,58 @@ public class Score
         }
     }
 
+    //------------//
+    // PartsParam //
+    //------------//
+    private class PartsParam
+            extends Param<List<PartData>>
+    {
+
+        @Override
+        public List<PartData> getSpecific ()
+        {
+            List<LogicalPart> list = getLogicalParts();
+
+            if (list != null) {
+                List<PartData> data = new ArrayList<>();
+
+                for (LogicalPart logicalPart : list) {
+                    // Initial setting for part midi program
+                    int prog = (logicalPart.getMidiProgram() != null)
+                            ? logicalPart.getMidiProgram() : logicalPart.getDefaultProgram();
+
+                    data.add(new PartData(logicalPart.getName(), prog));
+                }
+
+                return data;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public boolean setSpecific (List<PartData> specific)
+        {
+            try {
+                for (int i = 0; i < specific.size(); i++) {
+                    PartData data = specific.get(i);
+                    LogicalPart logicalPart = getLogicalParts().get(i);
+
+                    // Part name
+                    logicalPart.setName(data.name);
+
+                    // Part midi program
+                    logicalPart.setMidiProgram(data.program);
+                }
+
+                logger.info("Score parts have been updated");
+
+                return true;
+            } catch (Exception ex) {
+                logger.warn("Error updating score parts", ex);
+            }
+
+            return false;
+        }
+    }
 }

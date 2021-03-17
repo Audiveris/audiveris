@@ -42,6 +42,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Param<E>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
     //----------------
@@ -55,6 +56,7 @@ public class Param<E>
     /** Parent param, if any, to inherit from. */
     protected Param<E> parent;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getSourceValue //
     //----------------//

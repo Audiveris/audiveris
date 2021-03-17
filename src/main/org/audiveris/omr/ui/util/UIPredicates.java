@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
  */
 public abstract class UIPredicates
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Not meant to be instantiated.
@@ -42,6 +43,7 @@ public abstract class UIPredicates
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // isAdditionWanted //
     //------------------//

@@ -41,9 +41,11 @@ import java.util.List;
 public class FilamentView
         extends EntityView<Filament>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentView.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FilamentView} object.
      *
@@ -54,6 +56,7 @@ public class FilamentView
         super(entityService);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     protected void render (Graphics2D g)
     {

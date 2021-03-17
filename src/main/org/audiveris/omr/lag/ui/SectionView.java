@@ -32,6 +32,7 @@ import java.awt.Rectangle;
  */
 public interface SectionView
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Return the display rectangle used by the rendering of the section

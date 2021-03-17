@@ -36,8 +36,8 @@ import javax.swing.JCheckBox;
 public class BooleanPane
         extends XactDataPane<Boolean>
 {
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Boolean box. */
     protected final JCheckBox bbox = new JCheckBox();
 
@@ -57,7 +57,7 @@ public class BooleanPane
     {
         super(title, parent, model);
 
-        if (tip != null && !tip.isBlank()) {
+        if ((tip != null) && !tip.isBlank()) {
             bbox.setToolTipText(tip);
             this.title.setToolTipText(tip);
         }

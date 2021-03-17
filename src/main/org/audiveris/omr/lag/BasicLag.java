@@ -44,9 +44,11 @@ public class BasicLag
         extends BasicIndex<Section>
         implements Lag
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicLag.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Orientation of the lag. */
     private final Orientation orientation;
 
@@ -56,6 +58,7 @@ public class BasicLag
     /** Lag name. */
     private final String name;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor with specified orientation
      *
@@ -72,6 +75,7 @@ public class BasicLag
         logger.debug("Created lag {}", name);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addRunTable //
     //-------------//

@@ -42,6 +42,7 @@ import java.util.TreeMap;
  */
 public class Histogram<K extends Number>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** To sort peaks by decreasing value. */
     public final Comparator<PeakEntry<K>> reversePeakComparator = (PeakEntry<K> e1, PeakEntry<K> e2)
@@ -66,6 +67,7 @@ public class Histogram<K extends Number>
     /** Total count. */
     protected int totalCount = 0;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Histogram object, with no pre-defined range of buckets.
      */
@@ -73,6 +75,7 @@ public class Histogram<K extends Number>
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // bucketSet //
     //-----------//
@@ -609,6 +612,7 @@ public class Histogram<K extends Number>
         double getValue ();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // DoublePeak //
     //------------//

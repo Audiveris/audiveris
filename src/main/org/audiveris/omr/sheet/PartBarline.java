@@ -60,9 +60,36 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "part-barline")
 public class PartBarline
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PartBarline.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Barline style.
+     * <p>
+     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
+     * the addition of LIGHT_HEAVY_LIGHT to handle back-to-back configuration.
+     */
+    public static enum Style
+    {
+        REGULAR,
+        DOTTED,
+        DASHED,
+        HEAVY,
+        LIGHT_LIGHT,
+        LIGHT_HEAVY,
+        HEAVY_LIGHT,
+        HEAVY_HEAVY,
+        TICK,
+        SHORT,
+        NONE,
+
+        /** LIGHT_HEAVY_LIGHT is not part of MusicXML. */
+        LIGHT_HEAVY_LIGHT;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** <b>OLD</b> underlying {@link StaffBarlineInter} instances. */
     @Deprecated
     @XmlElement(name = "staff-barline")
@@ -77,6 +104,7 @@ public class PartBarline
     @XmlElement(name = "staff-barlines")
     private final List<StaffBarlineInter> staffBarlines = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartBarline} object.
      */
@@ -84,6 +112,7 @@ public class PartBarline
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addStaffBarline //
     //-----------------//
@@ -317,7 +346,7 @@ public class PartBarline
         boolean started = false;
 
         for (StaffBarlineInter sb : staffBarlines) {
-            started |= sb.getLeftBar().getStaff() == pivotStaff;
+            started |= (sb.getLeftBar().getStaff() == pivotStaff);
 
             if (started) {
                 partBarlineBelow.staffBarlines.add(sb);
@@ -377,29 +406,5 @@ public class PartBarline
         }
 
         return false;
-    }
-
-    /**
-     * Barline style.
-     * <p>
-     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
-     * the addition of LIGHT_HEAVY_LIGHT to handle back-to-back configuration.
-     */
-    public static enum Style
-    {
-        REGULAR,
-        DOTTED,
-        DASHED,
-        HEAVY,
-        LIGHT_LIGHT,
-        LIGHT_HEAVY,
-        HEAVY_LIGHT,
-        HEAVY_HEAVY,
-        TICK,
-        SHORT,
-        NONE,
-
-        /** LIGHT_HEAVY_LIGHT is not part of MusicXML. */
-        LIGHT_HEAVY_LIGHT;
     }
 }

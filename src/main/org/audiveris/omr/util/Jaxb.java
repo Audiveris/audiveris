@@ -64,14 +64,17 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public abstract class Jaxb
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Jaxb.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Jaxb ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // marshal //
     //---------//
@@ -170,6 +173,7 @@ public abstract class Jaxb
         return jaxbContext.createUnmarshaller().unmarshal(is);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // AtomicIntegerAdapter //
     //----------------------//

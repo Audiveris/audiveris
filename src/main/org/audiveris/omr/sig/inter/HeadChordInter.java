@@ -61,6 +61,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadChordInter
         extends AbstractChordInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadChordInter.class);
 
@@ -69,31 +70,26 @@ public class HeadChordInter
      * distance from chord head ordinate.
      * It implements total ordering.
      */
-    public static final Comparator<HeadInter> headComparator = new Comparator<HeadInter>()
-    {
-        @Override
-        public int compare (HeadInter n1,
-                            HeadInter n2)
-        {
-            if (n1 == n2) {
-                return 0;
-            }
-
-            final Point p1 = n1.getCenter();
-            final Point p2 = n2.getCenter();
-            final int yCmp = Integer.compare(p1.y, p2.y);
-
-            if (yCmp != 0) {
-                final AbstractChordInter chord = n1.getChord();
-
-                return chord.getStemDir() * yCmp;
-            }
-
-            // Total ordering: use abscissa to separate heads with identical ordinates (rare case)
-            return Integer.compare(p1.x, p2.x);
+    public static final Comparator<HeadInter> headComparator = (HeadInter n1, HeadInter n2) -> {
+        if (n1 == n2) {
+            return 0;
         }
+
+        final Point p1 = n1.getCenter();
+        final Point p2 = n2.getCenter();
+        final int yCmp = Integer.compare(p1.y, p2.y);
+
+        if (yCmp != 0) {
+            final AbstractChordInter chord = n1.getChord();
+
+            return chord.getStemDir() * yCmp;
+        }
+
+        // Total ordering: use abscissa to separate heads with identical ordinates (rare case)
+        return Integer.compare(p1.x, p2.x);
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadChordInter} object.
      *
@@ -111,6 +107,7 @@ public class HeadChordInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

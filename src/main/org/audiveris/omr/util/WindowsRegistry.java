@@ -42,14 +42,17 @@ import java.util.List;
  */
 public class WindowsRegistry
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WindowsRegistry.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private WindowsRegistry ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // query //
     //-------//

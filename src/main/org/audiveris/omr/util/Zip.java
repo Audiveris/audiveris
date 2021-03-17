@@ -51,14 +51,17 @@ import java.util.zip.ZipOutputStream;
  */
 public abstract class Zip
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Zip.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Zip ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // createInputStream //
     //-------------------//

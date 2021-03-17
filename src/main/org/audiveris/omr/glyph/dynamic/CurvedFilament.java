@@ -52,9 +52,11 @@ import java.util.List;
 public class CurvedFilament
         extends Filament
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CurvedFilament.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Typical length between points. */
     protected final int segmentLength;
 
@@ -64,6 +66,7 @@ public class CurvedFilament
     /** Curved line across all defining points. */
     protected NaturalSpline spline;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CurvedFilament} object.
      *
@@ -77,6 +80,7 @@ public class CurvedFilament
         this.segmentLength = segmentLength;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // computeLine //
     //-------------//
@@ -352,17 +356,19 @@ public class CurvedFilament
 
                 if (found.size() > 1) {
                     // Pick up the section closest to the point
-                    Collections.sort(found, new Comparator<Section>()
-                             {
-                                 @Override
-                                 public int compare (Section s1,
-                                                     Section s2)
-                                 {
-                                     return Double.compare(
-                                             point.distance(s1.getCentroid()),
-                                             point.distance(s2.getCentroid()));
-                                 }
-                             });
+                    Collections.sort(
+                            found,
+                            new Comparator<Section>()
+                    {
+                        @Override
+                        public int compare (Section s1,
+                                            Section s2)
+                        {
+                            return Double.compare(
+                                    point.distance(s1.getCentroid()),
+                                    point.distance(s2.getCentroid()));
+                        }
+                    });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
@@ -520,6 +526,7 @@ public class CurvedFilament
         return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // Constructor //
     //-------------//

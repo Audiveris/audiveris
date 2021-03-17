@@ -46,6 +46,9 @@ public class BeamBeamRelation
     private static final Logger logger = LoggerFactory.getLogger(BeamBeamRelation.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code BeamBeamRelation} object.
+     */
     public BeamBeamRelation ()
     {
     }

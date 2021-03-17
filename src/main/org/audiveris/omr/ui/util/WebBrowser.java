@@ -47,25 +47,23 @@ import java.net.URI;
  */
 public class WebBrowser
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
     /** Major browsers. */
-    private static final String[] browsers = {
-        "firefox",
-        "opera",
-        "konqueror",
-        "epiphany",
-        "mozilla",
-        "netscape"};
+    private static final String[] browsers
+            = {"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"};
 
     /** Singleton instance, initially null. */
     private static WebBrowser instance;
 
+    //~ Constructors -------------------------------------------------------------------------------
     private WebBrowser ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // isSupported //
     //-------------//
@@ -154,8 +152,7 @@ public class WebBrowser
             } else { //assume Unix or Linux
 
                 for (String browser : browsers) {
-                    if (Runtime.getRuntime().exec(new String[]{"which", browser})
-                            .waitFor() == 0) {
+                    if (Runtime.getRuntime().exec(new String[]{"which", browser}).waitFor() == 0) {
                         Runtime.getRuntime().exec(new String[]{browser, url});
 
                         return;

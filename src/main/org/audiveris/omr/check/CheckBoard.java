@@ -44,12 +44,15 @@ import org.slf4j.LoggerFactory;
 public class CheckBoard<C>
         extends Board
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckBoard.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** For display of check suite results. */
     private final CheckPanel<C> checkPanel;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Check Board.
      *
@@ -82,6 +85,7 @@ public class CheckBoard<C>
         tellObject(null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // applySuite //
     //------------//

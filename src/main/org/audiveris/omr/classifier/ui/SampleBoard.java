@@ -56,6 +56,7 @@ import javax.swing.SwingConstants;
 public class SampleBoard
         extends EntityBoard<Sample>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -63,6 +64,7 @@ public class SampleBoard
 
     private static final String DBL_FORMAT = "%.3f"; // Format for double output
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** User controller for samples. */
     private final SampleController controller;
 
@@ -101,6 +103,7 @@ public class SampleBoard
     /** To reassign. */
     private final AssignAction assignAction;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleBoard} object.
      *
@@ -133,6 +136,7 @@ public class SampleBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFormLayout //
     //---------------//
@@ -271,6 +275,7 @@ public class SampleBoard
         builder.add(pitch.getField(), cst.xy(11, r));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

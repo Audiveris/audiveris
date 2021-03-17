@@ -36,13 +36,16 @@ import java.awt.geom.Rectangle2D;
 public class DoubleBarlineSymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // Total width, computed from width of thin barline
     private static final double WIDTH_RATIO = 4.5;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // The thin barline symbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(Shape.THIN_BARLINE);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a DoubleBarlineSymbol.
      */
@@ -61,6 +64,7 @@ public class DoubleBarlineSymbol
         super(isIcon, Shape.DOUBLE_BARLINE, false);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

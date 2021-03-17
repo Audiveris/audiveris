@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 public class SupportImpacts
         extends GradeImpacts
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RelationImpacts object.
@@ -44,6 +45,7 @@ public class SupportImpacts
         super(names, weights);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getIntrinsicRatio //
     //-------------------//

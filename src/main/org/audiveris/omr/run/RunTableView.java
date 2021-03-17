@@ -44,12 +44,15 @@ import java.awt.Rectangle;
 public class RunTableView
         extends RubberPanel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTableView.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying table of runs. */
     private final RunTable table;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTableView} object.
      *
@@ -71,6 +74,7 @@ public class RunTableView
         setBackground(Color.white);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // render //
     //--------//
@@ -80,23 +84,23 @@ public class RunTableView
         // Render all table runs
         table.render(g, new Point(0, 0));
     }
-//
-//    @Override
-//    public void subscribe ()
-//    {
-//        super.subscribe();
-//
-//        table.getRunService().setLocationService(locationService);
-//    }
-//
-//    @Override
-//    public void unsubscribe ()
-//    {
-//        super.unsubscribe();
-//
-//        table.getRunService().cutLocationService(locationService);
-//    }
 
+    //
+    //    @Override
+    //    public void subscribe ()
+    //    {
+    //        super.subscribe();
+    //
+    //        table.getRunService().setLocationService(locationService);
+    //    }
+    //
+    //    @Override
+    //    public void unsubscribe ()
+    //    {
+    //        super.unsubscribe();
+    //
+    //        table.getRunService().cutLocationService(locationService);
+    //    }
     //---------------------//
     // handleLocationEvent //
     //---------------------//

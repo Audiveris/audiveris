@@ -33,8 +33,8 @@ package org.audiveris.omr.step;
 public class StepPause
         extends StepException
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Construct an {@code StepPause} with detail message.
      *

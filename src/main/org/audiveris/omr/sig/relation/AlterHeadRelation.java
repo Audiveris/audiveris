@@ -44,19 +44,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AlterHeadRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AlterHeadRelation.class);
 
-    private static final double[] IN_WEIGHTS = new double[]{
-        constants.xInWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] IN_WEIGHTS = new double[]{constants.xInWeight.getValue(),
+                                                            constants.yWeight.getValue()};
 
-    private static final double[] OUT_WEIGHTS = new double[]{
-        constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -172,6 +172,7 @@ public class AlterHeadRelation
         return getYGapMaximum(profile);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

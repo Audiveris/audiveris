@@ -28,6 +28,7 @@ package org.audiveris.omr.moments;
  */
 public interface LUT
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Set the value for integer coordinates (x,y).

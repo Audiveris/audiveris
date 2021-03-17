@@ -31,7 +31,13 @@ import java.awt.geom.Point2D;
  */
 public abstract class LineUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    private LineUtil ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // bisector //
     //----------//
@@ -556,9 +562,5 @@ public abstract class LineUtil
     {
         line.setLine(line.getX1() + dx, line.getY1() + dy,
                      line.getX2() + dx, line.getY2() + dy);
-    }
-
-    private LineUtil ()
-    {
     }
 }

@@ -31,6 +31,7 @@ import java.util.List;
  */
 public abstract class StringUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Elision. (undertie) */
     public static final char ELISION_CHAR = '\u203f';
@@ -53,11 +54,13 @@ public abstract class StringUtil
 
     public static final String HYPHEN_STRING = new String(new char[]{HYPHEN});
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private StringUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // compare //
     //---------//

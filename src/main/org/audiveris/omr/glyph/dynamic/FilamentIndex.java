@@ -48,20 +48,22 @@ import javax.swing.SwingUtilities;
 public class FilamentIndex
         extends BasicIndex<Filament>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentIndex.class);
 
     /** Events that can be published on filament service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        EntityListEvent.class,
-        IdEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
+                                                                   IdEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FilamentIndex} object.
      *
@@ -106,6 +108,7 @@ public class FilamentIndex
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getName //
     //---------//
@@ -144,17 +147,11 @@ public class FilamentIndex
                     MouseMovement.PRESSING,
                     filament);
 
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    entityService.publish(event);
-                }
-            });
+            SwingUtilities.invokeLater(() -> entityService.publish(event));
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

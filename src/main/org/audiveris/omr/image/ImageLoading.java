@@ -83,11 +83,13 @@ import javax.media.jai.JAI;
  */
 public abstract class ImageLoading
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ImageLoading.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * To disallow instantiation.
      */
@@ -95,6 +97,7 @@ public abstract class ImageLoading
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLoader //
     //-----------//
@@ -253,6 +256,7 @@ public abstract class ImageLoading
         return null;
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Loader //
     //--------//
@@ -285,19 +289,7 @@ public abstract class ImageLoading
         int getImageCount ();
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer pdfResolution = new Constant.Integer(
-                "DPI",
-                300,
-                "DPI resolution for PDF images");
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // AbstractLoader //
     //----------------//
@@ -330,6 +322,19 @@ public abstract class ImageLoading
                 throw new IllegalArgumentException("Invalid image id " + id);
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer pdfResolution = new Constant.Integer(
+                "DPI",
+                300,
+                "DPI resolution for PDF images");
     }
 
     //---------------//

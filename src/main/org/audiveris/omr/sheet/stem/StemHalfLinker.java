@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphFactory;
+import org.audiveris.omr.math.LineUtil;
+
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Set;
-import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.GlyphFactory;
-import org.audiveris.omr.math.LineUtil;
 
 /**
  * Interface {@code StemHalfLinker} handles connection above or below a StemLinker.
@@ -39,6 +40,7 @@ import org.audiveris.omr.math.LineUtil;
 public abstract class StemHalfLinker
         extends StemLinker
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the look-up area for stem items
@@ -75,5 +77,4 @@ public abstract class StemHalfLinker
             sLine.setLine(sLine.getX1() + dx, sLine.getY1(), sLine.getX2() + dx, sLine.getY2());
         }
     }
-
 }

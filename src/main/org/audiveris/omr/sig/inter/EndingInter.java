@@ -39,12 +39,12 @@ import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.EndingSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
@@ -79,12 +79,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class EndingInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     /** Default thickness of a wedge line. */
     public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent Data
     //----------------
     //
@@ -103,6 +105,7 @@ public class EndingInter
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D rightLeg;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EndingInter} object.
      *
@@ -143,6 +146,7 @@ public class EndingInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -168,16 +172,16 @@ public class EndingInter
             return true;
         }
 
-        if (line.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+        if (line.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
             return true;
         }
 
-        if (leftLeg.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+        if (leftLeg.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
             return true;
         }
 
         if (rightLeg != null) {
-            if (rightLeg.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+            if (rightLeg.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
                 return true;
             }
         }
@@ -498,6 +502,58 @@ public class EndingInter
         return (StaffBarlineInter) bars.get((side == HorizontalSide.LEFT) ? (bars.size() - 1) : 0);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]{"straight", "slope", "length"};
+
+        private static final double[] WEIGHTS = new double[]{1, 1, 1};
+
+        public Impacts (double straight,
+                        double slope,
+                        double length)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, straight);
+            setImpact(1, slope);
+            setImpact(2, length);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public Point2D topLeft;
+
+        public Point2D topRight;
+
+        public Point2D bottomLeft;
+
+        public Point2D bottomRight; // Optional
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(topLeft, dx, dy);
+            PointUtil.add(topRight, dx, dy);
+            PointUtil.add(bottomLeft, dx, dy);
+
+            if (bottomRight != null) {
+                PointUtil.add(bottomRight, dx, dy);
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -702,60 +758,6 @@ public class EndingInter
 
             inter.setBounds(null);
             super.undo();
-        }
-    }
-
-    //---------//
-    // Impacts //
-    //---------//
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]{
-            "straight",
-            "slope",
-            "length"};
-
-        private static final double[] WEIGHTS = new double[]{1, 1, 1};
-
-        public Impacts (double straight,
-                        double slope,
-                        double length)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, straight);
-            setImpact(1, slope);
-            setImpact(2, length);
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        public Point2D topLeft;
-
-        public Point2D topRight;
-
-        public Point2D bottomLeft;
-
-        public Point2D bottomRight; // Optional
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(topLeft, dx, dy);
-            PointUtil.add(topRight, dx, dy);
-            PointUtil.add(bottomLeft, dx, dy);
-
-            if (bottomRight != null) {
-                PointUtil.add(bottomRight, dx, dy);
-            }
         }
     }
 }

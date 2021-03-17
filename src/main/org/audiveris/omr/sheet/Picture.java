@@ -536,6 +536,7 @@ public class Picture
                 setImage(ImageKey.GRAY, gray, false);
             } catch (ImageFormatException ex) {
                 logger.warn("ImageFormatException thrown in getGrayImage", ex);
+
                 return null;
             }
         }
@@ -625,6 +626,7 @@ public class Picture
                 break;
 
             case BINARY:
+
                 // Built from binary image, if available
                 final BufferedImage image = getImage(ImageKey.BINARY);
 
@@ -996,6 +998,8 @@ public class Picture
      * Check if the image format (and especially its color model) is
      * properly handled by Audiveris and adjust if needed.
      *
+     * @param img image to be checked
+     * @return valid image
      * @throws ImageFormatException is the format is not supported
      */
     public static BufferedImage adjustImageFormat (BufferedImage img)

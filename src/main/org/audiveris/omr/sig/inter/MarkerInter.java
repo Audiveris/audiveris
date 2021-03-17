@@ -47,6 +47,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MarkerInter
         extends AbstractInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code MarkerInter} object.
@@ -69,6 +70,7 @@ public class MarkerInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -114,8 +116,9 @@ public class MarkerInter
         }
 
         final List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
-        final StaffBarlineInter staffBar
-                = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+        final StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(
+                staffBars,
+                center);
         Link link = null;
 
         if ((staffBar != null) && (GeoUtil.xOverlap(box, staffBar.getBounds()) > 0)) {

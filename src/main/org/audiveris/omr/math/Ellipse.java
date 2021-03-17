@@ -48,20 +48,28 @@ import static java.lang.Math.*;
  */
 public final class Ellipse
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
     /** Constraint such that 4*A*C - B**2 = 1 */
-    private static final Matrix C1 = new Matrix(
-            new double[][]{{0, 0, 2}, {0, -1, 0}, {2, 0, 0}});
+    private static final Matrix C1 = new Matrix(new double[][]{
+        {0, 0, 2},
+        {0, -1, 0},
+        {2, 0, 0}
+    });
 
     /** Inverse of Constraint */
-    private static final Matrix C1inv = new Matrix(
-            new double[][]{{0, 0, 0.5}, {0, -1, 0}, {0.5, 0, 0}});
+    private static final Matrix C1inv = new Matrix(new double[][]{
+        {0, 0, 0.5},
+        {0, -1, 0},
+        {0.5, 0, 0}
+    });
 
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Array of coefficients that define ellipse algebraic equation
      */
@@ -101,6 +109,7 @@ public final class Ellipse
     /** 1/2 Minor axis */
     protected Double minor;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of Ellipse, defined by a set of points
      *
@@ -121,6 +130,7 @@ public final class Ellipse
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getAngle //
     //----------//
@@ -354,7 +364,6 @@ public final class Ellipse
      */
     protected void computeCharacteristics ()
     {
-
         // Compute ellipse center
         center = computeCenter();
 
@@ -378,7 +387,6 @@ public final class Ellipse
     protected void fit (double[] x,
                         double[] y)
     {
-
         // Check input
         if (x.length != y.length) {
             throw new IllegalArgumentException("x & y arrays have different lengths");

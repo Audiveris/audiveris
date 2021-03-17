@@ -47,13 +47,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LyricLineInter
         extends SentenceInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LyricLineInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The verse number (within part). */
     @XmlAttribute
     private int number;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LyricLineInter} object.
      *
@@ -85,6 +88,7 @@ public class LyricLineInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

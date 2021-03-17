@@ -85,15 +85,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadStemRelation
         extends AbstractStemConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of head is used?. */
     @XmlAttribute(name = "head-side")
     private HorizontalSide headSide;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadStemRelation} object.
      */
@@ -101,6 +104,7 @@ public class HeadStemRelation
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -142,14 +146,14 @@ public class HeadStemRelation
                     ch.setStem(stem);
                 }
 
-//                // Propagate to beam if any
-//                Measure measure = ch.getMeasure();
-//
-//                for (AbstractBeamInter beam : stem.getBeams()) {
-//                    if (beam.getGroup() == null) {
-//                        BeamGroupInter.includeBeam(beam, measure);
-//                    }
-//                }
+                //                // Propagate to beam if any
+                //                Measure measure = ch.getMeasure();
+                //
+                //                for (AbstractBeamInter beam : stem.getBeams()) {
+                //                    if (beam.getGroup() == null) {
+                //                        BeamGroupInter.includeBeam(beam, measure);
+                //                    }
+                //                }
             }
         }
 
@@ -284,7 +288,7 @@ public class HeadStemRelation
         }
 
         // Relation head -> stem
-        final int yDir = (headToTail == TOP) ? -1 : 1;
+        final int yDir = (headToTail == TOP) ? (-1) : 1;
         final int xDir = -stemLine.relativeCCW(head.getCenter());
         final HorizontalSide hSide = (xDir < 0) ? LEFT : RIGHT;
         final Point2D refPt = head.getStemReferencePoint(hSide);
@@ -295,6 +299,7 @@ public class HeadStemRelation
         final double xGap = xDir * (xStem - refPt.getX());
 
         final double yGap;
+
         if (stump != null) {
             final Rectangle stumpBox = stump.getBounds();
             final double overlap = (yDir > 0)
@@ -336,6 +341,7 @@ public class HeadStemRelation
         final StemInter stem = (StemInter) pair.target;
 
         final HeadChordInter headChord = head.getChord();
+
         if (headChord == null) {
             return Collections.emptyList();
         }
@@ -350,6 +356,7 @@ public class HeadStemRelation
         final StemInter headStem = headChord.getStem();
 
         final boolean sharing;
+
         if (headSide == LEFT) {
             sharing = HeadStemRelation.isCanonicalShare(stem, head, headStem);
         } else {
@@ -375,6 +382,7 @@ public class HeadStemRelation
             tasks.add(new LinkTask(sig, stemChord, newHead, new Containment()));
 
             pair.source = newHead; // Instead of initial head
+
             return tasks;
         }
 
@@ -562,18 +570,19 @@ public class HeadStemRelation
         Point headCenter = head.getCenter();
         double yMidLeft = (leftLine.getY1() + leftLine.getY2()) / 2;
         double yMidRight = (rightLine.getY1() + rightLine.getY2()) / 2;
-        if (headCenter.y >= yMidLeft || headCenter.y <= yMidRight) {
+
+        if ((headCenter.y >= yMidLeft) || (headCenter.y <= yMidRight)) {
             return false;
         }
 
-        double yLeftExt = leftRel != null ? leftRel.getExtensionPoint().getY() : headBox.y;
-        double yRightExt = rightRel != null ? rightRel.getExtensionPoint().getY()
-                : headBox.y + headBox.height - 1;
+        double yLeftExt = (leftRel != null) ? leftRel.getExtensionPoint().getY() : headBox.y;
+        double yRightExt = (rightRel != null) ? rightRel.getExtensionPoint().getY()
+                : ((headBox.y + headBox.height) - 1);
 
         StemPortion leftPortion = getStemPortion(head, leftLine, yLeftExt);
         StemPortion rightPortion = getStemPortion(head, rightLine, yRightExt);
 
-        return leftPortion == STEM_TOP && rightPortion == STEM_BOTTOM;
+        return (leftPortion == STEM_TOP) && (rightPortion == STEM_BOTTOM);
     }
 
     //----------------//
@@ -597,6 +606,7 @@ public class HeadStemRelation
         return stemChord;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -617,27 +627,21 @@ public class HeadStemRelation
                 "Maximum horizontal overlap between stem & head");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
-                0.4,
-                "Idem for profile 1");
+        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(0.4, "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.15,
                 "Maximum horizontal gap between stem & head");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                0.25,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(0.25, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between stem & head");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                1.2,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
 
         private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
                 0.275,

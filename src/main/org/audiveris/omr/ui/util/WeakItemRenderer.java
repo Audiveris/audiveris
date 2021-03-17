@@ -32,12 +32,14 @@ import java.lang.ref.WeakReference;
 public class WeakItemRenderer
         implements ItemRenderer
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * Weak reference to the underlying renderer.
      */
     protected final WeakReference<ItemRenderer> weakRenderer;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WeakItemRenderer object.
      *
@@ -48,6 +50,7 @@ public class WeakItemRenderer
         weakRenderer = new WeakReference<>(renderer);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // renderItems //
     //-------------//

@@ -73,15 +73,14 @@ import javax.swing.border.TitledBorder;
 public class Trainer
         extends SingleFrameApplication
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    // Don't move this statement
-    // @formatter:off
     static {
         // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
         WellKnowns.ensureLoaded();
     }
-    // @formatter:on
 
+    // @formatter:on
     private static final Logger logger = LoggerFactory.getLogger(Trainer.class);
 
     /** The single instance of this class. */
@@ -110,6 +109,7 @@ public class Trainer
     /** Standard width for fields/buttons in DLUs. */
     static final String FIELD_WIDTH = "30dlu";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Related frame.
      * We need a frame rather than a dialog because this class can be run in standalone.
@@ -119,6 +119,7 @@ public class Trainer
     /** Panel for selection in repository. */
     private final SelectionPanel selectionPanel;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of Glyph Trainer. (there should be just one)
      */
@@ -135,6 +136,7 @@ public class Trainer
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // initialize //
     //------------//
@@ -304,12 +306,26 @@ public class Trainer
         Application.launch(Trainer.class, args);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//
     public static class Task
             extends Observable
     {
+
+        /**
+         * Enum {@code Activity} defines all activities in training.
+         */
+        static enum Activity
+        {
+            /** No ongoing activity */
+            INACTIVE,
+            /** Training on samples */
+            TRAINING,
+            /** Validating classifier */
+            VALIDATION;
+        }
 
         /** Managed classifier. */
         public final Classifier classifier;
@@ -347,19 +363,6 @@ public class Trainer
             this.activity = activity;
             setChanged();
             notifyObservers();
-        }
-
-        /**
-         * Enum {@code Activity} defines all activities in training.
-         */
-        static enum Activity
-        {
-            /** No ongoing activity */
-            INACTIVE,
-            /** Training on samples */
-            TRAINING,
-            /** Validating classifier */
-            VALIDATION;
         }
     }
 

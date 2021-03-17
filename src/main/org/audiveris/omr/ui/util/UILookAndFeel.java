@@ -39,6 +39,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class UILookAndFeel
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -53,10 +54,12 @@ public class UILookAndFeel
         }
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     private UILookAndFeel ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     // Available Themes:
     //
     // AbstractSkyTheme
@@ -121,6 +124,7 @@ public class UILookAndFeel
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

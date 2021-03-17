@@ -354,6 +354,7 @@ public enum OmrShape
     fingeringILower("Fingering i (indicio; right-hand index finger for guitar)"),
     fingeringMLower("Fingering m (medio; right-hand middle finger for guitar)"),
     fingeringALower("Fingering a (anular; right-hand ring finger for guitar)"),
+
     //
     // NOT YET HANDLED symbols (though found in MuseScore input)
     //

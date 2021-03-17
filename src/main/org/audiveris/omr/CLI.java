@@ -81,8 +81,8 @@ public class CLI
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the program. */
     private final String toolName;
 

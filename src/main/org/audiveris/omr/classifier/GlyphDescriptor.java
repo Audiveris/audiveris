@@ -42,12 +42,15 @@ import java.util.Collection;
  */
 public abstract class GlyphDescriptor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphDescriptor.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Descriptor name. */
     private final String name;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphDescriptor} object.
      *
@@ -58,6 +61,7 @@ public abstract class GlyphDescriptor
         this.name = name;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Export the provided collection of samples to a file (using CSV format).
      *

@@ -30,6 +30,7 @@ import java.util.List;
  */
 public interface SampleSource
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Get the collection of samples to test.
@@ -45,6 +46,7 @@ public interface SampleSource
      */
     List<Sample> getTrainSamples ();
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * A basic source of samples, the same set being used for training and for test.
      */

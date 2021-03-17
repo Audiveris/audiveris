@@ -60,9 +60,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationDotInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AugmentationDotInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AugmentationDotInter} object.
      *
@@ -82,6 +84,7 @@ public class AugmentationDotInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -367,9 +370,7 @@ public class AugmentationDotInter
 
                     // When this method is called, there is at most one stem per head
                     // (including the case of shared heads)
-                    for (Relation rel : system.getSig().getRelations(
-                            head,
-                            HeadStemRelation.class)) {
+                    for (Relation rel : system.getSig().getRelations(head, HeadStemRelation.class)) {
                         HeadStemRelation hsRel = (HeadStemRelation) rel;
 
                         if (hsRel.getHeadSide() == RIGHT) {
@@ -578,7 +579,7 @@ public class AugmentationDotInter
             // Head on or between line(s)?
             final int p = h1.getIntegerPitch();
 
-            if (p % 2 == 0) {
+            if ((p % 2) == 0) {
                 // On line
                 final int yHead = h1.getCenter().y;
                 final int yAug = getCenter().y;
@@ -587,10 +588,10 @@ public class AugmentationDotInter
 
                 if (yAug < yHead) {
                     // Link to upper
-                    head = yCh1 < yHead ? h1 : h2;
+                    head = (yCh1 < yHead) ? h1 : h2;
                 } else {
                     // Link to lower
-                    head = yCh1 > yHead ? h1 : h2;
+                    head = (yCh1 > yHead) ? h1 : h2;
                 }
 
                 links.add(new Link(head, new AugmentationRelation(), true));

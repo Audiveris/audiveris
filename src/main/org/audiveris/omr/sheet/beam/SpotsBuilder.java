@@ -69,6 +69,7 @@ import java.util.List;
  */
 public class SpotsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -77,10 +78,12 @@ public class SpotsBuilder
     /** Orientation chosen for spot runs. */
     public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpotsBuilder object.
      *
@@ -91,6 +94,7 @@ public class SpotsBuilder
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // buildSheetSpots //
     //-----------------//
@@ -375,6 +379,7 @@ public class SpotsBuilder
         sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs, true);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

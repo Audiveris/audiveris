@@ -22,8 +22,6 @@
 package org.audiveris.omr.sheet.stem;
 
 import ij.process.ByteProcessor;
-import java.awt.AlphaComposite;
-import java.awt.Color;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -54,6 +52,8 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -110,7 +110,6 @@ public class StemScaler
      */
     public void displayChart ()
     {
-
         final StemScale stemScale = retrieveStemWidth();
 
         if (histoKeeper != null) {
@@ -211,13 +210,16 @@ public class StemScaler
     private ByteProcessor getBuffer ()
     {
         // Build a mask focused on sheet staff areas
-        final BufferedImage mask = new BufferedImage(sheet.getWidth(), sheet.getHeight(),
-                                                     BufferedImage.TYPE_INT_ARGB);
+        final BufferedImage mask = new BufferedImage(
+                sheet.getWidth(),
+                sheet.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g = mask.createGraphics();
         g.setComposite(AlphaComposite.Src);
         g.setColor(Color.WHITE);
 
         final StaffManager mgr = sheet.getStaffManager();
+
         for (Staff staff : mgr.getStaves()) {
             g.fill(mgr.getCoreStaffPath(staff));
         }
@@ -251,6 +253,7 @@ public class StemScaler
             return buffer;
         } catch (ImageFormatException ex) {
             logger.warn("{}", ex);
+
             return null;
         }
     }
@@ -294,52 +297,6 @@ public class StemScaler
         private final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
                 1.0,
                 "Default stem thickness defined as ratio of foreground peak");
-    }
-
-    //--------------//
-    // StemsCleaner //
-    //--------------//
-    private static class StemsCleaner
-            extends PageCleaner
-    {
-
-        StemsCleaner (ByteProcessor buffer,
-                      Graphics2D g,
-                      Sheet sheet)
-        {
-            super(buffer, g, sheet);
-        }
-
-        /**
-         * Erase from image graphics all instances of provided shapes.
-         *
-         * @param shapes (input) the shapes to look for
-         */
-        public void eraseShapes (Collection<Shape> shapes)
-        {
-            for (SystemInfo system : sheet.getSystems()) {
-                final SIGraph sig = system.getSig();
-                final List<Inter> erased = new ArrayList<>();
-
-                for (Inter inter : sig.vertexSet()) {
-                    if (!inter.isRemoved() && shapes.contains(inter.getShape())) {
-                        if (canHide(inter)) {
-                            erased.add(inter);
-                        }
-                    }
-                }
-
-                // Erase the inters
-                for (Inter inter : erased) {
-                    inter.accept(this);
-                }
-
-                // Erase system header?
-                if (constants.useHeader.isSet()) {
-                    eraseSystemHeader(system, constants.systemVerticalMargin);
-                }
-            }
-        }
     }
 
     //-------------//
@@ -390,6 +347,52 @@ public class StemScaler
                     if (blackLength <= maxLength) {
                         function.addValue(blackLength, 1);
                     }
+                }
+            }
+        }
+    }
+
+    //--------------//
+    // StemsCleaner //
+    //--------------//
+    private static class StemsCleaner
+            extends PageCleaner
+    {
+
+        StemsCleaner (ByteProcessor buffer,
+                      Graphics2D g,
+                      Sheet sheet)
+        {
+            super(buffer, g, sheet);
+        }
+
+        /**
+         * Erase from image graphics all instances of provided shapes.
+         *
+         * @param shapes (input) the shapes to look for
+         */
+        public void eraseShapes (Collection<Shape> shapes)
+        {
+            for (SystemInfo system : sheet.getSystems()) {
+                final SIGraph sig = system.getSig();
+                final List<Inter> erased = new ArrayList<>();
+
+                for (Inter inter : sig.vertexSet()) {
+                    if (!inter.isRemoved() && shapes.contains(inter.getShape())) {
+                        if (canHide(inter)) {
+                            erased.add(inter);
+                        }
+                    }
+                }
+
+                // Erase the inters
+                for (Inter inter : erased) {
+                    inter.accept(this);
+                }
+
+                // Erase system header?
+                if (constants.useHeader.isSet()) {
+                    eraseSystemHeader(system, constants.systemVerticalMargin);
                 }
             }
         }

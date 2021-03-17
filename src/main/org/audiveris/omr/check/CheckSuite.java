@@ -59,9 +59,11 @@ import java.util.List;
  */
 public class CheckSuite<C>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckSuite.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this suite. */
     protected final String name;
 
@@ -80,6 +82,7 @@ public class CheckSuite<C>
     /** Total checks weight. */
     private double totalWeight = 0.0;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a suite of checks with standard threshold values.
      *
@@ -109,6 +112,7 @@ public class CheckSuite<C>
         this.goodThreshold = goodThreshold;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//

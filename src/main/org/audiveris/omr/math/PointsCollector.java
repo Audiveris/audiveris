@@ -32,6 +32,7 @@ import java.util.Arrays;
  */
 public class PointsCollector
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The absolute region of interest, if any. */
     private Rectangle roi;
@@ -45,6 +46,7 @@ public class PointsCollector
     /** The ordinates. */
     private int[] yy;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PointsCollector object, with absolute roi area taken as capacity.
      *
@@ -69,6 +71,7 @@ public class PointsCollector
         yy = new int[capacity];
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // ensureCapacity //
     //----------------//

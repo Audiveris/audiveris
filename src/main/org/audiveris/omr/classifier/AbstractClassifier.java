@@ -91,6 +91,7 @@ import javax.xml.bind.JAXBException;
 public abstract class AbstractClassifier<M extends Object>
         implements Classifier
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -109,9 +110,11 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    private static final Evaluation[] noiseEvaluations = {
-        new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)};
+    private static final Evaluation[] noiseEvaluations = {new Evaluation(
+        Shape.NOISE,
+        Evaluation.ALGORITHM)};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Features means and standard deviations. */
     protected Norms norms;
 
@@ -121,6 +124,7 @@ public abstract class AbstractClassifier<M extends Object>
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // evaluate //
     //----------//
@@ -294,7 +298,7 @@ public abstract class AbstractClassifier<M extends Object>
 
                     if (!isCompatible(model, norms)) {
                         final String msg = "Obsolete classifier user data in " + path
-                                                   + ", trying default data";
+                                           + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
@@ -342,7 +346,7 @@ public abstract class AbstractClassifier<M extends Object>
 
             if (!isCompatible(model, norms)) {
                 final String msg = "Obsolete classifier default data in " + uri
-                                           + ", please retrain from scratch";
+                                   + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
                 logger.info("Classifier data loaded from default uri {}", uri);
@@ -531,6 +535,7 @@ public abstract class AbstractClassifier<M extends Object>
         return bests.toArray(new Evaluation[bests.size()]);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Norms //
     //-------//

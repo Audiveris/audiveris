@@ -50,6 +50,7 @@ import java.util.Set;
 public class TextsStep
         extends AbstractSystemStep<TextsStep.Context>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextsStep.class);
 
@@ -69,6 +70,7 @@ public class TextsStep
         impactingClasses.addAll(forLyrics);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a TextsStep instance.
      */
@@ -76,6 +78,7 @@ public class TextsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -150,6 +153,7 @@ public class TextsStep
         return isImpactedBy(classe, impactingClasses);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//

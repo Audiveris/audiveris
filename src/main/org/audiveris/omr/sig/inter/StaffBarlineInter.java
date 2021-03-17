@@ -95,14 +95,17 @@ public final class StaffBarlineInter
         extends AbstractInter
         implements InterEnsemble
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Transient data
     //---------------
     //
     private Style style;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffBarlineInter} object from a shape.
      *
@@ -162,6 +165,7 @@ public final class StaffBarlineInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -449,15 +453,15 @@ public final class StaffBarlineInter
 
             case DOUBLE_BARLINE:
             case REVERSE_FINAL_BARLINE:
-                return new Point2D.Double(bounds.x + 0.9 * bounds.width, y);
+                return new Point2D.Double(bounds.x + (0.9 * bounds.width), y);
 
             case FINAL_BARLINE:
-                return new Point2D.Double(bounds.x + 0.7 * bounds.width, y);
+                return new Point2D.Double(bounds.x + (0.7 * bounds.width), y);
 
             case LEFT_REPEAT_SIGN:
             case RIGHT_REPEAT_SIGN:
             case BACK_TO_BACK_REPEAT_SIGN:
-                return new Point2D.Double(bounds.x + 0.5 * bounds.width, y);
+                return new Point2D.Double(bounds.x + (0.5 * bounds.width), y);
 
             default:
             }
@@ -708,10 +712,9 @@ public final class StaffBarlineInter
      */
     public boolean isLeftRepeat ()
     {
-//        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
-//                       && hasDotsOnRight();
-
-        if (shape == LEFT_REPEAT_SIGN || shape == BACK_TO_BACK_REPEAT_SIGN) {
+        //        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
+        //                       && hasDotsOnRight();
+        if ((shape == LEFT_REPEAT_SIGN) || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
             return true;
         }
 
@@ -740,13 +743,14 @@ public final class StaffBarlineInter
             }
 
             return true;
+
         case 3:
             // Style should be LIGHT_HEAVY_LIGHT
             return true;
+
         default:
             return false;
         }
-
     }
 
     //---------------//
@@ -761,10 +765,9 @@ public final class StaffBarlineInter
      */
     public boolean isRightRepeat ()
     {
-//        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
-//                       && hasDotsOnLeft();
-
-        if (shape == RIGHT_REPEAT_SIGN || shape == BACK_TO_BACK_REPEAT_SIGN) {
+        //        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
+        //                       && hasDotsOnLeft();
+        if ((shape == RIGHT_REPEAT_SIGN) || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
             return true;
         }
 
@@ -793,9 +796,11 @@ public final class StaffBarlineInter
             }
 
             return true;
+
         case 3:
             // Style should be LIGHT_HEAVY_LIGHT
             return true;
+
         default:
             return false;
         }
@@ -948,6 +953,7 @@ public final class StaffBarlineInter
             return closure;
         } else {
             cancel.set(true);
+
             return Collections.emptyList();
         }
     }
@@ -986,7 +992,6 @@ public final class StaffBarlineInter
             return (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
 
         case 2:
-
             if (getLeftBar().getShape() == Shape.THIN_BARLINE) {
                 return (getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
             } else {
@@ -994,12 +999,7 @@ public final class StaffBarlineInter
             }
 
         case 3:
-
-//            if ((getLeftBar().getShape() == Shape.THIN_BARLINE)
-//                        && (getMiddleBar().getShape() == Shape.THICK_BARLINE)
-//                        && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
             return LIGHT_HEAVY_LIGHT;
-//            }
 
         default:
             logger.warn("Unknown style for {}", this);

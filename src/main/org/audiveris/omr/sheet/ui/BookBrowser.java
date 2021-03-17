@@ -83,6 +83,7 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class BookBrowser
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -91,6 +92,7 @@ public class BookBrowser
     /** The filter for relevant classes and fields. */
     private static final Relevance filter = new PackageRelevance(Main.class.getPackage());
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Concrete UI component. */
     private final JPanel component;
 
@@ -106,6 +108,7 @@ public class BookBrowser
     /** The enclosing frame. */
     private JFrame frame;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BookBrowser} object.
      *
@@ -158,6 +161,7 @@ public class BookBrowser
         component.add("Center", splitPane);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // close //
     //-------//
@@ -186,7 +190,7 @@ public class BookBrowser
             // Set up a GUI framework
             frame = new JFrame();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setName("BookBrowserFrame");  // For SAF life cycle
+            frame.setName("BookBrowserFrame"); // For SAF life cycle
 
             // Add a REFRESH button
             JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
@@ -224,6 +228,81 @@ public class BookBrowser
     public void refresh ()
     {
         model.refreshAll();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
+                false,
+                "Should we hide empty dummy containers");
+
+        private final Constant.Boolean hideOriginatingInter = new Constant.Boolean(
+                true,
+                "Should we hide the originating inter when expanding a relation?");
+    }
+
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+
+        private final String name;
+
+        private final Collection<?> collection;
+
+        NamedCollection (String name,
+                         Collection<?> collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
+    {
+
+        private final String name;
+
+        private final Object data;
+
+        private final Inter orgInter;
+
+        NamedData (String name,
+                   Object data,
+                   Inter orgInter)
+        {
+            this.name = name;
+            this.data = data;
+            this.orgInter = orgInter;
+        }
+
+        NamedData (String name,
+                   Object data)
+        {
+            this(name, data, null);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name + ":" + data;
+        }
     }
 
     //-------//
@@ -371,6 +450,7 @@ public class BookBrowser
             // Case of Named Collection
             if (node instanceof NamedCollection) {
                 logger.debug("named collection: " + node);
+
                 NamedCollection nc = (NamedCollection) node;
                 relevants = new ArrayList<>();
 
@@ -381,16 +461,19 @@ public class BookBrowser
                 }
 
                 logger.debug("{} nb={}", node, relevants.size());
+
                 return relevants;
             }
 
             // Case of Named Data
             if (node instanceof NamedData) {
                 logger.debug("named data: " + node);
+
                 NamedData nd = (NamedData) node;
                 relevants = getRelevantChildren(nd.data, nd.orgInter);
 
                 logger.debug("{} nb={}", node, relevants.size());
+
                 return relevants;
             }
 
@@ -438,6 +521,7 @@ public class BookBrowser
 
                     if ((navigable != null) && (navigable.value() == false)) {
                         logger.debug("non-navigable {}", field);
+
                         continue;
                     }
 
@@ -448,6 +532,7 @@ public class BookBrowser
                         }
 
                         field.setAccessible(true);
+
                         Object object = field.get(node);
 
                         // No null field
@@ -538,6 +623,7 @@ public class BookBrowser
         {
             try {
                 TreePath p = e.getNewLeadSelectionPath();
+
                 if (p != null) {
                     Object obj = p.getLastPathComponent();
 
@@ -594,80 +680,6 @@ public class BookBrowser
             } catch (Throwable ex) {
                 logger.warn("BookBrowser error: " + ex, ex);
             }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
-                false,
-                "Should we hide empty dummy containers");
-
-        private final Constant.Boolean hideOriginatingInter = new Constant.Boolean(
-                true,
-                "Should we hide the originating inter when expanding a relation?");
-    }
-
-    //-----------------//
-    // NamedCollection //
-    //-----------------//
-    private static class NamedCollection
-    {
-
-        private final String name;
-
-        private final Collection<?> collection;
-
-        NamedCollection (String name,
-                         Collection<?> collection)
-        {
-            this.name = name;
-            this.collection = collection;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
-    }
-
-    //-----------//
-    // NamedData //
-    //-----------//
-    private static class NamedData
-    {
-
-        private final String name;
-
-        private final Object data;
-
-        private final Inter orgInter;
-
-        NamedData (String name,
-                   Object data,
-                   Inter orgInter)
-        {
-            this.name = name;
-            this.data = data;
-            this.orgInter = orgInter;
-        }
-
-        NamedData (String name,
-                   Object data)
-        {
-            this(name, data, null);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return name + ":" + data;
         }
     }
 }

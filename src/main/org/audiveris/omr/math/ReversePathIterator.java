@@ -75,6 +75,7 @@ import java.awt.geom.PathIterator;
 public class ReversePathIterator
         implements PathIterator
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The winding rule. */
     private final int windingRule;
@@ -91,6 +92,7 @@ public class ReversePathIterator
     /** The index into the segment types during iteration. */
     private int segmentIndex = 0;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an inverted path iterator from a standard one, keeping the winding rule.
      *
@@ -228,6 +230,7 @@ public class ReversePathIterator
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Returns the coordinates and type of the current path segment in
      * the iteration.

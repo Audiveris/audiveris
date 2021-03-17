@@ -28,12 +28,14 @@ package org.audiveris.omr.util;
  */
 public abstract class XmlUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
     private XmlUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------------//
     // stripNonValidXMLCharacters //
     //----------------------------//
@@ -67,11 +69,11 @@ public abstract class XmlUtil
         StringBuilder sb = new StringBuilder();
 
         for (char c : input.toCharArray()) {
-            if ((c == 0x9) || (c == 0xA)
-                        || (c == 0xD)
-                        || ((c >= 0x20) && (c <= 0xD7FF))
-                        || ((c >= 0xE000) && (c <= 0xFFFD))
-                        || ((c >= 0x10000) && (c <= 0x10FFFF))) {
+            if ((c == 0x9) || (c == 0xA) || (c == 0xD) || ((c >= 0x20) && (c <= 0xD7FF)) || ((c
+                                                                                                      >= 0xE000)
+                                                                                             && (c
+                                                                                                         <= 0xFFFD))
+                || ((c >= 0x10000) && (c <= 0x10FFFF))) {
                 sb.append(c);
             } else if (stripped != null) {
                 stripped.set(true);

@@ -36,6 +36,7 @@ import java.awt.geom.Point2D;
 public interface NearLine
         extends Entity
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the co-tangent of glyph line angle with abscissa axis.

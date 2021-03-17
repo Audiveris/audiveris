@@ -37,11 +37,13 @@ import java.awt.geom.Rectangle2D;
 public class NumDenSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int[] numCodes;
 
     private final int[] denCodes;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NumDenSymbol object.
      *
@@ -53,7 +55,10 @@ public class NumDenSymbol
                          int numerator,
                          int denominator)
     {
-        this(shape, ShapeSymbol.numberCodes(numerator), ShapeSymbol.numberCodes(denominator));
+        this(
+                shape,
+                ShapeSymbol.numberCodes(numerator),
+                ShapeSymbol.numberCodes(denominator));
     }
 
     //--------------//
@@ -96,6 +101,7 @@ public class NumDenSymbol
         this.denCodes = denCodes;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -142,6 +148,7 @@ public class NumDenSymbol
         OmrFont.paint(g, p.denLayout, bot, AREA_CENTER);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

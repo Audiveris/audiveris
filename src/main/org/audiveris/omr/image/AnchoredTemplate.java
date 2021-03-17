@@ -30,6 +30,7 @@ import org.audiveris.omr.image.Anchored.Anchor;
  */
 public class AnchoredTemplate
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Specific anchor. */
     public final Anchor anchor;
@@ -37,6 +38,7 @@ public class AnchoredTemplate
     /** Related template. */
     public final Template template;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnchoredTemplate} object.
      *
@@ -50,6 +52,7 @@ public class AnchoredTemplate
         this.template = template;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {

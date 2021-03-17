@@ -52,9 +52,11 @@ import java.util.List;
  */
 public class SpotsController
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SpotsController.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -71,6 +73,7 @@ public class SpotsController
     /** User display. */
     private MyView view;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpotsController object.
      *
@@ -87,6 +90,7 @@ public class SpotsController
         this.spotLag = spotLag;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -119,6 +123,7 @@ public class SpotsController
                         new SectionBoard(spotLag, true)));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//

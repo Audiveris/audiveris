@@ -66,8 +66,8 @@ public class KeyInter
         extends AbstractPitchedInter
         implements InterEnsemble
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
     /** Sharp pitches per clef kind. */
@@ -77,24 +77,12 @@ public class KeyInter
     public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<>(ClefKind.class);
 
     /** Sharp keys note steps. */
-    private static final AbstractNoteInter.Step[] SHARP_STEPS = new AbstractNoteInter.Step[]{
-        F,
-        C,
-        G,
-        D,
-        A,
-        E,
-        B};
+    private static final AbstractNoteInter.Step[] SHARP_STEPS
+            = new AbstractNoteInter.Step[]{F, C, G, D, A, E, B};
 
     /** Flat keys note steps. */
-    private static final AbstractNoteInter.Step[] FLAT_STEPS = new AbstractNoteInter.Step[]{
-        B,
-        E,
-        A,
-        D,
-        G,
-        C,
-        F};
+    private static final AbstractNoteInter.Step[] FLAT_STEPS
+            = new AbstractNoteInter.Step[]{B, E, A, D, G, C, F};
 
     static {
         SHARP_PITCHES_MAP.put(TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
@@ -349,6 +337,7 @@ public class KeyInter
 
         if (staff == null) {
             logger.debug("null staff");
+
             return null;
         }
 
@@ -356,6 +345,7 @@ public class KeyInter
 
         if (pt == null) {
             logger.debug("null pt");
+
             return null;
         }
 
@@ -363,6 +353,7 @@ public class KeyInter
 
         if (measure == null) {
             logger.debug("null measure");
+
             return null;
         }
 
@@ -370,15 +361,18 @@ public class KeyInter
 
         if ((key != null) && (key != this)) {
             logger.debug("measure already has {}", key);
+
             return null;
         }
 
         KeyInter keyBefore = null;
-        while (keyBefore == null || keyBefore == this) {
+
+        while ((keyBefore == null) || (keyBefore == this)) {
             measure = measure.getPrecedingInSystem();
 
             if (measure == null) {
                 logger.debug("no previous measure");
+
                 return null;
             }
 
@@ -399,9 +393,9 @@ public class KeyInter
      */
     private ClefInter getEffectiveClef ()
     {
-
         if (staff == null) {
             logger.debug("null staff");
+
             return null;
         }
 
@@ -409,6 +403,7 @@ public class KeyInter
 
         if (pt == null) {
             logger.debug("null pt");
+
             return null;
         }
 
@@ -416,6 +411,7 @@ public class KeyInter
 
         if (measure == null) {
             logger.debug("null measure");
+
             return null;
         }
 
@@ -488,7 +484,7 @@ public class KeyInter
         // Remove from staff header if relevant
         final StaffHeader header = staff.getHeader();
 
-        if (header != null && header.key == this) {
+        if ((header != null) && (header.key == this)) {
             header.key = null;
         }
 
@@ -844,75 +840,105 @@ public class KeyInter
         switch (fifths) {
         case -7:
             return Shape.KEY_FLAT_7;
+
         case -6:
             return Shape.KEY_FLAT_6;
+
         case -5:
             return Shape.KEY_FLAT_5;
+
         case -4:
             return Shape.KEY_FLAT_4;
+
         case -3:
             return Shape.KEY_FLAT_3;
+
         case -2:
             return Shape.KEY_FLAT_2;
+
         case -1:
             return Shape.KEY_FLAT_1;
+
         case 0:
             return Shape.KEY_CANCEL;
+
         case 1:
             return Shape.KEY_SHARP_1;
+
         case 2:
             return Shape.KEY_SHARP_2;
+
         case 3:
             return Shape.KEY_SHARP_3;
+
         case 4:
             return Shape.KEY_SHARP_4;
+
         case 5:
             return Shape.KEY_SHARP_5;
+
         case 6:
             return Shape.KEY_SHARP_6;
+
         case 7:
             return Shape.KEY_SHARP_7;
+
         default:
             throw new IllegalArgumentException("No key shape for fifths " + fifths);
         }
     }
 
-//---------//
-// valueOf //
-//---------//
+    //---------//
+    // valueOf //
+    //---------//
     private static int valueOf (Shape shape)
     {
         switch (shape) {
         case KEY_FLAT_7:
             return -7;
+
         case KEY_FLAT_6:
             return -6;
+
         case KEY_FLAT_5:
             return -5;
+
         case KEY_FLAT_4:
             return -4;
+
         case KEY_FLAT_3:
             return -3;
+
         case KEY_FLAT_2:
             return -2;
+
         case KEY_FLAT_1:
             return -1;
+
         case KEY_CANCEL:
             return 0;
+
         case KEY_SHARP_1:
             return 1;
+
         case KEY_SHARP_2:
             return 2;
+
         case KEY_SHARP_3:
             return 3;
+
         case KEY_SHARP_4:
             return 4;
+
         case KEY_SHARP_5:
             return 5;
+
         case KEY_SHARP_6:
             return 6;
+
         case KEY_SHARP_7:
             return 7;
+
         default:
             throw new IllegalArgumentException("No fifth value for " + shape);
         }

@@ -46,10 +46,12 @@ public class StraightFilament
         extends Filament
         implements NearLine
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The approximating line. */
     protected BasicLine line;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StraightFilament} object.
      *
@@ -60,6 +62,7 @@ public class StraightFilament
         super(interline);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // computeLine //
     //-------------//
@@ -289,6 +292,7 @@ public class StraightFilament
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // Constructor //
     //-------------//

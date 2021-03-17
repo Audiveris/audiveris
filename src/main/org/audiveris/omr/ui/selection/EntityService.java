@@ -55,8 +55,8 @@ public class EntityService<E extends Entity>
         extends SelectionService
         implements EventSubscriber<UserEvent>
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(EntityService.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -254,10 +254,11 @@ public class EntityService<E extends Entity>
             if (hint == SelectionHint.ENTITY_INIT) {
                 if (locationService != null) {
                     locationService.publish(
-                            new LocationEvent(this,
-                                              SelectionHint.ENTITY_TRANSIENT,
-                                              listEvent.movement,
-                                              entity.getBounds()));
+                            new LocationEvent(
+                                    this,
+                                    SelectionHint.ENTITY_TRANSIENT,
+                                    listEvent.movement,
+                                    entity.getBounds()));
                 }
 
                 // Use this entity to start a basket
@@ -309,7 +310,12 @@ public class EntityService<E extends Entity>
                 // Non-degenerated rectangle: look for contained entities
                 basket.clear();
                 basket.addAll(index.getContainedEntities(rect));
-                publish(new EntityListEvent<>(this, SelectionHint.ENTITY_TRANSIENT, movement, basket));
+                publish(
+                        new EntityListEvent<>(
+                                this,
+                                SelectionHint.ENTITY_TRANSIENT,
+                                movement,
+                                basket));
             } else {
                 // Just a point: look for most relevant entity
                 final Point loc = rect.getLocation();
@@ -358,7 +364,12 @@ public class EntityService<E extends Entity>
                 }
 
                 // Publish basket
-                publish(new EntityListEvent<>(this, SelectionHint.ENTITY_TRANSIENT, movement, basket));
+                publish(
+                        new EntityListEvent<>(
+                                this,
+                                SelectionHint.ENTITY_TRANSIENT,
+                                movement,
+                                basket));
             }
         }
     }

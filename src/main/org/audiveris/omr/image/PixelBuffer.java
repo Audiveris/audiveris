@@ -21,13 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import static org.audiveris.omr.image.PixelSource.BACKGROUND;
-import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.Table;
-
 import ij.process.ByteProcessor;
 
 import net.jcip.annotations.ThreadSafe;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
+import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +50,11 @@ public class PixelBuffer
         extends Table.UnsignedByte
         implements PixelFilter, PixelSink
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBuffer.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PixelBuffer object.
      *
@@ -123,6 +124,7 @@ public class PixelBuffer
         ///watch.print();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public ByteProcessor filteredImage ()
     {

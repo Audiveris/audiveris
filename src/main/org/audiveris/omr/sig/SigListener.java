@@ -39,12 +39,15 @@ import org.slf4j.LoggerFactory;
 public class SigListener
         implements GraphListener<Inter, Relation>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigListener.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sig. */
     private final SIGraph sig;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SigListener} object.
      *
@@ -55,6 +58,7 @@ public class SigListener
         this.sig = sig;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void edgeAdded (GraphEdgeChangeEvent<Inter, Relation> e)
     {

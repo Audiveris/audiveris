@@ -36,9 +36,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SegmentInter
         extends AbstractInter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SegmentInfo info;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SegmentInter object.
      *
@@ -61,6 +63,7 @@ public class SegmentInter
         this.info = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -83,6 +86,7 @@ public class SegmentInter
         return info;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//

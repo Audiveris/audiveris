@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.KeyInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
@@ -39,6 +39,7 @@ import java.awt.geom.Rectangle2D;
 public abstract class KeySymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The fifths value to represent, -7..-1 for flats, 1..7 for sharps.
@@ -46,6 +47,7 @@ public abstract class KeySymbol
      */
     public final int fifths;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeySymbol object.
      *
@@ -63,6 +65,7 @@ public abstract class KeySymbol
         this.fifths = fifths;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -107,7 +110,7 @@ public abstract class KeySymbol
         // (x,y): area center wrt staff middle-left
         // (w,h): area dim
         p.rect.setRect(p.rect.getWidth() / 2,
-                       p.rect.getY() - KeyInter.getStandardPosition(fifths) * p.stepDy,
+                       p.rect.getY() - (KeyInter.getStandardPosition(fifths) * p.stepDy),
                        p.rect.getWidth(),
                        p.rect.getHeight());
 
@@ -127,27 +130,26 @@ public abstract class KeySymbol
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         // Set loc to (x=left side, y=staff mid line)
-        PointUtil.add(loc, -p.rect.getWidth() / 2, -KeyInter.getStandardPosition(fifths) * p.stepDy);
+        PointUtil.add(loc,
+                      -p.rect.getWidth() / 2,
+                      -KeyInter.getStandardPosition(fifths) * p.stepDy);
 
         if (fifths == 0) {
             int pitch = KeyInter.getItemPitch(1, null);
-            MusicFont.paint(
-                    g,
-                    p.layout,
-                    new Point2D.Double(loc.getX(),
-                                       loc.getY() + pitch * p.stepDy),
-                    MIDDLE_LEFT);
+            MusicFont.paint(g,
+                            p.layout,
+                            new Point2D.Double(loc.getX(), loc.getY() + (pitch * p.stepDy)),
+                            MIDDLE_LEFT);
         } else {
             int sign = Integer.signum(fifths);
 
             for (int k = 1; k <= (fifths * sign); k++) {
                 int pitch = KeyInter.getItemPitch(k * sign, null);
-                MusicFont.paint(
-                        g,
-                        p.layout,
-                        new Point2D.Double(loc.getX() + (k - 1) * p.itemDx,
-                                           loc.getY() + pitch * p.stepDy),
-                        MIDDLE_LEFT);
+                MusicFont.paint(g,
+                                p.layout,
+                                new Point2D.Double(loc.getX() + ((k - 1) * p.itemDx),
+                                                   loc.getY() + (pitch * p.stepDy)),
+                                MIDDLE_LEFT);
             }
         }
     }
@@ -165,6 +167,7 @@ public abstract class KeySymbol
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

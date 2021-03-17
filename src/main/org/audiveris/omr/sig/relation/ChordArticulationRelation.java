@@ -44,15 +44,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordArticulationRelation
         extends AbstractConnection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordArticulationRelation.class);
 
-    private static final double[] WEIGHTS = new double[]{
-        constants.xWeight.getValue(),
-        constants.yWeight.getValue()};
+    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
+                                                         constants.yWeight.getValue()};
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -157,6 +158,7 @@ public class ChordArticulationRelation
         return getYGapMaximum(profile);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -173,27 +175,21 @@ public class ChordArticulationRelation
                 "Maximum horizontal gap between articulation center & chord");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
-                1.0,
-                "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(1.0, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between articulation center & chord");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                3.0,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(3.0, "Idem for profile 1");
 
         private final Scale.Fraction yGapMin = new Scale.Fraction(
                 0.1,
                 "Minimum vertical gap between articulation center & chord");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMin_p1 = new Scale.Fraction(
-                0.05,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMin_p1 = new Scale.Fraction(0.05, "Idem for profile 1");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 3,

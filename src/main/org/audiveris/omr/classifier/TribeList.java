@@ -50,12 +50,14 @@ import javax.xml.stream.XMLStreamException;
 @XmlRootElement(name = "tribes")
 class TribeList
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TribeList.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Used only to include sheet-name within the written file. */
@@ -66,6 +68,7 @@ class TribeList
     @XmlElement(name = "tribe")
     private final ArrayList<Tribe> tribes = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TribeList} object.
      *
@@ -86,6 +89,7 @@ class TribeList
         name = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getTribes //
     //-----------//

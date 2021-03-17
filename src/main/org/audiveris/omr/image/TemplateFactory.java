@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import java.awt.BasicStroke;
-import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
@@ -33,6 +30,8 @@ import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_SMALL;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
+import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.ui.TemplateView;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -46,6 +45,7 @@ import org.audiveris.omr.util.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
@@ -423,8 +423,7 @@ public class TemplateFactory
      * @return decorated magnified image
      */
     private BufferedImage buildDecoratedImage (Template tpl,
-                                               BufferedImage src
-    )
+                                               BufferedImage src)
     {
         final int r = constants.magnificationRatio.getValue(); // (rather arbitrary ratio)
         final int width = src.getWidth();
@@ -447,9 +446,11 @@ public class TemplateFactory
         // Paint shape symbol
         Composite oldComposite = g.getComposite();
         g.setComposite(TemplateView.templateComposite);
+
         MusicFont musicFont = MusicFont.getPointFont(r * tpl.getPointSize(), 0);
         final Point2D center = GeoUtil.center2D(slim);
         center.setLocation(r * center.getX(), r * center.getY());
+
         ShapeSymbol symbol = Symbols.getSymbol(tpl.getShape());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
         g.setComposite(oldComposite);
@@ -484,6 +485,7 @@ public class TemplateFactory
         // Anchor Point2D locations, shown as small circles with anchor abbreviation
         g.setStroke(new BasicStroke(1f));
         g.setXORMode(Color.BLACK);
+
         for (Entry<Anchor, Point2D> entry : tpl.getOffsets().entrySet()) {
             final Anchor anchor = entry.getKey();
             final Point2D pt2D = entry.getValue();
@@ -860,9 +862,9 @@ public class TemplateFactory
 
         // Symbol bounds taken as default values
         int x1 = fatBox.x;
-        int x2 = fatBox.x + fatBox.width - 1;
+        int x2 = (fatBox.x + fatBox.width) - 1;
         int y1 = fatBox.y;
-        int y2 = fatBox.y + fatBox.height - 1;
+        int y2 = (fatBox.y + fatBox.height) - 1;
 
         // West
         for (int x = 0; x < imgWidth; x++) {
@@ -987,7 +989,6 @@ public class TemplateFactory
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

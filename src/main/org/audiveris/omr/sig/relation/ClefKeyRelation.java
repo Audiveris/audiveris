@@ -37,9 +37,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClefKeyRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ClefKeyRelation} object.
      */
@@ -47,6 +49,7 @@ public class ClefKeyRelation
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -97,6 +100,7 @@ public class ClefKeyRelation
         return Grades.intrinsicRatio * constants.clefSupportCoeff.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

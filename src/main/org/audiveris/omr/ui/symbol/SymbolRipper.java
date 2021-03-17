@@ -79,12 +79,14 @@ import javax.swing.event.ChangeListener;
 public class SymbolRipper
         extends SingleFrameApplication
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
 
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Related frame.
      * We need a frame rather than a dialog because this class can be run in standalone.
@@ -179,6 +181,7 @@ public class SymbolRipper
     // y symbol
     private final LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolRipper object.
      */
@@ -227,6 +230,7 @@ public class SymbolRipper
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getFrame //
     //----------//
@@ -438,6 +442,7 @@ public class SymbolRipper
         Application.launch(SymbolRipper.class, args);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Drawing //
     //---------//

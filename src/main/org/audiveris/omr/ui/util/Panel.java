@@ -50,6 +50,7 @@ public class Panel
 ///extends FormDebugPanel // Or this line
 
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -58,9 +59,11 @@ public class Panel
     /** Default Insets */
     private static Insets DEFAULT_INSETS;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Room for potential specific insets */
     private Insets insets;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Panel object.
      */
@@ -69,6 +72,7 @@ public class Panel
         setBorder(null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getInsets //
     //-----------//
@@ -408,6 +412,7 @@ public class Panel
         return sbr.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.time;
 
-import java.awt.Rectangle;
-import java.util.Collection;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.TimeValue;
 import org.audiveris.omr.sheet.Scale;
@@ -42,12 +40,13 @@ import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 
 /**
  * This abstract class provides the basis for management of a system-level column
@@ -62,11 +61,13 @@ import java.util.function.Predicate;
  */
 public abstract class TimeColumn
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TimeColumn.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system. */
     protected final SystemInfo system;
 
@@ -74,8 +75,9 @@ public abstract class TimeColumn
     protected TimeValue timeValue;
 
     /** Map of time builders. (one per staff) */
-    protected final Map<Staff, TimeBuilder> builders = new TreeMap<Staff, TimeBuilder>(Staff.byId);
+    protected final Map<Staff, TimeBuilder> builders = new TreeMap<>(Staff.byId);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Column} object.
      *
@@ -86,6 +88,7 @@ public abstract class TimeColumn
         this.system = system;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getMaxDxOffset //
     //----------------//
@@ -110,7 +113,7 @@ public abstract class TimeColumn
      */
     public Map<Staff, AbstractTimeInter> getTimeInters ()
     {
-        Map<Staff, AbstractTimeInter> times = new TreeMap<Staff, AbstractTimeInter>(Staff.byId);
+        Map<Staff, AbstractTimeInter> times = new TreeMap<>(Staff.byId);
 
         for (Map.Entry<Staff, TimeBuilder> entry : builders.entrySet()) {
             times.put(entry.getKey(), entry.getValue().getTimeInter());
@@ -171,15 +174,8 @@ public abstract class TimeColumn
         final SIGraph sig = system.getSig();
         final Collection<AbstractTimeInter> times = getTimeInters().values();
         final Rectangle columnBox = Inters.getBounds(times);
-        final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean test (Inter inter)
-            {
-                return inter.getBounds().intersects(columnBox)
-                               && !(inter instanceof InterEnsemble);
-            }
-        });
+        final List<Inter> neighbors = sig.inters((Inter inter) -> inter.getBounds().intersects(
+                columnBox) && !(inter instanceof InterEnsemble));
 
         // Let's not consider our own time items as overlapping neighbors
         for (AbstractTimeInter time : times) {
@@ -238,7 +234,7 @@ public abstract class TimeColumn
     {
         // Retrieve all time values found, organized by value and staff
         Map<TimeValue, AbstractTimeInter[]> vectors = getValueVectors();
-        Map<TimeValue, Double> grades = new HashMap<TimeValue, Double>();
+        Map<TimeValue, Double> grades = new HashMap<>();
 
         TimeLoop:
         for (Map.Entry<TimeValue, AbstractTimeInter[]> entry : vectors.entrySet()) {
@@ -326,6 +322,7 @@ public abstract class TimeColumn
 
         for (int index = 0; index < staves.size(); index++) {
             final Staff staff = staves.get(index);
+
             if (staff.isTablature()) {
                 continue;
             }
@@ -383,6 +380,7 @@ public abstract class TimeColumn
         // Void by default
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

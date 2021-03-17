@@ -76,11 +76,29 @@ import java.util.TreeMap;
  */
 public class KeyColumn
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyColumn.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Status of key replication within part. */
+    public enum PartStatus
+    {
+        /** Success. */
+        OK,
+        /** Slice count to be reduced. */
+        SHRINK,
+        /** No clef in staff. */
+        NO_CLEF,
+        /** Replication failed. */
+        NO_REPLICATE,
+        /** No key in part. */
+        DESTROY;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     private final SystemInfo system;
 
@@ -93,6 +111,7 @@ public class KeyColumn
     /** Theoretical abscissa offset for each slice. */
     private List<Integer> globalOffsets;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyColumn} object.
      *
@@ -104,6 +123,7 @@ public class KeyColumn
         params = new Parameters(system.getSheet().getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addPlot //
     //---------//
@@ -458,21 +478,7 @@ public class KeyColumn
         return globalOffsets.get(index);
     }
 
-    /** Status of key replication within part. */
-    public enum PartStatus
-    {
-        /** Success. */
-        OK,
-        /** Slice count to be reduced. */
-        SHRINK,
-        /** No clef in staff. */
-        NO_CLEF,
-        /** Replication failed. */
-        NO_REPLICATE,
-        /** No key in part. */
-        DESTROY;
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

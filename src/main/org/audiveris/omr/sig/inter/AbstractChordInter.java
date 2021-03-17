@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -73,11 +72,13 @@ public abstract class AbstractChordInter
         extends AbstractInter
         implements InterEnsemble
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
     private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Transient data
     //---------------
     //
@@ -108,6 +109,7 @@ public abstract class AbstractChordInter
     /** Voice this chord belongs to. */
     protected Voice voice;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractChordInter} object.
      *
@@ -125,6 +127,7 @@ public abstract class AbstractChordInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -314,22 +317,18 @@ public abstract class AbstractChordInter
                 }
 
                 final Point headLoc = getHeadLocation();
+
                 if (headLoc != null) {
                     // Keep the sequence ordered by distance from chord tail
-                    Collections.sort(beams, new Comparator<AbstractBeamInter>()
-                             {
-                                 @Override
-                                 public int compare (AbstractBeamInter b1,
-                                                     AbstractBeamInter b2)
-                                 {
-                                     int x = getCenter().x;
-                                     double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                                     double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                                     int yHead = headLoc.y;
+                    Collections.sort(beams, (AbstractBeamInter b1, AbstractBeamInter b2) -> {
+                                 int x = getCenter().x;
+                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                                 int yHead = headLoc.y;
 
-                                     return Double.compare(Math.abs(yHead - y2),
-                                                           Math.abs(yHead - y1));
-                                 }
+                                 return Double.compare(
+                                         Math.abs(yHead - y2),
+                                         Math.abs(yHead - y1));
                              });
                 }
             }
@@ -1261,7 +1260,6 @@ public abstract class AbstractChordInter
 
         if (sig != null) {
             if (sig.containsVertex(this)) {
-
                 if (slot != null) {
                     sb.append(" slot#").append(slot.getId());
                 }

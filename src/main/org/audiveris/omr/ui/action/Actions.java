@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "actions")
 public class Actions
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Actions.class);
 
@@ -59,15 +60,48 @@ public class Actions
     /** The collection of all actions loaded so far. */
     private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<>();
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Predefined list of domain names.
+     * Through the action list files, the user will be able to add new domain names.
+     * This classification is mainly used to define the related pull-down menus.
+     */
+    public static enum Domain
+    {
+        /** Domain of file actions */
+        FILE,
+        /** Domain of book actions */
+        BOOK,
+        /** Domain of sheet actions */
+        SHEET,
+        /** Domain of individual steps */
+        STEP,
+        /** Domain of various view features */
+        VIEW,
+        /** Domain of utilities */
+        TOOL,
+        /** Domain of plugins */
+        PLUGIN,
+        /** Domain of help information */
+        HELP;
+
+        Domain ()
+        {
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of descriptors loaded by unmarshalling one file. */
     @XmlElement(name = "action")
     private final List<ActionDescriptor> descriptors = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** No-arg constructor meant for JAXB. */
     private Actions ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getAllDescriptors //
     //-------------------//
@@ -172,39 +206,9 @@ public class Actions
             if (desc.section == null) {
                 logger.warn("No section specified for {}", desc);
                 it.remove();
-
             }
         }
 
         allDescriptors.addAll(actions.descriptors);
-    }
-
-    /**
-     * Predefined list of domain names.
-     * Through the action list files, the user will be able to add new domain names.
-     * This classification is mainly used to define the related pull-down menus.
-     */
-    public static enum Domain
-    {
-        /** Domain of file actions */
-        FILE,
-        /** Domain of book actions */
-        BOOK,
-        /** Domain of sheet actions */
-        SHEET,
-        /** Domain of individual steps */
-        STEP,
-        /** Domain of various view features */
-        VIEW,
-        /** Domain of utilities */
-        TOOL,
-        /** Domain of plugins */
-        PLUGIN,
-        /** Domain of help information */
-        HELP;
-
-        Domain ()
-        {
-        }
     }
 }

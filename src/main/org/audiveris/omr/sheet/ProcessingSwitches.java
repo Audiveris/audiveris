@@ -57,6 +57,47 @@ public class ProcessingSwitches
     /** Default switches values. */
     private static volatile ProcessingSwitches defaultSwitches;
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //--------//
+    // Switch //
+    //--------//
+    /** Enumerated names, based on defined constants. */
+    public static enum Switch
+    {
+        poorInputMode(constants.poorInputMode),
+        indentations(constants.indentations),
+        bothSharedHeadDots(constants.bothSharedHeadDots),
+        keepGrayImages(constants.keepGrayImages),
+        articulations(constants.articulations),
+        chordNames(constants.chordNames),
+        fingerings(constants.fingerings),
+        frets(constants.frets),
+        pluckings(constants.pluckings),
+        lyrics(constants.lyrics),
+        lyricsAboveStaff(constants.lyricsAboveStaff),
+        smallBlackHeads(constants.smallBlackHeads),
+        smallVoidHeads(constants.smallVoidHeads),
+        smallWholeHeads(constants.smallWholeHeads),
+        crossHeads(constants.crossHeads),
+        implicitTuplets(constants.implicitTuplets),
+        sixStringTablatures(constants.sixStringTablatures),
+        fourStringTablatures(constants.fourStringTablatures),
+        oneLineStaves(constants.oneLineStaves);
+
+        /** Underlying boolean constant. */
+        Constant.Boolean constant;
+
+        Switch (Constant.Boolean constant)
+        {
+            this.constant = constant;
+        }
+
+        public Constant.Boolean getConstant ()
+        {
+            return constant;
+        }
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Map of switches. */
     protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<>(Switch.class);
@@ -147,46 +188,6 @@ public class ProcessingSwitches
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // Switch //
-    //--------//
-    /** Enumerated names, based on defined constants. */
-    public static enum Switch
-    {
-        poorInputMode(constants.poorInputMode),
-        indentations(constants.indentations),
-        bothSharedHeadDots(constants.bothSharedHeadDots),
-        keepGrayImages(constants.keepGrayImages),
-        articulations(constants.articulations),
-        chordNames(constants.chordNames),
-        fingerings(constants.fingerings),
-        frets(constants.frets),
-        pluckings(constants.pluckings),
-        lyrics(constants.lyrics),
-        lyricsAboveStaff(constants.lyricsAboveStaff),
-        smallBlackHeads(constants.smallBlackHeads),
-        smallVoidHeads(constants.smallVoidHeads),
-        smallWholeHeads(constants.smallWholeHeads),
-        crossHeads(constants.crossHeads),
-        implicitTuplets(constants.implicitTuplets),
-        sixStringTablatures(constants.sixStringTablatures),
-        fourStringTablatures(constants.fourStringTablatures),
-        oneLineStaves(constants.oneLineStaves);
-
-        /** Underlying boolean constant. */
-        Constant.Boolean constant;
-
-        Switch (Constant.Boolean constant)
-        {
-            this.constant = constant;
-        }
-
-        public Constant.Boolean getConstant ()
-        {
-            return constant;
-        }
-    }
-
     //---------//
     // Adapter //
     //---------//
@@ -356,7 +357,7 @@ public class ProcessingSwitches
         DefaultSwitches ()
         {
             for (Switch key : Switch.values()) {
-                map.put(key, new ConstantBasedParam<Boolean, Constant.Boolean>(key.getConstant()));
+                map.put(key, new ConstantBasedParam<>(key.getConstant()));
             }
         }
     }

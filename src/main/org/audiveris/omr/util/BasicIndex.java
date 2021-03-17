@@ -63,9 +63,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class BasicIndex<E extends Entity>
         implements EntityIndex<E>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicIndex.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -86,6 +88,7 @@ public class BasicIndex<E extends Entity>
     /** List of IDs for declared VIP entities. */
     private List<Integer> vipIds;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicIndex} object.
      *
@@ -104,6 +107,7 @@ public class BasicIndex<E extends Entity>
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -322,7 +326,8 @@ public class BasicIndex<E extends Entity>
                     MouseMovement.PRESSING,
                     entity);
 
-            SwingUtilities.invokeLater(new Runnable()
+            SwingUtilities.invokeLater(
+                    new Runnable()
             {
                 @Override
                 public void run ()
@@ -464,6 +469,7 @@ public class BasicIndex<E extends Entity>
         return entity != null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // InterfaceAdapter //
     //------------------//
@@ -517,7 +523,6 @@ public class BasicIndex<E extends Entity>
                 throws Exception
         {
             Collections.sort(value.list, (E e1, E e2) -> Integer.compare(e1.getId(), e2.getId()));
-
             ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<>();
 
             for (E entity : value.list) {
@@ -540,9 +545,9 @@ public class BasicIndex<E extends Entity>
     private static class IndexValue<E extends AbstractEntity>
     {
 
-        @XmlElementRefs({
-            @XmlElementRef(type = Glyph.class),
-            @XmlElementRef(type = BasicSymbol.class)})
+        @XmlElementRefs({@XmlElementRef(type = Glyph.class),
+                         @XmlElementRef(type = BasicSymbol.class)
+        })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }
 }

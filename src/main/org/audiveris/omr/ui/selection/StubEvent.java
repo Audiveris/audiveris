@@ -32,10 +32,12 @@ import org.audiveris.omr.sheet.SheetStub;
 public class StubEvent
         extends UserEvent<SheetStub>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected sheet stub, which may be null. */
     private final SheetStub stub;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SheetEvent object.
      *
@@ -53,6 +55,7 @@ public class StubEvent
         this.stub = stub;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

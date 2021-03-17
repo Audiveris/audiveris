@@ -28,6 +28,7 @@ package org.audiveris.omr.math;
  */
 public interface Projection
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report a simplistic derivative value at 'pos' point
@@ -81,6 +82,65 @@ public interface Projection
      */
     void increment (int pos,
                     int inc);
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------//
+    // Abstract //
+    //----------//
+    /**
+     * Abstract implementation.
+     */
+    public abstract class Abstract
+            implements Projection
+    {
+
+        /** First point on projection axis. */
+        protected final int start;
+
+        /** Last point on projection axis. */
+        protected final int stop;
+
+        /**
+         * Create an instance of Abstract class.
+         *
+         * @param start first value in range
+         * @param stop  last value in range
+         */
+        protected Abstract (int start,
+                            int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        @Override
+        public final int getDerivative (int pos)
+        {
+            if (pos <= start) {
+                return 0;
+            }
+
+            return getValue(pos) - getValue(pos - 1);
+        }
+
+        @Override
+        public int getLength ()
+        {
+            return stop - start + 1;
+        }
+
+        @Override
+        public int getStart ()
+        {
+            return start;
+        }
+
+        @Override
+        public int getStop ()
+        {
+            return stop;
+        }
+    }
 
     //---------//
     // Integer //
@@ -169,64 +229,6 @@ public interface Projection
                                      int inc)
         {
             data[pos - start] = (short) (data[pos - start] + inc);
-        }
-    }
-
-    //----------//
-    // Abstract //
-    //----------//
-    /**
-     * Abstract implementation.
-     */
-    public abstract class Abstract
-            implements Projection
-    {
-
-        /** First point on projection axis. */
-        protected final int start;
-
-        /** Last point on projection axis. */
-        protected final int stop;
-
-        /**
-         * Create an instance of Abstract class.
-         *
-         * @param start first value in range
-         * @param stop  last value in range
-         */
-        protected Abstract (int start,
-                            int stop)
-        {
-            this.start = start;
-            this.stop = stop;
-        }
-
-        @Override
-        public final int getDerivative (int pos)
-        {
-            if (pos <= start) {
-                return 0;
-            }
-
-            return getValue(pos) - getValue(pos - 1);
-        }
-
-        @Override
-        public int getLength ()
-        {
-            return stop - start + 1;
-        }
-
-        @Override
-        public int getStart ()
-        {
-            return start;
-        }
-
-        @Override
-        public int getStop ()
-        {
-            return stop;
         }
     }
 }

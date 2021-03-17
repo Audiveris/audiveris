@@ -33,6 +33,7 @@ import java.awt.geom.Point2D;
  */
 public class StaffPattern
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The number of lines expected in staff. */
     private final int count;
@@ -46,6 +47,7 @@ public class StaffPattern
     /** The precise interline value. */
     private final double interline;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffPattern} object.
      *
@@ -65,6 +67,7 @@ public class StaffPattern
         this.interline = interline;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // evaluate //
     //----------//

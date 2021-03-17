@@ -49,7 +49,7 @@ public enum HorizontalSide
      */
     public int direction ()
     {
-        return (this == LEFT) ? -1 : 1;
+        return (this == LEFT) ? (-1) : 1;
     }
 
     /**
@@ -60,6 +60,6 @@ public enum HorizontalSide
      */
     public static HorizontalSide of (int xDir)
     {
-        return (xDir == -1) ? LEFT : (xDir == +1) ? RIGHT : null;
+        return (xDir == -1) ? LEFT : ((xDir == +1) ? RIGHT : null);
     }
 }

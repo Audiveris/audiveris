@@ -32,13 +32,16 @@ import java.util.Scanner;
 public class LDoubleField
         extends LTextField
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Default format for display in the field : {@value} */
     public static final String DEFAULT_FORMAT = "%.5f";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Specific display format, if any */
     private final String format;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an (initially) editable double labeled field with proper
      * characteristics
@@ -107,6 +110,7 @@ public class LDoubleField
         this.format = format;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getValue //
     //----------//

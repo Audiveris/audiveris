@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.NamedDouble;
@@ -45,7 +46,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import org.audiveris.omr.glyph.Grades;
 
 /**
  * Class {@code CheckPanel} handles a panel to display the results of a check suite,
@@ -57,6 +57,7 @@ import org.audiveris.omr.glyph.Grades;
  */
 public class CheckPanel<C>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckPanel.class);
 
@@ -74,6 +75,7 @@ public class CheckPanel<C>
 
     private static final int FIELD_WIDTH = 4;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related check suite (the model). */
     private CheckSuite<C> suite;
 
@@ -92,6 +94,7 @@ public class CheckPanel<C>
     /** Last object checked. */
     private C checkable;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a check panel for a given suite.
      *
@@ -107,6 +110,7 @@ public class CheckPanel<C>
         setSuite(suite);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -319,7 +323,7 @@ public class CheckPanel<C>
                 field.setText(textOf(constant.getValue()));
                 field.setToolTipText(
                         "<html>" + constant.getName() + "<br/>" + constant.getDescription()
-                                + "</html>");
+                        + "</html>");
             }
         }
     }
@@ -409,6 +413,7 @@ public class CheckPanel<C>
         return Double.NaN;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ParamAction //
     //-------------//
@@ -467,8 +472,8 @@ public class CheckPanel<C>
                         try {
                             constant.setValue(valueOf(newString));
                             modified = true;
-                            sb.append(" modified from ").append(oldString).append(" to ").append(
-                                    newString);
+                            sb.append(" modified from ").append(oldString).append(" to ")
+                                    .append(newString);
                             logger.info(sb.toString());
                         } catch (Exception ex) {
                             logger.warn("Error in {}, {}", context, ex.getLocalizedMessage());

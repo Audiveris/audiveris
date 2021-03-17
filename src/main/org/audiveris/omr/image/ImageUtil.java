@@ -48,9 +48,16 @@ import javax.media.jai.JAI;
  */
 public abstract class ImageUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
+    private ImageUtil ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // invert //
     //--------//
@@ -285,9 +292,5 @@ public abstract class ImageUtil
         default:
             return "?";
         }
-    }
-
-    private ImageUtil ()
-    {
     }
 }

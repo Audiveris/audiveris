@@ -44,12 +44,14 @@ import org.slf4j.LoggerFactory;
 public class RunBoard
         extends Board
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Field for run length */
     private final LIntegerField rLength = new LIntegerField(
             false,
@@ -62,6 +64,7 @@ public class RunBoard
             "Start",
             "Pixel coordinate at start of run");
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Run Board on the RunTable of a provided ag
      *
@@ -86,8 +89,7 @@ public class RunBoard
         super(
                 Board.RUN.name + ((runTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
                 : " Hori"),
-                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100
-                : 0),
+                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
                 runTable.getRunService(),
                 eventClasses,
                 selected,
@@ -97,6 +99,7 @@ public class RunBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//

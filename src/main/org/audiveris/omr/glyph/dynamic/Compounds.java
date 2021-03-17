@@ -40,6 +40,7 @@ import java.util.TreeSet;
  */
 public abstract class Compounds
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * No meant to be instantiated.
@@ -48,6 +49,7 @@ public abstract class Compounds
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // byReverseLength //
     //-----------------//

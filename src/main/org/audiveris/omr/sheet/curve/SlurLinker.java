@@ -85,14 +85,17 @@ import java.util.Set;
  */
 public class SlurLinker
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SlurLinker.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurLinker} object.
      *
@@ -103,6 +106,7 @@ public class SlurLinker
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // defineAreaPair //
     //----------------//
@@ -610,6 +614,7 @@ public class SlurLinker
         return bestHead;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

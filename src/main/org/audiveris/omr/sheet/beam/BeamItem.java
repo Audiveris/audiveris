@@ -38,6 +38,7 @@ import java.awt.geom.Point2D;
 public class BeamItem
         implements Vip
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** VIP flag. */
     private boolean vip;
@@ -48,6 +49,7 @@ public class BeamItem
     /** The constant height of the item. */
     final double height;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamItem object.
      *
@@ -61,6 +63,7 @@ public class BeamItem
         this.height = height;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getBeltArea //
     //-------------//

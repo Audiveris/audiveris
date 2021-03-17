@@ -30,6 +30,7 @@ import java.awt.image.BufferedImage;
  */
 public class FloodFiller
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final BufferedImage image;
 
@@ -37,6 +38,7 @@ public class FloodFiller
 
     private final int height;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FloodFiller object.
      *
@@ -49,6 +51,7 @@ public class FloodFiller
         height = image.getHeight();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Flood fill the area from provided (x,y) location by recursively converting
      * pixels from oldColor to newColor.

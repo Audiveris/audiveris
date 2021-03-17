@@ -33,11 +33,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SameVoiceRelation
         extends Relation
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code SameVoiceRelation} object.
+     */
     public SameVoiceRelation ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//

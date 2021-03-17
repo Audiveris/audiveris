@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
-import java.awt.Point;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -43,6 +42,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
+import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
@@ -56,11 +56,11 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
-import org.audiveris.omr.sig.inter.WordInter;
 
 /**
  * Class {@code SymbolsLinker} defines final relations between certain symbols.
@@ -71,15 +71,18 @@ import org.audiveris.omr.sig.inter.WordInter;
  */
 public class SymbolsLinker
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsLinker.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated system. */
     private final SystemInfo system;
 
     /** SIG for the system. */
     private final SIGraph sig;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SymbolsLinker} object.
      *
@@ -92,6 +95,7 @@ public class SymbolsLinker
         sig = system.getSig();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // linkOneSentence //
     //-----------------//
@@ -178,8 +182,9 @@ public class SymbolsLinker
                     if (stack == null) {
                         logger.info("No stack at {}", word);
                     } else {
-                        AbstractChordInter chordBelow = stack
-                                .getStandardChordBelow(wordCenter, word.getBounds());
+                        AbstractChordInter chordBelow = stack.getStandardChordBelow(
+                                wordCenter,
+                                word.getBounds());
 
                         if (chordBelow != null) {
                             sig.addEdge(chordBelow, word, new ChordNameRelation());
@@ -193,6 +198,7 @@ public class SymbolsLinker
             break;
 
             default:
+
             // Roles other than [Lyrics, Direction, PartName, ChordName] stand by themselves
             }
         } catch (Exception ex) {

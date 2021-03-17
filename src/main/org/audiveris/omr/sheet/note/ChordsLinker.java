@@ -29,8 +29,8 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
+import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamPortion;
@@ -53,11 +53,13 @@ import java.util.List;
  */
 public class ChordsLinker
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsLinker.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -66,6 +68,7 @@ public class ChordsLinker
     @Navigable(false)
     private final SIGraph sig;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsLinker} object.
      *
@@ -77,6 +80,7 @@ public class ChordsLinker
         sig = system.getSig();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // checkBeamChords //
     //-----------------//
@@ -171,6 +175,7 @@ public class ChordsLinker
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -67,11 +67,13 @@ import java.util.Set;
  */
 public class SymbolsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -95,6 +97,7 @@ public class SymbolsBuilder
     /** Scale-dependent global constants. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsBuilder object.
      *
@@ -112,6 +115,7 @@ public class SymbolsBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSymbols //
     //--------------//
@@ -370,52 +374,7 @@ public class SymbolsBuilder
         }
     }
 
-    //---------------//
-    // SymbolAdapter //
-    //---------------//
-    private class SymbolAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        private final Scale scale = sheet.getScale();
-
-        SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
-        {
-            super(graph);
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            SymbolsBuilder.this.evaluateGlyph(glyph);
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle symBox)
-        {
-            // Check width
-            if (symBox.width > params.maxSymbolWidth) {
-                return true;
-            }
-
-            // Check height (not limited if on left of system: braces / brackets)
-            if (GeoUtil.center2D(symBox).getX() < system.getLeft()) {
-                return false;
-            } else {
-                return symBox.height > params.maxSymbolHeight;
-            }
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            double normed = scale.pixelsToAreaFrac(weight);
-
-            return !classifier.isBigEnough(normed);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -493,4 +452,49 @@ public class SymbolsBuilder
         }
     }
 
+    //---------------//
+    // SymbolAdapter //
+    //---------------//
+    private class SymbolAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        private final Scale scale = sheet.getScale();
+
+        SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
+        {
+            super(graph);
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            SymbolsBuilder.this.evaluateGlyph(glyph);
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle symBox)
+        {
+            // Check width
+            if (symBox.width > params.maxSymbolWidth) {
+                return true;
+            }
+
+            // Check height (not limited if on left of system: braces / brackets)
+            if (GeoUtil.center2D(symBox).getX() < system.getLeft()) {
+                return false;
+            } else {
+                return symBox.height > params.maxSymbolHeight;
+            }
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            double normed = scale.pixelsToAreaFrac(weight);
+
+            return !classifier.isBigEnough(normed);
+        }
+    }
 }

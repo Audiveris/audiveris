@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class Tempo
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -43,11 +44,13 @@ public abstract class Tempo
     /** Default parameter. */
     public static final Param<Integer> defaultTempo = new Default();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Tempo ()
     {
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

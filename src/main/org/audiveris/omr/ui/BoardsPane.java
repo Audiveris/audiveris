@@ -24,7 +24,6 @@ package org.audiveris.omr.ui;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import java.awt.Dimension;
 
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
@@ -34,6 +33,7 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -102,7 +102,7 @@ public class BoardsPane
 
         final int inset = UIUtil.adjustedSize(6);
         component.setInsets(inset, inset, inset, inset); // TLBR
-        component.setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + 2 * inset, 1));
+        component.setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + (2 * inset), 1));
 
         component.addMouseListener(new MyMouseAdapter());
 

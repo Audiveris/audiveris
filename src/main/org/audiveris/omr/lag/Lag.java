@@ -50,6 +50,7 @@ import java.util.Set;
 public interface Lag
         extends EntityIndex<Section>, Oriented
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Include the content of runs table to the lag.

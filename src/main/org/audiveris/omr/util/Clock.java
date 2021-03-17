@@ -35,6 +35,7 @@ import java.util.Locale;
  */
 public abstract class Clock
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To have a reference time */
     private static long startTime = System.currentTimeMillis();
@@ -62,11 +63,13 @@ public abstract class Clock
         timeFormatter.applyPattern("000,000.00");
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** To prevent instantiation. */
     private Clock ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getDate //
     //---------//

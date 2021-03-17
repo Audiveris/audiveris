@@ -36,9 +36,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataChordRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -75,6 +77,7 @@ public class FermataChordRelation
         return constants.chordSupportCoeff.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

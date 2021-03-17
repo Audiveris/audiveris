@@ -52,9 +52,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "holder")
 public abstract class DataHolder<T>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DataHolder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -77,6 +80,7 @@ public abstract class DataHolder<T>
     /** To discard data. (Removed from disk at store time) */
     protected boolean discarded = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DataHolder} object.
      *
@@ -95,6 +99,7 @@ public abstract class DataHolder<T>
         this.pathString = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // discard //
     //---------//

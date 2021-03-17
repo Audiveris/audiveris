@@ -48,6 +48,7 @@ import java.util.Map;
 public abstract class AbstractNoteInter
         extends AbstractPitchedInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractNoteInter.class);
 
@@ -57,6 +58,27 @@ public abstract class AbstractNoteInter
     /** All shape-based intrinsic durations. */
     private static final Map<Shape, Rational> shapeDurations = buildShapeDurations();
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Names of the various note steps. */
+    public static enum Step
+    {
+        /** La */
+        A,
+        /** Si */
+        B,
+        /** Do */
+        C,
+        /** Ré */
+        D,
+        /** Mi */
+        E,
+        /** Fa */
+        F,
+        /** Sol */
+        G;
+    }
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNoteInter object.
      *
@@ -104,6 +126,7 @@ public abstract class AbstractNoteInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChord //
     //----------//
@@ -321,24 +344,5 @@ public abstract class AbstractNoteInter
         map.put(Shape.ONE_128TH_REST, new Rational(1, 128));
 
         return map;
-    }
-
-    /** Names of the various note steps. */
-    public static enum Step
-    {
-        /** La */
-        A,
-        /** Si */
-        B,
-        /** Do */
-        C,
-        /** Ré */
-        D,
-        /** Mi */
-        E,
-        /** Fa */
-        F,
-        /** Sol */
-        G;
     }
 }

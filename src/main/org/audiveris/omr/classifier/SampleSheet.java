@@ -66,6 +66,7 @@ import javax.xml.stream.XMLStreamException;
  */
 public class SampleSheet
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleSheet.class);
 
@@ -81,6 +82,21 @@ public class SampleSheet
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Formalizes the status of sheet image, to avoid endless load attempts.
+     */
+    public enum ImageStatus
+    {
+        /** There is no recorded image for this sheet. */
+        NO_IMAGE,
+        /** Sheet image is available on disk. */
+        ON_DISK,
+        /** Sheet image is available in memory. */
+        LOADED;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Full descriptor. */
     private final Descriptor descriptor;
 
@@ -105,6 +121,7 @@ public class SampleSheet
     /** Tribe being created by user. */
     private Tribe currentTribe;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleSheet} object.
      *
@@ -138,6 +155,7 @@ public class SampleSheet
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getAllSamples //
     //---------------//
@@ -567,19 +585,7 @@ public class SampleSheet
         return jaxbContext;
     }
 
-    /**
-     * Formalizes the status of sheet image, to avoid endless load attempts.
-     */
-    public enum ImageStatus
-    {
-        /** There is no recorded image for this sheet. */
-        NO_IMAGE,
-        /** Sheet image is available on disk. */
-        ON_DISK,
-        /** Sheet image is available in memory. */
-        LOADED
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SampleList //
     //------------//

@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestChordInter
         extends AbstractChordInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code RestChordInter} object.
@@ -50,6 +51,7 @@ public class RestChordInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

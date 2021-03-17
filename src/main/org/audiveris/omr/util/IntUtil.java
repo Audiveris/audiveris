@@ -34,14 +34,17 @@ import java.util.List;
  */
 public abstract class IntUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(IntUtil.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private IntUtil ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // parseInts //
     //-----------//

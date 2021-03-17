@@ -57,16 +57,19 @@ import java.util.List;
  */
 public class BlackHeadSizer
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BlackHeadSizer.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     /** Scale-dependent global constants. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BlackHeadSizer} object.
      *
@@ -78,6 +81,7 @@ public class BlackHeadSizer
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -248,6 +252,7 @@ public class BlackHeadSizer
         logger.info("{}", musicFontScale);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

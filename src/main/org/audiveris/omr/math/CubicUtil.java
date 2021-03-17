@@ -36,9 +36,11 @@ import java.awt.geom.Point2D;
  */
 public abstract class CubicUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CubicUtil.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -46,6 +48,7 @@ public abstract class CubicUtil
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the point on the curve, located at t = 1-t = 0.5.
      * It splits the curve length equally.
@@ -112,7 +115,7 @@ public abstract class CubicUtil
         final Point2D p2 = pointAtT(c, t2);
 
         // Interpolated t parameter
-        final double t = t1 + (t2 - t1) * ((x - p1.getX()) / (p2.getX() - p1.getX()));
+        final double t = t1 + ((t2 - t1) * ((x - p1.getX()) / (p2.getX() - p1.getX())));
         final Point2D p = pointAtT(c, t);
 
         return p.getY();

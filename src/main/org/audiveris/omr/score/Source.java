@@ -78,6 +78,7 @@ import java.util.List;
  */
 public class Source
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Source.class);
 
@@ -85,6 +86,7 @@ public class Source
 
     private static final String SHEET_PREFIX = "sheet-";
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Path to source image file, if any. */
     private String file;
 
@@ -97,6 +99,7 @@ public class Source
     /** Systems processed in each image sheet. */
     private final List<SheetSystems> sheets = new ArrayList<>();
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // encodePage //
     //------------//
@@ -368,6 +371,7 @@ public class Source
         return intList;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // SheetSystems //
     //--------------//

@@ -17,6 +17,7 @@ import ij.process.ByteProcessor;
  */
 public interface ChamferDistance
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Value when on target location. */
     public static final int VALUE_TARGET = 0;
@@ -59,6 +60,7 @@ public interface ChamferDistance
         new int[]{5, 1, 346},
         new int[]{6, 1, 413}};
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // compute //
     //---------//
@@ -98,6 +100,7 @@ public interface ChamferDistance
      */
     DistanceTable computeToFore (ByteProcessor input);
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Abstract implementation.
      */
@@ -209,9 +212,11 @@ public interface ChamferDistance
                         int dy = cf[1];
                         int dt = cf[2];
                         testAndSet(output, x + dx, y + dy, v + dt);
+
                         if (dy != 0) {
                             testAndSet(output, x - dx, y + dy, v + dt);
                         }
+
                         if (dx != dy) {
                             testAndSet(output, x + dy, y + dx, v + dt);
 
@@ -237,9 +242,11 @@ public interface ChamferDistance
                         int dy = chamfer1[1];
                         int dt = chamfer1[2];
                         testAndSet(output, x - dx, y - dy, v + dt);
+
                         if (dy != 0) {
                             testAndSet(output, x + dx, y - dy, v + dt);
                         }
+
                         if (dx != dy) {
                             testAndSet(output, x - dy, y - dx, v + dt);
 

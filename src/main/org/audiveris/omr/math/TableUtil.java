@@ -36,7 +36,13 @@ import java.awt.image.WritableRaster;
  */
 public abstract class TableUtil
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
+    private TableUtil ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Print out a table of int values.
      *
@@ -327,9 +333,5 @@ public abstract class TableUtil
         }
 
         return ints;
-    }
-
-    private TableUtil ()
-    {
     }
 }

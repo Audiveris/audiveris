@@ -56,9 +56,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BeamHookInter
         extends AbstractBeamInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HookInter object.
      *
@@ -91,6 +93,7 @@ public class BeamHookInter
         super(null, null, null, 0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -231,6 +234,7 @@ public class BeamHookInter
         return new Link(bestStem, bestRel, true);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

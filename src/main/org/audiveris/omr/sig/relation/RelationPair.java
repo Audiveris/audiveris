@@ -32,11 +32,19 @@ import org.audiveris.omr.sig.inter.Inter;
  */
 public class RelationPair
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     public Inter source;
 
     public Inter target;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code RelationPair} object.
+     *
+     * @param source source inter
+     * @param target target inter
+     */
     public RelationPair (Inter source,
                          Inter target)
     {
@@ -44,6 +52,7 @@ public class RelationPair
         this.target = target;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {

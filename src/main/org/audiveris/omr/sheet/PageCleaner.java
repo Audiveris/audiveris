@@ -87,11 +87,13 @@ import java.util.List;
 public abstract class PageCleaner
         extends AbstractInterVisitor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PageCleaner.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet buffer. */
     protected final ByteProcessor buffer;
 
@@ -116,6 +118,7 @@ public abstract class PageCleaner
     /** Slightly thicker stroke for lines. (endings, wedges, slurs) */
     private final Stroke lineStroke;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageCleaner} object.
      *
@@ -164,6 +167,7 @@ public abstract class PageCleaner
         g.setColor(Color.WHITE);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void visit (AbstractBeamInter inter)
     {
@@ -481,6 +485,7 @@ public abstract class PageCleaner
         return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

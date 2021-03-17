@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "action")
 public class ActionDescriptor
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Which UI domain (menu) should host this action. */
     @XmlAttribute(name = "domain")
@@ -73,6 +74,7 @@ public class ActionDescriptor
     @XmlAttribute(name = "button")
     public String buttonClassName;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * To force instantiation through JAXB unmarshalling only.
      */
@@ -80,6 +82,7 @@ public class ActionDescriptor
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

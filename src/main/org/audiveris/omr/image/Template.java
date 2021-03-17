@@ -457,17 +457,22 @@ public class Template
         case MIDDLE_LEFT:
         case LEFT_STEM:
         case BOTTOM_LEFT_STEM:
-            return new Point((int) Math.round(offset.getX() - 0.5 - 0.001),
-                             (int) Math.round(offset.getY() - 0.5));
+            return new Point(
+                    (int) Math.round(offset.getX() - 0.5 - 0.001),
+                    (int) Math.round(offset.getY() - 0.5));
+
         case MIDDLE_RIGHT:
         case RIGHT_STEM:
         case TOP_RIGHT_STEM:
-            return new Point((int) Math.round(offset.getX() - 0.5 + 0.001),
-                             (int) Math.round(offset.getY() - 0.5));
+            return new Point(
+                    (int) Math.round(offset.getX() - 0.5 + 0.001),
+                    (int) Math.round(offset.getY() - 0.5));
+
         default:
         case CENTER:
-            return new Point((int) Math.round(offset.getX() - 0.5),
-                             (int) Math.round(offset.getY() - 0.5));
+            return new Point(
+                    (int) Math.round(offset.getX() - 0.5),
+                    (int) Math.round(offset.getY() - 0.5));
         }
     }
 
@@ -612,6 +617,7 @@ public class Template
         // Offset to apply to location?
         if (anchor != null) {
             final Point offset = getOffset(anchor);
+
             return new Point(x - offset.x, y - offset.y);
         }
 

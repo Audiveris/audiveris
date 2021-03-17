@@ -43,9 +43,11 @@ import org.slf4j.LoggerFactory;
 public class RandomFilter
         extends AdaptiveFilter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RandomFilter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
@@ -66,6 +68,7 @@ public class RandomFilter
                 true);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyTile //
     //--------//

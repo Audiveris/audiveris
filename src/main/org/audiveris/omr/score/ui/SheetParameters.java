@@ -49,6 +49,7 @@ import java.util.List;
  */
 public class SheetParameters
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
 
@@ -56,6 +57,7 @@ public class SheetParameters
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(SheetParameters.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component of this panel. */
     private final ScopedPanel scopedPanel;
 
@@ -68,6 +70,7 @@ public class SheetParameters
     /** Map of scaling parameters. */
     private final EnumMap<Item, ScalingParam> scalings = new EnumMap<>(Item.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetParameters} object.
      *
@@ -98,6 +101,7 @@ public class SheetParameters
         initialDisplay();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // commit //
     //--------//
@@ -148,6 +152,7 @@ public class SheetParameters
     public String getTitle ()
     {
         final String pattern = resources.getString("SheetParameters.titlePattern");
+
         return MessageFormat.format(pattern, sheet.getId());
     }
 
@@ -172,64 +177,7 @@ public class SheetParameters
         }
     }
 
-    //--------------//
-    // ScalingParam //
-    //--------------//
-    /**
-     * An integer {@code Param}, backed by Scale structure.
-     */
-    private class ScalingParam
-            extends Param<Integer>
-    {
-
-        public final Item key;
-
-        ScalingParam (Item key)
-        {
-            this.key = key;
-        }
-
-        @Override
-        public Integer getSourceValue ()
-        {
-            if (scale == null) {
-                return null;
-            }
-
-            return scale.getItemValue(key);
-        }
-
-        @Override
-        public Integer getValue ()
-        {
-            if (isSpecific()) {
-                return getSpecific();
-            }
-
-            return getSourceValue();
-        }
-
-        @Override
-        public boolean setSpecific (Integer specific)
-        {
-            final Integer value = getValue();
-            this.specific = specific;
-
-            if ((specific != null) && !specific.equals(value)) {
-                if (scale == null) {
-                    sheet.setScale(scale = new Scale());
-                }
-
-                scale.setItemValue(key, specific);
-                logger.info(key.getDescription() + " set to {}", specific);
-
-                return true;
-            }
-
-            return false;
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // ScaledPane //
     //------------//
@@ -293,6 +241,64 @@ public class SheetParameters
             }
 
             return key.getDescription();
+        }
+    }
+
+    //--------------//
+    // ScalingParam //
+    //--------------//
+    /**
+     * An integer {@code Param}, backed by Scale structure.
+     */
+    private class ScalingParam
+            extends Param<Integer>
+    {
+
+        public final Item key;
+
+        ScalingParam (Item key)
+        {
+            this.key = key;
+        }
+
+        @Override
+        public Integer getSourceValue ()
+        {
+            if (scale == null) {
+                return null;
+            }
+
+            return scale.getItemValue(key);
+        }
+
+        @Override
+        public Integer getValue ()
+        {
+            if (isSpecific()) {
+                return getSpecific();
+            }
+
+            return getSourceValue();
+        }
+
+        @Override
+        public boolean setSpecific (Integer specific)
+        {
+            final Integer value = getValue();
+            this.specific = specific;
+
+            if ((specific != null) && !specific.equals(value)) {
+                if (scale == null) {
+                    sheet.setScale(scale = new Scale());
+                }
+
+                scale.setItemValue(key, specific);
+                logger.info(key.getDescription() + " set to {}", specific);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -45,9 +45,11 @@ import java.util.List;
 public class CueBeamsStep
         extends AbstractSystemStep<CueBeamsStep.Context>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CueBeamsStep object.
      */
@@ -55,6 +57,7 @@ public class CueBeamsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -84,6 +87,7 @@ public class CueBeamsStep
         return new Context(spots, spotLag);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//

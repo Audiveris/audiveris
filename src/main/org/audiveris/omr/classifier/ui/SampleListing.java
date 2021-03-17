@@ -91,6 +91,7 @@ class SampleListing
         extends JScrollPane
         implements ChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleListing.class);
 
@@ -104,6 +105,7 @@ class SampleListing
 
     private static final Point SAMPLE_OFFSET = new Point(SAMPLE_MARGIN, SAMPLE_MARGIN);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final String title = "Samples";
 
     private final ScrollablePanel scrollablePanel = new ScrollablePanel();
@@ -117,6 +119,7 @@ class SampleListing
     /** Listener on all shape lists. */
     private final ListMouseListener listener = new ListMouseListener();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleListing} object.
      */
@@ -126,11 +129,12 @@ class SampleListing
         this.browser = browser;
         this.repository = repository;
 
-        setBorder(BorderFactory.createTitledBorder(
-                new EmptyBorder(20, 5, 0, 0), // TLBR
-                title,
-                TitledBorder.LEFT,
-                TitledBorder.TOP));
+        setBorder(
+                BorderFactory.createTitledBorder(
+                        new EmptyBorder(20, 5, 0, 0), // TLBR
+                        title,
+                        TitledBorder.LEFT,
+                        TitledBorder.TOP));
 
         scrollablePanel.setLayout(new BoxLayout(scrollablePanel, BoxLayout.Y_AXIS));
         scrollablePanel.setComponentPopupMenu(new SamplePopup());
@@ -140,6 +144,7 @@ class SampleListing
         setAlignmentX(LEFT_ALIGNMENT);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void stateChanged (ChangeEvent e)
     {
@@ -274,6 +279,178 @@ class SampleListing
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // GradedSample //
+    //--------------//
+    private static class GradedSample
+    {
+
+        public static final Comparator<GradedSample> byReverseGrade = new Comparator<GradedSample>()
+        {
+            @Override
+            public int compare (GradedSample o1,
+                                GradedSample o2)
+            {
+                return Double.compare(o2.grade, o1.grade); // By decreasing grade
+            }
+        };
+
+        final double grade;
+
+        final Sample sample;
+
+        GradedSample (double grade,
+                      Sample sample)
+        {
+            this.grade = grade;
+            this.sample = sample;
+        }
+    }
+
+    //----------------//
+    // SampleRenderer //
+    //----------------//
+    /**
+     * Render a sample cell within a ShapePane.
+     */
+    private static class SampleRenderer
+            extends JPanel
+            implements ListCellRenderer<Sample>
+    {
+
+        /** The sample being rendered. */
+        private Sample sample;
+
+        SampleRenderer (Dimension maxDimension)
+        {
+            setOpaque(true);
+            setPreferredSize(
+                    new Dimension(
+                            maxDimension.width + (2 * SAMPLE_MARGIN),
+                            maxDimension.height + (2 * SAMPLE_MARGIN)));
+            setBorder(SAMPLE_BORDER);
+        }
+
+        @Override
+        public Component getListCellRendererComponent (JList<? extends Sample> list,
+                                                       Sample sample,
+                                                       int index,
+                                                       boolean isSelected,
+                                                       boolean cellHasFocus)
+        {
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+            } else {
+                setBackground(sample.isSymbol() ? SYMBOL_BACKGROUND : SAMPLE_BACKGROUND);
+            }
+
+            this.sample = sample;
+
+            return this;
+        }
+
+        @Override
+        protected void paintComponent (Graphics g)
+        {
+            super.paintComponent(g); // Paint background
+
+            RunTable table = sample.getRunTable();
+            g.translate(SAMPLE_OFFSET.x, SAMPLE_OFFSET.y);
+
+            // Draw the (properly scaled) run table over a white rectangle of same bounds
+            final double ratio = (double) STANDARD_INTERLINE / sample.getInterline();
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.scale(ratio, ratio);
+
+            g2.setColor(Color.WHITE);
+            g2.fillRect(0, 0, table.getWidth(), table.getHeight());
+
+            g2.setColor(Color.BLACK);
+            table.render(g2, new Point(0, 0));
+
+            g2.dispose();
+
+            g.translate(-SAMPLE_OFFSET.x, -SAMPLE_OFFSET.y);
+        }
+    }
+
+    //-----------------//
+    // ScrollablePanel //
+    //-----------------//
+    private static class ScrollablePanel
+            extends JPanel
+            implements Scrollable
+    {
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize ()
+        {
+            return getPreferredSize();
+        }
+
+        /**
+         * Returns the distance to scroll to expose the next or previous block.
+         * <p>
+         * For JList:
+         * <ul>
+         * <li>if scrolling down, returns the distance to scroll so that the last
+         * visible element becomes the first completely visible element
+         * <li>if scrolling up, returns the distance to scroll so that the first
+         * visible element becomes the last completely visible element
+         * <li>returns {@code visibleRect.height} if the list is empty
+         * </ul>
+         * <p>
+         * For us:
+         * <p>
+         * "Element" could be the next/previous shapePane?
+         *
+         * @param visibleRect the view area visible within the viewport
+         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
+         * @param direction   less or equal to zero to scroll up, greater than zero for down
+         * @return the "block" increment for scrolling in the specified direction; always positive
+         */
+        @Override
+        public int getScrollableBlockIncrement (Rectangle visibleRect,
+                                                int orientation,
+                                                int direction)
+        {
+            if (orientation == SwingConstants.HORIZONTAL) {
+                return visibleRect.width;
+            } else {
+                return visibleRect.height;
+            }
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight ()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth ()
+        {
+            return true;
+        }
+
+        /**
+         * Returns the distance to scroll to expose the next or previous row.
+         *
+         * @param visibleRect the view area visible within the viewport
+         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
+         * @param direction   less or equal to zero to scroll up, greater than zero for down
+         * @return the "unit" increment for scrolling in the specified direction; always positive
+         */
+        @Override
+        public int getScrollableUnitIncrement (Rectangle visibleRect,
+                                               int orientation,
+                                               int direction)
+        {
+            return 40; // Minimum cell height. TODO: Could be improved.
+        }
+    }
+
     //-------------------//
     // ListMouseListener //
     //-------------------//
@@ -363,7 +540,7 @@ class SampleListing
                             Rectangle common = alternative.getBounds().intersection(box);
 
                             if (!common.isEmpty() && (common.width >= (box.width / 2))
-                                        && (common.height >= (box.height / 2))) {
+                                && (common.height >= (box.height / 2))) {
                                 logger.debug("alternative: {}", alternative);
                                 alternatives.add(alternative);
                             }
@@ -463,7 +640,8 @@ class SampleListing
             list.setCellRenderer(new SampleRenderer(maxDimensionOf(samples)));
 
             // Specific left/right keys to go through the whole list (and not only the current row)
-            list.addKeyListener(new KeyAdapter()
+            list.addKeyListener(
+                    new KeyAdapter()
             {
                 @Override
                 public void keyPressed (KeyEvent ke)
@@ -678,177 +856,6 @@ class SampleListing
         public void actionPerformed (ActionEvent e)
         {
             sortBy(Sample.byNormalizedWidth);
-        }
-    }
-
-    //--------------//
-    // GradedSample //
-    //--------------//
-    private static class GradedSample
-    {
-
-        public static final Comparator<GradedSample> byReverseGrade = new Comparator<GradedSample>()
-        {
-            @Override
-            public int compare (GradedSample o1,
-                                GradedSample o2)
-            {
-                return Double.compare(o2.grade, o1.grade); // By decreasing grade
-            }
-        };
-
-        final double grade;
-
-        final Sample sample;
-
-        GradedSample (double grade,
-                      Sample sample)
-        {
-            this.grade = grade;
-            this.sample = sample;
-        }
-    }
-
-    //----------------//
-    // SampleRenderer //
-    //----------------//
-    /**
-     * Render a sample cell within a ShapePane.
-     */
-    private static class SampleRenderer
-            extends JPanel
-            implements ListCellRenderer<Sample>
-    {
-
-        /** The sample being rendered. */
-        private Sample sample;
-
-        SampleRenderer (Dimension maxDimension)
-        {
-            setOpaque(true);
-            setPreferredSize(
-                    new Dimension(
-                            maxDimension.width + (2 * SAMPLE_MARGIN),
-                            maxDimension.height + (2 * SAMPLE_MARGIN)));
-            setBorder(SAMPLE_BORDER);
-        }
-
-        @Override
-        public Component getListCellRendererComponent (JList<? extends Sample> list,
-                                                       Sample sample,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean cellHasFocus)
-        {
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-            } else {
-                setBackground(sample.isSymbol() ? SYMBOL_BACKGROUND : SAMPLE_BACKGROUND);
-            }
-
-            this.sample = sample;
-
-            return this;
-        }
-
-        @Override
-        protected void paintComponent (Graphics g)
-        {
-            super.paintComponent(g); // Paint background
-
-            RunTable table = sample.getRunTable();
-            g.translate(SAMPLE_OFFSET.x, SAMPLE_OFFSET.y);
-
-            // Draw the (properly scaled) run table over a white rectangle of same bounds
-            final double ratio = (double) STANDARD_INTERLINE / sample.getInterline();
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.scale(ratio, ratio);
-
-            g2.setColor(Color.WHITE);
-            g2.fillRect(0, 0, table.getWidth(), table.getHeight());
-
-            g2.setColor(Color.BLACK);
-            table.render(g2, new Point(0, 0));
-
-            g2.dispose();
-
-            g.translate(-SAMPLE_OFFSET.x, -SAMPLE_OFFSET.y);
-        }
-    }
-
-    //-----------------//
-    // ScrollablePanel //
-    //-----------------//
-    private static class ScrollablePanel
-            extends JPanel
-            implements Scrollable
-    {
-
-        @Override
-        public Dimension getPreferredScrollableViewportSize ()
-        {
-            return getPreferredSize();
-        }
-
-        /**
-         * Returns the distance to scroll to expose the next or previous block.
-         * <p>
-         * For JList:
-         * <ul>
-         * <li>if scrolling down, returns the distance to scroll so that the last
-         * visible element becomes the first completely visible element
-         * <li>if scrolling up, returns the distance to scroll so that the first
-         * visible element becomes the last completely visible element
-         * <li>returns {@code visibleRect.height} if the list is empty
-         * </ul>
-         * <p>
-         * For us:
-         * <p>
-         * "Element" could be the next/previous shapePane?
-         *
-         * @param visibleRect the view area visible within the viewport
-         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
-         * @param direction   less or equal to zero to scroll up, greater than zero for down
-         * @return the "block" increment for scrolling in the specified direction; always positive
-         */
-        @Override
-        public int getScrollableBlockIncrement (Rectangle visibleRect,
-                                                int orientation,
-                                                int direction)
-        {
-            if (orientation == SwingConstants.HORIZONTAL) {
-                return visibleRect.width;
-            } else {
-                return visibleRect.height;
-            }
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight ()
-        {
-            return false;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth ()
-        {
-            return true;
-        }
-
-        /**
-         * Returns the distance to scroll to expose the next or previous row.
-         *
-         * @param visibleRect the view area visible within the viewport
-         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
-         * @param direction   less or equal to zero to scroll up, greater than zero for down
-         * @return the "unit" increment for scrolling in the specified direction; always positive
-         */
-        @Override
-        public int getScrollableUnitIncrement (Rectangle visibleRect,
-                                               int orientation,
-                                               int direction)
-        {
-            return 40; // Minimum cell height. TODO: Could be improved.
         }
     }
 }

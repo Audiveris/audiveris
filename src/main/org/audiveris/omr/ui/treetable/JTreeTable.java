@@ -51,12 +51,14 @@ import javax.swing.tree.TreePath;
 public class JTreeTable
         extends JTable
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * A subclass of JTree.
      */
     protected TreeTableCellRenderer tree;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JTreeTable object.
      *
@@ -95,6 +97,7 @@ public class JTreeTable
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Workaround for BasicTableUI anomaly. Make sure the UI never tries to
      * paint the editor. The UI currently uses different techniques to
@@ -162,6 +165,7 @@ public class JTreeTable
         LookAndFeel.installColorsAndFont(this, "Tree.background", "Tree.foreground", "Tree.font");
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------------//
     // TreeTableCellEditor //
     //---------------------//

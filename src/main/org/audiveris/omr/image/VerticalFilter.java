@@ -74,9 +74,11 @@ import org.slf4j.LoggerFactory;
 public class VerticalFilter
         extends AdaptiveFilter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
@@ -97,6 +99,7 @@ public class VerticalFilter
                 true);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyTile //
     //--------//

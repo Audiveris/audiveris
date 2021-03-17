@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import java.awt.Point;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -36,6 +35,7 @@ import org.audiveris.omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -54,11 +54,13 @@ import java.util.List;
 public class TextLine
         extends TextBasedItem
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Words that compose this line. */
     private final List<TextWord> words = new ArrayList<>();
 
@@ -71,6 +73,7 @@ public class TextLine
     /** Temporary processed flag. */
     private boolean processed;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextLine object from a sequence of words.
      *
@@ -96,6 +99,7 @@ public class TextLine
         super(null, null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addWords //
     //----------//
@@ -296,7 +300,7 @@ public class TextLine
     public Point2D getDeskewedExtremum (VerticalSide side,
                                         Skew skew)
     {
-        final int dir = (side == VerticalSide.TOP) ? -1 : +1;
+        final int dir = (side == VerticalSide.TOP) ? (-1) : (+1);
 
         // We work word per word
         Point2D bestDsk = null;
@@ -309,7 +313,7 @@ public class TextLine
 
             if (bestDsk == null) {
                 bestDsk = dsk;
-            } else if ((dsk.getY() - bestDsk.getY()) * dir > 0) {
+            } else if (((dsk.getY() - bestDsk.getY()) * dir) > 0) {
                 bestDsk = dsk;
             }
         }
@@ -853,11 +857,12 @@ public class TextLine
                              fontInfo.pointsize, maxFontSize, this);
 
                 return false;
-//            } else if (fontInfo.pointsize < minFontSize) {
-//                logger.debug("   too small font {} vs {} on {}",
-//                             fontInfo.pointsize, minFontSize, this);
-//
-//                return false;
+
+                //            } else if (fontInfo.pointsize < minFontSize) {
+                //                logger.debug("   too small font {} vs {} on {}",
+                //                             fontInfo.pointsize, minFontSize, this);
+                //
+                //                return false;
             }
         }
 
@@ -900,17 +905,8 @@ public class TextLine
      */
     public static Comparator<TextLine> byAbscissa (final Skew skew)
     {
-        return new Comparator<TextLine>()
-        {
-            @Override
-            public int compare (TextLine line1,
-                                TextLine line2)
-            {
-                return Double.compare(
-                        line1.getDskOrigin(skew).getX(),
-                        line2.getDskOrigin(skew).getX());
-            }
-        };
+        return (TextLine line1, TextLine line2) -> Double.compare(line1.getDskOrigin(skew).getX(),
+                                                                  line2.getDskOrigin(skew).getX());
     }
 
     /**
@@ -921,17 +917,8 @@ public class TextLine
      */
     public static Comparator<TextLine> byOrdinate (final Skew skew)
     {
-        return new Comparator<TextLine>()
-        {
-            @Override
-            public int compare (TextLine line1,
-                                TextLine line2)
-            {
-                return Double.compare(
-                        line1.getDskOrigin(skew).getY(),
-                        line2.getDskOrigin(skew).getY());
-            }
-        };
+        return (TextLine line1, TextLine line2) -> Double.compare(line1.getDskOrigin(skew).getY(),
+                                                                  line2.getDskOrigin(skew).getY());
     }
 
     //------//
@@ -954,6 +941,7 @@ public class TextLine
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

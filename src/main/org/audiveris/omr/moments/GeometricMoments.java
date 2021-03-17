@@ -36,6 +36,7 @@ import java.awt.Point;
  */
 public class GeometricMoments
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GeometricMoments.class);
 
@@ -55,6 +56,7 @@ public class GeometricMoments
         "weight", // 0
         "width", //  1
         "height", // 2
+
         /**
          * Mass-normalized central moments
          */
@@ -65,11 +67,13 @@ public class GeometricMoments
         "n21", // 7
         "n12", // 8
         "n03", // 9
+
         /**
          * Mass center
          */
         "xBar", // 10
         "yBar", // 11
+
         /**
          * Hu coefficients, if any
          */
@@ -82,9 +86,11 @@ public class GeometricMoments
         "h7", // 18
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The various moments, implemented as an array of double's. */
     private final double[] k = new double[size];
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GeometricMoments object.
      *
@@ -252,6 +258,7 @@ public class GeometricMoments
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getCentroid //
     //-------------//

@@ -36,6 +36,7 @@ import java.awt.image.BufferedImage;
 public class GhostComponentAdapter<A>
         extends GhostDropAdapter<A>
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostComponentAdapter object
@@ -49,6 +50,7 @@ public class GhostComponentAdapter<A>
         super(glassPane, action);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // mousePressed //
     //--------------//

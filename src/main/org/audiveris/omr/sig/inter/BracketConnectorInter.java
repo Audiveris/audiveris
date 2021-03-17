@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BracketConnectorInter
         extends AbstractVerticalConnectorInter
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new BracketConnectorInter object.
@@ -57,6 +58,7 @@ public class BracketConnectorInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

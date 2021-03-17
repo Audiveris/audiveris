@@ -117,8 +117,7 @@ public class VerticalsBuilder
 
             // Filament board
             EntityService<Filament> fService = sheet.getFilamentIndex().getEntityService();
-            assembly.addBoard(SheetTab.DATA_TAB,
-                              new FilamentBoard(fService, false));
+            assembly.addBoard(SheetTab.DATA_TAB, new FilamentBoard(fService, false));
         }
 
         // Retrieve candidates
@@ -161,7 +160,7 @@ public class VerticalsBuilder
             Point2D center = stick.getCenter2D();
             Staff staff = system.getClosestStaff(center);
 
-            if ((staff == null) || staff.isTablature() || center.getX() < staff.getHeaderStop()) {
+            if ((staff == null) || staff.isTablature() || (center.getX() < staff.getHeaderStop())) {
                 continue;
             }
 

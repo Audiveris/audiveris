@@ -38,6 +38,7 @@ import java.util.EnumSet;
 public interface WeightedEntity
         extends Entity, AttachmentHolder
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Assign a group to this symbol.

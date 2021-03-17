@@ -57,31 +57,19 @@ public abstract class Curve
         extends Arc
         implements AttachmentHolder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
     /** Comparison by left abscissa. */
-    public static final Comparator<Curve> byLeftAbscissa = new Comparator<Curve>()
-    {
-        @Override
-        public int compare (Curve c1,
-                            Curve c2)
-        {
-            return Integer.compare(c1.getEnd(true).x, c2.getEnd(true).x);
-        }
-    };
+    public static final Comparator<Curve> byLeftAbscissa = (Curve c1, Curve c2)
+            -> Integer.compare(c1.getEnd(true).x, c2.getEnd(true).x);
 
     /** Comparison by right abscissa. */
-    public static final Comparator<Curve> byRightAbscissa = new Comparator<Curve>()
-    {
-        @Override
-        public int compare (Curve c1,
-                            Curve c2)
-        {
-            return Integer.compare(c1.getEnd(false).x, c2.getEnd(false).x);
-        }
-    };
+    public static final Comparator<Curve> byRightAbscissa = (Curve c1, Curve c2)
+            -> Integer.compare(c1.getEnd(false).x, c2.getEnd(false).x);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique id. (within containing sheet) */
     protected final int id;
 
@@ -103,6 +91,7 @@ public abstract class Curve
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Curve object.
      *
@@ -125,6 +114,7 @@ public abstract class Curve
         this.parts.addAll(parts);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
     //---------------//
@@ -444,12 +434,12 @@ public abstract class Curve
             final Point point = points.get(index); // Point of curve
             final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
 
-            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index) && ((run
-                    .getLength() <= 1) || isCloseToCurve(
-                            point.x,
-                            run.getStop(),
-                            maxRunDistance,
-                            index))) {
+            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
+                        && ((run.getLength() <= 1)
+                                    || isCloseToCurve(point.x,
+                                                      run.getStop(),
+                                                      maxRunDistance,
+                                                      index))) {
                 curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
             }
         }
@@ -585,14 +575,6 @@ public abstract class Curve
      */
     public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
     {
-        return new Comparator<Curve>()
-        {
-            @Override
-            public int compare (Curve a1,
-                                Curve a2)
-            {
-                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
-            }
-        };
+        return (Curve a1, Curve a2) -> Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
     }
 }

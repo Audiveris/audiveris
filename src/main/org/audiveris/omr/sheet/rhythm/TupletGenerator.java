@@ -73,9 +73,11 @@ import java.util.TreeMap;
  */
 public class TupletGenerator
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TupletGenerator.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying measure. */
     private final Measure measure;
 
@@ -83,6 +85,7 @@ public class TupletGenerator
 
     private final Scale scale;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code TupletGenerator} object.
      *
@@ -96,6 +99,7 @@ public class TupletGenerator
         scale = system.getSheet().getScale();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // findImplicitTuplets //
     //---------------------//
@@ -251,6 +255,7 @@ public class TupletGenerator
     private void dumpVoices ()
     {
         logger.info("{}", measure);
+
         List<Voice> voices = new ArrayList<>(measure.getVoices());
         Collections.sort(voices, Voices.byId);
 
@@ -259,7 +264,7 @@ public class TupletGenerator
 
             for (AbstractChordInter ch : voice.getChords()) {
                 Rational chDur = ch.getDuration();
-                end = end == null ? chDur : end.plus(chDur);
+                end = (end == null) ? chDur : end.plus(chDur);
             }
 
             logger.info("   {} duration:{}", voice, end);
@@ -399,20 +404,25 @@ public class TupletGenerator
 
         for (AbstractChordInter ch : group) {
             int dir = ch.getStemDir();
+
             if (dir != 0) {
                 List<AbstractChordInter> chords = dirs.get(dir);
+
                 if (chords == null) {
                     dirs.put(dir, chords = new ArrayList<>());
                 }
+
                 chords.add(ch);
             }
         }
+
         int dir = 0;
         int bestCount = 0;
 
         for (Map.Entry<Integer, List<AbstractChordInter>> entry : dirs.entrySet()) {
             int count = entry.getValue().size();
-            if (dir == 0 || bestCount < count) {
+
+            if ((dir == 0) || (bestCount < count)) {
                 dir = entry.getKey();
                 bestCount = count;
             }
@@ -428,7 +438,7 @@ public class TupletGenerator
         int margin = dim.height / 10; // Small vertical margin between chord tail and tuplet
         Rectangle tupletBox = new Rectangle(
                 center.x - (dim.width / 2),
-                center.y + dir * (box.height / 2 + margin + ((dir < 0) ? dim.height : 0)),
+                center.y + (dir * ((box.height / 2) + margin + ((dir < 0) ? dim.height : 0))),
                 dim.width,
                 dim.height);
 

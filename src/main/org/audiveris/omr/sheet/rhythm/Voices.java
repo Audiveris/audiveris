@@ -53,84 +53,74 @@ import java.util.Map;
  */
 public abstract class Voices
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voices.class);
 
     /** To sort voices by their ID. */
-    public static final Comparator<Voice> byId = new Comparator<Voice>()
-    {
-        @Override
-        public int compare (Voice v1,
-                            Voice v2)
-        {
-            return Integer.compare(v1.getId(), v2.getId());
-        }
-    };
+    public static final Comparator<Voice> byId = (Voice v1, Voice v2)
+            -> Integer.compare(v1.getId(), v2.getId());
 
     /** To sort voices by vertical position within their containing measure or stack. */
-    public static final Comparator<Voice> byOrdinate = new Comparator<Voice>()
-    {
-        @Override
-        public int compare (Voice v1,
-                            Voice v2)
-        {
-            if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
-                throw new IllegalArgumentException("Comparing voices in different stacks");
+    public static final Comparator<Voice> byOrdinate = (Voice v1, Voice v2) -> {
+        if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
+            throw new IllegalArgumentException("Comparing voices in different stacks");
+        }
+
+        // Check if they are located in different parts
+        Part p1 = v1.getMeasure().getPart();
+        Part p2 = v2.getMeasure().getPart();
+
+        if (p1 != p2) {
+            return Part.byId.compare(p1, p2);
+        }
+
+        // Check voice family
+        Family f1 = v1.getFamily();
+        Family f2 = v2.getFamily();
+
+        if (f1 != f2) {
+            return f1.compareTo(f2);
+        }
+
+        AbstractChordInter c1 = v1.getFirstChord();
+        AbstractChordInter c2 = v2.getFirstChord();
+        Slot firstSlot1 = c1.getSlot();
+        Slot firstSlot2 = c2.getSlot();
+
+        // Check if the voices started in different time slots
+        // Beware of whole rests, they have no time slot
+        if ((firstSlot1 != null) && (firstSlot2 != null)) {
+            int comp = Integer.compare(firstSlot1.getId(), firstSlot2.getId());
+
+            if (comp != 0) {
+                return comp;
             }
 
-            // Check if they are located in different parts
-            Part p1 = v1.getMeasure().getPart();
-            Part p2 = v2.getMeasure().getPart();
-
-            if (p1 != p2) {
-                return Part.byId.compare(p1, p2);
+            // Same first time slot, so let's use chord ordinate
+            return Inters.byOrdinate.compare(c1, c2);
+        } else {
+            // We have at least one whole rest (which always starts on slot 1, by definition)
+            if ((firstSlot2 != null) && (firstSlot2.getId() > 1)) {
+                return -1;
             }
 
-            // Check voice family
-            Family f1 = v1.getFamily();
-            Family f2 = v2.getFamily();
-
-            if (f1 != f2) {
-                return f1.compareTo(f2);
+            if ((firstSlot1 != null) && (firstSlot1.getId() > 1)) {
+                return 1;
             }
 
-            AbstractChordInter c1 = v1.getFirstChord();
-            AbstractChordInter c2 = v2.getFirstChord();
-            Slot firstSlot1 = c1.getSlot();
-            Slot firstSlot2 = c2.getSlot();
-
-            // Check if the voices started in different time slots
-            // Beware of whole rests, they have no time slot
-            if ((firstSlot1 != null) && (firstSlot2 != null)) {
-                int comp = Integer.compare(firstSlot1.getId(), firstSlot2.getId());
-
-                if (comp != 0) {
-                    return comp;
-                }
-
-                // Same first time slot, so let's use chord ordinate
-                return Inters.byOrdinate.compare(c1, c2);
-            } else {
-                // We have at least one whole rest (which always starts on slot 1, by definition)
-                if ((firstSlot2 != null) && (firstSlot2.getId() > 1)) {
-                    return -1;
-                }
-
-                if ((firstSlot1 != null) && (firstSlot1.getId() > 1)) {
-                    return 1;
-                }
-
-                // Both are at beginning of measure, so let's use chord ordinates
-                return Inters.byOrdinate.compare(c1, c2);
-            }
+            // Both are at beginning of measure, so let's use chord ordinates
+            return Inters.byOrdinate.compare(c1, c2);
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     // Not meant to be instantiated.
     private Voices ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // refinePage //
     //------------//
@@ -144,15 +134,9 @@ public abstract class Voices
         logger.debug("PageStep.refinePage");
 
         final SystemInfo firstSystem = page.getFirstSystem();
-        final SlurAdapter systemSlurAdapter = new SlurAdapter()
-        {
-            @Override
-            public SlurInter getInitialSlur (SlurInter slur)
-            {
-                // Across systems within a single page, the partnering slur is the left extension
-                return slur.getExtension(LEFT);
-            }
-        };
+
+        // Across systems within a single page, the partnering slur is the left extension
+        final SlurAdapter systemSlurAdapter = (SlurInter slur) -> slur.getExtension(LEFT);
 
         for (LogicalPart logicalPart : page.getLogicalParts()) {
             for (SystemInfo system : page.getSystems()) {
@@ -237,15 +221,8 @@ public abstract class Voices
                         precOrphans.removeAll(links.values());
                         SlurInter.discardOrphans(precOrphans, RIGHT);
 
-                        final SlurAdapter pageSlurAdapter = new SlurAdapter()
-                        {
-                            @Override
-                            public SlurInter getInitialSlur (SlurInter slur)
-                            {
-                                // Across pages within a score, use the links map
-                                return links.get(slur);
-                            }
-                        };
+                        // Across pages within a score, use the links map
+                        final SlurAdapter pageSlurAdapter = (SlurInter slur) -> links.get(slur);
 
                         for (Voice voice : part.getFirstMeasure().getVoices()) {
                             Integer tiedId = getTiedId(voice, pageSlurAdapter);
@@ -306,15 +283,9 @@ public abstract class Voices
     public static void refineSystem (SystemInfo system)
     {
         final SIGraph sig = system.getSig();
-        final SlurAdapter measureSlurAdapter = new SlurAdapter()
-        {
-            @Override
-            public SlurInter getInitialSlur (SlurInter slur)
-            {
-                // Across measures within a single system, the partnering slur is the slur itself
-                return slur;
-            }
-        };
+
+        // Across measures within a single system, the partnering slur is the slur itself
+        final SlurAdapter measureSlurAdapter = (SlurInter slur) -> slur;
 
         for (Part part : system.getParts()) {
             Measure prevMeasure = null;
@@ -346,6 +317,7 @@ public abstract class Voices
                                     if (voice.getId() != ch1.getVoice().getId()) {
                                         measure.swapVoiceId(voice, ch1.getVoice().getId());
                                     }
+
                                     break;
                                 }
                             }
@@ -414,6 +386,7 @@ public abstract class Voices
         return null;
     }
 
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-------------//
     // SlurAdapter //
     //-------------//

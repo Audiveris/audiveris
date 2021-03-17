@@ -31,6 +31,7 @@ import org.audiveris.omr.glyph.Shape;
 public class KeySharpSymbol
         extends KeySymbol
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new KeySharpSymbol object.
@@ -46,6 +47,7 @@ public class KeySharpSymbol
         super(key, isIcon, shape, 35);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

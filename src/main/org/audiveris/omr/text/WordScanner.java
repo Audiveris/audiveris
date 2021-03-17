@@ -37,9 +37,11 @@ import java.util.List;
  */
 public abstract class WordScanner
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The content string. */
     private final String content;
 
@@ -69,6 +71,7 @@ public abstract class WordScanner
 
     private int nextWordStop = -1;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // WordScanner //
     //-------------//
@@ -91,6 +94,7 @@ public abstract class WordScanner
         this.chars = chars;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getWordChars //
     //--------------//
@@ -227,6 +231,7 @@ public abstract class WordScanner
         nextWord = getNextWord();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // ManualScanner //
     //---------------//

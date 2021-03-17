@@ -49,13 +49,16 @@ import java.awt.geom.Rectangle2D;
 public class BeamSymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The decorating quarter (head + stem) part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Specified beam thickness, if any, as a ratio of interline. */
     protected Double thicknessFraction;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BeamSymbol.
      *
@@ -98,6 +101,7 @@ public class BeamSymbol
         this.thicknessFraction = thicknessFraction;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getModel //
     //----------//
@@ -158,6 +162,7 @@ public class BeamSymbol
         final int il = font.getStaffInterline();
         final double fraction = (thicknessFraction != null) ? thicknessFraction : 0.5;
         p.model.thickness = Math.rint(il * fraction);
+
         double width = il * 2.0; // Beam width
         double yShift = 0; ///-il * 1.0; // Non zero for a slanted beam (p2.y - p1.y)
         double absShift = Math.abs(yShift);
@@ -166,6 +171,7 @@ public class BeamSymbol
 
         if (decorated) {
             p.quarterCount = 2;
+
             Rectangle2D qRect = p.layout.getBounds();
             p.rect = new Rectangle2D.Double(0,
                                             0,
@@ -175,23 +181,23 @@ public class BeamSymbol
             if (yShift >= 0) {
                 p.model.p1 = new Point2D.Double(qRect.getWidth(), p.model.thickness / 2.0);
                 p.model.p2 = new Point2D.Double(qRect.getWidth() + width,
-                                                p.model.thickness / 2.0 + absShift);
+                                                (p.model.thickness / 2.0) + absShift);
             } else {
                 p.model.p1 = new Point2D.Double(qRect.getWidth(),
-                                                p.model.thickness / 2.0 + absShift);
+                                                (p.model.thickness / 2.0) + absShift);
                 p.model.p2 = new Point2D.Double(qRect.getWidth() + width, p.model.thickness / 2.0);
             }
 
             // Define specific offset to point at center of beam
             p.offset = new Point(
                     (int) Math.rint((p.rect.getWidth() - width) / 2.0),
-                    (int) Math.rint((absShift + p.model.thickness - p.rect.getHeight()) / 2.0));
+                    (int) Math.rint(((absShift + p.model.thickness) - p.rect.getHeight()) / 2.0));
         } else {
             if (yShift >= 0) {
                 p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0);
-                p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0 + absShift);
+                p.model.p2 = new Point2D.Double(width, (p.model.thickness / 2.0) + absShift);
             } else {
-                p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0 + absShift);
+                p.model.p1 = new Point2D.Double(0, (p.model.thickness / 2.0) + absShift);
                 p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0);
             }
 
@@ -223,6 +229,7 @@ public class BeamSymbol
             // Draw the two quarters
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
+
             final int yShift = (int) Math.rint(p.model.p2.getY() - p.model.p1.getY());
             final int absShift = Math.abs(yShift);
 
@@ -240,6 +247,7 @@ public class BeamSymbol
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//

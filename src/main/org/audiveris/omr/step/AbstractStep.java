@@ -94,6 +94,7 @@ import java.util.List;
  */
 public abstract class AbstractStep
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
 
@@ -155,6 +156,7 @@ public abstract class AbstractStep
             WedgeInter.class,
             WordInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractStep} object.
      */
@@ -162,6 +164,7 @@ public abstract class AbstractStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // clearErrors //
     //-------------//

@@ -59,13 +59,35 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BracketInter
         extends AbstractStaffVerticalInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BracketInter.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //-------------//
+    // BracketKind //
+    //-------------//
+    /**
+     * Kind of bracket.
+     */
+    public static enum BracketKind
+    {
+        /** With upper serif. */
+        TOP,
+        /** With upper and lower serifs. */
+        BOTH,
+        /** With lower serif. */
+        BOTTOM,
+        /** With no serif. */
+        NONE;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Bracket kind. */
     @XmlAttribute(name = "kind")
     private final BracketKind kind;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BracketInter} object.
      *
@@ -105,6 +127,7 @@ public class BracketInter
         this.kind = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -239,23 +262,5 @@ public class BracketInter
         }
 
         bounds = area.getBounds();
-    }
-
-    //-------------//
-    // BracketKind //
-    //-------------//
-    /**
-     * Kind of bracket.
-     */
-    public static enum BracketKind
-    {
-        /** With upper serif. */
-        TOP,
-        /** With upper and lower serifs. */
-        BOTH,
-        /** With lower serif. */
-        BOTTOM,
-        /** With no serif. */
-        NONE
     }
 }

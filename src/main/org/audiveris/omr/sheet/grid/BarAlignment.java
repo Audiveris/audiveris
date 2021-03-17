@@ -36,6 +36,7 @@ import java.util.Objects;
 public class BarAlignment
         implements Comparable<BarAlignment>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Bar peak in the upper staff. */
     protected final StaffPeak topPeak;
@@ -55,6 +56,7 @@ public class BarAlignment
     /** Alignment grade. */
     protected double grade;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarAlignment object.
      *
@@ -79,6 +81,7 @@ public class BarAlignment
         grade = impacts.getGrade();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -247,6 +250,7 @@ public class BarAlignment
         return best;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//

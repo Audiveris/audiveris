@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
  */
 public class Ghostscript
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -51,6 +52,12 @@ public class Ghostscript
     /** Path to exec. */
     private static volatile String path;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    private Ghostscript ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getPath //
     //---------//
@@ -127,9 +134,8 @@ public class Ghostscript
 
         /** Regex for registry key line. */
         final Pattern keyPattern = Pattern.compile(
-                "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\" + group(
-                        VERSION,
-                        "\\d+\\.\\d+") + "$");
+                "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\"
+                        + group(VERSION, "\\d+\\.\\d+") + "$");
 
         /** Regex for registry value line. */
         final Pattern valPattern = Pattern.compile(
@@ -207,6 +213,7 @@ public class Ghostscript
         return null; // Abnormal exit
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -223,9 +230,5 @@ public class Ghostscript
                 "version",
                 9_999,
                 "Maximum Ghostscript acceptable version");
-    }
-
-    private Ghostscript ()
-    {
     }
 }

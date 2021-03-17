@@ -38,10 +38,12 @@ import java.awt.geom.Point2D;
 public class SlashedFlagSymbol
         extends ShapeSymbol
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The small flag symbol. */
     private final ShapeSymbol flagSymbol = Symbols.getSymbol(Shape.SMALL_FLAG);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SmallFlagSymbol} object.
      */
@@ -60,6 +62,7 @@ public class SlashedFlagSymbol
         super(isIcon, Shape.SMALL_FLAG_SLASH, false);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -100,14 +103,16 @@ public class SlashedFlagSymbol
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
-        g.draw(new Line2D.Double(
-                loc.getX() - (p.rect.getWidth() / 2),
-                loc.getY() + (p.rect.getHeight() / 5),
-                loc.getX() + (p.rect.getWidth() / 2),
-                loc.getY() - (p.rect.getHeight() / 5)));
+        g.draw(
+                new Line2D.Double(
+                        loc.getX() - (p.rect.getWidth() / 2),
+                        loc.getY() + (p.rect.getHeight() / 5),
+                        loc.getX() + (p.rect.getWidth() / 2),
+                        loc.getY() - (p.rect.getHeight() / 5)));
         g.setStroke(oldStroke);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

@@ -31,10 +31,12 @@ import java.nio.file.Path;
 public abstract class PathTask
         extends VoidTask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying path. */
     protected Path path;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PathTask} object.
      */
@@ -52,6 +54,7 @@ public abstract class PathTask
         this.path = path;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Set the path value.
      *

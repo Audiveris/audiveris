@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.util.LabeledEnum;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -35,6 +34,7 @@ import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.BrowserLinkListener;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.LabeledEnum;
 import org.audiveris.omr.util.Version;
 
 import org.jdesktop.application.Application;
@@ -83,6 +83,7 @@ import javax.swing.JTextPane;
  */
 public abstract class Versions
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -108,10 +109,10 @@ public abstract class Versions
      * </ul>
      */
     public static final Version INTER_GEOMETRY = new Version("5.2.1");
+
     //
     // NOTA: Add here below any new version for which some upgrade is necessary.
     //
-
     /**
      * Sequence of upgrade versions to check.
      * NOTA: This sequence must be manually updated when a new version is added above.
@@ -130,11 +131,38 @@ public abstract class Versions
     /** How to format dates. */
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //-------------//
+    // CheckResult //
+    //-------------//
+    public enum CheckResult
+    {
+        COMPATIBLE,
+        BOOK_TOO_OLD,
+        PROGRAM_TOO_OLD;
+    }
+
+    //-----------//
+    // Frequency //
+    //-----------//
+    /** Frequency for polling project site. */
+    private static enum Frequency
+    {
+        Always,
+        Daily,
+        Weekly,
+        Monthly,
+        Yearly,
+        Never;
+    }
+
+    //~ Constructors -------------------------------------------------------------------------------
     /** No instance needed for this functional class. */
     private Versions ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // check //
     //-------//
@@ -191,16 +219,6 @@ public abstract class Versions
         return (list == null) ? Collections.emptyList() : list;
     }
 
-    //-------------//
-    // CheckResult //
-    //-------------//
-    public enum CheckResult
-    {
-        COMPATIBLE,
-        BOOK_TOO_OLD,
-        PROGRAM_TOO_OLD;
-    }
-
     //------------------//
     // getLatestRelease //
     //------------------//
@@ -222,6 +240,7 @@ public abstract class Versions
 
             if (repository == null) {
                 logger.warn("Unknown repository: {}", AUDIVERIS_REPOSITORY_NAME);
+
                 return null;
             }
 
@@ -319,28 +338,38 @@ public abstract class Versions
         next.setTime(constants.lastReleaseCheckDate.getValue());
 
         final Frequency frequency = constants.releaseCheckFrequency.getValue();
+
         switch (frequency) {
         case Always:
             break;
+
         case Daily:
             next.add(Calendar.DAY_OF_MONTH, 1);
+
             break;
+
         case Weekly:
             next.add(Calendar.WEEK_OF_MONTH, 1);
+
             break;
+
         case Monthly:
             next.add(Calendar.MONTH, 1);
+
             break;
+
         case Yearly:
             next.add(Calendar.YEAR, 1);
+
             break;
+
         case Never:
             next = null;
         }
 
         logger.info("Versions. Poll frequency: {}, next poll on: {}",
                     frequency,
-                    next != null ? DATE_FORMAT.format(next.getTime()) : null);
+                    (next != null) ? DATE_FORMAT.format(next.getTime()) : null);
 
         return next;
     }
@@ -390,13 +419,14 @@ public abstract class Versions
         return now.compareTo(next) > 0;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // AbstractPanel //
     //---------------//
     /**
      * Common part between Negative and Positive panels.
      */
-    private static abstract class AbstractPanel
+    private abstract static class AbstractPanel
             extends Panel
     {
 
@@ -497,6 +527,23 @@ public abstract class Versions
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Enum<Frequency> releaseCheckFrequency = new Constant.Enum<>(
+                Frequency.class,
+                Frequency.Weekly,
+                "Frequency of release check");
+
+        private final Constant.Date lastReleaseCheckDate = new Constant.Date(
+                "1-Jan-2000",
+                "Date when last release check was made");
+    }
+
     //---------------//
     // NegativePanel //
     //---------------//
@@ -551,6 +598,7 @@ public abstract class Versions
 
             // Published
             published.setName("published");
+
             DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);
             published.setText(dateFormat.format(release.getPublished_at()));
 
@@ -616,36 +664,5 @@ public abstract class Versions
             builder.add(contentLabel, cst.xy(1, r));
             builder.add(contentField, cst.xyw(3, r, 3));
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Enum<Frequency> releaseCheckFrequency = new Constant.Enum<>(
-                Frequency.class,
-                Frequency.Weekly,
-                "Frequency of release check");
-
-        private final Constant.Date lastReleaseCheckDate = new Constant.Date(
-                "1-Jan-2000",
-                "Date when last release check was made");
-    }
-
-    //-----------//
-    // Frequency //
-    //-----------//
-    /** Frequency for polling project site. */
-    private static enum Frequency
-    {
-        Always,
-        Daily,
-        Weekly,
-        Monthly,
-        Yearly,
-        Never;
     }
 }

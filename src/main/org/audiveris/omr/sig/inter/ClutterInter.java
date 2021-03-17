@@ -37,6 +37,12 @@ public class ClutterInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new {@code ClutterInter} object.
+     *
+     * @param glyph Underlying glyph
+     * @param grade quality grade
+     */
     public ClutterInter (Glyph glyph,
                          Double grade)
     {

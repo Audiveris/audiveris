@@ -252,7 +252,7 @@ public class HeadStemsCleaner
             }
         }
 
-        if (leftStem == null || rightStem == null) {
+        if ((leftStem == null) || (rightStem == null)) {
             return false;
         }
 

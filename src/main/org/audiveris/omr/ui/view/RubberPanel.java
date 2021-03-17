@@ -399,17 +399,11 @@ public class RubberPanel
             showFocusLocation(rect, true);
 
             // Then, adjust zoom ratio to fit the rectangle size
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    Rectangle vr = getVisibleRect();
-                    double zoomX = vr.width / (double) rect.width;
-                    double zoomY = vr.height / (double) rect.height;
-                    zoom.setRatio(Math.min(zoomX, zoomY));
-                }
+            SwingUtilities.invokeLater(() -> {
+                Rectangle vr = getVisibleRect();
+                double zoomX = vr.width / (double) rect.width;
+                double zoomY = vr.height / (double) rect.height;
+                zoom.setRatio(Math.min(zoomX, zoomY));
             });
         }
     }

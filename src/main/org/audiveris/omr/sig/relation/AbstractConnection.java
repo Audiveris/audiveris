@@ -218,9 +218,8 @@ public abstract class AbstractConnection
         private static final String[] NAMES = new String[]{"xInGap", "yGap"};
 
         // Default weights
-        private static final double[] WEIGHTS = new double[]{
-            constants.xInWeight.getValue(),
-            constants.yWeight.getValue()};
+        private static final double[] WEIGHTS = new double[]{constants.xInWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
         /**
          * Create an InImpacts object.
@@ -252,9 +251,8 @@ public abstract class AbstractConnection
         private static final String[] NAMES = new String[]{"xOutGap", "yGap"};
 
         // Defaults weights
-        private static final double[] WEIGHTS = new double[]{
-            constants.xOutWeight.getValue(),
-            constants.yWeight.getValue()};
+        private static final double[] WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
         /**
          * Create an OutImpacts object.

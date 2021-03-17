@@ -60,6 +60,7 @@ public class DynamicsInter
         extends AbstractInter
         implements StringSymbolInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -151,6 +152,7 @@ public class DynamicsInter
         //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DynamicsInter object.
      *
@@ -172,6 +174,7 @@ public class DynamicsInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -296,7 +299,8 @@ public class DynamicsInter
             final DynamicsInter shorter = (DynamicsInter) inter;
             final String shortString = shorter.getSymbolString();
 
-            if ((shorter == this) || (shortString.length() >= cplLength)
+            if ((shorter == this)
+                        || (shortString.length() >= cplLength)
                         || !cplString.contains(shortString)) {
                 continue;
             }
@@ -351,9 +355,9 @@ public class DynamicsInter
 
         for (VerticalSide side : VerticalSide.values()) {
             final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(
-                    center,
-                    widenedBounds) : stack.getStandardChordBelow(center, widenedBounds);
+            AbstractChordInter chord = lookAbove
+                    ? stack.getStandardChordAbove(center, widenedBounds)
+                    : stack.getStandardChordBelow(center, widenedBounds);
 
             if ((chord == null) || chord instanceof RestChordInter) {
                 continue;
@@ -397,6 +401,7 @@ public class DynamicsInter
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

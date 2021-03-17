@@ -63,6 +63,7 @@ public class StaffLine
     private static final Logger logger = LoggerFactory.getLogger(StaffLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //

@@ -45,15 +45,18 @@ import java.awt.geom.AffineTransform;
 public class OmrGlassPane
         extends GhostGlassPane
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OmrGlassPane.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The transform to apply when painting on top of target (zoomed sheet view). */
     private AffineTransform targetTransform;
 
     /** Current inter Dnd operation, if any. */
     private InterDnd interDnd;
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // paintComponent //
     //----------------//
@@ -76,7 +79,7 @@ public class OmrGlassPane
             // Use composition with display underneath
             g2.setComposite(targetComposite);
 
-            if (interDnd == null || !interDnd.hasReference()) {
+            if ((interDnd == null) || !interDnd.hasReference()) {
                 Rectangle rect = getImageBounds(localPoint);
                 g2.drawImage(draggedImage, null, rect.x, rect.y);
             } else {
@@ -112,7 +115,7 @@ public class OmrGlassPane
         // Use image bounds
         Rectangle rect = super.getSceneBounds(center);
 
-        if (interDnd != null && overTarget) {
+        if ((interDnd != null) && overTarget) {
             // Use inter decorations, etc (this depends on staff reference availability)
             Rectangle box = interDnd.getSceneBounds();
 
@@ -124,7 +127,7 @@ public class OmrGlassPane
         // To cope with curve thickness, not taken into account in inter bounds
         if (targetTransform != null) {
             double ratio = targetTransform.getScaleX();
-            int margin = (int) Math.ceil(ratio * Curves.DEFAULT_THICKNESS / 2.0);
+            int margin = (int) Math.ceil((ratio * Curves.DEFAULT_THICKNESS) / 2.0);
             rect.grow(margin, margin);
         }
 

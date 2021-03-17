@@ -404,7 +404,8 @@ public class InterFactory
         case SHARP:
         case DOUBLE_SHARP:
         case DOUBLE_FLAT: {
-            AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff); // Staff is very questionable!
+            // Staff is very questionable!
+            AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
             sig.addVertex(alter);
             alter.setLinks(systemHeads);
@@ -620,7 +621,7 @@ public class InterFactory
                 final Rectangle columnBox = Inters.getBounds(times);
                 final List<Inter> neighbors = sig.inters(
                         (inter) -> inter.getBounds().intersects(columnBox)
-                                   && !(inter instanceof InterEnsemble));
+                                           && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 

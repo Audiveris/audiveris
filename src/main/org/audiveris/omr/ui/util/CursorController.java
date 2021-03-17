@@ -46,6 +46,7 @@ import javax.swing.SwingWorker;
  */
 public class CursorController
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -60,10 +61,12 @@ public class CursorController
     /** Delay before busy cursor is displayed. */
     public static final long DELAY = constants.delay.getValue(); // in milliseconds
 
+    //~ Constructors -------------------------------------------------------------------------------
     private CursorController ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // createListener //
     //----------------//
@@ -180,6 +183,7 @@ public class CursorController
         }.execute();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

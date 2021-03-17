@@ -36,6 +36,7 @@ public class OmrFileFilter
         extends FileFilter
         implements FilenameFilter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** User readable description */
     private final String description;
@@ -43,6 +44,7 @@ public class OmrFileFilter
     /** Array of accepted file extensions */
     private final String[] extensions;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a file filter, with only one file extension to consider
      *
@@ -77,8 +79,7 @@ public class OmrFileFilter
                           String... extensions)
     {
         if (description == null) {
-            this.description = (extensions.length > 1) ? Arrays.toString(extensions)
-                    : extensions[0];
+            this.description = (extensions.length > 1) ? Arrays.toString(extensions) : extensions[0];
         } else {
             this.description = description;
         }
@@ -86,6 +87,7 @@ public class OmrFileFilter
         this.extensions = extensions.clone();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

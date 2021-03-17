@@ -35,16 +35,19 @@ import java.util.List;
  */
 public abstract class TextItem
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Lowercase vowel characters. */
     private static final char[] VOWELS = "aeiouy".toCharArray();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Item bounds. */
     protected Rectangle bounds;
 
     /** Item value. */
     protected String value;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // TextItem //
     //----------//
@@ -64,6 +67,7 @@ public abstract class TextItem
         this.value = value;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // hasVowell //
     //-----------//

@@ -50,9 +50,11 @@ import javax.xml.bind.annotation.XmlElement;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SectionSets
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The collection of sections sets. */
     protected Collection<Collection<Section>> sets;
 
@@ -60,6 +62,7 @@ public class SectionSets
     @XmlElement(name = "sections")
     private Collection<SectionDescSet> descSets;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SectionSets object.
      *
@@ -77,6 +80,7 @@ public class SectionSets
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getSets //
     //---------//
@@ -96,8 +100,7 @@ public class SectionSets
 
                 for (SectionDesc sectionId : idSet.sections) {
                     Lag lag = sheet.getLagManager().getLag(
-                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG
-                                    : Lags.HLAG);
+                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
                     Section section = lag.getEntity(sectionId.id);
 
                     if (section == null) {
@@ -203,9 +206,11 @@ public class SectionSets
         SectionSets sectionSets = new SectionSets();
         sectionSets.sets = new ArrayList<>();
         sectionSets.sets.add(sections);
+
         return sectionSets;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // SectionDesc //
     //-------------//

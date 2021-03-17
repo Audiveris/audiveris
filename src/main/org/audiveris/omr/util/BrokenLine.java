@@ -79,16 +79,19 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "broken-line")
 public class BrokenLine
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The ordered sequence of points. */
     @XmlElement(name = "point")
     @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     private final List<Point> points = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BrokenLine object with an initially empty sequence of points.
      */
@@ -116,6 +119,7 @@ public class BrokenLine
         resetPoints(points);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addPoint //
     //----------//
@@ -432,6 +436,7 @@ public class BrokenLine
         return constants.stickyDistance.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

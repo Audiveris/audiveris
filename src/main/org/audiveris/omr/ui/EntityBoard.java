@@ -65,6 +65,7 @@ public class EntityBoard<E extends Entity>
         extends Board
         implements ChangeListener, ActionListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
@@ -74,6 +75,16 @@ public class EntityBoard<E extends Entity>
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** To select precise ID option. */
+    public static enum IdOption
+    {
+        ID_NONE,
+        ID_LABEL,
+        ID_SPINNER;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Counter of entities selection. */
     protected JLabel count;
 
@@ -98,6 +109,7 @@ public class EntityBoard<E extends Entity>
     /** To avoid loop, indicate that update() method id being processed. */
     protected boolean selfUpdating = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityBoard} object, with all entity fields by default.
      *
@@ -158,8 +170,9 @@ public class EntityBoard<E extends Entity>
         // Id
         switch (idOption) {
         case ID_LABEL:
-            idLabel = new LLabel(resources.getString("idLabel.text"),
-                                 resources.getString("idLabel.toolTipText"));
+            idLabel = new LLabel(
+                    resources.getString("idLabel.text"),
+                    resources.getString("idLabel.toolTipText"));
 
             break;
 
@@ -179,6 +192,7 @@ public class EntityBoard<E extends Entity>
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -430,13 +444,5 @@ public class EntityBoard<E extends Entity>
         SpinnerUtil.setEditable(spinner, true);
 
         return spinner;
-    }
-
-    /** To select precise ID option. */
-    public static enum IdOption
-    {
-        ID_NONE,
-        ID_LABEL,
-        ID_SPINNER;
     }
 }

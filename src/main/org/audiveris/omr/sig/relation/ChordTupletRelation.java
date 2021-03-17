@@ -41,12 +41,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordTupletRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Assigned tuplet support coefficient. */
     private final double tupletCoeff;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletChordRelation} object.
      *
@@ -65,6 +68,7 @@ public class ChordTupletRelation
         this.tupletCoeff = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -135,6 +139,7 @@ public class ChordTupletRelation
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

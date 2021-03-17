@@ -260,10 +260,10 @@ public class SheetAnnotations
 
             // Inner symbols?
             List<SymbolInfo> innerSymbols = symbol.getInnerSymbols();
+
             if (!innerSymbols.isEmpty()) {
                 setIds(innerSymbols);
             }
-
         }
     }
 
@@ -299,7 +299,6 @@ public class SheetAnnotations
         @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
         public final ArrayList<Rectangle> excludedAreas = new ArrayList<>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SheetInfo (String imageFileName,
                           Dimension dim)
         {

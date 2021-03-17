@@ -53,9 +53,11 @@ import java.util.TreeSet;
  */
 public class BarColumn
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BarColumn.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The sheet graph of peaks. */
     private final PeakGraph peakGraph;
 
@@ -71,6 +73,7 @@ public class BarColumn
     /** Mean width. */
     private Double width;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarColumn} object.
      *
@@ -85,6 +88,7 @@ public class BarColumn
         peaks = new StaffPeak[system.getStaves().size()];
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addChain //
     //----------//
@@ -322,6 +326,7 @@ public class BarColumn
         return nb == peaks.length;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Chain //
     //-------//
@@ -333,17 +338,9 @@ public class BarColumn
     {
 
         /** To sort by (de-skewed) abscissa. */
-        public static final Comparator<Chain> byAbscissa = new Comparator<Chain>()
-        {
-            @Override
-            public int compare (Chain c1,
-                                Chain c2)
-            {
-                return Double.compare(
-                        c1.first().getDeskewedAbscissa(),
-                        c2.first().getDeskewedAbscissa());
-            }
-        };
+        public static final Comparator<Chain> byAbscissa = (Chain c1, Chain c2)
+                -> Double.compare(c1.first().getDeskewedAbscissa(),
+                                  c2.first().getDeskewedAbscissa());
 
         /**
          * Create a Chain out of peaks.

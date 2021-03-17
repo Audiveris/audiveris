@@ -37,9 +37,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarConnectionRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarConnectionRelation object.
      *
@@ -51,10 +53,14 @@ public class BarConnectionRelation
         setImpacts(impacts);
     }
 
+    /**
+     * Creates a new {@code BarConnectionRelation} object.
+     */
     public BarConnectionRelation ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -91,6 +97,7 @@ public class BarConnectionRelation
         return constants.barSupportCoeff.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

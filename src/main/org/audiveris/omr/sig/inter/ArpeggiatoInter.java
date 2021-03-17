@@ -57,12 +57,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArpeggiatoInter
         extends AbstractVerticalInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArpeggiatoInter.class);
 
     /** Default thickness of an arpeggiato. */
     public static final double DEFAULT_THICKNESS = 10.0;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoInter} object.
      *
@@ -83,6 +85,7 @@ public class ArpeggiatoInter
         super(null, null, (Double) null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

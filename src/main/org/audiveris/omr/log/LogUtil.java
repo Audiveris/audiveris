@@ -62,6 +62,7 @@ import javax.swing.SwingUtilities;
  */
 public abstract class LogUtil
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** MDC key for book context. */
     public static final String BOOK = "BOOK";
@@ -78,6 +79,12 @@ public abstract class LogUtil
     /** Initial messages before logging is fully set. */
     private static final List<String> initialMessages = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
+    private LogUtil ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addAppender //
     //-------------//
@@ -101,6 +108,7 @@ public abstract class LogUtil
         String now = new SimpleDateFormat("yyyyMMdd'T'HHmm").format(new Date());
         Path logFile = logFolder.resolve(name + "-" + now + ".log");
         fileAppender.setFile(logFile.toAbsolutePath().toString());
+
         PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern("%date %level [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex");
@@ -129,6 +137,7 @@ public abstract class LogUtil
         String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
         Path logPath = WellKnowns.LOG_FOLDER.resolve(now + ".log").toAbsolutePath();
         fileAppender.setFile(logPath.toString());
+
         PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern(
@@ -410,9 +419,5 @@ public abstract class LogUtil
     private static void initMessage (String str)
     {
         initialMessages.add(str);
-    }
-
-    private LogUtil ()
-    {
     }
 }

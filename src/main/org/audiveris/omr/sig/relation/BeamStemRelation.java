@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.BeamPortion.*;
+import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -46,7 +47,6 @@ import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.util.VerticalSide;
 
 /**
  * Class {@code BeamStemRelation} implements the geometric link between a beam

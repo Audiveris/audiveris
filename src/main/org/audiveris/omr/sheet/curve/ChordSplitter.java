@@ -90,11 +90,13 @@ import java.util.TreeSet;
  */
 public class ChordSplitter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordSplitter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The large chord to be split. */
     private final HeadChordInter chord;
 
@@ -120,6 +122,7 @@ public class ChordSplitter
 
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordSplitter} object.
      *
@@ -142,6 +145,7 @@ public class ChordSplitter
         minSubStemLength = sheet.getScale().toPixels(constants.minSubStemLength);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // split //
     //-------//
@@ -250,8 +254,9 @@ public class ChordSplitter
                 ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
 
         for (int iLast = 0, iMax = allPartitions.size() - 1; iLast <= iMax; iLast++) {
-            final int yStop = (iLast != iMax) ? (allPartitions.get(iLast + 1).first().getCenter().y
-                                                         - stemDir) : chord.getTailLocation().y;
+            final int yStop = (iLast != iMax)
+                    ? (allPartitions.get(iLast + 1).first().getCenter().y - stemDir)
+                    : chord.getTailLocation().y;
             final int height = stemDir * (yStop - yStart + 1);
 
             // Extract a sub-stem only if height is significant and smaller than root stem height
@@ -376,6 +381,7 @@ public class ChordSplitter
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

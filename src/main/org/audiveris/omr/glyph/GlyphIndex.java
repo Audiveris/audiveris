@@ -65,11 +65,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlyphIndex
         implements EntityIndex<Glyph>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphIndex.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /**
@@ -91,6 +93,7 @@ public class GlyphIndex
     /** Selection service, if any. */
     private GlyphService glyphService;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphIndex} object.
      */
@@ -98,6 +101,7 @@ public class GlyphIndex
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -356,14 +360,7 @@ public class GlyphIndex
                     MouseMovement.PRESSING,
                     glyph);
 
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    glyphService.publish(event);
-                }
-            });
+            SwingUtilities.invokeLater(() -> glyphService.publish(event));
         }
     }
 
@@ -466,6 +463,7 @@ public class GlyphIndex
         return id;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

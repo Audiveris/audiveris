@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -22,11 +23,14 @@ import javax.swing.SwingUtilities;
 public class WrapLayout
         extends FlowLayout
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WrapLayout.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private Dimension preferredLayoutSize;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructs a new <code>WrapLayout</code> with a left
      * alignment and a default 5-unit horizontal and vertical gap.
@@ -69,36 +73,37 @@ public class WrapLayout
     {
         super(align, hgap, vgap);
     }
-//
-//    /**
-//     * Layout the components in the Container using the layout logic of the parent
-//     * FlowLayout class.
-//     *
-//     * @param target the Container using this WrapLayout
-//     */
-//    @Override
-//    public void layoutContainer (Container target)
-//    {
-//        Dimension size = preferredLayoutSize(target);
-//        // When a frame is minimized or maximized the preferred size of the
-//        // Container is assumed not to change. Therefore we need to force a
-//        // validate() to make sure that space, if available, is allocated to
-//        // the panel using a WrapLayout.
-//        if (size.equals(preferredLayoutSize)) {
-//            super.layoutContainer(target);
-//        } else {
-//            preferredLayoutSize = size;
-//            Container top = target;
-//
-//            while (top.getParent() != null) {
-//                top = top.getParent();
-//            }
-//
-//            top.validate();
-//        }
-//    }
-//
 
+    //~ Methods ------------------------------------------------------------------------------------
+    //
+    //    /**
+    //     * Layout the components in the Container using the layout logic of the parent
+    //     * FlowLayout class.
+    //     *
+    //     * @param target the Container using this WrapLayout
+    //     */
+    //    @Override
+    //    public void layoutContainer (Container target)
+    //    {
+    //        Dimension size = preferredLayoutSize(target);
+    //        // When a frame is minimized or maximized the preferred size of the
+    //        // Container is assumed not to change. Therefore we need to force a
+    //        // validate() to make sure that space, if available, is allocated to
+    //        // the panel using a WrapLayout.
+    //        if (size.equals(preferredLayoutSize)) {
+    //            super.layoutContainer(target);
+    //        } else {
+    //            preferredLayoutSize = size;
+    //            Container top = target;
+    //
+    //            while (top.getParent() != null) {
+    //                top = top.getParent();
+    //            }
+    //
+    //            top.validate();
+    //        }
+    //    }
+    //
     /**
      * Returns the preferred dimensions for this layout given the
      * <i>visible</i> components in the specified target container.
@@ -126,6 +131,7 @@ public class WrapLayout
     {
         Dimension minimum = layoutSize(target, false);
         minimum.width -= (getHgap() + 1);
+
         return minimum;
     }
 
@@ -144,12 +150,12 @@ public class WrapLayout
             //  Each row must fit with the width allocated to the container.
             //  When the container width = 0, the preferred width of the container
             //  has not yet been calculated so lets ask for the maximum.
-
             Container container = target;
 
-            while (container.getSize().width == 0 && container.getParent() != null) {
+            while ((container.getSize().width == 0) && (container.getParent() != null)) {
                 container = container.getParent();
             }
+
             logger.debug("WRAP_LAYOUT containerName: {}", container.getName());
 
             int targetWidth = container.getSize().width;
@@ -178,7 +184,7 @@ public class WrapLayout
                     Dimension d = preferred ? m.getPreferredSize() : m.getMinimumSize();
 
                     //  Can't add the component to current row. Start a new row.
-                    if (rowWidth + d.width > maxWidth) {
+                    if ((rowWidth + d.width) > maxWidth) {
                         addRow(dim, rowWidth, rowHeight);
                         rowWidth = 0;
                         rowHeight = 0;
@@ -197,7 +203,7 @@ public class WrapLayout
             addRow(dim, rowWidth, rowHeight);
 
             dim.width += horizontalInsetsAndGap;
-            dim.height += insets.top + insets.bottom + vgap * 2;
+            dim.height += (insets.top + insets.bottom + (vgap * 2));
 
             //	When using a scroll pane or the DecoratedLookAndFeel we need to
             //  make sure the preferred size is less than the size of the
@@ -205,11 +211,12 @@ public class WrapLayout
             //  correctly. Removing the horizontal gap is an easy way to do this.
             Container scrollPane = SwingUtilities.getAncestorOfClass(JScrollPane.class, target);
 
-            if (scrollPane != null && target.isValid()) {
+            if ((scrollPane != null) && target.isValid()) {
                 dim.width -= (hgap + 1);
             }
 
             logger.debug("WRAP_LAYOUT containerSize:{} dim:{}", container.getSize(), dim);
+
             return dim;
         }
     }

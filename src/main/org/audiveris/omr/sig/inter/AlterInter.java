@@ -62,8 +62,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AlterInter
         extends AbstractPitchedInter
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
@@ -235,6 +235,7 @@ public class AlterInter
             return new Point2D.Double(center.getX(),
                                       center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
         }
+
         default:
             return center;
         }
@@ -261,6 +262,7 @@ public class AlterInter
     {
         final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
+
         final int profile = Math.max(getProfile(), system.getProfile());
 
         return lookupLinks(systemHeads, profile);
@@ -326,9 +328,8 @@ public class AlterInter
         Rectangle accidBox = getBounds();
         Point accidPt = new Point(
                 accidBox.x + accidBox.width,
-                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT)) ? (accidBox.y
-                                                                                   + (accidBox.height
-                                                                                      / 2))
+                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT))
+                        ? (accidBox.y + (accidBox.height / 2))
                         : (accidBox.y + ((3 * accidBox.height) / 4)));
         Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
         List<Inter> notes = Inters.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
@@ -495,6 +496,7 @@ public class AlterInter
         return new Pitches((int) Math.rint(geoPitch), geoPitch);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Pitches //
     //---------//
@@ -524,7 +526,6 @@ public class AlterInter
         }
     }
 
-    //~ Internal Classes ---------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

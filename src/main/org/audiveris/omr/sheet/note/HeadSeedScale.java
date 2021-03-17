@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
-import java.util.ArrayList;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Jaxb;
@@ -29,8 +28,10 @@ import org.audiveris.omr.util.Jaxb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Map.Entry;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -56,6 +57,9 @@ public class HeadSeedScale
     final EnumMap<Shape, EnumMap<HorizontalSide, Double>> global = new EnumMap<>(Shape.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code HeadSeedScale} object.
+     */
     public HeadSeedScale ()
     {
     }
@@ -121,6 +125,7 @@ public class HeadSeedScale
             }
 
             sb.append(entry.getKey()).append('[');
+
             boolean innerStarted = false;
 
             for (Entry<HorizontalSide, Double> e : entry.getValue().entrySet()) {

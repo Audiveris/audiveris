@@ -55,12 +55,15 @@ import javax.swing.JMenuItem;
 public class ExtractionMenu
         extends LocationDependentMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ExtractionMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the extraction menu
      *
@@ -75,6 +78,7 @@ public class ExtractionMenu
         add(new JMenuItem(new AreaAction())); // Save just a rectangle of sheet
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // save //
     //------//
@@ -104,6 +108,7 @@ public class ExtractionMenu
         logger.info("Extraction stored as {}", file);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AreaAction //
     //------------//

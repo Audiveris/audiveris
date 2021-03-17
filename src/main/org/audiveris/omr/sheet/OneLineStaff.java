@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import java.awt.geom.Point2D;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.note.NotePosition;
 
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.sheet.note.NotePosition;
 
 /**
  * Class {@code OneLineStaff} is a one-line staff dedicated to percussion instrument.
@@ -45,10 +45,8 @@ import org.audiveris.omr.sheet.note.NotePosition;
 public class OneLineStaff
         extends Staff
 {
-
-    //~ Static fields/initializers -----------------------------------------------------------------
-    //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a {@code OneLineStaff} object
      *
@@ -67,7 +65,6 @@ public class OneLineStaff
         super(id, left, right, specificInterline, lines);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * No-arg constructor needed for JAXB.
      */
@@ -75,6 +72,7 @@ public class OneLineStaff
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public boolean isOneLineStaff ()
     {
@@ -128,8 +126,6 @@ public class OneLineStaff
         // (Used to disambiguate whole vs half rests)
         double middle = getMidLine().yAt(pt.getX());
 
-        return 2 * (pt.getY() - middle) / getSpecificInterline();
+        return (2 * (pt.getY() - middle)) / getSpecificInterline();
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

@@ -35,7 +35,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.concurrent.Exchanger;
 
 import javax.swing.JDialog;
@@ -50,9 +49,11 @@ import javax.swing.JOptionPane;
 public class ModelessOptionPane
         extends JOptionPane
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ModelessOptionPane.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // showConfirmDialog //
     //-------------------//
@@ -124,27 +125,22 @@ public class ModelessOptionPane
                 pane.setValue(JOptionPane.UNINITIALIZED_VALUE);
             }
         });
-        pane.addPropertyChangeListener(new PropertyChangeListener()
-        {
-            @Override
-            public void propertyChange (PropertyChangeEvent event)
-            {
-                // Let the defaultCloseOperation handle the closing
-                // if the user closed the window without selecting a button
-                // (newValue = null in that case).  Otherwise, close the dialog.
-                if (dialog.isVisible() && (event.getSource() == pane)
-                            && (event.getPropertyName().equals(VALUE_PROPERTY))
-                            && (event.getNewValue() != null)
-                            && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
-                    JOptionPane pane = (JOptionPane) event.getSource();
+        pane.addPropertyChangeListener((PropertyChangeEvent event) -> {
+            // Let the defaultCloseOperation handle the closing
+            // if the user closed the window without selecting a button
+            // (newValue = null in that case).  Otherwise, close the dialog.
+            if (dialog.isVisible() && (event.getSource() == pane)
+                        && (event.getPropertyName().equals(VALUE_PROPERTY))
+                        && (event.getNewValue() != null)
+                        && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
+                JOptionPane srcPane = (JOptionPane) event.getSource();
 
-                    dialog.setVisible(false);
+                dialog.setVisible(false);
 
-                    try {
-                        exchanger.exchange(optionOf(pane));
-                    } catch (InterruptedException ex) {
-                        logger.warn("Exchange got interrupted", ex);
-                    }
+                try {
+                    exchanger.exchange(optionOf(srcPane));
+                } catch (InterruptedException ex) {
+                    logger.warn("Exchange got interrupted", ex);
                 }
             }
         });

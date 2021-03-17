@@ -34,6 +34,7 @@ import java.util.Comparator;
  */
 public class Evaluation
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Absolute confidence in shape manually assigned by the user. */
     public static final double MANUAL = 3;
@@ -54,6 +55,7 @@ public class Evaluation
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluated shape. */
     public Shape shape;
 
@@ -66,6 +68,7 @@ public class Evaluation
     /** The specific check that failed, if any. */
     public Failure failure;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an initialized evaluation instance.
      *
@@ -79,6 +82,7 @@ public class Evaluation
         this.grade = grade;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//
@@ -106,6 +110,7 @@ public class Evaluation
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Failure //
     //---------//

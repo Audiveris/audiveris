@@ -33,8 +33,8 @@ import java.nio.file.Path;
 public class SheetPathHistory
         extends AbstractHistory<SheetPath>
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new {@code SheetPathHistory} object.
      *
