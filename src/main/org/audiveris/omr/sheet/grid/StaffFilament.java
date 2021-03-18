@@ -338,7 +338,8 @@ public class StaffFilament
         }
 
         final StaffLine staffLine = new StaffLine(points, getThickness());
-        staffLine.reducePoints(constants.maxSimplificationShift.getValue());
+        ///staffLine.reducePoints(constants.maxSimplificationShift.getValue());
+        staffLine.simplify(constants.maxSimplificationShift.getValue(), segmentLength);
         staffLine.setGlyph(glyph);
 
         return staffLine;
