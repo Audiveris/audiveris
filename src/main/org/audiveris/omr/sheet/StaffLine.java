@@ -272,51 +272,81 @@ public class StaffLine
         }
     }
 
-    //--------------//
-    // reducePoints //
-    //--------------//
     /**
      * Reduce the number of intermediate defining points while respecting the provided
      * maximum ordinate shift.
      * <p>
      * Strategy is as follows:
      * <ol>
-     * <li>Inspect middle intermediate point.
-     * <li>Remove it to check if ordinate at its x location remains OK.
-     * <li>If so, choose the new middle point to check
-     * <li>If not, re-insert this point and reduce left and right sub-lists
+     * <li>Start with a spline built with just the two left and right defining points
+     * <li>Check spline ordinate at every original defining point vs original defining ordinate
+     * <li>If all measured ordinates are OK vs maximum shift, return the current list of points
+     * <li>If at least one ordinate is not OK, cut all segments in two
+     * <li>If segment length is shorter than original segments length, stay with originals
+     * <li>Else, compute the new spline and re-check
      * </ol>
      *
-     * @param maxDy maximum acceptable ordinate shift
+     * @param maxDy         maximum acceptable ordinate shift
+     * @param segmentLength original segments length
      */
-    public void reducePoints (double maxDy)
+    public void simplify (double maxDy,
+                          int segmentLength)
     {
-        reduceList(points, maxDy);
+        final Point2D left = points.get(0);
+        final Point2D right = points.get(points.size() - 1);
+        final List<Point2D> defs = simplify(left, right, maxDy, segmentLength);
+
+        if (!defs.equals(points)) {
+            spline = null;
+            points.clear();
+            points.addAll(defs);
+        }
     }
 
-    private void reduceList (List<Point2D> pts,
-                             double maxDy)
+    private List<Point2D> simplify (Point2D left,
+                                    Point2D right,
+                                    double maxDy,
+                                    int segmentLength)
     {
-        if (pts.size() <= 2) {
-            return;
-        }
+        final double width = right.getX() - left.getX();
+        final List<Point2D> defs = new ArrayList<>();
+        defs.add(left);
+        defs.add(right);
 
-        final int mid = pts.size() / 2;
-        Point2D p = pts.get(mid);
-        pts.remove(mid);
-        spline = null;
+        while (true) {
+            final double segLg = width / (defs.size() - 1);
 
-        double y = yAt(p.getX());
+            if (segLg < segmentLength) {
+                logger.debug("Initial    pts:{}", points.size());
+                return points;
+            }
 
-        if (Math.abs(y - p.getY()) > maxDy) {
-            // Re-insert point
-            pts.add(mid, p);
-            spline = null;
+            // Check ordinate on all original points
+            final NaturalSpline mySpline = NaturalSpline.interpolate(defs);
+            boolean ok = true;
 
-            reduceList(pts.subList(0, mid), maxDy);
-            reduceList(pts.subList(mid, pts.size()), maxDy);
-        } else {
-            reduceList(pts, maxDy);
+            for (Point2D org : points) {
+                final double dy = mySpline.yAtX(org.getX()) - org.getY();
+
+                if (Math.abs(dy) > maxDy) {
+                    ok = false;
+                    break;
+                }
+            }
+
+            if (ok) {
+                logger.debug("Simplified pts:{}", defs.size());
+                return defs;
+            }
+
+            // Divide every segment in two
+            for (int i = 0; i < defs.size() - 1; i += 2) {
+                final Point2D lp = defs.get(i);
+                final Point2D rp = defs.get(i + 1);
+                final double x = 0.5 * (lp.getX() + rp.getX());
+                final double y = yAt(x);
+                defs.add(i + 1, new Point2D.Double(x, y));
+            }
         }
     }
 
