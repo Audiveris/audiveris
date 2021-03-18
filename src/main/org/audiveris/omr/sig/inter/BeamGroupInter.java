@@ -824,14 +824,18 @@ public class BeamGroupInter
         for (int i = 0; i < beams.size(); i++) {
             final AbstractBeamInter beam = (AbstractBeamInter) beams.get(i);
 
-            if (beam.getGroup() != null) {
-                continue;
+            if (beam.isVip()) {
+                logger.info("VIP groupBeam for {}", beam);
             }
 
-            // This beam is not compatible with any previous beam, so let's start a new group
-            final BeamGroupInter group = new BeamGroupInter();
-            sig.addVertex(group);
-            group.addMember(beam);
+            BeamGroupInter group = beam.getGroup();
+
+            if (group == null) {
+                // This beam is not compatible with any previous beam, so let's start a new group
+                group = new BeamGroupInter();
+                sig.addVertex(group);
+                group.addMember(beam);
+            }
 
             final Rectangle luBox = beam.getBounds();
             luBox.grow(0, (int) Math.ceil(maxYDistance - (beam.getHeight() / 2)));

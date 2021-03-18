@@ -94,10 +94,11 @@ public class ChordsStep
         // Gather all system notes (heads & rests) into chords
         new ChordsBuilder(system).buildHeadChords();
 
-        // Verify beam-chord connections
         final ChordsLinker linker = new ChordsLinker(system);
-        linker.checkBeamChords();
 
+        // Verify beam-chord connections
+        ///linker.checkBeamChords(); // Not compatible with some beams
+        //
         // Handle chord relationships with other symbols within the same system
         linker.linkChords();
     }
