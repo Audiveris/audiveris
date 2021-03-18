@@ -181,6 +181,7 @@ public class BeamsBuilder
 
         // First, retrieve beam candidates from spots
         sortedBeamSpots = system.getGroupedGlyphs(GlyphGroup.BEAM_SPOT);
+        Collections.sort(sortedBeamSpots, Glyphs.byFullOrdinate);
 
         // Create initial beams by checking spots individually
         createBeams();

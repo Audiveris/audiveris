@@ -131,6 +131,39 @@ public abstract class Glyphs
         }
     };
 
+    /**
+     * To compare glyphs according to their top ordinate (then left abscissa, then id).
+     * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
+     */
+    public static final Comparator<Glyph> byFullOrdinate = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            if (g1 == g2) {
+                return 0;
+            }
+
+            // Ordinate
+            int dy = g1.getTop() - g2.getTop();
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Abscissa
+            int dx = g1.getLeft() - g2.getLeft();
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Finally, use id ...
+            return Integer.compare(g1.getId(), g2.getId());
+        }
+    };
+
     /** To compare glyphs according to their decreasing bottom ordinate. */
     public static final Comparator<Glyph> byReverseBottom = new Comparator<Glyph>()
     {

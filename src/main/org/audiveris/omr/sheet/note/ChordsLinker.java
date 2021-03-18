@@ -23,25 +23,15 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
-import org.audiveris.omr.sig.inter.BeamInter;
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BeamPortion;
-import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.Rectangle;
-import java.util.List;
 
 /**
  * Class {@code ChordsLinker} works at system level to handle relations between chords
@@ -94,70 +84,70 @@ public class ChordsLinker
      * Not a beam side chord.
      * The one with weaker connection.
      * <p>
-     * TODO: Perhaps choose the one in opposite direction WRT chord majority?
+     * NOTA: These checks are no longer relevant!!!
      */
     public void checkBeamChords ()
     {
-        final double maxRatio = constants.maxAbscissaOverlapRatio.getValue();
-
-        for (Inter inter : system.getSig().inters(BeamInter.class)) {
-            if (inter.isVip()) {
-                logger.info("VIP checkBeamChords for {}", inter);
-            }
-
-            final BeamInter beam = (BeamInter) inter;
-            final List<AbstractChordInter> chords = beam.getChords(); // Sorted by center abscissa
-
-            AbstractChordInter prevChord = null;
-
-            for (AbstractChordInter chord : chords) {
-                final Rectangle bounds = chord.getBounds();
-
-                if (prevChord != null) {
-                    final int overlap = GeoUtil.xOverlap(prevChord.getBounds(), bounds);
-                    final double ratio = (double) overlap / bounds.width;
-
-                    if (ratio > maxRatio) {
-                        logger.info("{} Overlapping {} {} vs {}", beam, ratio, prevChord, chord);
-
-                        StemInter prevStem = prevChord.getStem();
-                        BeamStemRelation prevRel = (BeamStemRelation) sig.getRelation(
-                                beam,
-                                prevStem,
-                                BeamStemRelation.class);
-
-                        StemInter stem = chord.getStem();
-                        BeamStemRelation rel = (BeamStemRelation) sig.getRelation(
-                                beam,
-                                stem,
-                                BeamStemRelation.class);
-
-                        final BeamStemRelation guiltyRel;
-
-                        if (prevRel.getBeamPortion() == BeamPortion.LEFT) {
-                            guiltyRel = rel; // Keep beam side chord
-                        } else if (rel.getBeamPortion() == BeamPortion.RIGHT) {
-                            guiltyRel = prevRel; // Keep beam side chord
-                        } else {
-                            // Use connection grade
-                            guiltyRel = (prevRel.getGrade() < rel.getGrade()) ? prevRel : rel;
-                        }
-
-                        sig.removeEdge(guiltyRel);
-
-                        AbstractChordInter guiltyChord = (guiltyRel == prevRel) ? prevChord : chord;
-                        logger.info("{} disconnected from {}", guiltyChord, beam);
-
-                        // Adjust which is the "current" chord
-                        if (guiltyRel == rel) {
-                            chord = prevChord;
-                        }
-                    }
-                }
-
-                prevChord = chord;
-            }
-        }
+//        final double maxRatio = constants.maxAbscissaOverlapRatio.getValue();
+//
+//        for (Inter inter : system.getSig().inters(BeamInter.class)) {
+//            if (inter.isVip()) {
+//                logger.info("VIP checkBeamChords for {}", inter);
+//            }
+//
+//            final BeamInter beam = (BeamInter) inter;
+//            final List<AbstractChordInter> chords = beam.getChords(); // Sorted by center abscissa
+//
+//            AbstractChordInter prevChord = null;
+//
+//            for (AbstractChordInter chord : chords) {
+//                final Rectangle bounds = chord.getBounds();
+//
+//                if (prevChord != null) {
+//                    final int overlap = GeoUtil.xOverlap(prevChord.getBounds(), bounds);
+//                    final double ratio = (double) overlap / bounds.width;
+//
+//                    if (ratio > maxRatio) {
+//                        logger.info("{} Overlapping {} {} vs {}", beam, ratio, prevChord, chord);
+//
+//                        StemInter prevStem = prevChord.getStem();
+//                        BeamStemRelation prevRel = (BeamStemRelation) sig.getRelation(
+//                                beam,
+//                                prevStem,
+//                                BeamStemRelation.class);
+//
+//                        StemInter stem = chord.getStem();
+//                        BeamStemRelation rel = (BeamStemRelation) sig.getRelation(
+//                                beam,
+//                                stem,
+//                                BeamStemRelation.class);
+//
+//                        final BeamStemRelation guiltyRel;
+//
+//                        if (prevRel.getBeamPortion() == BeamPortion.LEFT) {
+//                            guiltyRel = rel; // Keep beam side chord
+//                        } else if (rel.getBeamPortion() == BeamPortion.RIGHT) {
+//                            guiltyRel = prevRel; // Keep beam side chord
+//                        } else {
+//                            // Use connection grade
+//                            guiltyRel = (prevRel.getGrade() < rel.getGrade()) ? prevRel : rel;
+//                        }
+//
+//                        sig.removeEdge(guiltyRel);
+//
+//                        AbstractChordInter guiltyChord = (guiltyRel == prevRel) ? prevChord : chord;
+//                        logger.info("{} disconnected from {}", guiltyChord, beam);
+//
+//                        // Adjust which is the "current" chord
+//                        if (guiltyRel == rel) {
+//                            chord = prevChord;
+//                        }
+//                    }
+//                }
+//
+//                prevChord = chord;
+//            }
+//        }
     }
 
     //------------//
