@@ -294,20 +294,6 @@ public class StaffLine
     {
         final Point2D left = points.get(0);
         final Point2D right = points.get(points.size() - 1);
-        final List<Point2D> defs = simplify(left, right, maxDy, segmentLength);
-
-        if (!defs.equals(points)) {
-            spline = null;
-            points.clear();
-            points.addAll(defs);
-        }
-    }
-
-    private List<Point2D> simplify (Point2D left,
-                                    Point2D right,
-                                    double maxDy,
-                                    int segmentLength)
-    {
         final double width = right.getX() - left.getX();
         final List<Point2D> defs = new ArrayList<>();
         defs.add(left);
@@ -318,7 +304,7 @@ public class StaffLine
 
             if (segLg < segmentLength) {
                 logger.debug("Initial    pts:{}", points.size());
-                return points;
+                return; // Failure
             }
 
             // Check ordinate on all original points
@@ -336,7 +322,10 @@ public class StaffLine
 
             if (ok) {
                 logger.debug("Simplified pts:{}", defs.size());
-                return defs;
+                spline = null;
+                points.clear();
+                points.addAll(defs);
+                return; // Success
             }
 
             // Divide every segment in two

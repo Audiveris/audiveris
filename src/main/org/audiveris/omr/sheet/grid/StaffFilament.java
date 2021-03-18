@@ -338,7 +338,6 @@ public class StaffFilament
         }
 
         final StaffLine staffLine = new StaffLine(points, getThickness());
-        ///staffLine.reducePoints(constants.maxSimplificationShift.getValue());
         staffLine.simplify(constants.maxSimplificationShift.getValue(), segmentLength);
         staffLine.setGlyph(glyph);
 
@@ -414,7 +413,7 @@ public class StaffFilament
 
         private final Constant.Double maxSimplificationShift = new Constant.Double(
                 "pixels",
-                0.25,
+                1.0,
                 "Maximum acceptable vertical shift when simplifying staff line points");
     }
 
