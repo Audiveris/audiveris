@@ -58,171 +58,88 @@ public abstract class Glyphs
      * To compare glyphs according to their id.
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
-    public static final Comparator<Glyph> byId = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            return Integer.compare(g1.getId(), g2.getId());
-        }
-    };
+    public static final Comparator<Glyph> byId = (g1, g2)
+            -> Integer.compare(g1.getId(), g2.getId());
 
     /** To compare glyphs according to their left abscissa. */
-    public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            return Integer.compare(g1.getLeft(), g2.getLeft());
-        }
-    };
+    public static final Comparator<Glyph> byAbscissa = (g1, g2)
+            -> (g1 == g2) ? 0 : Integer.compare(g1.getLeft(), g2.getLeft());
 
     /**
      * To compare glyphs according to their left abscissa (then top ordinate, then id).
-     * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
+     * This comparator, which requires that all handled glyphs have an ID, can be used for a
+     * set.
      */
-    public static final Comparator<Glyph> byFullAbscissa = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            // Abscissa
-            int dx = g1.getLeft() - g2.getLeft();
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Ordinate
-            int dy = g1.getTop() - g2.getTop();
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Finally, use id ...
-            return Integer.compare(g1.getId(), g2.getId());
+    public static final Comparator<Glyph> byFullAbscissa = (g1, g2) -> {
+        if (g1 == g2) {
+            return 0;
         }
+
+        // Abscissa
+        int dx = g1.getLeft() - g2.getLeft();
+
+        if (dx != 0) {
+            return dx;
+        }
+
+        // Ordinate
+        int dy = g1.getTop() - g2.getTop();
+
+        if (dy != 0) {
+            return dy;
+        }
+
+        // Finally, use id ...
+        return Integer.compare(g1.getId(), g2.getId());
     };
 
     /** To compare glyphs according to their top ordinate. */
-    public static final Comparator<Glyph> byOrdinate = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            return Integer.compare(g1.getTop(), g2.getTop());
-        }
-    };
+    public static final Comparator<Glyph> byOrdinate = (g1, g2)
+            -> (g1 == g2) ? 0 : Integer.compare(g1.getTop(), g2.getTop());
 
     /**
      * To compare glyphs according to their top ordinate (then left abscissa, then id).
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
-    public static final Comparator<Glyph> byFullOrdinate = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            // Ordinate
-            int dy = g1.getTop() - g2.getTop();
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Abscissa
-            int dx = g1.getLeft() - g2.getLeft();
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Finally, use id ...
-            return Integer.compare(g1.getId(), g2.getId());
+    public static final Comparator<Glyph> byFullOrdinate = (g1, g2) -> {
+        if (g1 == g2) {
+            return 0;
         }
+
+        // Ordinate
+        int dy = g1.getTop() - g2.getTop();
+
+        if (dy != 0) {
+            return dy;
+        }
+
+        // Abscissa
+        int dx = g1.getLeft() - g2.getLeft();
+
+        if (dx != 0) {
+            return dx;
+        }
+
+        // Finally, use id ...
+        return Integer.compare(g1.getId(), g2.getId());
     };
 
     /** To compare glyphs according to their decreasing bottom ordinate. */
-    public static final Comparator<Glyph> byReverseBottom = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            return Integer.compare(g2.getTop() + g2.getHeight(), g1.getTop() + g1.getHeight());
-        }
-    };
+    public static final Comparator<Glyph> byReverseBottom = (g1, g2)
+            -> (g1 == g2) ? 0 : Integer.compare(g2.getTop() + g2.getHeight(),
+                                                g1.getTop() + g1.getHeight());
 
     /** To compare glyphs according to their (increasing) weight. */
-    public static final Comparator<Glyph> byWeight = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            return Integer.compare(g1.getWeight(), g2.getWeight());
-        }
-    };
+    public static final Comparator<Glyph> byWeight = (g1, g2)
+            -> (g1 == g2) ? 0 : Integer.compare(g1.getWeight(), g2.getWeight());
 
     /** To compare glyphs according to their (increasing) width. */
-    public static final Comparator<Glyph> byWidth = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            return Integer.compare(g1.getWidth(), g2.getWidth());
-        }
-    };
+    public static final Comparator<Glyph> byWidth = (g1, g2)
+            -> (g1 == g2) ? 0 : Integer.compare(g1.getWidth(), g2.getWidth());
 
     /** To compare glyphs according to their decreasing weight. */
-    public static final Comparator<Glyph> byReverseWeight = new Comparator<Glyph>()
-    {
-        @Override
-        public int compare (Glyph g1,
-                            Glyph g2)
-        {
-            if (g1 == g2) {
-                return 0;
-            }
-
-            return Integer.compare(g2.getWeight(), g1.getWeight());
-        }
-    };
+    public static final Comparator<Glyph> byReverseWeight = (g1, g2)
+            -> (g1 == g2) ? 0 : Integer.compare(g2.getWeight(), g1.getWeight());
 
     //~ Constructors -------------------------------------------------------------------------------
     // Class is not meant to be instantiated.

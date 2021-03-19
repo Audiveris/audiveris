@@ -66,18 +66,12 @@ public class SentenceInter
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
-    public static final Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
-    {
-        @Override
-        public int compare (SentenceInter s1,
-                            SentenceInter s2)
-        {
-            final Skew skew = s1.getSig().getSystem().getSkew();
+    public static final Comparator<SentenceInter> byOrdinate = (s1, s2) -> {
+        final Skew skew = s1.getSig().getSystem().getSkew();
 
-            return Double.compare(
-                    skew.deskewed(s1.getLocation()).getY(),
-                    skew.deskewed(s2.getLocation()).getY());
-        }
+        return Double.compare(
+                skew.deskewed(s1.getLocation()).getY(),
+                skew.deskewed(s2.getLocation()).getY());
     };
 
     //~ Instance fields ----------------------------------------------------------------------------

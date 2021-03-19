@@ -79,17 +79,11 @@ public class ChordsBuilder
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
 
     /** To sort head-stem relations left to right. */
-    private static final Comparator<Relation> byHeadSide = new Comparator<Relation>()
-    {
-        @Override
-        public int compare (Relation o1,
-                            Relation o2)
-        {
-            final HorizontalSide s1 = ((HeadStemRelation) o1).getHeadSide();
-            final HorizontalSide s2 = ((HeadStemRelation) o2).getHeadSide();
+    private static final Comparator<Relation> byHeadSide = (Relation o1, Relation o2) -> {
+        final HorizontalSide s1 = ((HeadStemRelation) o1).getHeadSide();
+        final HorizontalSide s2 = ((HeadStemRelation) o2).getHeadSide();
 
-            return s1.compareTo(s2);
-        }
+        return s1.compareTo(s2);
     };
 
     //~ Instance fields ----------------------------------------------------------------------------

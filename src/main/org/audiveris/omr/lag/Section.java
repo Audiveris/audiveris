@@ -74,112 +74,65 @@ public interface Section
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A section comparator, using section id. */
-    public static final Comparator<Section> idComparator = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            return Integer.compare(s1.getId(), s2.getId());
-        }
-    };
+    public static final Comparator<Section> idComparator = (Section s1, Section s2)
+            -> Integer.compare(s1.getId(), s2.getId());
 
     /** For comparing Section instances on their decreasing weight. */
-    public static final Comparator<Section> reverseWeightComparator = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            return Integer.signum(s2.getWeight() - s1.getWeight());
-        }
-    };
+    public static final Comparator<Section> reverseWeightComparator = (Section s1, Section s2)
+            -> Integer.signum(s2.getWeight() - s1.getWeight());
 
     /** For comparing Section instances on their start value. */
-    public static final Comparator<Section> byCoordinate = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            return s1.getStartCoord() - s2.getStartCoord();
-        }
-    };
+    public static final Comparator<Section> byCoordinate = (Section s1, Section s2)
+            -> s1.getStartCoord() - s2.getStartCoord();
 
     /** For comparing Section instances on their position value. */
-    public static final Comparator<Section> byPosition = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            return s1.getFirstPos() - s2.getFirstPos();
-        }
-    };
+    public static final Comparator<Section> byPosition = (Section s1, Section s2)
+            -> s1.getFirstPos() - s2.getFirstPos();
 
     /** For comparing Section instances on their position, then coordinate values. */
-    public static final Comparator<Section> byFullPosition = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            final int p1 = s1.getFirstPos();
-            final int p2 = s2.getFirstPos();
+    public static final Comparator<Section> byFullPosition = (Section s1, Section s2) -> {
+        final int p1 = s1.getFirstPos();
+        final int p2 = s2.getFirstPos();
 
-            if (p1 != p2) {
-                return p1 - p2;
-            }
-
-            final int c1 = s1.getStartCoord();
-            final int c2 = s2.getStartCoord();
-
-            return c1 - c2;
+        if (p1 != p2) {
+            return p1 - p2;
         }
+
+        final int c1 = s1.getStartCoord();
+        final int c2 = s2.getStartCoord();
+
+        return c1 - c2;
     };
 
     /** For comparing Section instances on their absolute abscissa. */
-    public static final Comparator<Section> byAbscissa = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            return Integer.compare(s1.getBounds().x, s2.getBounds().x);
-        }
-    };
+    public static final Comparator<Section> byAbscissa = (Section s1, Section s2)
+            -> Integer.compare(s1.getBounds().x, s2.getBounds().x);
 
     /** For comparing Section instances on their absolute abscissa, ordinate, id. */
-    public static final Comparator<Section> byFullAbscissa = new Comparator<Section>()
-    {
-        @Override
-        public int compare (Section s1,
-                            Section s2)
-        {
-            if (s1 == s2) {
-                return 0;
-            }
-
-            final Point ref = s1.getBounds().getLocation();
-            final Point otherRef = s2.getBounds().getLocation();
-
-            // Are x values different?
-            final int dx = ref.x - otherRef.x;
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Vertically aligned, so use ordinates
-            final int dy = ref.y - otherRef.y;
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Finally, use id. Note this should return zero if different sections cannot overlap
-            return Integer.compare(s1.getId(), s2.getId());
+    public static final Comparator<Section> byFullAbscissa = (Section s1, Section s2) -> {
+        if (s1 == s2) {
+            return 0;
         }
+
+        final Point ref = s1.getBounds().getLocation();
+        final Point otherRef = s2.getBounds().getLocation();
+
+        // Are x values different?
+        final int dx = ref.x - otherRef.x;
+
+        if (dx != 0) {
+            return dx;
+        }
+
+        // Vertically aligned, so use ordinates
+        final int dy = ref.y - otherRef.y;
+
+        if (dy != 0) {
+            return dy;
+        }
+
+        // Finally, use id. Note this should return zero if different sections cannot overlap
+        return Integer.compare(s1.getId(), s2.getId());
     };
 
     //~ Methods ------------------------------------------------------------------------------------

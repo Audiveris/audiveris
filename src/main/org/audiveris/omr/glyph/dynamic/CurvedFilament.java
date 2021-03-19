@@ -40,7 +40,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -356,19 +355,9 @@ public class CurvedFilament
 
                 if (found.size() > 1) {
                     // Pick up the section closest to the point
-                    Collections.sort(
-                            found,
-                            new Comparator<Section>()
-                    {
-                        @Override
-                        public int compare (Section s1,
-                                            Section s2)
-                        {
-                            return Double.compare(
-                                    point.distance(s1.getCentroid()),
-                                    point.distance(s2.getCentroid()));
-                        }
-                    });
+                    Collections.sort(found, (Section s1, Section s2) -> Double.compare(
+                            point.distance(s1.getCentroid()),
+                            point.distance(s2.getCentroid())));
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);

@@ -121,21 +121,16 @@ public class SigReducer
                                                                      WedgeInter.class};
 
     /** Predicate for non-disabled overlap. */
-    private static final Predicate<Inter> overlapPredicate = new Predicate<Inter>()
-    {
-        @Override
-        public boolean test (Inter inter)
-        {
-            final Class<?> interClass = inter.getClass();
+    private static final Predicate<Inter> overlapPredicate = (Inter inter) -> {
+        final Class<?> interClass = inter.getClass();
 
-            for (Class classe : disabledClasses) {
-                if (classe.isAssignableFrom(interClass)) {
-                    return false;
-                }
+        for (Class classe : disabledClasses) {
+            if (classe.isAssignableFrom(interClass)) {
+                return false;
             }
-
-            return true;
         }
+
+        return true;
     };
 
     /**

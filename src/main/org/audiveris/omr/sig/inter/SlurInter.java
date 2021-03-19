@@ -105,89 +105,62 @@ public class SlurInter
     private static final Logger logger = LoggerFactory.getLogger(SlurInter.class);
 
     /** To sort slurs vertically within a measure. */
-    public static final Comparator<SlurInter> verticalComparator = new Comparator<SlurInter>()
-    {
-        @Override
-        public int compare (SlurInter s1,
-                            SlurInter s2)
-        {
-            return Double.compare(s1.getCurve().getY1(), s2.getCurve().getY1());
-        }
-    };
+    public static final Comparator<SlurInter> verticalComparator = (SlurInter s1, SlurInter s2)
+            -> Double.compare(s1.getCurve().getY1(), s2.getCurve().getY1());
 
     /**
      * Predicate for a slur not connected on both ends.
      */
-    public static final Predicate<SlurInter> isOrphan = new Predicate<SlurInter>()
-    {
-        @Override
-        public boolean test (SlurInter slur)
-        {
-            for (HorizontalSide side : HorizontalSide.values()) {
-                if (slur.getHead(side) == null) {
-                    return true;
-                }
+    public static final Predicate<SlurInter> isOrphan = (SlurInter slur) -> {
+        for (HorizontalSide side : HorizontalSide.values()) {
+            if (slur.getHead(side) == null) {
+                return true;
             }
-
-            return false;
         }
+
+        return false;
     };
 
     /** Predicate for an orphan slur at the end of its system/part. */
-    public static final Predicate<SlurInter> isEndingOrphan = new Predicate<SlurInter>()
-    {
-        @Override
-        public boolean test (SlurInter slur)
-        {
-            if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
-                // Check we are in last measure
-                Point2D end = slur.getCurve().getP2();
-                SystemInfo system = slur.getSig().getSystem();
-                MeasureStack stack = system.getStackAt(end);
-
-                if (stack == system.getLastStack()) {
-                    // Check slur ends in last measure half
-                    Staff staff = system.getClosestStaff(end);
-                    Measure measure = stack.getMeasureAt(staff);
-                    int middle = measure.getAbscissa(LEFT, staff) + (measure.getWidth() / 2);
-
-                    if (end.getX() > middle) {
-                        return true;
-                    }
+    public static final Predicate<SlurInter> isEndingOrphan = (SlurInter slur) -> {
+        if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
+            // Check we are in last measure
+            Point2D end = slur.getCurve().getP2();
+            SystemInfo system = slur.getSig().getSystem();
+            MeasureStack stack = system.getStackAt(end);
+            if (stack == system.getLastStack()) {
+                // Check slur ends in last measure half
+                Staff staff1 = system.getClosestStaff(end);
+                Measure measure = stack.getMeasureAt(staff1);
+                int middle = measure.getAbscissa(LEFT, staff1) + (measure.getWidth() / 2);
+                if (end.getX() > middle) {
+                    return true;
                 }
             }
-
-            return false;
         }
+        return false;
     };
 
     /** Predicate for an orphan slur at the beginning of its system/part. */
-    public static final Predicate<SlurInter> isBeginningOrphan = new Predicate<SlurInter>()
-    {
-        @Override
-        public boolean test (SlurInter slur)
-        {
-            if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
-                // Check we are in first measure
-                Point2D end = slur.getCurve().getP1();
-                SystemInfo system = slur.getSig().getSystem();
-                MeasureStack stack = system.getStackAt(end);
-
-                if (stack == system.getFirstStack()) {
-                    // Check slur ends in first measure half (excluding header area)
-                    Staff staff = system.getClosestStaff(end);
-                    Measure measure = stack.getMeasureAt(staff);
-                    int middle = (staff.getHeaderStop() + measure.getAbscissa(LEFT, staff)
-                                          + measure.getWidth()) / 2;
-
-                    if (end.getX() < middle) {
-                        return true;
-                    }
+    public static final Predicate<SlurInter> isBeginningOrphan = (SlurInter slur) -> {
+        if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
+            // Check we are in first measure
+            Point2D end = slur.getCurve().getP1();
+            SystemInfo system = slur.getSig().getSystem();
+            MeasureStack stack = system.getStackAt(end);
+            if (stack == system.getFirstStack()) {
+                // Check slur ends in first measure half (excluding header area)
+                Staff staff1 = system.getClosestStaff(end);
+                Measure measure = stack.getMeasureAt(staff1);
+                int middle
+                        = (staff1.getHeaderStop() + measure.getAbscissa(LEFT, staff1) + measure
+                        .getWidth()) / 2;
+                if (end.getX() < middle) {
+                    return true;
                 }
             }
-
-            return false;
         }
+        return false;
     };
 
     //~ Instance fields ----------------------------------------------------------------------------

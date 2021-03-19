@@ -57,16 +57,8 @@ public abstract class Filament
     /**
      * For comparing Filament instances on their top ordinate.
      */
-    public static final Comparator<Filament> topComparator = new Comparator<Filament>()
-    {
-        @Override
-        public int compare (Filament f1,
-                            Filament f2)
-        {
-            // Sort on top ordinate
-            return Integer.signum(f1.getBounds().y - f2.getBounds().y);
-        }
-    };
+    public static final Comparator<Filament> topComparator = (Filament f1, Filament f2)
+            -> Integer.signum(f1.getBounds().y - f2.getBounds().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Absolute beginning point. */

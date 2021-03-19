@@ -38,15 +38,8 @@ public class PartGroup
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare groups by their first staff ID. */
-    public static final Comparator<PartGroup> byFirstId = new Comparator<PartGroup>()
-    {
-        @Override
-        public int compare (PartGroup pg1,
-                            PartGroup pg2)
-        {
-            return Integer.compare(pg1.firstStaffId, pg2.firstStaffId);
-        }
-    };
+    public static final Comparator<PartGroup> byFirstId = (PartGroup pg1, PartGroup pg2)
+            -> Integer.compare(pg1.firstStaffId, pg2.firstStaffId);
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**

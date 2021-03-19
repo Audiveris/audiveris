@@ -333,15 +333,7 @@ class SelectionPanel
 
         /** For comparing GradedSample instances in reverse grade order. */
         static final Comparator<GradedSample> reverseGradeComparator
-                = new Comparator<GradedSample>()
-        {
-            @Override
-            public int compare (GradedSample gs1,
-                                GradedSample gs2)
-            {
-                return Double.compare(gs2.grade, gs1.grade);
-            }
-        };
+                = (GradedSample gs1, GradedSample gs2) -> Double.compare(gs2.grade, gs1.grade);
 
         final Sample sample;
 

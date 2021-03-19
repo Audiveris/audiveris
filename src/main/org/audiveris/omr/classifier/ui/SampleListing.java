@@ -286,15 +286,8 @@ class SampleListing
     private static class GradedSample
     {
 
-        public static final Comparator<GradedSample> byReverseGrade = new Comparator<GradedSample>()
-        {
-            @Override
-            public int compare (GradedSample o1,
-                                GradedSample o2)
-            {
-                return Double.compare(o2.grade, o1.grade); // By decreasing grade
-            }
-        };
+        public static final Comparator<GradedSample> byReverseGrade = (o1, o2)
+                -> Double.compare(o2.grade, o1.grade);
 
         final double grade;
 
@@ -540,7 +533,7 @@ class SampleListing
                             Rectangle common = alternative.getBounds().intersection(box);
 
                             if (!common.isEmpty() && (common.width >= (box.width / 2))
-                                && (common.height >= (box.height / 2))) {
+                                        && (common.height >= (box.height / 2))) {
                                 logger.debug("alternative: {}", alternative);
                                 alternatives.add(alternative);
                             }

@@ -112,26 +112,12 @@ public class Staff
     private static final Logger logger = LoggerFactory.getLogger(Staff.class);
 
     /** To sort by staff id. */
-    public static final Comparator<Staff> byId = new Comparator<Staff>()
-    {
-        @Override
-        public int compare (Staff o1,
-                            Staff o2)
-        {
-            return Integer.compare(o1.getId(), o2.getId());
-        }
-    };
+    public static final Comparator<Staff> byId = (Staff o1, Staff o2)
+            -> Integer.compare(o1.getId(), o2.getId());
 
     /** To sort by staff abscissa. */
-    public static final Comparator<Staff> byAbscissa = new Comparator<Staff>()
-    {
-        @Override
-        public int compare (Staff o1,
-                            Staff o2)
-        {
-            return Integer.compare(o1.left, o2.left);
-        }
-    };
+    public static final Comparator<Staff> byAbscissa = (Staff o1, Staff o2)
+            -> Integer.compare(o1.left, o2.left);
 
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data

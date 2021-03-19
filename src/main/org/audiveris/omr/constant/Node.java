@@ -34,15 +34,8 @@ public abstract class Node
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** For comparing Node instances according to their name */
-    public static final Comparator<Node> nameComparator = new Comparator<Node>()
-    {
-        @Override
-        public int compare (Node n1,
-                            Node n2)
-        {
-            return n1.getName().compareTo(n2.getName());
-        }
-    };
+    public static final Comparator<Node> nameComparator = (Node n1, Node n2)
+            -> n1.getName().compareTo(n2.getName());
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** (Fully qualified) name of the node */

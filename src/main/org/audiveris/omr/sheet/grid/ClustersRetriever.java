@@ -105,89 +105,45 @@ public class ClustersRetriever
     /**
      * For comparing Filament instances on their starting point.
      */
-    private static final Comparator<StaffFilament> byStartAbscissa = new Comparator<StaffFilament>()
-    {
-        @Override
-        public int compare (StaffFilament f1,
-                            StaffFilament f2)
-        {
-            // Sort on start
-            return Double.compare(f1.getStartPoint().getX(), f2.getStartPoint().getX());
-        }
-    };
+    private static final Comparator<StaffFilament> byStartAbscissa = (f1, f2)
+            -> Double.compare(f1.getStartPoint().getX(), f2.getStartPoint().getX());
 
     /**
      * For comparing Filament instances on their stopping point.
      */
-    private static final Comparator<StaffFilament> byStopAbscissa = new Comparator<StaffFilament>()
-    {
-        @Override
-        public int compare (StaffFilament f1,
-                            StaffFilament f2)
-        {
-            // Sort on stop
-            return Double.compare(f1.getStopPoint().getX(), f2.getStopPoint().getX());
-        }
-    };
+    private static final Comparator<StaffFilament> byStopAbscissa = (f1, f2)
+            -> Double.compare(f1.getStopPoint().getX(), f2.getStopPoint().getX());
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /**
-     * For comparing Filament instances on their (de-skewed) center ordinate.
-     */
-    private final Comparator<StaffFilament> byDskOrdinate = new Comparator<StaffFilament>()
-    {
-        @Override
-        public int compare (StaffFilament f1,
-                            StaffFilament f2)
-        {
-            final Point2D dsk1 = sheet.getSkew().deskewed(f1.getCenter2D());
-            final Point2D dsk2 = sheet.getSkew().deskewed(f2.getCenter2D());
-
-            return Double.compare(dsk1.getY(), dsk2.getY());
-        }
-    };
-
     /** Comparator on cluster ordinate. */
-    public Comparator<LineCluster> byOrdinate = new Comparator<LineCluster>()
-    {
-        @Override
-        public int compare (LineCluster c1,
-                            LineCluster c2)
-        {
-            double o1 = ordinateOf(c1);
-            double o2 = ordinateOf(c2);
+    public Comparator<LineCluster> byOrdinate = (LineCluster c1, LineCluster c2) -> {
+        double o1 = ordinateOf(c1);
+        double o2 = ordinateOf(c2);
 
-            if (o1 < o2) {
-                return -1;
-            }
-
-            if (o1 > o2) {
-                return +1;
-            }
-
-            return 0;
+        if (o1 < o2) {
+            return -1;
         }
+
+        if (o1 > o2) {
+            return +1;
+        }
+
+        return 0;
     };
 
     /**
      * Comparator by page layout (this leads to systems).
      */
-    public Comparator<LineCluster> byLayout = new Comparator<LineCluster>()
-    {
-        @Override
-        public int compare (LineCluster c1,
-                            LineCluster c2)
-        {
-            Point p1 = c1.getCenter();
-            Point p2 = c2.getCenter();
+    public Comparator<LineCluster> byLayout = (LineCluster c1, LineCluster c2) -> {
+        Point p1 = c1.getCenter();
+        Point p2 = c2.getCenter();
 
-            if (GeoUtil.xOverlap(c1.getBounds(), c2.getBounds()) < 0) {
-                // No abscissa overlap, we are side by side: use abscissae
-                return Integer.compare(p1.x, p2.x);
-            } else {
-                // Abscissa overlap, we are one under the other: use deskewed ordinates
-                return Double.compare(ordinateOf(p1), ordinateOf(p2));
-            }
+        if (GeoUtil.xOverlap(c1.getBounds(), c2.getBounds()) < 0) {
+            // No abscissa overlap, we are side by side: use abscissae
+            return Integer.compare(p1.x, p2.x);
+        } else {
+            // Abscissa overlap, we are one under the other: use deskewed ordinates
+            return Double.compare(ordinateOf(p1), ordinateOf(p2));
         }
     };
 

@@ -105,15 +105,7 @@ public class CLI
     {
         this.toolName = toolName;
 
-        final Comparator<OptionHandler> noSorter = new Comparator<>()
-        {
-            @Override
-            public int compare (OptionHandler o1,
-                                OptionHandler o2)
-            {
-                return 0;
-            }
-        };
+        final Comparator<OptionHandler> noSorter = (OptionHandler o1, OptionHandler o2) -> 0;
 
         final ParserProperties props = ParserProperties.defaults()
                 .withAtSyntax(true)

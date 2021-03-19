@@ -59,17 +59,9 @@ public class LineCluster
 
     private static final Logger logger = LoggerFactory.getLogger(LineCluster.class);
 
-    /** For comparing LineCluster instances on their true length. */
-    public static final Comparator<LineCluster> byReverseLength = new Comparator<LineCluster>()
-    {
-        @Override
-        public int compare (LineCluster c1,
-                            LineCluster c2)
-        {
-            // Sort on reverse length
-            return Double.compare(c2.getTrueLength(), c1.getTrueLength());
-        }
-    };
+    /** For comparing LineCluster instances on their reverse true length. */
+    public static final Comparator<LineCluster> byReverseLength = (LineCluster c1, LineCluster c2)
+            -> Double.compare(c2.getTrueLength(), c1.getTrueLength());
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Id for debug. */
