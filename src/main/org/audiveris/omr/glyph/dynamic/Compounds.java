@@ -61,15 +61,7 @@ public abstract class Compounds
      */
     public static Comparator<SectionCompound> byReverseLength (final Orientation orientation)
     {
-        return new Comparator<SectionCompound>()
-        {
-            @Override
-            public int compare (SectionCompound s1,
-                                SectionCompound s2)
-            {
-                return s2.getLength(orientation) - s1.getLength(orientation);
-            }
-        };
+        return (s1, s2) -> s2.getLength(orientation) - s1.getLength(orientation);
     }
 
     //----------------//

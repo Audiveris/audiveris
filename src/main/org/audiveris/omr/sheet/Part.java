@@ -103,15 +103,8 @@ public class Part
     private static final Logger logger = LoggerFactory.getLogger(Part.class);
 
     /** For comparing Part instances according to their id. */
-    public static final Comparator<Part> byId = new Comparator<Part>()
-    {
-        @Override
-        public int compare (Part p1,
-                            Part p2)
-        {
-            return Integer.compare(Math.abs(p1.getId()), Math.abs(p2.getId()));
-        }
-    };
+    public static final Comparator<Part> byId = (Part p1, Part p2)
+            -> Integer.compare(Math.abs(p1.getId()), Math.abs(p2.getId()));
 
     //~ Instance fields ----------------------------------------------------------------------------
     //

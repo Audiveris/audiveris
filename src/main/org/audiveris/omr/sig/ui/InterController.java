@@ -102,7 +102,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -1322,15 +1321,8 @@ public class InterController
         }
 
         // Sort the 2 staves by increasing distance from glyph center
-        Collections.sort(staves, new Comparator<Staff>()
-                 {
-                     @Override
-                     public int compare (Staff s1,
-                                         Staff s2)
-                     {
-                         return Double.compare(s1.distanceTo(center), s2.distanceTo(center));
-                     }
-                 });
+        Collections.sort(staves,
+                         (s1, s2) -> Double.compare(s1.distanceTo(center), s2.distanceTo(center)));
 
         if (constants.useStaffLink.isSet()) {
             // Try to use link

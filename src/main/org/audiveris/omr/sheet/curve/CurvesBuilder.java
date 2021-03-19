@@ -79,15 +79,8 @@ public abstract class CurvesBuilder
     private static final Logger logger = LoggerFactory.getLogger(CurvesBuilder.class);
 
     /** To sort Extension instances by decreasing grade. */
-    private static final Comparator<Extension> byReverseGrade = new Comparator<Extension>()
-    {
-        @Override
-        public int compare (Extension e1,
-                            Extension e2)
-        {
-            return Double.compare(e2.getGrade(), e1.getGrade());
-        }
-    };
+    private static final Comparator<Extension> byReverseGrade = (Extension e1, Extension e2)
+            -> Double.compare(e2.getGrade(), e1.getGrade());
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */

@@ -45,15 +45,8 @@ public class Evaluation
     /**
      * For comparing Evaluation instances by decreasing grade.
      */
-    public static final Comparator<Evaluation> byReverseGrade = new Comparator<Evaluation>()
-    {
-        @Override
-        public int compare (Evaluation e1,
-                            Evaluation e2)
-        {
-            return Double.compare(e2.grade, e1.grade); // Reverse order: highest to lowest
-        }
-    };
+    public static final Comparator<Evaluation> byReverseGrade = (Evaluation e1, Evaluation e2)
+            -> Double.compare(e2.grade, e1.grade);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluated shape. */

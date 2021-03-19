@@ -51,48 +51,20 @@ public class Sample
     private static final Logger logger = LoggerFactory.getLogger(Sample.class);
 
     /** For comparing Sample instances by shape. */
-    public static final Comparator<Sample> byShape = new Comparator<Sample>()
-    {
-        @Override
-        public int compare (Sample s1,
-                            Sample s2)
-        {
-            return Integer.compare(s1.getShape().ordinal(), s2.getShape().ordinal());
-        }
-    };
+    public static final Comparator<Sample> byShape = (Sample s1, Sample s2) -> Integer.compare(s1
+            .getShape().ordinal(), s2.getShape().ordinal());
 
     /** For comparing Sample instances by normalized width. */
-    public static final Comparator<Sample> byNormalizedWidth = new Comparator<Sample>()
-    {
-        @Override
-        public int compare (Sample s1,
-                            Sample s2)
-        {
-            return Double.compare(s1.getNormalizedWidth(), s2.getNormalizedWidth());
-        }
-    };
+    public static final Comparator<Sample> byNormalizedWidth = (Sample s1, Sample s2) -> Double
+            .compare(s1.getNormalizedWidth(), s2.getNormalizedWidth());
 
     /** For comparing Sample instances by normalized height. */
-    public static final Comparator<Sample> byNormalizedHeight = new Comparator<Sample>()
-    {
-        @Override
-        public int compare (Sample s1,
-                            Sample s2)
-        {
-            return Double.compare(s1.getNormalizedHeight(), s2.getNormalizedHeight());
-        }
-    };
+    public static final Comparator<Sample> byNormalizedHeight = (Sample s1, Sample s2) -> Double
+            .compare(s1.getNormalizedHeight(), s2.getNormalizedHeight());
 
     /** For comparing Sample instances by normalized weight. */
-    public static final Comparator<Sample> byNormalizedWeight = new Comparator<Sample>()
-    {
-        @Override
-        public int compare (Sample s1,
-                            Sample s2)
-        {
-            return Double.compare(s1.getNormalizedWeight(), s2.getNormalizedWeight());
-        }
-    };
+    public static final Comparator<Sample> byNormalizedWeight = (Sample s1, Sample s2) -> Double
+            .compare(s1.getNormalizedWeight(), s2.getNormalizedWeight());
 
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data

@@ -49,16 +49,9 @@ public class SlurHeadLink
     /**
      * To sort by increasing euclidian distance.
      */
-    public static final Comparator<SlurHeadLink> byEuclidean = new Comparator<SlurHeadLink>()
-    {
-        @Override
-        public int compare (SlurHeadLink o1,
-                            SlurHeadLink o2)
-        {
-            return Double.compare(((SlurHeadRelation) o1.relation).getEuclidean(),
-                                  ((SlurHeadRelation) o2.relation).getEuclidean());
-        }
-    };
+    public static final Comparator<SlurHeadLink> byEuclidean = (SlurHeadLink o1, SlurHeadLink o2)
+            -> Double.compare(((SlurHeadRelation) o1.relation).getEuclidean(),
+                              ((SlurHeadRelation) o2.relation).getEuclidean());
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

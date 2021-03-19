@@ -382,40 +382,6 @@ public class ShapeChecker
             }
         };
 
-        //
-        //        new Checker("CommonCutTime", COMMON_TIME)
-        //        {
-        //            // TODO: this no longer works, since shape is not recorded in glyph!
-        //            private Predicate<Glyph> stemPredicate = new Predicate<Glyph>()
-        //            {
-        //                @Override
-        //                public boolean check (Glyph entity)
-        //                {
-        //                    return entity.getShape() == Shape.STEM;
-        //                }
-        //            };
-        //
-        //            @Override
-        //            public boolean check (SystemInfo system,
-        //                                  Evaluation eval,
-        //                                  Glyph glyph,
-        //                                  double[] features)
-        //            {
-        //                // COMMON_TIME shape is easily confused with CUT_TIME
-        //                // Check presence of a "pseudo-stem"
-        //                Rectangle box = glyph.getBounds();
-        //                box.grow(-box.width / 4, 0);
-        //
-        //                List<Glyph> neighbors = system.lookupIntersectedGlyphs(box, glyph);
-        //
-        //                if (Glyphs.contains(neighbors, stemPredicate)) {
-        //                    eval.shape = Shape.CUT_TIME;
-        //                }
-        //
-        //                return true;
-        //            }
-        //        };
-        //
         new Checker("Text", TEXT)
         {
             @Override

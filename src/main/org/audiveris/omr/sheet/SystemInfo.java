@@ -95,15 +95,8 @@ public class SystemInfo
     private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     /** To sort by system id. */
-    public static final Comparator<SystemInfo> byId = new Comparator<SystemInfo>()
-    {
-        @Override
-        public int compare (SystemInfo o1,
-                            SystemInfo o2)
-        {
-            return Integer.compare(o1.id, o2.id);
-        }
-    };
+    public static final Comparator<SystemInfo> byId = (SystemInfo o1, SystemInfo o2)
+            -> Integer.compare(o1.id, o2.id);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //

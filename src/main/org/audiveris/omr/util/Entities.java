@@ -40,30 +40,16 @@ public class Entities
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare Entity instances according to their id. */
-    public static final Comparator<Entity> byId = new Comparator<Entity>()
-    {
-        @Override
-        public int compare (Entity e1,
-                            Entity e2)
-        {
-            return e1.getId() - e2.getId();
-        }
-    };
+    public static final Comparator<Entity> byId = (e1, e2) -> e1.getId() - e2.getId();
 
     /**
      * For comparing entities by center abscissa.
      */
-    public static final Comparator<Entity> byCenterAbscissa = new Comparator<Entity>()
-    {
-        @Override
-        public int compare (Entity e1,
-                            Entity e2)
-        {
-            final Rectangle b1 = e1.getBounds();
-            final Rectangle b2 = e2.getBounds();
+    public static final Comparator<Entity> byCenterAbscissa = (e1, e2) -> {
+        final Rectangle b1 = e1.getBounds();
+        final Rectangle b2 = e2.getBounds();
 
-            return Integer.compare(b1.x + (b1.width / 2), b2.x + (b2.width / 2));
-        }
+        return Integer.compare(b1.x + (b1.width / 2), b2.x + (b2.width / 2));
     };
 
     //~ Constructors -------------------------------------------------------------------------------

@@ -65,15 +65,7 @@ public class Sections
      */
     public static Comparator<Section> byReverseLength (final Orientation orientation)
     {
-        return new Comparator<Section>()
-        {
-            @Override
-            public int compare (Section s1,
-                                Section s2)
-            {
-                return Integer.signum(s2.getLength(orientation) - s1.getLength(orientation));
-            }
-        };
+        return (s1, s2) -> Integer.signum(s2.getLength(orientation) - s1.getLength(orientation));
     }
 
     //-----------------//

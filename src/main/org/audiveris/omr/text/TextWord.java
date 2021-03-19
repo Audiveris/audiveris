@@ -75,26 +75,12 @@ public class TextWord
     private static final Pattern DASH_WORDS = getDashWordPattern();
 
     /** Comparator based on word size. */
-    public static final Comparator<TextWord> bySize = new Comparator<TextWord>()
-    {
-        @Override
-        public int compare (TextWord o1,
-                            TextWord o2)
-        {
-            return Integer.compare(o1.getValue().length(), o2.getValue().length());
-        }
-    };
+    public static final Comparator<TextWord> bySize = (TextWord o1, TextWord o2)
+            -> Integer.compare(o1.getValue().length(), o2.getValue().length());
 
     /** Comparator based on word starting abscissa. */
-    public static final Comparator<TextWord> byAbscissa = new Comparator<TextWord>()
-    {
-        @Override
-        public int compare (TextWord o1,
-                            TextWord o2)
-        {
-            return Integer.compare(o1.getBounds().x, o2.getBounds().x);
-        }
-    };
+    public static final Comparator<TextWord> byAbscissa = (TextWord o1, TextWord o2)
+            -> Integer.compare(o1.getBounds().x, o2.getBounds().x);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Containing TextLine. */

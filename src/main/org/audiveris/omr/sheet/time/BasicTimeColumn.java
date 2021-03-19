@@ -8,7 +8,6 @@ import org.audiveris.omr.sig.inter.Inter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -149,17 +148,7 @@ public class BasicTimeColumn
         }
 
         // Select a single vertical line (based on item count? or the left-most line?)
-        Collections.sort(
-                lines,
-                new Comparator<Line>()
-        {
-            @Override
-            public int compare (Line o1,
-                                Line o2)
-            {
-                return Double.compare(o1.getOffset(), o2.getOffset());
-            }
-        });
+        Collections.sort(lines, (o1, o2) -> Double.compare(o1.getOffset(), o2.getOffset()));
 
         Line chosenLine = lines.get(0);
         List<Inter> kept = new ArrayList<>();

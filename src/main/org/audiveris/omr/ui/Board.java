@@ -124,15 +124,8 @@ public abstract class Board
     public static final Desc CHECK = new Desc("Check", 900);
 
     /** To sort boards by their position. */
-    public static final Comparator<Board> byPosition = new Comparator<Board>()
-    {
-        @Override
-        public int compare (Board b1,
-                            Board b2)
-        {
-            return Integer.compare(b1.position, b2.position);
-        }
-    };
+    public static final Comparator<Board> byPosition = (Board b1, Board b2)
+            -> Integer.compare(b1.position, b2.position);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The board instance name. */

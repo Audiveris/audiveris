@@ -73,15 +73,8 @@ public class BeamStructure
     private static final Logger logger = LoggerFactory.getLogger(BeamStructure.class);
 
     /** Comparator on abscissae. */
-    public static final Comparator<BeamStructure> byAbscissa = new Comparator<BeamStructure>()
-    {
-        @Override
-        public int compare (BeamStructure b1,
-                            BeamStructure b2)
-        {
-            return Integer.compare(b1.getGlyph().getBounds().x, b2.getGlyph().getBounds().x);
-        }
-    };
+    public static final Comparator<BeamStructure> byAbscissa = (BeamStructure b1, BeamStructure b2)
+            -> Integer.compare(b1.getGlyph().getBounds().x, b2.getGlyph().getBounds().x);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */

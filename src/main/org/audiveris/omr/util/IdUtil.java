@@ -40,15 +40,7 @@ public abstract class IdUtil
     private static final Logger logger = LoggerFactory.getLogger(IdUtil.class);
 
     /** To compare Entity instances according to their id. */
-    public static final Comparator<String> byId = new Comparator<String>()
-    {
-        @Override
-        public int compare (String id1,
-                            String id2)
-        {
-            return IdUtil.compare(id1, id2); // When prefix + integers
-        }
-    };
+    public static final Comparator<String> byId = (id1, id2) -> IdUtil.compare(id1, id2);
 
     //~ Constructors -------------------------------------------------------------------------------
     private IdUtil ()
