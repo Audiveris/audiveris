@@ -722,6 +722,28 @@ public class SheetStub
         logger.info("Sheet {} flagged as invalid.", getId());
     }
 
+    //----------//
+    // validate //
+    //----------//
+    /**
+     * Flag a stub as valid (containing music).
+     */
+    public void validate ()
+    {
+        invalid = Boolean.FALSE;
+
+        book.updateScores(this);
+
+        pageRefs.clear();
+        setModified(true);
+
+        if (OMR.gui != null) {
+            StubsController.getInstance().markTab(this, Colors.SHEET_OK);
+        }
+
+        logger.info("Sheet {} flagged as valid.", getId());
+    }
+
     //--------//
     // isDone //
     //--------//
