@@ -245,6 +245,39 @@ public class BookActions
         OmrGui.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
     }
 
+    //-------------------//
+    // browseBookSamples //
+    //-------------------//
+    /**
+     * Action to browse the separate sample repository of the currently selected book.
+     *
+     * @param e the event that triggered this action
+     * @return the UI task to perform
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public Task browseBookSamples (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            if (book.hasSpecificRepository()) {
+                return new SampleBrowser.Waiter(resources.getString("launchingBookSampleBrowser"))
+                {
+                    @Override
+                    protected SampleBrowser doInBackground ()
+                            throws Exception
+                    {
+                        return SampleBrowser.getInstance(book);
+                    }
+                };
+            } else {
+                logger.info(format(resources.getString("noBookRepo.pattern"), book.getRadix()));
+            }
+        }
+
+        return null;
+    }
+
     //-----------//
     // closeBook //
     //-----------//
@@ -1435,37 +1468,32 @@ public class BookActions
         return new UpgradeBookTask(stub.getBook());
     }
 
-    //-------------------//
-    // browseBookSamples //
-    //-------------------//
+    //---------------//
+    // validateSheet //
+    //---------------//
     /**
-     * Action to browse the separate sample repository of the currently selected book.
+     * Action that flags the currently selected sheet as valid.
      *
      * @param e the event that triggered this action
-     * @return the UI task to perform
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public Task browseBookSamples (ActionEvent e)
+    @Action(disabledProperty = STUB_VALID)
+    public void validateSheet (ActionEvent e)
     {
-        final Book book = StubsController.getCurrentBook();
+        SheetStub stub = StubsController.getCurrentStub();
 
-        if (book != null) {
-            if (book.hasSpecificRepository()) {
-                return new SampleBrowser.Waiter(resources.getString("launchingBookSampleBrowser"))
-                {
-                    @Override
-                    protected SampleBrowser doInBackground ()
-                            throws Exception
-                    {
-                        return SampleBrowser.getInstance(book);
-                    }
-                };
-            } else {
-                logger.info(format(resources.getString("noBookRepo.pattern"), book.getRadix()));
+        if (stub != null) {
+            final String pattern = resources.getString("setSheetValid.pattern");
+            final String msg = format(pattern, stub.getId());
+
+            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
+                stub.validate();
+
+                final Sheet sheet = stub.getSheet();
+                final StubsController controller = StubsController.getInstance();
+
+                controller.callAboutStub(sheet.getStub());
             }
         }
-
-        return null;
     }
 
     //------------//
