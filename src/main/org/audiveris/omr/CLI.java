@@ -23,13 +23,17 @@ package org.audiveris.omr;
 
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.log.LogUtil;
+import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.RunClass;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
+import org.audiveris.omr.util.NaturalSpec;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -61,8 +65,6 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.ui.BookActions;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
@@ -438,9 +440,6 @@ public class CLI
                 }
                 LogUtil.start(book);
 
-                // Specific sheets to process?
-                final SortedSet<Integer> sheetIds = params.getSheetIds();
-
                 // Make sure stubs are available
                 if (book.getStubs().isEmpty()) {
                     book.createStubs();
@@ -451,6 +450,11 @@ public class CLI
                     }
                 }
 
+                // Specific sheets to process?
+                final SortedSet<Integer> sheetIds = params.getSheetIds();
+                final List<SheetStub> validStubs = Book.getValidStubs(book.getStubs(sheetIds));
+                List<Score> scores = book.getScores();
+
                 if (OMR.gui != null) {
                     Integer focus = (sheetIds != null) ? sheetIds.first() : null;
                     book.createStubsTabs(focus); // Tabs are now accessible
@@ -460,19 +464,25 @@ public class CLI
                     if (Book.batchUpgradeBooks() || params.upgrade) {
                         book.upgradeStubs();
                     }
+
+                    if (sheetIds != null) {
+                        // Use a temporary array of scores
+                        scores = new ArrayList<>();
+                    }
                 }
 
-                // Specific step to reach on all sheets in the book?
+                // Specific step to reach on valid selected sheets in the book?
                 if (params.step != null) {
-                    boolean ok = book.reachBookStep(params.step, params.force, sheetIds);
+                    boolean ok = book.reachBookStep(params.step, params.force, validStubs);
 
                     if (!ok) {
                         return;
                     }
                 }
 
+                // Score(s)
                 if (params.transcribe) {
-                    book.reduceScores();
+                    book.transcribe(validStubs, scores);
                 }
 
                 // Specific class to run?
@@ -496,25 +506,25 @@ public class CLI
                 // Book export?
                 if (params.export) {
                     logger.debug("Export book");
-                    book.export();
+                    book.export(validStubs, scores);
                 }
 
                 // Book sample?
                 if (params.sample) {
                     logger.debug("Sample book");
-                    book.sample();
+                    book.sample(validStubs);
                 }
 
                 // Book annotate?
                 if (params.annotate) {
                     logger.debug("Annotate book");
-                    book.annotate();
+                    book.annotate(validStubs);
                 }
 
                 // Book print?
                 if (params.print) {
                     logger.debug("Print book");
-                    book.print();
+                    book.print(validStubs);
                 }
             } catch (ProcessingCancellationException pce) {
                 logger.warn("Cancelled " + book);
@@ -714,30 +724,14 @@ public class CLI
             int counter = 0;
 
             for (; counter < params.size(); counter++) {
-                String param = params.getParameter(counter);
+                final String param = params.getParameter(counter);
 
                 if (param.startsWith("-")) {
                     break;
                 }
 
-                int minusPos = param.indexOf('-');
-
-                if (minusPos != -1) {
-                    // " a - b " or a-b
-                    String str1 = param.substring(0, minusPos).trim();
-                    String str2 = param.substring(minusPos + 1).trim();
-                    int i1 = Integer.parseInt(str1);
-                    int i2 = Integer.parseInt(str2);
-
-                    for (int i = i1; i <= i2; i++) {
-                        setter.addValue(i);
-                    }
-                } else {
-                    for (String p : param.split(" ")) {
-                        if (!p.isEmpty()) {
-                            setter.addValue(Integer.parseInt(p));
-                        }
-                    }
+                for (int i : NaturalSpec.decode(param, true)) {
+                    setter.addValue(i);
                 }
             }
 

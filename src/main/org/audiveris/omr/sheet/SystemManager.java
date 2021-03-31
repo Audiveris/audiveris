@@ -109,6 +109,62 @@ public class SystemManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // allocatePages //
+    //---------------//
+    /**
+     * Allocate page(s) for the sheet, as well as contained systems & parts.
+     * <p>
+     * Detect if an indented system starts a new movement (and thus a new score).
+     * <p>
+     * This behavior is driven by the "indentations" processing switch.
+     *
+     * @see <a href="https://github.com/Audiveris/audiveris/pull/350">PR of Vladimir Buyanov</a>
+     */
+    public void allocatePages ()
+    {
+        final SheetStub stub = sheet.getStub();
+        final ProcessingSwitches switches = stub.getProcessingSwitches();
+        final boolean useIndentation = switches.getValue(ProcessingSwitches.Switch.indentations);
+        Page page = null;
+
+        // Look at left indentation of (deskewed) systems
+        checkIndentations();
+
+        // Allocate systems per page
+        for (SystemInfo system : systems) {
+            if (system.isIndented() && useIndentation) {
+                final int systId = system.getId();
+
+                // We have a movement start
+                if (page != null) {
+                    // Sheet middle => Score break, finish current page
+                    page.setLastSystemId(systId - 1);
+                    page.setSystems(systems);
+                }
+
+                // Start a new page
+                sheet.addPage(
+                        page = new Page(
+                                sheet,
+                                1 + sheet.getPages().size(),
+                                (systId == 1) ? null : systId));
+                page.setMovementStart(true);
+                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
+            } else if (page == null) {
+                // Start first page in sheet
+                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
+                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), false, null));
+            }
+
+            system.setPage(page);
+        }
+
+        if (page != null) {
+            page.setSystems(systems);
+        }
+    }
+
     //-------------------//
     // computeSystemArea //
     //-------------------//
@@ -648,62 +704,6 @@ public class SystemManager
         Collections.sort(neighbors, SystemInfo.byId);
 
         return neighbors;
-    }
-
-    //---------------//
-    // allocatePages //
-    //---------------//
-    /**
-     * Allocate page(s) for the sheet, as well as contained systems & parts.
-     * <p>
-     * Detect if an indented system starts a new movement (and thus a new score).
-     * <p>
-     * This behavior is driven by the "indentations" processing switch.
-     *
-     * @see <a href="https://github.com/Audiveris/audiveris/pull/350">PR of Vladimir Buyanov</a>
-     */
-    private void allocatePages ()
-    {
-        final SheetStub stub = sheet.getStub();
-        final ProcessingSwitches switches = stub.getProcessingSwitches();
-        final boolean useIndentation = switches.getValue(ProcessingSwitches.Switch.indentations);
-        Page page = null;
-
-        // Look at left indentation of (deskewed) systems
-        checkIndentations();
-
-        // Allocate systems per page
-        for (SystemInfo system : systems) {
-            if (system.isIndented() && useIndentation) {
-                final int systId = system.getId();
-
-                // We have a movement start
-                if (page != null) {
-                    // Sheet middle => Score break, finish current page
-                    page.setLastSystemId(systId - 1);
-                    page.setSystems(systems);
-                }
-
-                // Start a new page
-                sheet.addPage(
-                        page = new Page(
-                                sheet,
-                                1 + sheet.getPages().size(),
-                                (systId == 1) ? null : systId));
-                page.setMovementStart(true);
-                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
-            } else if (page == null) {
-                // Start first page in sheet
-                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
-                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), false, null));
-            }
-
-            system.setPage(page);
-        }
-
-        if (page != null) {
-            page.setSystems(systems);
-        }
     }
 
     //-------------------//

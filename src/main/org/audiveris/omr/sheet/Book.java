@@ -50,9 +50,11 @@ import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.Language;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
+import org.audiveris.omr.util.NaturalSpec;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Version;
@@ -75,7 +77,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -152,6 +156,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #isMultiSheet}</li>
  * <li>{@link #getStub}</li>
  * <li>{@link #getStubs}</li>
+ * <li>{@link #getStubs(java.util.Collection)}</li>
  * <li>{@link #getFirstValidStub}</li>
  * <li>{@link #getValidStubs}</li>
  * <li>{@link #removeStub}</li>
@@ -264,6 +269,10 @@ public class Book
     /** Sheet offset of image file with respect to full work, if any. */
     @XmlAttribute(name = "offset")
     private Integer offset;
+
+    /** Specification of sheets selection, if any. */
+    @XmlAttribute(name = "sheets-specification")
+    private String sheetsSpecification;
 
     /** Indicate if the book scores must be updated. */
     @XmlAttribute(name = "dirty")
@@ -380,8 +389,10 @@ public class Book
      * <p>
      * Generate a whole zip file, in which each valid sheet is represented by a pair
      * composed of sheet image (.png) and sheet annotations (.xml).
+     *
+     * @param theStubs the stubs to process
      */
-    public void annotate ()
+    public void annotate (List<SheetStub> theStubs)
     {
         Path root = null;
 
@@ -391,7 +402,7 @@ public class Book
                     getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
             root = ZipFileSystem.create(path);
 
-            for (SheetStub stub : getValidStubs()) {
+            for (SheetStub stub : theStubs) {
                 try {
                     LogUtil.start(stub);
 
@@ -429,6 +440,17 @@ public class Book
     public static boolean batchUpgradeBooks ()
     {
         return constants.batchUpgradeBooks.isSet();
+    }
+
+    //-------------//
+    // clearScores //
+    //-------------//
+    /**
+     * Reset the book scores.
+     */
+    public void clearScores ()
+    {
+        scores.clear();
     }
 
     //-------//
@@ -594,11 +616,15 @@ public class Book
      * "xml" depending upon whether compression is used.</li>
      * <li>If we use opus, everything goes into "BOOK.opus.mxl" as a single container file.</li>
      * </ul>
+     *
+     * @param theStubs  the valid selected stubs
+     * @param theScores the scores to use
      */
-    public void export ()
+    public void export (List<SheetStub> theStubs,
+                        List<Score> theScores)
     {
-        // Make sure material is ready?
-        transcribe();
+        // Make sure material is ready
+        transcribe(theStubs, theScores);
 
         // path/to/scores/Book
         final Path bookPathSansExt = BookManager.getActualPath(
@@ -610,7 +636,7 @@ public class Book
 
         // Export each movement score
         String bookName = bookPathSansExt.getFileName().toString();
-        final boolean multiMovements = scores.size() > 1;
+        final boolean multiMovements = theScores.size() > 1;
 
         if (BookManager.useOpus()) {
             // Export the book as one opus file
@@ -623,7 +649,7 @@ public class Book
             }
         } else {
             // Export the book as one or several movement files
-            for (Score score : scores) {
+            for (Score score : theScores) {
                 final String scoreName = (!multiMovements) ? bookName
                         : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
                 final Path scorePath = bookPathSansExt.resolveSibling(scoreName + ext);
@@ -956,11 +982,73 @@ public class Book
     /**
      * Report the scores (movements) detected in this book.
      *
-     * @return the immutable list of scores
+     * @return the live list of scores
      */
     public List<Score> getScores ()
     {
-        return Collections.unmodifiableList(scores);
+        return scores;
+    }
+
+    //------------------//
+    // getSelectedStubs //
+    //------------------//
+    /**
+     * Report the selected stubs according to selection specification.
+     *
+     * @return (copy of) the list of selected stubs (valid or not)
+     */
+    public List<SheetStub> getSelectedStubs ()
+    {
+        if (sheetsSpecification == null) {
+            return new ArrayList<>(stubs);
+        }
+
+        return getStubs(NaturalSpec.decode(sheetsSpecification, true));
+    }
+
+    //------------------------//
+    // getSheetsSpecification //
+    //------------------------//
+    /**
+     * Report the specification for sheets selection.
+     *
+     * @return the sheetsSpecification string, perhaps null
+     */
+    public String getSheetsSpecification ()
+    {
+        return sheetsSpecification;
+    }
+
+    //------------------------//
+    // setSheetsSpecification //
+    //------------------------//
+    /**
+     * Remember a new specification for sheets selection.
+     *
+     * @param sheetsSpecification the sheetsSpecification to set, perhaps null
+     * @return true if the spec was actually modified
+     */
+    public boolean setSheetsSpecification (String sheetsSpecification)
+    {
+        boolean modif = false;
+
+        if (sheetsSpecification == null) {
+            if (this.sheetsSpecification != null) {
+                modif = true;
+            }
+        } else {
+            if (!sheetsSpecification.equals(this.sheetsSpecification)) {
+                modif = true;
+            }
+        }
+
+        this.sheetsSpecification = sheetsSpecification;
+
+        if (modif) {
+            setModified(true); // Book has been modified
+        }
+
+        return modif;
     }
 
     //-----------------------------//
@@ -1007,19 +1095,84 @@ public class Book
         return Collections.unmodifiableList(stubs);
     }
 
+    //----------//
+    // getStubs //
+    //----------//
+    /**
+     * Report the sheets stubs corresponding to the provided sheet IDs.
+     *
+     * @param sheetIds list of IDs of desired stubs, perhaps null
+     * @return the immutable list of selected sheets stubs, list may be empty but is never null
+     */
+    public List<SheetStub> getStubs (Collection<Integer> sheetIds)
+    {
+        if (sheetIds == null) {
+            return getStubs();
+        }
+
+        final List<SheetStub> found = new ArrayList<>();
+
+        for (int id : sheetIds) {
+            if (id < 1 || id > stubs.size()) {
+                logger.warn("No sheet #{} in {}", id, this);
+            } else {
+                found.add(stubs.get(id - 1));
+            }
+        }
+
+        return found;
+    }
+
+    //-----------------------//
+    // getValidSelectedStubs //
+    //-----------------------//
+    /**
+     * Report the valid sheets among the sheets selection.
+     *
+     * @return the valid selected stubs
+     */
+    public List<SheetStub> getValidSelectedStubs ()
+    {
+        final List<SheetStub> sel = getSelectedStubs();
+
+        for (Iterator<SheetStub> it = sel.iterator(); it.hasNext();) {
+            final SheetStub stub = it.next();
+
+            if (!stub.isValid()) {
+                it.remove();
+            }
+        }
+
+        return sel;
+    }
+
     //---------------//
     // getValidStubs //
     //---------------//
     /**
      * Report the non-discarded sheets stubs in this book.
      *
-     * @return the immutable list of valid sheets stubs
+     * @return the list of valid sheets stubs
      */
     public List<SheetStub> getValidStubs ()
     {
+        return getValidStubs(stubs);
+    }
+
+    //---------------//
+    // getValidStubs //
+    //---------------//
+    /**
+     * Report the valid stubs among the provided stubs.
+     *
+     * @param theStubs the provided stubs
+     * @return the list of valid sheets stubs
+     */
+    public static List<SheetStub> getValidStubs (List<SheetStub> theStubs)
+    {
         List<SheetStub> valids = new ArrayList<>();
 
-        for (SheetStub stub : stubs) {
+        for (SheetStub stub : theStubs) {
             if (stub.isValid()) {
                 valids.add(stub);
             }
@@ -1329,8 +1482,10 @@ public class Book
     //-------//
     /**
      * Print this book in PDF format.
+     *
+     * @param theStubs the valid selected stubs
      */
-    public void print ()
+    public void print (List<SheetStub> theStubs)
     {
         // Path to print file
         final Path pdfPath = BookManager.getActualPath(
@@ -1338,10 +1493,10 @@ public class Book
                 BookManager.getDefaultPrintPath(this));
 
         try {
-            new BookPdfOutput(Book.this, pdfPath.toFile()).write(
-                    null,
-                    new SheetResultPainter.PdfResultPainter());
+            new BookPdfOutput(this, pdfPath.toFile())
+                    .write(theStubs, new SheetResultPainter.PdfResultPainter());
             setPrintPath(pdfPath);
+            logger.info("Book printed to {}", pdfPath);
         } catch (Exception ex) {
             logger.warn("Cannot print to {} {}", pdfPath, ex.toString(), ex);
         }
@@ -1351,25 +1506,24 @@ public class Book
     // reachBookStep //
     //---------------//
     /**
-     * Reach a specific step (and all needed intermediate steps) on all valid sheets
-     * of this book.
+     * Reach a specific step (and all needed intermediate steps) on valid selected
+     * sheets of this book.
      *
      * @param target   the targeted step
      * @param force    if true and step already reached, sheet is reset and processed until step
-     * @param sheetIds IDs of selected valid sheets, or null for all valid sheets
+     * @param theStubs the valid selected stubs
      * @return true if OK on all sheet actions
      */
     public boolean reachBookStep (final Step target,
                                   final boolean force,
-                                  final Set<Integer> sheetIds)
+                                  final List<SheetStub> theStubs)
     {
         try {
-            final List<SheetStub> concernedStubs = getConcernedStubs(sheetIds);
-            logger.debug("reachStep {} force:{} sheetIds:{}", target, force, sheetIds);
+            logger.debug("reachStep {} force:{} stubs:{}", target, force, theStubs);
 
             if (!force) {
                 // Check against the least advanced step performed across all sheets concerned
-                Step least = getLeastStep(concernedStubs);
+                Step least = getLeastStep(theStubs);
 
                 if ((least != null) && (least.compareTo(target) >= 0)) {
                     return true; // Nothing to do
@@ -1378,11 +1532,8 @@ public class Book
 
             // Launch the steps on each sheet
             long startTime = System.currentTimeMillis();
-            logger.info(
-                    "Book reaching {}{} on sheets:{}",
-                    target,
-                    force ? " force" : "",
-                    ids(concernedStubs));
+            logger.info("Book reaching {}{} on sheets:{}",
+                        target, force ? " force" : "", ids(theStubs));
 
             try {
                 boolean someFailure = false;
@@ -1393,7 +1544,7 @@ public class Book
                     // Process all stubs in parallel
                     List<Callable<Boolean>> tasks = new ArrayList<>();
 
-                    for (final SheetStub stub : concernedStubs) {
+                    for (final SheetStub stub : theStubs) {
                         tasks.add(() -> {
                             LogUtil.start(stub);
 
@@ -1434,7 +1585,7 @@ public class Book
                     }
                 } else {
                     // Process one stub after the other
-                    for (SheetStub stub : concernedStubs) {
+                    for (SheetStub stub : theStubs) {
                         LogUtil.start(stub);
 
                         try {
@@ -1479,26 +1630,32 @@ public class Book
     /**
      * Determine the logical parts of each score.
      *
+     * @param theStubs  the valid selected stubs
+     * @param theScores the scores to populate
      * @return the count of modifications done
      */
-    public int reduceScores ()
+    public int reduceScores (List<SheetStub> theStubs,
+                             List<Score> theScores)
     {
         int modifs = 0;
 
-        if (scores != null) {
-            for (Score score : scores) {
-                // (re) build the score logical parts
-                modifs += new ScoreReduction(score).reduce();
+        for (Score score : theScores) {
+            // (re) build the score logical parts
+            modifs += new ScoreReduction(score).reduce(theStubs);
 
-                // Slurs and voices connection across pages in score
-                modifs += Voices.refineScore(score);
-            }
+            // Voices connection across pages in score
+            modifs += Voices.refineScore(score, theStubs);
+        }
 
-            if (modifs > 0) {
+        if (modifs > 0) {
+            if (theScores == this.scores) {
                 setModified(true);
-                logger.info("Scores built: {}", scores.size());
             }
 
+            logger.info("Scores built: {}", theScores.size());
+        }
+
+        if (theScores == this.scores) {
             setDirty(false);
         }
 
@@ -1522,49 +1679,34 @@ public class Book
         return stubs.remove(stub);
     }
 
-    //-------//
-    // reset //
-    //-------//
+    //---------//
+    // resetTo //
+    //---------//
     /**
-     * Reset all valid sheets of this book to their initial state.
+     * Reset all valid selected sheets of this book to their gray or binary images.
+     *
+     * @param step either LOAD or BINARY step only
      */
-    public void reset ()
+    public void resetTo (Step step)
     {
-        for (SheetStub stub : getValidStubs()) {
-            stub.reset();
+        if (step != Step.LOAD && step != Step.BINARY) {
+            logger.error("Method resetTo is reserved to LOAD and BINARY steps");
+            return;
         }
 
-        scores.clear();
-    }
+        final StubsController ctrl = (OMR.gui != null) ? StubsController.getInstance() : null;
 
-    //---------------//
-    // resetToBinary //
-    //---------------//
-    /**
-     * Reset all valid sheets of this book to their binary images.
-     */
-    public void resetToBinary ()
-    {
-        for (SheetStub stub : getValidStubs()) {
-            if (stub.isDone(Step.BINARY)) {
-                stub.resetToBinary();
-            }
-        }
+        for (SheetStub stub : getValidSelectedStubs()) {
+            if (stub.isDone(step)) {
+                if (step == Step.LOAD) {
+                    stub.resetToGray();
+                } else {
+                    stub.resetToBinary();
+                }
 
-        scores.clear();
-    }
-
-    //-------------//
-    // resetToGray //
-    //-------------//
-    /**
-     * Reset all valid sheets of this book to their gray images.
-     */
-    public void resetToGray ()
-    {
-        for (SheetStub stub : getValidStubs()) {
-            if (stub.isDone(Step.LOAD)) {
-                stub.resetToGray();
+                if (ctrl != null) {
+                    ctrl.markTab(stub, Colors.SHEET_OK);
+                }
             }
         }
 
@@ -1576,10 +1718,12 @@ public class Book
     //--------//
     /**
      * Write the book symbol samples into its sample repository.
+     *
+     * @param theStubs the selected valid stubs
      */
-    public void sample ()
+    public void sample (List<SheetStub> theStubs)
     {
-        for (SheetStub stub : getValidStubs()) {
+        for (SheetStub stub : theStubs) {
             Sheet sheet = stub.getSheet();
             sheet.sample();
         }
@@ -1780,16 +1924,23 @@ public class Book
     // transcribe //
     //------------//
     /**
-     * Convenient method to perform all needed transcription steps on all valid sheets
+     * Convenient method to perform all needed transcription steps on selected valid sheets
      * of this book and building the book score(s).
      *
+     * @param theStubs  the valid selected stubs
+     * @param theScores the collection of scores to populate
      * @return true if OK
      */
-    public boolean transcribe ()
+    public boolean transcribe (List<SheetStub> theStubs,
+                               List<Score> theScores)
     {
-        boolean ok = reachBookStep(Step.last(), false, null);
+        boolean ok = reachBookStep(Step.last(), false, theStubs);
 
-        reduceScores();
+        if (theScores.isEmpty()) {
+            createScores(theStubs, theScores);
+        }
+
+        reduceScores(theStubs, theScores);
 
         return ok;
     }
@@ -1813,8 +1964,8 @@ public class Book
     public synchronized void updateScores (SheetStub currentStub)
     {
         if (scores.isEmpty()) {
-            // Easy: allocate scores based on all book stubs
-            createScores();
+            // Easy: allocate scores based on all relevant book stubs
+            createScores(null, scores);
         } else {
             try {
                 // Determine just the impacted pageRefs
@@ -1893,7 +2044,7 @@ public class Book
                 logger.warn("Error updating scores " + ex, ex);
                 logger.warn("Rebuilding them from stubs info.");
                 scores.clear();
-                createScores();
+                createScores(null, scores);
             }
         }
     }
@@ -2120,21 +2271,29 @@ public class Book
     // createScores //
     //--------------//
     /**
-     * Create scores out of all book stubs.
+     * Create scores out of (all or selected) valid book stubs.
+     *
+     * @param validSelectedStubs valid selected stubs, or null
+     * @param theScores          the scores to populate
      */
-    private void createScores ()
+    private void createScores (List<SheetStub> validSelectedStubs,
+                               List<Score> theScores)
     {
+        if (validSelectedStubs == null) {
+            validSelectedStubs = getValidSelectedStubs();
+        }
+
         Score score = null;
 
         // Group provided sheets pages into scores
         for (SheetStub stub : stubs) {
-            // An invalid or not-yet-processed stub triggers a score break
-            if (stub.getPageRefs().isEmpty()) {
+            // An invalid or not-selected or not-yet-processed stub triggers a score break
+            if (!validSelectedStubs.contains(stub) || stub.getPageRefs().isEmpty()) {
                 score = null;
             } else {
                 for (PageRef pageRef : stub.getPageRefs()) {
                     if ((score == null) || pageRef.isMovementStart()) {
-                        scores.add(score = new Score());
+                        theScores.add(score = new Score());
                         score.setBook(this);
                     }
 
@@ -2143,7 +2302,7 @@ public class Book
             }
         }
 
-        logger.debug("Created scores:{}", scores);
+        logger.debug("Created scores:{}", theScores);
     }
 
     //-------------------//
@@ -2168,13 +2327,14 @@ public class Book
     /**
      * Report the least advanced step reached among all provided stubs.
      *
+     * @param theStubs the provided stubs
      * @return the least step, null if any stub has not reached the first step (LOAD)
      */
-    private Step getLeastStep (List<SheetStub> stubs)
+    private Step getLeastStep (List<SheetStub> theStubs)
     {
         Step least = Step.last();
 
-        for (SheetStub stub : stubs) {
+        for (SheetStub stub : theStubs) {
             Step latest = stub.getLatestStep();
 
             if (latest == null) {
@@ -2310,7 +2470,7 @@ public class Book
                                 || OMR.gui.displayConfirmation(
                                     msg + "\nConfirm reset to binary?",
                                     "Too old book version")) {
-                        resetToBinary();
+                        resetTo(Step.BINARY);
                         logger.info("Book {} reset to binary.", radix);
                         version = WellKnowns.TOOL_REF;
                         build = WellKnowns.TOOL_BUILD;
@@ -2453,19 +2613,19 @@ public class Book
     /**
      * Build a string with just the IDs of the stub collection.
      *
-     * @param stubs the collection of stub instances
+     * @param theStubs the collection of stub instances
      * @return the string built
      */
-    public static String ids (List<SheetStub> stubs)
+    public static String ids (List<SheetStub> theStubs)
     {
-        if (stubs == null) {
+        if (theStubs == null) {
             return "";
         }
 
         StringBuilder sb = new StringBuilder();
         sb.append("[");
 
-        for (SheetStub entity : stubs) {
+        for (SheetStub entity : theStubs) {
             sb.append("#").append(entity.getNumber());
         }
 

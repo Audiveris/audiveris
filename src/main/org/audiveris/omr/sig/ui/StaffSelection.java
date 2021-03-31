@@ -40,9 +40,11 @@ import static javax.swing.JOptionPane.CLOSED_OPTION;
  */
 public class StaffSelection
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffSelection.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Resource injection. */
     private final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
             StaffSelection.class);
@@ -55,14 +57,19 @@ public class StaffSelection
                                                   resources.getString(className + ".cancel")};
 
     /** Option pane. */
-    private final JOptionPane pane = new JOptionPane(resources.getString(className + ".message"),
-                                                     JOptionPane.QUESTION_MESSAGE,
-                                                     JOptionPane.DEFAULT_OPTION, null, options);
+    private final JOptionPane pane = new JOptionPane(
+            resources.getString(className + ".message"),
+            JOptionPane.QUESTION_MESSAGE,
+            JOptionPane.DEFAULT_OPTION,
+            null,
+            options);
 
     /** Reusable dialog. */
-    private final JDialog dialog = pane.createDialog(OMR.gui.getFrame(), resources.getString(
-                                                     className + ".title"));
+    private final JDialog dialog = pane.createDialog(
+            OMR.gui.getFrame(),
+            resources.getString(className + ".title"));
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -74,15 +81,6 @@ public class StaffSelection
     public static StaffSelection getInstance ()
     {
         return LazySingleton.INSTANCE;
-    }
-
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final StaffSelection INSTANCE = new StaffSelection();
     }
 
     /**
@@ -107,5 +105,15 @@ public class StaffSelection
         }
 
         return CLOSED_OPTION; // Either closed or cancelled
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final StaffSelection INSTANCE = new StaffSelection();
     }
 }

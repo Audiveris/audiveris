@@ -85,6 +85,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -647,15 +648,13 @@ public class Sheet
                     : ((ext.equals(OMR.SCORE_EXTENSION)) ? false : BookManager.useCompression());
             final boolean useSig = BookManager.useSignature();
 
-            int modifs = 0; // Count of modifications
-
             if (pages.size() > 1) {
                 // One file per page
                 for (PageRef pageRef : stub.getPageRefs()) {
                     final Score score = new Score();
                     score.setBook(book);
                     score.addPageRef(stub.getNumber(), pageRef);
-                    modifs += new ScoreReduction(score).reduce();
+                    new ScoreReduction(score).reduce(Arrays.asList(stub));
 
                     final int idx = pageRef.getId();
                     final String scoreName = sheetName + OMR.MOVEMENT_EXTENSION + idx;
@@ -667,15 +666,11 @@ public class Sheet
                 final Score score = new Score();
                 score.setBook(book);
                 score.addPageRef(stub.getNumber(), stub.getFirstPageRef());
-                modifs += new ScoreReduction(score).reduce();
+                new ScoreReduction(score).reduce(Arrays.asList(stub));
 
                 final String scoreName = sheetName;
                 final Path scorePath = path.resolveSibling(scoreName + ext);
                 new ScoreExporter(score).export(scorePath, scoreName, useSig, compressed);
-            }
-
-            if (modifs > 0) {
-                book.setModified(true);
             }
 
             // Remember the book export path in the book itself
@@ -1152,7 +1147,7 @@ public class Sheet
             }
 
             new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
-                    this,
+                    Arrays.asList(getStub()),
                     new SheetResultPainter.PdfResultPainter());
             logger.info("Sheet printed to {}", sheetPrintPath);
         } catch (Exception ex) {

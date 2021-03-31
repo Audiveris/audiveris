@@ -30,6 +30,7 @@ import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.sheet.Picture.ImageKey;
 import org.audiveris.omr.sheet.Picture.TableKey;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
@@ -668,6 +669,13 @@ public class SheetStub
                             watch.start("afterReload");
                             sh.afterReload(this);
                             setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
+
+                            if (OMR.gui != null) {
+                                StubsController.getInstance().markTab(
+                                        this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
+
+                            }
+
                             logger.info("Loaded {}", sheetFile);
                         } catch (IOException |
                                  JAXBException ex) {
@@ -708,11 +716,10 @@ public class SheetStub
      */
     public void invalidate ()
     {
-        invalid = Boolean.TRUE;
-
-        book.updateScores(this);
+        invalid = true;
 
         pageRefs.clear();
+        book.updateScores(this);
         setModified(true);
 
         if (OMR.gui != null) {
@@ -730,11 +737,9 @@ public class SheetStub
      */
     public void validate ()
     {
-        invalid = Boolean.FALSE;
+        resetToBinary();
 
         book.updateScores(this);
-
-        pageRefs.clear();
         setModified(true);
 
         if (OMR.gui != null) {
@@ -910,10 +915,8 @@ public class SheetStub
             if (force && (target.compareTo(latestStep) <= 0)) {
                 if (target.compareTo(Step.BINARY) > 0) {
                     resetToBinary();
-                } else if (target == Step.BINARY) {
-                    resetToGray();
                 } else {
-                    reset();
+                    resetToGray();
                 }
             }
 
@@ -1014,20 +1017,18 @@ public class SheetStub
     public void resetToBinary ()
     {
         try {
-            final BufferedImage gray = sheet.getPicture().getGrayImage();
             final RunTable binaryTable = grabBinaryTable();
 
-            doReset();
-            sheet = new Sheet(this, binaryTable);
-
-            if (gray != null) {
-                sheet.setImage(gray, false);
+            if (binaryTable != null) {
+                doReset();
+                sheet = new Sheet(this, binaryTable);
+                logger.info("Sheet#{} reset to binary.", number);
+                display();
+            } else {
+                logger.warn("No binary table available for sheet #{}", number);
             }
-
-            logger.info("Sheet#{} reset to binary.", number);
-            display();
         } catch (Throwable ex) {
-            logger.warn("Could not reset to binary {}", ex.toString(), ex);
+            logger.warn("Sheet#{} could not reset to binary {}", number, ex.toString(), ex);
         }
     }
 
@@ -1040,18 +1041,18 @@ public class SheetStub
     public void resetToGray ()
     {
         try {
-            final BufferedImage gray = sheet.getPicture().getGrayImage();
+            final BufferedImage img = book.loadSheetImage(number);
 
-            if (gray != null) {
+            if (img != null) {
                 doReset();
-                sheet = new Sheet(this, gray, false);
+                sheet = new Sheet(this, img, true);
                 logger.info("Sheet#{} reset to gray.", number);
                 display();
             } else {
                 logger.warn("No gray image available for sheet #{}", number);
             }
         } catch (Throwable ex) {
-            logger.warn("Could not reset to gray {}", ex.toString(), ex);
+            logger.warn("Sheet#{} could not reset to gray {}", number, ex.toString(), ex);
         }
     }
 
@@ -1313,17 +1314,22 @@ public class SheetStub
     {
         // Avoid loading sheet just to reset to binary:
         // If sheet is available, use its picture.getTable()
-        // Otherwise, load it directly from binary.xml on disk
+        // Otherwise, load binary image from disk and convert to RunTable
         RunTable binaryTable = null;
 
         if (hasSheet()) {
-            logger.debug("Getting BINARY from sheet");
+            logger.debug("Sheet#{} getting BINARY from sheet", number);
             binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
         }
 
         if (binaryTable == null) {
-            logger.debug("Loading BINARY from disk");
-            binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
+            logger.debug("Sheet#{} loading BINARY image from disk", number);
+            final BufferedImage binaryImg = new ImageHolder(ImageKey.BINARY).getData(this);
+
+            if (binaryImg != null) {
+                logger.debug("Sheet#{} getting BINARY table from image", number);
+                binaryTable = Picture.tableOf(binaryImg);
+            }
         }
 
         return binaryTable;

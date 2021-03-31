@@ -23,7 +23,10 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice.Family;
@@ -172,15 +175,27 @@ public abstract class Voices
      * Ties across sheets cannot easily be persisted, so we detect and use them on the fly.
      *
      * @param score the score to process
+     * @param stubs the valid selected stubs
      * @return the count of modifications made
      */
-    public static int refineScore (Score score)
+    public static int refineScore (Score score,
+                                   List<SheetStub> stubs)
     {
+        final Book book = score.getBook();
         int modifs = 0;
         SystemInfo prevSystem = null; // Last system of preceding page, if any
 
         for (int pageNumber = 1; pageNumber <= score.getPageCount(); pageNumber++) {
-            Page page = score.getPage(pageNumber);
+            // Within valid selected stubs?
+            final PageRef ref = score.getPageRefs().get(pageNumber - 1);
+            final SheetStub stub = book.getStub(ref.getSheetNumber());
+
+            if (!stubs.contains(stub)) {
+                prevSystem = null;
+                continue;
+            }
+
+            final Page page = score.getPage(pageNumber);
 
             if (prevSystem != null) {
                 for (LogicalPart scorePart : score.getLogicalParts()) {

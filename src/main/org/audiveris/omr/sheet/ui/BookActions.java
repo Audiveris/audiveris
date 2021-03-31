@@ -80,6 +80,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.text.MessageFormat.format;
+import java.util.List;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -141,6 +142,9 @@ public class BookActions
     /** The action that toggles repetitive input mode. */
     private final ApplicationAction repetitiveInputAction;
 
+    /** The action that toggles sheet validity. */
+    private final ApplicationAction toggleValidityAction;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BookActions object.
@@ -153,6 +157,7 @@ public class BookActions
 
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
         repetitiveInputAction = (ApplicationAction) actionMap.get("toggleRepetitiveInput");
+        toggleValidityAction = (ApplicationAction) actionMap.get("toggleSheetValidity");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -164,7 +169,7 @@ public class BookActions
     {
         final Book book = StubsController.getCurrentBook();
 
-        if (book == null) {
+        if ((book == null) || !hasValidSelectedSheets(book)) {
             return null;
         }
 
@@ -176,7 +181,7 @@ public class BookActions
             {
                 try {
                     LogUtil.start(book);
-                    book.annotate();
+                    book.annotate(book.getValidSelectedStubs());
                 } catch (Throwable ex) {
                     logger.warn("Error in annotateBook {}", ex.toString(), ex);
                 } finally {
@@ -249,7 +254,7 @@ public class BookActions
     // browseBookSamples //
     //-------------------//
     /**
-     * Action to browse the separate sample repository of the currently selected book.
+     * Action to browse the separate sample repository of the current book.
      *
      * @param e the event that triggered this action
      * @return the UI task to perform
@@ -282,7 +287,7 @@ public class BookActions
     // closeBook //
     //-----------//
     /**
-     * Action that handles the closing of the currently selected book.
+     * Action that handles the closing of the current book.
      *
      * @param e the event that triggered this action
      * @return the task which will close the book
@@ -559,7 +564,7 @@ public class BookActions
     // exportBook //
     //------------//
     /**
-     * Export the currently selected book using MusicXML format
+     * Export the current book using MusicXML format
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
@@ -569,7 +574,7 @@ public class BookActions
     {
         final Book book = StubsController.getCurrentBook();
 
-        if (book == null) {
+        if ((book == null) || !hasValidSelectedSheets(book)) {
             return null;
         }
 
@@ -587,8 +592,7 @@ public class BookActions
     // exportBookAs //
     //--------------//
     /**
-     * Export the currently selected book, using MusicXML format, to a user-provided
-     * location.
+     * Export the current book, using MusicXML format, to a user-provided location.
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
@@ -598,7 +602,7 @@ public class BookActions
     {
         final Book book = StubsController.getCurrentBook();
 
-        if (book == null) {
+        if ((book == null) || !hasValidSelectedSheets(book)) {
             return null;
         }
 
@@ -750,38 +754,6 @@ public class BookActions
     public HistoryMenu getImageHistoryMenu ()
     {
         return imageHistoryMenu;
-    }
-
-    //-----------------//
-    // invalidateSheet //
-    //-----------------//
-    /**
-     * Action that flags the currently selected sheet as invalid.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_VALID)
-    public void invalidateSheet (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub != null) {
-            final String pattern = resources.getString("setSheetInvalid.pattern");
-            final String msg = format(pattern, stub.getId());
-
-            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
-                stub.invalidate();
-
-                final Sheet sheet = stub.getSheet();
-                final StubsController controller = StubsController.getInstance();
-
-                if (ViewParameters.getInstance().isInvalidSheetDisplay() == false) {
-                    controller.removeAssembly(sheet.getStub());
-                } else {
-                    controller.callAboutStub(sheet.getStub());
-                }
-            }
-        }
     }
 
     //---------------------//
@@ -1010,7 +982,7 @@ public class BookActions
     // printBook //
     //-----------//
     /**
-     * Print the currently selected book, as a PDF file
+     * Print the current book, as a PDF file
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
@@ -1020,7 +992,7 @@ public class BookActions
     {
         final Book book = StubsController.getCurrentBook();
 
-        if (book == null) {
+        if ((book == null) || !hasValidSelectedSheets(book)) {
             return null;
         }
 
@@ -1037,7 +1009,7 @@ public class BookActions
     // printBookAs //
     //-------------//
     /**
-     * Write the currently selected book, using PDF format, to a user-provided file.
+     * Write the current book, using PDF format, to a user-provided file.
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
@@ -1047,7 +1019,7 @@ public class BookActions
     {
         final Book book = StubsController.getCurrentBook();
 
-        if (book == null) {
+        if ((book == null) || !hasValidSelectedSheets(book)) {
             return null;
         }
 
@@ -1111,83 +1083,46 @@ public class BookActions
         controller.redo();
     }
 
-    //-----------//
-    // resetBook //
-    //-----------//
-    /**
-     * Action that resets the currently selected book.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public void resetBook (ActionEvent e)
-    {
-        final Book book = StubsController.getCurrentBook();
-
-        if (book != null) {
-            // Check book input path still exists
-            final Path inputPath = book.getInputPath();
-
-            if (!Files.exists(inputPath)) {
-                OMR.gui.displayWarning("Cannot find " + inputPath, "Source images not available");
-            } else {
-                final String msg = format(resources.getString("resetBookToEnd.pattern"),
-                                          book.getRadix(),
-                                          Step.LOAD);
-
-                if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
-                    book.reset();
-                }
-            }
-        }
-    }
-
     //-------------------//
     // resetBookToBinary //
     //-------------------//
     /**
-     * Action that resets to BINARY all valid sheets of selected book.
+     * Action that resets to BINARY all (valid selected) sheets of current book.
      *
      * @param e the event that triggered this action
+     * @return the background task
      */
     @Action(enabledProperty = BOOK_IDLE)
-    public void resetBookToBinary (ActionEvent e)
+    public Task<Void, Void> resetBookToBinary (ActionEvent e)
     {
-        final Book book = StubsController.getCurrentBook();
-
-        if (book != null) {
-            final String msg = format(resources.getString("resetBookToEnd.pattern"),
-                                      book.getRadix(),
-                                      Step.BINARY);
-
-            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
-                book.resetToBinary();
-            }
-        }
+        return resetBook(Step.BINARY);
     }
 
     //-----------------//
     // resetBookToGray //
     //-----------------//
     /**
-     * Action that resets all valid sheets of selected book to gray.
+     * Action that resets all (valid selected) sheets of current book to gray.
      *
      * @param e the event that triggered this action
+     * @return the background task
      */
     @Action(enabledProperty = BOOK_IDLE)
-    public void resetBookToGray (ActionEvent e)
+    public Task<Void, Void> resetBookToGray (ActionEvent e)
     {
+        // Check book input path still exists
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            final String msg = format(resources.getString("resetBookToEnd.pattern"),
-                                      book.getRadix(),
-                                      Step.LOAD);
+            final Path inputPath = book.getInputPath();
 
-            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
-                book.resetToGray();
+            if (!Files.exists(inputPath)) {
+                OMR.gui.displayWarning("Cannot find " + inputPath, "Source images not available");
+                return null;
             }
         }
+
+        return resetBook(Step.LOAD);
     }
 
     //------------//
@@ -1198,7 +1133,7 @@ public class BookActions
     {
         final Book book = StubsController.getCurrentBook();
 
-        if (book == null) {
+        if ((book == null) || !hasValidSelectedSheets(book)) {
             return null;
         }
 
@@ -1224,7 +1159,7 @@ public class BookActions
     // saveBook //
     //----------//
     /**
-     * Action to save the internals of the currently selected book.
+     * Action to save the internals of the current book.
      *
      * @param e the event that triggered this action
      * @return the UI task to perform
@@ -1288,7 +1223,7 @@ public class BookActions
     // saveBookRepository //
     //--------------------//
     /**
-     * Action to save the separate repository of the currently selected book.
+     * Action to save the separate repository of the current book.
      *
      * @param e the event that triggered this action
      * @return the UI task to perform
@@ -1315,6 +1250,32 @@ public class BookActions
         }
 
         return null;
+    }
+
+    //--------------//
+    // selectSheets //
+    //--------------//
+    /**
+     * Specify sheets selection.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public void selectSheets (ActionEvent e)
+    {
+        Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return;
+        }
+
+        try {
+            if (new StubsSelection(book).getSheetsSpec()) {
+                book.clearScores();
+            }
+        } catch (Throwable ex) {
+            logger.warn("Error in selectSheets {}", ex.toString(), ex);
+        }
     }
 
     //------------//
@@ -1358,6 +1319,27 @@ public class BookActions
         }
     }
 
+    //---------------------//
+    // updateSheetValidity //
+    //---------------------//
+    /**
+     * Update menu item according to sheet validity status.
+     *
+     * @param stub the sheet stub to process
+     */
+    public void updateSheetValidity (SheetStub stub)
+    {
+        if ((stub != null) && stub == StubsController.getCurrentStub()) {
+            final boolean isValid = stub.isValid();
+            toggleValidityAction.putValue(javax.swing.Action.SMALL_ICON, resources.getImageIcon(
+                                          "toggleSheetValidity.Action.icon." + isValid));
+            toggleValidityAction.putValue(javax.swing.Action.NAME, resources.getString(
+                                          "toggleSheetValidity.Action.text." + isValid));
+            toggleValidityAction.putValue(javax.swing.Action.SHORT_DESCRIPTION, resources.getString(
+                                          "toggleSheetValidity.Action.shortDescription." + isValid));
+        }
+    }
+
     //-----------------------//
     // toggleRepetitiveInput //
     //-----------------------//
@@ -1381,6 +1363,42 @@ public class BookActions
         final SymbolsEditor symbolsEditor = stub.getSheet().getSymbolsEditor();
         symbolsEditor.toggleRepetitiveInputMode();
         repetitiveInputAction.setSelected(symbolsEditor.isRepetitiveInputMode());
+    }
+
+    //---------------------//
+    // toggleSheetValidity //
+    //---------------------//
+    /**
+     * Action that toggles the validity of currently selected sheet.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_IDLE)
+    public void toggleSheetValidity (ActionEvent e)
+    {
+        final StubsController controller = StubsController.getInstance();
+        final SheetStub stub = controller.getSelectedStub();
+
+        if (stub != null) {
+            final boolean isValid = stub.isValid();
+            final String pattern = resources.getString(
+                    isValid ? "setSheetInvalid.pattern" : "setSheetValid.pattern");
+            final String msg = format(pattern, stub.getId());
+
+            if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
+                return;
+            }
+
+            if (isValid) {
+                stub.invalidate();
+
+                if (ViewParameters.getInstance().isInvalidSheetDisplay() == false) {
+                    controller.removeAssembly(stub);
+                }
+            } else {
+                stub.validate();
+            }
+        }
     }
 
     //----------------//
@@ -1466,34 +1484,6 @@ public class BookActions
         }
 
         return new UpgradeBookTask(stub.getBook());
-    }
-
-    //---------------//
-    // validateSheet //
-    //---------------//
-    /**
-     * Action that flags the currently selected sheet as valid.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(disabledProperty = STUB_VALID)
-    public void validateSheet (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub != null) {
-            final String pattern = resources.getString("setSheetValid.pattern");
-            final String msg = format(pattern, stub.getId());
-
-            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
-                stub.validate();
-
-                final Sheet sheet = stub.getSheet();
-                final StubsController controller = StubsController.getInstance();
-
-                controller.callAboutStub(sheet.getStub());
-            }
-        }
     }
 
     //------------//
@@ -1698,6 +1688,28 @@ public class BookActions
         return new OmrFileFilter(ext, new String[]{ext});
     }
 
+    //-----------//
+    // resetBook //
+    //-----------//
+    private Task<Void, Void> resetBook (Step step)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        final String msg = format(resources.getString("resetBookToEnd.pattern"),
+                                  book.getRadix(),
+                                  step);
+
+        if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
+            return null;
+        }
+
+        return new ResetBookTask(book, step);
+    }
+
     //----------------//
     // selectBookPath //
     //----------------//
@@ -1763,6 +1775,23 @@ public class BookActions
                 defaultSheetPath,
                 filter(ext),
                 resources.getString("chooseSheetPrint"));
+    }
+
+    //------------------------//
+    // hasValidSelectedSheets //
+    //------------------------//
+    private boolean hasValidSelectedSheets (Book book)
+    {
+
+        final List<SheetStub> stubs = book.getValidSelectedStubs();
+
+        if (stubs.isEmpty()) {
+            logger.warn("No valid selected sheets in {}", book);
+
+            return false;
+        } else {
+            return true;
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1915,7 +1944,7 @@ public class BookActions
             try {
                 LogUtil.start(book);
                 book.setPrintPath(bookPrintPath);
-                book.print();
+                book.print(book.getValidSelectedStubs());
             } catch (Throwable ex) {
                 logger.warn("Error in PrintBookTask {}", ex.toString(), ex);
             } finally {
@@ -2119,7 +2148,7 @@ public class BookActions
                 LogUtil.start(book);
 
                 if (checkParameters(book)) {
-                    book.export();
+                    book.export(book.getValidSelectedStubs(), book.getScores());
                 }
             } catch (Throwable ex) {
                 logger.warn("Error in ExportBookTask {}", ex.toString(), ex);
@@ -2179,6 +2208,38 @@ public class BookActions
         static final BookActions INSTANCE = new BookActions();
     }
 
+    //---------------//
+    // ResetBookTask //
+    //---------------//
+    /**
+     * Task that reset all valid selected sheets of book to gray or binary.
+     */
+    private static class ResetBookTask
+            extends VoidTask
+    {
+
+        final Book book;
+
+        final Step step;
+
+        public ResetBookTask (Book book,
+                              Step step)
+        {
+            this.book = book;
+            this.step = step;
+        }
+
+        @Override
+        protected Void doInBackground ()
+                throws Exception
+        {
+
+            book.resetTo(step);
+
+            return null;
+        }
+    }
+
     //----------------//
     // SampleBookTask //
     //----------------//
@@ -2199,7 +2260,7 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
-                book.sample();
+                book.sample(book.getValidSelectedStubs());
             } catch (Throwable ex) {
                 logger.warn("Error in SampleBookTask {}", ex.toString(), ex);
             } finally {
@@ -2275,7 +2336,7 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
-                book.transcribe();
+                book.transcribe(book.getValidSelectedStubs(), book.getScores());
             } catch (Throwable ex) {
                 logger.warn("Could not transcribe book {}", ex.toString(), ex);
             } finally {

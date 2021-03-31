@@ -959,27 +959,14 @@ public class Picture
     // tableOf //
     //---------//
     /**
-     * Build table from provided image.
+     * Report the (vertical) RunTable built from the provided binary image.
      *
-     * @param key key to image
-     * @return the table built, or null if image could not be found
+     * @param binaryImg provided binary image
+     * @return the binary RunTable
      */
-    private RunTable tableOf (ImageKey key)
+    public static RunTable tableOf (BufferedImage binaryImg)
     {
-        final ImageHolder imageHolder = images.get(key);
-
-        if ((imageHolder != null) && !imageHolder.hasNoData()) {
-            BufferedImage image = imageHolder.getData(sheet.getStub());
-
-            if (image != null) {
-                ByteProcessor buffer = new ByteProcessor(image);
-                RunTableFactory runFactory = new RunTableFactory(VERTICAL);
-
-                return runFactory.createTable(buffer);
-            }
-        }
-
-        return null;
+        return new RunTableFactory(VERTICAL).createTable(new ByteProcessor(binaryImg));
     }
 
     //----------//
@@ -1168,6 +1155,30 @@ public class Picture
 
         // Convert oldTables to images
         convertOldTables();
+    }
+
+    //---------//
+    // tableOf //
+    //---------//
+    /**
+     * Build table from provided image.
+     *
+     * @param key key to image
+     * @return the table built, or null if image could not be found
+     */
+    private RunTable tableOf (ImageKey key)
+    {
+        final ImageHolder imageHolder = images.get(key);
+
+        if ((imageHolder != null) && !imageHolder.hasNoData()) {
+            BufferedImage image = imageHolder.getData(sheet.getStub());
+
+            if (image != null) {
+                return tableOf(image);
+            }
+        }
+
+        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
