@@ -24,6 +24,7 @@ package org.audiveris.omr.score;
 import org.audiveris.omr.score.PartConnection.Candidate;
 import org.audiveris.omr.score.PartConnection.ResultEntry;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.SheetStub;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,11 +73,12 @@ public class ScoreReduction
     /**
      * Build the score LogicalPart instances by connecting the pages logical parts.
      *
+     * @param stubs valid selected stubs
      * @return the count of modifications done
      */
-    public int reduce ()
+    public int reduce (List<SheetStub> stubs)
     {
-        final List<List<Candidate>> sequences = buildSequences(score.getPages());
+        final List<List<Candidate>> sequences = buildSequences(score.getPages(stubs));
 
         // Connect the parts across all pages of the score
         PartConnection connection = new PartConnection(sequences);
@@ -132,7 +134,7 @@ public class ScoreReduction
      * Store the results as the score list of LogicalPart instances
      *
      * @param resultEntries results from part connection
-     * @retrun true if score part list has really been modified
+     * @return true if score part list has really been modified
      */
     private boolean storeResults (List<ResultEntry> resultEntries)
     {

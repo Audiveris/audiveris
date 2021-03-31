@@ -1045,12 +1045,15 @@ public class PartwiseBuilder
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
                 PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
-                StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
-                        part,
-                        part.getFirstStaff());
 
-                for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
-                    processMarker((MarkerInter) marker);
+                if (topPartBarline != null) {
+                    StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
+                            part,
+                            part.getFirstStaff());
+
+                    for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
+                        processMarker((MarkerInter) marker);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -2163,7 +2166,10 @@ public class PartwiseBuilder
         }
 
         // Then, stub by stub, populate all ScorePartwise.Part instances in parallel
-        for (SheetStub stub : score.getStubs()) {
+        final List<SheetStub> scoreStubs = score.getStubs();
+        logger.info("Exporting sheet(s): {}", Book.ids(scoreStubs));
+
+        for (SheetStub stub : scoreStubs) {
             processStub(stub, partMap);
         }
     }

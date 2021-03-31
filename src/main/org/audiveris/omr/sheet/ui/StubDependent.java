@@ -606,6 +606,7 @@ public abstract class StubDependent
 
             // Update stubValid
             setStubValid((stub != null) && stub.isValid());
+            BookActions.getInstance().updateSheetValidity(stub);
 
             // Update stubIdle & stubTranscribable & repetitiveInputSelectable
             if (stub != null) {

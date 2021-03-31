@@ -27,7 +27,6 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SimpleSheetPainter;
 import org.audiveris.omr.step.Step;
@@ -41,7 +40,7 @@ import java.awt.RenderingHints;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -78,23 +77,22 @@ public class BookPdfOutput
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Write the PDF output for the provided sheet if any, otherwise for the whole book.
+     * Write the PDF output for the provided stub(s).
      *
-     * @param sheet   desired sheet or null
+     * @param stubs   valid selected stub(s)
      * @param painter concrete sheet painter
      * @throws Exception if printing goes wrong
      */
-    public void write (Sheet sheet,
+    public void write (List<SheetStub> stubs,
                        SimpleSheetPainter painter)
             throws Exception
     {
         FileOutputStream fos = null;
         Document document = null;
         PdfWriter writer = null;
+        final List<Integer> printedIds = new ArrayList<>();
 
         try {
-            final List<SheetStub> stubs = (sheet != null) ? Arrays.asList(sheet.getStub())
-                    : book.getValidStubs();
             fos = new FileOutputStream(file);
 
             for (SheetStub stub : stubs) {
@@ -135,11 +133,10 @@ public class BookPdfOutput
 
                 // This is the end...
                 g2.dispose();
+                printedIds.add(stub.getNumber());
             }
 
-            if (sheet == null) {
-                logger.info("Book printed to {}", file);
-            }
+            logger.info("Printed sheet(s): {}", printedIds);
         } finally {
             if (document != null) {
                 document.close();

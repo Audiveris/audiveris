@@ -296,20 +296,6 @@ public class SheetView
         if (scrollValues != null) {
             scrollValues.applyTo(scrollView.getComponent());
         }
-
-        //
-        //        // Force update of LocationEvent
-        //        if (stub.hasSheet()) {
-        //            SelectionService locationService = stub.getSheet().getLocationService();
-        //            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-        //                    LocationEvent.class);
-        //            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
-        //
-        //            if (location != null) {
-        //                locationService.publish(
-        //                        new LocationEvent(this, locationEvent.hint, null, location));
-        //            }
-        //        }
     }
 
     //----------//

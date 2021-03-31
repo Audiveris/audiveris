@@ -431,6 +431,33 @@ public class Score
         return pages;
     }
 
+    //----------//
+    // getPages //
+    //----------//
+    /**
+     * Report the collection of pages in that score, limited to the provided stubs.
+     *
+     * @param stubs valid selected stubs
+     * @return the relevant pages
+     */
+    public List<Page> getPages (List<SheetStub> stubs)
+    {
+        final List<Page> relevantPages = new ArrayList<>();
+
+        // De-reference pageRefs
+        for (PageRef ref : pageRefs) {
+            final SheetStub stub = book.getStub(ref.getSheetNumber());
+
+            if (stubs.contains(stub)) {
+                final Sheet sheet = stub.getSheet();
+                final Page page = sheet.getPages().get(ref.getId() - 1);
+                relevantPages.add(page);
+            }
+        }
+
+        return relevantPages;
+    }
+
     //---------------//
     // getPartsParam //
     //---------------//

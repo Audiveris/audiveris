@@ -307,7 +307,7 @@ public class Plugin
                 }
             }
 
-            book.export();
+            book.export(book.getValidSelectedStubs(), book.getScores());
 
             if (Files.exists(exportPath)) {
                 return exportPath;
