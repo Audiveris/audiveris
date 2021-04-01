@@ -869,7 +869,7 @@ public class HeadLinker
             private List<Glyph> seeds;
 
             /** The theoretical line from head. */
-            private final Line2D theoLine;
+            private Line2D theoLine;
 
             /** Ordinate range between refPt and limit. */
             private final Rectangle yRange;
@@ -886,15 +886,9 @@ public class HeadLinker
             {
                 this.vSide = vSide;
                 yDir = vSide.direction();
-
-                final Rectangle systemBox = system.getBounds();
-                final int sysY = (yDir > 0) ? (systemBox.y + systemBox.height) : systemBox.y;
-                final Point2D sysPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
-                theoLine = new Line2D.Double(refPt, sysPt);
-                head.addAttachment("t" + getId(), theoLine);
+                luArea = buildLuArea(null); // This also computes theoLine
 
                 // Look for beams and beam hooks in the corner
-                luArea = buildLuArea(null);
                 List<Inter> beamCandidates = Inters.intersectedInters(
                         neighborBeams, GeoOrder.BY_ABSCISSA, luArea);
 
@@ -1286,8 +1280,10 @@ public class HeadLinker
              * Define the lookup area on given corner, knowing the reference point of the
              * entity (head).
              * Global slope is used (plus and minus slopeMargin).
+             * <p>
+             * Side effect: compute theoLine
              *
-             * @param the rather horizontal limit for the area, or null to use system limit
+             * @param the rather horizontal limit for the area, or null to use part limit
              * @return the lookup area
              */
             private Area buildLuArea (Line2D limit)
@@ -1304,9 +1300,9 @@ public class HeadLinker
                 // Then segment away from head
                 final double yLimit;
                 if (limit == null) {
-                    // Use system limit
-                    final Rectangle systemBox = system.getBounds();
-                    yLimit = (yDir > 0) ? systemBox.getMaxY() : systemBox.getMinY();
+                    // Use part limit
+                    final Rectangle partBox = head.getStaff().getPart().getAreaBounds();
+                    yLimit = (yDir > 0) ? partBox.y + partBox.height - 1 : partBox.y;
                 } else {
                     // Use provided (beam) limit
                     yLimit = LineUtil.yAtX(limit, refPt.getX());
@@ -1321,6 +1317,10 @@ public class HeadLinker
                 // Attachment
                 head.addAttachment(getId(), lu);
 
+                // Compute theoLine
+                theoLine = retriever.getTheoreticalLine(refPt, yLimit);
+                head.addAttachment("t" + getId(), theoLine);
+
                 return new Area(lu);
             }
 
@@ -1330,7 +1330,7 @@ public class HeadLinker
             /**
              * Determine the target end point of stem.
              * <p>
-             * This is based on system limit, unless a beam group intersects corner line, in which
+             * This is based on part limit, unless a beam group intersects corner line, in which
              * case the beam group farthest limit is used and the corner area truncated accordingly.
              *
              * @param beamGroups the relevant beam groups, ordered by distance from head

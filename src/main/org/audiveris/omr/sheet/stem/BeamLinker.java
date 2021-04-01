@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import java.awt.Point;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphGroup;
@@ -87,6 +88,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.audiveris.omr.sheet.Staff;
 
 /**
  * Class {@code BeamLinker} handles the connections from a beam to the nearby
@@ -1076,21 +1078,19 @@ public class BeamLinker
             //---------------//
             private void buildGeometry ()
             {
-                theoLine = retriever.getTheoreticalLine(refPt, yDir);
-
+                luArea = buildLuArea(null); // This gives a first value for theoLine
+//
+//                theoLine = retriever.getTheoreticalLine(refPt, yDir);
+//
                 // Check for closer limit (due to some alien beam, for example)
                 final Line2D closer = getCloserLimit();
 
                 if (closer != null) {
-                    // Shrink theoline accordingly
-                    Point2D p2 = retriever.getTargetPt(refPt, closer);
-                    theoLine = new Line2D.Double(refPt, p2);
+                    luArea = buildLuArea(closer); // This shrinks theoline accordingly
                 }
 
                 beam.addAttachment("t" + id, theoLine);
-                luArea = buildLuArea(closer);
                 seeds = Glyphs.intersectedGlyphs(neighborSeeds, luArea);
-
             }
 
             //-------------//
@@ -1126,11 +1126,22 @@ public class BeamLinker
                 lu.lineTo(pr.getX(), pr.getY() + yOffset);
 
                 // Then segment away from beam
-                final double yLimit;
+                double yLimit;
                 if (limit == null) {
-                    // Use system limit
+                    // System limit as starting value
                     final Rectangle systemBox = system.getBounds();
-                    yLimit = (yDir > 0) ? systemBox.getMaxY() : systemBox.getMinY();
+                    yLimit = (yDir < 0) ? systemBox.getMaxY() : systemBox.getMinY();
+
+                    // Use part(s) limit
+                    final Point center = beam.getCenter();
+                    final List<Staff> staves = system.getStavesAround(center);
+
+                    for (Staff staff : staves) {
+                        final Rectangle partBox = staff.getPart().getAreaBounds();
+                        yLimit = (yDir > 0)
+                                ? Math.max(yLimit, partBox.y + partBox.height - 1)
+                                : Math.min(yLimit, partBox.y);
+                    }
                 } else {
                     // Use provided limit
                     yLimit = LineUtil.yAtX(limit, refPt.getX());
@@ -1144,6 +1155,10 @@ public class BeamLinker
 
                 // Attachment
                 beam.addAttachment("" + id, lu);
+
+                // Compute theoLine
+                theoLine = retriever.getTheoreticalLine(refPt, yLimit);
+                beam.addAttachment("t" + id, theoLine);
 
                 return new Area(lu);
             }
