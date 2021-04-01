@@ -738,6 +738,29 @@ public class Part
         return maxDy;
     }
 
+    //---------------//
+    // getAreaBounds //
+    //---------------//
+    /**
+     * Report the bounds of part area.
+     *
+     * @return the part area bounds
+     */
+    public Rectangle getAreaBounds ()
+    {
+        Rectangle bounds = null;
+
+        for (Staff staff : staves) {
+            if (bounds == null) {
+                bounds = staff.getAreaBounds().getBounds();
+            } else {
+                bounds.add(staff.getAreaBounds().getBounds());
+            }
+        }
+
+        return bounds;
+    }
+
     //--------------//
     // getMeasureAt //
     //--------------//

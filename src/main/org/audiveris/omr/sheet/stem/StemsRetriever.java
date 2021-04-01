@@ -510,19 +510,17 @@ public class StemsRetriever
     // getTheoreticalLine //
     //--------------------//
     /**
-     * Compute the (skewed) vertical line from reference point to the system limit.
+     * Compute the (skewed) vertical line from reference point to the ordinate limit.
      *
-     * @param refPt starting reference point
-     * @param yDir  vertical direction from reference point
-     * @return the theoretical line oriented from ref point to system border
+     * @param refPt  starting reference point
+     * @param yLimit ordinate limit
+     * @return the theoretical line oriented from ref point to limit
      */
     Line2D getTheoreticalLine (Point2D refPt,
-                               int yDir)
+                               double yLimit)
     {
-        final Rectangle systemBox = system.getBounds();
-        final int sysY = (yDir > 0) ? (systemBox.y + systemBox.height) : systemBox.y;
-        final Point2D sysPt = getTargetPt(refPt, new Line2D.Double(0, sysY, 100, sysY));
-        return new Line2D.Double(refPt, sysPt);
+        return new Line2D.Double(refPt,
+                                 getTargetPt(refPt, new Line2D.Double(0, yLimit, 100, yLimit)));
     }
 
     //----------------//
