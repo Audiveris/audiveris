@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -1316,6 +1317,16 @@ public abstract class AbstractInter
                 }
 
                 sig.removeVertex(this);
+
+                // Make sure the underlying glyph remains accessible
+                if (glyph != null) {
+                    final SystemInfo system = sig.getSystem();
+                    final Step step = system.getSheet().getStub().getLatestStep();
+
+                    if (step != null && step.compareTo(Step.CURVES) >= 0) {
+                        system.addFreeGlyph(glyph);
+                    }
+                }
             }
         }
     }

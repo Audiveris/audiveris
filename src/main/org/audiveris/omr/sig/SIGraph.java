@@ -770,7 +770,7 @@ public class SIGraph
         Exclusion exc = new Exclusion(cause);
         addEdge(source, target, exc);
 
-        if (inter1.isVip() && inter2.isVip()) {
+        if (inter1.isVip() || inter2.isVip()) {
             logger.info("VIP exclusion {}", exc.toLongString(this));
         }
 

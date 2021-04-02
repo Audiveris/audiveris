@@ -115,7 +115,7 @@ public class ReductionStep
             final int medianValue = lengths.get(lengths.size() / 2);
             final double medianFraction = sheet.getScale().pixelsToFrac(medianValue);
 
-            logger.info("Stems free length median value: {} pixels, {} fractions",
+            logger.info("Stems free length median value: {} pixels, {} interlines",
                         medianValue, String.format("%.1f", medianFraction));
         }
     }
