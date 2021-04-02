@@ -486,7 +486,7 @@ public class PartwiseBuilder
         MidiInstrument midiInstrument = factory.createMidiInstrument();
         pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
         midiInstrument.setId(scoreInstrument);
-        midiInstrument.setMidiChannel(logicalPart.getId());
+        midiInstrument.setMidiChannel(1 + ((logicalPart.getId() - 1) % 16)); // in [1..16] range
         midiInstrument.setMidiProgram(midiProgram);
         midiInstrument.setVolume(new BigDecimal(score.getVolume()));
 
