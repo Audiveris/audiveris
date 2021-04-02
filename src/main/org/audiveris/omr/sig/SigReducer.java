@@ -1353,7 +1353,7 @@ public class SigReducer
                 }
 
                 // Overlap is accepted in some cases
-                if (compatible(left, right)) {
+                if (compatible(left, right) || compatible(right, left)) {
                     continue;
                 }
 

@@ -2041,8 +2041,7 @@ public class Book
 
                 // Workaround: Clear all scores and rebuild them from stubs info
                 // (Doing so, we may lose logical-part informations)
-                logger.warn("Error updating scores " + ex, ex);
-                logger.warn("Rebuilding them from stubs info.");
+                logger.info("Rebuilding score(s) from stubs information.");
                 scores.clear();
                 createScores(null, scores);
             }
