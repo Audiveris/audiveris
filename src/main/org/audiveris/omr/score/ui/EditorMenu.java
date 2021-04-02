@@ -210,8 +210,11 @@ public class EditorMenu
             extends LocationDependentMenu
     {
 
-        /** Selected measure. */
+        /** Selected stack. */
         private MeasureStack stack;
+
+        /** Selected measure. */
+        private Measure measure;
 
         private final RhythmAction rhythmAction = new RhythmAction();
 
@@ -220,7 +223,8 @@ public class EditorMenu
         MeasureMenu ()
         {
             super("Measure");
-            add(new JMenuItem(new DumpAction()));
+            add(new JMenuItem(new DumpStackAction()));
+            add(new JMenuItem(new DumpMeasureAction()));
             add(new JMenuItem(rhythmAction));
             add(new JMenuItem(mergeAction));
         }
@@ -228,7 +232,7 @@ public class EditorMenu
         @Override
         public void updateUserLocation (Rectangle rect)
         {
-            Measure measure = getCurrentMeasure(GeoUtil.center2D(rect));
+            measure = getCurrentMeasure(GeoUtil.center2D(rect));
 
             if (measure != null) {
                 stack = measure.getStack();
@@ -249,20 +253,40 @@ public class EditorMenu
         /**
          * Dump the current measure.
          */
-        private class DumpAction
+        private class DumpMeasureAction
                 extends AbstractAction
         {
 
-            DumpAction ()
+            DumpMeasureAction ()
             {
-                putValue(NAME, "Dump voices");
+                putValue(NAME, "Dump measure voices");
                 putValue(SHORT_DESCRIPTION, "Dump the voices of the selected measure");
             }
 
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                stack.printVoices("\n");
+                stack.printVoices("\n", measure);
+            }
+        }
+
+        /**
+         * Dump the current measure.
+         */
+        private class DumpStackAction
+                extends AbstractAction
+        {
+
+            DumpStackAction ()
+            {
+                putValue(NAME, "Dump stack voices");
+                putValue(SHORT_DESCRIPTION, "Dump the voices of the selected measure stack");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                stack.printVoices("\n", null);
             }
         }
 
@@ -682,7 +706,7 @@ public class EditorMenu
                     final List<SystemInfo> systems = sheet.getSystemManager().getSystems();
                     boolean isLast = system == systems.get(systems.size() - 1);
                     setEnabled(!isLast
-                               && (sheet.getStub().getLatestStep().compareTo(Step.GRID) >= 0));
+                                       && (sheet.getStub().getLatestStep().compareTo(Step.GRID) >= 0));
                 }
             }
         }
