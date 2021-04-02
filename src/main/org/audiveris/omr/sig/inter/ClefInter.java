@@ -314,6 +314,7 @@ public class ClefInter
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
+        case PERCUSSION_CLEF:
             return HeadInter.Step.values()[(71 - pitch) % 7];
 
         case C_CLEF:
@@ -326,9 +327,6 @@ public class ClefInter
         case F_CLEF_8VA:
         case F_CLEF_8VB:
             return HeadInter.Step.values()[(73 - pitch) % 7];
-
-        case PERCUSSION_CLEF:
-            return null;
 
         default:
             logger.error("No note step defined for {}", this);
@@ -354,6 +352,7 @@ public class ClefInter
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
+        case PERCUSSION_CLEF:
             return (34 - intPitch) / 7;
 
         case G_CLEF_8VA:
@@ -376,9 +375,6 @@ public class ClefInter
 
         case F_CLEF_8VB:
             return ((22 - intPitch) / 7) - 1;
-
-        case PERCUSSION_CLEF:
-            return 0;
 
         default:
             logger.error("No note octave defined for {}", this);

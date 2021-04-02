@@ -1795,7 +1795,9 @@ public class PartwiseBuilder
     private void processNote (AbstractNoteInter note)
     {
         try {
-            logger.debug("Visiting {}", note);
+            if (note.isVip()) {
+                logger.info("VIP Visiting {}", note);
+            }
 
             final SIGraph sig = note.getSig();
             final Staff staff = note.getStaff();
