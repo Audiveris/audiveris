@@ -1580,9 +1580,11 @@ public class MeasureStack
     /**
      * Print the voices of this measure stack on standard output.
      *
-     * @param title a potential title for this printout, or null
+     * @param title           a potential title for this printout, or null
+     * @param selectedMeasure the desired measure in stack, or the whole stack if null
      */
-    public void printVoices (String title)
+    public void printVoices (String title,
+                             Measure selectedMeasure)
     {
         try {
             StringBuilder sb = new StringBuilder();
@@ -1609,13 +1611,15 @@ public class MeasureStack
             }
 
             for (Measure measure : measures) {
-                sb.append("\n--- P").append(measure.getPart().getId());
+                if ((selectedMeasure == null) || (measure == selectedMeasure)) {
+                    sb.append("\n--- P").append(measure.getPart().getId());
 
-                List<Voice> voices = new ArrayList<>(measure.getVoices());
-                Collections.sort(voices, Voices.byId);
+                    List<Voice> voices = new ArrayList<>(measure.getVoices());
+                    Collections.sort(voices, Voices.byId);
 
-                for (Voice voice : voices) {
-                    sb.append("\n").append(voice.toStrip());
+                    for (Voice voice : voices) {
+                        sb.append("\n").append(voice.toStrip());
+                    }
                 }
             }
 

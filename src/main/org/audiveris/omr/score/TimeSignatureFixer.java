@@ -246,7 +246,7 @@ public class TimeSignatureFixer
             logger.debug("Checking stack#{}", stack.getPageId());
 
             if (logger.isDebugEnabled()) {
-                stack.printVoices(null);
+                stack.printVoices(null, null);
             }
 
             for (Voice voice : stack.getVoices()) {
