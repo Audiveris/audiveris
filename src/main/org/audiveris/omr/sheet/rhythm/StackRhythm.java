@@ -82,7 +82,7 @@ public class StackRhythm
                 logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
             }
         } catch (Exception ex) {
-            logger.warn("StackRhythm error processing {} " + ex, stack, ex);
+            logger.warn("StackRhythm error processing {} {}", stack, ex.toString(), ex);
         }
     }
 
