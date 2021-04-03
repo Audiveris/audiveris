@@ -76,6 +76,7 @@ import javax.swing.SwingConstants;
 public class InterBoard
         extends EntityBoard<Inter>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -84,6 +85,7 @@ public class InterBoard
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(InterBoard.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -147,6 +149,7 @@ public class InterBoard
     /** To avoid unwanted events. */
     private boolean selfUpdatingText;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterBoard object, pre-selected by default.
      *
@@ -188,6 +191,7 @@ public class InterBoard
         custom.setVisible(false);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -309,6 +313,7 @@ public class InterBoard
                     aboveBelow.setVisible(true);
 
                     LyricItemInter firstNormalItem = lyric.getFirstNormalItem();
+
                     if (firstNormalItem != null) {
                         HeadChordInter firstChord = firstNormalItem.getHeadChord();
                         Voice theVoice = firstChord.getVoice();
@@ -317,7 +322,6 @@ public class InterBoard
                             voice.setVisible(true);
                             voice.setValue(theVoice.getId());
                         }
-
                     }
                 }
 
@@ -438,6 +442,7 @@ public class InterBoard
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

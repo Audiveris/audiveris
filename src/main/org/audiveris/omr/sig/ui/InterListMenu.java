@@ -178,16 +178,9 @@ public class InterListMenu
 
                     for (Inter inter : sysInters) {
                         if (!inter.isRemoved()) {
-                            // A menu (or simple item) dedicated to this inter instance
-                            final JMenuItem item;
+                            // A menu dedicated to this inter instance
                             final Set<Relation> relations = inter.getSig().edgesOf(inter);
-
-                            if (!relations.isEmpty()) {
-                                item = new InterMenu(inter, relations).getMenu();
-                            } else {
-                                item = new JMenuItem(new InterAction(inter, null));
-                            }
-
+                            final JMenuItem item = new InterMenu(inter, relations).getMenu();
                             item.addMouseListener(interListener);
                             add(item);
                         }
