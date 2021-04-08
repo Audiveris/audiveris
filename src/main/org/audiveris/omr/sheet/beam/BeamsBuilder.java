@@ -587,13 +587,20 @@ public class BeamsBuilder
         final List<BeamLine> lines = structure.getLines();
 
         // First, retrieve top and bottom jitter
-        final double topJitter = structure.computeJitter(lines.get(0), TOP);
-        final double botJitter = structure.computeJitter(lines.get(lines.size() - 1), BOTTOM);
-        final double meanJitter = 0.5 * (topJitter + botJitter);
-        final double distImpact = 1 - (meanJitter / params.maxJitterRatio);
+        final double distImpact;
 
-        ///logger.info("meanJitter:{} for {}", String.format("%.4f", meanJitter), structure);
-        //
+        try {
+            final double topJitter = structure.computeJitter(lines.get(0), TOP);
+            final double botJitter = structure.computeJitter(lines.get(lines.size() - 1), BOTTOM);
+            final double meanJitter = 0.5 * (topJitter + botJitter);
+            ///logger.info("meanJitter:{} for {}", String.format("%.4f", meanJitter), structure);
+            distImpact = 1 - (meanJitter / params.maxJitterRatio);
+        } catch (Exception ex) {
+            logger.info("Error computing beam jitter {} {}", ex.toString(), structure, ex);
+
+            return false;
+        }
+
         for (int idx = 0; idx < lines.size(); idx++) {
             final BeamLine line = lines.get(idx);
 
