@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -237,6 +239,9 @@ public class MeasureFixer
     {
         logger.debug("{} processing {}", getClass().getSimpleName(), system);
 
+        // To gather all warnings about missing time signature in this system
+        final List<String> warnings = new ArrayList<>();
+
         // Loop on stacks in system (the list of stacks being modified on the fly)
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
             stack = system.getStacks().get(idx);
@@ -245,9 +250,7 @@ public class MeasureFixer
             if (stack.getExpectedDuration() != null) {
                 stack.checkDuration();
             } else {
-                logger.warn("{} no target duration for measure {}, please check time signature.",
-                            system.getPage(),
-                            stack.getPageId());
+                warnings.add(stack.getPageId());
             }
 
             // Check if all voices in all parts exhibit the same termination
@@ -318,6 +321,12 @@ public class MeasureFixer
             // For next measure stack
             prevStack = stack;
             prevStackTermination = stackTermination;
+        }
+
+        if (!warnings.isEmpty()) {
+            logger.warn("{} No target duration for measures local IDs {}"
+                                + ", please check time signatures",
+                        system, warnings);
         }
 
         // For next system
