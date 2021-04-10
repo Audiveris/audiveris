@@ -877,7 +877,6 @@ public class MeasureRhythm
                         }
 
                         if (timeOffset == null) {
-                            // This can happen when chords are being manually redefined
                             logger.info("No timeOffset for {}", ch);
                         }
                     }
@@ -1135,6 +1134,10 @@ public class MeasureRhythm
                             final AbstractChordInter ch = pair.newChord;
                             final AbstractChordInter act = pair.oldChord;
                             final Rational end = act.getEndTime();
+
+                            if (end == null) {
+                                return; // Computing cannot continue
+                            }
 
                             if (!end.equals(slotTime)) {
                                 logger.debug("{} slotTime:{} end:{}", slot, slotTime, end);

@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.relation.SameTimeRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
+import org.audiveris.omr.sig.ui.InterController.SourceTargetRelation;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
@@ -212,16 +213,16 @@ public class ChordListMenu
     // buildTimeItems //
     //----------------//
     /**
-     * Try to build time item(s) with the two provided chords.
+     * Try to build time item(s) with the 2+ provided chords.
      * <p>
-     * we check that the 2 provided chords:
+     * we check that the 2+ provided chords:
      * <ul>
      * <li>Belong to the same measure.
      * <li>Are rather close abscissa-wise.
      * <li>Don't belong to the same beam group (because their time relations are imposed)
      * </ul>
      *
-     * @param chords   the two provided chords
+     * @param chords   the 2+ provided chords
      * @param listener the selection listener to use
      */
     private void buildTimeItems (final List<AbstractChordInter> chords,
@@ -232,12 +233,18 @@ public class ChordListMenu
             return;
         }
 
-        // Check abscissa gap between the two chords
-        final AbstractChordInter src = chords.get(0);
-        final AbstractChordInter tgt = chords.get(1);
-        final Rectangle b1 = src.getBounds();
-        final Rectangle b2 = tgt.getBounds();
-        final int xGap = GeoUtil.xGap(b1, b2);
+        // Check abscissa gap between the chords
+        int xGap = 0;
+        for (int i1 = 0, ilBreak = chords.size() - 1; i1 < ilBreak; i1++) {
+            final AbstractChordInter ch1 = chords.get(i1);
+            final Rectangle b1 = ch1.getBounds();
+
+            for (AbstractChordInter ch2 : chords.subList(i1 + 1, chords.size())) {
+                final Rectangle b2 = ch2.getBounds();
+                xGap = Math.max(xGap, GeoUtil.xGap(b1, b2));
+            }
+        }
+
         final int max = sheet.getScale().toPixels(constants.maxAbscissaGapForTimeItems);
 
         if (xGap > max) {
@@ -245,49 +252,66 @@ public class ChordListMenu
             return;
         }
 
-        // The two candidates cannot belong to the same beam group
-        BeamGroupInter bg1 = src.getBeamGroup();
-        BeamGroupInter bg2 = tgt.getBeamGroup();
+        // No two candidates can belong to the same beam group
+        for (int i1 = 0, ilBreak = chords.size() - 1; i1 < ilBreak; i1++) {
+            final AbstractChordInter ch1 = chords.get(i1);
+            final BeamGroupInter bg1 = ch1.getBeamGroup();
 
-        if ((bg1 != null) && (bg1 == bg2)) {
-            logger.debug("Chords belong to the same beam group: {}", chords);
-            return;
-        }
+            if (bg1 != null) {
+                for (AbstractChordInter ch2 : chords.subList(i1 + 1, chords.size())) {
+                    final BeamGroupInter bg2 = ch2.getBeamGroup();
 
-        final SIGraph sig = src.getSig();
-        Relation same = null;
-        Relation separate = null;
-
-        for (Relation rel : sig.getAllEdges(src, tgt)) {
-            if (rel instanceof SameTimeRelation) {
-                same = rel;
-            } else if (rel instanceof SeparateTimeRelation) {
-                separate = rel;
+                    if (bg1 == bg2) {
+                        logger.debug("Chords belong to the same beam group: {}", chords);
+                        return;
+                    }
+                }
             }
         }
 
-        if (same == null) {
-            if (separate == null) {
-                addItem(new RelationAdditionItem("Same Time Slot",
-                                                 "Make the two chords share the same time slot",
-                                                 src, tgt, new SameTimeRelation()), listener);
-            }
+        final SIGraph sig = chords.get(0).getSig();
+
+        if (chords.size() >= 3) {
+            addItem(new MultipleRelationAdditionItem("Same Time Slot for all",
+                                                     "Make all chords share the same time slot",
+                                                     chords, SameTimeRelation.class), listener);
         } else {
-            addItem(new RelationRemovalItem("cancel Same Time Slot",
-                                            "Cancel use of same time slot",
-                                            sig, same), listener);
-        }
+            final AbstractChordInter src = chords.get(0);
+            final AbstractChordInter tgt = chords.get(1);
+            Relation same = null;
+            Relation separate = null;
 
-        if (separate == null) {
+            for (Relation rel : sig.getAllEdges(src, tgt)) {
+                if (rel instanceof SameTimeRelation) {
+                    same = rel;
+                } else if (rel instanceof SeparateTimeRelation) {
+                    separate = rel;
+                }
+            }
+
             if (same == null) {
-                addItem(new RelationAdditionItem("Separate Time Slots",
-                                                 "Make the two chords use separate time slots",
-                                                 src, tgt, new SeparateTimeRelation()), listener);
+                if (separate == null) {
+                    addItem(new RelationAdditionItem("Same Time Slot",
+                                                     "Make the two chords share the same time slot",
+                                                     src, tgt, new SameTimeRelation()), listener);
+                }
+            } else {
+                addItem(new RelationRemovalItem("cancel Same Time Slot",
+                                                "Cancel use of same time slot",
+                                                sig, same), listener);
             }
-        } else {
-            addItem(new RelationRemovalItem("cancel Separate Time Slots",
-                                            "Cancel use of separate time slots",
-                                            sig, separate), listener);
+
+            if (separate == null) {
+                if (same == null) {
+                    addItem(new RelationAdditionItem("Separate Time Slots",
+                                                     "Make the two chords use separate time slots",
+                                                     src, tgt, new SeparateTimeRelation()), listener);
+                }
+            } else {
+                addItem(new RelationRemovalItem("cancel Separate Time Slots",
+                                                "Cancel use of separate time slots",
+                                                sig, separate), listener);
+            }
         }
     }
 
@@ -602,6 +626,7 @@ public class ChordListMenu
                     default:
                         // 3 and above
                         buildMergeItem(sysChords, listener);
+                        buildTimeItems(sysChords, listener);
                     }
 
                     if (getItemCount() == actionsStartCount) {
@@ -764,6 +789,52 @@ public class ChordListMenu
         {
             logger.debug("Splitting {}", chord);
             sheet.getInterController().splitChord(chord);
+        }
+    }
+
+    //------------------------------//
+    // MultipleRelationAdditionItem //
+    //-----------------------------//
+    /**
+     * Menu item which consists in adding a relation between every couple.
+     */
+    private class MultipleRelationAdditionItem
+            extends JMenuItem
+    {
+
+        public MultipleRelationAdditionItem (String label,
+                                             String tip,
+                                             final List<AbstractChordInter> chords,
+                                             final Class<? extends Relation> relationClass)
+        {
+            this.setAction(new AbstractAction()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    final SIGraph sig = chords.get(0).getSig();
+                    try {
+                        final List<SourceTargetRelation> strs = new ArrayList<>();
+
+                        for (int i = 0; i < chords.size() - 1; i++) {
+                            final AbstractChordInter src = chords.get(i);
+
+                            for (AbstractChordInter tgt : chords.subList(i + 1, chords.size())) {
+                                Relation rel = relationClass.newInstance();
+                                strs.add(new SourceTargetRelation(src, tgt, rel));
+                            }
+                        }
+
+                        sheet.getInterController().linkMultiple(sig, strs);
+                    } catch (InstantiationException |
+                             IllegalAccessException ex) {
+                        logger.error("Could not instantiate class {}", relationClass, ex);
+                    }
+                }
+            });
+
+            this.setText(label);
+            this.setToolTipText(tip);
         }
     }
 

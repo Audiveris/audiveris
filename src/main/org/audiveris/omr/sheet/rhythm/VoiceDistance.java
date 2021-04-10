@@ -207,7 +207,7 @@ public abstract class VoiceDistance
 
         private static final int STAFF_DIFF = 20;
 
-        private static final int STEM_1_DIFF = 3;
+        private static final int STEM_1_DIFF = 2; //3;
 
         private static final int STEM_2_DIFF = 6;
 
