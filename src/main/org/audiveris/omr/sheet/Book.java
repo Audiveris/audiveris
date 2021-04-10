@@ -80,8 +80,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -630,29 +633,30 @@ public class Book
         final Path bookPathSansExt = BookManager.getActualPath(
                 getExportPathSansExt(),
                 BookManager.getDefaultExportPathSansExt(this));
-        final boolean compressed = BookManager.useCompression();
-        final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final boolean sig = BookManager.useSignature();
 
         // Export each movement score
-        String bookName = bookPathSansExt.getFileName().toString();
-        final boolean multiMovements = theScores.size() > 1;
+        final String bookName = bookPathSansExt.getFileName().toString();
 
         if (BookManager.useOpus()) {
             // Export the book as one opus file
-            final Path opusPath = bookPathSansExt.resolveSibling(bookName + OMR.OPUS_EXTENSION);
+            final Path opusPath = getOpusExportPath();
 
             try {
-                new OpusExporter(this).export(opusPath, bookName, sig);
+                new OpusExporter(this).export(opusPath, bookName, sig, theScores);
             } catch (Exception ex) {
                 logger.warn("Could not export opus " + opusPath, ex);
             }
         } else {
             // Export the book as one or several movement files
-            for (Score score : theScores) {
-                final String scoreName = (!multiMovements) ? bookName
+            final Map<Score, Path> scoreMap = getScoreExportPaths(theScores);
+            final boolean compressed = BookManager.useCompression();
+
+            for (Entry<Score, Path> entry : scoreMap.entrySet()) {
+                final Score score = entry.getKey();
+                final Path scorePath = entry.getValue();
+                final String scoreName = (!isMultiMovement()) ? bookName
                         : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
-                final Path scorePath = bookPathSansExt.resolveSibling(scoreName + ext);
 
                 try {
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
@@ -661,6 +665,60 @@ public class Book
                 }
             }
         }
+    }
+
+    //-------------------//
+    // getOpusExportPath //
+    //-------------------//
+    /**
+     * Report the opus export path.
+     * <p>
+     * Using opus, everything goes into "BOOK.opus.mxl" as a single container file
+     *
+     * @return the target opus path
+     */
+    public Path getOpusExportPath ()
+    {
+        final Path bookPathSansExt = BookManager.getActualPath(
+                getExportPathSansExt(),
+                BookManager.getDefaultExportPathSansExt(this));
+        final String bookName = bookPathSansExt.getFileName().toString();
+
+        return bookPathSansExt.resolveSibling(bookName + OMR.OPUS_EXTENSION);
+    }
+
+    //---------------------//
+    // getScoreExportPaths //
+    //---------------------//
+    /**
+     * Report the export path for each exported score (using no opus).
+     * <ul>
+     * <li>A <i>single-movement</i> book is exported as one "BOOK.ext" file.
+     * <li>A <i>multi-movement</i> book is exported as several "BOOK.mvt#.ext" files,
+     * where "#" stands for the movement number.
+     * </ul>
+     * Extension 'ext' is either "mxl" or "xml" depending upon whether compression is used or not.
+     *
+     * @param theScores the scores to export
+     * @return the populated map of export paths, one per score
+     */
+    public Map<Score, Path> getScoreExportPaths (List<Score> theScores)
+    {
+        final Path bookPathSansExt = BookManager.getActualPath(
+                getExportPathSansExt(),
+                BookManager.getDefaultExportPathSansExt(this));
+        final String bookName = bookPathSansExt.getFileName().toString();
+        final Map<Score, Path> pathMap = new LinkedHashMap<>();
+        final boolean compressed = BookManager.useCompression();
+        final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
+
+        for (Score score : theScores) {
+            final String scoreName = (!isMultiMovement()) ? bookName
+                    : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
+            pathMap.put(score, bookPathSansExt.resolveSibling(scoreName + ext));
+        }
+
+        return pathMap;
     }
 
     //----------//
@@ -913,8 +971,7 @@ public class Book
     public ProcessingSwitches getProcessingSwitches ()
     {
         if (switches == null) {
-            switches = new ProcessingSwitches();
-            switches.setParent(ProcessingSwitches.getDefaultSwitches());
+            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches());
         }
 
         return switches;
@@ -1369,6 +1426,19 @@ public class Book
                 }
             });
         }
+    }
+
+    //-----------------//
+    // isMultiMovement //
+    //-----------------//
+    /**
+     * Report whether this book contains several movements (scores).
+     *
+     * @return true if multi scores
+     */
+    public boolean isMultiMovement ()
+    {
+        return scores.size() > 1;
     }
 
     //------------//

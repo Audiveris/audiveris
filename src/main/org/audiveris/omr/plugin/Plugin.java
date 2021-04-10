@@ -34,9 +34,10 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -190,20 +191,20 @@ public class Plugin
      */
     public Void runPlugin (Book book)
     {
-        Path exportPath = retrieveExport(book);
+        final Collection<Path> exportPaths = retrieveExportFiles(book);
 
-        if (exportPath == null) {
-            logger.warn("No suitable export");
+        if (exportPaths == null) {
+            logger.warn("No suitable export file(s)");
 
             return null;
         }
 
         // Build process
-        List<String> cli = buildCli(exportPath);
+        final List<String> cli = buildCli(exportPaths);
         logger.info("Process: {}", cli);
 
-        ProcessBuilder pb = new ProcessBuilder(cli);
-        pb = pb.redirectErrorStream(true); // Merge process error stream with its output stream
+        final ProcessBuilder pb = new ProcessBuilder(cli);
+        pb.redirectErrorStream(true); // Merge process error stream with its output stream
 
         try {
             final Process process = pb.start(); // Start process
@@ -253,13 +254,22 @@ public class Plugin
     //----------//
     // buildCli //
     //----------//
-    private List<String> buildCli (Path exportPath)
+    /**
+     * Build the CLI command.
+     *
+     * @param paths the export path(s) to process
+     * @return the resulting CLI command
+     */
+    private List<String> buildCli (Collection<Path> paths)
     {
-        List<String> cli = new ArrayList<>(args.size());
+        final List<String> cli = new ArrayList<>();
 
         for (String arg : args) {
+            // Special token to indicate where paths must be inserted
             if (arg.trim().equals("{}")) {
-                cli.add(exportPath.toString());
+                for (Path path : paths) {
+                    cli.add(path.toString());
+                }
             } else {
                 cli.add(arg);
             }
@@ -268,54 +278,109 @@ public class Plugin
         return cli;
     }
 
-    //----------------//
-    // retrieveExport //
-    //----------------//
+    //-------------//
+    // deleteFiles //
+    //-------------//
     /**
-     * Try to retrieve an up-to-date export file
+     * Delete all the provided files.
+     *
+     * @param paths paths to delete
+     * @throws IOException
+     */
+    private void deleteFiles (Collection<Path> paths)
+            throws IOException
+    {
+        for (Path path : paths) {
+            Files.deleteIfExists(path);
+        }
+    }
+
+    //------------//
+    // exportIsOk //
+    //------------//
+    /**
+     * Check if the provided path does exist and is dated after provided bookTime if any.
+     *
+     * @param bookTime time stamp of book file, perhaps null
+     * @param path     required path
+     * @return true if OK
+     * @throws IOException can be thrown when checking file date
+     */
+    private boolean exportIsOk (FileTime bookTime,
+                                Path path)
+            throws IOException
+    {
+        if (!Files.exists(path)) {
+            return false;
+        }
+
+        return (bookTime == null) || (Files.getLastModifiedTime(path).compareTo(bookTime) > 0);
+    }
+
+    //------------//
+    // exportIsOk //
+    //------------//
+    /**
+     * Check if all the provided paths do exist and are dated after provided bookTime
+     * if any.
+     *
+     * @param bookTime time stamp of book file, perhaps null
+     * @param paths    all required paths
+     * @return true if OK
+     * @throws IOException can be thrown when checking file date
+     */
+    private boolean exportIsOk (FileTime bookTime,
+                                Collection<Path> paths)
+            throws IOException
+    {
+        for (Path path : paths) {
+            if (!exportIsOk(bookTime, path)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    //---------------------//
+    // retrieveExportFiles //
+    //---------------------//
+    /**
+     * Try to get (retrieve or build) up-to-date export file(s).
      *
      * @param book the related book
-     * @return path to suitable export, or null
+     * @return paths to export file(s), null if no export file is usable
      */
-    private Path retrieveExport (Book book)
+    private Collection<Path> retrieveExportFiles (Book book)
     {
         try {
-            // Make sure we have the export file
-            final Path exportPathSansExt = BookManager.getDefaultExportPathSansExt(book);
+            // Target export file(s)
+            final Collection<Path> paths = BookManager.useOpus()
+                    ? Arrays.asList(book.getOpusExportPath())
+                    : book.getScoreExportPaths(book.getScores()).values();
 
-            if (exportPathSansExt == null) {
-                logger.warn("Could not get export path");
+            // Reuse existing export?
+            if (!book.isModified()) {
+                final Path bookPath = book.getBookPath();
 
-                return null;
-            }
+                if ((bookPath != null) && Files.exists(bookPath)) {
+                    final FileTime bookTime = Files.getLastModifiedTime(bookPath); // .omr file time
 
-            final Path exportPath = Paths.get(exportPathSansExt + BookManager.getExportExtension());
-
-            if (Files.exists(exportPath)) {
-                FileTime exportTime = Files.getLastModifiedTime(exportPath);
-
-                if (!book.isModified()) {
-                    Path bookPath = book.getBookPath();
-
-                    if ((bookPath != null) && Files.exists(bookPath)) {
-                        FileTime bookTime = Files.getLastModifiedTime(bookPath);
-
-                        if (exportTime.compareTo(bookTime) > 0) {
-                            return exportPath; // We can use this export file
-                        }
+                    if (exportIsOk(bookTime, paths)) {
+                        return paths;
                     }
                 }
             }
 
+            // We must (re-) export
+            deleteFiles(paths);
             book.export(book.getValidSelectedStubs(), book.getScores());
 
-            if (Files.exists(exportPath)) {
-                return exportPath;
+            if (exportIsOk(null, paths)) {
+                return paths; // We can use new export
             }
-
-            logger.warn("Cannot find file {}", exportPath);
         } catch (IOException ex) {
-            logger.warn("Error getting export file " + ex, ex);
+            logger.warn("Error getting export file(s) {}", ex.toString(), ex);
         }
 
         return null;
@@ -326,7 +391,7 @@ public class Plugin
     // PluginTask //
     //------------//
     /**
-     * Handles the processing defined by the underlying javascript.
+     * Handles the processing described by the plugin definition.
      * The life-cycle of this instance is limited to the duration of the task.
      */
     private class PluginTask
