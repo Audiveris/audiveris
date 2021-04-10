@@ -75,15 +75,17 @@ public class OpusExporter
      * @param path     full target path to write (cannot be null)
      * @param rootName opus root name
      * @param signed   should we inject ProxyMusic signature?
+     * @param scores   the scores to export
      * @throws Exception if something goes wrong
      */
     public void export (Path path,
                         String rootName,
-                        boolean signed)
+                        boolean signed,
+                        List<Score> scores)
             throws Exception
     {
         try (OutputStream os = new FileOutputStream(path.toString())) {
-            export(os, signed, rootName);
+            export(os, signed, rootName, scores);
             logger.info("Opus {} exported to {}", rootName, path);
         }
     }
@@ -97,11 +99,13 @@ public class OpusExporter
      * @param os       the output stream where XML data is written (cannot be null)
      * @param signed   should we inject ProxyMusic signature?
      * @param rootName simple root path name, without extension
+     * @param scores   the scores to export
      * @throws Exception if something goes wrong
      */
     public void export (OutputStream os,
                         boolean signed,
-                        String rootName)
+                        String rootName,
+                        List<Score> scores)
             throws Exception
     {
         if (os == null) {
@@ -122,7 +126,6 @@ public class OpusExporter
             rootName = "opus"; // Fall-back value
         }
 
-        final List<Score> scores = book.getScores();
         final boolean multi = scores.size() > 1; // Is this a multi-movement book?
 
         for (Score score : scores) {
