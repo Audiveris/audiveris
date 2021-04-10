@@ -1703,7 +1703,7 @@ public class PartwiseBuilder
                     timeCounter = Rational.ZERO;
                 }
 
-                if (voice.isWhole()) {
+                if (voice.isMeasureRest()) {
                     // Delegate to the chord children directly
                     AbstractChordInter chord = voice.getWholeChord();
                     clefIters.push(measure.getWidth(), chord.getTopStaff());
@@ -1960,7 +1960,7 @@ public class PartwiseBuilder
                 try {
                     final Rational dur;
 
-                    if (chord.isWholeRest()) {
+                    if (chord.isMeasureRest()) {
                         Rational measureDur = current.measure.getStack().getActualDuration();
                         dur = (measureDur != null) ? measureDur : Rational.ONE; // Not too bad...
                     } else {

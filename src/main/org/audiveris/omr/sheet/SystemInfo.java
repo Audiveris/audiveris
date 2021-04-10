@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
@@ -1377,6 +1378,38 @@ public class SystemInfo
     public void setIndented (boolean indented)
     {
         this.indented = indented;
+    }
+
+    //--------------------//
+    // isMeasureRestShape //
+    //--------------------//
+    /**
+     * Report whether the provided shape is a measure-long rest.
+     * <ul>
+     * <li>This is always the case for LONG_REST and BREVE_REST.
+     * <li>This is the case for WHOLE_REST provided that flag partialWholeRests is not 'on' for the
+     * containing sheet.
+     * </ul>
+     *
+     * @param shape provided shape
+     * @return true if rest is measure-long
+     */
+    public boolean isMeasureRestShape (Shape shape)
+    {
+        switch (shape) {
+        case LONG_REST:
+        case BREVE_REST:
+            return true;
+
+        case WHOLE_REST: {
+            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+            return !switches.getValue(ProcessingSwitches.Switch.partialWholeRests);
+        }
+
+        default:
+            return false;
+        }
     }
 
     //--------------//

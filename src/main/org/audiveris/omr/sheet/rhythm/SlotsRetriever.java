@@ -54,8 +54,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +66,7 @@ import java.util.Set;
  * Class {@code SlotsRetriever} is in charge, within one measure of a system,
  * to organize all chords into vertical slots.
  * <p>
- * Voices and time offset are not considered yet, they will be handled later.
+ * Voices and time offsets are not considered yet, they will be handled later.
  * <p>
  * A key point is to determine when two chords should belong or not to the same slot:
  * <ul>
@@ -404,6 +406,7 @@ public class SlotsRetriever
     {
         // Sort measure standard chords by abscissa
         List<AbstractChordInter> stdChords = new ArrayList<>(measure.getStandardChords());
+        purgeMeasureRestChords(stdChords);
         Collections.sort(stdChords, Inters.byAbscissa);
 
         // Populate graph with chords
@@ -544,14 +547,14 @@ public class SlotsRetriever
     /**
      * Report all chords in measure that are candidate to slot assignment.
      *
-     * @return list of standard chords in measure, except the whole rest chords
+     * @return list of standard chords in measure, except the measure-long rest chords
      */
     private List<AbstractChordInter> getCandidateChords ()
     {
         List<AbstractChordInter> candidates = new ArrayList<>();
 
         for (AbstractChordInter chord : measure.getStandardChords()) {
-            if (!chord.isWholeRest()) {
+            if (!chord.isMeasureRest()) {
                 candidates.add(chord);
             }
         }
@@ -926,6 +929,25 @@ public class SlotsRetriever
                 if ((rel != null) && (getRel(two, ch) == null)) {
                     setRel(two, ch, rel);
                 }
+            }
+        }
+    }
+
+    //------------------------//
+    // purgeMeasureRestChords //
+    //------------------------//
+    /**
+     * Purge the provided collection from measure-long rest chords.
+     *
+     * @param chords (input/output) the chords to purge
+     */
+    private void purgeMeasureRestChords (Collection<AbstractChordInter> chords)
+    {
+        for (Iterator<AbstractChordInter> it = chords.iterator(); it.hasNext();) {
+            final AbstractChordInter chord = it.next();
+
+            if (chord.isMeasureRest()) {
+                it.remove();
             }
         }
     }

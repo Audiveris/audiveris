@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Class {@code BooleanParam} is a Param for Boolean.
+ * <p>
+ * No longer used. Remove it?
  *
  * @author Hervé Bitteur
  */

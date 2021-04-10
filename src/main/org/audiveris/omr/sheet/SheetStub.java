@@ -590,8 +590,7 @@ public class SheetStub
     public ProcessingSwitches getProcessingSwitches ()
     {
         if (switches == null) {
-            switches = new ProcessingSwitches();
-            switches.setParent(book.getProcessingSwitches());
+            switches = new ProcessingSwitches(book.getProcessingSwitches());
         }
 
         return switches;

@@ -321,7 +321,7 @@ public abstract class AbstractNoteInter
         map.put(Shape.BREVE_REST, new Rational(2, 1)); // 2 measures
         map.put(Shape.BREVE, new Rational(2, 1));
 
-        map.put(Shape.WHOLE_REST, Rational.ONE); // 1 measure
+        map.put(Shape.WHOLE_REST, Rational.ONE); // 1 measure, unless partialWholeRests is on
         map.put(Shape.WHOLE_NOTE, Rational.ONE);
 
         map.put(Shape.HALF_REST, new Rational(1, 2));

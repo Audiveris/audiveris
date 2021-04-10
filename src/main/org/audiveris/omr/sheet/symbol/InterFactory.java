@@ -59,6 +59,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
@@ -132,6 +133,9 @@ public class InterFactory
     /** All system notes (heads and rests), ordered by abscissa. */
     private List<Inter> systemNotes;
 
+    /** All system (head of rest) chords, ordered by abscissa. */
+    private final List<Inter> systemChords;
+
     /** All system head-based chords, ordered by abscissa. */
     private final List<Inter> systemHeadChords;
 
@@ -165,7 +169,10 @@ public class InterFactory
         systemHeads = sig.inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
 
-        systemHeadChords = sig.inters(AbstractChordInter.class);
+        systemChords = sig.inters(AbstractChordInter.class);
+        Collections.sort(systemChords, Inters.byAbscissa);
+
+        systemHeadChords = sig.inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         dotFactory = new DotFactory(this, system);
@@ -396,7 +403,7 @@ public class InterFactory
         // Tuplets
         case TUPLET_THREE:
         case TUPLET_SIX:
-            return TupletInter.createValid(glyph, shape, grade, system, systemHeadChords);
+            return TupletInter.createValid(glyph, shape, grade, system, systemChords);
 
         // Accidentals
         case FLAT:
@@ -520,7 +527,7 @@ public class InterFactory
 
         // Others
         default:
-            logger.info("No support yet for {}", shape);
+            logger.info("No support yet for {} glyph#{}", shape, glyph.getId());
 
             return null;
         }
@@ -638,6 +645,14 @@ public class InterFactory
                 }
             }
         }
+    }
+
+    //-----------------//
+    // getSystemChords //
+    //-----------------//
+    List<Inter> getSystemChords ()
+    {
+        return systemChords;
     }
 
     //---------------------//

@@ -278,28 +278,32 @@ public class ShapeChecker
                  * But because of other notes in the same staff-measure, they may appear
                  * on different pitch values, as they see fit. See Telemann example.
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
-                 * This can be translated as 2*p = 4*k+1 for wholes and 4*k-1 for halves
+                 * This can be translated as 2*p = 4*k +1 for wholes and 4*k -1 for halves
                  */
                 final double pp = system.estimatedPitch(glyph.getCenter2D());
                 final int p2 = (int) Math.rint(2 * pp); // Pitch * 2
 
                 switch (p2) {
+                case -13:
                 case -9:
                 case -5:
                 case -1:
                 case 3:
                 case 7:
                 case 11:
+                case 15:
                     eval.shape = Shape.HALF_REST; // Standard pitch: -0.5
 
                     return true;
 
+                case -15:
                 case -11:
                 case -7:
                 case -3:
                 case 1:
                 case 5:
                 case 9:
+                case 13:
                     eval.shape = Shape.WHOLE_REST; // Standard pitch: -1.5
 
                     return true;
@@ -650,26 +654,26 @@ public class ShapeChecker
             }
         };
 
-        new Checker("Breve", BREVE_REST)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph)
-            {
-                // Must be centered on pitch position -1
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
-
-                if (Math.abs(pp + 1) > 0.5) {
-                    eval.failure = new Evaluation.Failure("pitch");
-
-                    return false;
-                }
-
-                return true;
-            }
-        };
-
+//        new Checker("BreveRest", BREVE_REST)
+//        {
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph)
+//            {
+//                // Must be centered on pitch position -1
+//                final double pp = system.estimatedPitch(glyph.getCenter2D());
+//
+//                if (Math.abs(pp + 1) > 0.5) {
+//                    eval.failure = new Evaluation.Failure("pitch");
+//
+//                    return false;
+//                }
+//
+//                return true;
+//            }
+//        };
+//
         new Checker("SystemTop", Arrays.asList(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK))
         {
             @Override

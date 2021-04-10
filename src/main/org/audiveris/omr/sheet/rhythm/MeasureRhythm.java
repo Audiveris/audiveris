@@ -149,8 +149,8 @@ public class MeasureRhythm
             measure.resetRhythm();
             ok = true;
 
-            // Process all whole rest chords, they are decoupled from any slot
-            processWholeRestChords();
+            // Process all measure-long rest chords, they are decoupled from any slot
+            processMeasureRestChords();
 
             // Retrieve slots
             slots.clear();
@@ -379,28 +379,28 @@ public class MeasureRhythm
         return false;
     }
 
-    //------------------------//
-    // processWholeRestChords //
-    //------------------------//
+    //--------------------------//
+    // processMeasureRestChords //
+    //--------------------------//
     /**
-     * Assign a dedicated voice to each whole rest chord in stack.
+     * Assign a dedicated voice to each measure-long rest chord in stack.
      */
-    private List<Voice> processWholeRestChords ()
+    private List<Voice> processMeasureRestChords ()
     {
-        List<Voice> wholeVoices = new ArrayList<>();
+        final List<Voice> measureRestVoices = new ArrayList<>();
+        final List<AbstractChordInter> measureRestChords
+                = new ArrayList<>(measure.getMeasureRestChords());
+        Collections.sort(measureRestChords, Inters.byOrdinate);
 
-        final List<AbstractChordInter> wholes = new ArrayList<>(measure.getWholeRestChords());
-        Collections.sort(wholes, Inters.byAbscissa);
-
-        for (AbstractChordInter chord : wholes) {
+        for (AbstractChordInter chord : measureRestChords) {
             chord.setTimeOffset(Rational.ZERO);
 
-            Voice voice = Voice.createWholeVoice((RestChordInter) chord, chord.getMeasure());
+            Voice voice = Voice.createMeasureRestVoice((RestChordInter) chord, chord.getMeasure());
             measure.addVoice(voice);
-            wholeVoices.add(voice);
+            measureRestVoices.add(voice);
         }
 
-        return wholeVoices;
+        return measureRestVoices;
     }
 
     //--------------------//
@@ -422,7 +422,7 @@ public class MeasureRhythm
         }
 
         for (Voice voice : measure.getVoices()) {
-            if (!voice.isWhole() && !extinctVoices.contains(voice)) {
+            if (!voice.isMeasureRest() && !extinctVoices.contains(voice)) {
                 AbstractChordInter lastChord = voice.getLastChord();
 
                 if (lastChord.getTimeOffset() != null) {
@@ -1256,16 +1256,11 @@ public class MeasureRhythm
             List<AbstractChordInter> actives = new ArrayList<>();
 
             for (Voice voice : measure.getVoices()) {
-                if (voice.isWhole()) {
+                if (voice.isMeasureRest()) {
                     continue;
                 }
 
                 AbstractChordInter lastChord = voice.getLastChord();
-
-                // Exclude whole notes
-                if (lastChord.isWholeHead()) {
-                    continue;
-                }
 
                 // Make sure voice lastChord slot precedes this slot
                 if (lastChord.getSlot().compareTo(slot) > 0) {

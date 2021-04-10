@@ -83,7 +83,8 @@ public class RestSymbol
     @Override
     protected ShapeSymbol createDecoratedSymbol ()
     {
-        if ((shape == BREVE_REST) || (shape == WHOLE_REST) || (shape == HALF_REST)) {
+        if ((shape == LONG_REST) || (shape == BREVE_REST) || (shape == WHOLE_REST)
+                    || (shape == HALF_REST)) {
             return new RestSymbol(isIcon, shape, true, codes);
         }
 

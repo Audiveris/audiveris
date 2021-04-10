@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.param.BooleanParam;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
 
@@ -82,7 +81,8 @@ public class ProcessingSwitches
         implicitTuplets(constants.implicitTuplets),
         sixStringTablatures(constants.sixStringTablatures),
         fourStringTablatures(constants.fourStringTablatures),
-        oneLineStaves(constants.oneLineStaves);
+        oneLineStaves(constants.oneLineStaves),
+        partialWholeRests(constants.partialWholeRests);
 
         /** Underlying boolean constant. */
         Constant.Boolean constant;
@@ -102,8 +102,23 @@ public class ProcessingSwitches
     /** Map of switches. */
     protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<>(Switch.class);
 
-    /** Parent switches, if any. */
-    private ProcessingSwitches parent;
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Create a {@code ProcessingSwitches} object with its parent.
+     *
+     * @param parent parent switches
+     */
+    public ProcessingSwitches (ProcessingSwitches parent)
+    {
+        if (parent != null) {
+            setParent(parent);
+        }
+    }
+
+    // Meant for JAXB
+    protected ProcessingSwitches ()
+    {
+    }
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
@@ -121,17 +136,11 @@ public class ProcessingSwitches
      * Report the current value for the provided key.
      *
      * @param key provided key
-     * @return current value, perhaps null
+     * @return current value
      */
     public Boolean getValue (Switch key)
     {
-        Param<Boolean> param = getParam(key);
-
-        if (param == null) {
-            return null;
-        }
-
-        return param.getValue();
+        return getParam(key).getValue();
     }
 
     /**
@@ -155,19 +164,18 @@ public class ProcessingSwitches
      *
      * @param parent the parent to assign
      */
-    public void setParent (ProcessingSwitches parent)
+    public final void setParent (ProcessingSwitches parent)
     {
-        this.parent = parent;
-
-        // Populate the map
+        // Complete the map and link each switch to parent switch
         for (Switch key : Switch.values()) {
             Param<Boolean> param = getParam(key);
 
             if (param == null) {
-                param = new BooleanParam();
-                param.setParent(parent.getParam(key));
+                param = new Param<>();
                 map.put(key, param);
             }
+
+            param.setParent(parent.getParam(key));
         }
     }
 
@@ -213,6 +221,7 @@ public class ProcessingSwitches
                 myEntry.key = entry.getKey();
                 myEntry.value = entry.getValue().getSpecific();
 
+                // We marshal only entries for which we have a specific value
                 if (myEntry.value != null) {
                     myList.entries.add(myEntry);
                 }
@@ -227,12 +236,20 @@ public class ProcessingSwitches
         {
             ProcessingSwitches switches = new ProcessingSwitches();
 
+            // We populate entries for which we have a specific value
             for (MyEntry entry : value.entries) {
-                BooleanParam b = new BooleanParam();
+                Param<Boolean> param = new Param<>();
 
                 if (entry.value != null) {
-                    b.setSpecific(entry.value);
-                    switches.map.put(entry.key, b);
+                    param.setSpecific(entry.value);
+                    switches.map.put(entry.key, param);
+                }
+            }
+
+            // Then fill empty entries
+            for (Switch key : Switch.values()) {
+                if (switches.map.get(key) == null) {
+                    switches.map.put(key, new Param<>());
                 }
             }
 
@@ -260,6 +277,15 @@ public class ProcessingSwitches
 
             @XmlValue
             public Boolean value;
+
+            @Override
+            public String toString ()
+            {
+                return new StringBuilder("MyEntry{")
+                        .append("key:").append(key)
+                        .append(",value:").append(value)
+                        .append('}').toString();
+            }
         }
     }
 
@@ -345,6 +371,10 @@ public class ProcessingSwitches
         private final Constant.Boolean oneLineStaves = new Constant.Boolean(
                 false,
                 "Support for percussion staves (1 line)");
+
+        private final Constant.Boolean partialWholeRests = new Constant.Boolean(
+                false,
+                "Support for partial whole rests");
     }
 
     //-----------------//

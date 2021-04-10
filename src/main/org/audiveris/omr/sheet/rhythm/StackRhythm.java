@@ -204,7 +204,7 @@ public class StackRhythm
 
         for (Measure measure : stack.getMeasures()) {
             for (Voice voice : measure.getVoices()) {
-                if (!voice.isWhole()) {
+                if (!voice.isMeasureRest()) {
                     for (AbstractChordInter chord : voice.getChords()) {
                         Rational time = chord.getTimeOffset();
 
@@ -235,7 +235,7 @@ public class StackRhythm
 
         for (Measure measure : stack.getMeasures()) {
             for (Voice voice : measure.getVoices()) {
-                if (!voice.isWhole()) {
+                if (!voice.isMeasureRest()) {
                     for (AbstractChordInter chord : voice.getChords()) {
                         Rational time = chord.getTimeOffset();
 

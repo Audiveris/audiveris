@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.OldBeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice.Family;
@@ -269,7 +270,7 @@ public class Measure
 
             FakeRest (Staff staff)
             {
-                super(null, Shape.WHOLE_REST, 0.0, staff, -1.0);
+                super(null, Shape.WHOLE_REST, 0.0, staff, -1.5);
             }
 
             @Override
@@ -288,7 +289,7 @@ public class Measure
         whole.chord = chord;
 
         addInter(chord);
-        addVoice(Voice.createWholeVoice(chord, this));
+        addVoice(Voice.createMeasureRestVoice(chord, this));
     }
 
     //----------//
@@ -1340,22 +1341,23 @@ public class Measure
         return Collections.unmodifiableList(voices);
     }
 
-    //--------------------//
-    // getWholeRestChords //
-    //--------------------//
+    //----------------------//
+    // getMeasureRestChords //
+    //----------------------//
     /**
-     * Report all whole rest-chords in measure.
+     * Report all rest-chords meant to last the whole measure.
      *
-     * @return all whole rest chords in measure
+     * @return the measure-long rest chords in measure
      */
-    public Set<AbstractChordInter> getWholeRestChords ()
+    public Set<AbstractChordInter> getMeasureRestChords ()
     {
+        final SystemInfo system = stack.getSystem();
         final Set<AbstractChordInter> set = new LinkedHashSet<>();
 
         for (RestChordInter chord : getRestChords()) {
             final List<Inter> members = chord.getMembers();
 
-            if (!members.isEmpty() && (members.get(0).getShape() == Shape.WHOLE_REST)) {
+            if (!members.isEmpty() && system.isMeasureRestShape(members.get(0).getShape())) {
                 set.add(chord);
             }
         }
@@ -1519,38 +1521,17 @@ public class Measure
     // isMeasureRest //
     //---------------//
     /**
-     * Check whether the provided rest chord is a measure rest.
+     * Check whether the provided rest chord is a measure-long rest.
      *
      * @param restChord the provided rest chord
      * @return true if rest chord is actually a measure rest, false otherwise
      */
     public boolean isMeasureRest (RestChordInter restChord)
     {
-        Inter noteInter = restChord.getMembers().get(0);
-        Shape shape = noteInter.getShape();
+        final Inter noteInter = restChord.getMembers().get(0);
+        final Shape shape = noteInter.getShape();
 
-        if (!shape.isWholeRest()) {
-            return false;
-        }
-
-        if ((shape == Shape.BREVE_REST) || (shape == Shape.LONG_REST)) {
-            return true;
-        }
-
-        // Here we have a WHOLE_REST shape
-        RestInter rest = (RestInter) noteInter;
-
-        // Check pitch?
-        int pitch2 = (int) Math.rint(2.0 * rest.getPitch());
-
-        if (pitch2 != -3) {
-            return false;
-        }
-
-        // Check other chords in same staff-measure?
-        Set<Inter> staffChords = filterByStaff(getStandardChords(), restChord.getTopStaff());
-
-        return staffChords.size() == 1;
+        return stack.getSystem().isMeasureRestShape(shape);
     }
 
     //----------------//
