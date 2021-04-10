@@ -118,7 +118,7 @@ public class TupletGenerator
         List<TupletInter> created = null;
 
         for (Voice voice : measure.getVoices()) {
-            if (voice.isWhole()) {
+            if (voice.isMeasureRest()) {
                 continue;
             }
 
@@ -130,10 +130,6 @@ public class TupletGenerator
             }
 
             final AbstractChordInter lastChord = chords.get(chords.size() - 1);
-
-            if (lastChord.isWholeHead()) {
-                continue;
-            }
 
             // Compute total voice duration, ignoring tuplets if any
             // So, we cannot simply use lastChord end time

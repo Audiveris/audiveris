@@ -820,7 +820,7 @@ public class Page
                 for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
-                            final Rational duration = chord.isWholeRest()
+                            final Rational duration = chord.isMeasureRest()
                                     ? stack.getExpectedDuration()
                                     : chord.getDuration();
 

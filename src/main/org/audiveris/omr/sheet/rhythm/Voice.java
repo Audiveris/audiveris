@@ -118,13 +118,13 @@ public class Voice
     private Rational excess;
 
     /**
-     * Whole chord of the voice, if any.
-     * If a voice is assigned to a whole/multi rest, then this rest chord is defined as the
-     * wholeRestChord of this voice, and the slots table is left empty.
+     * Measure rest chord of the voice, if any.
+     * If a voice is assigned to a measure/multi rest, then this rest chord is defined as the
+     * measureRestChord of this voice, and the slots table is left empty.
      */
     @XmlIDREF
-    @XmlAttribute(name = "whole-rest-chord")
-    private RestChordInter wholeRestChord;
+    @XmlAttribute(name = "whole-rest-chord") // Should be measure-rest-chord, but kept for compatibility
+    private RestChordInter measureRestChord;
 
     /**
      * Map (SlotId -> SlotVoice) to store chord information for each slot.
@@ -182,8 +182,8 @@ public class Voice
 
         id = measure.generateVoiceId(family);
 
-        if (chord.isWholeRest()) {
-            wholeRestChord = (RestChordInter) chord;
+        if (chord.isMeasureRest()) {
+            measureRestChord = (RestChordInter) chord;
         }
 
         chord.setVoice(this);
@@ -213,8 +213,8 @@ public class Voice
             this.measure = measure;
 
             // Set chord voices
-            if (isWhole()) {
-                wholeRestChord.setVoice(this);
+            if (isMeasureRest()) {
+                measureRestChord.setVoice(this);
             } else if (slots != null) {
                 for (SlotVoice info : slots.values()) {
                     if (info.status == Status.BEGIN) {
@@ -243,7 +243,7 @@ public class Voice
     public void checkDuration ()
     {
         try {
-            if (isWhole()) {
+            if (isMeasureRest()) {
                 setTermination(null); // we can't tell anything
             } else if ((chords != null) && !chords.isEmpty()) {
                 AbstractChordInter last = chords.get(chords.size() - 1);
@@ -356,14 +356,14 @@ public class Voice
     /**
      * Report the precise duration of this voice.
      * <p>
-     * Note that if the voice is just a whole/multi rest we have no precise duration (the voice
+     * Note that if the voice is just a measure/multi rest we have no precise duration (the voice
      * duration will be the measure duration, whatever it is), hence we report a null value.
      *
      * @return the voice duration or null
      */
     public Rational getDuration ()
     {
-        if (wholeRestChord != null) {
+        if (measureRestChord != null) {
             return null;
         }
 
@@ -401,7 +401,7 @@ public class Voice
      */
     public Rational getDurationSansTuplet ()
     {
-        if (wholeRestChord != null) {
+        if (measureRestChord != null) {
             return null;
         }
 
@@ -437,8 +437,8 @@ public class Voice
      */
     public AbstractChordInter getFirstChord ()
     {
-        if (isWhole()) {
-            return wholeRestChord;
+        if (isMeasureRest()) {
+            return measureRestChord;
         }
 
         if ((chords != null) && !chords.isEmpty()) {
@@ -616,8 +616,8 @@ public class Voice
      */
     public AbstractChordInter getLastChord ()
     {
-        if (isWhole()) {
-            return wholeRestChord;
+        if (isMeasureRest()) {
+            return measureRestChord;
         }
 
         if ((chords != null) && !chords.isEmpty()) {
@@ -659,10 +659,10 @@ public class Voice
      */
     public List<AbstractChordInter> getRests ()
     {
-        List<AbstractChordInter> rests = new ArrayList<>();
+        final List<AbstractChordInter> rests = new ArrayList<>();
 
-        if (isWhole()) {
-            rests.add(wholeRestChord);
+        if (isMeasureRest()) {
+            rests.add(measureRestChord);
         } else {
             for (AbstractChordInter chord : chords) {
                 if (chord.isRest()) {
@@ -767,7 +767,7 @@ public class Voice
      */
     public AbstractChordInter getWholeChord ()
     {
-        return wholeRestChord;
+        return measureRestChord;
     }
 
     //---------------//
@@ -795,17 +795,17 @@ public class Voice
         return ((getWholeChord() == null) && (slots != null) && (slots.get(slot.getId()) == null));
     }
 
-    //---------//
-    // isWhole //
-    //---------//
+    //---------------//
+    // isMeasureRest //
+    //---------------//
     /**
-     * Report whether this voice is made of a whole/multi rest.
+     * Report whether this voice is made of just a measure-long rest.
      *
-     * @return true if made of a whole/multi rest
+     * @return true if made of a measure rest
      */
-    public boolean isWhole ()
+    public boolean isMeasureRest ()
     {
-        return wholeRestChord != null;
+        return measureRestChord != null;
     }
 
     //-------------//
@@ -820,8 +820,8 @@ public class Voice
     public void putSlotInfo (Slot slot,
                              SlotVoice chordInfo)
     {
-        if (isWhole()) {
-            logger.error("You cannot insert a slot in a whole-only voice");
+        if (isMeasureRest()) {
+            logger.error("You cannot insert a slot in a measure-rest voice");
 
             return;
         }
@@ -872,15 +872,15 @@ public class Voice
 
         sb.append(String.format("V%2d ", id));
 
-        // Whole/Multi
-        if (isWhole()) {
-            sb.append("|Ch#").append(String.format("%-5s", wholeRestChord.getId()));
+        if (isMeasureRest()) {
+            // Measure-long rest
+            sb.append("|Ch#").append(String.format("%-5s", measureRestChord.getId()));
 
             for (int s = 1; s < measure.getStack().getSlots().size(); s++) {
                 sb.append("=========");
             }
 
-            sb.append("|W");
+            sb.append("|M");
         } else {
             Rational voiceDur = Rational.ZERO;
 
@@ -1018,23 +1018,23 @@ public class Voice
         chords = null;
     }
 
-    //------------------//
-    // createWholeVoice //
-    //------------------//
+    //------------------------//
+    // createMeasureRestVoice //
+    //------------------------//
     /**
-     * Factory method to create a voice made of just one whole/multi rest.
+     * Factory method to create a voice made of just one measure-long rest.
      *
-     * @param wholeChord the whole/multi rest chord
-     * @param measure    the containing measure
+     * @param measureRestChord the measure-long rest chord
+     * @param measure          the containing measure
      * @return the created voice instance
      */
-    public static Voice createWholeVoice (RestChordInter wholeChord,
-                                          Measure measure)
+    public static Voice createMeasureRestVoice (RestChordInter measureRestChord,
+                                                Measure measure)
     {
-        logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
+        logger.debug("createMeasureRestVoice for {} in {}", measureRestChord, measure);
 
-        Voice voice = new Voice(wholeChord, measure);
-        voice.wholeRestChord = wholeChord;
+        final Voice voice = new Voice(measureRestChord, measure);
+        voice.measureRestChord = measureRestChord;
 
         return voice;
     }

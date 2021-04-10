@@ -29,6 +29,9 @@ import org.audiveris.omr.util.param.Param;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -47,6 +50,8 @@ public abstract class XactDataPane<E>
         implements ActionListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(XactDataPane.class);
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()

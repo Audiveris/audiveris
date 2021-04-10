@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import org.audiveris.omr.util.param.Param;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.JCheckBox;
 
 /**
@@ -36,8 +39,11 @@ import javax.swing.JCheckBox;
 public class BooleanPane
         extends XactDataPane<Boolean>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(BooleanPane.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Boolean box. */
     protected final JCheckBox bbox = new JCheckBox();
 
@@ -85,7 +91,9 @@ public class BooleanPane
     @Override
     protected void display (Boolean content)
     {
-        bbox.setSelected(content);
+        if (content != null) {
+            bbox.setSelected(content);
+        }
     }
 
     @Override

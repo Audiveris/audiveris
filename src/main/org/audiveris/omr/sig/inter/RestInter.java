@@ -143,12 +143,7 @@ public class RestInter
     /**
      * (Try to) create a Rest inter.
      * <p>
-     * Most rests, whatever their shape, lie very close to staff middle line.
-     * Rests can lie far from staff middle line only when they are horizontally inserted between
-     * head-chords that also lie outside of staff height.
-     * The exception is the whole rest for which there should be no neighbors.
-     * <p>
-     * Also, a rest cannot be too close abscissa-wise to a head-chord.
+     * A rest cannot be too close abscissa-wise to a head-chord.
      *
      * @param glyph            underlying glyph
      * @param shape            precise shape
@@ -163,95 +158,41 @@ public class RestInter
                                          SystemInfo system,
                                          List<Inter> systemHeadChords)
     {
-        // Determine pitch according to glyph centroid
         final Point centroid = glyph.getCentroid();
-        final Rectangle glyphBox = glyph.getBounds();
 
-        // Rest positioning
-        Staff restStaff = null;
-        Double restPitch = null;
-        List<Inter> measureChords = null;
+        // Pick up the closest staff
+        final Staff restStaff = system.getClosestStaff(centroid);
 
-        // First, check ordinate
-        StaffLoop:
-        for (final Staff staff : system.getStavesAround(centroid)) {
-            final Measure measure = staff.getPart().getMeasureAt(centroid);
-
-            if (measure == null) {
-                continue;
-            }
-
-            // All head-chords in measure
-            final int left = measure.getAbscissa(HorizontalSide.LEFT, staff);
-            final int right = measure.getAbscissa(HorizontalSide.RIGHT, staff);
-            measureChords = Inters.inters(systemHeadChords, (Inter inter) -> {
-                                      if (inter.getStaff() != staff) {
-                                          return false;
-                                      }
-
-                                      final Point center = inter.getCenter();
-
-                                      return (center.x >= left) && (center.x <= right);
-                                  });
-
-            // Pitch value WRT staff
-            final double measuredPitch = staff.pitchPositionOf(centroid);
-
-            // Good rest, close to staff middle?
-            if (Math.abs(measuredPitch) <= constants.suspiciousPitchPosition.getValue()) {
-                restStaff = staff;
-                restPitch = measuredPitch;
-
-                break;
-            }
-
-            // Not so good rest, look for head chords nearby (in the same staff measure)
-            if (shape != Shape.WHOLE_REST) {
-                for (Inter inter : measureChords) {
-                    if (GeoUtil.yOverlap(inter.getBounds(), glyphBox) > 0) {
-                        restStaff = staff;
-                        restPitch = measuredPitch;
-
-                        break StaffLoop;
-                    }
-                }
-            } else {
-                // Special case for WHOLE_REST
-                Staff closestStaff = system.getClosestStaff(centroid);
-
-                if (staff == closestStaff) {
-                    boolean overlap = false;
-
-                    for (Inter inter : measureChords) {
-                        if (GeoUtil.yOverlap(inter.getBounds(), glyphBox) > 0) {
-                            overlap = true;
-                        }
-                    }
-
-                    if (!overlap) {
-                        restStaff = staff;
-                        restPitch = measuredPitch;
-
-                        break;
-                    }
-                }
-            }
+        if (restStaff == null) {
+            return null;
         }
 
-        // Check vertical position is OK
-        if (restStaff == null) {
-            if (glyph.isVip() || logger.isDebugEnabled()) {
-                logger.info("Discarded isolated rest candidate glyph#{}", glyph.getId());
-            }
+        final Measure measure = restStaff.getPart().getMeasureAt(centroid);
 
-            return null; // Failure
+        if (measure == null) {
+            return null;
         }
 
         // Check horizontal position WRT head-chords
         final int minDx = system.getSheet().getScale().toPixels(constants.minInterChordDx);
+        final Rectangle glyphBox = glyph.getBounds();
         final Point2D restCenter = GeoUtil.center2D(glyphBox);
         final Rectangle fatBox = new Rectangle(glyphBox);
         fatBox.grow(minDx, 0);
+
+        // All head-chords in staff measure
+        final int left = measure.getAbscissa(HorizontalSide.LEFT, restStaff);
+        final int right = measure.getAbscissa(HorizontalSide.RIGHT, restStaff);
+        final List<Inter> measureChords
+                = Inters.inters(systemHeadChords, (Inter inter) -> {
+                            if (inter.getStaff() != restStaff) {
+                                return false;
+                            }
+
+                            final Point center = inter.getCenter();
+
+                            return (center.x >= left) && (center.x <= right);
+                        });
 
         for (Inter chord : measureChords) {
             if (fatBox.intersects(chord.getBounds())) {
@@ -267,7 +208,9 @@ public class RestInter
             }
         }
 
-        // Everything is OK
+        // Pitch value WRT staff
+        final double restPitch = restStaff.pitchPositionOf(centroid);
+
         RestInter restInter = new RestInter(glyph, shape, grade, restStaff, restPitch);
         restStaff.addNote(restInter);
 

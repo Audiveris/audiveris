@@ -312,7 +312,7 @@ public enum Shape
     //
     // Shapes from HW_REST_set ---
     //
-    WHOLE_REST("Rest for whole measure", HW_REST_set),
+    WHOLE_REST("Rest for a 1", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
 
     //
@@ -508,20 +508,6 @@ public enum Shape
                 name() + ".color", // Name
                 Constant.Color.encodeColor((color != null) ? color : Color.BLACK),
                 "Color for shape " + name());
-    }
-
-    //-------------//
-    // isWholeRest //
-    //-------------//
-    /**
-     * Check whether the shape is a whole (or multi) rest, for which no duration can be
-     * specified.
-     *
-     * @return true if whole / multi rest
-     */
-    public boolean isWholeRest ()
-    {
-        return (this == WHOLE_REST) || (this == BREVE_REST) || (this == LONG_REST);
     }
 
     //--------//
