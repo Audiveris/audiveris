@@ -568,6 +568,45 @@ public class InterController
         }.execute();
     }
 
+    //--------------//
+    // linkMultiple //
+    //--------------//
+    /**
+     * Add a relation between inters.
+     *
+     * @param sig      the containing SIG
+     * @param source   the source inter
+     * @param target   the target inter
+     * @param relation the relation to add
+     */
+    @UIThread
+    public void linkMultiple (final SIGraph sig,
+                              final List<SourceTargetRelation> strs)
+    {
+        new CtrlTask(DO, "link")
+        {
+            @Override
+            protected void build ()
+            {
+                for (SourceTargetRelation str : strs) {
+                    // Additional tasks?
+                    final RelationPair pair = new RelationPair(str.source, str.target);
+                    seq.addAll(str.relation.preLink(pair));
+
+                    // Remove conflicting relations if any
+                    final boolean sourceIsNew = pair.source != str.source;
+                    removeConflictingRelations(seq, sig, sourceIsNew, pair.source, pair.target,
+                                               str.relation);
+                }
+
+                // Finally, add relation
+                for (SourceTargetRelation str : strs) {
+                    seq.add(new LinkTask(sig, str.source, str.target, str.relation));
+                }
+            }
+        }.execute();
+    }
+
     //-------------//
     // mergeChords //
     //-------------//
@@ -1686,6 +1725,31 @@ public class InterController
                     "Deletion of " + inters.size() + " inters")) {
                 removeInters(inters);
             }
+        }
+    }
+
+    //----------------------//
+    // SourceTargetRelation //
+    //----------------------//
+    /**
+     * A tuple combining source, target and relation, to be handled as a whole.
+     */
+    public static class SourceTargetRelation
+    {
+
+        public final Inter source;
+
+        public final Inter target;
+
+        public final Relation relation;
+
+        public SourceTargetRelation (Inter source,
+                                     Inter target,
+                                     Relation relation)
+        {
+            this.source = source;
+            this.target = target;
+            this.relation = relation;
         }
     }
 }

@@ -593,7 +593,12 @@ public abstract class AbstractChordInter
         if (chordDur == null) {
             return null;
         } else {
-            return timeOffset.plus(chordDur);
+            if (timeOffset == null) {
+                logger.info("No timeOffset for {}", this);
+                return null;
+            } else {
+                return timeOffset.plus(chordDur);
+            }
         }
     }
 

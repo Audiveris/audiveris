@@ -288,8 +288,8 @@ public class Voice
             SlotVoice info = getSlotInfo(slot);
 
             if (info == null) {
-                if ((prevChord != null) && (prevChord.getEndTime().compareTo(slot.getTimeOffset())
-                                                    > 0)) {
+                if ((prevChord != null)
+                            && (prevChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
                     putSlotInfo(slot, new SlotVoice(prevChord, Status.CONTINUE));
                 }
             } else {
