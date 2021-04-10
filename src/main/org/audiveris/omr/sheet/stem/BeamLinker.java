@@ -37,6 +37,7 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker.VLinker;
@@ -88,7 +89,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.audiveris.omr.sheet.Staff;
 
 /**
  * Class {@code BeamLinker} handles the connections from a beam to the nearby
@@ -370,6 +370,11 @@ public class BeamLinker
 
         for (HorizontalSide hSide : HorizontalSide.values()) {
             final BLinker bLinker = sideBLinkers.get(hSide);
+
+            if (bLinker == null) {
+                logger.info("No BLinker on {} of {}", hSide, this);
+                continue;
+            }
 
             if (bLinker.isLinked()) {
                 linkedSides.add(hSide);
