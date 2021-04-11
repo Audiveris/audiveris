@@ -134,7 +134,7 @@ public abstract class StubDependent
     protected boolean redoable = false;
 
     /** Indicates whether repetitive input mode can be selected. */
-    protected boolean repetitiveInputSelectable = true;
+    protected boolean repetitiveInputSelectable = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

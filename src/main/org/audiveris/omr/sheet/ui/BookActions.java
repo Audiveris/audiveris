@@ -158,6 +158,7 @@ public class BookActions
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
         repetitiveInputAction = (ApplicationAction) actionMap.get("toggleRepetitiveInput");
         toggleValidityAction = (ApplicationAction) actionMap.get("toggleSheetValidity");
+        updateSheetValidity(null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -1327,9 +1328,16 @@ public class BookActions
      *
      * @param stub the sheet stub to process
      */
-    public void updateSheetValidity (SheetStub stub)
+    public final void updateSheetValidity (SheetStub stub)
     {
-        if ((stub != null) && stub == StubsController.getCurrentStub()) {
+        if (stub == null) {
+            toggleValidityAction.putValue(javax.swing.Action.SMALL_ICON, resources.getImageIcon(
+                                          "toggleSheetValidity.Action.icon.true"));
+            toggleValidityAction.putValue(javax.swing.Action.NAME, resources.getString(
+                                          "toggleSheetValidity.Action.text.none"));
+            toggleValidityAction.putValue(javax.swing.Action.SHORT_DESCRIPTION, resources.getString(
+                                          "toggleSheetValidity.Action.shortDescription.none"));
+        } else if (stub == StubsController.getCurrentStub()) {
             final boolean isValid = stub.isValid();
             toggleValidityAction.putValue(javax.swing.Action.SMALL_ICON, resources.getImageIcon(
                                           "toggleSheetValidity.Action.icon." + isValid));
