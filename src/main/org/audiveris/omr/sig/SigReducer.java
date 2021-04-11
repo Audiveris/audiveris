@@ -124,7 +124,7 @@ public class SigReducer
     private static final Predicate<Inter> overlapPredicate = (Inter inter) -> {
         final Class<?> interClass = inter.getClass();
 
-        for (Class classe : disabledClasses) {
+        for (Class<?> classe : disabledClasses) {
             if (classe.isAssignableFrom(interClass)) {
                 return false;
             }
