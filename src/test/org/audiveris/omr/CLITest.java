@@ -152,7 +152,7 @@ public class CLITest
         System.out.println("\n+++ testSome");
 
         String[] args = new String[]{
-            "-help", "-batch", "-sheets", "5 2", " 3", "-step", "PAGE",
+            "-help", "-batch", "-sheets", "2 5", " 3", "-step", "PAGE",
             "myScript.xml", "my Input.pdf"
         };
         CLI.Parameters params = instance.parseParameters(args);
