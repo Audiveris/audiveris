@@ -28,7 +28,6 @@ import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.SampleBrowser;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
@@ -130,9 +129,6 @@ public class BookActions
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Flag to allow automatic book rebuild on every user edition action. */
-    private boolean rebuildAllowed = true;
-
     /** Sub-menu on images history. */
     private final HistoryMenu imageHistoryMenu;
 
@@ -901,6 +897,7 @@ public class BookActions
     //------------//
     /**
      * Action that allows to display the horizontal projection of a selected staff.
+     * <p>
      * We need a sub-menu to select proper staff.
      *
      * @param e the event that triggered this action
@@ -923,35 +920,30 @@ public class BookActions
             return;
         }
 
-        JPopupMenu popup = new JPopupMenu("Staves IDs");
+        final JPopupMenu popup = new JPopupMenu("Staves IDs");
 
         // Menu title
-        JMenuItem title = new JMenuItem("Select staff ID:");
+        final JMenuItem title = new JMenuItem("Select staff ID:");
         title.setHorizontalAlignment(SwingConstants.CENTER);
         title.setEnabled(false);
         popup.add(title);
         popup.addSeparator();
 
-        ActionListener listener = new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                int index = Integer.decode(e.getActionCommand()) - 1;
-                Staff staff = staffManager.getStaff(index);
-                new StaffProjector(sheet, staff, null).plot();
-            }
+        final ActionListener listener = (ActionEvent e1) -> {
+            final int index = Integer.decode(e1.getActionCommand()) - 1;
+            final Staff staff = staffManager.getStaff(index);
+            new StaffProjector(sheet, staff, null).plot();
         };
 
         // Populate popup
         for (Staff staff : staffManager.getStaves()) {
-            JMenuItem item = new JMenuItem("" + staff.getId());
+            final JMenuItem item = new JMenuItem("" + staff.getId());
             item.addActionListener(listener);
             popup.add(item);
         }
 
         // Display popup menu
-        JFrame frame = OMR.gui.getFrame();
+        final JFrame frame = OMR.gui.getFrame();
         popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
     }
 
@@ -1316,7 +1308,7 @@ public class BookActions
         final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub == sheet.getStub()) {
-            repetitiveInputAction.setSelected(sheet.getSymbolsEditor().isRepetitiveInputMode());
+            repetitiveInputAction.setSelected(sheet.getSheetEditor().isRepetitiveInputMode());
         }
     }
 
@@ -1368,9 +1360,9 @@ public class BookActions
             return;
         }
 
-        final SymbolsEditor symbolsEditor = stub.getSheet().getSymbolsEditor();
-        symbolsEditor.toggleRepetitiveInputMode();
-        repetitiveInputAction.setSelected(symbolsEditor.isRepetitiveInputMode());
+        final SheetEditor sheetEditor = stub.getSheet().getSheetEditor();
+        sheetEditor.toggleRepetitiveInputMode();
+        repetitiveInputAction.setSelected(sheetEditor.isRepetitiveInputMode());
     }
 
     //---------------------//
@@ -2214,6 +2206,10 @@ public class BookActions
     {
 
         static final BookActions INSTANCE = new BookActions();
+
+        private LazySingleton ()
+        {
+        }
     }
 
     //---------------//

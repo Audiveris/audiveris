@@ -73,7 +73,7 @@ public class SymbolsStep
     public void displayUI (Step step,
                            Sheet sheet)
     {
-        sheet.getSymbolsEditor().refresh();
+        sheet.getSheetEditor().refresh();
 
         // Update glyph board if needed (to see OCR'ed data)
         final SelectionService service = sheet.getGlyphIndex().getEntityService();

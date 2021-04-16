@@ -127,7 +127,7 @@ public class EditorMenu
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
-            return sheet.getSymbolsEditor().getStrictMeasureAt(point);
+            return sheet.getSheetEditor().getStrictMeasureAt(point);
         }
 
         return null;
@@ -162,7 +162,7 @@ public class EditorMenu
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
-            return sheet.getSymbolsEditor().getStrictSlotAt(point);
+            return sheet.getSheetEditor().getStrictSlotAt(point);
         }
 
         return null;
@@ -455,7 +455,7 @@ public class EditorMenu
             List<SystemInfo> systems = sheet.getSystems();
 
             if (systems != null) {
-                slot = sheet.getSymbolsEditor().getStrictSlotAt(GeoUtil.center2D(rect));
+                slot = sheet.getSheetEditor().getStrictSlotAt(GeoUtil.center2D(rect));
             } else {
                 slot = null;
             }

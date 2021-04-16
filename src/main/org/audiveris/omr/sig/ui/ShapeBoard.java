@@ -31,10 +31,10 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.symbol.InterFactory;
-import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sheet.ui.SheetEditor;
+import org.audiveris.omr.sheet.ui.SheetEditor.SheetKeyListener;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
@@ -66,8 +66,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -97,7 +95,7 @@ import javax.swing.SwingUtilities;
  * <p>
  * Shapes are gathered and presented in separate families that are mutually exclusive.
  * <p>
- * A special set of shapes, always visible, is dedicated to the latest shapes used to ease the
+ * A special set of shapes, always visible, caches the latest shapes used to ease the
  * repetition of user actions.
  * <ul>
  * <li>Direct insertion is performed by drag and drop to the target score view or sheet view</li>
@@ -190,8 +188,8 @@ public class ShapeBoard
         }
     };
 
-    /** Related Symbols editor. */
-    private final SymbolsEditor symbolsEditor;
+    /** Related sheet editor. */
+    private final SheetEditor sheetEditor;
 
     /** Panel of all shape sets. */
     private final Panel setsPanel;
@@ -218,7 +216,7 @@ public class ShapeBoard
     private final MyDropAdapter dropAdapter = new MyDropAdapter();
 
     /** When sequence of keys are typed. */
-    private final MyKeyListener keyListener = new MyKeyListener();
+    private final SheetKeyListener keyListener;
 
     /** When split container is resized, we reshape this board. */
     private final PropertyChangeListener dividerListener = new PropertyChangeListener()
@@ -235,17 +233,20 @@ public class ShapeBoard
     /**
      * Create a new ShapeBoard object.
      *
-     * @param sheet         the related sheet
-     * @param symbolsEditor related symbols editor, needed for its view and evaluator
-     * @param selected      true if initially selected
+     * @param sheet       the related sheet
+     * @param sheetEditor related sheet editor, needed for its view, keyListener and evaluator
+     * @param selected    true if initially selected
      */
     public ShapeBoard (Sheet sheet,
-                       SymbolsEditor symbolsEditor,
+                       SheetEditor sheetEditor,
                        boolean selected)
     {
         super(Board.SHAPE, null, null, selected, false, false, false);
         this.sheet = sheet;
-        this.symbolsEditor = symbolsEditor;
+        this.sheetEditor = sheetEditor;
+
+        keyListener = sheetEditor.getSheetKeyListener();
+        getComponent().addKeyListener(keyListener);
 
         dropAdapter.addDropListener(dropListener);
         shapeHistory = new ShapeHistory();
@@ -253,9 +254,6 @@ public class ShapeBoard
 
         defineLayout();
 
-        // Listen to keys typed while in symbolsEditor view or in this shape board
-        symbolsEditor.getView().addKeyListener(keyListener);
-        getComponent().addKeyListener(keyListener);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -343,6 +341,66 @@ public class ShapeBoard
         sp.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
 
         super.setSplitContainer(sp);
+    }
+
+    //--------------//
+    // checkInitial //
+    //--------------//
+    /**
+     * Check if provided char is the initial of a shape family.
+     *
+     * @param c provided char
+     * @return true if OK
+     */
+    public boolean checkInitial (char c)
+    {
+        if (!isSelected()) {
+            return false;
+        }
+
+        closeShapeSet();
+
+        // First character (family)
+        ShapeSet set = setMap.get(c);
+
+        if (set == null) {
+            return false;
+        }
+
+        logger.debug("family:{}", set.getName());
+        selectShapeSet(set);
+
+        return true;
+    }
+
+    //---------------//
+    // processString //
+    //---------------//
+    /**
+     * Try to process the provided string as a shape selection.
+     *
+     * @param str the 2-char string
+     */
+    public void processString (String str)
+    {
+        if (isSelected()) {
+            final Shape shape = shapeMap.get(str);
+            logger.debug("shape:{}", shape);
+
+            if (shape != null) {
+                final Glyph glyph = sheet.getGlyphIndex().getSelectedGlyph();
+
+                if (glyph != null) {
+                    assignGlyph(glyph, shape);
+                } else {
+                    // Just set focus on proper shape button
+                    addToHistory(shape);
+                    shapeHistory.setFocus();
+                }
+            } else {
+                closeShapeSet();
+            }
+        }
     }
 
     //------------------//
@@ -457,7 +515,7 @@ public class ShapeBoard
     // buildSetsPanel //
     //----------------//
     /**
-     * Build the global panel of sets.
+     * Build the catalog of families.
      *
      * @return the global panel of families
      */
@@ -813,87 +871,6 @@ public class ShapeBoard
         }
     }
 
-    //---------------//
-    // MyKeyListener //
-    //---------------//
-    /**
-     * Listener in charge of retrieving the sequence of keys typed by the user.
-     */
-    private class MyKeyListener
-            extends KeyAdapter
-    {
-
-        /** First character typed, if any. */
-        Character c1 = null;
-
-        @Override
-        public void keyTyped (KeyEvent e)
-        {
-            char c = e.getKeyChar();
-
-            if (c1 == null) {
-                // First character (family)
-                ShapeSet set = setMap.get(c);
-
-                if (isSelected()) {
-                    closeShapeSet();
-                }
-
-                if (set != null) {
-                    logger.debug("set:{}", set.getName());
-
-                    if (isSelected()) {
-                        selectShapeSet(set);
-                    }
-
-                    c1 = c;
-                } else {
-                    reset();
-
-                    // Enter/exit repetitive input mode?
-                    if (c == 'n') {
-                        BookActions.getInstance().toggleRepetitiveInput(null);
-                        return;
-                    }
-
-                    // Direct use of classifier buttons?
-                    if (c >= '1' && c <= '5') {
-                        int id = c - '0';
-                        symbolsEditor.getEvaluationBoard().selectButton(id);
-                        return;
-                    }
-                }
-            } else {
-                // Second character (shape within family)
-                String str = String.valueOf(new char[]{c1, c});
-                Shape shape = shapeMap.get(str);
-                logger.debug("shape:{}", shape);
-
-                if (shape != null) {
-                    Glyph glyph = sheet.getGlyphIndex().getSelectedGlyph();
-
-                    if (glyph != null) {
-                        assignGlyph(glyph, shape);
-                    } else {
-                        // Set focus on proper shape button
-                        addToHistory(shape);
-                        shapeHistory.setFocus();
-                    }
-                } else if (isSelected()) {
-                    closeShapeSet();
-                }
-
-                reset();
-            }
-        }
-
-        public void reset ()
-        {
-            c1 = null;
-            logger.debug("---Reset---");
-        }
-    }
-
     //-----------------//
     // MyMotionAdapter //
     //-----------------//
@@ -1028,6 +1005,8 @@ public class ShapeBoard
             panel.setName("history");
             panel.setVisible(false);
             panel.setLayout(new WrapLayout(FlowLayout.LEADING));
+
+            panel.addKeyListener(keyListener);
         }
 
         /**

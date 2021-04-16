@@ -212,7 +212,7 @@ public class EvaluationBoard
                             classifier.evaluate(
                                     glyph,
                                     system,
-                                    selector.evalCount(),
+                                    evalCount(),
                                     constants.minGrade.getValue(),
                                     useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
                                             : Classifier.NO_CONDITIONS),
@@ -225,7 +225,7 @@ public class EvaluationBoard
                         classifier.evaluate(
                                 glyph,
                                 ((Sample) glyph).getInterline(),
-                                selector.evalCount(),
+                                evalCount(),
                                 constants.minGrade.getValue(),
                                 useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
                                         : Classifier.NO_CONDITIONS),
@@ -273,8 +273,10 @@ public class EvaluationBoard
      */
     public void selectButton (int buttonID)
     {
-        if (buttonID <= selector.buttons.size()) {
-            selector.buttons.get(buttonID - 1).actionPerformed(null);
+        if (isSelected()) {
+            if (buttonID <= selector.buttons.size()) {
+                selector.buttons.get(buttonID - 1).actionPerformed(null);
+            }
         }
     }
 
@@ -287,6 +289,19 @@ public class EvaluationBoard
      * @return count of visible buttons
      */
     public static int getVisibleButtons ()
+    {
+        return constants.visibleButtons.getValue();
+    }
+
+    //-----------//
+    // evalCount //
+    //-----------//
+    /**
+     * Report the number of displayed evaluations
+     *
+     * @return the number of eval buttons
+     */
+    public static int evalCount ()
     {
         return constants.visibleButtons.getValue();
     }
@@ -308,19 +323,6 @@ public class EvaluationBoard
             }
 
             setEvals(null, null);
-        }
-
-        //-----------//
-        // evalCount //
-        //-----------//
-        /**
-         * Report the number of displayed evaluations
-         *
-         * @return the number of eval buttons
-         */
-        public final int evalCount ()
-        {
-            return constants.visibleButtons.getValue();
         }
 
         //----------//

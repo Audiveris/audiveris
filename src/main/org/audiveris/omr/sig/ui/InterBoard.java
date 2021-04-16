@@ -207,9 +207,9 @@ public class InterBoard
             final Inter inter = InterBoard.this.getSelectedEntity();
 
             if (edit.getField().isSelected()) {
-                sheet.getSymbolsEditor().openEditMode(inter);
+                sheet.getSheetEditor().openEditMode(inter);
             } else {
-                sheet.getSymbolsEditor().closeEditMode();
+                sheet.getSheetEditor().closeEditMode();
             }
         } else {
             super.actionPerformed(e); // VIP or DUMP
@@ -337,7 +337,7 @@ public class InterBoard
                 selfUpdatingText = false;
             } else {
                 // edit?
-                Inter editedInter = sheet.getSymbolsEditor().getEditedInter();
+                Inter editedInter = sheet.getSheetEditor().getEditedInter();
                 edit.getField().setSelected(inter == editedInter);
             }
         } else {
