@@ -34,7 +34,6 @@ import org.audiveris.omr.glyph.GlyphsModel;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.FilamentIndex;
 import org.audiveris.omr.glyph.ui.GlyphsController;
-import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.image.ImageFormatException;
 import org.audiveris.omr.lag.LagManager;
 import org.audiveris.omr.lag.Lags;
@@ -49,6 +48,7 @@ import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
+import org.audiveris.omr.sheet.ui.SheetEditor;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -173,7 +173,7 @@ import javax.xml.stream.XMLStreamException;
  * <dt>UI</dt>
  * <dd>
  * <ul>
- * <li>{@link #getSymbolsEditor}</li>
+ * <li>{@link #getSheetEditor}</li>
  * <li>{@link #createBinaryView}</li>
  * <li>{@link #createInitialView}</li>
  * <li>{@link #displayDataTab}</li>
@@ -291,8 +291,8 @@ public class Sheet
     /** Specific UI manager dealing with inters. */
     private volatile InterController interController;
 
-    /** Related symbols editor, if any. */
-    private SymbolsEditor symbolsEditor;
+    /** Related sheet editor, if any. */
+    private SheetEditor sheetEditor;
 
     //-- resettable members ---
     //
@@ -564,7 +564,7 @@ public class Sheet
     public void displayDataTab ()
     {
         try {
-            getSymbolsEditor();
+            getSheetEditor();
             stub.getAssembly().selectViewTab(SheetTab.DATA_TAB);
         } catch (Throwable ex) {
             logger.warn("Error in displayDataTab " + ex, ex);
@@ -1057,23 +1057,23 @@ public class Sheet
         return stub;
     }
 
-    //------------------//
-    // getSymbolsEditor //
-    //------------------//
+    //----------------//
+    // getSheetEditor //
+    //----------------//
     /**
-     * In non batch mode, report the editor dealing with symbols recognition in this sheet
+     * In non batch mode, report the editor dedicated to this sheet
      *
-     * @return the symbols editor, or null
+     * @return the sheet editor, or null
      */
-    public SymbolsEditor getSymbolsEditor ()
+    public SheetEditor getSheetEditor ()
     {
-        if (symbolsEditor == null) {
+        if (sheetEditor == null) {
             interController = new InterController(this);
-            symbolsEditor = new SymbolsEditor(this, getGlyphsController(), interController);
-            interController.setSymbolsEditor(symbolsEditor);
+            sheetEditor = new SheetEditor(this, getGlyphsController(), interController);
+            interController.setSheetEditor(sheetEditor);
         }
 
-        return symbolsEditor;
+        return sheetEditor;
     }
 
     //------------------//
@@ -1486,7 +1486,7 @@ public class Sheet
             staffManager.reset();
             systemManager.reset();
             glyphsController = null;
-            symbolsEditor = null;
+            sheetEditor = null;
         }
 
         // Clear errors and history for this step

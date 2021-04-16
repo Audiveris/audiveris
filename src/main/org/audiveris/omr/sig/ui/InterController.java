@@ -30,7 +30,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ui.NestView;
-import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -42,6 +41,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sheet.ui.SheetEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -148,7 +148,7 @@ public class InterController
     private final TaskHistory history = new TaskHistory();
 
     /** User pane. Lazily assigned */
-    private SymbolsEditor editor;
+    private SheetEditor sheetEditor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -194,7 +194,7 @@ public class InterController
             protected void publish ()
             {
                 if (!seq.isCancelled()) {
-                    sheet.getSymbolsEditor().getShapeBoard().addToHistory(inter.getShape());
+                    sheet.getSheetEditor().getShapeBoard().addToHistory(inter.getShape());
                 }
 
                 sheet.getInterIndex().publish(inter);
@@ -504,7 +504,7 @@ public class InterController
     {
         history.clear();
 
-        if (editor != null) {
+        if (sheetEditor != null) {
             refreshUI();
         }
     }
@@ -840,10 +840,10 @@ public class InterController
                 sheet.getInterIndex().publish(null);
 
                 // Make sure an on-going edition is not impacted
-                Inter edited = sheet.getSymbolsEditor().getEditedInter();
+                Inter edited = sheet.getSheetEditor().getEditedInter();
 
                 if (edited != null && inters.contains(edited)) {
-                    sheet.getSymbolsEditor().closeEditMode();
+                    sheet.getSheetEditor().closeEditMode();
                 }
             }
         }.execute();
@@ -904,25 +904,25 @@ public class InterController
         }.execute();
     }
 
-    //------------------//
-    // setSymbolsEditor //
-    //------------------//
+    //----------------//
+    // setSheetEditor //
+    //----------------//
     /**
      * Late assignment of editor, to avoid circularities in elaboration, and to allow
      * handling of specific keys.
      *
-     * @param symbolsEditor the user pane
+     * @param sheetEditor the user pane
      */
-    public void setSymbolsEditor (SymbolsEditor symbolsEditor)
+    public void setSheetEditor (SheetEditor sheetEditor)
     {
-        editor = symbolsEditor;
+        this.sheetEditor = sheetEditor;
 
-        NestView view = editor.getView();
-        InputMap inputMap = view.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        NestView sheetView = sheetEditor.getSheetView();
+        InputMap inputMap = sheetView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // Support for delete key
         inputMap.put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
-        view.getActionMap().put("RemoveAction", new RemoveAction());
+        sheetView.getActionMap().put("RemoveAction", new RemoveAction());
     }
 
     //------------//
@@ -1151,11 +1151,11 @@ public class InterController
     public void undo ()
     {
         // If an inter is being edited, "undo" simply cancels the ongoing edition
-        InterEditor interEditor = sheet.getSymbolsEditor().getInterEditor();
+        InterEditor interEditor = sheet.getSheetEditor().getInterEditor();
 
         if (interEditor != null) {
             interEditor.undo();
-            sheet.getSymbolsEditor().closeEditMode();
+            sheet.getSheetEditor().closeEditMode();
             Inter inter = interEditor.getInter();
             inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
             BookActions.getInstance().setUndoable(canUndo());
@@ -1317,7 +1317,7 @@ public class InterController
                 sheet.getGlyphIndex().publish(null);
 
                 if (!seq.isCancelled()) {
-                    sheet.getSymbolsEditor().getShapeBoard().addToHistory(shape);
+                    sheet.getSheetEditor().getShapeBoard().addToHistory(shape);
                 }
             }
         }.execute();
@@ -1424,7 +1424,7 @@ public class InterController
     private void refreshUI ()
     {
         // Update editor display
-        editor.refresh();
+        sheetEditor.refresh();
 
         // Update status of undo/redo actions
         final BookActions bookActions = BookActions.getInstance();

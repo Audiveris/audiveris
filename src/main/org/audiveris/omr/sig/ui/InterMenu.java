@@ -178,7 +178,7 @@ public class InterMenu
         public void actionPerformed (ActionEvent e)
         {
             final Sheet sheet = inter.getSig().getSystem().getSheet();
-            sheet.getSymbolsEditor().openEditMode(inter);
+            sheet.getSheetEditor().openEditMode(inter);
             inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
         }
     }

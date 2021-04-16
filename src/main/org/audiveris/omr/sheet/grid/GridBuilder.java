@@ -118,7 +118,7 @@ public class GridBuilder
 
             // Display
             if (OMR.gui != null) {
-                sheet.getSymbolsEditor().refresh();
+                sheet.getSheetEditor().refresh();
 
                 final SheetAssembly assembly = sheet.getStub().getAssembly();
 

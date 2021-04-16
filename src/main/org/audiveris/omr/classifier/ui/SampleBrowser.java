@@ -1045,7 +1045,7 @@ public class SampleBrowser
                         classifier.evaluate(
                                 glyph,
                                 sample.getInterline(),
-                                selector.evalCount(),
+                                evalCount(),
                                 0.0, // minGrade
                                 Classifier.NO_CONDITIONS),
                         glyph);

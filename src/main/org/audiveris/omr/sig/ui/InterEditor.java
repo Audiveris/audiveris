@@ -154,7 +154,7 @@ public abstract class InterEditor
         }
 
         inter.getSig().publish(inter); // To update the edit checkbox on interboard
-        system.getSheet().getSymbolsEditor().closeEditMode();
+        system.getSheet().getSheetEditor().closeEditMode();
     }
 
     //----------//

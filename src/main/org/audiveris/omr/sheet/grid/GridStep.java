@@ -69,7 +69,7 @@ public class GridStep
     public void displayUI (Step step,
                            Sheet sheet)
     {
-        sheet.getSymbolsEditor().refresh();
+        sheet.getSheetEditor().refresh();
 
         if (constants.displayNoStaff.isSet()) {
             sheet.getStub().getAssembly().addViewTab(

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   S y m b o l s E d i t o r                                    //
+//                                     S h e e t E d i t o r                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.glyph.ui;
+package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.constant.Constant;
@@ -28,6 +28,10 @@ import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.Filament;
+import org.audiveris.omr.glyph.ui.EvaluationBoard;
+import org.audiveris.omr.glyph.ui.GlyphsController;
+import org.audiveris.omr.glyph.ui.NestView;
+import org.audiveris.omr.glyph.ui.SymbolGlyphBoard;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
@@ -43,13 +47,6 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.symbol.InterFactory;
-import org.audiveris.omr.sheet.ui.BookActions;
-import org.audiveris.omr.sheet.ui.PixelBoard;
-import org.audiveris.omr.sheet.ui.SelectionPainter;
-import org.audiveris.omr.sheet.ui.SheetAssembly;
-import org.audiveris.omr.sheet.ui.SheetGradedPainter;
-import org.audiveris.omr.sheet.ui.SheetResultPainter;
-import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
@@ -89,6 +86,8 @@ import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -107,26 +106,26 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane from which all
- * symbol processing actions can be launched and their results checked.
+ * Class {@code SheetEditor} defines, for a given sheet, a UI pane from which all
+ * processing actions can be launched and their results checked.
  *
  * @author Hervé Bitteur
  */
-public class SymbolsEditor
+public class SheetEditor
         implements PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetEditor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Related nest view. */
+    /** Sheet view. */
     private final MyView view;
 
     private final ShapeBoard shapeBoard;
@@ -148,9 +147,9 @@ public class SymbolsEditor
      * @param glyphsController the symbols controller for this sheet
      * @param interController  the inter controller for this sheet
      */
-    public SymbolsEditor (Sheet sheet,
-                          GlyphsController glyphsController,
-                          InterController interController)
+    public SheetEditor (Sheet sheet,
+                        GlyphsController glyphsController,
+                        InterController interController)
     {
         this.sheet = sheet;
 
@@ -287,6 +286,32 @@ public class SymbolsEditor
         return shapeBoard;
     }
 
+    //---------------------//
+    // getSheetKeyListener //
+    //---------------------//
+    /**
+     * Report the key listener used by sheet editor.
+     *
+     * @return sheet key listener
+     */
+    public SheetKeyListener getSheetKeyListener ()
+    {
+        return view.keyListener;
+    }
+
+    //--------------//
+    // getSheetView //
+    //--------------//
+    /**
+     * Report the SheetEditor sheet view (the large graphical sheet display).
+     *
+     * @return the sheet view
+     */
+    public NestView getSheetView ()
+    {
+        return view;
+    }
+
     //--------------------//
     // getStrictMeasureAt //
     //--------------------//
@@ -353,11 +378,6 @@ public class SymbolsEditor
         }
 
         return null;
-    }
-
-    public NestView getView ()
-    {
-        return view;
     }
 
     //-----------//
@@ -450,9 +470,65 @@ public class SymbolsEditor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // SheetKeyListener //
+    //------------------//
+    /**
+     * Listener in charge of retrieving the sequence of keys typed by the user.
+     */
+    public class SheetKeyListener
+            extends KeyAdapter
+    {
+
+        /** First character typed, if any. */
+        Character firstChar = null;
+
+        @Override
+        public void keyTyped (KeyEvent e)
+        {
+            final char c = e.getKeyChar();
+
+            if (firstChar == null) {
+                // Shape family selection?
+                if (shapeBoard.isSelected() && shapeBoard.checkInitial(c)) {
+                    firstChar = c;
+                    return;
+                }
+
+                // Direct use of classifier buttons?
+                if (evaluationBoard.isSelected()) {
+                    final char maxId = (char) ('0' + EvaluationBoard.evalCount());
+
+                    if (c >= '1' && c <= maxId) {
+                        final int id = c - '0';
+                        evaluationBoard.selectButton(id);
+                        return;
+                    }
+                }
+            } else {
+                // Second character (shape within family)
+                final String str = String.valueOf(new char[]{firstChar, c});
+                shapeBoard.processString(str);
+                reset();
+            }
+        }
+
+        /**
+         * Reset the key input sequence.
+         */
+        public void reset ()
+        {
+            firstChar = null;
+        }
+    }
+
     //--------//
     // MyView //
     //--------//
+    /**
+     * This is the main view, displaying the sheet image with sections, glyphs and inters
+     * for edition.
+     */
     private final class MyView
             extends NestView
     {
@@ -469,14 +545,16 @@ public class SymbolsEditor
         /** Repetitive input mode. */
         private boolean repetitiveInputMode = false;
 
+        /** When sequence of keys are typed. */
+        private final SheetKeyListener keyListener = new SheetKeyListener();
+
         private MyView (GlyphIndex glyphIndex)
         {
-            super(
-                    glyphIndex.getEntityService(),
-                    Arrays.asList(
-                            sheet.getLagManager().getLag(Lags.HLAG),
-                            sheet.getLagManager().getLag(Lags.VLAG)),
-                    sheet);
+            super(glyphIndex.getEntityService(),
+                  Arrays.asList(
+                          sheet.getLagManager().getLag(Lags.HLAG),
+                          sheet.getLagManager().getLag(Lags.VLAG)),
+                  sheet);
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
@@ -488,6 +566,8 @@ public class SymbolsEditor
 
             // Arrow keys + Enter key for inter editor
             bindInterEditionKeys();
+            addKeyListener(keyListener);
+
         }
 
         //--------------//

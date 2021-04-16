@@ -102,7 +102,7 @@ public class ShapeMenu
     //-----------------//
     private void addRecentShapes ()
     {
-        List<Shape> shapes = sheet.getSymbolsEditor().getShapeBoard().getHistory();
+        List<Shape> shapes = sheet.getSheetEditor().getShapeBoard().getHistory();
 
         if (!shapes.isEmpty()) {
             for (Shape shape : shapes) {

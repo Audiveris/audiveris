@@ -158,7 +158,7 @@ public abstract class Board
     /** The split container that will contain the boards pane. */
     private JSplitPane splitContainer;
 
-    /** Board is selected?. */
+    /** Board is selected? (it appears in boards pane). */
     private boolean selected;
 
     //~ Constructors -------------------------------------------------------------------------------
