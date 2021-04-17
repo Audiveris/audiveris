@@ -65,7 +65,7 @@ public abstract class AbstractHistory<E>
      * @param constant       backing constant on disk
      * @param folderConstant backing constant for last folder, or null
      * @param maxSize        maximum entities in history
-     * @param predicate
+     * @param predicate      predicate to test names equivalence
      */
     public AbstractHistory (String name,
                             Constant.String constant,

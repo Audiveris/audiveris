@@ -56,6 +56,7 @@ import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathTask;
 import org.audiveris.omr.util.SheetPath;
+import org.audiveris.omr.util.SheetPathHistory;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.param.Param;
@@ -812,7 +813,7 @@ public class BookActions
     // openRecentBook //
     //----------------//
     /**
-     * Action that let the user open the book most recently closed
+     * Action that let the user open the book most recently closed.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
@@ -820,15 +821,20 @@ public class BookActions
     @Action
     public LoadBookTask openRecentBook (ActionEvent e)
     {
-        final SheetPath sheetPath = BookManager.getInstance().getBookHistory().getFirst();
+        final SheetPathHistory bookHistory = BookManager.getInstance().getBookHistory();
 
-        if (sheetPath != null) {
-            final Path path = sheetPath.getBookPath();
+        while (!bookHistory.isEmpty()) {
+            final SheetPath sheetPath = bookHistory.getFirst();
 
-            if (Files.exists(path)) {
-                return new LoadBookTask(sheetPath);
-            } else {
-                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+            if (sheetPath != null) {
+                final Path path = sheetPath.getBookPath();
+
+                if (Files.exists(path)) {
+                    return new LoadBookTask(sheetPath);
+                } else {
+                    logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+                    bookHistory.remove(sheetPath);
+                }
             }
         }
 
