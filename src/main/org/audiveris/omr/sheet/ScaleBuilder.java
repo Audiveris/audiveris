@@ -252,8 +252,8 @@ public class ScaleBuilder
             if (verbose) {
                 logger.info(String.format("Beam measured height: %2d -- %.2f"
                                                   + " of [%d..%d] range at %d%% of needed quorum",
-                                          peak, rangeRatio, minHeight, maxHeight, (int) Math.rint(
-                                                  quorumRatio * 100)));
+                                          peak, rangeRatio, minHeight, maxHeight,
+                                          (int) Math.rint(quorumRatio * 100)));
             }
 
             // Quorum reached or measured value close to guess?
