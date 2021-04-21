@@ -926,6 +926,7 @@ public class SheetEditor
                 // Selected slot, if any
                 if (highlightedSlot != null) {
                     boolean mixed = viewParams.isInputPainting();
+                    g.setColor(Color.BLACK);
                     final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
                     final boolean annots = viewParams.isAnnotationPainting();
                     new SheetResultPainter(sheet, g, coloredVoices, false, annots).highlightSlot(
