@@ -1854,7 +1854,7 @@ public class PartwiseBuilder
                     isMeasureRest = true;
                 }
 
-                if (!current.measure.isDummy() && !isMeasureRest && !staff.isOneLineStaff()) {
+                if (!current.measure.isDummy() && !staff.isOneLineStaff()) {
                     // Set displayStep & displayOctave for rest
                     rest.setDisplayStep(stepOf(note.getStep()));
                     rest.setDisplayOctave(note.getOctave());
