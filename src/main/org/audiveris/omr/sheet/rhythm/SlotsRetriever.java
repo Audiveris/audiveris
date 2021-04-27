@@ -710,32 +710,20 @@ public class SlotsRetriever
                 final Rectangle box2 = ch2.getBounds();
                 final double x2 = stack.getXOffset(ch2.getCenterLeft());
                 final int yOverlap = GeoUtil.yOverlap(box1, box2);
+                final double dx = Math.abs(x1 - x2);
 
-                if (yOverlap > params.maxVerticalOverlap) {
-                    // Boxes overlap vertically
-                    if (areAdjacent(ch1, ch2)) {
-                        adjacencies.add(new ChordPair(ch1, ch2));
-                    } else if (x1 < x2) {
-                        setRel(ch1, ch2, BEFORE);
-                        setRel(ch2, ch1, AFTER);
-                    } else {
-                        setRel(ch2, ch1, BEFORE);
-                        setRel(ch1, ch2, AFTER);
-                    }
+                // Check boxes vertical overlap + adjacency
+                if ((yOverlap > params.maxVerticalOverlap) && areAdjacent(ch1, ch2)) {
+                    adjacencies.add(new ChordPair(ch1, ch2));
+                } else if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
+                    setRel(ch1, ch2, CLOSE);
+                    setRel(ch2, ch1, CLOSE);
+                } else if (x1 < x2) {
+                    setRel(ch1, ch2, BEFORE);
+                    setRel(ch2, ch1, AFTER);
                 } else {
-                    // Boxes do not overlap vertically
-                    final double dx = Math.abs(x1 - x2);
-
-                    if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
-                        setRel(ch1, ch2, CLOSE);
-                        setRel(ch2, ch1, CLOSE);
-                    } else if (x1 < x2) {
-                        setRel(ch1, ch2, BEFORE);
-                        setRel(ch2, ch1, AFTER);
-                    } else {
-                        setRel(ch2, ch1, BEFORE);
-                        setRel(ch1, ch2, AFTER);
-                    }
+                    setRel(ch2, ch1, BEFORE);
+                    setRel(ch1, ch2, AFTER);
                 }
             }
         }
