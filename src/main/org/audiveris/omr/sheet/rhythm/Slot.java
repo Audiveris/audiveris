@@ -81,7 +81,7 @@ public class Slot
     //
     /** Sequential Id unique within the containing stack. Starts at 1. */
     @XmlAttribute
-    protected final int id;
+    protected int id;
 
     /** Reference abscissa offset since measure start. */
     @XmlAttribute(name = "x-offset")
@@ -136,7 +136,6 @@ public class Slot
      */
     private Slot ()
     {
-        this.id = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -313,11 +312,24 @@ public class Slot
     /**
      * Report the slot Id.
      *
-     * @return the slot id (for debug)
+     * @return the slot id
      */
     public int getId ()
     {
         return id;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign a new id to slot.
+     *
+     * @param id new id
+     */
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------//
