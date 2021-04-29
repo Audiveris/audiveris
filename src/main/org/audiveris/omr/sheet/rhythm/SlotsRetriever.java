@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.rhythm;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -430,7 +431,7 @@ public class SlotsRetriever
         // Finally, default location-based relationships
         inspectLocations(stdChords);
 
-        if (logger.isDebugEnabled()) {
+        if (constants.dumpRelationships.isSet() || logger.isDebugEnabled()) {
             dumpRelationships(stdChords);
         }
     }
@@ -741,8 +742,8 @@ public class SlotsRetriever
                 for (AbstractChordInter ch1 : n1) {
                     for (AbstractChordInter ch2 : n2) {
                         if ((ch1 != ch2) && (getRel(ch1, ch2) == null)) {
-                            setRel(ch1, ch2, CLOSE);
-                            setRel(ch2, ch1, CLOSE);
+                            setRel(ch1, ch2, EQUAL);
+                            setRel(ch2, ch1, EQUAL);
                         }
                     }
                 }
@@ -1040,10 +1041,6 @@ public class SlotsRetriever
                 1.0,
                 "Maximum horizontal delta between two slots for a merge");
 
-        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
-                0.5,
-                "Minimum horizontal delta between two slots");
-
         private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
                 0.4,
                 "Maximum horizontal gap between adjacent chords bounds");
@@ -1051,6 +1048,10 @@ public class SlotsRetriever
         private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(
                 0.25,
                 "Maximum vertical overlap tolerated");
+
+        private final Constant.Boolean dumpRelationships = new Constant.Boolean(
+                false,
+                "(debug) Dump matrix of chords relationships");
     }
 
     //------------//

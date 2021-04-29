@@ -173,9 +173,16 @@ public class MeasureRhythm
 
             setFirstSlot(); // Set and push time ZERO for chords of first slot
 
-            for (CompoundSlot slot : slots) {
+            // Slots list may be shrunk dynamically
+            for (int i = 0; i < slots.size(); i++) {
+                final CompoundSlot slot = slots.get(i);
                 ok &= new SlotMapper(slot).mapChords();
-                purgeExtinctVoices(slot);
+
+                if (slots.contains(slot)) {
+                    purgeExtinctVoices(slot);
+                } else {
+                    i--;
+                }
             }
 
             if (implicitTuplets) {
@@ -430,12 +437,12 @@ public class MeasureRhythm
 
                     if (end.compareTo(firstTime) < 0) {
                         if (lastChord.isVip() || logger.isDebugEnabled()) {
-                            logger.info(
-                                    "VIP {} {} extinct at {} before slot#{}",
-                                    voice,
-                                    Inters.ids(voice.getChords()),
-                                    end,
-                                    slot.getId());
+                            logger.info("{} VIP {} {} extinct at {} before slot#{}",
+                                        measure,
+                                        voice,
+                                        Inters.ids(voice.getChords()),
+                                        end,
+                                        slot.getId());
                         }
 
                         extinctVoices.add(voice);
@@ -647,7 +654,7 @@ public class MeasureRhythm
         // Incomings
         private final List<AbstractChordInter> rookies;
 
-        // Known incompabilities
+        // Known voice incompabilities
         private final Set<ChordPair> blackList;
 
         // Explicit voice links
@@ -682,7 +689,7 @@ public class MeasureRhythm
                     // Time problem detected in a narrow slot
                     // Some data is wrong (recognition problem or implicit tuplet)
                     //TODO: check if some tuplet factor could explain the difference
-                    logger.info("Time inconsistency in {}", times);
+                    logger.info("{} Time inconsistency in {}", measure, times);
                     ok &= analyzeTimes(times);
                 }
             }
@@ -877,11 +884,58 @@ public class MeasureRhythm
                         }
 
                         if (timeOffset == null) {
-                            logger.info("No timeOffset for {}", ch);
+                            if (siblings.isEmpty()) {
+                                // This chord is alone in its time slot
+                                // If adjacent with a chord in previous slot, join previous slot
+                                if (mergeWithPreviousSlot(ch)) {
+                                    return;
+                                }
+                            }
+
+                            logger.info("{} No timeOffset for {}", measure, ch);
                         }
                     }
                 }
             }
+        }
+
+        //-----------------------//
+        // mergeWithPreviousSlot //
+        //-----------------------//
+        /**
+         * Try to merge this slot (containing just one rookie with no time offset)
+         * with previous slot if it contains a chord EQUAL to rookie.
+         *
+         * @param rookie the single rookie to deal with
+         * @return true if success
+         */
+        private boolean mergeWithPreviousSlot (AbstractChordInter rookie)
+        {
+            final CompoundSlot prevSlot = slots.get(slot.id - 2);
+
+            for (AbstractChordInter ch : prevSlot.getChords()) {
+                final Rel rel = narrowSlotsRetriever.getRel(ch, rookie);
+
+                if (rel == Rel.EQUAL) {
+                    final Rational timeOffset = ch.getTimeOffset();
+
+                    if (timeOffset != null) {
+                        logger.info("BINGO {} {}", ch, rookie);
+                        prevSlot.getChords().add(rookie);
+                        rookie.setAndPushTime(timeOffset);
+
+                        for (CompoundSlot sl : slots.subList(slot.id, slots.size())) {
+                            sl.setId(sl.getId() - 1);
+                        }
+
+                        slots.remove(slot);
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         //------------//
