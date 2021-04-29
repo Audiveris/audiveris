@@ -258,8 +258,8 @@ public class Voice
 
                     if (delta.compareTo(Rational.ZERO) > 0) {
                         MeasureStack stack = measure.getStack();
-                        logger.info("{} {} too long {}", measure, this, delta);
                         excess = delta; // For voice
+                        logger.info("{} {} too long", measure, this);
                         measure.setAbnormal(true);
 
                         if ((stack.getExcess() == null) || (delta.compareTo(stack.getExcess()) > 0)) {
