@@ -111,11 +111,13 @@ public class ScrollView
      */
     public void fitHeight ()
     {
-        Rectangle vr = view.getVisibleRect();
-        Dimension dim = view.getModelSize();
+        final Rectangle vr = view.getVisibleRect();
+        final Dimension dim = view.getModelSize();
         logger.debug("fitHeight vr={} dim={}", vr, dim);
 
-        setZoomRatio(vr.height / (double) dim.height);
+        if ((vr != null) && (dim != null)) {
+            setZoomRatio(vr.height / (double) dim.height);
+        }
     }
 
     //----------//
@@ -127,11 +129,13 @@ public class ScrollView
      */
     public void fitWhole ()
     {
-        Rectangle vr = view.getVisibleRect();
-        Dimension dim = view.getModelSize();
+        final Rectangle vr = view.getVisibleRect();
+        final Dimension dim = view.getModelSize();
         logger.debug("fitWhole vr={} dim={}", vr, dim);
 
-        setZoomRatio(Math.min(vr.width / (double) dim.width, vr.height / (double) dim.height));
+        if ((vr != null) && (dim != null)) {
+            setZoomRatio(Math.min(vr.width / (double) dim.width, vr.height / (double) dim.height));
+        }
     }
 
     //----------//
@@ -146,17 +150,17 @@ public class ScrollView
      */
     public boolean fitWidth ()
     {
-        Rectangle vr = view.getVisibleRect();
-        Dimension dim = view.getModelSize();
+        final Rectangle vr = view.getVisibleRect();
+        final Dimension dim = view.getModelSize();
         logger.debug("fitWidth vr={} dim={}", vr, dim);
 
-        if ((vr.width > 0) && (dim.width > 0)) {
+        if ((vr != null) && (dim != null) && (vr.width > 0) && (dim.width > 0)) {
             setZoomRatio(vr.width / (double) dim.width);
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     //--------------//
