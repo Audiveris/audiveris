@@ -124,7 +124,7 @@ public class StubsSelection
         final JOptionPane pane = defineLayout();
 
         // Initial sheets selection, as read from book
-        final String lastSpec = book.getSheetsSpecification();
+        final String lastSpec = book.getSheetsSelection();
 
         if (lastSpec == null) {
             group.setSelected(allButton.getModel(), true);
@@ -148,8 +148,8 @@ public class StubsSelection
             final ButtonModel model = group.getSelection();
 
             if (model == allButton.getModel()) {
-                logger.info("Sheets specification: <all>");
-                return book.setSheetsSpecification(null);
+                logger.info("Sheets selection: <all>");
+                return book.setSheetsSelection(null);
             }
 
             try {
@@ -171,8 +171,8 @@ public class StubsSelection
                     logger.warn("{} does not contain sheet(s) {}", book, discarded);
                 } else {
                     final String normalizedSpec = NaturalSpec.encode(ids);
-                    logger.info("Sheets specification:\"{}\" IDs:{}", normalizedSpec, ids);
-                    return book.setSheetsSpecification(normalizedSpec);
+                    logger.info("Sheets selection:\"{}\" IDs:{}", normalizedSpec, ids);
+                    return book.setSheetsSelection(normalizedSpec);
                 }
             } catch (NumberFormatException ex) {
                 logger.warn("Illegal naturals specification");

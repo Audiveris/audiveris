@@ -273,10 +273,6 @@ public class Book
     @XmlAttribute(name = "offset")
     private Integer offset;
 
-    /** Specification of sheets selection, if any. */
-    @XmlAttribute(name = "sheets-specification")
-    private String sheetsSpecification;
-
     /** Indicate if the book scores must be updated. */
     @XmlAttribute(name = "dirty")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
@@ -296,6 +292,10 @@ public class Book
     @XmlElement(name = "processing")
     @XmlJavaTypeAdapter(ProcessingSwitches.Adapter.class)
     private ProcessingSwitches switches;
+
+    /** Specification of sheets selection, if any. */
+    @XmlElement(name = "sheets-selection")
+    private String sheetsSelection;
 
     /** Sequence of all sheets stubs got from image file. */
     @XmlElement(name = "sheet")
@@ -1056,50 +1056,50 @@ public class Book
      */
     public List<SheetStub> getSelectedStubs ()
     {
-        if (sheetsSpecification == null) {
+        if (sheetsSelection == null) {
             return new ArrayList<>(stubs);
         }
 
-        return getStubs(NaturalSpec.decode(sheetsSpecification, true));
+        return getStubs(NaturalSpec.decode(sheetsSelection, true));
     }
 
-    //------------------------//
-    // getSheetsSpecification //
-    //------------------------//
+    //--------------------//
+    // getSheetsSelection //
+    //--------------------//
     /**
      * Report the specification for sheets selection.
      *
-     * @return the sheetsSpecification string, perhaps null
+     * @return the sheetsSelection string, perhaps null
      */
-    public String getSheetsSpecification ()
+    public String getSheetsSelection ()
     {
-        return sheetsSpecification;
+        return sheetsSelection;
     }
 
-    //------------------------//
-    // setSheetsSpecification //
-    //------------------------//
+    //--------------------//
+    // setSheetsSelection //
+    //--------------------//
     /**
      * Remember a new specification for sheets selection.
      *
-     * @param sheetsSpecification the sheetsSpecification to set, perhaps null
+     * @param sheetsSelection the sheetsSelection to set, perhaps null
      * @return true if the spec was actually modified
      */
-    public boolean setSheetsSpecification (String sheetsSpecification)
+    public boolean setSheetsSelection (String sheetsSelection)
     {
         boolean modif = false;
 
-        if (sheetsSpecification == null) {
-            if (this.sheetsSpecification != null) {
+        if (sheetsSelection == null) {
+            if (this.sheetsSelection != null) {
                 modif = true;
             }
         } else {
-            if (!sheetsSpecification.equals(this.sheetsSpecification)) {
+            if (!sheetsSelection.equals(this.sheetsSelection)) {
                 modif = true;
             }
         }
 
-        this.sheetsSpecification = sheetsSpecification;
+        this.sheetsSelection = sheetsSelection;
 
         if (modif) {
             setModified(true); // Book has been modified
