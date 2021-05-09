@@ -23,6 +23,8 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -136,7 +138,7 @@ public class ChordsBuilder
                     }
                 }
 
-                // Aggregate whole heads into vertical chords
+                // Aggregate whole heads into isolated or vertical chords
                 detectWholeVerticals(wholeHeads);
             }
         }
@@ -329,13 +331,16 @@ public class ChordsBuilder
     // detectWholeVerticals //
     //----------------------//
     /**
-     * Review the provided collection of whole heads in a staff to come up with vertical
-     * sequences (chords).
+     * Review the provided collection of whole heads in a staff to come up with either
+     * single-note chords or vertical chords.
      *
      * @param wholeHeads the provided list of whole heads (no stem) in current staff
      */
     private void detectWholeVerticals (List<HeadInter> wholeHeads)
     {
+        final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
+        final boolean multiWhole = switches.getValue(Switch.multiWholeHeadChords);
+
         Collections.sort(wholeHeads, Inters.byCenterOrdinate);
 
         for (int i = 0, iBreak = wholeHeads.size(); i < iBreak; i++) {
@@ -352,19 +357,22 @@ public class ChordsBuilder
             chord.setStaff(h1.getStaff());
             chord.addMember(h1);
 
-            int p1 = (int) Math.rint(h1.getPitch());
+            if (multiWhole) {
+                // Try to gather wholes below
+                int p1 = (int) Math.rint(h1.getPitch());
 
-            for (HeadInter h2 : wholeHeads.subList(i + 1, iBreak)) {
-                final int p2 = (int) Math.rint(h2.getPitch());
+                for (HeadInter h2 : wholeHeads.subList(i + 1, iBreak)) {
+                    final int p2 = (int) Math.rint(h2.getPitch());
 
-                if (p2 > (p1 + 2)) {
-                    break; // Vertical gap is too large, this is the end for current chord
-                }
+                    if (p2 > (p1 + 2)) {
+                        break; // Vertical gap is too large, this is the end for current chord
+                    }
 
-                // Check horizontal fit
-                if (GeoUtil.xOverlap(chord.getBounds(), h2.getBounds()) > 0) {
-                    chord.addMember(h2);
-                    p1 = p2;
+                    // Check horizontal fit
+                    if (GeoUtil.xOverlap(chord.getBounds(), h2.getBounds()) > 0) {
+                        chord.addMember(h2);
+                        p1 = p2;
+                    }
                 }
             }
         }

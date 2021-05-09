@@ -82,7 +82,8 @@ public class ProcessingSwitches
         sixStringTablatures(constants.sixStringTablatures),
         fourStringTablatures(constants.fourStringTablatures),
         oneLineStaves(constants.oneLineStaves),
-        partialWholeRests(constants.partialWholeRests);
+        partialWholeRests(constants.partialWholeRests),
+        multiWholeHeadChords(constants.multiWholeHeadChords);
 
         /** Underlying boolean constant. */
         Constant.Boolean constant;
@@ -375,6 +376,10 @@ public class ProcessingSwitches
         private final Constant.Boolean partialWholeRests = new Constant.Boolean(
                 false,
                 "Support for partial whole rests");
+
+        private final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
+                false,
+                "Support for multi-whole head chords");
     }
 
     //-----------------//
