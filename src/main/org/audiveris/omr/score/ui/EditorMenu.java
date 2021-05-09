@@ -67,7 +67,7 @@ import javax.swing.JMenuItem;
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
  * selection in page editor view.
  * <p>
- * It points to several sub-menus: inters, glyphs, measure, page, slot, chords, staff, extraction
+ * It points to several sub-menus: chords, inters, glyphs, slot, measure, staff, page, extraction
  *
  * @author Hervé Bitteur
  */
@@ -107,15 +107,15 @@ public class EditorMenu
             addMenu(new TribesMenu(sheet));
         }
 
-        addMenu(new MeasureMenu());
-        addMenu(new PageMenu());
-        addMenu(new SystemMenu());
         addMenu(new SlotMenu());
+        addMenu(new MeasureMenu());
 
         if (AdvancedTopics.Topic.PLOTS.isSet()) {
             addMenu(new StaffMenu());
         }
 
+        addMenu(new PageMenu());
+        addMenu(new SystemMenu());
         addMenu(new ExtractionMenu(sheet));
     }
 
