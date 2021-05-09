@@ -378,7 +378,7 @@ public class ChordNameInter
     @Override
     public String getShapeString ()
     {
-        return "CHORD_NAME: \"" + value + "\"";
+        return "CHORD_NAME: " + value;
     }
 
     //----------//
@@ -386,13 +386,14 @@ public class ChordNameInter
     //----------//
     /**
      * Use the new value to parse chord name information.
+     * <p>
+     * If parsing is correct, placeholders (b and #) are replaced by true alteration signs.
      *
      * @param value the new text value
      */
     @Override
     public void setValue (String value)
     {
-        super.setValue(value);
 
         final ChordStructure cs = parseChord(value);
 
@@ -401,8 +402,10 @@ public class ChordNameInter
             kind = cs.kind;
             bass = cs.bass;
             degrees = cs.degrees;
+            super.setValue(value.replaceAll("b", FLAT).replaceAll("#", SHARP));
         } else {
             logger.info("Failed parsing ChordName text: {}", value);
+            super.setValue(value);
         }
     }
 

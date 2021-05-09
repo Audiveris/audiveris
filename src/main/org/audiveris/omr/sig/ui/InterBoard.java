@@ -24,10 +24,12 @@ package org.audiveris.omr.sig.ui;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
@@ -55,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
@@ -189,6 +192,9 @@ public class InterBoard
         verse.setVisible(false);
         aboveBelow.setVisible(false);
         custom.setVisible(false);
+
+        // Trick for alteration signs
+        adjustFontForAlterations();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -442,6 +448,24 @@ public class InterBoard
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
+    //--------------------------//
+    // adjustFontForAlterations //
+    //--------------------------//
+    /**
+     * Text items 'shapeName' and 'textField' need to display alteration signs:
+     * {@link ChordNameInter#FLAT} , {@link ChordNameInter#SHARP} and perhaps
+     * {@link ChordNameInter#NATURAL}, so they need a font different from default Arial.
+     */
+    private void adjustFontForAlterations ()
+    {
+        final String specificFontName = constants.fontForAlterations.getValue();
+
+        for (JComponent comp : Arrays.asList(shapeName.getField(), textField.getField())) {
+            final Font oldFont = comp.getFont(); // To keep style and size
+            comp.setFont(new Font(specificFontName, oldFont.getStyle(), oldFont.getSize()));
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -449,6 +473,10 @@ public class InterBoard
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.String fontForAlterations = new Constant.String(
+                "Lucida Sans Unicode",
+                "Name of font able to display alteration signs");
 
         private final PixelCount shapeIconHeight = new PixelCount(
                 70,

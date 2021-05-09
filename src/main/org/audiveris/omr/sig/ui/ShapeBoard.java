@@ -115,6 +115,9 @@ public class ShapeBoard
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
 
+    /** Unicode value for black up-pointing triangle sign: {@value}. */
+    private static final String BACK = "\u25B2";
+
     /** Map first typed char to selected shape set. */
     private static final Map<Character, ShapeSet> setMap = new HashMap<>();
 
@@ -567,7 +570,7 @@ public class ShapeBoard
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
         // Button to close this family and return to all-families panel
-        JButton close = new JButton("<");
+        JButton close = new JButton(BACK);
         close.addActionListener(closeListener);
         close.setToolTipText("Back to all families");
         close.setBorderPainted(false); // To avoid visual confusion with draggable items
