@@ -334,20 +334,6 @@ public class SlotsRetriever
                     final int p2 = h2.getIntegerPitch();
 
                     if (Math.abs(p2 - p1) <= 2) {
-                        // Check no strong separation exists via close/equal chords
-                        Set<AbstractChordInter> n1 = getClosure(ch1);
-                        Set<AbstractChordInter> n2 = getClosure(ch2);
-
-                        for (AbstractChordInter c1 : n1) {
-                            for (AbstractChordInter c2 : n2) {
-                                Rel rel = getRel(c1, c2);
-
-                                if ((rel == Rel.AFTER) || (rel == Rel.BEFORE)) {
-                                    return false;
-                                }
-                            }
-                        }
-
                         return true;
                     }
                 }
@@ -428,8 +414,12 @@ public class SlotsRetriever
         // Extend explicit time join to intermediate chords if any
         inspectTimeJoins(stdChords);
 
+        // Detect adjacencies
+        inspectAdjacencies(stdChords);
+
         // Finally, default location-based relationships
-        inspectLocations(stdChords);
+        inspectCloseChords(stdChords);
+        inspectDistantChords(stdChords);
 
         if (constants.dumpRelationships.isSet() || logger.isDebugEnabled()) {
             dumpRelationships(stdChords);
@@ -563,31 +553,28 @@ public class SlotsRetriever
         return candidates;
     }
 
-    //------------//
-    // getClosure //
-    //------------//
+    //-----------//
+    // getEquals //
+    //-----------//
     /**
-     * Report the chords that are likely to belong to the same slot as the provided chord
+     * Report the chords that are equal to the provided chord
      *
      * @param chord the provided chord
-     * @return the set of chords candidates which are flagged as either EQUAL or CLOSE to the
-     *         provided chord
+     * @return the set of chords candidates which are flagged as EQUAL to the provided chord
      */
-    private Set<AbstractChordInter> getClosure (AbstractChordInter chord)
+    private Set<AbstractChordInter> getEquals (AbstractChordInter chord)
     {
-        Set<AbstractChordInter> closes = new LinkedHashSet<>();
-        closes.add(chord);
+        final Set<AbstractChordInter> equals = new LinkedHashSet<>();
+        final Set<Edge> outEdges = graph.outgoingEdgesOf(chord);
 
-        for (AbstractChordInter ch : candidateChords) {
-            Rel rel1 = getRel(chord, ch);
-            Rel rel2 = getRel(ch, chord);
-
-            if ((rel1 == CLOSE) || (rel1 == EQUAL) || (rel2 == CLOSE) || (rel2 == EQUAL)) {
-                closes.add(ch);
+        for (Edge edge : outEdges) {
+            if (edge.rel == EQUAL) {
+                final AbstractChordInter ch = graph.getEdgeTarget(edge);
+                equals.add(ch);
             }
         }
 
-        return closes;
+        return equals;
     }
 
     //--------//
@@ -639,6 +626,44 @@ public class SlotsRetriever
         return false;
     }
 
+    //--------------------//
+    // inspectAdjacencies //
+    //--------------------//
+    /**
+     * Inspect couples of chords to detect adjacencies.
+     *
+     * @param stdChords standard chords, sorted by abscissa
+     */
+    private void inspectAdjacencies (List<AbstractChordInter> stdChords)
+    {
+        final List<ChordPair> adjacencies = new ArrayList<>();
+
+        for (int i = 0; i < stdChords.size(); i++) {
+            final AbstractChordInter ch1 = stdChords.get(i);
+            final Rectangle box1 = ch1.getBounds();
+
+            for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
+                if (ch1.isVip() && ch2.isVip()) {
+                    logger.info("VIP inspectAdjacencies {} vs {}", ch1, ch2);
+                }
+
+                if (getRel(ch1, ch2) != null) {
+                    continue;
+                }
+
+                // Check boxes vertical overlap + adjacency
+                final Rectangle box2 = ch2.getBounds();
+                final int yOverlap = GeoUtil.yOverlap(box1, box2);
+
+                if ((yOverlap > params.maxVerticalOverlap) && areAdjacent(ch1, ch2)) {
+                    adjacencies.add(new ChordPair(ch1, ch2));
+                    setRel(ch1, ch2, EQUAL);
+                    setRel(ch2, ch1, EQUAL);
+                }
+            }
+        }
+    }
+
     //--------------//
     // inspectBeams //
     //--------------//
@@ -678,74 +703,99 @@ public class SlotsRetriever
         }
     }
 
-    //------------------//
-    // inspectLocations //
-    //------------------//
+    //--------------------//
+    // inspectCloseChords //
+    //--------------------//
     /**
-     * Derive the missing inter-chord relationships from chords relative locations.
+     * Detect close chords.
      *
      * @param stdChords standard chords, sorted by abscissa
      */
-    private void inspectLocations (List<AbstractChordInter> stdChords)
+    private void inspectCloseChords (List<AbstractChordInter> stdChords)
     {
         final int maxSlotDx = useWideSlots ? params.maxSlotDxHigh : params.maxSlotDxLow;
-        final List<ChordPair> adjacencies = new ArrayList<>();
         final MeasureStack stack = measure.getStack();
 
         for (int i = 0; i < stdChords.size(); i++) {
             final AbstractChordInter ch1 = stdChords.get(i);
-
-            final Rectangle box1 = ch1.getBounds();
             final double x1 = stack.getXOffset(ch1.getCenterLeft());
 
             for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
                 if (ch1.isVip() && ch2.isVip()) {
-                    logger.info("VIP inspectLocations {} vs {}", ch1, ch2);
+                    logger.info("VIP inspectCloseChords {} vs {}", ch1, ch2);
                 }
 
                 if (getRel(ch1, ch2) != null) {
                     continue;
                 }
 
-                // Check y overlap
-                final Rectangle box2 = ch2.getBounds();
+                // Check abscissa
                 final double x2 = stack.getXOffset(ch2.getCenterLeft());
-                final int yOverlap = GeoUtil.yOverlap(box1, box2);
                 final double dx = Math.abs(x1 - x2);
 
-                // Check boxes vertical overlap + adjacency
-                if ((yOverlap > params.maxVerticalOverlap) && areAdjacent(ch1, ch2)) {
-                    adjacencies.add(new ChordPair(ch1, ch2));
-                } else if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
+                if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
                     setRel(ch1, ch2, CLOSE);
                     setRel(ch2, ch1, CLOSE);
-                } else if (x1 < x2) {
+                }
+            }
+        }
+    }
+
+    //----------------------//
+    // inspectDistantChords //
+    //----------------------//
+    /**
+     * Determine inter-chord relationships for remaining chord couples.
+     *
+     * @param stdChords standard chords, sorted by abscissa
+     */
+    private void inspectDistantChords (List<AbstractChordInter> stdChords)
+    {
+        final int maxSlotDx = useWideSlots ? params.maxSlotDxHigh : params.maxSlotDxLow;
+        final MeasureStack stack = measure.getStack();
+
+        for (int i = 0; i < stdChords.size(); i++) {
+            final AbstractChordInter ch1 = stdChords.get(i);
+            final double x1 = stack.getXOffset(ch1.getCenterLeft());
+
+            OtherLoop:
+            for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
+                if (ch1.isVip() && ch2.isVip()) {
+                    logger.info("VIP inspectDistantChords {} vs {}", ch1, ch2);
+                }
+
+                if (getRel(ch1, ch2) != null) {
+                    continue;
+                }
+
+                if (!areExplicitlySeparate(ch1, ch2)) {
+                    // Check if compatible with a chord equal to ch2
+                    final Set<AbstractChordInter> equals = getEquals(ch2);
+
+                    for (AbstractChordInter ch : equals) {
+                        if (!areExplicitlySeparate(ch1, ch)) {
+                            final double x = stack.getXOffset(ch.getCenterLeft());
+                            final double dx = Math.abs(x1 - x);
+
+                            if (dx <= maxSlotDx) {
+                                setRel(ch1, ch2, CLOSE);
+                                setRel(ch2, ch1, CLOSE);
+
+                                continue OtherLoop;
+                            }
+                        }
+                    }
+                }
+
+                // Not directly close and no compatible equal found
+                final double x2 = stack.getXOffset(ch2.getCenterLeft());
+
+                if (x1 < x2) {
                     setRel(ch1, ch2, BEFORE);
                     setRel(ch2, ch1, AFTER);
                 } else {
                     setRel(ch2, ch1, BEFORE);
                     setRel(ch1, ch2, AFTER);
-                }
-            }
-        }
-
-        // Process detected adjacencies
-        if (!adjacencies.isEmpty()) {
-            logger.debug("Slot adjacencies: {}", adjacencies);
-
-            for (ChordPair pair : adjacencies) {
-                // Since ch1 ~ ch2, all neighbors of ch1 ~ neighbors of ch2
-                // (unless a relationship is already established)
-                Set<AbstractChordInter> n1 = getClosure(pair.one);
-                Set<AbstractChordInter> n2 = getClosure(pair.two);
-
-                for (AbstractChordInter ch1 : n1) {
-                    for (AbstractChordInter ch2 : n2) {
-                        if ((ch1 != ch2) && (getRel(ch1, ch2) == null)) {
-                            setRel(ch1, ch2, EQUAL);
-                            setRel(ch2, ch1, EQUAL);
-                        }
-                    }
                 }
             }
         }
