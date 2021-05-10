@@ -47,8 +47,8 @@ import java.util.Set;
  */
 public class RemovalScenario
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(RemovalScenario.class);
 
     //~ Instance fields ----------------------------------------------------------------------------

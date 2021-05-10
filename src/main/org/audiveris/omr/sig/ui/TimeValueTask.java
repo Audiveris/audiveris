@@ -32,16 +32,15 @@ import org.audiveris.omr.sig.inter.TimeCustomInter;
 public class TimeValueTask
         extends InterTask
 {
-
-    //~ Static fields/initializers -----------------------------------------------------------------
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Old time value. */
     private final TimeRational oldTime;
 
     /** New time value. */
     private final TimeRational newTime;
-    //~ Constructors -------------------------------------------------------------------------------
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeValueTask} object.
      *
@@ -56,8 +55,8 @@ public class TimeValueTask
 
         oldTime = custom.getTimeRational();
     }
-    //~ Methods ------------------------------------------------------------------------------------
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public TimeCustomInter getInter ()
     {
@@ -92,6 +91,4 @@ public class TimeValueTask
 
         return sb.toString();
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

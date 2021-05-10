@@ -73,7 +73,7 @@ public class BackToBackSymbol
      */
     protected BackToBackSymbol (boolean isIcon)
     {
-        super(isIcon, Shape.DOUBLE_BARLINE, false);
+        super(isIcon, Shape.BACK_TO_BACK_REPEAT_SIGN, false);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

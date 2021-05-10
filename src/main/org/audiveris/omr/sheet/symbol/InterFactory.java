@@ -875,6 +875,16 @@ public class InterFactory
         case AUGMENTATION_DOT:
             return new AugmentationDotInter(null, GRADE); // No visit
 
+        // Compound notes
+        case QUARTER_NOTE_UP:
+            return null;
+        case QUARTER_NOTE_DOWN:
+            return null;
+        case HALF_NOTE_UP:
+            return null;
+        case HALF_NOTE_DOWN:
+            return null;
+
         // Flags
         case FLAG_1:
         case FLAG_2:

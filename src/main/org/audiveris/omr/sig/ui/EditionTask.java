@@ -36,6 +36,7 @@ import java.util.Iterator;
 public class EditionTask
         extends InterTask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The editor used on inter. */
     private final InterEditor editor;
@@ -43,6 +44,14 @@ public class EditionTask
     /** The relations to remove. */
     private final Collection<Link> unlinks;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code EditionTask} object.
+     *
+     * @param editor  DOCUMENT ME!
+     * @param links   DOCUMENT ME!
+     * @param unlinks DOCUMENT ME!
+     */
     public EditionTask (InterEditor editor,
                         Collection<Link> links,
                         Collection<Link> unlinks)
@@ -57,6 +66,7 @@ public class EditionTask
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {

@@ -52,14 +52,15 @@ import java.util.List;
 public class InterService
         extends EntityService<Inter>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterService.class);
 
     /** Events that can be published on inter service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        EntityListEvent.class,
-        IdEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
+                                                                   IdEvent.class};
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterService} object.
      *
@@ -72,6 +73,7 @@ public class InterService
         super(index, locationService, eventsAllowed);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getMostRelevant //
     //-----------------//
@@ -86,6 +88,7 @@ public class InterService
             return list.get(0);
 
         default:
+
             List<Inter> copy = new ArrayList<>(list);
             Collections.sort(copy, Inters.membersFirst);
 
@@ -135,8 +138,8 @@ public class InterService
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Search only when in MODE_INTER or MODE_GLYPH
-        if (ViewParameters.getInstance()
-                .getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
+        if (ViewParameters.getInstance().getSelectionMode()
+            != ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
         }
     }

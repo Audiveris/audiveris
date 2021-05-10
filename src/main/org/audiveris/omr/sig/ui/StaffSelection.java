@@ -53,8 +53,9 @@ public class StaffSelection
 
     /** Options objects for dialog. */
     private final Object[] options = new Object[]{resources.getImageIcon(className + ".UP.icon"),
-                                                  resources.getImageIcon(className + ".DOWN.icon"),
-                                                  resources.getString(className + ".cancel")};
+                                                  resources.getImageIcon(
+                                                  className + ".DOWN.icon"), resources.getString(
+                                                  className + ".cancel")};
 
     /** Option pane. */
     private final JOptionPane pane = new JOptionPane(

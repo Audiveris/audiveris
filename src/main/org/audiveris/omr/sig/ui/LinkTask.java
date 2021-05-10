@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.relation.Relation;
 public class LinkTask
         extends RelationTask
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code LinkTask} object.
@@ -52,6 +53,7 @@ public class LinkTask
         this.target = target;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {

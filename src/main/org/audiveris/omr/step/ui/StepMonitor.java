@@ -43,17 +43,20 @@ import javax.swing.SwingUtilities;
  */
 public class StepMonitor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Progress bar for actions performed on sheet. */
     private final JProgressBar bar = new MyJProgressBar();
 
     /** Total active actions. */
     private int actives = 0;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a user monitor on step processing.
      * There is exactly one instance of this class (and no instance when running in batch mode)
@@ -67,6 +70,7 @@ public class StepMonitor
         bar.setForeground(Colors.PROGRESS_BAR);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -91,14 +95,7 @@ public class StepMonitor
     public void notifyMsg (final String msg)
     {
         logger.debug("notifyMsg '{}'", msg);
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                bar.setString(msg);
-            }
-        });
+        SwingUtilities.invokeLater(() -> bar.setString(msg));
     }
 
     //--------//
@@ -112,18 +109,13 @@ public class StepMonitor
     private void setBar (final double amount)
     {
         logger.debug("setBar amount:{}", amount);
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                int divisions = constants.divisions.getValue();
-                bar.setMinimum(0);
-                bar.setMaximum(divisions);
+        SwingUtilities.invokeLater(() -> {
+            int divisions = constants.divisions.getValue();
+            bar.setMinimum(0);
+            bar.setMaximum(divisions);
 
-                int val = (int) Math.round(divisions * amount);
-                bar.setValue(val);
-            }
+            int val = (int) Math.round(divisions * amount);
+            bar.setValue(val);
         });
     }
 
@@ -171,24 +163,20 @@ public class StepMonitor
     {
         if (!constants.useIndeterminate.isSet()) {
             logger.debug("animate");
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    int old = bar.getValue();
+            SwingUtilities.invokeLater(() -> {
+                int old = bar.getValue();
 
-                    if (old > bar.getMinimum()) {
-                        int diff = bar.getMaximum() - old;
-                        int increment = (int) Math.round(diff * constants.ratio.getValue());
+                if (old > bar.getMinimum()) {
+                    int diff = bar.getMaximum() - old;
+                    int increment = (int) Math.round(diff * constants.ratio.getValue());
 
-                        bar.setValue(old + increment);
-                    }
+                    bar.setValue(old + increment);
                 }
             });
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

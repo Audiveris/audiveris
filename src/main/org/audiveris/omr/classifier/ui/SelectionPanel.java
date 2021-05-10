@@ -380,18 +380,12 @@ class SelectionPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    trains = null;
-                    tests = null;
+            executor.execute(() -> {
+                trains = null;
+                tests = null;
 
-                    // Get a fresh collection
-                    getTrainSamples();
-                }
+                // Get a fresh collection
+                getTrainSamples();
             });
         }
     }

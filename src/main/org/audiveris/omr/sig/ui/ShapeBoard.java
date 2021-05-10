@@ -1024,14 +1024,7 @@ public class ShapeBoard
         {
             if (!SwingUtilities.isEventDispatchThread()) {
                 try {
-                    SwingUtilities.invokeAndWait(new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            add(shape);
-                        }
-                    });
+                    SwingUtilities.invokeAndWait(() -> add(shape));
                 } catch (InterruptedException |
                          InvocationTargetException ex) {
                     logger.warn("invokeAndWait error", ex);

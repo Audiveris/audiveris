@@ -29,6 +29,7 @@ package org.audiveris.omr.sig.ui;
  */
 public interface InterUIModel
 {
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Translate the model along the provided vector.

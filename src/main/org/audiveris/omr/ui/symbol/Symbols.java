@@ -41,7 +41,7 @@ public abstract class Symbols
 
     private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
-    /** Symbol of '8' char for ottava sign (alta or bassa) on F &amp; G clefs */
+    /** Symbol of '8' char for ottava sign (alta or bassa) on F and G clefs */
     public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(false, 165);
 
     /** Symbol for upper part of brace */
@@ -258,6 +258,8 @@ public abstract class Symbols
         ottava(G_CLEF_8VA, true, 38);
         ottava(G_CLEF_8VB, false, 38);
 
+        mapShape(HALF_NOTE_UP, 104);
+        mapShape(HALF_NOTE_DOWN, 72);
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
         sym.put(HW_REST_set, new RestSymbol(HW_REST_set, false, 238));
 
@@ -314,6 +316,8 @@ public abstract class Symbols
         mapText(PLUCK_A, "a");
 
         mapShape(QUARTER_REST, 206);
+        mapShape(QUARTER_NOTE_UP, 113);
+        mapShape(QUARTER_NOTE_DOWN, 81);
 
         sym.put(REPEAT_DOT, new RepeatDotSymbol(false));
         mapShape(REVERSE_FINAL_BARLINE, 210);

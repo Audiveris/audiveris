@@ -31,10 +31,12 @@ import org.audiveris.omr.score.Page;
 public class PageTask
         extends UITask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Impacted page. */
     private final Page page;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageTask} object.
      *
@@ -46,6 +48,7 @@ public class PageTask
         this.page = page;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     public Page getPage ()
     {
         return page;

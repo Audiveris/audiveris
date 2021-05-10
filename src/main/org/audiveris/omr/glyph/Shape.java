@@ -325,6 +325,14 @@ public enum Shape
     NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue"),
 
     //
+    // Compound notes (head + stem) ---
+    //
+    QUARTER_NOTE_UP("Filled head plus its up stem"),
+    QUARTER_NOTE_DOWN("Filled head plus its down stem"),
+    HALF_NOTE_UP("Hollow head plus its up stem"),
+    HALF_NOTE_DOWN("Hollow head plus its down stem"),
+
+    //
     // StemLessHeads ---
     //
     WHOLE_NOTE("Hollow node head for wholes"),

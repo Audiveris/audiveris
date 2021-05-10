@@ -36,6 +36,7 @@ import java.util.Collection;
 public class AdditionTask
         extends InterTask
 {
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Add an inter instance with its provided relations.
@@ -53,6 +54,7 @@ public class AdditionTask
         super(sig, inter, initialBounds, links, "add");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {

@@ -326,15 +326,7 @@ public class BasicIndex<E extends Entity>
                     MouseMovement.PRESSING,
                     entity);
 
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    entityService.publish(event);
-                }
-            });
+            SwingUtilities.invokeLater(() -> entityService.publish(event));
         }
     }
 

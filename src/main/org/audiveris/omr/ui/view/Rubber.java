@@ -322,15 +322,7 @@ public class Rubber
                     (vr.y + rawRect.y) - e.getY(),
                     vr.width,
                     vr.height);
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    component.scrollRectToVisible(vr);
-                }
-            });
+            SwingUtilities.invokeLater(() -> component.scrollRectToVisible(vr));
         } else if (isRubberWanted(e)) {
             updateSize(e);
             mouseMonitor.rectangleSelected(rect, DRAGGING);

@@ -46,9 +46,11 @@ import java.util.Collection;
  */
 public class InterTracker
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterTracker.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The Inter instance being tracked. */
     protected final Inter inter;
 
@@ -58,6 +60,7 @@ public class InterTracker
     /** The containing system, if any. */
     protected SystemInfo system;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an {@code InterTracker} object.
      *
@@ -71,6 +74,7 @@ public class InterTracker
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     public Inter getInter ()
     {
         return inter;

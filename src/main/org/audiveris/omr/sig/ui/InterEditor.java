@@ -79,6 +79,7 @@ import java.util.List;
  */
 public abstract class InterEditor
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterEditor.class);
 
@@ -93,6 +94,7 @@ public abstract class InterEditor
     /** Radius of handle square corners. */
     private static final double HANDLE_ARC_RADIUS = constants.handleArcRadius.getValue();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying inter. */
     protected final Inter inter;
 
@@ -117,6 +119,7 @@ public abstract class InterEditor
     /** Has the mouse been actually moved since being pressed?. */
     protected boolean hasMoved = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code InterEditor} object.
      *
@@ -139,6 +142,7 @@ public abstract class InterEditor
         tracker.setSystem(system);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // endProcess //
     //------------//
@@ -199,7 +203,7 @@ public abstract class InterEditor
                 for (Handle handle : handles) {
                     double sq = handle.getHandleCenter().distanceSq(pt);
 
-                    if ((bestHandle == null || sq < bestSq)) {
+                    if (((bestHandle == null) || (sq < bestSq))) {
                         bestHandle = handle;
                         bestSq = sq;
                     }
@@ -219,7 +223,9 @@ public abstract class InterEditor
                 hasMoved = false;
 
                 break;
+
             case DRAGGING:
+
                 if (selectedHandle != null) {
                     if (lastPoint != null) {
                         Point vector = PointUtil.subtraction(pt, lastPoint);
@@ -235,7 +241,9 @@ public abstract class InterEditor
                 }
 
                 break;
+
             case RELEASING:
+
                 if (hasMoved) {
                     // Perhaps switch selection to a specific handle
                     switchHandleOnRelease();
@@ -245,6 +253,7 @@ public abstract class InterEditor
                 active = true;
 
                 break;
+
             default:
                 break;
             }
@@ -314,6 +323,7 @@ public abstract class InterEditor
         sb.append('{');
         sb.append(inter);
         sb.append('}');
+
         return sb.toString();
     }
 
@@ -410,14 +420,16 @@ public abstract class InterEditor
             } else {
                 // Remain on last point
                 system.getSheet().getLocationService().publish(
-                        new LocationEvent(this,
-                                          SelectionHint.ENTITY_TRANSIENT,
-                                          MouseMovement.DRAGGING,
-                                          new Rectangle(lastPoint)));
+                        new LocationEvent(
+                                this,
+                                SelectionHint.ENTITY_TRANSIENT,
+                                MouseMovement.DRAGGING,
+                                new Rectangle(lastPoint)));
             }
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Handle //
     //--------//
@@ -453,7 +465,8 @@ public abstract class InterEditor
          */
         public boolean contains (Point pt)
         {
-            return handleCenter.distanceSq(pt) <= HANDLE_DETECTION_RADIUS * HANDLE_DETECTION_RADIUS;
+            return handleCenter.distanceSq(pt)
+                   <= (HANDLE_DETECTION_RADIUS * HANDLE_DETECTION_RADIUS);
         }
 
         /**
@@ -489,13 +502,13 @@ public abstract class InterEditor
             final double zoom = g.getTransform().getScaleX();
             final double halfSide = HANDLE_HALF_SIDE / zoom;
             final double arcRadius = HANDLE_ARC_RADIUS / zoom;
-            final RoundRectangle2D square
-                    = new RoundRectangle2D.Double(handleCenter.getX() - halfSide,
-                                                  handleCenter.getY() - halfSide,
-                                                  2 * halfSide,
-                                                  2 * halfSide,
-                                                  arcRadius,
-                                                  arcRadius);
+            final RoundRectangle2D square = new RoundRectangle2D.Double(
+                    handleCenter.getX() - halfSide,
+                    handleCenter.getY() - halfSide,
+                    2 * halfSide,
+                    2 * halfSide,
+                    arcRadius,
+                    arcRadius);
 
             if (isSelected) {
                 g.fill(square);

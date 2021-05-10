@@ -34,6 +34,7 @@ import java.util.List;
 public class SystemMergeTask
         extends UITask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Top system. */
     private final SystemInfo system;
@@ -44,15 +45,23 @@ public class SystemMergeTask
     /** PageRef removed, if any. */
     private PageRef pageRef;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code SystemMergeTask} object.
+     *
+     * @param system DOCUMENT ME!
+     */
     public SystemMergeTask (SystemInfo system)
     {
         super(system.getSig(), "merge-system");
 
         this.system = system;
+
         List<SystemInfo> systems = sheet.getSystems();
         systemBelow = systems.get(1 + systems.indexOf(system));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     public SystemInfo getSystem ()
     {
         return system;

@@ -39,6 +39,7 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
 public class RelationAction
         extends AbstractAction
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Originating inter. */
     private final Inter inter;
@@ -49,6 +50,7 @@ public class RelationAction
     /** The other inter, if any. */
     private final Inter other;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RelationAction object.
      *
@@ -82,6 +84,7 @@ public class RelationAction
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//

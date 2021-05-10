@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.PointUtil;
@@ -44,6 +41,9 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -64,9 +64,11 @@ import java.util.List;
  */
 public class InterDnd
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterDnd.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -97,6 +99,7 @@ public class InterDnd
     /** Current staff reference point, if any. */
     private Point staffReference;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterDnd} object.
      *
@@ -120,6 +123,7 @@ public class InterDnd
         tracker = ghost.getTracker(sheet);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // drop //
     //------//
@@ -142,6 +146,7 @@ public class InterDnd
 
             if (staves.isEmpty()) {
                 logger.info("Drop point lies beyond sheet limits");
+
                 return;
             }
 
@@ -169,7 +174,6 @@ public class InterDnd
             if (staff != null) {
                 sheet.getInterController().addInter(ghost);
                 ///sheet.getSymbolsEditor().openEditMode(ghost);
-
                 logger.debug("Dropped {} at {}", this, dropPoint);
             } else {
                 logger.debug("Ghost {} could not be dropped on staff", ghost);
@@ -228,7 +232,7 @@ public class InterDnd
     {
         staffReference = null;
 
-        Staff closestStaff = sheet.getStaffManager().getClosestStaff(location);
+        final Staff closestStaff = sheet.getStaffManager().getClosestStaff(location);
 
         if (closestStaff == null) {
             staff = null;
@@ -266,7 +270,7 @@ public class InterDnd
 
                 if (staff != null) {
                     // Retrieve staff reference
-                    LineInfo line = staff.getMidLine();
+                    final LineInfo line = staff.getMidLine();
 
                     if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
                         staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
@@ -286,7 +290,7 @@ public class InterDnd
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("DnDOperation{");
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
 
         if (staff != null) {
             sb.append(" staff:").append(staff.getId());
@@ -296,9 +300,7 @@ public class InterDnd
             sb.append(" ghost:").append(ghost);
         }
 
-        sb.append("}");
-
-        return sb.toString();
+        return sb.append('}').toString();
     }
 
     //----------------//
@@ -316,7 +318,7 @@ public class InterDnd
             return null;
         }
 
-        Rectangle box = tracker.getSceneBounds();
+        final Rectangle box = tracker.getSceneBounds();
         box.add(staffReference);
 
         return box;
@@ -330,7 +332,8 @@ public class InterDnd
         if (staffReference != null) {
             // Draw line to staff reference if any
             g.setColor(Color.RED);
-            Point center = ghost.getCenter();
+
+            final Point center = ghost.getCenter();
             g.drawLine(center.x, center.y, staffReference.x, staffReference.y);
         }
 
@@ -347,10 +350,10 @@ public class InterDnd
      */
     private Stroke buildCurveStroke ()
     {
-        Scale scale = sheet.getScale();
-        Integer fore = (scale != null) ? scale.getFore() : null;
-        double thickness = (fore != null) ? fore : Curves.DEFAULT_THICKNESS;
-        float curveThickness = (float) (zoomRatio * thickness);
+        final Scale scale = sheet.getScale();
+        final Integer fore = (scale != null) ? scale.getFore() : null;
+        final double thickness = (fore != null) ? fore : Curves.DEFAULT_THICKNESS;
+        final float curveThickness = (float) (zoomRatio * thickness);
 
         return new BasicStroke(curveThickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     }
@@ -391,9 +394,8 @@ public class InterDnd
     private void updateImage (int interline)
     {
         // Adapt image to current interline
-        int zoomedInterline = (int) Math.rint(zoomRatio * interline);
-        MusicFont font = MusicFont.getBaseFont(zoomedInterline);
-
+        final int zoomedInterline = (int) Math.rint(zoomRatio * interline);
+        final MusicFont font = MusicFont.getBaseFont(zoomedInterline);
         glass.setImage(symbol.getDecoratedSymbol().buildImage(font, curveStroke));
     }
 }
