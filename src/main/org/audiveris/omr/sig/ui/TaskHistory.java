@@ -37,15 +37,18 @@ import java.util.List;
  */
 class TaskHistory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TaskHistory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** History of action sequences. */
     private final List<UITaskList> sequences = new ArrayList<>();
 
     /** Current position in history, always pointing to sequence just done. */
     private int cursor = -1;
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Register an action sequence.
      *
@@ -108,6 +111,7 @@ class TaskHistory
             cursor++;
 
             logger.debug("TaskHistory seqs:{} cursor:{} redo {}", sequences.size(), cursor, seq);
+
             return seq;
         } else {
             return null;
@@ -139,6 +143,7 @@ class TaskHistory
             cursor--;
 
             logger.debug("TaskHistory seqs:{} cursor:{} undo {}", sequences.size(), cursor, seq);
+
             return seq;
         } else {
             return null;

@@ -60,13 +60,16 @@ import javax.swing.JMenuItem;
 public class InterListMenu
         extends LocationDependentMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterListMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     private final InterListener interListener = new InterListener();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterListMenu} object.
      *
@@ -78,6 +81,7 @@ public class InterListMenu
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // updateUserLocation //
     //--------------------//
@@ -99,7 +103,8 @@ public class InterListMenu
                 "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
 
         // To delete all listed inters when item is clicked upon
-        item.addActionListener(new ActionListener()
+        item.addActionListener(
+                new ActionListener()
         {
             @Override
             public void actionPerformed (ActionEvent e)
@@ -112,7 +117,8 @@ public class InterListMenu
         });
 
         // To (re)focus on all the listed inters when moving the mouse on the item
-        item.addMouseListener(new AbstractMouseListener()
+        item.addMouseListener(
+                new AbstractMouseListener()
         {
             @Override
             public void mouseEntered (MouseEvent e)
@@ -198,6 +204,7 @@ public class InterListMenu
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // InterListener //
     //---------------//

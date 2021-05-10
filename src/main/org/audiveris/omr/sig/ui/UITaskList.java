@@ -43,9 +43,11 @@ import java.util.Set;
  */
 public class UITaskList
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UITaskList.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
     /** Possible options. */
     public static enum Option
     {
@@ -55,6 +57,7 @@ public class UITaskList
         VALIDATED;
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of related actions. */
     private final List<UITask> list = new ArrayList<>();
 
@@ -64,6 +67,7 @@ public class UITaskList
     /** For a graceful cancel. */
     private boolean cancelled = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterTaskList} object.
      *
@@ -84,6 +88,7 @@ public class UITaskList
         list.addAll(tasks);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//

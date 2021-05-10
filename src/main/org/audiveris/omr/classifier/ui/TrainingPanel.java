@@ -352,23 +352,17 @@ class TrainingPanel
                           final int iter,
                           final double score)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                // Update current values
-                epochIndex.setText(Integer.toString(epoch));
-                iterIndex.setText(Integer.toString(iter));
-                trainScore.setText(String.format("%.4f", score));
+        // This part is run on swing thread
+        SwingUtilities.invokeLater(() -> {
+            // Update current values
+            epochIndex.setText(Integer.toString(epoch));
+            iterIndex.setText(Integer.toString(iter));
+            trainScore.setText(String.format("%.4f", score));
 
-                // Update progress bar
-                progressBar.setValue(iter);
+            // Update progress bar
+            progressBar.setValue(iter);
 
-                component.repaint();
-            }
+            component.repaint();
         });
     }
 

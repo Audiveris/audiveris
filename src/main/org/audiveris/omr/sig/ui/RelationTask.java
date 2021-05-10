@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.relation.Relation;
 public abstract class RelationTask
         extends UITask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     protected final Relation relation;
 
@@ -40,6 +41,7 @@ public abstract class RelationTask
 
     protected Inter target;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RelationTask} object.
      *
@@ -55,6 +57,7 @@ public abstract class RelationTask
         this.relation = relation;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the relation
      */

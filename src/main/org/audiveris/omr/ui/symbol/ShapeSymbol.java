@@ -40,7 +40,7 @@ import java.io.IOException;
  * A ShapeSymbol thus adds several features:
  * <ul>
  * <li>It can be used for dedicated shape assignment buttons.</li>
- * <li>It can be used for Drag &amp; Drop operations, since it implements the {@link Transferable}
+ * <li>It can be used for Drag n' Drop operations, since it implements the {@link Transferable}
  * interface.</li>
  * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
  * available.</li>

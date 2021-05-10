@@ -38,12 +38,14 @@ import javax.swing.SwingUtilities;
  */
 public abstract class StepMonitoring
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StepMonitoring.class);
 
     /** Related progress monitor when used in interactive mode. */
     private static volatile StepMonitor monitor;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -51,6 +53,7 @@ public abstract class StepMonitoring
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // animate //
     //---------//
@@ -123,27 +126,22 @@ public abstract class StepMonitoring
     {
         if (monitor != null) {
             final boolean finished = stub.getCurrentStep() == null;
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    // Update sheet view for this step?
-                    if (finished) {
-                        if (stub.isValid()) {
-                            step.displayUI(stub.getSheet());
-                            stub.getAssembly().selectViewTab(step.getSheetTab());
-                        }
+            SwingUtilities.invokeLater(() -> {
+                // Update sheet view for this step?
+                if (finished) {
+                    if (stub.isValid()) {
+                        step.displayUI(stub.getSheet());
+                        stub.getAssembly().selectViewTab(step.getSheetTab());
                     }
+                }
 
-                    // Call attention to this sheet (only if displayed),
-                    // so that score-dependent actions can get enabled.
-                    StubsController ctrl = StubsController.getInstance();
-                    SheetStub currentStub = ctrl.getSelectedStub();
+                // Call attention to this sheet (only if displayed),
+                // so that score-dependent actions can get enabled.
+                StubsController ctrl = StubsController.getInstance();
+                SheetStub currentStub = ctrl.getSelectedStub();
 
-                    if (currentStub == stub) {
-                        ctrl.callAboutStub(currentStub);
-                    }
+                if (currentStub == stub) {
+                    ctrl.callAboutStub(currentStub);
                 }
             });
         }

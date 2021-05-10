@@ -34,11 +34,18 @@ import java.awt.Rectangle;
 public class DefaultEditor
         extends InterEditor
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final Rectangle originalBounds;
 
     private final Rectangle latestBounds;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code DefaultEditor} object.
+     *
+     * @param inter DOCUMENT ME!
+     */
     public DefaultEditor (final Inter inter)
     {
         super(inter);
@@ -46,7 +53,8 @@ public class DefaultEditor
         originalBounds = inter.getBounds();
         latestBounds = inter.getBounds();
 
-        handles.add(selectedHandle = new Handle(inter.getCenter())
+        handles.add(
+                selectedHandle = new Handle(inter.getCenter())
         {
             @Override
             public boolean move (Point vector)
@@ -65,6 +73,7 @@ public class DefaultEditor
         });
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {
@@ -75,6 +84,7 @@ public class DefaultEditor
         sb.append(String.format(" latestBounds(x:%d,y:%d,w:%d,h:%d)", b.x, b.y, b.width, b.height));
 
         sb.append('}');
+
         return sb.toString();
     }
 

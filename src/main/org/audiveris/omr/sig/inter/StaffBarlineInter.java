@@ -69,6 +69,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.ui.selection.LocationEvent;
 
 /**
  * Class {@code StaffBarlineInter} represents a logical barline for one staff only.
@@ -858,6 +859,13 @@ public final class StaffBarlineInter
                     "Do you confirm whole system-height addition?",
                     "Insertion of " + bars.size() + " barlines")) {
                 cancel.set(true);
+
+                sheet.getInterIndex().publish(null);
+                sheet.getLocationService().publish(
+                        new LocationEvent(this,
+                                          SelectionHint.LOCATION_INIT,
+                                          MouseMovement.PRESSING,
+                                          null));
 
                 return Collections.emptyList();
             }

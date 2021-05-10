@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.inter.WordInter;
 public class WordValueTask
         extends InterTask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Old word content. */
     private final String oldValue;
@@ -38,6 +39,7 @@ public class WordValueTask
     /** New word content. */
     private final String newValue;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code WordTask} object.
      *
@@ -53,6 +55,7 @@ public class WordValueTask
         oldValue = word.getValue();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public WordInter getInter ()
     {

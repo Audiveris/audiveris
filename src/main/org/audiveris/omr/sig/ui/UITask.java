@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.SIGraph;
  */
 public abstract class UITask
 {
+    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Operation kind performed on a UITask. */
     public static enum OpKind
@@ -41,6 +42,7 @@ public abstract class UITask
         REDO;
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** A name for task action. */
     protected final String actionName;
 
@@ -50,6 +52,7 @@ public abstract class UITask
     /** Underlying SIG. */
     protected final SIGraph sig;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code UITask} object.
      *
@@ -78,6 +81,7 @@ public abstract class UITask
         this.actionName = actionName;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     public SIGraph getSig ()
     {
         return sig;

@@ -400,30 +400,24 @@ public class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    setEnabled(false);
+            executor.execute(() -> {
+                setEnabled(false);
 
-                    if (task != null) {
-                        task.setActivity(VALIDATION);
-                    }
-
-                    runValidation();
-
-                    weakPositiveAction.setEnabled(weakPositives.size() > 0);
-                    falsePositiveAction.setEnabled(!falsePositives.isEmpty());
-                    weakNegativeAction.setEnabled(weakNegatives.size() > 0);
-
-                    if (task != null) {
-                        task.setActivity(INACTIVE);
-                    }
-
-                    setEnabled(true);
+                if (task != null) {
+                    task.setActivity(VALIDATION);
                 }
+
+                runValidation();
+
+                weakPositiveAction.setEnabled(weakPositives.size() > 0);
+                falsePositiveAction.setEnabled(!falsePositives.isEmpty());
+                weakNegativeAction.setEnabled(weakNegatives.size() > 0);
+
+                if (task != null) {
+                    task.setActivity(INACTIVE);
+                }
+
+                setEnabled(true);
             });
         }
     }

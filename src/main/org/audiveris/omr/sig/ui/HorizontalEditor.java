@@ -36,9 +36,8 @@ import java.awt.Rectangle;
 public class HorizontalEditor
         extends InterEditor
 {
-
-    //~ Static fields/initializers -----------------------------------------------------------------
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Original data
     private final Rectangle originalBounds;
 
@@ -46,6 +45,11 @@ public class HorizontalEditor
     private final Rectangle latestBounds;
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code HorizontalEditor} object.
+     *
+     * @param inter DOCUMENT ME!
+     */
     public HorizontalEditor (final Inter inter)
     {
         super(inter);
@@ -54,7 +58,8 @@ public class HorizontalEditor
         latestBounds = inter.getBounds();
 
         // Middle handle: move horizontally only
-        handles.add(selectedHandle = new Handle(inter.getCenter())
+        handles.add(
+                selectedHandle = new Handle(inter.getCenter())
         {
             @Override
             public boolean move (Point vector)
@@ -94,6 +99,4 @@ public class HorizontalEditor
 
         super.undo();
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

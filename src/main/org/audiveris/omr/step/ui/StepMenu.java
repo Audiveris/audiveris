@@ -55,12 +55,15 @@ import javax.swing.event.MenuEvent;
  */
 public class StepMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI menu. */
     private final JMenu menu;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Generates the menu to be inserted in the application pull-down menus.
      *
@@ -81,6 +84,7 @@ public class StepMenu
         menu.addMenuListener(new MyMenuListener());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -110,36 +114,7 @@ public class StepMenu
         }
     }
 
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            SheetStub stub = StubsController.getCurrentStub();
-            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(stub, isIdle);
-                }
-            }
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     private static class StepAction
             extends AbstractAction
     {
@@ -173,28 +148,33 @@ public class StepMenu
                                 final Path inputPath = stub.getBook().getInputPath();
 
                                 if (!Files.exists(inputPath)) {
-                                    OMR.gui.displayWarning("Input file not found: " + inputPath,
-                                                           "No source for " + step + " step");
+                                    OMR.gui.displayWarning(
+                                            "Input file not found: " + inputPath,
+                                            "No source for " + step + " step");
                                     step = null;
+
                                     return null;
                                 }
                             } else if (step == Step.BINARY) {
                                 final Picture picture = stub.getSheet().getPicture();
 
                                 if (null == picture.getSource(Picture.SourceKey.GRAY)) {
-                                    OMR.gui.displayWarning("Gray source not found.",
-                                                           "No source for " + step + " step");
+                                    OMR.gui.displayWarning(
+                                            "Gray source not found.",
+                                            "No source for " + step + " step");
                                     step = null;
+
                                     return null;
                                 }
                             }
 
                             // Refine messages for very first steps (LOAD and BINARY)
-                            final String mid = step.compareTo(Step.BINARY) <= 0 ? ""
+                            final String mid = (step.compareTo(Step.BINARY) <= 0) ? ""
                                     : " from binary source";
+
                             if (!OMR.gui.displayConfirmation(
                                     "About to re-perform step " + step + mid + "."
-                                            + "\nDo you confirm?",
+                                    + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
                                     JOptionPane.WARNING_MESSAGE)) {
@@ -204,6 +184,7 @@ public class StepMenu
 
                         try {
                             LogUtil.start(stub);
+
                             boolean ok = stub.reachStep(step, true);
                             logger.info("End of sheet step {}", stub.getLatestStep());
                         } finally {
@@ -263,6 +244,36 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
+     */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            SheetStub stub = StubsController.getCurrentStub();
+            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(stub, isIdle);
                 }
             }
         }

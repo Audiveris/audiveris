@@ -211,6 +211,13 @@ public class ShapeSet
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL);
 
+    /** All compound notes. */
+    public static final List<Shape> CompoundNotes = Arrays.asList(
+            QUARTER_NOTE_UP,
+            QUARTER_NOTE_DOWN,
+            HALF_NOTE_UP,
+            HALF_NOTE_DOWN);
+
     /** FermataArcs. */
     public static final EnumSet<Shape> FermataArcs = EnumSet.of(FERMATA_ARC, FERMATA_ARC_BELOW);
 

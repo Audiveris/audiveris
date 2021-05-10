@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.awt.Point;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -53,6 +52,7 @@ import org.audiveris.omr.util.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -75,15 +76,18 @@ import javax.swing.JMenuItem;
 public class ChordListMenu
         extends LocationDependentMenu
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordListMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     private final ChordListener chordListener = new ChordListener();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordListMenu} object.
      *
@@ -95,6 +99,7 @@ public class ChordListMenu
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // updateUserLocation //
     //--------------------//
@@ -135,6 +140,7 @@ public class ChordListMenu
 
         if (!checkSingleMeasure(headChords)) {
             logger.debug("Chords of different measures: {}", headChords);
+
             return;
         }
 
@@ -143,12 +149,14 @@ public class ChordListMenu
 
         if (withStem == null) {
             logger.debug("Chords non consistent for a merge: {}", headChords);
+
             return;
         }
 
         // Check chords are rather aligned vertically
         if (!checkAlignedForMerge(headChords, withStem)) {
             logger.debug("Chords not vertically aligned for a merge: {}", headChords);
+
             return;
         }
 
@@ -181,6 +189,7 @@ public class ChordListMenu
 
         if (notes.size() < 2) {
             logger.debug("Chord with too few heads for a split: {}", notes.size());
+
             return;
         }
 
@@ -201,7 +210,7 @@ public class ChordListMenu
                                    final List<AbstractChordInter> sysChords,
                                    final SelectionListener listener)
     {
-        String plural = sysChords.size() > 1 ? "s" : "";
+        String plural = (sysChords.size() > 1) ? "s" : "";
         String text = sysChords.size() + " chord" + plural + " for System #" + system.getId() + ":";
         JMenuItem title = new JMenuItem(text);
         title.setEnabled(false);
@@ -230,11 +239,13 @@ public class ChordListMenu
     {
         if (!checkSingleMeasure(chords)) {
             logger.debug("Chords of different measures: {}", chords);
+
             return;
         }
 
         // Check abscissa gap between the chords
         int xGap = 0;
+
         for (int i1 = 0, ilBreak = chords.size() - 1; i1 < ilBreak; i1++) {
             final AbstractChordInter ch1 = chords.get(i1);
             final Rectangle b1 = ch1.getBounds();
@@ -249,6 +260,7 @@ public class ChordListMenu
 
         if (xGap > max) {
             logger.debug("Chords with a too wide gap for time: {}", chords);
+
             return;
         }
 
@@ -263,6 +275,7 @@ public class ChordListMenu
 
                     if (bg1 == bg2) {
                         logger.debug("Chords belong to the same beam group: {}", chords);
+
                         return;
                     }
                 }
@@ -272,9 +285,13 @@ public class ChordListMenu
         final SIGraph sig = chords.get(0).getSig();
 
         if (chords.size() >= 3) {
-            addItem(new MultipleRelationAdditionItem("Same Time Slot for all",
-                                                     "Make all chords share the same time slot",
-                                                     chords, SameTimeRelation.class), listener);
+            addItem(
+                    new MultipleRelationAdditionItem(
+                            "Same Time Slot for all",
+                            "Make all chords share the same time slot",
+                            chords,
+                            SameTimeRelation.class),
+                    listener);
         } else {
             final AbstractChordInter src = chords.get(0);
             final AbstractChordInter tgt = chords.get(1);
@@ -291,26 +308,44 @@ public class ChordListMenu
 
             if (same == null) {
                 if (separate == null) {
-                    addItem(new RelationAdditionItem("Same Time Slot",
-                                                     "Make the two chords share the same time slot",
-                                                     src, tgt, new SameTimeRelation()), listener);
+                    addItem(
+                            new RelationAdditionItem(
+                                    "Same Time Slot",
+                                    "Make the two chords share the same time slot",
+                                    src,
+                                    tgt,
+                                    new SameTimeRelation()),
+                            listener);
                 }
             } else {
-                addItem(new RelationRemovalItem("cancel Same Time Slot",
-                                                "Cancel use of same time slot",
-                                                sig, same), listener);
+                addItem(
+                        new RelationRemovalItem(
+                                "cancel Same Time Slot",
+                                "Cancel use of same time slot",
+                                sig,
+                                same),
+                        listener);
             }
 
             if (separate == null) {
                 if (same == null) {
-                    addItem(new RelationAdditionItem("Separate Time Slots",
-                                                     "Make the two chords use separate time slots",
-                                                     src, tgt, new SeparateTimeRelation()), listener);
+                    addItem(
+                            new RelationAdditionItem(
+                                    "Separate Time Slots",
+                                    "Make the two chords use separate time slots",
+                                    src,
+                                    tgt,
+                                    new SeparateTimeRelation()),
+                            listener);
                 }
             } else {
-                addItem(new RelationRemovalItem("cancel Separate Time Slots",
-                                                "Cancel use of separate time slots",
-                                                sig, separate), listener);
+                addItem(
+                        new RelationRemovalItem(
+                                "cancel Separate Time Slots",
+                                "Cancel use of separate time slots",
+                                sig,
+                                separate),
+                        listener);
             }
         }
     }
@@ -340,6 +375,7 @@ public class ChordListMenu
 
         if (xOverlap > max) {
             logger.debug("Chords with a too big overlap for voice: {}", chords);
+
             return;
         }
 
@@ -356,26 +392,41 @@ public class ChordListMenu
 
         if (same == null) {
             if (separate == null) {
-                addItem(new RelationAdditionItem("Same Voice",
-                                                 "Make the two chords part of the same voice",
-                                                 src, tgt, new SameVoiceRelation()), listener);
+                addItem(
+                        new RelationAdditionItem(
+                                "Same Voice",
+                                "Make the two chords part of the same voice",
+                                src,
+                                tgt,
+                                new SameVoiceRelation()),
+                        listener);
             }
         } else {
-            addItem(new RelationRemovalItem("cancel Same Voice",
-                                            "Cancel use of same voice",
-                                            sig, same), listener);
+            addItem(
+                    new RelationRemovalItem("cancel Same Voice", "Cancel use of same voice", sig,
+                                            same),
+                    listener);
         }
 
         if (separate == null) {
-            if (same == null && checkSingleMeasure(chords)) {
-                addItem(new RelationAdditionItem("Separate Voices",
-                                                 "Make the two chords use separate voices",
-                                                 src, tgt, new SeparateVoiceRelation()), listener);
+            if ((same == null) && checkSingleMeasure(chords)) {
+                addItem(
+                        new RelationAdditionItem(
+                                "Separate Voices",
+                                "Make the two chords use separate voices",
+                                src,
+                                tgt,
+                                new SeparateVoiceRelation()),
+                        listener);
             }
         } else {
-            addItem(new RelationRemovalItem("cancel Separate Voices",
-                                            "Cancel use of separate voices",
-                                            sig, separate), listener);
+            addItem(
+                    new RelationRemovalItem(
+                            "cancel Separate Voices",
+                            "Cancel use of separate voices",
+                            sig,
+                            separate),
+                    listener);
         }
     }
 
@@ -515,7 +566,6 @@ public class ChordListMenu
                     SystemInfo system = sig.getSystem();
 
                     if (system != null) {
-
                         // Is there a relevant chord related to this inter?
                         AbstractChordInter chord = relatedChord(inter);
 
@@ -612,17 +662,23 @@ public class ChordListMenu
 
                     // Actions according to the number of selected chords
                     final int actionsStartCount = getItemCount();
+
                     switch (sysChords.size()) {
                     case 0:
                         return; // Cannot occur actually
+
                     case 1:
                         buildSplitItem(sysChords.get(0), listener);
+
                         break;
+
                     case 2:
                         buildMergeItem(sysChords, listener);
                         buildVoiceItems(sysChords, listener);
                         buildTimeItems(sysChords, listener);
+
                         break;
+
                     default:
                         // 3 and above
                         buildMergeItem(sysChords, listener);
@@ -683,6 +739,7 @@ public class ChordListMenu
         return true;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // ChordListener //
     //---------------//
@@ -699,6 +756,171 @@ public class ChordListMenu
             JMenuItem item = (JMenuItem) e.getSource();
             InterAction action = (InterAction) item.getAction();
             action.publish(SelectionHint.ENTITY_INIT);
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction maxStemDxForMerge = new Scale.Fraction(
+                0.3,
+                "Maximum abscissa shift between chords stems for a merge");
+
+        private final Scale.Fraction maxChordDxForMerge = new Scale.Fraction(
+                0.6,
+                "Maximum abscissa shift between chords centers for a merge");
+
+        private final Scale.Fraction maxAbscissaGapForTimeItems = new Scale.Fraction(
+                2.0,
+                "Maximum abscissa gap between chords bounds for a time menu item");
+
+        private final Scale.Fraction maxAbscissaOverlapForVoiceItems = new Scale.Fraction(
+                0.2,
+                "Maximum abscissa overlap between chords bounds for a voice menu item");
+    }
+
+    //-------------//
+    // MergeAction //
+    //-------------//
+    private class MergeAction
+            extends AbstractAction
+    {
+
+        private final List<HeadChordInter> chords;
+
+        private final boolean withStem;
+
+        MergeAction (List<HeadChordInter> chords,
+                     boolean withStem)
+        {
+            super("Merge");
+            putValue(Action.SHORT_DESCRIPTION, "Merge the provided chords into a single one");
+
+            this.chords = chords;
+            this.withStem = withStem;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            logger.debug("Merging {}", chords);
+            sheet.getInterController().mergeChords(chords, withStem);
+        }
+    }
+
+    //------------------------------//
+    // MultipleRelationAdditionItem //
+    //-----------------------------//
+    /**
+     * Menu item which consists in adding a relation between every couple.
+     */
+    private class MultipleRelationAdditionItem
+            extends JMenuItem
+    {
+
+        public MultipleRelationAdditionItem (String label,
+                                             String tip,
+                                             final List<AbstractChordInter> chords,
+                                             final Class<? extends Relation> relationClass)
+        {
+            this.setAction(
+                    new AbstractAction()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    final SIGraph sig = chords.get(0).getSig();
+
+                    try {
+                        final List<SourceTargetRelation> strs = new ArrayList<>();
+
+                        for (int i = 0; i < (chords.size() - 1); i++) {
+                            final AbstractChordInter src = chords.get(i);
+
+                            for (AbstractChordInter tgt : chords.subList(
+                                    i + 1,
+                                    chords.size())) {
+                                Relation rel = relationClass.newInstance();
+                                strs.add(new SourceTargetRelation(src, tgt, rel));
+                            }
+                        }
+
+                        sheet.getInterController().linkMultiple(sig, strs);
+                    } catch (InstantiationException |
+                             IllegalAccessException ex) {
+                        logger.error("Could not instantiate class {}", relationClass, ex);
+                    }
+                }
+            });
+
+            this.setText(label);
+            this.setToolTipText(tip);
+        }
+    }
+
+    //----------------------//
+    // RelationAdditionItem //
+    //----------------------//
+    /**
+     * Menu item which consists in adding a relation.
+     */
+    private class RelationAdditionItem
+            extends JMenuItem
+    {
+
+        public RelationAdditionItem (String label,
+                                     String tip,
+                                     final AbstractChordInter source,
+                                     final AbstractChordInter target,
+                                     final Relation relation)
+        {
+            this.setAction(
+                    new AbstractAction()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    final SIGraph sig = source.getSig();
+                    sheet.getInterController().link(sig, source, target, relation);
+                }
+            });
+
+            this.setText(label);
+            this.setToolTipText(tip);
+        }
+    }
+
+    //---------------------//
+    // RelationRemovalItem //
+    //---------------------//
+    /**
+     * Menu item which consists in removing a relation.
+     */
+    private class RelationRemovalItem
+            extends JMenuItem
+    {
+
+        public RelationRemovalItem (String label,
+                                    String tip,
+                                    final SIGraph sig,
+                                    final Relation relation)
+        {
+            this.setAction(
+                    new AbstractAction()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    sheet.getInterController().unlink(sig, relation);
+                }
+            });
+
+            this.setText(label);
+            this.setToolTipText(tip);
         }
     }
 
@@ -739,35 +961,6 @@ public class ChordListMenu
     }
 
     //-------------//
-    // MergeAction //
-    //-------------//
-    private class MergeAction
-            extends AbstractAction
-    {
-
-        private final List<HeadChordInter> chords;
-
-        private final boolean withStem;
-
-        MergeAction (List<HeadChordInter> chords,
-                     boolean withStem)
-        {
-            super("Merge");
-            putValue(Action.SHORT_DESCRIPTION, "Merge the provided chords into a single one");
-
-            this.chords = chords;
-            this.withStem = withStem;
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.debug("Merging {}", chords);
-            sheet.getInterController().mergeChords(chords, withStem);
-        }
-    }
-
-    //-------------//
     // SplitAction //
     //-------------//
     private class SplitAction
@@ -790,138 +983,5 @@ public class ChordListMenu
             logger.debug("Splitting {}", chord);
             sheet.getInterController().splitChord(chord);
         }
-    }
-
-    //------------------------------//
-    // MultipleRelationAdditionItem //
-    //-----------------------------//
-    /**
-     * Menu item which consists in adding a relation between every couple.
-     */
-    private class MultipleRelationAdditionItem
-            extends JMenuItem
-    {
-
-        public MultipleRelationAdditionItem (String label,
-                                             String tip,
-                                             final List<AbstractChordInter> chords,
-                                             final Class<? extends Relation> relationClass)
-        {
-            this.setAction(new AbstractAction()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    final SIGraph sig = chords.get(0).getSig();
-                    try {
-                        final List<SourceTargetRelation> strs = new ArrayList<>();
-
-                        for (int i = 0; i < chords.size() - 1; i++) {
-                            final AbstractChordInter src = chords.get(i);
-
-                            for (AbstractChordInter tgt : chords.subList(i + 1, chords.size())) {
-                                Relation rel = relationClass.newInstance();
-                                strs.add(new SourceTargetRelation(src, tgt, rel));
-                            }
-                        }
-
-                        sheet.getInterController().linkMultiple(sig, strs);
-                    } catch (InstantiationException |
-                             IllegalAccessException ex) {
-                        logger.error("Could not instantiate class {}", relationClass, ex);
-                    }
-                }
-            });
-
-            this.setText(label);
-            this.setToolTipText(tip);
-        }
-    }
-
-    //----------------------//
-    // RelationAdditionItem //
-    //----------------------//
-    /**
-     * Menu item which consists in adding a relation.
-     */
-    private class RelationAdditionItem
-            extends JMenuItem
-    {
-
-        public RelationAdditionItem (String label,
-                                     String tip,
-                                     final AbstractChordInter source,
-                                     final AbstractChordInter target,
-                                     final Relation relation)
-        {
-            this.setAction(new AbstractAction()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    final SIGraph sig = source.getSig();
-                    sheet.getInterController().link(sig, source, target, relation);
-                }
-
-            });
-
-            this.setText(label);
-            this.setToolTipText(tip);
-        }
-    }
-
-    //---------------------//
-    // RelationRemovalItem //
-    //---------------------//
-    /**
-     * Menu item which consists in removing a relation.
-     */
-    private class RelationRemovalItem
-            extends JMenuItem
-    {
-
-        public RelationRemovalItem (String label,
-                                    String tip,
-                                    final SIGraph sig,
-                                    final Relation relation)
-        {
-            this.setAction(new AbstractAction()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    sheet.getInterController().unlink(sig, relation);
-                }
-
-            }
-            );
-
-            this.setText(label);
-            this.setToolTipText(tip);
-        }
-    }
-
-//-----------//
-// Constants //
-//-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction maxStemDxForMerge = new Scale.Fraction(
-                0.3,
-                "Maximum abscissa shift between chords stems for a merge");
-
-        private final Scale.Fraction maxChordDxForMerge = new Scale.Fraction(
-                0.6,
-                "Maximum abscissa shift between chords centers for a merge");
-
-        private final Scale.Fraction maxAbscissaGapForTimeItems = new Scale.Fraction(
-                2.0,
-                "Maximum abscissa gap between chords bounds for a time menu item");
-
-        private final Scale.Fraction maxAbscissaOverlapForVoiceItems = new Scale.Fraction(
-                0.2,
-                "Maximum abscissa overlap between chords bounds for a voice menu item");
     }
 }

@@ -42,6 +42,7 @@ import java.util.Set;
 public abstract class InterTask
         extends UITask
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Task focus. */
     protected final Inter inter;
@@ -52,6 +53,7 @@ public abstract class InterTask
     /** Relations inter is involved in. */
     protected Collection<Link> links;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterTask} object.
      *
@@ -76,6 +78,7 @@ public abstract class InterTask
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Getter for involved inter.
      *

@@ -42,12 +42,15 @@ import javax.swing.AbstractAction;
 public class GlyphAction
         extends AbstractAction
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphAction.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying glyph. */
     private final Glyph glyph;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GlyphAction object.
      *
@@ -72,6 +75,7 @@ public class GlyphAction
         putValue(SHORT_DESCRIPTION, tipOf(glyph));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
