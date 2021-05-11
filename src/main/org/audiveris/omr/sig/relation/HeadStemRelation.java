@@ -591,8 +591,8 @@ public class HeadStemRelation
     /**
      * Create a HeadChord on-the-fly based on provided stem.
      *
-     * @param seq  action sequence to populate
-     * @param stem the provided stem
+     * @param tasks action sequence to populate
+     * @param stem  the provided stem
      * @return a HeadChord around this stem
      */
     private HeadChordInter buildStemChord (List<UITask> tasks,

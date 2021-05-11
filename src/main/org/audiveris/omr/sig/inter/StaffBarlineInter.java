@@ -47,8 +47,12 @@ import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -69,7 +73,6 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.ui.selection.LocationEvent;
 
 /**
  * Class {@code StaffBarlineInter} represents a logical barline for one staff only.
@@ -202,6 +205,29 @@ public final class StaffBarlineInter
     public boolean contains (BarlineInter barline)
     {
         return sig.getRelation(this, barline, Containment.class) != null;
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
+    {
+        // Needed to get bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+
+        if (staff != null) {
+            // Snap ordinate
+            final double y = staff.pitchToOrdinate(getCenter().x, 0);
+            dropLocation.y = (int) Math.rint(y);
+            super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        }
+
+        return true;
     }
 
     //-----------//

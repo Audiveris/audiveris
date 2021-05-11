@@ -51,6 +51,7 @@ import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.ClutterInter;
+import org.audiveris.omr.sig.inter.CompoundNoteInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -877,13 +878,10 @@ public class InterFactory
 
         // Compound notes
         case QUARTER_NOTE_UP:
-            return null;
         case QUARTER_NOTE_DOWN:
-            return null;
         case HALF_NOTE_UP:
-            return null;
         case HALF_NOTE_DOWN:
-            return null;
+            return new CompoundNoteInter(null, null, shape, GRADE);
 
         // Flags
         case FLAG_1:

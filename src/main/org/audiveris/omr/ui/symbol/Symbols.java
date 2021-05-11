@@ -258,8 +258,8 @@ public abstract class Symbols
         ottava(G_CLEF_8VA, true, 38);
         ottava(G_CLEF_8VB, false, 38);
 
-        mapShape(HALF_NOTE_UP, 104);
-        mapShape(HALF_NOTE_DOWN, 72);
+        sym.put(HALF_NOTE_DOWN, new CompoundNoteSymbol(HALF_NOTE_DOWN, 72));
+        sym.put(HALF_NOTE_UP, new CompoundNoteSymbol(HALF_NOTE_UP, 104));
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
         sym.put(HW_REST_set, new RestSymbol(HW_REST_set, false, 238));
 
@@ -315,9 +315,9 @@ public abstract class Symbols
         mapText(PLUCK_M, "m");
         mapText(PLUCK_A, "a");
 
+        sym.put(QUARTER_NOTE_DOWN, new CompoundNoteSymbol(QUARTER_NOTE_DOWN, 81));
+        sym.put(QUARTER_NOTE_UP, new CompoundNoteSymbol(QUARTER_NOTE_UP, 113));
         mapShape(QUARTER_REST, 206);
-        mapShape(QUARTER_NOTE_UP, 113);
-        mapShape(QUARTER_NOTE_DOWN, 81);
 
         sym.put(REPEAT_DOT, new RepeatDotSymbol(false));
         mapShape(REVERSE_FINAL_BARLINE, 210);

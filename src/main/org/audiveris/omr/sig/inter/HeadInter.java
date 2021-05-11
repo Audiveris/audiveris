@@ -260,7 +260,7 @@ public class HeadInter
                 modified = true;
             }
 
-            final Double y = getSnapOrdinate();
+            final Double y = getSnapOrdinate(getCenter(), staff);
 
             if (y != null) {
                 dropLocation.y = (int) Math.rint(y);
@@ -483,6 +483,76 @@ public class HeadInter
         return coreBounds;
     }
 
+    //--------------------------//
+    // getNeededLedgerAdditions //
+    //--------------------------//
+    /**
+     * Report UI tasks to add needed ledgers.
+     *
+     * @param headCenter location of head center
+     * @param staff      related staff
+     * @return the list of ledger additions, perhaps empty
+     */
+    public static List<UITask> getNeededLedgerAdditions (Point2D headCenter,
+                                                         Staff staff)
+    {
+        final List<UITask> tasks = new ArrayList<>();
+        final SIGraph theSig = staff.getSystem().getSig();
+
+        for (Line2D line : getNeededLedgerLines(headCenter, staff)) {
+            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1.0);
+            ledger.setManual(true);
+            ledger.setStaff(staff);
+            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.emptySet()));
+        }
+
+        return tasks;
+    }
+
+    //----------------------//
+    // getNeededLedgerLines //
+    //----------------------//
+    /**
+     * Report the ledger lines that should be added to support this head.
+     *
+     * @param headCenter location of head center
+     * @param staff      related staff
+     * @return the sequence of needed ledger lines
+     */
+    public static List<Line2D> getNeededLedgerLines (Point2D headCenter,
+                                                     Staff staff)
+    {
+        if (staff == null) {
+            return Collections.emptyList();
+        }
+
+        final NotePosition np = staff.getNotePosition(headCenter);
+        final int thePitch = (int) Math.rint(np.getPitchPosition());
+        List<Line2D> lines = null;
+
+        if (Math.abs(thePitch) >= 6) {
+            final IndexedLedger iLedger = np.getLedger();
+            final int closestIndex = (iLedger != null) ? iLedger.index : 0;
+            final Scale scale = staff.getSystem().getSheet().getScale();
+            final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
+            final double x1 = headCenter.getX() - (ledgerLength / 2.0);
+            final double x2 = headCenter.getX() + (ledgerLength / 2.0);
+            final int dir = Integer.signum(thePitch);
+
+            for (int p = 6 * dir + 2 * closestIndex; p * dir <= thePitch * dir; p += 2 * dir) {
+                int y = (int) Math.rint(staff.pitchToOrdinate(headCenter.getX(), p));
+
+                if (lines == null) {
+                    lines = new ArrayList<>();
+                }
+
+                lines.add(new Line2D.Double(x1, y, x2, y));
+            }
+        }
+
+        return (lines != null) ? lines : Collections.emptyList();
+    }
+
     //-------------//
     // getTemplate //
     //-------------//
@@ -609,6 +679,32 @@ public class HeadInter
         }
 
         return map;
+    }
+
+    //-----------------//
+    // getSnapOrdinate //
+    //-----------------//
+    /**
+     * Report the theoretical ordinate of head center when correctly aligned with staff
+     * lines and ledgers.
+     * <p>
+     * Required properties: staff, bounds
+     *
+     * @param headCenter location of head center
+     * @param staff      related staff
+     * @return the proper ordinate if any, null otherwise
+     */
+    public static Double getSnapOrdinate (Point2D headCenter,
+                                          Staff staff)
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        final NotePosition notePosition = staff.getNotePosition(headCenter);
+        final double roundedPitch = Math.rint(notePosition.getPitchPosition());
+
+        return staff.pitchToOrdinate(headCenter.getX(), roundedPitch);
     }
 
     //-----------------------//
@@ -856,7 +952,7 @@ public class HeadInter
         }
 
         // Addition of needed ledgers
-        tasks.addAll(neededLedgerAdditions());
+        tasks.addAll(getNeededLedgerAdditions(getCenter(), staff));
 
         return tasks;
     }
@@ -870,7 +966,7 @@ public class HeadInter
         final List<UITask> tasks = new ArrayList<>(super.preEdit(editor));
 
         // Addition of needed ledgers
-        tasks.addAll(neededLedgerAdditions());
+        tasks.addAll(getNeededLedgerAdditions(getCenter(), staff));
 
         return tasks;
     }
@@ -1094,48 +1190,6 @@ public class HeadInter
         return constants.shrinkVertRatio.getValue();
     }
 
-    //----------------------//
-    // getNeededLedgerLines //
-    //----------------------//
-    /**
-     * Report the ledger lines that should be added to support this head.
-     *
-     * @return the sequence of needed ledger lines
-     */
-    private List<Line2D> getNeededLedgerLines ()
-    {
-        if (staff == null) {
-            return Collections.emptyList();
-        }
-
-        final Point center = getCenter();
-        final NotePosition np = staff.getNotePosition(center);
-        final int thePitch = (int) Math.rint(np.getPitchPosition());
-        List<Line2D> lines = null;
-
-        if (Math.abs(thePitch) >= 6) {
-            final IndexedLedger iLedger = np.getLedger();
-            final int closestIndex = (iLedger != null) ? iLedger.index : 0;
-            final Scale scale = staff.getSystem().getSheet().getScale();
-            final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
-            final int x1 = center.x - (ledgerLength / 2);
-            final int x2 = center.x + (ledgerLength / 2);
-            final int dir = Integer.signum(thePitch);
-
-            for (int p = 6 * dir + 2 * closestIndex; p * dir <= thePitch * dir; p += 2 * dir) {
-                int y = (int) Math.rint(staff.pitchToOrdinate(center.x, p));
-
-                if (lines == null) {
-                    lines = new ArrayList<>();
-                }
-
-                lines.add(new Line2D.Double(x1, y, x2, y));
-            }
-        }
-
-        return (lines != null) ? lines : Collections.emptyList();
-    }
-
     //-----------------//
     // getSnapAbscissa //
     //-----------------//
@@ -1171,55 +1225,6 @@ public class HeadInter
         }
 
         return null;
-    }
-
-    //-----------------//
-    // getSnapOrdinate //
-    //-----------------//
-    /**
-     * Report the theoretical ordinate of head center when correctly aligned with staff
-     * lines and ledgers.
-     * <p>
-     * Required properties: staff, bounds
-     *
-     * @return the proper ordinate if any, null otherwise
-     */
-    private Double getSnapOrdinate ()
-    {
-        if (staff == null) {
-            return null;
-        }
-
-        Point center = getCenter();
-        NotePosition notePosition = staff.getNotePosition(center);
-        double doublePitch = notePosition.getPitchPosition();
-        double roundedPitch = Math.rint(doublePitch);
-        double y = staff.pitchToOrdinate(center.x, roundedPitch);
-
-        return y;
-    }
-
-    //-----------------------//
-    // neededLedgerAdditions //
-    //-----------------------//
-    /**
-     * Report UI tasks to add needed ledgers.
-     *
-     * @return the list of ledger additions, perhaps empty
-     */
-    private List<UITask> neededLedgerAdditions ()
-    {
-        final List<UITask> tasks = new ArrayList<>();
-        final SIGraph theSig = (sig != null) ? sig : staff.getSystem().getSig();
-
-        for (Line2D line : getNeededLedgerLines()) {
-            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1.0);
-            ledger.setManual(true);
-            ledger.setStaff(staff);
-            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.emptySet()));
-        }
-
-        return tasks;
     }
 
     //--------//
@@ -1367,7 +1372,7 @@ public class HeadInter
                         latestBounds.x = (int) Math.rint(x - halfWidth);
                     }
 
-                    final Double y = head.getSnapOrdinate();
+                    final Double y = getSnapOrdinate(head.getCenter(), head.getStaff());
 
                     if (y != null) {
                         latestBounds.y = (int) Math.rint(y - halfHeight);
@@ -1399,14 +1404,14 @@ public class HeadInter
     /**
      * Specific tracker for a note head, able to display needed ledgers.
      */
-    private static class Tracker
+    public static class Tracker
             extends InterTracker
     {
 
-        public Tracker (HeadInter head,
+        public Tracker (Inter inter,
                         Sheet sheet)
         {
-            super(head, sheet);
+            super(inter, sheet);
         }
 
         @Override
@@ -1415,9 +1420,7 @@ public class HeadInter
             super.render(g);
 
             // Add needed ledgers
-            final HeadInter head = (HeadInter) inter;
-
-            for (Line2D line : head.getNeededLedgerLines()) {
+            for (Line2D line : getNeededLedgerLines(inter.getRelationCenter(), inter.getStaff())) {
                 g.setColor(Color.RED);
                 g.draw(line);
             }
@@ -1429,9 +1432,7 @@ public class HeadInter
             Rectangle box = super.getSceneBounds();
 
             // Include needed ledgers if any
-            final HeadInter head = (HeadInter) inter;
-
-            for (Line2D line : head.getNeededLedgerLines()) {
+            for (Line2D line : getNeededLedgerLines(inter.getRelationCenter(), inter.getStaff())) {
                 box.add(line.getBounds());
             }
 
