@@ -333,7 +333,7 @@ public class InterDnd
             // Draw line to staff reference if any
             g.setColor(Color.RED);
 
-            final Point center = ghost.getCenter();
+            final Point center = PointUtil.rounded(ghost.getRelationCenter());
             g.drawLine(center.x, center.y, staffReference.x, staffReference.y);
         }
 

@@ -315,7 +315,7 @@ public class ShapeSet
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
             Colors.SCORE_NOTES,
-            shapesOf(Heads, shapesOf(AUGMENTATION_DOT)));
+            shapesOf(Heads, shapesOf(AUGMENTATION_DOT), CompoundNotes));
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,

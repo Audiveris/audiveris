@@ -106,7 +106,8 @@ public interface Inter
     void decrease (double ratio);
 
     /**
-     * Derive inter geometry from the provided symbol, font and current drop location.
+     * Derive inter geometry from the provided symbol, font and current location
+     * (when symbol is dragged, dropped or when created with repetitive input).
      *
      * @param symbol       the dropped symbol
      * @param sheet        containing sheet

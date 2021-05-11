@@ -187,18 +187,10 @@ public abstract class AbstractTimeInter
         super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
 
         if (staff != null) {
-            boolean modified = false;
-
-            final Double y = getSnapOrdinate();
-
-            if (y != null) {
-                dropLocation.y = (int) Math.rint(y);
-                modified = true;
-            }
-
-            if (modified) {
-                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
-            }
+            // Snap ordinate
+            final double y = staff.pitchToOrdinate(getCenter().x, 0);
+            dropLocation.y = (int) Math.rint(y);
+            super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
         }
 
         return true;
@@ -529,25 +521,6 @@ public abstract class AbstractTimeInter
         }
 
         return null;
-    }
-
-    //-----------------//
-    // getSnapOrdinate //
-    //-----------------//
-    /**
-     * Report the theoretical ordinate of number center, located on pitch 0.
-     * <p>
-     * Required properties: staff, bounds
-     *
-     * @return the proper ordinate if any, null otherwise
-     */
-    private Double getSnapOrdinate ()
-    {
-        if (staff == null) {
-            return null;
-        }
-
-        return staff.pitchToOrdinate(getCenter().x, 0);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

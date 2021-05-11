@@ -57,6 +57,23 @@ public abstract class GeoUtil
                                   rect.getY() + (rect.getHeight() / 2.0));
     }
 
+    //-------------//
+    // translate2D //
+    //-------------//
+    /**
+     * Translate the Rectangle2D according to vector (dx, dy).
+     *
+     * @param rect rectangle to translate
+     * @param dx   abscissa translation
+     * @param dy   ordinate translation
+     */
+    public static void translate2D (Rectangle2D rect,
+                                    double dx,
+                                    double dy)
+    {
+        rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
+    }
+
     //--------//
     // center //
     //--------//

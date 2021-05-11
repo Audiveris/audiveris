@@ -371,7 +371,7 @@ public abstract class AbstractVerticalInter
         public Point2D p2;
 
         // Width
-        public double width;
+        public Double width;
 
         public Model (Point2D p1,
                       Point2D p2)
@@ -386,6 +386,16 @@ public abstract class AbstractVerticalInter
         {
             PointUtil.add(p1, dx, dy);
             PointUtil.add(p2, dx, dy);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder("avModel{")
+                    .append("p1:").append(p1)
+                    .append(" p2:").append(p2)
+                    .append(" width:").append(width)
+                    .append('}').toString();
         }
     }
 
