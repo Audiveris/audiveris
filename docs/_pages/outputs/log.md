@@ -8,12 +8,12 @@ nav_order: 1
 ## .log files
 {: .no_toc :}
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Session global log

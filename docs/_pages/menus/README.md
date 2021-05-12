@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Pulldown Menus
+title: Pulldown menus
 parent: References
 nav_order: 1
 has_children: true
 ---
-# Pulldown Menus
+# Pulldown menus
 
 This chapter simply describes all Audiveris menus, both the pulldown menus and the popup context
 menu of Audiveris main window.

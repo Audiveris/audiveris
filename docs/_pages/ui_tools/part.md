@@ -1,15 +1,17 @@
 ---
 layout: default
-title: Part
+title: Part merge
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 12
+nav_order: 7
 ---
-## Part
+## Part merge
 {: .no_toc }
 
-During the GRID step, the OMR engine detects staves and assign one part per staff, unless:
+During the GRID step, the OMR engine detects staves and assigns exactly one part per staff,
+unless:
 * There a multi-staff brace on the left margin of the staff,
-* And the staves joined by the brace are also joined by connectors
+* And the staves joined by the brace are also joined by connectors further down the staves
 (a connector is a vertical concrete segment joining two barlines).
 
 If these two conditions are met, the two staves (more rarely three staves) are considered to
@@ -40,6 +42,7 @@ You can undo this operation (or remove the manual brace, which is equivalent)
 
 NOTA: this is an _adhoc_ feature, meant fo fix a brace cropped out.
 It works only by inserting a **manual** brace.
+{: .nota-bg}
 
 You can still slightly shift or resize the brace if you wish.
 But do not try to extend the brace to a 3rd staff, this wouldn't work.

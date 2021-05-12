@@ -4,20 +4,19 @@ title: Building from sources
 nav_order: 2
 parent: Installation
 ---
+## Building from sources (Windows, Linux, MacOS)
+{: .no_toc }
 
-## Table of contents
+Table of contents
 {: .no_toc .text-delta }
-
 1. TOC
 {:toc}
-
 ---
-## Building from sources (Windows, Linux, MacOS)
 
 ### Dependencies
 
-* [Java Development Kit (JDK)][1]: version 7 or 8 (preferred), but not 9 or 10 yet.
-  Audiveris 5.1 can run on both 32-bit and 64-bit architectures.
+* [Java Development Kit (JDK)][1]: version 11 (higher numbers may work, to be confirmed).
+  Audiveris 5.2 runs only on 64-bit architectures.
 
 * [Git](https://git-scm.com): version control system.
 
@@ -36,11 +35,9 @@ Language installation depends on your OS. Here are examples to add Russian langu
   - Windows:
     1. Download russian language data from
     [https://github.com/tesseract-ocr/langdata/tree/master/rus](https://github.com/tesseract-ocr/langdata/tree/master/rus)
-    into `c:\Program Files (x86)\tesseract-ocr\tessdata` (on 64-bit machine)
-    or `c:\Program Files\tesseract-ocr\tessdata` (on 32-bit machine)
+    into `c:\Program Files (x86)\tesseract-ocr\tessdata`
     2. Make sure the environment variable `TESSDATA_PREFIX` contains the full path to the parent of
-    `tessdata` folder, that is either `c:\Program Files (x86)\tesseract-ocr\`
-    or `c:\Program Files\tesseract-ocr\`.  
+    `tessdata` folder, that is `c:\Program Files (x86)\tesseract-ocr\`.  
 
   At runtime, you can specify which languages should be tried by the OCR software.
   By default, these are `deu`, `eng`, `ita`, `fra` as specified by the application constant
@@ -57,28 +54,45 @@ Fortunately, every known Unix-like OS distribution already contains a package fo
 ### Download, build and run
 To download Audiveris project, use the following command in a directory of your choice:
 
-`git clone https://github.com/Audiveris/audiveris.git`
+```sh
+git clone https://github.com/Audiveris/audiveris.git
+```
 
 This will create a sub-directory named "audiveris" in your current directory and populate it with
 project material (notably source code and build procedure).
 
 Now move to this "audiveris" project directory:
 
-`cd audiveris`
+```sh
+cd audiveris
+```
 
-Once in this "audiveris" project directory, you can:
+Once in this `audiveris` project directory, you can select the branch you want.   
+By default, you are on `master`branch.  
+To use for example the `development`branch with its latest features, use:
+```sh
+git checkout development
+```
+You can build the software via the command:
+```sh
+# (Linux & Mac, or Cygwin terminal under Windows)
+./gradlew build
+```
+```sh
+# (Windows terminal)
+gradlew.bat build
+```
 
-* Build the software via the command:
+You can run the software, as GUI tool, via the command:
 
-    `./gradlew build` (Linux & Mac, or Cygwin terminal under Windows)
-
-    `gradlew.bat build` (Windows terminal)
-
-* Run the software, as GUI tool, via the command:
-
-    `./gradlew run` (Linux & Mac, or Cygwin terminal under Windows)
-
-    `gradlew.bat run` (Windows terminal)
+```sh
+# (Linux & Mac, or Cygwin terminal under Windows)
+./gradlew run
+```
+```sh
+# (Windows terminal)
+gradlew.bat run
+```
 
 Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scene,
 takes care of getting and launching the proper gradle version.
@@ -112,29 +126,6 @@ Then, you can repeatedly run audiveris from those files:
 ```sh
 # Run audiveris (append arguments if so needed):
 java -cp "Audiveris/lib/*" Audiveris
-```
-
-## Building from Arch User Repository
-
-In the AUR (Arch User Repository), there exist two packages which can be installed by hand
-(or with your AUR-helper of trust) for Arch Linux distribution:
-
-* Package [audiveris](https://aur.archlinux.org/packages/audiveris) which uses the
-[5.1.0 release](https://github.com/Audiveris/audiveris/releases/tag/5.1.0),
-* Package [audiveris-git](https://aur.archlinux.org/packages/audiveris-git) which tracks the
-`master` branch.
-
-To install, simply execute:
-```bash
-git clone https://aur.archlinux.org/audiveris.git
-#git clone https://aur.archlinux.org/audiveris-git.git
-cd audiveris
-makepkg -fsri
-```
-Or with an AUR-helper (pikaur/yaourt/...):
-```bash
-pikaur -S audiveris
-#pikaur -S audiveris-git
 ```
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.html

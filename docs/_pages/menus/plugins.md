@@ -2,7 +2,7 @@
 layout: default
 title: Plugins menu
 grand_parent: References
-parent: Pulldown Menus
+parent: Pulldown menus
 nav_order: 7
 ---
 ## Plugins menu

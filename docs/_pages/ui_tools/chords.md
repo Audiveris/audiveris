@@ -1,8 +1,9 @@
 ---
 layout: default
 title: Chords
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 9
+nav_order: 11
 ---
 ## Chords
 {: .no_toc }
@@ -15,13 +16,11 @@ This is made possible via the usual popup menu which can provide a specific `Cho
 sub-menu, whose content tightly depends on the chords configuration.
 
 ---
-
-## Table of contents
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Chords menu
@@ -34,7 +33,7 @@ before opening the popup/Chords menu:
 Notice that the global bounding box (red rectangle) encompasses the bounds of both chords.
 
 Also, the menu begins with information lines about the selected chords.
-And if you hover about these lines, the bounding box is dynamically updated to show just the
+And if you hover over these lines, the bounding box is dynamically updated to show just the
 selected item.
 This is meant to allow a visual check of the selected chords:
 
@@ -42,71 +41,19 @@ This is meant to allow a visual check of the selected chords:
 | --- | --- | --- |
 | ![](../assets/images/chords_both.png) | ![](../assets/images/chords_one.png) | ![](../assets/images/chords_two.png) |
 
+To ease manual dealing with chords, you can make each chord ID visible as in the picture below
+(use pull-down menu `View | Show chord IDs`):
+
+![](../assets/images/chord_ids.png)
+
 NOTA: The example of Chords menu above shows only a partial list of possible chords actions,
 because the list depends on the current status and configuration of the selected chords.
 
 Here after, we list all the possible items of `Chords...` menu.
 
-### Voice
-
-A voice is defined as a sequence of chords (head chords and rest chords) in the same music part. [^voice_sharing]
-
-Audiveris algorithm for voice building is already very tricky.
-It tries to reconcile different heuristics, but in some cases the result may not be the one the
-user would expect.
-
-Purpose of the voice actions is to guide the software in voice building, by imposing that two
-given chords have the same or have different voices.
-
-#### [cancel] Same Voice
-
-![](../assets/images/same_voice.png)
-
-Here, by imposing the same voice between the two heads indicated by an arrow, we in fact "merge"
-the 2 voices into one, as follows:
-
-![](../assets/images/same_voice_after.png)
-
-You can always undo such task.
-But if you want, much later in the process, to cancel this task, you can always select the same
-chords and you'll be offered to _cancel_ the task.
-
-![](../assets/images/same_voice_cancel.png)
-
-#### [cancel] Separate Voices
-
-This command imposes the voice algorithm to assign the selected chords to separate voices.
-
-Note this is not exactly the reverse of "_same voice_" command:
-* Without any command, you let the algorithm decide with no guidance.
-* With a command (whether it's _same_ or _separate_), you explicitly guide the algorithm.
-
-### Time
-
-Assigning a chord to proper time slot is as tricky as voice assignment.
-In fact, time and voice algorithms are tightly coupled.
-
-When two chords are rather close abscissa-wise, when should we consider them as part of the same
-time slot?
-
-#### [cancel] Same Time Slot
-
-![](../assets/images/same_slot.png)
-
-Here, we can see that time slots on second staff of the part are not correctly assigned.
-This is because the whole note on upper staff and the 8th note on lower staff are toi far apart
-abscissa-wise.
-So, we force these two notes to share the same time slot.
-
-#### [cancel] Separate Time Slots
-
-As opposed to the same time slot, this command is used to force time separation between two
-chords that the engine had considered as adjacent.
-
 ### Chord
 
-Gathering note heads into chords may need some user correction.
-
+The gathering note heads into chords may need some user correction.
 
 #### Split
 
@@ -131,7 +78,67 @@ to gather whole heads into one chord.
 
 ![](../assets/images/chord_merge.png)
 
+### Voice
+
+A voice is defined as a sequence of chords (head chords and rest chords) in the same music part. [^voice_sharing]
+
+Audiveris algorithm for voice building is already very tricky.
+It tries to reconcile different heuristics, but in some cases the result may not be the one the
+user would expect.
+
+Purpose of the voice actions is to guide the software in voice building, by imposing that two
+given chords have the same or have different voices.
+
+#### [cancel] Same Voice
+
+![](../assets/images/same_voice.png)
+
+Here, by imposing the same voice between the two heads indicated by an arrow, we in fact "merge"
+the 2 voices into one, as follows:
+
+![](../assets/images/same_voice_after.png)
+
+You can always undo such task.
+Also if you want, much later in the process, to cancel this task, you can always select the same
+chords and you'll be offered to _cancel_ the task.
+
+![](../assets/images/same_voice_cancel.png)
+
+#### [cancel] Separate Voices
+
+This command imposes the voice algorithm to assign the selected chords to _separate_ voices.
+
+Note this is not exactly the reverse of "_same voice_" command:
+* Without any command, you let the algorithm decide with no guidance.
+* With a command (whether it's _same_ or _separate_), you explicitly guide the algorithm.
+
+### Time
+
+Assigning a chord to proper time slot is as tricky as voice assignment.
+In fact, time and voice algorithms are tightly coupled.
+
+When two chords are rather close abscissa-wise, when should we consider them as part of the same
+time slot?
+
+#### [cancel] Same Time Slot
+
+![](../assets/images/same_slot.png)
+
+Here, we can see that time slots on second staff of the part are not correctly assigned.
+This is because the whole note on upper staff and the 8th note on lower staff are too far apart
+abscissa-wise.
+So, we force these two notes to share the same time slot.
+
+Experience shows that the most efficient action is generally to grab the set of _all_ the chords
+that should share the same slot (a rather vertical selection in the _same_ part)
+and apply the _Same Time Slot_ command on the whole set.
+
+#### [cancel] Separate Time Slots
+
+As opposed to the same time slot, this command is used to force time separation between two
+chords that the engine has considered as adjacent.
+
 ---
-[^voice_sharing]: There is an on-going debate about the possibility for Audiveris to share chords between voices. But for current 5.2 release, a chord can be assigned to exactly one voice.
+[^voice_sharing]: There is an on-going debate about the possibility for Audiveris to share [rest-] chords between voices. But for current 5.2 release, a chord can be assigned to exactly one voice.
 
  [^whole_chord]: Current heuristic for whole chords is to gather whole heads if they are aligned vertically and not more than one interline apart.

@@ -7,12 +7,12 @@ nav_order: 2
 ## Advanced Topics
 {: .no_toc }
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 Only standard features are visible by default in Audiveris user interface.

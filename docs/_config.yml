@@ -45,10 +45,16 @@ remote_theme: pmarsceill/just-the-docs
 plugins:
   - jekyll-feed
   - jekyll-relative-links
+  - jekyll-seo-tag
 
 relative_links:
   enabled: true
   collections: true
+
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
 
 # Set a path/url to a logo that will be displayed instead of the title
 logo: "_pages/assets/images/splash.png"
@@ -67,8 +73,12 @@ aux_links:
   "Audiveris organization on GitHub":
     - "https://github.com/Audiveris"
 
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
 # Footer content appears at the bottom of every page's main content
-footer_content: "Copyright &copy; Audiveris 2020. Distributed under <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
+footer_content: "Copyright &copy; Audiveris 2021. Distributed under <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil

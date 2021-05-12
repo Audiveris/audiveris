@@ -16,12 +16,12 @@ the current location in sheet view and the selected items if any.
 
 Some of its content also depends on user-selected [Advanced Topics](../advanced/topics.md).
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Inters

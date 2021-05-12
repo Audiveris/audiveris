@@ -23,12 +23,12 @@ This is addressed in the [Samples](samples.md) section before.
 Finally, you can launch one or several trainings of the glyph classifier, via the dedicated Trainer
 dialog.
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Trainer Dialog {#trainer}

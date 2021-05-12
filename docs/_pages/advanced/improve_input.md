@@ -12,12 +12,13 @@ Although the human's eye can identify the notes correctly, the algorithms have p
 the components of a score correctly.
 
 Here are some possible improvements using Gimp.
-## Table of contents
+
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Adjust Brightness and Contrast

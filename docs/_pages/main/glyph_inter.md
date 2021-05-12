@@ -2,14 +2,14 @@
 layout: default
 title: Glyph vs Inter
 grand_parent: Main Features
-parent: Main Entities
+parent: Main entities
 nav_order: 3
 ---
 ### Glyph vs Inter
 
 #### Glyph
 
-A **Glyph** is nothing more than an un-mutable set of foreground (black) pixels, precisely located
+A **Glyph** is nothing more than an immutable set of foreground (black) pixels, precisely located
 in a sheet binary image.
 
 It carries no shape.
@@ -34,10 +34,17 @@ and helps clarify the configuration.
 
 As opposed to a Glyph, an Inter belongs to a system and is often related to a staff.
 
-It carries a shape and a grade in (0..1) range, which can be considered as the probability for the
+It carries a shape and a grade in [0..1] range, which can be considered as the probability for the
 interpretation to be a true positive.
 This grade is an interpretation _intrinsic_ grade, only based on the glyph at hand in isolation
 (this grade is often provided by the glyph classifier).
 
 Later, the Inter will generally be assigned a _contextual_ grade, based on the Inter grade
 and the supporting relations with other Inter instances nearby.
+
+#### Typical display example
+
+
+|   View  |  Inter over Glyph   |
+| --- | --- |
+|![](../assets/images/glyph_inter.png) | A Treble Clef **inter** appears in dark blue <br> Its related **glyph** is mostly hidden behind|

@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Entity Colors
+title: Entity colors
 grand_parent: Main Features
-parent: Main Window
+parent: Main window
 nav_order: 3
 ---
-### Entity Colors
+### Entity colors
 
 The sheet window uses different colors to display the entities and the kind of entity that was
 recognized:

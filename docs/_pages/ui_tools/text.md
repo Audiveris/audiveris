@@ -1,12 +1,12 @@
 ---
 layout: default
 title: Text
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 10
+nav_order: 12
 ---
 ## Text
 {: .no_toc }
-
 
 Recognition of textual elements is delegated to Tesseract OCR library.  
 This recognition is performed by the OMR engine (this is the TEXTS step).
@@ -15,18 +15,27 @@ It can also be performed manually on a provided glyph.
 The resulting hierarchy of sentence and words can also be manually modified by the end-user.
 
 ---
-
-## Table of contents
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
+### Recognition of text items
+
+It is very difficult to automatically derive the meaning from the textual items in a musical score.
+
+For **lyrics**, the single syllables are connected to the chords above or below.    
+But it is not always obvious whether the text concerns the staff above or below
+nor it's always clear which voice is concerned.
+
+For **plain text**, Audiveris tries to detect text role, such as directions or typical header
+elements like: title, composer and lyricist.
+If it fails, the role can be easily corrected manually.
 
 ### TEXT step
 
-The `TEXTS` step runs Tesseract OCR on the whole image and tries to assign each textual item its
+The `TEXTS` step runs Tesseract OCR on the whole image and tries to assign to each textual item its
 probable content, type and role.
 
 This engine step is influenced by three options available in the `Book parameters` menu:
@@ -53,10 +62,7 @@ OCR operation.
 
 ### Sentence vs Words
 
-A Sentence inter is an ensemble of one or several Word inter(s), as described in the following
-class diagram:
-
-![](../assets/images/Sentence_Hierarchy.png)
+A Sentence inter is an ensemble of one or several Word inter(s):
 
 * A **Word** handles its textual value and location.
   Word sub-classes (ChordName and LyricItem) handle additional data.  
@@ -72,9 +78,7 @@ class diagram:
 
   ![](../assets/images/sentence_role_edited.png)
 
-### Plain Sentence
-
-A sentence role can be set to any value in:
+A sentence role can be set to any value among:
 UnknownRole,
 _Lyrics_,
 _ChordName_,
@@ -90,7 +94,9 @@ Rights,
 EndingNumber,
 EndingText.
 
-A "plain" sentence is any sentence which is assigned a role different from ChordName and Lyrics.
+### Plain Sentence
+
+A "plain" sentence is any sentence which is assigned a role different from Lyrics.
 
 Following an OCR recognition (OMR engine or manual OCR), the role of each resulting sentence is
 determined by some heuristics.
@@ -104,25 +110,34 @@ role afterwards, from any role to any other role.
 
 A chord name is a musical symbol which names and describes the related chord.
 
-Examples of chord names are: C, D7, F♯, B♭min, Em♭5, G6/B, Gdim, F♯m7, Em♭5, D7♯5, Am7♭5,
-A(9), BMaj7/D♯, ...
+For example:
+`C`, `D7`, `F♯`, `B♭min`, `Em♭5`, `G6/B`, `Gdim`, `F♯m7`, `Em♭5`, `D7♯5`, `Am7♭5`,
+`A(9)`, `BMaj7/D♯`.
 
 **IMPORTANT NOTICE**:
-As of this writing, Audiveris is not yet able to recognize chord names that include a sharp
- (``♯``) or a flat (``♭``) character.
+As of this writing, Audiveris engine is not yet able to recognize chord names that include true
+sharp (``♯``) or flat (``♭``) characters.
 Perhaps one day, we will succeed in training Tesseract OCR on this text content.  
-For the time being, Audiveris is however able to recognize such chord names, when these
-characters have been replaced (by an OCR "mistake", or by manual modification) by more "usual"
-characters:
+For the time being, Audiveris is able to recognize such chord names when these characters have
+been replaced (by OCR "mistake", or by manual modification) by more "usual" characters:
+{: .nota-bg }
 * ``'#'`` (number) as replacement for ``'♯'`` (sharp),
 * ``'b'`` (lowercase b) as replacement for ``'♭'`` (flat).
+{: .nota-bg }
 
 When you OCR a chord name word, Audiveris may be able to decode it as a chord name and thus wrap
 it within a chord name sentence.
 
-If Audiveris was unsuccessful, you can still force the chord name role (at sentence level) and
+If Audiveris has failed, you can still force the chord name role (at sentence level) and
 type in the missing `b` or `#` characters if so needed (at word level).
-The chord name will then be re-decoded on-the-fly with its new textual content.
+The chord name will then be decoded on-the-fly with its new textual content.
+
+Note you don't have to manually enter the true sharp or flat signs.
+Entering them via their Unicode value is a bit tricky, and finally useless.    
+Instead, when a text has been recognized or assigned as a chord name, its internal `b`
+or `#` characters are automatically replaced by their true alteration signs.    
+For example, you can type "Bb" then press `Enter` and the chord name will be translated and
+displayed as "B♭".
 
 ### Lyric Line
 

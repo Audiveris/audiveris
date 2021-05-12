@@ -15,12 +15,12 @@ This data is presented as options to the end user, and is modifiable at run time
 * Through the CLI `-option KEY=VALUE` argument
 * Through the pulldown menu `Tools | Options`
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 ### Dialog
 

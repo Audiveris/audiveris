@@ -2,7 +2,7 @@
 layout: default
 title: Sheet menu
 grand_parent: References
-parent: Pulldown Menus
+parent: Pulldown menus
 nav_order: 3
 ---
 ## Sheet menu
@@ -12,12 +12,12 @@ nav_order: 3
 
 This menu operates on the current sheet (of the current book).
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Undo

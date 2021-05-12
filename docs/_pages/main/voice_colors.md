@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Voice Colors
+title: Voice colors
 grand_parent: Main Features
-parent: Main Window
+parent: Main window
 nav_order: 4
 ---
-### Voice Colors
+### Voice colors
 
 By default, each score entity is displayed using a color determined according to the entity kind:
 

@@ -10,12 +10,12 @@ nav_order: 4
 
 ![](../assets/images/glyph_board.png)
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Vip

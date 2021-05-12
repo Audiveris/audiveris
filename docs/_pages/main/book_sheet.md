@@ -2,7 +2,7 @@
 layout: default
 title: Book vs Sheet
 grand_parent: Main Features
-parent: Main Entities
+parent: Main entities
 nav_order: 1
 ---
 ### Book vs Sheet

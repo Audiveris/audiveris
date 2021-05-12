@@ -2,7 +2,7 @@
 layout: default
 title: View menu
 grand_parent: References
-parent: Pulldown Menus
+parent: Pulldown menus
 nav_order: 5
 ---
 ## View menu
@@ -10,12 +10,12 @@ nav_order: 5
 
 ![](../assets/images/view_menu.png)
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Width Fit

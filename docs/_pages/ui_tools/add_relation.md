@@ -1,32 +1,35 @@
 ---
 layout: default
 title: Relation addition
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 7
+nav_order: 4
 ---
 ## Relation addition
 {: .no_toc }
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
-
 Most Inter instances have relations with other Inter instances.
-For example the note head below exhibits 2 relations,
-a _SlurHead_ relation between the slur and the note head,
-a _HeadStem_ relation between the note head and the stem.
+For example the note head below exhibits 2 relations:
+- a _SlurHead_ relation between slur and note head,
+- a _HeadStem_ relation between note head and stem.
 
-### Mandatory vs Non-Mandatory relations
+![](../assets/images/note_with_relations.png)
+
+You can visually check the relations when you select an Inter.
+The name of each relation is also displayed, provided that current zoom is high enough (>=2).
+
+
+### Mandatory vs non-mandatory relations
 
 Depending on Inter class, an Inter instance may need a relation with another Inter instance.
-
-Relations are shown when you select an Inter.
-The name of each relation is also displayed, provided that current zoom is high enough (>=2).
 
 If an Inter instance lacks a mandatory relation, it should somehow be removed before the end of
 the transcription process.
@@ -49,11 +52,11 @@ needed relation.
 NOTA, regarding relation automatic search:
 * A **mandatory relation** is automatically searched for, only at the moment the dependent
 inter is created, shifted or resized.
-This is so, simply because, using the same slur example, the slur needs a head but the head does
-not need a slur.
+This is so, simply because -- using the same slur example -- the slur _needs_ a head
+but the head _does not_ need a slur.
 A good practice, when several Inters have to be created manually, is to create the independent
 Inters first and the dependent Inters second.  
-But still, when the geometry is really beyond specified limits, the needed relation may not be
+But still, when the geometry is really beyond some specified limits, the needed relation may not be
 automatically created and you'll have to add it manually.
 
 * A **non-mandatory relation** is never searched for automatically.

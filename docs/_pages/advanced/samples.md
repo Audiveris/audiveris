@@ -17,12 +17,12 @@ If not, select the `SAMPLES` topic in the `Tools | Advanced Topics...` menu
 Audiveris 5.1 basic classifier is a Glyph classifier, which means that it needs to be trained with
 glyph samples (a sample is basically a glyph with the related shape).
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 ### Initial samples
 
@@ -139,7 +139,5 @@ When you are satisfied with a book repository you can push its content to the gl
 You do so from the book repository interface, by selecting the pulldown menu
 `Repository | Push to Global`.
 
-If you leave a repository with unsaved modifications, you will be prompted to save them
-or to forget them.
 
 [Folders]:  /folders/essential.md

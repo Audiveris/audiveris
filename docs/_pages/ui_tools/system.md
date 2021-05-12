@@ -1,10 +1,11 @@
 ---
 layout: default
-title: System
+title: System merge
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 11
+nav_order: 6
 ---
-## System
+## System merge
 {: .no_toc }
 
 In Audiveris GRID step, detected staves are gathered into systems, based on barlines found on
@@ -13,10 +14,10 @@ the left side of the staves.
 In a poor quality score image, many black pixels may have disappeared, sometimes leading to broken
 barlines.
 
-Unfortunately, in the example below, the leading left barline was damaged, resulting in a wrong
-detection of systems.
+In the example image below, the leading left barline has been damaged, resulting in a wrong
+detection of systems by the OMR engine.
 
-| left barline broken | resulting grid before | resulting grid after |
+| Left barline broken | Resulting grid before fix | Resulting grid after fix |
 | ---| --- | --- |
 | ![](../assets/images/system_broken.png) | ![](../assets/images/system_broken_before.png) |   ![](../assets/images/system_broken_after.png) |
 

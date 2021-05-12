@@ -30,5 +30,10 @@ The default location of all "book folders" depends on the operating system.
 For Windows OS, the default location is the "Audiveris" sub-folder of user's Documents folder.
 More details are available in [Folders](../folders/README) chapter.
 
-Note that this export is lossy, since a large amount of OMR information can't go into MusicXML.
+Note that this export is _lossy_, since a large amount of OMR information can't go into MusicXML.
 A `.omr` file can always be used to regenerate the `.mxl` export, but the reverse is not true.
+
+A good advice is to keep these `.omr` files -- unless you are running out of disk space!:-) --
+because they represent a valuable source of OMR information,
+suitable for training newer versions of Audiveris (more on this later).
+{: .nota-bg}

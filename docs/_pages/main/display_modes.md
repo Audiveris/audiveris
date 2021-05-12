@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Display Modes
+title: Display modes
 grand_parent: Main Features
-parent: Main Window
+parent: Main window
 nav_order: 1
 ---
-### Sheet Display Modes
+### Sheet display modes
 
 |  | Binary tab | Data tab |
 | --- | --- | --- |
@@ -25,5 +25,5 @@ to ease the visual detection of any discrepancies.
 * ![](../assets/images/ModeLogical.png) The _logical_ mode displays only the logical score entities (inters).
   It represents the whole transcription of the original image.
 
-Using the menu `Views | Switch layers` or the **F12** function key or the dedicated toolbar icon,
-you can circle through these 3 different modes: Physical / Combined / Logical.
+Using menu `Views | Switch layers` or **F12** function key or the dedicated toolbar icon,
+you can cycle through these 3 different modes: Physical / Combined / Logical.

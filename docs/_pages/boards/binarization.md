@@ -16,12 +16,12 @@ on pixel level.
 
 It is effective only when run on the initial gray image.
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Mean

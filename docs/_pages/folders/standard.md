@@ -8,12 +8,12 @@ nav_order: 1
 ## Standard folders
 {: .no_toc :}
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Purpose

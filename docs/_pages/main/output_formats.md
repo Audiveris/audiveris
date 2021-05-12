@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Output Formats
+title: Output formats
 parent: Main Features
-nav_order: 7
+nav_order: 8
 ---
-## Output Formats
+## Output formats
 
 There are 3 possibilities for output of a transcribed score:
 

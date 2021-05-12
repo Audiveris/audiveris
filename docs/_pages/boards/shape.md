@@ -8,12 +8,12 @@ nav_order: 6
 ## Shape board
 {: .no_toc :}
 
-## Table of contents
+--
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Top dialog: families
@@ -21,14 +21,17 @@ nav_order: 6
 
 The shape board displays a panel of shape families.
 
-For example, the first line in the panel contains these buttons:
-Accidentals, Articulations, Attributes, Barlines, BeamsAndTuplets, Clefs, Dynamics, Flags.
+In the picture above, we can see:
+- First line: Accidentals, Articulations, Attributes, Barlines, BeamsAndTuplets,
+  Clefs, Dynamics, Flags, Holds.
+- Second line: Keys, HeadsAndDot, Markers, Ornaments, Rests, Times, Digits,
+  Pluckings, Romans, Physicals.
 
 ### Palettes: shapes
 Clicking on a family button replaces the global family panel by the selected family palette,
-for example the Accidentals palette:
+for example the HeadsAndDot palette:
 
-![](../assets/images/accidentals_palette.png)
+![](../assets/images/heads_palette.png)
 
 In this palette you can:
 * Assign a shape, via a double-click on proper shape button, to the current glyph.

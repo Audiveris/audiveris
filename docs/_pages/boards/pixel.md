@@ -13,12 +13,12 @@ nav_order: 1
 The pixel board handles the location within the sheet image, as well as the pixel
 gray value at the (x,y) location.
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Level

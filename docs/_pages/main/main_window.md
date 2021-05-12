@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Main Window
+title: Main window
 parent: Main Features
 nav_order: 1
 has_children: true
 ---
-## Main Window
+## Main window
 
 ![](../assets/images/chula_transcribed.png)
 

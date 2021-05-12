@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Book Parameters
+title: Book parameters
 parent: Main Features
 nav_order: 5
 ---
-## Book Parameters
+## Book parameters
 {: .no_toc }
 
-## Table of contents
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
@@ -17,10 +17,8 @@ nav_order: 5
 
 ### Dialog
 
-This dialog let you display and modify high-level processing parameters.
-It can be accessed through `Book | Set parameters...` pulldown menu.
-
-![](../assets/images/book_parameters_menu.png)
+The pulldown menu  `Book | Set Book Parameters...` opens a dialog to let you display and modify
+high-level processing parameters.
 
 The following example displays the parameters dialog for a book (`Dichterliebe01`) which contains
 two sheets:
@@ -79,8 +77,10 @@ completes the dialog.
   In some cases, supporting a rather rare feature may imply collateral damages, the small note heads
   are such example of tricky features.
   So it is safer to use them only when you have to.   
-  NOTA: a switch disables a feature only for the OMR automatic recognition, the feature remains
+
+  NOTA: a switch can disable a feature only for the OMR automatic recognition, the feature remains
   available for manual user actions.
+  {: .nota-bg }
   * Articulations
   * Chord names
   * Fingering digits

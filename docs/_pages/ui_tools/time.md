@@ -1,21 +1,19 @@
 ---
 layout: default
-title: Time
+title: Time signature
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 14
+nav_order: 10
 ---
-## Time
+## Time signature
 {: .no_toc }
 
-
 ---
-
-## Table of contents
-{: .no_toc .text-delta }
+Table of contents
+{: .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 ### Whole vs Pair
 
@@ -25,7 +23,7 @@ Audiveris OMR is able to handle both whole- and pair- time signatures:
 
   1. A single musical symbol (COMMON_TIME and CUT_TIME)
   2. A predefined combo. As of today, these are 4/4, 2/2, 2/4, 3/4, 5/4, 6/4, 3/8, 6/8 and 12/8
-  3. The custom combo (initially set to 0/0)
+  3. The _custom_ combo (initially set to 0/0)
 
 * A _pair_ time signature is a signature handled as an ensemble of two separate time numbers.
 Not all pairs can be recognized, only the equivalent forms of predefined combos (see above).
@@ -49,7 +47,7 @@ but this feature is available only for a _whole_ signature, you cannot drag n' d
 of a pair.
 
 Moreover, in these two cases (glyph assignment and drag n' drop), please note that your choice is
-**limited** to the predefined shapes of the palette.
+_limited to the predefined shapes_ of the palette.
 
 ### Custom time signature
 
@@ -57,7 +55,7 @@ Starting with 5.2 release, the time shape palette provides the new `custom` time
 This is a fully-customizable combo signature.
 
 To define a precise time signature, the most convenient way is often to drag the `custom` combo
-from the shape palette to a target location:
+(0/0) from the shape palette to a target location:
 
 ![](../assets/images/time_palette.png)
 

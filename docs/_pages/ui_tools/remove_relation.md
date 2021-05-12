@@ -1,18 +1,19 @@
 ---
 layout: default
 title: Relation removal
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 8
+nav_order: 5
 ---
 ## Relation removal
 {: .no_toc }
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Removing a wrong relation
@@ -35,7 +36,7 @@ relation.
 
 ![](../assets/images/select_relation_for_remove.png)
 
-Without this relation, the sharp sign is now no longer linked to any note,
+Without this relation, the sharp sign is now no longer linked to any head,
 it thus appears in red abnormal status.
 
 Finally, the correct relation could be manually added
@@ -48,8 +49,9 @@ configuration below:
 
 In the precise case above (correcting reference of accidentals), explicit removal of the
 relation was not necessary.
-This is so, because an accidental can reference only one note
-(if we except the specific case of _shared_ note heads).
+This is so, because an accidental can reference only one note head
+(if we except the specific case of
+[note head shared by two voices](../ui_cases/shared_head.md)).
 
 So the wrong _AlterHead_ relation would be removed automatically when inserting a new one.
 

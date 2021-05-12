@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Inter Editors
+title: Inter editors
 parent: References
 nav_order: 0
 ---
-## Inter Editors
+## Inter editors
 {: .no_toc }
 
 ---
-
-## Table of contents
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
+---
 
 ### Default editor
 

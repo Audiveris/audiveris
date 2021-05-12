@@ -18,12 +18,12 @@ The standard sequence is to:
 
 This sequence can be automated via the use of one or several plugins.
 
-## Table of contents
+---
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ### Use of Plugins
@@ -54,30 +54,20 @@ Here below is an example of such `plugins.xml` file.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 ====================================================================================================
-
                                         p l u g i n s . x m l
-
 ====================================================================================================
-
     This file will be looked up in user config folder.
-
     It defines the list of Audiveris export plugins.
-
     Each plugin element is defined as follows:
-
     - Attribute id: (mandatory) Unique name for the plugin
-
     - Attribute tip: (optional) Description to be used as a tip
-
     - Elements arg: (mandatory) One separate element for each argument.
                     At least one arg element must equal {} to indicate where to insert at run-time
-                    the export file path.    
+                    the export file path(s).    
 ====================================================================================================
 -->
-
 <plugins>
 
     <!-- EasyABC -->
@@ -124,5 +114,5 @@ rather self-explanatory:
 * Each `<plugin>` element defines a separate plugin.
 * The first plugin found in file is taken as the `default` one.
 * The sequence of `<arg>` elements defines the precise syntax of a CLI command.
-* The `{}` arg is a placeholder where Audiveris will insert the path to
-  the exported MusicXML file.
+* The `{}` arg is a placeholder where Audiveris will insert the path(s) to
+  the exported MusicXML file(s).

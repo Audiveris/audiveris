@@ -1,12 +1,12 @@
 ---
 layout: default
 title: Inter removal
+grand_parent: User Edition
 parent: UI Tools
-nav_order: 6
+nav_order: 3
 ---
 ## Inter removal
 {: .no_toc }
-
 
 When one or several Inter instances have been selected, you can remove them as follows:
 

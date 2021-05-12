@@ -7,7 +7,7 @@ nav_order: 3
 ## Pipeline
 {: .no_toc }
 
-## Table of contents
+Table of contents
 {: .no_toc .text-delta }
 
 1. TOC
@@ -21,20 +21,20 @@ the others.
 Only the final gathering of sheets results, which comparatively is a very fast action,
 is performed at book level.
 
-![](../assets/images/project.png)
+![](../assets/images/book_workflow.png)
 
 The diagram above presents the typical workflow for an example input file, named `foo.pdf`:
-1. When opening the `foo.pdf` input, Audiveris creates a Book instance.
+1. When opening the `foo.pdf` input file, Audiveris creates a Book instance.
 2. It then detects how many images the input file contains, and allocates one sheet
-(just a sheet stub actually) for each contained image.
+(just a sheet "stub" actually) for each contained image.
 3. When actually processing a given sheet, the corresponding image is loaded from the input file,
 and the OMR pipeline is applied on the sheet.
-4. At any time, when saving the project, all the book and sheets OMR materials are saved in the
+4. At any time, when saving the project, all the book and sheets OMR information is saved into the
 `foo.omr` project file.
 
 **TIP**: Audiveris V5 can accommodate a book of hundreds of sheets.
-To save on memory, especially on long interactive sessions, the user can ask Audiveris to
-transparently swap all book sheets to disk (except the current one).
+To save on memory, especially during long interactive sessions, the user can ask Audiveris to
+transparently swap all book sheets to disk (except the current sheet).
 This is done via the pulldown menu `Book | Swap Book Sheets`.
 
 ### Sheet Pipeline

@@ -2,24 +2,13 @@
 layout: default
 title: Limitations
 parent: Main Features
-nav_order: 8
+nav_order: 9
 ---
 ## Limitations
 {: .no_toc }
 
 This section presents the known cases that current Audiveris does not handle properly.
 These are "known limitations", which should be addressed in future releases.
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
-TODO: fingering, recognized, but not exported to MXL
-
-TODO: plucking, recognized, but not exported to MXL
 
 It is important that the end user be aware of these cases to avoid wasting time on them
 with the current release.
@@ -34,19 +23,39 @@ We make a distinction between different kinds of OMR limitations:
   process the entity correctly.  
   In many cases, using Audiveris editor, the user should be able to manually modify the engine
   output and thus allow correct production of MusicXML.
-* **Editor**: The data model is OK, but the current editor does not provide the interactive feature
-  to perform a desired action.
-  See [Editor Limitations](../edition/editor_limitations.md) dedicated section.  
+* **Edition**: The data model is OK, but the current edition tools do not provide the
+  interactive feature to perform a desired action.    
   Use of an external music editor on Audiveris MusicXML output may bring a solution.
 
+---
+
+Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Data model Limitations
 
-#### Tablature
+#### Fingering
+TODO: recognized, but not exported to MXL
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Guitar_tablature_sample.svg/450px-Guitar_tablature_sample.svg.png)
+#### Natural signs in key signature
 
-There is no support for tablature staff (the one with the "TAB" clef).
+![](../assets/images/hybrid_key.png)
+
+In current data model, a key signature is assumed to contain only sharp signs or only flat signs.
+There is yet no room in them for natural signs.
+
+Such natural signs are just "curtesy" signs for the reader, and can be ignored by OMR.
+
+Note however that, since the current engine expects sharps-only or flats-only signatures,
+the simple presence of natural signs will likely impede correct key recognition.
+In this case, the user will have to manually enter the correct key (without the naturals).
+
+TODO: cancel keys
 
 #### One-line percussion staff
 
@@ -54,18 +63,12 @@ There is no support for tablature staff (the one with the "TAB" clef).
 
 There is no support for 1-line percussion staff.
 
+TODO: update this
+
 Current Audiveris supports only percussion clef with standard notes on 5-line staves as in
 the following example:
 
 ![](https://upload.wikimedia.org/wikipedia/commons/c/c8/Drumkit_notation_drums.png)
-
-#### Tremolos
-
-![](https://easymusictheory.files.wordpress.com/2013/02/trem1.jpg?w=479)
-
-![](https://study.com/cimages/multimages/16/tremolo_two_notes.png)
-
-Audiveris supports no tremolo, whether on a single note or between two notes.
 
 #### Ottava
 
@@ -80,18 +83,29 @@ vertical leg.
 Although the ottava sign is properly defined and generally recognized by the current engine, there
 is yet no support for the dash-line nor the small vertical leg.
 
-#### Natural signs in key signature
+#### Plucking
+TODO: recognized, but not exported to MXL
 
-![](../assets/images/hybrid_key.png)
+#### Tablature
 
-In current data model, a key signature is assumed to contain only sharp signs or only flat signs.
-There is yet no room in them for natural signs.
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Guitar_tablature_sample.svg/450px-Guitar_tablature_sample.svg.png)
 
-Such natural signs are just "curtesy" signs for the reader, and can be ignored by OMR.
+Even though they can be detected, tablatures cannot be populated, even manually.
 
-Note however that, since the current engine expects sharps-only or flats-only signatures,
-the simple presence of natural signs will likely impede correct key recognition.
-In this case, the user will have to manually enter the correct key (without the naturals).
+- TODO: needed book processing option
+- TODO: non-processing areas
+
+#### Tremolos
+
+![](https://easymusictheory.files.wordpress.com/2013/02/trem1.jpg?w=479)
+
+![](https://study.com/cimages/multimages/16/tremolo_two_notes.png)
+
+Audiveris supports no tremolo, whether on a single note or between two notes.
+
+#### Tuplets
+
+Tuplets other than 3 and 6 tuplets are not supported, even manually.
 
 ### Engine Limitations
 
@@ -116,6 +130,8 @@ It is thus harmless for the OMR engine to ignore this warning.
 Apart from this curtesy case, the user will have to manually enter the missing key change on every
 staff.
 
+TODO: check if engine does not detect key sig changes.
+
 #### Opposed Stems
 
 We can have two head chords with up and down stems that are located in such a way that they seem
@@ -129,3 +145,10 @@ but no head on any stem end.
 At the next reduction, this stem will be discarded, and the now isolated heads as well.
 
 This error can be fixed by manually inserting separate standard stems (and the related heads).
+
+### Edition Limitations
+
+#### ChordName
+
+Need to use # and b characters in lieu of sharp and flat in chord name.
+Tesseract OCR to be trained on embedded alteration signs.
