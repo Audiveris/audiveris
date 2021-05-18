@@ -75,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -254,11 +255,13 @@ public class HeadLinker
      *
      * @param stemProfile desired profile level for stem
      * @param linkProfile global profile for links
+     * @param undefs      (output) populate with undefined head sides
      * @param append      true for appending to already linked heads
      * @return true if linked
      */
     public boolean linkSides (int stemProfile,
                               int linkProfile,
+                              LinkedHashMap<Inter, Set<HorizontalSide>> undefs,
                               boolean append)
     {
         if (head.isVip()) {
@@ -301,6 +304,13 @@ public class HeadLinker
                     // Here, there seems to be potential connections on both vertical sides
                     // So, stop processing this head immediately for both horizontal sides
                     // But stay open to a link coming later (from above or below)
+                    Set<HorizontalSide> hSides = undefs.get(head);
+
+                    if (hSides == null) {
+                        undefs.put(head, hSides = EnumSet.noneOf(HorizontalSide.class));
+                    }
+
+                    hSides.add(hSide);
                 }
             } else if (botOk) {
                 if (clBot.link(stemProfile, linkProfile, append)) {
@@ -317,7 +327,7 @@ public class HeadLinker
                     logger.info("VIP {} ratherGood", this);
                 }
 
-                return linkSides(++stemProfile, linkProfile, append);
+                return linkSides(++stemProfile, linkProfile, undefs, append);
             } else {
                 for (SLinker sLinker : sLinkers.values()) {
                     sLinker.setClosed(true);
@@ -1283,7 +1293,7 @@ public class HeadLinker
              * <p>
              * Side effect: compute theoLine
              *
-             * @param the rather horizontal limit for the area, or null to use part limit
+             * @param limit rather horizontal limit for the area, or null to use part limit
              * @return the lookup area
              */
             private Area buildLuArea (Line2D limit)
@@ -1396,7 +1406,7 @@ public class HeadLinker
              * @param stemProfile desired profile for inclusion of additional items
              * @param linkProfile desired profile for head-stem linking
              * @param relations   (output) to be populated by head-stem and beam-stem relations
-             * @param glyphs      (output) to be populated that glyphs that do compose the stem
+             * @param glyphs      (output) to be populated by glyphs that do compose the stem
              * @return index of last item to pick, or -1 if failed
              */
             private int expand (double yHard,
