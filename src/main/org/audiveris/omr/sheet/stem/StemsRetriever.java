@@ -57,9 +57,11 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +77,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -199,6 +202,9 @@ public class StemsRetriever
 
     /** Maximum vertical gap, per profile level. */
     private final TreeMap<Integer, Integer> gapMap;
+
+    /** Undefined head sides. */
+    private final LinkedHashMap<Inter, Set<HorizontalSide>> undefs = new LinkedHashMap<>();
 
     private StopWatch watch;
 
@@ -578,10 +584,37 @@ public class StemsRetriever
      */
     private void checkNeededStems (List<Inter> systemHeads)
     {
-        for (Inter head : systemHeads) {
-            if (ShapeSet.StemHeads.contains(head.getShape())) {
-                if (!sig.hasRelation(head, HeadStemRelation.class)) {
-                    head.setAbnormal(true);
+        HeadLoop:
+        for (Inter hInter : systemHeads) {
+            if (ShapeSet.StemHeads.contains(hInter.getShape())) {
+                if (!sig.hasRelation(hInter, HeadStemRelation.class)) {
+                    final Set<HorizontalSide> vSides = undefs.get(hInter);
+                    boolean linked = false;
+
+                    if (vSides != null) {
+                        final HeadInter head = (HeadInter) hInter;
+                        final Point headCenter = head.getCenter();
+
+                        for (HorizontalSide hSide : vSides) {
+                            final SLinker sl = head.getLinker().getSLinkers().get(hSide);
+                            logger.debug("{} undef  {}", head, sl);
+
+                            // If we have a VERTICAL_SEED on side, try a stem link
+                            final Glyph stump = sl.getStump();
+
+                            if (stump != null && stump.isVerticalSeed()) {
+                                final Point stumpCenter = stump.getCenter();
+                                final VerticalSide vSide = stumpCenter.y < headCenter.y
+                                        ? TOP : BOTTOM;
+                                final CLinker cl = sl.getCornerLinker(vSide);
+                                linked |= cl.link(0, 0, true);
+                            }
+                        }
+                    }
+
+                    if (!linked) {
+                        hInter.setAbnormal(true);
+                    }
                 }
             }
         }
@@ -732,14 +765,14 @@ public class StemsRetriever
 
         for (Inter h : systemHeads) {
             final HeadInter head = (HeadInter) h;
-            if (!head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), false)) {
+            if (!head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), undefs, false)) {
                 unlinkedHeads.add(head);
             }
         }
 
         watch.start("Heads linking phase 2");
         for (HeadInter head : unlinkedHeads) {
-            head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), true);
+            head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), undefs, true);
         }
     }
 
