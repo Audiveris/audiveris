@@ -1216,14 +1216,14 @@ public class SIGraph
     // relations //
     //-----------//
     /**
-     * Lookup for relations of the provided class (or subclass thereof).
+     * Lookup for relations of the provided classes (or subclasses thereof).
      *
-     * @param classe the class to search for
-     * @return the relations of desired class, perhaps empty but not null
+     * @param classes the classes to search for
+     * @return the relations of desired classes, perhaps empty but not null
      */
-    public List<Relation> relations (final Class classe)
+    public List<Relation> relations (final Class... classes)
     {
-        return relations(new RelationClassPredicate(classe));
+        return relations(new RelationClassPredicate(classes));
     }
 
     //--------------//

@@ -358,28 +358,34 @@ public abstract class Relations
     // RelationClassPredicate //
     //------------------------//
     /**
-     * Predicate to filter Relation instance of a certain class (or subclass thereof).
+     * Predicate to filter Relation instance of certain classes (or subclasses thereof).
      */
     public static class RelationClassPredicate
             implements Predicate<Relation>
     {
 
-        private final Class classe;
+        private final Class[] classes;
 
         /**
          * Create relation class predicate.
          *
-         * @param classe Filtering class
+         * @param classes array of Filtering class
          */
-        public RelationClassPredicate (Class classe)
+        public RelationClassPredicate (Class[] classes)
         {
-            this.classe = classe;
+            this.classes = classes;
         }
 
         @Override
         public boolean test (Relation relation)
         {
-            return classe.isInstance(relation);
+            for (Class classe : classes) {
+                if (classe.isInstance(relation)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
