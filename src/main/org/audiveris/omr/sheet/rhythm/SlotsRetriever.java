@@ -43,6 +43,7 @@ import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 
@@ -287,11 +288,6 @@ public class SlotsRetriever
             return false;
         }
 
-        // No adjacency if explicitly separated
-        if (areExplicitlySeparate(ch1, ch2)) {
-            return false;
-        }
-
         final Rectangle box1 = ch1.getBoundsWithDots();
         final Rectangle box2 = ch2.getBoundsWithDots();
 
@@ -357,7 +353,8 @@ public class SlotsRetriever
     // areExplicitlySeparate //
     //-----------------------//
     /**
-     * Check whether the two provided chords have been declared as using separate slots.
+     * Check whether the two provided chords have been declared as using separate slots
+     * (or sharing the same voice, which implies separate slots).
      *
      * @param ch1 one chord
      * @param ch2 another chord
@@ -375,7 +372,7 @@ public class SlotsRetriever
         final SIGraph sig = src.getSig();
 
         for (Relation rel : sig.getAllEdges(src, tgt)) {
-            if (rel instanceof SeparateTimeRelation) {
+            if ((rel instanceof SeparateTimeRelation) || (rel instanceof SameVoiceRelation)) {
                 return true;
             }
         }
@@ -399,8 +396,11 @@ public class SlotsRetriever
         // Populate graph with chords
         Graphs.addAllVertices(graph, stdChords);
 
-        // Explicit time join
-        inspectTimeJoins(null);
+        // Explicit separate time slots
+        inspectSeparateSlots();
+
+        // Explicit same time
+        inspectSameSlot(null);
 
         // BeamGroupInter-based relationships
         inspectBeams();
@@ -411,8 +411,8 @@ public class SlotsRetriever
         // RootStem-based relationships
         inspectRootStems();
 
-        // Extend explicit time join to intermediate chords if any
-        inspectTimeJoins(stdChords);
+        // Extend explicit same time slot to intermediate chords if any
+        inspectSameSlot(stdChords);
 
         // Detect adjacencies
         inspectAdjacencies(stdChords);
@@ -529,7 +529,7 @@ public class SlotsRetriever
             sb.append("  ").append(chy);
         }
 
-        logger.info("\n{}", sb);
+        logger.info("\nwide:{}\n{}", useWideSlots, sb);
     }
 
     //--------------------//
@@ -636,8 +636,6 @@ public class SlotsRetriever
      */
     private void inspectAdjacencies (List<AbstractChordInter> stdChords)
     {
-        final List<ChordPair> adjacencies = new ArrayList<>();
-
         for (int i = 0; i < stdChords.size(); i++) {
             final AbstractChordInter ch1 = stdChords.get(i);
             final Rectangle box1 = ch1.getBounds();
@@ -656,7 +654,6 @@ public class SlotsRetriever
                 final int yOverlap = GeoUtil.yOverlap(box1, box2);
 
                 if ((yOverlap > params.maxVerticalOverlap) && areAdjacent(ch1, ch2)) {
-                    adjacencies.add(new ChordPair(ch1, ch2));
                     setRel(ch1, ch2, EQUAL);
                     setRel(ch2, ch1, EQUAL);
                 }
@@ -733,7 +730,7 @@ public class SlotsRetriever
                 final double x2 = stack.getXOffset(ch2.getCenterLeft());
                 final double dx = Math.abs(x1 - x2);
 
-                if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
+                if (dx <= maxSlotDx) {
                     setRel(ch1, ch2, CLOSE);
                     setRel(ch2, ch1, CLOSE);
                 }
@@ -768,21 +765,19 @@ public class SlotsRetriever
                     continue;
                 }
 
-                if (!areExplicitlySeparate(ch1, ch2)) {
-                    // Check if compatible with a chord equal to ch2
-                    final Set<AbstractChordInter> equals = getEquals(ch2);
+                // Check if compatible with a chord equal to ch2
+                final Set<AbstractChordInter> equals = getEquals(ch2);
 
-                    for (AbstractChordInter ch : equals) {
-                        if (!areExplicitlySeparate(ch1, ch)) {
-                            final double x = stack.getXOffset(ch.getCenterLeft());
-                            final double dx = Math.abs(x1 - x);
+                for (AbstractChordInter ch : equals) {
+                    if (!areExplicitlySeparate(ch1, ch)) {
+                        final double x = stack.getXOffset(ch.getCenterLeft());
+                        final double dx = Math.abs(x1 - x);
 
-                            if (dx <= maxSlotDx) {
-                                setRel(ch1, ch2, CLOSE);
-                                setRel(ch2, ch1, CLOSE);
+                        if (dx <= maxSlotDx) {
+                            setRel(ch1, ch2, CLOSE);
+                            setRel(ch2, ch1, CLOSE);
 
-                                continue OtherLoop;
-                            }
+                            continue OtherLoop;
                         }
                     }
                 }
@@ -884,19 +879,15 @@ public class SlotsRetriever
         }
     }
 
-    //------------------//
-    // inspectTimeJoins //
-    //------------------//
+    //-----------------//
+    // inspectSameSlot //
+    //-----------------//
     /**
-     * A pair of chords may be linked by an explicit ChordTimeJoinRelation.
-     * <p>
-     * Right now, a ChordTimeJoinRelation is effective only if both source and target chords
-     * belong to the same measure (and thus the same part).
-     * TODO: Should we support time alignment across parts?
+     * A pair of chords may be linked by an explicit SameTimeRelation.
      *
      * @param stdChords standard chords, sorted by abscissa
      */
-    private void inspectTimeJoins (List<AbstractChordInter> stdChords)
+    private void inspectSameSlot (List<AbstractChordInter> stdChords)
     {
         final SIGraph sig = measure.getStack().getSystem().getSig();
 
@@ -932,6 +923,37 @@ public class SlotsRetriever
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    //----------------------//
+    // inspectSeparateSlots //
+    //----------------------//
+    /**
+     * A pair of chords may be linked by an explicit SeparateTimeRelation
+     * (or SameVoiceRelation).
+     */
+    private void inspectSeparateSlots ()
+    {
+        final SIGraph sig = measure.getStack().getSystem().getSig();
+        final MeasureStack stack = measure.getStack();
+
+        for (Relation same : sig.relations(SeparateTimeRelation.class, SameVoiceRelation.class)) {
+            final AbstractChordInter ch1 = (AbstractChordInter) sig.getEdgeSource(same);
+            final AbstractChordInter ch2 = (AbstractChordInter) sig.getEdgeTarget(same);
+
+            if ((ch1.getMeasure() == measure) && (ch2.getMeasure() == measure)) {
+                final double x1 = stack.getXOffset(ch1.getCenterLeft());
+                final double x2 = stack.getXOffset(ch2.getCenterLeft());
+
+                if (x1 < x2) {
+                    setRel(ch1, ch2, BEFORE);
+                    setRel(ch2, ch1, AFTER);
+                } else {
+                    setRel(ch2, ch1, BEFORE);
+                    setRel(ch1, ch2, AFTER);
                 }
             }
         }
