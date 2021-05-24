@@ -437,6 +437,8 @@ public class ShapeBoard
         shapeMap.put("" + c + 'v', Shape.NOTEHEAD_VOID);
         shapeMap.put("" + c + 'b', Shape.NOTEHEAD_BLACK);
         shapeMap.put("" + c + 'd', Shape.AUGMENTATION_DOT);
+        shapeMap.put("" + c + 'h', Shape.HALF_NOTE_UP);
+        shapeMap.put("" + c + 'q', Shape.QUARTER_NOTE_UP);
 
         setMap.put(c = 'r', ShapeSet.Rests);
         shapeMap.put("" + c + '1', Shape.WHOLE_REST);
