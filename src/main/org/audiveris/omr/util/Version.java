@@ -81,7 +81,7 @@ public class Version
         if (dot2 == -1) {
             minor = Integer.decode(this.value.substring(dot1 + 1, len));
             patch = 0;
-            label = null;
+            label = "";
         } else {
             minor = Integer.decode(this.value.substring(dot1 + 1, dot2));
 
@@ -89,7 +89,7 @@ public class Version
 
             if (dash == -1) {
                 patch = Integer.decode(this.value.substring(dot2 + 1, len));
-                label = null;
+                label = "";
             } else {
                 patch = Integer.decode(this.value.substring(dot2 + 1, dash));
                 label = this.value.substring(dash + 1, len);
