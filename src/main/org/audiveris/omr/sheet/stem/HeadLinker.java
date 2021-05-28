@@ -237,12 +237,14 @@ public class HeadLinker
      * <ol>
      * <li>If no significant length is found on either top or bottom, we consider no link can be
      * found on this horizontal side of head.
-     * <li>If top <b>or</b> bottom (exclusively) exhibit a significant length, then a link can be
+     * <li>If top <b>or</b> bottom (exclusively) exhibits a significant length, then a link can be
      * searched on the vertical direction found.
      * <li>If both top <b>and</b> bottom exhibit a significant length, then this head is assumed to
      * be located within a longer "column of heads".
      * No link is searched for this head, we expect that either the starting or the terminating head
      * of the column will fall in the case 2 above.
+     * This head horizontal side is recorded in the 'undefs' collection of undefined heads, to be
+     * later checked when all other attempts have been made.
      * </ol>
      *
      * Policies:
@@ -959,7 +961,7 @@ public class HeadLinker
 
                 // Gap: let's check our own opposite corner
                 final CLinker myDiag = getCornerOpposite();
-                if (myDiag.hasConcreteStart(Profiles.STANDARD)) {
+                if (myDiag.hasConcreteStart(Profiles.STRICT)) {
                     // Use length just before gap
                     return sb.getLengthAt(gapIndex - 1) >= params.minLinkerLength;
                 }
@@ -967,7 +969,7 @@ public class HeadLinker
                 // Gap: let's check other head corner in opposite horizontal side
                 final CLinker diag = cl.getSource().getLinker().getCornerLinker(
                         hSide.opposite(), vSide);
-                if (diag.canLink(Profiles.STANDARD, false)) {
+                if (diag.canLink(Profiles.STRICT, false)) {
                     // Use length just before gap
                     return sb.getLengthAt(gapIndex - 1) >= params.minLinkerLength;
                 }
@@ -1224,7 +1226,7 @@ public class HeadLinker
                         ///h.getLinker().linkSides(0, linkProfile);
                         int maxProf = isRatherGood(h) ? Profiles.RATHER_GOOD_HEAD : linkProfile;
 
-                        for (int prof = Profiles.STANDARD; prof <= maxProf; prof++) {
+                        for (int prof = Profiles.STRICT; prof <= maxProf; prof++) {
                             if (first.link(prof, linkProfile, append)) {
                                 break;
                             }
@@ -1655,7 +1657,7 @@ public class HeadLinker
                     logger.info("VIP {} lookupOtherHeads", this);
                 }
 
-                List<CLinker> list = new ArrayList<>();
+                final List<CLinker> list = new ArrayList<>();
 
                 // Last ordinate before candidates
                 final double yLast = refPt.getY() + yDir * params.minHeadHeadDy;
@@ -1664,17 +1666,18 @@ public class HeadLinker
                 final List<Inter> headCandidates = Inters.intersectedInters(
                         retriever.getSystemHeads(), GeoOrder.BY_ABSCISSA, luArea);
                 headCandidates.remove(head);
+                headCandidates.removeAll(sig.getCompetingInters(head));
 
                 for (Inter hInter : headCandidates) {
-                    final HeadInter head = (HeadInter) hInter;
+                    final HeadInter h = (HeadInter) hInter;
 
                     // Check head is far enough from start
-                    final double dy = yDir * (head.getCenter().y - yLast);
+                    final double dy = yDir * (h.getCenter().y - yLast);
                     if (dy < 0) {
                         continue;
                     }
 
-                    for (SLinker sLinker : head.getLinker().getSLinkers().values()) {
+                    for (SLinker sLinker : h.getLinker().getSLinkers().values()) {
                         if (luArea.contains(sLinker.getReferencePoint())) {
                             list.add(sLinker.getCornerLinker(vSide));
                         }
@@ -1682,7 +1685,6 @@ public class HeadLinker
                 }
 
                 return list;
-
             }
 
             //---------------//

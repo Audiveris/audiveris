@@ -626,7 +626,6 @@ public class StemsRetriever
     private TreeMap<Integer, Integer> buildGapMap ()
     {
         final TreeMap<Integer, Integer> map = new TreeMap<>();
-        map.put(-1, 0);
 
         for (int p = 0; p <= Profiles.MAX_VALUE; p++) {
             map.put(p, scale.toPixels(StemChecker.getMaxYGap(p)));
@@ -765,14 +764,14 @@ public class StemsRetriever
 
         for (Inter h : systemHeads) {
             final HeadInter head = (HeadInter) h;
-            if (!head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), undefs, false)) {
+            if (!head.getLinker().linkSides(Profiles.STRICT, system.getProfile(), undefs, false)) {
                 unlinkedHeads.add(head);
             }
         }
 
         watch.start("Heads linking phase 2");
         for (HeadInter head : unlinkedHeads) {
-            head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), undefs, true);
+            head.getLinker().linkSides(Profiles.STRICT, system.getProfile(), undefs, true);
         }
     }
 

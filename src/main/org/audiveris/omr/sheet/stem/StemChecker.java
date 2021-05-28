@@ -325,21 +325,24 @@ public class StemChecker
         private final Scale.Fraction cleanLow_p3 = new Scale.Fraction(0.0, "Idem for profile 3");
 
         private final Scale.Fraction gapHigh = new Scale.Fraction(
-                0.3,
+                0,
                 "Maximum vertical gap between stem segments");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction gapHigh_p1 = new Scale.Fraction(0.6, "Idem for profile 1");
+        private final Scale.Fraction gapHigh_p1 = new Scale.Fraction(0.3, "Idem for profile 1");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction gapHigh_p2 = new Scale.Fraction(2.0, "Idem for profile 2");
+        private final Scale.Fraction gapHigh_p2 = new Scale.Fraction(0.6, "Idem for profile 2");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction gapHigh_p3 = new Scale.Fraction(4.0, "Idem for profile 3");
+        private final Scale.Fraction gapHigh_p3 = new Scale.Fraction(2.0, "Idem for profile 3");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction gapHigh_p4 = new Scale.Fraction(4.0, "Idem for profile 4");
 
         private final Constant.Double slopeHigh = new Constant.Double(
                 "tangent",
-                0.08, // 0.06,
+                0.08,
                 "Maximum difference with global slope");
 
         private final Scale.Fraction straightHigh = new Scale.Fraction(

@@ -500,7 +500,7 @@ public class EndingsBuilder
             legYMargin = scale.toPixels(constants.legYMargin);
             maxLegXGap = scale.toPixels(constants.maxLegXGap);
             maxLegYGap = scale.toPixels(constants.maxLegYGap);
-            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(Profiles.STANDARD));
+            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(Profiles.STRICT));
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {

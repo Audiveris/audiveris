@@ -386,6 +386,30 @@ public class SIGraph
         return closure;
     }
 
+    //--------------------//
+    // getCompetingInters //
+    //--------------------//
+    /**
+     * Report the set of inters that have an exclusion with provided inter.
+     *
+     * @param inter the provided interpretation
+     * @return the set of competitors, perhaps empty but never null
+     */
+    public Set<Inter> getCompetingInters (Inter inter)
+    {
+        final Set<Inter> competitors = new LinkedHashSet<>();
+
+        for (Relation exc : getExclusions(inter)) {
+            competitors.add(getOppositeInter(inter, exc));
+        }
+
+        if (competitors.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return competitors;
+    }
+
     //--------------//
     // getExclusion //
     //--------------//

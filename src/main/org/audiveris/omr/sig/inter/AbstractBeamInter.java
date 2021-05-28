@@ -40,7 +40,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
-import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -341,9 +340,7 @@ public abstract class AbstractBeamInter
      */
     public BeamHookInter getCompetingHook ()
     {
-        for (Relation rel : sig.getRelations(this, Exclusion.class)) {
-            final Inter opposite = sig.getOppositeInter(this, rel);
-
+        for (Inter opposite : sig.getCompetingInters(this)) {
             if ((opposite.getShape() == Shape.BEAM_HOOK) && (opposite.getGlyph() == getGlyph())) {
                 return (BeamHookInter) opposite;
             }

@@ -115,7 +115,7 @@ public class StemBuilder
     private List<StemItem> items = new ArrayList<>();
 
     /** Reachable lengths, per profile. */
-    private final TreeMap<Integer, IndexLg> lengthMap = new TreeMap<>();
+    private final TreeMap<Integer, Integer> lengthMap = new TreeMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -381,7 +381,7 @@ public class StemBuilder
      */
     public int getLength (int profile)
     {
-        return lengthMap.get(profile).lg;
+        return lengthMap.get(profile);
     }
 
     //----------------//
@@ -394,7 +394,7 @@ public class StemBuilder
      */
     public int getTotalLength ()
     {
-        return lengthMap.get(Profiles.MAX_VALUE).lg;
+        return lengthMap.get(Profiles.MAX_VALUE);
     }
 
     //----------------//
@@ -1028,7 +1028,7 @@ public class StemBuilder
                         final int prof = entry.getKey();
 
                         if (lengthMap.get(prof) == null) {
-                            lengthMap.put(prof, new IndexLg(i - 1, getLengthAt(i - 1)));
+                            lengthMap.put(prof, getLengthAt(i - 1));
                         }
                     } else {
                         break;
@@ -1037,7 +1037,7 @@ public class StemBuilder
 
                 if (ev.contrib > maxGap) {
                     if (lengthMap.get(maxStemProfile) == null) {
-                        lengthMap.put(maxStemProfile, new IndexLg(i - 1, getLengthAt(i - 1)));
+                        lengthMap.put(maxStemProfile, getLengthAt(i - 1));
                     }
 
                     return;
@@ -1049,7 +1049,7 @@ public class StemBuilder
             final int prof = entry.getKey();
 
             if (lengthMap.get(prof) == null) {
-                lengthMap.put(prof, new IndexLg(maxIndex, getLengthAt(maxIndex)));
+                lengthMap.put(prof, getLengthAt(maxIndex));
             }
         }
     }
@@ -1110,30 +1110,5 @@ public class StemBuilder
         }
 
         return null;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // IndexLg //
-    //---------//
-    public static class IndexLg
-    {
-
-        final int index;
-
-        final int lg;
-
-        public IndexLg (int index,
-                        int lg)
-        {
-            this.index = index;
-            this.lg = lg;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return index + "/" + lg;
-        }
     }
 }
