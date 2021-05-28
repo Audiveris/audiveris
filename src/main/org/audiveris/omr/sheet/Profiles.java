@@ -30,26 +30,29 @@ public abstract class Profiles
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Strict case: no gap allowed. */
+    public static final int STRICT = 0;
+
     /** Standard case: no particular profile. */
-    public static final int STANDARD = 0;
+    public static final int STANDARD = 1;
 
     /** Case of an entity manually defined by the user, we can be more relax. */
-    public static final int MANUAL = 1;
+    public static final int MANUAL = 2;
 
     /** Sheet of rather poor quality. */
-    public static final int POOR = 1;
+    public static final int POOR = 2;
 
     /** Linking a rather good head. */
-    public static final int RATHER_GOOD_HEAD = 2;
+    public static final int RATHER_GOOD_HEAD = 3;
 
     /** Linking a beam center, from a connected stem seed. */
-    public static final int BEAM_SEED = 2;
+    public static final int BEAM_SEED = 3;
 
     /** Linking a beam side, for a good beam, should not fail. */
-    public static final int BEAM_SIDE = 3;
+    public static final int BEAM_SIDE = 4;
 
     /** Maximum defined profile value. */
-    public static final int MAX_VALUE = 3;
+    public static final int MAX_VALUE = 4;
 
     //~ Constructors -------------------------------------------------------------------------------
     private Profiles ()

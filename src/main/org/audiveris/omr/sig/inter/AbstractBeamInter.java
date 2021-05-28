@@ -341,9 +341,7 @@ public abstract class AbstractBeamInter
      */
     public BeamHookInter getCompetingHook ()
     {
-        for (Relation rel : sig.getRelations(this, Exclusion.class)) {
-            final Inter opposite = sig.getOppositeInter(this, rel);
-
+        for (Inter opposite : sig.getCompetingInters(this)) {
             if ((opposite.getShape() == Shape.BEAM_HOOK) && (opposite.getGlyph() == getGlyph())) {
                 return (BeamHookInter) opposite;
             }

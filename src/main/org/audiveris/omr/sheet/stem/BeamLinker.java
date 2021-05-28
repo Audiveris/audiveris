@@ -1333,6 +1333,11 @@ public class BeamLinker
 
                 final List<Inter> headCandidates = Inters.intersectedInters(
                         retriever.getSystemHeads(), GeoOrder.BY_ABSCISSA, luArea);
+
+                for (AbstractBeamInter b : siblings) {
+                    headCandidates.removeAll(beam.getSig().getCompetingInters(b));
+                }
+
                 final List<CLinker> cLinkers = new ArrayList<>();
 
                 // For void heads
