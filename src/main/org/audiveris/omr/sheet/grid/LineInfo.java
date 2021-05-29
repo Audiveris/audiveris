@@ -109,7 +109,7 @@ public interface LineInfo
      * Report the same line translated vertically.
      *
      * @param dy amount of vertical translation
-     * @return
+     * @return the translated line
      */
     LineInfo yTranslated (double dy);
 }

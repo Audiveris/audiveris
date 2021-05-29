@@ -146,7 +146,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #setClosing}</li>
  * <li>{@link #getLock}</li>
  * <li>{@link #openBookFile}</li>
+ * <li>{@link #openBookFile(Path)}</li>
  * <li>{@link #openSheetFolder}</li>
+ * <li>{@link #isUpgraded}</li>
+ * <li>{@link #batchUpgradeBooks}</li>
+ * <li>{@link #getVersion}</li>
+ * <li>{@link #getVersionValue}</li>
+ * <li>{@link #setVersionValue}</li>
+ * <li>{@link #getStubsToUpgrade}</li>
+ * <li>{@link #getStubsWithOldVersion}</li>
+ * <li>{@link #getStubsWithTableFiles}</li>
+ * <li>{@link #upgradeStubs}</li>
  * </ul>
  * </dd>
  *
@@ -160,8 +170,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getStub}</li>
  * <li>{@link #getStubs}</li>
  * <li>{@link #getStubs(java.util.Collection)}</li>
+ * <li>{@link #getSheetsSelection}</li>
+ * <li>{@link #setSheetsSelection}</li>
+ * <li>{@link #getSelectedStubs}</li>
  * <li>{@link #getFirstValidStub}</li>
+ * <li>{@link #getValidSelectedStubs}</li>
  * <li>{@link #getValidStubs}</li>
+ * <li>{@link #getValidStubs(java.util.List)}</li>
  * <li>{@link #removeStub}</li>
  * <li>{@link #hideInvalidStubs}</li>
  * <li>{@link #ids}</li>
@@ -172,6 +187,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dt>Parameters</dt>
  * <dd>
  * <ul>
+ * <li>{@link #promptedForUpgrade}</li>
+ * <li>{@link #setPromptedForUpgrade}</li>
  * <li>{@link #getBinarizationFilter}</li>
  * <li>{@link #getOcrLanguages}</li>
  * <li>{@link #getProcessingSwitches}</li>
@@ -181,14 +198,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dt>Transcription</dt>
  * <dd>
  * <ul>
- * <li>{@link #reset}</li>
- * <li>{@link #resetToBinary}</li>
+ * <li>{@link #resetTo}</li>
  * <li>{@link #transcribe}</li>
  * <li>{@link #reachBookStep}</li>
  * <li>{@link #updateScores}</li>
  * <li>{@link #reduceScores}</li>
  * <li>{@link #getScore}</li>
  * <li>{@link #getScores}</li>
+ * <li>{@link #clearScores}</li>
+ * <li>{@link #isMultiMovement}</li>
  * </ul>
  * </dd>
  *
@@ -210,6 +228,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getBrowserFrame}</li>
  * <li>{@link #getExportPathSansExt}</li>
  * <li>{@link #setExportPathSansExt}</li>
+ * <li>{@link #getOpusExportPath}</li>
+ * <li>{@link #getScoreExportPaths}</li>
  * <li>{@link #export}</li>
  * <li>{@link #getPrintPath}</li>
  * <li>{@link #setPrintPath}</li>
@@ -377,7 +397,7 @@ public class Book
     /**
      * No-arg constructor needed by JAXB.
      */
-    public Book ()
+    private Book ()
     {
         path = null;
         subBooks = null;
@@ -501,6 +521,25 @@ public class Book
         Memory.gc();
 
         logger.debug("Book closed.");
+    }
+
+    //-----------------//
+    // closeFileSystem //
+    //-----------------//
+    /**
+     * Close the provided (book) file system.
+     *
+     * @param fileSystem the book file system
+     */
+    public static void closeFileSystem (FileSystem fileSystem)
+    {
+        try {
+            fileSystem.close();
+
+            logger.info("Book file system closed.");
+        } catch (IOException ex) {
+            logger.warn("Could not close book file system " + ex, ex);
+        }
     }
 
     //-------------//
@@ -1312,6 +1351,33 @@ public class Book
         });
     }
 
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Build a string with just the IDs of the stub collection.
+     *
+     * @param theStubs the collection of stub instances
+     * @return the string built
+     */
+    public static String ids (List<SheetStub> theStubs)
+    {
+        if (theStubs == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (SheetStub entity : theStubs) {
+            sb.append("#").append(entity.getNumber());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //-------------//
     // includeBook //
     //-------------//
@@ -1473,6 +1539,69 @@ public class Book
         return stubs.size() > 1;
     }
 
+    //----------//
+    // loadBook //
+    //----------//
+    /**
+     * Load a book out of a provided book file.
+     *
+     * @param bookPath path to the (zipped) book file
+     * @return the loaded book if successful
+     */
+    public static Book loadBook (Path bookPath)
+    {
+        StopWatch watch = new StopWatch("loadBook " + bookPath);
+        Book book = null;
+
+        try {
+            logger.info("Loading book {}", bookPath);
+            watch.start("book");
+
+            // Open book file
+            Path rootPath = ZipFileSystem.open(bookPath);
+
+            // Load book internals (just the stubs) out of book.xml
+            Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
+
+            try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
+                JAXBContext ctx = getJaxbContext();
+                Unmarshaller um = ctx.createUnmarshaller();
+                book = (Book) um.unmarshal(is);
+                LogUtil.start(book);
+                book.getLock().lock();
+                rootPath.getFileSystem().close(); // Close book file
+
+                boolean ok = book.initTransients(null, bookPath);
+
+                if (!ok) {
+                    logger.info("Discarded {}", bookPath);
+
+                    return null;
+                }
+
+                book.checkScore(); // TODO: remove ASAP
+
+                // Book successfully loaded (but sheets may need upgrade later).
+                return book;
+            }
+        } catch (IOException |
+                 JAXBException ex) {
+            logger.warn("Error loading book " + bookPath + " " + ex, ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+
+            if (book != null) {
+                book.getLock().unlock();
+            }
+
+            LogUtil.stopBook();
+        }
+    }
+
     //----------------//
     // loadSheetImage //
     //----------------//
@@ -1527,6 +1656,40 @@ public class Book
             throws IOException
     {
         return ZipFileSystem.open(bookPath);
+    }
+
+    //--------------//
+    // openBookFile //
+    //--------------//
+    /**
+     * Open the book file (supposed to already exist at location provided by
+     * '{@code bookPath}' parameter) for reading or writing.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @param bookPath book path name
+     * @return the root path of the (zipped) book file system
+     */
+    public static Path openBookFile (Path bookPath)
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            logger.debug("Book file system opened");
+
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, (ClassLoader) null);
+
+            return fileSystem.getPath(fileSystem.getSeparator());
+        } catch (FileNotFoundException ex) {
+            logger.warn("File not found: " + bookPath, ex);
+        } catch (IOException ex) {
+            logger.warn("Error reading book:" + bookPath, ex);
+        }
+
+        return null;
     }
 
     //-----------------//
@@ -2655,149 +2818,6 @@ public class Book
         }
 
         return impacted;
-    }
-
-    //-----------------//
-    // closeFileSystem //
-    //-----------------//
-    /**
-     * Close the provided (book) file system.
-     *
-     * @param fileSystem the book file system
-     */
-    public static void closeFileSystem (FileSystem fileSystem)
-    {
-        try {
-            fileSystem.close();
-
-            logger.info("Book file system closed.");
-        } catch (IOException ex) {
-            logger.warn("Could not close book file system " + ex, ex);
-        }
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the stub collection.
-     *
-     * @param theStubs the collection of stub instances
-     * @return the string built
-     */
-    public static String ids (List<SheetStub> theStubs)
-    {
-        if (theStubs == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (SheetStub entity : theStubs) {
-            sb.append("#").append(entity.getNumber());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // loadBook //
-    //----------//
-    /**
-     * Load a book out of a provided book file.
-     *
-     * @param bookPath path to the (zipped) book file
-     * @return the loaded book if successful
-     */
-    public static Book loadBook (Path bookPath)
-    {
-        StopWatch watch = new StopWatch("loadBook " + bookPath);
-        Book book = null;
-
-        try {
-            logger.info("Loading book {}", bookPath);
-            watch.start("book");
-
-            // Open book file
-            Path rootPath = ZipFileSystem.open(bookPath);
-
-            // Load book internals (just the stubs) out of book.xml
-            Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
-
-            try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
-                JAXBContext ctx = getJaxbContext();
-                Unmarshaller um = ctx.createUnmarshaller();
-                book = (Book) um.unmarshal(is);
-                LogUtil.start(book);
-                book.getLock().lock();
-                rootPath.getFileSystem().close(); // Close book file
-
-                boolean ok = book.initTransients(null, bookPath);
-
-                if (!ok) {
-                    logger.info("Discarded {}", bookPath);
-
-                    return null;
-                }
-
-                book.checkScore(); // TODO: remove ASAP
-
-                // Book successfully loaded (but sheets may need upgrade later).
-                return book;
-            }
-        } catch (IOException |
-                 JAXBException ex) {
-            logger.warn("Error loading book " + bookPath + " " + ex, ex);
-
-            return null;
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-
-            if (book != null) {
-                book.getLock().unlock();
-            }
-
-            LogUtil.stopBook();
-        }
-    }
-
-    //--------------//
-    // openBookFile //
-    //--------------//
-    /**
-     * Open the book file (supposed to already exist at location provided by
-     * '{@code bookPath}' parameter) for reading or writing.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @param bookPath book path name
-     * @return the root path of the (zipped) book file system
-     */
-    public static Path openBookFile (Path bookPath)
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            logger.debug("Book file system opened");
-
-            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, (ClassLoader) null);
-
-            return fileSystem.getPath(fileSystem.getSeparator());
-        } catch (FileNotFoundException ex) {
-            logger.warn("File not found: " + bookPath, ex);
-        } catch (IOException ex) {
-            logger.warn("Error reading book:" + bookPath, ex);
-        }
-
-        return null;
     }
 
     //------------//

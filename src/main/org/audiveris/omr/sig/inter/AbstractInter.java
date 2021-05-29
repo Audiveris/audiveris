@@ -89,6 +89,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.sheet.Profiles;
 
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
@@ -797,7 +798,7 @@ public abstract class AbstractInter
     @Override
     public int getProfile ()
     {
-        return isManual() ? 1 : 0;
+        return isManual() ? Profiles.MANUAL : Profiles.STANDARD;
     }
 
     //-----------------//

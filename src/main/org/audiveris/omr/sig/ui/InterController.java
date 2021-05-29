@@ -574,10 +574,8 @@ public class InterController
     /**
      * Add a relation between inters.
      *
-     * @param sig      the containing SIG
-     * @param source   the source inter
-     * @param target   the target inter
-     * @param relation the relation to add
+     * @param sig  the containing SIG
+     * @param strs the list of SourceTargetRelation to add
      */
     @UIThread
     public void linkMultiple (final SIGraph sig,

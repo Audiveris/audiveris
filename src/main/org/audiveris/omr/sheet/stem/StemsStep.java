@@ -90,7 +90,7 @@ public class StemsStep
      *
      * @param sheet the sheet to check
      * @return null
-     * @throws StepException
+     * @throws StepException if step got stopped
      */
     @Override
     protected Void doProlog (Sheet sheet)

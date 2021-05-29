@@ -86,6 +86,7 @@ public class GuiActions
      * Launch browser on the global repository.
      *
      * @param e the event which triggered this action
+     * @return the background task
      */
     @Action
     public Task browseGlobalSamples (ActionEvent e)
@@ -108,6 +109,7 @@ public class GuiActions
      * Launch browser on a local sample repository.
      *
      * @param e the event which triggered this action
+     * @return the background task
      */
     @Action
     public Task browseLocalSamples (ActionEvent e)

@@ -135,6 +135,8 @@ import javax.xml.stream.XMLStreamException;
  * <dd>
  * <ul>
  * <li>{@link #addPage}</li>
+ * <li>{@link #addPage(int,Page)}</li>
+ * <li>{@link #removePage}</li>
  * <li>{@link #getPages}</li>
  * <li>{@link #getLastPage}</li>
  * <li>{@link #getStaffManager}</li>
@@ -147,7 +149,7 @@ import javax.xml.stream.XMLStreamException;
  * <dd>
  * <ul>
  * <li>{@link #annotate()}</li>
- * <li>{@link #annotate(java.nio.file.Path)}</li>
+ * <li>{@link #annotate(Path)}</li>
  * <li>{@link #sample}</li>
  * </ul>
  * </dd>
@@ -175,7 +177,7 @@ import javax.xml.stream.XMLStreamException;
  * <ul>
  * <li>{@link #getSheetEditor}</li>
  * <li>{@link #createBinaryView}</li>
- * <li>{@link #createInitialView}</li>
+ * <li>{@link #createGrayView}</li>
  * <li>{@link #displayDataTab}</li>
  * <li>{@link #displayMainTabs}</li>
  * <li>{@link #getErrorsEditor}</li>
