@@ -103,6 +103,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #decideOnRemoval}</li>
  * <li>{@link #setModified}</li>
  * <li>{@link #isModified}</li>
+ * <li>{@link #getVersion}</li>
+ * <li>{@link #getVersionValue}</li>
+ * <li>{@link #setVersionValue}</li>
+ * <li>{@link #isUpgraded}</li>
+ * <li>{@link #setUpgraded}</li>
  * <li>{@link #close}</li>
  * <li>{@link #getLock}</li>
  * <li>{@link #storeSheet}</li>
@@ -112,10 +117,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dd>
  * <ul>
  * <li>{@link #addPageRef}</li>
+ * <li>{@link #addPageRef(int,PageRef)}</li>
  * <li>{@link #clearPageRefs}</li>
  * <li>{@link #getFirstPageRef}</li>
  * <li>{@link #getLastPageRef}</li>
  * <li>{@link #getPageRefs}</li>
+ * <li>{@link #removePageRef}</li>
  * </ul>
  * </dd>
  * <dt>Parameters</dt>
@@ -124,6 +131,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getBinarizationFilter}</li>
  * <li>{@link #getOcrLanguages}</li>
  * <li>{@link #getProcessingSwitches}</li>
+ * <li>{@link #getProfile}</li>
  * </ul>
  * </dd>
  * <dt>Transcription</dt>
@@ -131,6 +139,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <ul>
  * <li>{@link #reset}</li>
  * <li>{@link #resetToBinary}</li>
+ * <li>{@link #resetToGray}</li>
  * <li>{@link #reachStep}</li>
  * <li>{@link #getCurrentStep}</li>
  * <li>{@link #getLatestStep}</li>
@@ -139,6 +148,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #isDone}</li>
  * <li>{@link #invalidate}</li>
  * <li>{@link #isValid}</li>
+ * <li>{@link #validate}</li>
  * </ul>
  * </dd>
  * <dt>UI</dt>
@@ -1055,28 +1065,6 @@ public class SheetStub
         }
     }
 
-    //---------//
-    // display //
-    //---------//
-    private void display ()
-    {
-        if (OMR.gui != null) {
-            try {
-                Runnable runnable = () -> StubsController.getInstance().display(
-                        SheetStub.this, false);
-
-                if (SwingUtilities.isEventDispatchThread()) {
-                    runnable.run();
-                } else {
-                    SwingUtilities.invokeAndWait(runnable);
-                }
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
-                logger.warn("Could not reset {}", ex.toString(), ex);
-            }
-        }
-    }
-
     //------------//
     // storeSheet //
     //------------//
@@ -1199,6 +1187,28 @@ public class SheetStub
 
         if ((switches != null) && switches.isEmpty()) {
             switches = null;
+        }
+    }
+
+    //---------//
+    // display //
+    //---------//
+    private void display ()
+    {
+        if (OMR.gui != null) {
+            try {
+                Runnable runnable = () -> StubsController.getInstance().display(
+                        SheetStub.this, false);
+
+                if (SwingUtilities.isEventDispatchThread()) {
+                    runnable.run();
+                } else {
+                    SwingUtilities.invokeAndWait(runnable);
+                }
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
+                logger.warn("Could not reset {}", ex.toString(), ex);
+            }
         }
     }
 

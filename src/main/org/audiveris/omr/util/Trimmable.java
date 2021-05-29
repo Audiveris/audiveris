@@ -53,10 +53,10 @@ public abstract class Trimmable
      * Nullify any empty collection annotated field before being marshalled.
      *
      * @param obj the object about to be marshalled
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InvocationTargetException
-     * @throws NoSuchMethodException
+     * @throws IllegalAccessException    to be handled by caller
+     * @throws IllegalArgumentException  to be handled by caller
+     * @throws InvocationTargetException to be handled by caller
+     * @throws NoSuchMethodException     to be handled by caller
      */
     public static void beforeMarshal (Object obj)
             throws IllegalAccessException,
@@ -89,11 +89,11 @@ public abstract class Trimmable
      * Re-allocate empty collections to null annotated fields after being marshalled.
      *
      * @param obj the object just marshalled
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InstantiationException
-     * @throws InvocationTargetException
-     * @throws NoSuchMethodException
+     * @throws IllegalAccessException    to be handled by caller
+     * @throws IllegalArgumentException  to be handled by caller
+     * @throws InstantiationException    to be handled by caller
+     * @throws InvocationTargetException to be handled by caller
+     * @throws NoSuchMethodException     to be handled by caller
      */
     public static void afterMarshal (Object obj)
             throws IllegalAccessException,

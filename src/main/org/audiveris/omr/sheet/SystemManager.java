@@ -113,7 +113,7 @@ public class SystemManager
     // allocatePages //
     //---------------//
     /**
-     * Allocate page(s) for the sheet, as well as contained systems & parts.
+     * Allocate page(s) for the sheet, as well as contained systems and parts.
      * <p>
      * Detect if an indented system starts a new movement (and thus a new score).
      * <p>

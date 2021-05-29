@@ -87,10 +87,10 @@ public class SheetView
     //~ Constructors -------------------------------------------------------------------------------
     /**
      *
-     * @param assembly
-     * @param title
-     * @param boardsPane
-     * @param scrollView
+     * @param assembly   the sheet assembly
+     * @param title      title for the view
+     * @param boardsPane related boards pane
+     * @param scrollView scroll view to host the sheet view
      */
     public SheetView (SheetAssembly assembly,
                       String title,

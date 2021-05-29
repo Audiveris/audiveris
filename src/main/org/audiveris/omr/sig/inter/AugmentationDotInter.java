@@ -547,7 +547,8 @@ public class AugmentationDotInter
      * <li>If head is located <b>on</b> staff line or ledger, use dot relative location.
      * <li>If head is located <b>between</b> staff lines or ledgers:
      * <ul>
-     * <li>If {@link ProcessingSwitches#bothSharedHeadDots} is set, assign dot to <b>both</b> heads.
+     * <li>If {@link ProcessingSwitches.Switch#bothSharedHeadDots} is set, assign dot to
+     * <b>both</b> heads.
      * <li>If switch is not set, check chords durations:
      * <ul>
      * <li>If they are different, assign the dot <b>only</b> to the <b>longer</b>

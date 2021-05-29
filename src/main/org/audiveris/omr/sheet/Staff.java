@@ -169,7 +169,7 @@ public class Staff
     @XmlElement(name = "ledgers-entry")
     protected List<LedgersEntry> ledgersValue;
 
-    /** Notes (heads & rests) assigned to this staff. */
+    /** Notes (heads and rests) assigned to this staff. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "notes")

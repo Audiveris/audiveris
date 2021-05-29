@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities;
  *
  * @author Rob Camick
  *
- * @see https://tips4java.wordpress.com/2008/11/06/wrap-layout/
+ * @see <a href="https://tips4java.wordpress.com/2008/11/06/wrap-layout/">Wrap Layout</a>
  */
 public class WrapLayout
         extends FlowLayout
