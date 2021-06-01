@@ -1565,7 +1565,7 @@ public class BeamGroupInter
 
         private final Constant.Double maxSlopeDiff = new Constant.Double(
                 "tangent",
-                0.07,
+                0.065,
                 "Maximum slope difference between beams of a group");
 
         private final Constant.Double cueMaxSlopeDiff = new Constant.Double(

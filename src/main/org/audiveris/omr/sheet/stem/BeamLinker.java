@@ -1084,9 +1084,7 @@ public class BeamLinker
             private void buildGeometry ()
             {
                 luArea = buildLuArea(null); // This gives a first value for theoLine
-//
-//                theoLine = retriever.getTheoreticalLine(refPt, yDir);
-//
+
                 // Check for closer limit (due to some alien beam, for example)
                 final Line2D closer = getCloserLimit();
 
@@ -1109,7 +1107,7 @@ public class BeamLinker
              * <p>
              * Global slope is used (plus and minus slopeMargin).
              *
-             * @param the rather horizontal limit for the area, or null to use system limit
+             * @param limit the rather horizontal limit for the area, or null to use system limit
              * @return the lookup area
              */
             private Area buildLuArea (Line2D limit)
@@ -1259,7 +1257,8 @@ public class BeamLinker
                             stoppingHeadLinker = isEnd ? cl : null;
 
                             // Once a first stopping head has been reached, let's use normal maxYGap
-                            maxYGap = retriever.getGapMap().get(isEnd ? linkProfile : stemProfile);
+                            maxYGap = retriever.getGapMap().get(
+                                    isEnd ? Profiles.STANDARD : stemProfile);
                         }
                     } else if (ev instanceof LinkerItem
                                        && ((LinkerItem) ev).linker instanceof BLinker) {
@@ -1537,11 +1536,6 @@ public class BeamLinker
                     }
                 }
 
-                final SIGraph sig = system.getSig();
-                if (stem.getId() == 0) {
-                    sig.addVertex(stem);
-                }
-
                 // Link between starting beam and stem?
                 final Link bsLink = BeamStemRelation.checkLink(
                         beam, stem, vSide.opposite(), scale, stemProfile);
@@ -1549,6 +1543,12 @@ public class BeamLinker
                     logger.info("{} no beam link", this);
                     return false;
                 }
+
+                final SIGraph sig = system.getSig();
+                if (stem.getId() == 0) {
+                    sig.addVertex(stem);
+                }
+
                 bsLink.applyTo(beam);
                 getBLinker().setLinked(true);
 

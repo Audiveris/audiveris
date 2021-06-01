@@ -739,10 +739,10 @@ public class StemsRetriever
         stemChecker = new StemChecker(system.getSheet());
 
         // Beams first
-        watch.start("Beams linking");
         systemBeams = sig.inters(AbstractBeamInter.class);
         Collections.sort(systemBeams, Inters.byReverseWidth); // Link longest beams first
 
+        watch.start("Beams sides linking");
         for (Iterator<Inter> it = systemBeams.iterator(); it.hasNext();) {
             final AbstractBeamInter beam = (AbstractBeamInter) it.next();
 
@@ -752,7 +752,11 @@ public class StemsRetriever
                 it.remove();
                 continue;
             }
+        }
 
+        watch.start("Beams stumps linking");
+        for (Iterator<Inter> it = systemBeams.iterator(); it.hasNext();) {
+            final AbstractBeamInter beam = (AbstractBeamInter) it.next();
             beam.getLinker().linkStumps(system.getProfile());
         }
 
@@ -1102,7 +1106,7 @@ public class StemsRetriever
                 "Maximum horizontal gap between beam and seed");
 
         private final Constant.Ratio maxBeamSeedDyRatio = new Constant.Ratio(
-                0.5,
+                0.25,
                 "Maximum vertical gap between beam and seed as ratio of max gap with stem");
 
         private final Scale.Fraction minBeamStemsDx = new Scale.Fraction(
