@@ -1516,7 +1516,12 @@ public class HeadLinker
                         final double cg = retriever.getMaxHeadContextualGrade(cl.getHead(),
                                                                               hsRel);
                         if (cg >= Grades.minContextualGrade) {
-                            ySoft = cl.getReferencePoint().getY() + yDir * params.bestStemTailLg;
+                            final double cly = cl.getReferencePoint().getY();
+                            ySoft = cly + yDir * params.bestStemTailLg;
+
+                            if (stemProfile < Profiles.MAX_VALUE) {
+                                yHard = cly + yDir * params.minStemTailLg;
+                            }
                         }
                     } else if (ev instanceof LinkerItem
                                        && ((LinkerItem) ev).linker instanceof BLinker) {
