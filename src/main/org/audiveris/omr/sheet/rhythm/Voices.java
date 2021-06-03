@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import java.awt.Color;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
@@ -117,6 +118,27 @@ public abstract class Voices
         }
     };
 
+    /** Sequence of colors for voices. */
+    private static final int alpha = 200;
+
+    private static final Color[] voiceColors = new Color[]{
+        /** 1 Purple */
+        new Color(128, 64, 255, alpha),
+        /** 2 Green */
+        new Color(0, 255, 0, alpha),
+        /** 3 Brown */
+        new Color(165, 42, 42, alpha),
+        /** 4 Magenta */
+        new Color(255, 0, 255, alpha),
+        /** 5 Cyan */
+        new Color(0, 255, 255, alpha),
+        /** 6 Orange */
+        new Color(255, 200, 0, alpha),
+        /** 7 Pink */
+        new Color(255, 150, 150, alpha),
+        /** 8 BlueGreen */
+        new Color(0, 128, 128, alpha)};
+
     //~ Constructors -------------------------------------------------------------------------------
     // Not meant to be instantiated.
     private Voices ()
@@ -124,6 +146,50 @@ public abstract class Voices
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // colorOf //
+    //---------//
+    /**
+     * Report the color to use when painting elements related to the provided voice.
+     *
+     * @param voice the provided voice
+     * @return the color to use
+     */
+    public static Color colorOf (Voice voice)
+    {
+        return colorOf(voice.getId());
+    }
+
+    //---------//
+    // colorOf //
+    //---------//
+    /**
+     * Report the color to use when painting elements related to the provided voice ID.
+     *
+     * @param id the provided voice id
+     * @return the color to use
+     */
+    public static Color colorOf (int id)
+    {
+        // Use table of colors, circularly.
+        int index = (id - 1) % voiceColors.length;
+
+        return voiceColors[index];
+    }
+
+    //---------------//
+    // getColorCount //
+    //---------------//
+    /**
+     * Report the number of defined voice colors.
+     *
+     * @return count of colors
+     */
+    public static int getColorCount ()
+    {
+        return voiceColors.length;
+    }
+
     //------------//
     // refinePage //
     //------------//
@@ -263,10 +329,10 @@ public abstract class Voices
     // refineStack //
     //-------------//
     /**
-     * Refine voice IDs within a stack.
+     * Refine voice IDs within a stack. (METHOD NOT USED)
      * <p>
      * When this method is called, initial IDs have been assigned according to voice creation
-     * (whole voices first, then slot voices, with each voice remaining in its part).
+     * (measure-long voices first, then slot voices, with each voice remaining in its part).
      * <p>
      * Here we simply rename the IDs from top to bottom (roughly), within each staff.
      * <p>
@@ -307,26 +373,25 @@ public abstract class Voices
 
             for (MeasureStack stack : system.getStacks()) {
                 final Measure measure = stack.getMeasureAt(part);
+                final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
 
-                if (prevMeasure != null) {
-                    // Check tied voices from same part in previous measure
-                    final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
-
-                    for (Voice voice : measureVoices) {
+                for (Voice voice : measureVoices) {
+                    if (prevMeasure != null) {
+                        // Check voices from same part in previous measure
                         // Tie-based voice link
-                        Integer tiedId = getTiedId(voice, measureSlurAdapter);
+                        final Integer tiedId = getTiedId(voice, measureSlurAdapter);
 
                         if ((tiedId != null) && (voice.getId() != tiedId)) {
                             measure.swapVoiceId(voice, tiedId);
                         }
 
                         // SameVoiceRelation-based voice link
-                        AbstractChordInter ch2 = voice.getFirstChord();
+                        final AbstractChordInter ch2 = voice.getFirstChord();
 
                         if (ch2 != null) {
                             for (Relation rel : sig.getRelations(ch2, SameVoiceRelation.class)) {
-                                Inter inter = sig.getOppositeInter(ch2, rel);
-                                AbstractChordInter ch1 = (AbstractChordInter) inter;
+                                final Inter inter = sig.getOppositeInter(ch2, rel);
+                                final AbstractChordInter ch1 = (AbstractChordInter) inter;
 
                                 if (ch1.getMeasure() == prevMeasure) {
                                     if (voice.getId() != ch1.getVoice().getId()) {
@@ -336,6 +401,17 @@ public abstract class Voices
                                     break;
                                 }
                             }
+                        }
+                    }
+
+                    // Preferred voice IDs?
+                    final AbstractChordInter ch1 = voice.getFirstChord();
+
+                    if (ch1 != null) {
+                        final Integer preferredVoiceId = ch1.getPreferredVoiceId();
+
+                        if ((preferredVoiceId != null) && (preferredVoiceId != voice.getId())) {
+                            measure.swapVoiceId(voice, preferredVoiceId);
                         }
                     }
                 }

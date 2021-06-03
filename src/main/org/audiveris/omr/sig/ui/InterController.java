@@ -43,6 +43,7 @@ import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.SheetEditor;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
@@ -460,6 +461,29 @@ public class InterController
             protected void publish ()
             {
                 sheet.getInterIndex().publish(custom);
+            }
+        }.execute();
+    }
+
+    //---------------//
+    // changeVoiceId //
+    //---------------//
+    /**
+     * Change the preferred voice ID of a chord.
+     *
+     * @param chord the chord to modify
+     * @param newId the new voice ID
+     */
+    @UIThread
+    public void changeVoiceId (final AbstractChordInter chord,
+                               final Integer newId)
+    {
+        new CtrlTask(DO, "changeVoiceId")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new ChordVoiceIdTask(chord, newId));
             }
         }.execute();
     }

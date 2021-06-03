@@ -365,6 +365,7 @@ public class Measure
     {
         try {
             final SIGraph sig = part.getSystem().getSig();
+            boolean upgraded = false;
 
             // Clefs, keys, timeSigs to fill measure
             List<Inter> measureInters = filter(
@@ -382,9 +383,7 @@ public class Measure
                     oldBeamGroup.afterReload(this, sig);
                 }
 
-                if (!oldBeamGroups.isEmpty()) {
-                    part.getSystem().getSheet().getStub().setUpgraded(true);
-                }
+                upgraded |= !oldBeamGroups.isEmpty();
 
                 oldBeamGroups = null;
             }
@@ -396,7 +395,7 @@ public class Measure
 
             // Voices
             for (Voice voice : voices) {
-                voice.afterReload(this);
+                upgraded |= voice.afterReload(this);
             }
 
             // Chords
@@ -406,6 +405,10 @@ public class Measure
 
             for (AbstractChordInter chord : getRestChords()) {
                 chord.afterReload(this);
+            }
+
+            if (upgraded) {
+                part.getSystem().getSheet().getStub().setUpgraded(true);
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);

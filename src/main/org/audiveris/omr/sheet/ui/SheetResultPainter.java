@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.rhythm.Voices;
 import static org.audiveris.omr.sheet.ui.SheetPainter.halfAT;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -416,7 +417,7 @@ public class SheetResultPainter
             Color c;
 
             if (coloredVoices && (voice != null)) {
-                c = colorOf(voice);
+                c = Voices.colorOf(voice);
             } else {
                 c = defaultColor;
             }

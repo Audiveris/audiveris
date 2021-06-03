@@ -55,6 +55,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 /**
  * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
  * attached to the same stem if any, and that start on the same time slot in a part.
@@ -79,6 +81,14 @@ public abstract class AbstractChordInter
     private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Preferred voice ID, if any. */
+    @XmlAttribute(name = "preferred-voice-id")
+    private Integer preferredVoiceId;
+
     // Transient data
     //---------------
     //
@@ -769,6 +779,32 @@ public abstract class AbstractChordInter
         }
 
         return super.getPart();
+    }
+
+    //---------------------//
+    // getPreferredVoiceId //
+    //---------------------//
+    /**
+     * Report the preferred voice ID if any.
+     *
+     * @return the preferredVoiceId, perhaps null
+     */
+    public Integer getPreferredVoiceId ()
+    {
+        return preferredVoiceId;
+    }
+
+    //---------------------//
+    // setPreferredVoiceId //
+    //---------------------//
+    /**
+     * Assign a preferred voice ID.
+     *
+     * @param preferredVoiceId the preferredVoiceId to set
+     */
+    public void setPreferredVoiceId (Integer preferredVoiceId)
+    {
+        this.preferredVoiceId = preferredVoiceId;
     }
 
     //---------//
