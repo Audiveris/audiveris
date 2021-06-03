@@ -243,7 +243,7 @@ public class EditorMenu
             setVisible(stack != null);
 
             if (stack != null) {
-                setText("Measure #" + stack.getPageId() + " ...");
+                setText("Measure #" + stack.getPageId());
             }
 
             rhythmAction.update();
@@ -395,7 +395,7 @@ public class EditorMenu
             setVisible(page != null);
 
             if (page != null) {
-                setText("Page #" + page.getId() + " ...");
+                setText("Page #" + page.getId());
             }
 
             rhythmAction.update();
@@ -463,7 +463,7 @@ public class EditorMenu
             setVisible(slot != null);
 
             if (slot != null) {
-                setText("Slot #" + slot.getId() + " ...");
+                setText("Slot #" + slot.getId());
             }
         }
 
@@ -623,7 +623,7 @@ public class EditorMenu
             setVisible(system != null);
 
             if (system != null) {
-                setText("System #" + system.getId() + " ...");
+                setText("System #" + system.getId());
             }
 
             mergeAction.update();

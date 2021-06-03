@@ -216,7 +216,7 @@ public class SampleController
          */
         public AssignAction ()
         {
-            super("Assign to...");
+            super("Assign to");
             putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
             ShapeSet.addAllShapes(popup, actionListener);
 
