@@ -94,6 +94,7 @@
 
     <action domain="DEBUG" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="browseBook"          topic="DEBUG"/>
     <action domain="DEBUG" section="50" class="org.audiveris.omr.ui.GuiActions"        method="clearLog"            topic="DEBUG"   button="javax.swing.JButton"/>
+    <action domain="DEBUG" section="60" class="org.audiveris.omr.ui.GuiActions"        method="launchSymbolRipper"  topic="DEBUG"/>
     <action domain="DEBUG" section="70" class="org.audiveris.omr.sheet.ui.BookActions" method="dumpEventServices"   topic="DEBUG"/>
     
     <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />
