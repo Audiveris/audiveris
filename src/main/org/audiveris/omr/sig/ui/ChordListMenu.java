@@ -102,7 +102,7 @@ public class ChordListMenu
      */
     public ChordListMenu (Sheet sheet)
     {
-        super("Chords ...");
+        super("Chords");
         this.sheet = sheet;
     }
 

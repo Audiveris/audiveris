@@ -77,7 +77,7 @@ public class InterListMenu
      */
     public InterListMenu (Sheet sheet)
     {
-        super("Inters ...");
+        super("Inters");
         this.sheet = sheet;
     }
 

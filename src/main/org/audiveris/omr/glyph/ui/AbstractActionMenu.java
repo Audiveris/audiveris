@@ -113,7 +113,7 @@ public abstract class AbstractActionMenu
 
         for (int level = 0; level <= maxLevel; level++) {
             SeparableMenu currentMenu = (level == 0) ? getMenu()
-                    : new SeparableMenu("Continued ...");
+                    : new SeparableMenu("Continued");
 
             for (Integer tag : tags) {
                 for (Map.Entry<DynAction, Integer> entry : dynActions.entrySet()) {
