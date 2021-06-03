@@ -199,16 +199,20 @@ public class SymbolRipper
                         GraphicsEnvironment.getLocalGraphicsEnvironment()
                                 .getAvailableFontFamilyNames()));
 
+        pointCode.setModel(new SpinnerNumberModel(0x1_d100, 0, 0x1_d1ff, 1));
+
         // Initial values
         fontName.getSpinner().setValue("MusicalSymbols");
         ///fontName.getSpinner().setValue("Symbola");
-        fontBase.setValue(0); //0);
+        fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
+        pointCode.setValue(113); // Quarter note (in MusicalSymbols)
+
         fontSize.setValue(200);
-        pointCode.setModel(new SpinnerNumberModel(0x1_d100, 0, 0x1_d1ff, 1));
         width.setValue(400);
         height.setValue(500);
         xOffset.setValue(200);
         yOffset.setValue(300);
+
         changeCode();
         defineFont();
 
