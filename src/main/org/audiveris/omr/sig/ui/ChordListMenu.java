@@ -1004,7 +1004,8 @@ public class ChordListMenu
             chordPrefId = chord.getPreferredVoiceId();
 
             final int prefId = (chordPrefId != null) ? chordPrefId : 0;
-            setText("Preferred voice (experimental)");
+            setText("Preferred voice [Experimental]");
+            setToolTipText("Assign specific voice ID to first chord in measure voice");
 
             // None item
             final JMenuItem noneItem = new JRadioButtonMenuItem(NO_VOICE_ID);
