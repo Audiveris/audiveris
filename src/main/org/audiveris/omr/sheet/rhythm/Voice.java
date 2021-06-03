@@ -91,7 +91,7 @@ public class Voice
          * <li>9-12 for INFRA family (third staff in a 3-staff organ system)
          * </ol>
          */
-        private static int ID_FAMILY_OFFSET = 4;
+        private static final int ID_FAMILY_OFFSET = 4;
 
         /**
          * Report the offset to be used for voice IDs within this family.
@@ -101,6 +101,23 @@ public class Voice
         public int idOffset ()
         {
             return ID_FAMILY_OFFSET * ordinal();
+        }
+
+        /**
+         * Report the id values for this family.
+         *
+         * @return array of family id values
+         */
+        public int[] ids ()
+        {
+            final int[] ids = new int[ID_FAMILY_OFFSET];
+            final int offset = idOffset();
+
+            for (int i = 0; i < ID_FAMILY_OFFSET; i++) {
+                ids[i] = 1 + offset + i;
+            }
+
+            return ids;
         }
     }
 
@@ -118,12 +135,20 @@ public class Voice
     private Rational excess;
 
     /**
+     * Old wholeRestChord, if any, to be replaced by measureRestChord.
+     */
+    @XmlIDREF
+    @XmlAttribute(name = "whole-rest-chord") // Renamed as measure-rest-chord
+    @Deprecated
+    private RestChordInter oldWholeRestChord;
+
+    /**
      * Measure rest chord of the voice, if any.
      * If a voice is assigned to a measure/multi rest, then this rest chord is defined as the
      * measureRestChord of this voice, and the slots table is left empty.
      */
     @XmlIDREF
-    @XmlAttribute(name = "whole-rest-chord") // Should be measure-rest-chord, but kept for compatibility
+    @XmlAttribute(name = "measure-rest-chord")
     private RestChordInter measureRestChord;
 
     /**
@@ -206,11 +231,14 @@ public class Voice
      * To be called right after unmarshalling.
      *
      * @param measure the containing measure
+     * @return true if upgraded
      */
-    public void afterReload (Measure measure)
+    public boolean afterReload (Measure measure)
     {
         try {
             this.measure = measure;
+
+            final boolean upgraded = upgradeOldStuff();
 
             // Set chord voices
             if (isMeasureRest()) {
@@ -229,8 +257,11 @@ public class Voice
                     }
                 }
             }
+
+            return upgraded;
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            return false;
         }
     }
 
@@ -1037,5 +1068,25 @@ public class Voice
         voice.measureRestChord = measureRestChord;
 
         return voice;
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    /**
+     * Upgrade from oldWholeRestChord to measureRestChord.
+     *
+     * @return true if really upgraded
+     */
+    public boolean upgradeOldStuff ()
+    {
+        if (oldWholeRestChord != null) {
+            measureRestChord = oldWholeRestChord;
+            oldWholeRestChord = null;
+
+            return true;
+        }
+
+        return false;
     }
 }

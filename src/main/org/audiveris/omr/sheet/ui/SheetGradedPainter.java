@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.inter.Inter;
 
 import org.slf4j.Logger;
@@ -107,7 +108,7 @@ public class SheetGradedPainter
                 final Voice voice = inter.getVoice();
 
                 if (voice != null) {
-                    base = colorOf(voice);
+                    base = Voices.colorOf(voice);
                 }
             }
 

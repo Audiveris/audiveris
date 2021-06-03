@@ -38,6 +38,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.curve.Curves;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -160,27 +161,6 @@ public abstract class SheetPainter
             Font.PLAIN,
             constants.chordFontSize.getValue());
 
-    /** Sequence of colors for voices. */
-    protected static final int alpha = 200;
-
-    protected static final Color[] voiceColors = new Color[]{
-        /** 1 Purple */
-        new Color(128, 64, 255, alpha),
-        /** 2 Green */
-        new Color(0, 255, 0, alpha),
-        /** 3 Brown */
-        new Color(165, 42, 42, alpha),
-        /** 4 Magenta */
-        new Color(255, 0, 255, alpha),
-        /** 5 Cyan */
-        new Color(0, 255, 255, alpha),
-        /** 6 Orange */
-        new Color(255, 200, 0, alpha),
-        /** 7 Pink */
-        new Color(255, 150, 150, alpha),
-        /** 8 BlueGreen */
-        new Color(0, 128, 128, alpha)};
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet. */
     protected final Sheet sheet;
@@ -252,7 +232,7 @@ public abstract class SheetPainter
      */
     public static JPanel getVoicePanel ()
     {
-        final int length = voiceColors.length;
+        final int length = Voices.getColorCount();
         final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
         final Color background = Color.WHITE;
         final StringBuilder sbc = new StringBuilder();
@@ -277,7 +257,7 @@ public abstract class SheetPainter
         final int mid = length / 2;
 
         for (int c = 1; c <= length; c++) {
-            final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
+            final Color color = new Color(Voices.colorOf(c).getRGB()); // Remove alpha
             final JLabel label = new JLabel("" + c, JLabel.CENTER);
             label.setPreferredSize(cellDim);
             label.setFont(font);
@@ -1134,23 +1114,6 @@ public abstract class SheetPainter
          * @return true if so
          */
         protected abstract boolean splitMirrors ();
-
-        //---------//
-        // colorOf //
-        //---------//
-        /**
-         * Report the color to use when painting elements related to the provided voice
-         *
-         * @param voice the provided voice
-         * @return the color to use
-         */
-        protected Color colorOf (Voice voice)
-        {
-            // Use table of colors, circularly.
-            int index = (voice.getId() - 1) % voiceColors.length;
-
-            return voiceColors[index];
-        }
 
         //--------------//
         // getMusicFont //

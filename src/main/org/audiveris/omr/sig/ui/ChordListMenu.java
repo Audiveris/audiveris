@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import java.awt.Color;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
@@ -55,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +69,9 @@ import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 
 /**
  * Class {@code ChordListMenu} displays a collection of chords.
@@ -81,6 +86,8 @@ public class ChordListMenu
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordListMenu.class);
+
+    private static final String NO_VOICE_ID = "None";
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
@@ -161,6 +168,21 @@ public class ChordListMenu
         }
 
         addItem(new JMenuItem(new MergeAction(headChords, withStem)), listener);
+    }
+
+    //----------------//
+    // buildVoiceMenu //
+    //----------------//
+    /**
+     * Build an assign voice action item.
+     *
+     * @param chord    the provided head chord
+     * @param listener the selection listener to use
+     */
+    private void buildVoiceMenu (final AbstractChordInter chord,
+                                 final SelectionListener listener)
+    {
+        addItem(new VoiceMenu(chord), listener);
     }
 
     //----------------//
@@ -669,6 +691,7 @@ public class ChordListMenu
 
                     case 1:
                         buildSplitItem(sysChords.get(0), listener);
+                        buildVoiceMenu(sysChords.get(0), listener);
 
                         break;
 
@@ -957,6 +980,67 @@ public class ChordListMenu
         public String toString ()
         {
             return ClassUtil.nameOf(this);
+        }
+    }
+
+    //-----------//
+    // VoiceMenu //
+    //-----------//
+    /**
+     * Allows to set a preferred voice ID.
+     */
+    private class VoiceMenu
+            extends JMenu
+            implements ActionListener
+    {
+
+        private final AbstractChordInter chord; // Chord involved
+
+        private final Integer chordPrefId; // Chord preferred voice id, if any
+
+        public VoiceMenu (AbstractChordInter chord)
+        {
+            this.chord = chord;
+            chordPrefId = chord.getPreferredVoiceId();
+
+            final int prefId = (chordPrefId != null) ? chordPrefId : 0;
+            setText("Preferred voice (experimental)");
+
+            // None item
+            final JMenuItem noneItem = new JRadioButtonMenuItem(NO_VOICE_ID);
+            noneItem.setSelected(0 == prefId);
+            noneItem.addActionListener(this);
+            add(noneItem);
+
+            // ID items
+            for (int id : chord.getMeasure().inferVoiceFamily(chord).ids()) {
+                final JMenuItem item = new JRadioButtonMenuItem("" + id);
+                item.setOpaque(true);
+                item.setBackground(new Color(Voices.colorOf(id).getRGB()));
+                item.setSelected(id == prefId);
+                item.addActionListener(this);
+                add(item);
+            }
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final String command = e.getActionCommand();
+
+            if (command.equals(NO_VOICE_ID)) {
+                if (chordPrefId != null) {
+                    logger.info("No more preferred voice for {}", chord);
+                    sheet.getInterController().changeVoiceId(chord, null);
+                }
+            } else {
+                final int prefId = Integer.decode(e.getActionCommand());
+
+                if ((chordPrefId == null) || (chordPrefId != prefId)) {
+                    logger.info("Preferred voice {} for {}", prefId, chord);
+                    sheet.getInterController().changeVoiceId(chord, prefId);
+                }
+            }
         }
     }
 
