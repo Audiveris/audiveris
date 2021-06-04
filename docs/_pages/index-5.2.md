@@ -10,6 +10,10 @@ has_toc: false
 
 This documentation applies to release 5.2 and later.
 
+NOTA: This is a work in progress, don't hesitate to come and review it from time to time.
+{: .label .label-yellow }
+
+---
 Table of contents
 {: .no_toc .text-delta }
 

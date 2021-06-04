@@ -13,7 +13,7 @@ Site under construction for 5.2 release
 {: .d-inline-block }
 being updated
 {: .label .label-yellow }
-- [5.1: Stable version](https://bacchushlg.gitbooks.io/audiveris-5-1/content/)
+- [5.1: Old but stable version](https://bacchushlg.gitbooks.io/audiveris-5-1/content/)
 
 ## OMR file format
 - [Wiki description](https://github.com/Audiveris/audiveris/wiki/Project-Structure)
