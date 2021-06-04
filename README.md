@@ -1,10 +1,4 @@
-1
-
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
-
-2
-
-[[https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png|Audiveris Logo]]
 
 # Audiveris - Open-source Optical Music Recognition (v5.2)
 
