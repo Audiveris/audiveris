@@ -30,21 +30,47 @@ The core of engine music information (OMR data) is fully documented and made pub
 either directly via XML-based `.omr` project files or via the Java API of this software.   
 Audiveris comes with an integrated exporter to write (a subset of) this OMR data into
 [MusicXML][musicxml] 3.0 format.
-Other exporters are expected to build upon OMR data to support other target formats.
+In the future, other exporters are expected to build upon OMR data to support other target formats.
 
-## Installing and running (Windows only)
+## Installing binaries (Windows)
 
-Refer to HandBook [Binaries][binaries] section.
+On GitHub [Releases][releases] page, an Audiveris 5.2 installer is available for Windows.
 
-## Building and running (Windows, MacOS and Linux)
+It takes care of the whole installation, including needed libraries like Tesseract OCR,
+but assumes that you already have a suitable Java Runtime Environment installed.   
+At least Java version 11 is required.
+You can download it from Oracle at [https://www.oracle.com/fr/java/technologies/javase/jdk11-archive-downloads.html](https://www.oracle.com/fr/java/technologies/javase/jdk11-archive-downloads.html).   
+Java versions above 11 *may* work, but have not been tested yet.
 
-Refer to HandBook [Sources][sources] section.
+And since Oracle provides Java 11 and above only for 64-bit architectures, the same restriction
+applies to Audiveris 5.2 as well.
+Should you really need a 32-bit Audiveris version, you can still use old Audiveris 5.1 version
+from the [Releases][releases] page.
 
-NOTA for GitHub users:
+For further installation details, please refer to HandBook [Binaries][binaries] section.
+
+## Building from sources (Windows, MacOS and Linux)
+
+**NOTA** for GitHub users:
 - Audiveris "*master*" branch is updated only when a new release is published.
 - Instead, Audiveris development happens continuously in "*development*" branch, so checkout and pull
 this *development* branch to get and build the latest version.
-- See details in this dedicated [Wiki article][workflow].
+- See workflow details in this dedicated [Wiki article][workflow].
+
+You will need the typical tools: git, gradle and Java Development Kit (JDK) 11.
+
+All libraries, including Tesseract OCR libraries, will get pulled as Gradle dependencies
+but you will have to download Tesseract language data files.  
+
+And we have to make it clear, because the same issues are posted again and again:
+1. Audiveris needs the **old 3.04 Tesseract language files**,
+new 4.x Tesseract is not suitable for detecting and processing text on music images.
+2. No Tesseract executable needs to be installed, since Tesseract is used via **libraries**.
+3. You can have other Tesseract versions installed, they will not impede Audiveris behavior,
+provided that Audiveris can find its needed Tesseract language files
+(typically via **TESSDATA_PREFIX** environment variable).
+
+For further building details, please refer to HandBook [Sources][sources] section.
 
 ## Further Information
 
@@ -66,3 +92,4 @@ The most recent stable version is release 5.2, published on June 2021.
 [binaries]:       https://audiveris.github.io/audiveris/_pages/install/binaries/
 [sources]:        https://audiveris.github.io/audiveris/_pages/install/sources/
 [releases]:       https://github.com/Audiveris/audiveris/releases
+[win-installer]:  https://github.com/Audiveris/audiveris/releases/download/5.2.1/Audiveris_Setup-5.2.1-windows-x86_64.exe

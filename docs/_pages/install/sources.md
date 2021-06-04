@@ -20,9 +20,10 @@ Table of contents
 
 * [Git](https://git-scm.com): version control system.
 
-* [Tesseract OCR][2]: Audiveris engine delegates to Tesseract software the recognition of any
-text item (lyrics, title, directions, part names, etc...) and you need Tesseract language files
-for this OCR to work properly.  
+* [Tesseract OCR][2]: Audiveris engine delegates to Tesseract *libraries* the recognition of any
+text item (lyrics, title, directions, part names, etc...).
+These libraries are automatically pulled as Gradle dependencies, but you will need Tesseract
+*language files* for this OCR to work properly.  
 Pick up at least the english (`eng`) language data.
 Other languages can be installed too, like `deu`, `ita`, `fra`, etc.
 Please check the [Tesseract guide][3] for further details and make sure to grab language data
@@ -72,6 +73,9 @@ By default, you are on `master`branch.
 To use for example the `development`branch with its latest features, use:
 ```sh
 git checkout development
+
+# To make sure you grab even the latest updates:
+git pull --all
 ```
 You can build the software via the command:
 ```sh

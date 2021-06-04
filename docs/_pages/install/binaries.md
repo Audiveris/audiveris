@@ -21,7 +21,7 @@ Audiveris installers for Windows are hosted on
 [https://github.com/Audiveris/audiveris/releases](https://github.com/Audiveris/audiveris/releases).
 
 The latest version available is:
-* Audiveris_Setup-5.2.????-windows-x86_64.exe (BINGO CHECK PRECISE FILE NAME!!!)
+* Audiveris_Setup-5.2.1-windows-x86_64.exe
 
 During installation, you will be prompted to associate the `.omr` file extension
 (which represents an Audiveris Book) to Audiveris software.
