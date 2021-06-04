@@ -85,6 +85,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.sig.relation.Exclusion;
 
 /**
  * Abstract class {@code AbstractBeamInter} is the basis for {@link BeamInter},
