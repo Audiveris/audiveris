@@ -98,7 +98,6 @@ public abstract class AdvancedTopics
         PLOTS(constants.usePlots),
         SPECIFIC_VIEWS(constants.useSpecificViews),
         SPECIFIC_ITEMS(constants.useSpecificItems),
-        WINDOW_LAYOUT(constants.useWindowLayout),
         DEBUG(constants.useDebug);
 
         /** Underlying constant. */
@@ -240,10 +239,6 @@ public abstract class AdvancedTopics
         private final Constant.Boolean useSpecificItems = new Constant.Boolean(
                 false,
                 "Specific items shown in sheet view");
-
-        private final Constant.Boolean useWindowLayout = new Constant.Boolean(
-                false,
-                "Handling of main window layout");
 
         private final Constant.Boolean useDebug = new Constant.Boolean(
                 false,
