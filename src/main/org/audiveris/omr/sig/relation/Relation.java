@@ -28,6 +28,9 @@ import org.audiveris.omr.util.Jaxb;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -46,8 +49,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class Relation
         implements Cloneable
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(Relation.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -68,6 +75,23 @@ public abstract class Relation
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         // No-op by default
+    }
+
+    //--------//
+    // dumpOf //
+    //--------//
+    /**
+     * Report a dump of this relation in the provided sig context.
+     *
+     * @param sig containing sig
+     */
+    public String dumpOf (SIGraph sig)
+    {
+        return new StringBuilder()
+                .append("  Source: ").append(sig.getEdgeSource(this)).append("\n")
+                .append("Relation: ").append(this).append(" ").append(getDetails()).append("\n")
+                .append("  Target: ").append(sig.getEdgeTarget(this)).append("\n")
+                .toString();
     }
 
     //-----------//

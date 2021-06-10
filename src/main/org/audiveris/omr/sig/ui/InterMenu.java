@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +108,7 @@ public class InterMenu
         menu.add(buildRelationsTitle(sheet, inter));
 
         for (Relation relation : relations) {
-            JMenuItem item = new JMenuItem(new RelationAction(inter, relation));
+            JMenuItem item = new RelationMenu(inter, relation);
             item.addMouseListener(relationListener);
             menu.add(item);
         }
@@ -266,18 +267,52 @@ public class InterMenu
             RelationAction relationAction = (RelationAction) item.getAction();
             relationAction.publish();
         }
+    }
+
+    //--------------//
+    // RelationMenu //
+    //--------------//
+    private class RelationMenu
+            extends JMenu
+            implements ActionListener
+    {
+
+        private final Inter inter;
+
+        private final Relation relation;
+
+        private final JMenuItem dumpItem;
+
+        private final JMenuItem deleteItem;
+
+        public RelationMenu (Inter inter,
+                             Relation relation)
+        {
+            super(new RelationAction(inter, relation));
+
+            this.inter = inter;
+            this.relation = relation;
+
+            // Dump
+            add(dumpItem = new JMenuItem("Dump"));
+            dumpItem.addActionListener(this);
+
+            add(deleteItem = new JMenuItem("Delete"));
+            deleteItem.addActionListener(this);
+        }
 
         @Override
-        public void mouseReleased (MouseEvent e)
+        public void actionPerformed (ActionEvent e)
         {
-            JMenuItem item = (JMenuItem) e.getSource();
-            RelationAction ra = (RelationAction) item.getAction();
-            SIGraph sig = ra.getInter().getSig();
-            Relation relation = ra.getRelation();
-            String relStr = relation.getName();
+            final Object source = e.getSource();
+            final SIGraph sig = inter.getSig();
 
-            if (OMR.gui.displayConfirmation("Remove " + relStr + " relation?")) {
-                interController.unlink(sig, relation);
+            if (source == dumpItem) {
+                logger.info("{}", relation.dumpOf(sig));
+            } else if (source == deleteItem) {
+                if (OMR.gui.displayConfirmation("Remove " + relation.getName() + " relation?")) {
+                    interController.unlink(sig, relation);
+                }
             }
         }
     }
