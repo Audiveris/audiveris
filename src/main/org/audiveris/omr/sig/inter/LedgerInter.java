@@ -350,6 +350,10 @@ public class LedgerInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (staff != null) {
             staff.removeLedger(this);
         }

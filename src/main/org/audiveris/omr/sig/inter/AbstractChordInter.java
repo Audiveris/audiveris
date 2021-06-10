@@ -1165,6 +1165,10 @@ public abstract class AbstractChordInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (measure != null) {
             measure.removeInter(this);
         }

@@ -284,6 +284,10 @@ public class LyricLineInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (staff != null) {
             staff.getPart().removeLyric(this);
         }

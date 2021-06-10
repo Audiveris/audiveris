@@ -272,6 +272,10 @@ public class BraceInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (isManual()) {
             Part myPart = staff.getPart();
 

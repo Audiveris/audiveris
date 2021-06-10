@@ -282,6 +282,10 @@ public abstract class AbstractNoteInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (staff != null) {
             staff.removeNote(this);
         }

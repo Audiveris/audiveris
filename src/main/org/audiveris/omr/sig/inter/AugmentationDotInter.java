@@ -479,6 +479,10 @@ public class AugmentationDotInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {

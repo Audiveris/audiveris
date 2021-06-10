@@ -253,6 +253,10 @@ public class TupletInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (!isImplicit()) {
             MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 

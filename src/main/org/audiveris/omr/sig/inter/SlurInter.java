@@ -792,6 +792,10 @@ public class SlurInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (part != null) {
             part.removeSlur(this);
         } else {

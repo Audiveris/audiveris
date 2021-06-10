@@ -338,6 +338,10 @@ public abstract class AbstractTimeInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         // Remove from staff header if relevant
         final StaffHeader header = staff.getHeader();
 

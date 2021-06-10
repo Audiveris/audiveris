@@ -85,7 +85,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.sig.relation.Exclusion;
 
 /**
  * Abstract class {@code AbstractBeamInter} is the basis for {@link BeamInter},
@@ -519,8 +518,7 @@ public abstract class AbstractBeamInter
         computeArea();
 
         if (staff != null) {
-            SIGraph sig = staff.getSystem().getSig();
-            List<Inter> systemStems = sig.inters(StemInter.class);
+            final List<Inter> systemStems = staff.getSystem().getSig().inters(StemInter.class);
             Collections.sort(systemStems, Inters.byAbscissa);
 
             // Snap sides?
@@ -538,6 +536,10 @@ public abstract class AbstractBeamInter
             if (x2 != null) {
                 model.p2.setLocation(x2, model.p2.getY());
                 modified = true;
+            }
+
+            if (model.p1.getX() >= model.p2.getX()) {
+                return false; // Unusable beam
             }
 
             if (modified) {
@@ -697,6 +699,10 @@ public abstract class AbstractBeamInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         for (AbstractChordInter chord : getChords()) {
             chord.invalidateCache();
         }
@@ -974,6 +980,15 @@ public abstract class AbstractBeamInter
         }
 
         return bestLink;
+    }
+
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point2D getRelationCenter ()
+    {
+        return PointUtil.middle(median);
     }
 
     //-----------------//

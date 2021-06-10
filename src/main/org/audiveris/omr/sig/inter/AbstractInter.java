@@ -1270,63 +1270,65 @@ public abstract class AbstractInter
     @Override
     public void remove (boolean extensive)
     {
-        if (!removed) {
-            logger.debug("Removing {} extensive:{}", this, extensive);
+        if (isRemoved()) {
+            return;
+        }
 
-            if (isVip()) {
-                logger.info("VIP remove {}", this);
-            }
+        logger.debug("Removing {} extensive:{}", this, extensive);
 
-            removed = true;
+        if (isVip()) {
+            logger.info("VIP remove {}", this);
+        }
 
-            if (sig != null) {
-                // Extensive is true for non-manual removals only
-                if (extensive) {
-                    // Handle ensemble - member cases?
-                    // Copy is needed to avoid concurrent modification exception
-                    List<Relation> relsCopy = new ArrayList<>(sig.incomingEdgesOf(this));
+        removed = true;
 
-                    for (Relation rel : relsCopy) {
-                        // A member may be contained by several ensembles (case of TimeNumberInter)
-                        if (rel instanceof Containment) {
-                            InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
+        if (sig != null) {
+            // Extensive is true for non-manual removals only
+            if (extensive) {
+                // Handle ensemble - member cases?
+                // Copy is needed to avoid concurrent modification exception
+                List<Relation> relsCopy = new ArrayList<>(sig.incomingEdgesOf(this));
 
-                            if (ens.getMembers().size() == 1) {
-                                logger.debug("{} removing a dying ensemble {}", this, ens);
-                                ens.remove(false);
-                            }
-                        }
-                    }
+                for (Relation rel : relsCopy) {
+                    // A member may be contained by several ensembles (case of TimeNumberInter)
+                    if (rel instanceof Containment) {
+                        InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
 
-                    if (this instanceof InterEnsemble) {
-                        InterEnsemble ens = (InterEnsemble) this;
-
-                        // Delete all its members that are not part of another ensemble
-                        for (Inter member : ens.getMembers()) {
-                            Set<Inter> ensembles = member.getAllEnsembles();
-
-                            if (!ensembles.isEmpty()) {
-                                ensembles.remove(this);
-
-                                if (ensembles.isEmpty()) {
-                                    logger.debug("{} removing a member {}", this, member);
-                                    member.remove(false);
-                                }
-                            }
+                        if (ens.getMembers().size() == 1) {
+                            logger.debug("{} removing a dying ensemble {}", this, ens);
+                            ens.remove(false);
                         }
                     }
                 }
 
-                sig.removeVertex(this);
+                if (this instanceof InterEnsemble) {
+                    InterEnsemble ens = (InterEnsemble) this;
 
-                // Make sure the underlying glyph remains accessible
-                if (glyph != null) {
-                    final SystemInfo system = sig.getSystem();
-                    final Step step = system.getSheet().getStub().getLatestStep();
+                    // Delete all its members that are not part of another ensemble
+                    for (Inter member : ens.getMembers()) {
+                        Set<Inter> ensembles = member.getAllEnsembles();
 
-                    if (step != null && step.compareTo(Step.CURVES) >= 0) {
-                        system.addFreeGlyph(glyph);
+                        if (!ensembles.isEmpty()) {
+                            ensembles.remove(this);
+
+                            if (ensembles.isEmpty()) {
+                                logger.debug("{} removing a member {}", this, member);
+                                member.remove(false);
+                            }
+                        }
                     }
+                }
+            }
+
+            sig.removeVertex(this);
+
+            // Make sure the underlying glyph remains accessible
+            if (glyph != null) {
+                final SystemInfo system = sig.getSystem();
+                final Step step = system.getSheet().getStub().getLatestStep();
+
+                if (step != null && step.compareTo(Step.CURVES) >= 0) {
+                    system.addFreeGlyph(glyph);
                 }
             }
         }

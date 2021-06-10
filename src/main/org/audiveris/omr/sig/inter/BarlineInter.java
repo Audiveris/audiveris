@@ -351,6 +351,10 @@ public class BarlineInter
     @Override
     public void remove (boolean extensive)
     {
+        if (isRemoved()) {
+            return;
+        }
+
         if (staff != null) {
             staff.removeBarline(this);
         }
