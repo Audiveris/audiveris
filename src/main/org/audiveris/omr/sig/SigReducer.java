@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.EnsembleHelper;
@@ -117,7 +118,8 @@ public class SigReducer
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
     /** Inter classes for which overlap detection is (currently) disabled. */
-    private static final Class<?>[] disabledClasses = new Class<?>[]{LedgerInter.class,
+    private static final Class<?>[] disabledClasses = new Class<?>[]{BeamGroupInter.class,
+                                                                     LedgerInter.class,
                                                                      WedgeInter.class};
 
     /** Predicate for non-disabled overlap. */
