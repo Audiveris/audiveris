@@ -792,8 +792,9 @@ public class StemInter
             final VerticalSide vSide = (crossPt.getY() < yStem) ? TOP : BOTTOM;
             final Link link = BeamStemRelation.checkLink(beam, this, vSide, scale, profile);
 
+            // BeamStemRelation link is implemented from beam to stem, hence we have to reverse it
             if (link != null) {
-                links.add(link);
+                links.add(link.reverse(beam));
             }
         }
 

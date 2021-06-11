@@ -122,6 +122,20 @@ public class Link
         return false;
     }
 
+    //---------//
+    // reverse //
+    //---------//
+    /**
+     * Report a reversed link from partner to inter
+     *
+     * @param inter the new partner
+     * @return the reversed link
+     */
+    public Link reverse (Inter inter)
+    {
+        return new Link(inter, relation, !outgoing);
+    }
+
     //----------//
     // toString //
     //----------//
