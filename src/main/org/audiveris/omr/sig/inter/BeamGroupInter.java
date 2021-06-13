@@ -331,7 +331,7 @@ public class BeamGroupInter
 
         for (AbstractChordInter chord : headChords) {
             if (prevChord != null) {
-                // Look for at most one interleaved rest
+                // Look for interleaved rest(s)
                 List<RestChordInter> found = new ArrayList<>();
 
                 // Priority on white listed rests if any
@@ -347,21 +347,16 @@ public class BeamGroupInter
                 }
 
                 if (found.isEmpty()) {
-                    // Fallback using plain candidates
-                    found.addAll(lookupRests(prevChord, chord, candidates));
+                    // Fallback using at most one plain candidate
+                    final List<RestChordInter> plains = lookupRests(prevChord, chord, candidates);
+
+                    if (!plains.isEmpty()) {
+                        Collections.sort(plains, Inters.byAbscissa);
+                        found.add(plains.get(0));
+                    }
                 }
 
-                if (found.size() > 1) {
-                    // Choose the rest closest to group median line
-                    final Line2D median = getMainMedian();
-                    Collections.sort(found, (RestChordInter r1, RestChordInter r2) -> Double.
-                            compare(median.ptLineDistSq(r1.getCenter()),
-                                    median.ptLineDistSq(r2.getCenter())));
-                }
-
-                if (!found.isEmpty()) {
-                    allChords.add(found.get(0));
-                }
+                allChords.addAll(found);
             }
 
             allChords.add(chord);
@@ -1174,7 +1169,7 @@ public class BeamGroupInter
     // lookupRests //
     //-------------//
     /**
-     * Look for a rest interleaved between the provided left and right headChords.
+     * Look for rests interleaved between the provided left and right headChords.
      *
      * @param left       provided head chord on left side
      * @param right      provided head chord on right side
