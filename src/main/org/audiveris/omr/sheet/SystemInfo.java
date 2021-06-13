@@ -546,7 +546,7 @@ public class SystemInfo
     // getFirstStack //
     //---------------//
     /**
-     * Report the first measure stack in this part.
+     * Report the first measure stack in this system.
      *
      * @return the first measure stack
      */

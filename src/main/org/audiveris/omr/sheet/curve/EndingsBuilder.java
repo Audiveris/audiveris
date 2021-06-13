@@ -353,7 +353,11 @@ public class EndingsBuilder
             return null;
         }
 
-        if (length < (measure.getWidth() * constants.minMeasureRatio.getValue())) {
+        // Accept a lower ratio for first measure in system (due to room for clef + key? + time?)
+        final Constant.Ratio minRatio = (measure.getStack() == system.getFirstStack())
+                ? constants.minFirstMeasureRatio : constants.minMeasureRatio;
+
+        if (length < (measure.getWidth() * minRatio.getValue())) {
             logger.debug("Ending {} too short compared with related {}", segment, measure);
 
             return null;
@@ -415,6 +419,10 @@ public class EndingsBuilder
         private final Constant.Ratio minMeasureRatio = new Constant.Ratio(
                 0.8,
                 "Minimum ending length as ratio of related measure length");
+
+        private final Constant.Ratio minFirstMeasureRatio = new Constant.Ratio(
+                0.6,
+                "Minimum ending length as ratio of related measure length, for first in system");
 
         private final Scale.Fraction minLengthLow = new Scale.Fraction(
                 6,
