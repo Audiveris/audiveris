@@ -59,40 +59,51 @@ public class Version
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code Version} object and parse its components.
+     * <p>
+     * Accepted tag formats to infer version number:
+     * <ul>
+     * <li>5.2.1-alpha
+     * <li>5.2.1
+     * <li>5.3
+     * <li>6.0
+     * </ul>
+     * NOTA: For convenience, we also accept "v5.2.1" as synonym for "5.2.1"
      *
-     * @param value version string
+     * @param value tag name string
      */
     public Version (String value)
     {
-        this.value = value.trim();
+        this.value = value;
 
         // Parse value
-        final int len = this.value.length();
-        final int dot1 = this.value.indexOf('.', 0);
+        final int len = value.length();
+        final int dot1 = value.indexOf('.', 0);
 
         if (dot1 == -1) {
             throw new IllegalArgumentException("Illegal version structure: " + value);
         }
 
-        major = Integer.decode(this.value.substring(0, dot1));
+        // Protection against "v123" or "V123" to just get 123 integer string
+        final String majorString = value.substring(0, dot1).replaceAll("[vV]", "");
+        major = Integer.decode(majorString);
 
-        final int dot2 = this.value.indexOf('.', dot1 + 1);
+        final int dot2 = value.indexOf('.', dot1 + 1);
 
         if (dot2 == -1) {
-            minor = Integer.decode(this.value.substring(dot1 + 1, len));
+            minor = Integer.decode(value.substring(dot1 + 1, len));
             patch = 0;
             label = "";
         } else {
-            minor = Integer.decode(this.value.substring(dot1 + 1, dot2));
+            minor = Integer.decode(value.substring(dot1 + 1, dot2));
 
-            final int dash = this.value.indexOf('-', dot2 + 1);
+            final int dash = value.indexOf('-', dot2 + 1);
 
             if (dash == -1) {
-                patch = Integer.decode(this.value.substring(dot2 + 1, len));
+                patch = Integer.decode(value.substring(dot2 + 1, len));
                 label = "";
             } else {
-                patch = Integer.decode(this.value.substring(dot2 + 1, dash));
-                label = this.value.substring(dash + 1, len);
+                patch = Integer.decode(value.substring(dot2 + 1, dash));
+                label = value.substring(dash + 1, len);
             }
         }
     }

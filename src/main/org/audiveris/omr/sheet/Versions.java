@@ -289,7 +289,7 @@ public abstract class Versions
     public static void poll (boolean manual)
     {
         final GHRelease latest = getLatestRelease();
-        final Version latestVersion = new Version(latest.getTagName());
+        final Version latestVersion = new Version(latest.getTagName().trim());
 
         if (Versions.CURRENT_SOFTWARE.compareTo(latestVersion) < 0) {
             logger.info("A new software release is available: {}", latestVersion);
@@ -555,7 +555,7 @@ public abstract class Versions
         {
             super(getResources().getString("Negative.title"), release);
             setName("PollingNegativeDialog");
-            
+
             tag.setVisible(false);
 
             // Status
