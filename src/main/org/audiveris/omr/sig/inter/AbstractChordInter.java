@@ -38,6 +38,7 @@ import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Entities;
@@ -751,6 +752,27 @@ public abstract class AbstractChordInter
         return EnsembleHelper.getMembers(this, Inters.byReverseCenterOrdinate);
     }
 
+    //-----------------------------//
+    // getNextChordInVoiceSequence //
+    //-----------------------------//
+    /**
+     * Report the next chord, if any, declared as same voice in sequence for this one.
+     *
+     * @return the next chord in voice sequence found, or null
+     */
+    public AbstractChordInter getNextChordInVoiceSequence ()
+    {
+        if (sig != null) {
+            for (Relation rel : sig.outgoingEdgesOf(this)) {
+                if (rel instanceof NextInVoiceRelation) {
+                    return (AbstractChordInter) sig.getOppositeInter(this, rel);
+                }
+            }
+        }
+
+        return null;
+    }
+
     //----------//
     // getNotes //
     //----------//
@@ -1203,26 +1225,86 @@ public abstract class AbstractChordInter
         timeOffset = null;
     }
 
+    //----------//
+    // pushTime //
+    //----------//
+    /**
+     * Try to push time further off this chord.
+     */
+    private void pushTime ()
+    {
+        pushTimeViaVoiceSequence(); // Propagate via voice sequence if any
+        pushTimeViaGroup(); // Propagate via beam group if any
+        pushTimeViaTie(); // Propagate via tie if any
+    }
+
     //------------------//
     // pushTimeViaGroup //
     //------------------//
+    /**
+     * Push time information via beam group structure, if any.
+     * <p>
+     * NOTA: A beam group should not go past measure borders, but we double-check for safety.
+     */
     public void pushTimeViaGroup ()
     {
         // Propagate via beam group if any
         BeamGroupInter group = getBeamGroup();
 
         if (group != null) {
-            group.computeTimeOffsets();
+            AbstractChordInter prevChord = null;
 
-            // If any, push via tie after last chord
-            AbstractChordInter lastChord = group.getLastChord();
-            lastChord.pushTimeViaTie();
+            // Reminder: group.getAllChords() report beam chords plus interleaved rests if any
+            for (AbstractChordInter chord : group.getAllChords()) {
+                if (prevChord != null) {
+                    try {
+                        if (measure == chord.measure) {
+                            chord.setTimeOffset(prevChord.getEndTime());
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("{} Cannot compute chord time based on previous chord", chord);
+                    }
+                } else if (chord.getTimeOffset() == null) {
+                    logger.warn("{} Computing beam group times with first chord not set", chord);
+                }
+
+                prevChord = chord;
+            }
+
+            final AbstractChordInter lastChord = group.getLastChord();
+
+            if (measure == lastChord.measure) {
+                // Warning: No more propagation via group!
+                lastChord.pushTimeViaVoiceSequence(); // Propagate via voice sequence if any
+                lastChord.pushTimeViaTie(); // Propagate via tie if any
+            }
+        }
+    }
+
+    //--------------------------//
+    // pushTimeViaVoiceSequence //
+    //--------------------------//
+    /**
+     * Push time information via voice sequence structure, if any.
+     */
+    public void pushTimeViaVoiceSequence ()
+    {
+        // Propagate via voice sequence if any
+        final AbstractChordInter ch = getNextChordInVoiceSequence();
+
+        if ((ch != null) && (measure == ch.measure)) {
+            ch.setTimeOffset(getEndTime());
+
+            ch.pushTime(); // If possible, push further
         }
     }
 
     //----------------//
     // pushTimeViaTie //
     //----------------//
+    /**
+     * Push time information via tie structure, if any.
+     */
     public void pushTimeViaTie ()
     {
         // Propagate via tie if any
@@ -1233,9 +1315,7 @@ public abstract class AbstractChordInter
             if (measure == ch.measure) {
                 ch.setTimeOffset(getEndTime());
 
-                // If any, push via group of tied chord
-                ch.pushTimeViaGroup();
-                ch.pushTimeViaTie();
+                ch.pushTime(); // If possible, push further
             }
         }
     }
@@ -1269,8 +1349,7 @@ public abstract class AbstractChordInter
         setTimeOffset(timeOffset);
 
         if (timeOffset != null) {
-            pushTimeViaGroup(); // Propagate via beam group if any
-            pushTimeViaTie(); // Propagate via tie if any
+            pushTime(); // If possible, push further
         }
     }
 

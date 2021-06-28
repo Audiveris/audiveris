@@ -25,13 +25,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SameVoiceRelation} indicates that the source and target chords
- * should belong to the same voice.
+ * should belong to the same voice, but tells nothing about time slots
+ * (except that they cannot belong to the same time slot, of course).
+ * <p>
+ * Warning: This relation is kept essentially for compatibility with old .omr files.
+ * Users are encouraged to use the more powerful {@link NextInVoiceRelation} whenever possible.
+ *
+ * @see NextInVoiceRelation
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "same-voice")
 public class SameVoiceRelation
-        extends Relation
+        extends Rhythm
 {
     //~ Constructors -------------------------------------------------------------------------------
 

@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
@@ -367,12 +368,15 @@ public class SlotsRetriever
             logger.info("VIP areExplicitlySeparate? {} {}", ch1, ch2);
         }
 
-        final AbstractChordInter src = (ch1.getId() < ch2.getId()) ? ch1 : ch2;
-        final AbstractChordInter tgt = (ch1.getId() < ch2.getId()) ? ch2 : ch1;
-        final SIGraph sig = src.getSig();
+        final SIGraph sig = ch1.getSig();
+        final LinkedHashSet<Relation> rels = new LinkedHashSet<>();
+        rels.addAll(sig.getAllEdges(ch1, ch2));
+        rels.addAll(sig.getAllEdges(ch2, ch1));
 
-        for (Relation rel : sig.getAllEdges(src, tgt)) {
-            if ((rel instanceof SeparateTimeRelation) || (rel instanceof SameVoiceRelation)) {
+        for (Relation rel : rels) {
+            if ((rel instanceof SeparateTimeRelation)
+                        || (rel instanceof NextInVoiceRelation)
+                        || (rel instanceof SameVoiceRelation)) {
                 return true;
             }
         }

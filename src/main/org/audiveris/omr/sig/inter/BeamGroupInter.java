@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamBeamRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
@@ -262,32 +263,6 @@ public class BeamGroupInter
         }
     }
 
-    //--------------------//
-    // computeTimeOffsets //
-    //--------------------//
-    /**
-     * Compute time offsets for all chords of this beam group, assuming the first chord
-     * of the group already has its time offset assigned.
-     */
-    public void computeTimeOffsets ()
-    {
-        AbstractChordInter prevChord = null;
-
-        for (AbstractChordInter chord : getAllChords()) {
-            if (prevChord != null) {
-                try {
-                    chord.setTimeOffset(prevChord.getEndTime());
-                } catch (Exception ex) {
-                    logger.warn("{} Cannot compute chord time based on previous chord", chord);
-                }
-            } else if (chord.getTimeOffset() == null) {
-                logger.warn("{} Computing beam group times with first chord not set", chord);
-            }
-
-            prevChord = chord;
-        }
-    }
-
     //--------------//
     // getAllChords //
     //--------------//
@@ -307,11 +282,11 @@ public class BeamGroupInter
      * This lookup mechanism depends on the potential existence of an explicit voice relation
      * between the rest and one of the stemmed chords of the beam group:
      * <ul>
-     * <li>If there is a {@link SameVoiceRelation} (white list) and if the rest center is located
-     * with the beam group abscissa range, then the rest is considered as interleaved, even if
-     * lookup failed.
+     * <li>If there is a {@link SameVoiceRelation} / {@link NextInVoiceRelation}
+     * (white list) and if the rest center is located with the beam group abscissa range,
+     * then the rest is considered as interleaved, even if lookup failed.
      * <li>If there is a {@link SeparateVoiceRelation} (black list) then the rest is not considered
-     * as interleaved, regardless of any lookup.
+     * as interleaved, regardless of any lookup result.
      * </ul>
      *
      * @return the (perhaps empty) collection of 'beamed' chords and interleaved rests.
@@ -320,7 +295,9 @@ public class BeamGroupInter
     {
         final List<AbstractChordInter> allChords = new ArrayList<>();
         final List<AbstractChordInter> headChords = getChords();
-        final Set<RestChordInter> whiteRests = getLinkedRests(headChords, SameVoiceRelation.class);
+        final Set<RestChordInter> whiteRests = getLinkedRests(headChords,
+                                                              SameVoiceRelation.class,
+                                                              NextInVoiceRelation.class);
 
         // Plain candidate rests
         final Set<RestChordInter> candidates = new LinkedHashSet<>(measure.getRestChords());
@@ -386,6 +363,8 @@ public class BeamGroupInter
     //-----------//
     /**
      * Report the x-ordered collection of chords that are grouped by this beam group.
+     * <p>
+     * NOTA: This does NOT include any interleaved rest, only the really 'beamed' chords.
      *
      * @return the (perhaps empty) collection of 'beamed' chords.
      */
@@ -1143,26 +1122,44 @@ public class BeamGroupInter
      * Report the rest chords with a specific relation to this group.
      *
      * @param headChords head chords of this group
-     * @param classe     desired relation class
+     * @param classes    desired relation classes
      * @return white listed rest chords
      */
     private Set<RestChordInter> getLinkedRests (List<AbstractChordInter> headChords,
-                                                Class<? extends Relation> classe)
+                                                Class<?>... classes)
     {
-        final Set<RestChordInter> found = new LinkedHashSet<>();
+        final Set<RestChordInter> allRests = new LinkedHashSet<>();
         final SIGraph sig = measure.getStack().getSystem().getSig();
 
+        // First, restChords directly linked to headChords
         for (AbstractChordInter ch : headChords) {
-            for (Relation sameRel : sig.getRelations(ch, classe)) {
+            for (Relation sameRel : sig.getRelations(ch, classes)) {
                 final Inter other = sig.getOppositeInter(ch, sameRel);
 
                 if (other instanceof RestChordInter) {
-                    found.add((RestChordInter) other);
+                    allRests.add((RestChordInter) other);
                 }
             }
         }
 
-        return found;
+        // Then, other restChords directly linked to already collected restChords, etc...
+        final Set<RestChordInter> newRests = new LinkedHashSet<>();
+        do {
+            allRests.addAll(newRests);
+            newRests.clear();
+
+            for (AbstractChordInter ch : allRests) {
+                for (Relation sameRel : sig.getRelations(ch, classes)) {
+                    final Inter other = sig.getOppositeInter(ch, sameRel);
+
+                    if ((other instanceof RestChordInter) && !allRests.contains(other)) {
+                        newRests.add((RestChordInter) other);
+                    }
+                }
+            }
+        } while (!newRests.isEmpty());
+
+        return allRests;
     }
 
     //-------------//

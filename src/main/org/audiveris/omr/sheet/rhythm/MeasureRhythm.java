@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
@@ -1417,7 +1418,8 @@ public class MeasureRhythm
             for (AbstractChordInter ch : rookies) {
                 final SIGraph sig = ch.getSig();
 
-                for (Relation rel : sig.getRelations(ch, SameVoiceRelation.class)) {
+                for (Relation rel : sig.getRelations(ch, SameVoiceRelation.class,
+                                                     NextInVoiceRelation.class)) {
                     AbstractChordInter other = (AbstractChordInter) sig.getOppositeInter(ch, rel);
                     whites.add(new ChordPair(ch, other));
                 }

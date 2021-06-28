@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Relation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class {@code UnlinkTask}
  *
@@ -32,8 +35,11 @@ import org.audiveris.omr.sig.relation.Relation;
 public class UnlinkTask
         extends RelationTask
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(UnlinkTask.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code UnlinkTask} object.
      *
@@ -53,6 +59,10 @@ public class UnlinkTask
     public void performDo ()
     {
         sig.removeEdge(getRelation());
+
+        if (source.isVip() || target.isVip()) {
+            logger.info("VIP removing {} between {} and {}", relation, source, target);
+        }
 
         //        // Source inter may have been removed when publication is seen on UI...
         //        if (!source.isRemoved()) {

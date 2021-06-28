@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "same-time")
 public class SameTimeRelation
-        extends Relation
+        extends Rhythm
 {
     //~ Constructors -------------------------------------------------------------------------------
 

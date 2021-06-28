@@ -1523,7 +1523,9 @@ public class InterController
         // Conflict on sources
         if (relation.isSingleSource()) {
             for (Relation rel : sig.getRelations(target, relation.getClass())) {
-                toRemove.add(rel);
+                if (sig.getEdgeTarget(rel) == target) {
+                    toRemove.add(rel);
+                }
             }
         }
 
@@ -1531,7 +1533,9 @@ public class InterController
         if (relation.isSingleTarget()) {
             if (!sourceIsNew) {
                 for (Relation rel : sig.getRelations(source, relation.getClass())) {
-                    toRemove.add(rel);
+                    if (sig.getEdgeSource(rel) == source) {
+                        toRemove.add(rel);
+                    }
                 }
 
                 // Specific case of (single target) augmentation dot to shared head:

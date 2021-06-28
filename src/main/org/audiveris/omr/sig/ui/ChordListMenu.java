@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
@@ -62,6 +63,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -390,9 +392,9 @@ public class ChordListMenu
         final AbstractChordInter tgt = chords.get(1);
         final SIGraph sig = src.getSig();
 
-        final Rectangle b1 = src.getBounds();
-        final Rectangle b2 = tgt.getBounds();
-        final int xOverlap = GeoUtil.xOverlap(b1, b2);
+        final Rectangle srcBox = src.getBounds();
+        final Rectangle tgtBox = tgt.getBounds();
+        final int xOverlap = GeoUtil.xOverlap(srcBox, tgtBox);
         final int max = sheet.getScale().toPixels(constants.maxAbscissaOverlapForVoiceItems);
 
         if (xOverlap > max) {
@@ -401,23 +403,55 @@ public class ChordListMenu
             return;
         }
 
+        final Point srcCenter = GeoUtil.center(srcBox);
+        final Point tgtCenter = GeoUtil.center(tgtBox);
+        final AbstractChordInter left = srcCenter.x <= tgtCenter.x ? src : tgt;
+        final AbstractChordInter right = srcCenter.x > tgtCenter.x ? src : tgt;
+
         Relation same = null;
+        Relation nextInVoice = null;
         Relation separate = null;
 
-        for (Relation rel : sig.getAllEdges(src, tgt)) {
+        final LinkedHashSet<Relation> rels = new LinkedHashSet<>();
+        rels.addAll(sig.getAllEdges(src, tgt));
+        rels.addAll(sig.getAllEdges(tgt, src));
+
+        for (Relation rel : rels) {
             if (rel instanceof SameVoiceRelation) {
                 same = rel;
+            } else if (rel instanceof NextInVoiceRelation) {
+                nextInVoice = rel;
             } else if (rel instanceof SeparateVoiceRelation) {
                 separate = rel;
             }
+        }
+
+        if (nextInVoice == null) {
+            if (separate == null) {
+                addItem(new RelationAdditionItem(
+                        "Next in Voice",
+                        "The two chords are in sequence within the same voice",
+                        left,
+                        right,
+                        new NextInVoiceRelation()),
+                        listener);
+            }
+        } else {
+            addItem(
+                    new RelationRemovalItem(
+                            "cancel Next in Voice",
+                            "Cancel use of next in voice",
+                            sig,
+                            same),
+                    listener);
         }
 
         if (same == null) {
             if (separate == null) {
                 addItem(
                         new RelationAdditionItem(
-                                "Same Voice",
-                                "Make the two chords part of the same voice",
+                                "Same Voice [deprecated, prefer Next in Voice]]",
+                                "The two chords share the same voice",
                                 src,
                                 tgt,
                                 new SameVoiceRelation()),
@@ -425,13 +459,16 @@ public class ChordListMenu
             }
         } else {
             addItem(
-                    new RelationRemovalItem("cancel Same Voice", "Cancel use of same voice", sig,
-                                            same),
+                    new RelationRemovalItem(
+                            "cancel Same Voice",
+                            "Cancel use of same voice",
+                            sig,
+                            same),
                     listener);
         }
 
         if (separate == null) {
-            if ((same == null) && checkSingleMeasure(chords)) {
+            if ((same == null) && (nextInVoice == null)) {
                 addItem(
                         new RelationAdditionItem(
                                 "Separate Voices",
@@ -850,8 +887,7 @@ public class ChordListMenu
                                              final List<AbstractChordInter> chords,
                                              final Class<? extends Relation> relationClass)
         {
-            this.setAction(
-                    new AbstractAction()
+            setAction(new AbstractAction()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -880,8 +916,8 @@ public class ChordListMenu
                 }
             });
 
-            this.setText(label);
-            this.setToolTipText(tip);
+            setText(label);
+            setToolTipText(tip);
         }
     }
 
@@ -901,8 +937,7 @@ public class ChordListMenu
                                      final AbstractChordInter target,
                                      final Relation relation)
         {
-            this.setAction(
-                    new AbstractAction()
+            setAction(new AbstractAction()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -912,8 +947,8 @@ public class ChordListMenu
                 }
             });
 
-            this.setText(label);
-            this.setToolTipText(tip);
+            setText(label);
+            setToolTipText(tip);
         }
     }
 
@@ -932,8 +967,7 @@ public class ChordListMenu
                                     final SIGraph sig,
                                     final Relation relation)
         {
-            this.setAction(
-                    new AbstractAction()
+            setAction(new AbstractAction()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -942,8 +976,8 @@ public class ChordListMenu
                 }
             });
 
-            this.setText(label);
-            this.setToolTipText(tip);
+            setText(label);
+            setToolTipText(tip);
         }
     }
 
@@ -1005,7 +1039,7 @@ public class ChordListMenu
 
             final int prefId = (chordPrefId != null) ? chordPrefId : 0;
             setText("Preferred voice [Experimental]");
-            setToolTipText("Assign specific voice ID to first chord in measure voice");
+            setToolTipText("Assign specific voice ID to first chord in system voice");
 
             // None item
             final JMenuItem noneItem = new JRadioButtonMenuItem(NO_VOICE_ID);

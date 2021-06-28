@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
@@ -123,6 +124,7 @@ public class RhythmsStep
         forStack.add(ChordTupletRelation.class);
         forStack.add(DoubleDotRelation.class);
         forStack.add(HeadStemRelation.class);
+        forStack.add(NextInVoiceRelation.class);
         forStack.add(SameTimeRelation.class);
         forStack.add(SameVoiceRelation.class);
         forStack.add(SeparateTimeRelation.class);
@@ -202,7 +204,7 @@ public class RhythmsStep
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
                             if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
-                                || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
+                                        || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
                                 // Add next stack as well
                                 impact.add(stack.getNextSibling());
                             }

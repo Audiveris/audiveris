@@ -37,6 +37,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -385,11 +386,13 @@ public abstract class Voices
                             measure.swapVoiceId(voice, tiedId);
                         }
 
-                        // SameVoiceRelation-based voice link
+                        // SameVoiceRelation-based or NextInVoiceRelation-based voice links
                         final AbstractChordInter ch2 = voice.getFirstChord();
 
                         if (ch2 != null) {
-                            for (Relation rel : sig.getRelations(ch2, SameVoiceRelation.class)) {
+                            for (Relation rel : sig.getRelations(ch2,
+                                                                 SameVoiceRelation.class,
+                                                                 NextInVoiceRelation.class)) {
                                 final Inter inter = sig.getOppositeInter(ch2, rel);
                                 final AbstractChordInter ch1 = (AbstractChordInter) inter;
 

@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "separate-time")
 public class SeparateTimeRelation
-        extends Relation
+        extends Rhythm
 {
     //~ Constructors -------------------------------------------------------------------------------
 

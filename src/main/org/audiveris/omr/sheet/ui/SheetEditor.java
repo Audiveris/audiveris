@@ -52,6 +52,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Rhythm;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
@@ -908,13 +909,12 @@ public class SheetEditor
                             SIGraph sig = inter.getSig();
 
                             if (sig != null) {
-                                Set<Relation> supports = sig.getRelations(inter, Support.class);
-
-                                if (!supports.isEmpty()) {
-                                    for (Relation rel : supports) {
-                                        Inter opp = sig.getOppositeInter(inter, rel);
-                                        painter.drawSupport(inter, opp, rel.getClass());
-                                    }
+                                final Set<Relation> links = sig.getRelations(inter,
+                                                                             Support.class,
+                                                                             Rhythm.class);
+                                for (Relation rel : links) {
+                                    Inter opp = sig.getOppositeInter(inter, rel);
+                                    painter.drawLink(inter, opp, rel.getClass());
                                 }
                             }
                         }

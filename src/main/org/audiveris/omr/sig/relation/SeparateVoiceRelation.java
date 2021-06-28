@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "separate-voice")
 public class SeparateVoiceRelation
-        extends Relation
+        extends Rhythm
 {
     //~ Constructors -------------------------------------------------------------------------------
 

@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
+import org.audiveris.omr.sig.relation.Support;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.util.UIUtil;
 
@@ -75,25 +76,26 @@ public class SelectionPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // drawSupport //
-    //-------------//
+    //----------//
+    // drawLink //
+    //----------//
     /**
-     * Draw the support relation between two inters.
+     * Draw the link between two inters.
      *
-     * @param one          first inter
-     * @param two          second inter
-     * @param supportClass provided support class
+     * @param one       first inter
+     * @param two       second inter
+     * @param linkClass provided link class
      */
-    public void drawSupport (Inter one,
-                             Inter two,
-                             Class<? extends Relation> supportClass)
+    public void drawLink (Inter one,
+                          Inter two,
+                          Class<? extends Relation> linkClass)
     {
         final double zoom = g.getTransform().getScaleX();
 
-        // Draw support line
+        // Draw link line
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 2f);
-        g.setColor(NoExclusion.class.isAssignableFrom(supportClass) ? Color.GRAY : Color.GREEN);
+        g.setColor(NoExclusion.class.isAssignableFrom(linkClass) ? Color.GRAY
+                : Support.class.isAssignableFrom(linkClass) ? Color.GREEN : Color.ORANGE);
 
         final double r = 2 / zoom; // Radius
         final Point2D oneCenter = one.getRelationCenter();
@@ -105,12 +107,12 @@ public class SelectionPainter
         final Line2D line = new Line2D.Double(oneCenter, twoCenter);
         g.draw(line);
 
-        // Print support name at center of line?
-        if (zoom >= constants.minZoomForSupportNames.getValue()) {
+        // Print link name at center of line?
+        if (zoom >= constants.minZoomForLinkNames.getValue()) {
             final double std = 0.5 * UIUtil.GLOBAL_FONT_RATIO;
             final double z = Math.max(std, zoom);
             final AffineTransform at = AffineTransform.getScaleInstance(std / z, std / z);
-            final TextLayout layout = basicLayout(Relations.nameOf(supportClass), at);
+            final TextLayout layout = basicLayout(Relations.nameOf(linkClass), at);
             paint(layout, GeoUtil.center2D(line.getBounds()), AREA_CENTER);
         }
     }
@@ -145,9 +147,9 @@ public class SelectionPainter
             extends ConstantSet
     {
 
-        private final Constant.Ratio minZoomForSupportNames = new Constant.Ratio(
+        private final Constant.Ratio minZoomForLinkNames = new Constant.Ratio(
                 2.0,
-                "Minimum zoom value to display support names");
+                "Minimum zoom value to display link names");
     }
 
     //---------------------//

@@ -52,6 +52,7 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
@@ -134,6 +135,7 @@ public class PageStep
         forVoices.add(TupletInter.class);
         // Relations
         forVoices.add(AugmentationRelation.class);
+        forVoices.add(NextInVoiceRelation.class);
         forVoices.add(SameTimeRelation.class);
         forVoices.add(SameVoiceRelation.class);
         forVoices.add(SeparateTimeRelation.class);

@@ -124,7 +124,7 @@ public class InterTracker
             Collection<Link> links = inter.searchLinks(system);
 
             for (Link link : links) {
-                painter.drawSupport(inter, link.partner, link.relation.getClass());
+                painter.drawLink(inter, link.partner, link.relation.getClass());
             }
         }
     }
