@@ -1099,7 +1099,7 @@ public class HeadLinker
                     logger.info("VIP {} inspect maxStemProfile:{}", this, maxStemProfile);
                 }
 
-                // Collect suitable seeds
+                // Collect suitable seeds (on top of head stump)
                 seeds = retrieveSeeds();
 
                 // Other head linkers
@@ -1519,9 +1519,15 @@ public class HeadLinker
                             final double cly = cl.getReferencePoint().getY();
                             ySoft = cly + yDir * params.bestStemTailLg;
 
-                            if (stemProfile < Profiles.MAX_VALUE) {
-                                yHard = cly + yDir * params.minStemTailLg;
-                            }
+//                            // Allow to push yHard to include new segments
+//                            // But, if last segment fails, we should step back to the last good one
+//                            if (stemProfile < Profiles.MAX_VALUE) {
+//                                final double yHardNew = cly + yDir * params.minStemTailLg;
+//
+//                                if (yDir * Double.compare(yHardNew, yHard) > 0) {
+//                                    yHard = yHardNew;
+//                                }
+//                            }
                         }
                     } else if (ev instanceof LinkerItem
                                        && ((LinkerItem) ev).linker instanceof BLinker) {
@@ -1675,6 +1681,11 @@ public class HeadLinker
 
                 for (Inter hInter : headCandidates) {
                     final HeadInter h = (HeadInter) hInter;
+
+                    // Check other head shape is compatible with initial head shape
+                    if (h.getShape() != head.getShape()) {
+                        continue;
+                    }
 
                     // Check head is far enough from start
                     final double dy = yDir * (h.getCenter().y - yLast);

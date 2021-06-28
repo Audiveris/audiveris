@@ -227,6 +227,7 @@ public class SigReducer
      * <li>All (standard) beams or all small beams.
      * <li>(standard) beams with (standard) heads only.
      * <li>Small beams with small heads only.
+     * <li>A stem is in exclusion with any intersected head it is not linked with.
      * </ul>
      */
     private void analyzeChords ()
@@ -237,10 +238,14 @@ public class SigReducer
         List<Inter> stems = sig.inters(Shape.STEM);
         Collections.sort(stems, Inters.byReverseGrade);
 
-        // Heads organized by shape (black, void, and small versions)
+        // All heads of the sig
+        List<Inter> allHeads = sig.inters(HeadInter.class);
+        Collections.sort(allHeads, Inters.byAbscissa);
+
+        // Stem Heads organized by shape (black, void, and small versions)
         Map<Shape, Set<Inter>> heads = new EnumMap<>(Shape.class);
 
-        // Beams organized by size (standard vs small versions)
+        // Stem Beams organized by size (standard vs small versions)
         Map<Size, Set<Inter>> beams = new EnumMap<>(Size.class);
 
         for (Inter stem : stems) {
@@ -256,6 +261,9 @@ public class SigReducer
             heads.clear();
             beams.clear();
 
+            // Heads intersected by current stem
+            final List<Inter> intersectedHeads = intersectedHeads((StemInter) stem, allHeads);
+
             // Populate the various head & beam classes around this stem
             for (Relation rel : sig.edgesOf(stem)) {
                 if (rel instanceof HeadStemRelation) {
@@ -268,6 +276,7 @@ public class SigReducer
                     }
 
                     set.add(head);
+                    intersectedHeads.remove(head);
                 } else if (rel instanceof BeamStemRelation) {
                     Inter beam = sig.getEdgeSource(rel);
                     Size size = (beam instanceof SmallBeamInter) ? Size.SMALL : Size.STANDARD;
@@ -279,6 +288,11 @@ public class SigReducer
 
                     set.add(beam);
                 }
+            }
+
+            // Exclusion between stem and each intersected (non-linked) head
+            for (Inter ih : intersectedHeads) {
+                sig.insertExclusion(stem, ih, Exclusion.Cause.OVERLAP);
             }
 
             // Mutual head exclusion based on head shape
@@ -1429,6 +1443,31 @@ public class SigReducer
         }
 
         return true;
+    }
+
+    //------------------//
+    // intersectedHeads //
+    //------------------//
+    /**
+     * Report the heads that intersect the provided stem.
+     *
+     * @param stem     provided stem
+     * @param allHeads all heads in sig
+     * @return the intersected heads
+     */
+    private List<Inter> intersectedHeads (StemInter stem,
+                                          List<Inter> allHeads)
+    {
+        final Line2D median = stem.getMedian();
+        final List<Inter> found = new ArrayList<>();
+
+        for (Inter ih : allHeads) {
+            if (median.intersects(ih.getBounds())) {
+                found.add(ih);
+            }
+        }
+
+        return found;
     }
 
     //-----------------------//
