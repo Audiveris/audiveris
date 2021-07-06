@@ -921,7 +921,6 @@ public class MeasureRhythm
                     final Rational timeOffset = ch.getTimeOffset();
 
                     if (timeOffset != null) {
-                        logger.info("BINGO {} {}", ch, rookie);
                         prevSlot.getChords().add(rookie);
                         rookie.setAndPushTime(timeOffset);
 

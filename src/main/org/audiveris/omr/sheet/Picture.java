@@ -214,7 +214,7 @@ public class Picture
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
 
-        setTable(TableKey.BINARY, binaryTable, false); // This sets also binary image
+        setTable(TableKey.BINARY, binaryTable, true); // This sets also binary image
 
         logger.debug("Picture with BinaryTable {}", binaryTable);
     }
@@ -628,7 +628,7 @@ public class Picture
             case BINARY:
 
                 // Built from binary image, if available
-                final BufferedImage image = getImage(ImageKey.BINARY);
+                BufferedImage image = getImage(ImageKey.BINARY);
 
                 if (image != null) {
                     src = new ByteProcessor(image);
@@ -638,6 +638,11 @@ public class Picture
 
                     if (gray != null) {
                         src = binarized(gray);
+
+                        // Register binary image for possible future use
+                        image = src.getBufferedImage();
+                        setImage(ImageKey.BINARY, image, true);
+                        sheet.getStub().setModified(true);
                     } else {
                         logger.warn("Cannot provide BINARY source");
 

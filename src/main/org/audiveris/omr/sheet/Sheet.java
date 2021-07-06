@@ -1443,7 +1443,7 @@ public class Sheet
         if (picture == null) {
             picture = new Picture(this, binaryTable);
         } else {
-            picture.setTable(Picture.TableKey.BINARY, binaryTable, false);
+            picture.setTable(Picture.TableKey.BINARY, binaryTable, true);
         }
 
         if (OMR.gui != null) {

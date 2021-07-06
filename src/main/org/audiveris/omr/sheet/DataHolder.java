@@ -153,7 +153,7 @@ public abstract class DataHolder<T>
                         }
 
                         path.getFileSystem().close(); // Close book file system
-                        modified = false;
+                        setModified(false);
                     } else {
                         logger.debug("No bookpath for{}", book);
                         hasNoData = true;
@@ -182,7 +182,7 @@ public abstract class DataHolder<T>
                          boolean modified)
     {
         this.data = data;
-        this.modified = modified;
+        setModified(modified);
 
         if (data != null) {
             hasNoData = false;
@@ -251,6 +251,10 @@ public abstract class DataHolder<T>
      */
     public void setModified (boolean bool)
     {
+        if (!bool) {
+            logger.debug("{} setModified:false", this);
+        }
+
         modified = bool;
     }
 

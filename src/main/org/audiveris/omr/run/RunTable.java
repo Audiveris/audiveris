@@ -210,7 +210,7 @@ public class RunTable
             throw new RuntimeException("Illegal run length " + length);
         }
 
-        weight = null; // Invalidate chached data
+        weight = null; // Invalidate cached data
 
         // Look for background where foreground run is to take place
         // ...F(B)F... -> ...F(B1FB2)F...
@@ -1520,7 +1520,7 @@ public class RunTable
                     rle = new int[seqRle.length];
                     System.arraycopy(seqRle, 0, rle, 0, seqRle.length);
                 } else {
-                    int backLg = seqRle[1] & 0xFFFF; // backLg >= coordMin by definition of coordMin
+                    int backLg = seqRle[1]; // backLg >= coordMin by definition of coordMin
 
                     if (backLg > coordMin) {
                         // Shorten the background length
@@ -1889,7 +1889,7 @@ public class RunTable
             // ...FBF
             // .....^ cursor after next()
             int foreLoc = loc;
-            int foreLg = rle[cursor++] & 0xFFFF;
+            int foreLg = rle[cursor++];
 
             // Update the (modifiable) run structure
             run.setStart(foreLoc);
@@ -1898,7 +1898,7 @@ public class RunTable
             loc += foreLg;
 
             if (cursor < rle.length) {
-                int backLg = rle[cursor] & 0xFFFF;
+                int backLg = rle[cursor];
                 loc += backLg;
             }
 
