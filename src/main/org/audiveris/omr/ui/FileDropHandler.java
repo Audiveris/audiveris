@@ -228,7 +228,10 @@ public class FileDropHandler
 
             if (firstValid != null) {
                 StubsController.getInstance().selectAssembly(firstValid);
-                BookActions.applyUserSettings(firstValid);
+
+                if (BookActions.preOpenBookParameters()) {
+                    BookActions.applyUserSettings(firstValid);
+                }
             }
         }
     }

@@ -183,6 +183,12 @@ public abstract class XactDataPane<E>
         selBox.setSelected(bool);
     }
 
+    @Override
+    public String toString ()
+    {
+        return getClass().getSimpleName() + " " + title.getText();
+    }
+
     /**
      * Write the parameter into the fields content
      *

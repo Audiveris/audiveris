@@ -87,20 +87,23 @@ public class ConstantBasedParam<E, C extends Constant<E>>
     @Override
     public boolean setSpecific (E specific)
     {
-        if (!getValue().equals(specific)) {
+        final E value = getValue();
+
+        if (!value.equals(specific)) {
             if (specific == null) {
                 if (!cst.isSourceValue()) {
                     cst.resetToSource();
-                    logger.info(
-                            "Default " + cst.getDescription() + " reset to {}",
-                            cst.getSourceValue());
+                    logger.info("Default " + cst.getDescription() + " reset to {}",
+                                cst.getSourceValue());
+
+                    return true;
                 }
             } else {
                 cst.setValue(specific);
                 logger.info("Default " + cst.getDescription() + " set to {}", cst.getValue());
-            }
 
-            return true;
+                return true;
+            }
         }
 
         return false;

@@ -678,9 +678,21 @@ public class BookActions
      */
     public static void applyUserSettings (final SheetStub stub)
     {
+        final Book book = stub.getBook();
+
+        // Dialog already active?
+        final JDialog activeDialog = book.getParameterDialog();
+
+        if (activeDialog != null) {
+            activeDialog.setVisible(true);
+
+            return;
+        }
+
+        // Create a brand new dialog
         try {
-            final BookParameters scoreParams = new BookParameters(stub);
-            final String frameTitle = scoreParams.getTitle();
+            final BookParameters bookParams = new BookParameters(stub);
+            final String frameTitle = bookParams.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, false); // Non modal
 
             // For SAF life cycle (to save dialog size and location across application runs)
@@ -692,13 +704,16 @@ public class BookActions
                 @Override
                 public void windowClosing (WindowEvent we)
                 {
+                    book.setParameterDialog(null);
                     dialog.dispose();
                 }
             });
 
+            book.setParameterDialog(dialog);
+
             // User actions on buttons OK, Apply, Cancel
             final JOptionPane optionPane = new JOptionPane(
-                    scoreParams.getComponent(),
+                    bookParams.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     null,
@@ -713,15 +728,16 @@ public class BookActions
                     if (choice == Opt.Cancel) {
                         exit = true;
                     } else if (choice == Opt.Apply) {
-                        scoreParams.commit(stub);
+                        bookParams.commit(book);
                         exit = false;
                     } else if (choice == Opt.OK) {
-                        exit = scoreParams.commit(stub);
+                        exit = bookParams.commit(book);
                     } else {
                         exit = false;
                     }
 
                     if (exit) {
+                        book.setParameterDialog(null);
                         dialog.setVisible(false);
                         dialog.dispose();
                     } else {
@@ -975,6 +991,19 @@ public class BookActions
         } else {
             logger.info(resources.getString("noStemData"));
         }
+    }
+
+    //-----------------------//
+    // preOpenBookParameters //
+    //-----------------------//
+    /**
+     * Check whether we should pre-open book parameters dialog at any book creation.
+     *
+     * @return true if so
+     */
+    public static boolean preOpenBookParameters ()
+    {
+        return constants.preOpenBookParameters.isSet();
     }
 
     //-----------//
@@ -1913,7 +1942,10 @@ public class BookActions
 
                 if (firstValid != null) {
                     StubsController.invokeSelect(firstValid);
-                    BookActions.applyUserSettings(firstValid);
+
+                    if (preOpenBookParameters()) {
+                        BookActions.applyUserSettings(firstValid);
+                    }
                 }
             } catch (Exception ex) {
                 logger.warn("Error opening path " + path + " " + ex, ex);
@@ -2079,6 +2111,10 @@ public class BookActions
         private final Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
                 "Should we ask confirmation for closing an unsaved book?");
+
+        private final Constant.Boolean preOpenBookParameters = new Constant.Boolean(
+                false,
+                "Automatically open book parameters dialog at book creation?");
     }
 
     //---------//

@@ -393,7 +393,7 @@ public class CLI
         @Override
         protected void openBookDialog (SheetStub stub)
         {
-            if (OMR.gui != null) {
+            if ((OMR.gui != null) && BookActions.preOpenBookParameters()) {
                 BookActions.applyUserSettings(stub);
             }
         }

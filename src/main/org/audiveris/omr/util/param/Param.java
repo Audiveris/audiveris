@@ -144,13 +144,21 @@ public class Param<E>
      */
     public boolean setSpecific (E specific)
     {
-        if ((getSpecific() == null) || !getSpecific().equals(specific)) {
-            this.specific = specific;
+        final E currentSpecific = getSpecific();
 
-            return true;
+        if (currentSpecific == null) {
+            if (specific == null) {
+                return false;
+            }
         } else {
-            return false;
+            if (currentSpecific.equals(specific)) {
+                return false;
+            }
         }
+
+        this.specific = specific;
+
+        return true;
     }
 
     //----------//

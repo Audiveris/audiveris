@@ -246,28 +246,49 @@ public class BookParameters
     /**
      * Commit the user actions.
      *
-     * @param stub the related sheet
+     * @param book the related book
      * @return true if committed, false otherwise
      */
-    public boolean commit (SheetStub stub)
+    public boolean commit (Book book)
     {
         try {
+            boolean defaultModified = false;
+            boolean bookModified = false;
+
             // Commit all specific values, if any, to their model object
-            for (int t = 0, tBreak = component.getTabCount(); t < tBreak; t++) {
-                final ScopedPanel panel = (ScopedPanel) component.getComponentAt(t);
+            for (int tab = 0, tBreak = component.getTabCount(); tab < tBreak; tab++) {
+                final ScopedPanel panel = (ScopedPanel) component.getComponentAt(tab);
                 boolean modified = false;
 
                 for (XactDataPane pane : panel.getPanes()) {
-                    modified |= pane.commit();
+                    final boolean paneModified = pane.commit();
+
+                    if (paneModified) {
+                        logger.debug("BookParameters modified tab:{} {} {}",
+                                     tab, panel.getName(), pane);
+                    }
+
+                    modified |= paneModified;
                 }
 
-                // Book/Sheet modifications
-                if ((t > 0) && modified) {
-                    stub.setModified(true);
+                // Default / Book modifications
+                if (modified) {
+                    if (tab == 0) {
+                        defaultModified = true;
+                    } else {
+                        book.setModified(true);
+                        bookModified = true;
+                    }
                 }
             }
 
-            logger.info("Book parameters committed");
+            if (defaultModified) {
+                logger.info("Default parameters committed");
+            }
+
+            if (bookModified) {
+                logger.info("Book parameters committed");
+            }
         } catch (Exception ex) {
             logger.warn("Could not commit book parameters {}", ex.toString(), ex);
 

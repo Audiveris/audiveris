@@ -96,6 +96,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipOutputStream;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
@@ -361,6 +362,9 @@ public class Book
     /** Set of stubs that need to be upgraded. */
     private Set<SheetStub> stubsToUpgrade;
 
+    /** Active parameter dialog, if any. */
+    private JDialog parameterDialog;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Book with a path to an input images file.
@@ -507,6 +511,11 @@ public class Book
                     LogUtil.stopBook();
                 }
             });
+        }
+
+        // Close parameter dialog if any
+        if (parameterDialog != null) {
+            parameterDialog.dispose();
         }
 
         // Close browser if any
@@ -971,6 +980,32 @@ public class Book
     public void setOffset (Integer offset)
     {
         this.offset = offset;
+    }
+
+    //--------------------//
+    // getParameterDialog //
+    //--------------------//
+    /**
+     * Report the active parameter dialog, if any.
+     *
+     * @return the active parameter dialog, perhaps null
+     */
+    public JDialog getParameterDialog ()
+    {
+        return parameterDialog;
+    }
+
+    //--------------------//
+    // setParameterDialog //
+    //--------------------//
+    /**
+     * Register the provided dialog as the active parameter dialog.
+     *
+     * @param dialog new parameter dialog, perhaps null
+     */
+    public void setParameterDialog (JDialog dialog)
+    {
+        parameterDialog = dialog;
     }
 
     //--------------//
