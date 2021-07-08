@@ -58,6 +58,7 @@ import org.audiveris.omr.sig.relation.SameTimeRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
+import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.InterTask;
 import org.audiveris.omr.sig.ui.PageTask;
 import org.audiveris.omr.sig.ui.RelationTask;
@@ -153,7 +154,10 @@ public class PageStep
 
     static {
         forSlurs = new HashSet<>();
+        // Inters
         forSlurs.add(SlurInter.class);
+        // Relations
+        forSlurs.add(SlurHeadRelation.class);
     }
 
     static {
@@ -309,20 +313,25 @@ public class PageStep
             } else if (task instanceof RelationTask) {
                 RelationTask relationTask = (RelationTask) task;
                 Relation relation = relationTask.getRelation();
+
+                Inter source = relationTask.getSource();
+                SystemInfo system = sig.getSystem();
+                MeasureStack stack = system.getStackAt(source.getCenter());
+                Page page = stack.getSystem().getPage();
+                Impact impact = map.get(page);
+
+                if (impact == null) {
+                    map.put(page, impact = new Impact());
+                }
+
                 Class classe = relation.getClass();
 
                 if (isImpactedBy(classe, forVoices)) {
-                    Inter source = relationTask.getSource();
-                    SystemInfo system = sig.getSystem();
-                    MeasureStack stack = system.getStackAt(source.getCenter());
-                    Page page = stack.getSystem().getPage();
-                    Impact impact = map.get(page);
-
-                    if (impact == null) {
-                        map.put(page, impact = new Impact());
-                    }
-
                     impact.onVoices = true;
+                }
+
+                if (isImpactedBy(classe, forSlurs)) {
+                    impact.onSlurs = true;
                 }
             }
         }

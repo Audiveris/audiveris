@@ -336,9 +336,16 @@ public class SlurInter
     @Override
     public boolean checkAbnormal ()
     {
-        boolean abnormal = false;
+        // Being a tie status means it's OK, even perhaps across sheets
+        if (!isTie()) {
+            setAbnormal(false);
+
+            return false;
+        }
 
         // Check if slur is connected (or extended) on both ends
+        boolean abnormal = false;
+
         for (HorizontalSide side : HorizontalSide.values()) {
             if ((this.getHead(side) == null) && (this.getExtension(side) == null)) {
                 abnormal = true;
@@ -366,7 +373,7 @@ public class SlurInter
     public void checkCrossTie (SlurInter prevSlur)
     {
         final HeadInter h1 = prevSlur.getHead(LEFT);
-        final HeadInter h2 = prevSlur.getHead(RIGHT);
+        final HeadInter h2 = this.getHead(RIGHT);
         final boolean result;
 
         if (!areTieCompatible(h1, h2)) {
@@ -772,6 +779,8 @@ public class SlurInter
     {
         if (this.tie != tie) {
             this.tie = tie;
+
+            checkAbnormal();
 
             if (sig != null) {
                 sig.getSystem().getSheet().getStub().setModified(true);
