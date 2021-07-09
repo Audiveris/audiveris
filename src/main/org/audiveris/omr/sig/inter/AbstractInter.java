@@ -631,7 +631,7 @@ public abstract class AbstractInter
             coreBounds = box;
         }
 
-        return coreBounds;
+        return new Rectangle(coreBounds);
     }
 
     //------------//
@@ -652,6 +652,10 @@ public abstract class AbstractInter
             }
 
             sb.append("(").append(impacts).append(")");
+        }
+
+        if (abnormal) {
+            sb.append(" ABNORMAL");
         }
 
         return sb.toString();

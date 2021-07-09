@@ -97,6 +97,8 @@ public class PageStep
 
     private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
 
+    private static final Impact WHOLE_IMPACT = new Impact(true, true, true, true, true);
+
     /** Classes that may impact voices. */
     private static final Set<Class<?>> forVoices;
 
@@ -200,24 +202,11 @@ public class PageStep
     public void doit (Sheet sheet)
             throws StepException
     {
-        // Check gutter between systems one under the other
+        // Clean up gutter between systems one under the other
         new SheetReduction(sheet).process();
 
         for (Page page : sheet.getPages()) {
-            // Connect parts across systems in the page
-            new PageReduction(page).reduce();
-
-            // Inter-system slurs connections
-            page.connectOrphanSlurs(true); // True for tie checking
-
-            // Lyrics
-            refineLyrics(page);
-
-            // Merge / renumber measure stacks within the page
-            new MeasureFixer().process(page);
-
-            // Refine voices IDs (and thus colors) across all systems of the page
-            Voices.refinePage(page);
+            processPage(page);
         }
     }
 
@@ -298,6 +287,7 @@ public class PageStep
 
                 impact.onParts = true; // Safer
                 impact.onMeasures = true;
+                impact.onSlurs = true;
                 impact.onVoices = true;
             } else if (task instanceof SystemMergeTask) {
                 Page page = ((SystemMergeTask) task).getSystem().getPage();
@@ -340,28 +330,9 @@ public class PageStep
 
         // Second, handle each page impact
         for (Entry<Page, Impact> entry : map.entrySet()) {
-            Page page = entry.getKey();
-            Impact impact = entry.getValue();
-
-            if (impact.onParts) {
-                new PageReduction(page).reduce();
-            }
-
-            if (impact.onMeasures) {
-                new MeasureFixer().process(page);
-            }
-
-            if (impact.onSlurs) {
-                page.connectOrphanSlurs(true); // True for tie checking
-            }
-
-            if (impact.onLyrics) {
-                refineLyrics(page);
-            }
-
-            if (impact.onVoices) {
-                Voices.refinePage(page);
-            }
+            final Page page = entry.getKey();
+            final Impact impact = entry.getValue();
+            doProcessPage(page, impact);
         }
     }
 
@@ -372,6 +343,47 @@ public class PageStep
     public boolean isImpactedBy (Class<?> classe)
     {
         return isImpactedBy(classe, impactingClasses);
+    }
+
+    //-------------//
+    // processPage //
+    //-------------//
+    public void processPage (Page page)
+    {
+        doProcessPage(page, WHOLE_IMPACT);
+    }
+
+    //---------------//
+    // doProcessPage //
+    //---------------//
+    private void doProcessPage (Page page,
+                                Impact impact)
+    {
+        if (impact.onParts) {
+            // Connect parts across systems in the page
+            new PageReduction(page).reduce();
+        }
+
+        if (impact.onMeasures) {
+            // Merge / renumber measure stacks within the page
+            new MeasureFixer().process(page);
+        }
+
+        if (impact.onSlurs) {
+            // Inter-system slurs connections
+            page.connectOrphanSlurs();
+            page.checkPageCrossTies();
+        }
+
+        if (impact.onLyrics) {
+            // Lyrics
+            refineLyrics(page);
+        }
+
+        if (impact.onVoices) {
+            // Refine voices IDs (and thus colors) across all systems of the page
+            Voices.refinePage(page);
+        }
     }
 
     //--------------//
@@ -408,6 +420,23 @@ public class PageStep
         boolean onVoices = false;
 
         boolean onMeasures = false;
+
+        public Impact ()
+        {
+        }
+
+        public Impact (boolean onParts,
+                       boolean onSlurs,
+                       boolean onLyrics,
+                       boolean onVoices,
+                       boolean onMeasures)
+        {
+            this.onParts = onParts;
+            this.onSlurs = onSlurs;
+            this.onLyrics = onLyrics;
+            this.onVoices = onVoices;
+            this.onMeasures = onMeasures;
+        }
 
         @Override
         public String toString ()

@@ -480,7 +480,7 @@ public class HeadInter
             coreBounds = shrink(getBounds()).getBounds();
         }
 
-        return coreBounds;
+        return new Rectangle(coreBounds);
     }
 
     //--------------------------//

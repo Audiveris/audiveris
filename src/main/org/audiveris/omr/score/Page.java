@@ -178,47 +178,61 @@ public class Page
      * previous system if any.
      * <p>
      * Orphan slurs that don't connect (and are not manual) are removed from their SIG.
-     *
-     * @param checkTie true for tie checking
      */
-    public void connectOrphanSlurs (boolean checkTie)
+    public void connectOrphanSlurs ()
     {
-        for (SystemInfo system : getSystems()) {
-            SystemInfo prevSystem = system.getPrecedingInPage();
+        for (SystemInfo system : systems.subList(1, systems.size())) {
+            // Examine every part in sequence
+            for (Part part : system.getParts()) {
+                final List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
 
-            if (prevSystem != null) {
-                // Examine every part in sequence
-                for (Part part : system.getParts()) {
-                    List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
+                // Connect to ending orphans in preceding system/part (if such part exists)
+                final Part precPart = part.getPrecedingInPage();
 
-                    // Connect to ending orphans in preceding system/part (if such part exists)
-                    Part precPart = part.getPrecedingInPage();
+                if (precPart != null) {
+                    final List<SlurInter> precOrphans = precPart.getSlurs(SlurInter.isEndingOrphan);
 
-                    if (precPart != null) {
-                        List<SlurInter> precOrphans = precPart.getSlurs(SlurInter.isEndingOrphan);
+                    // Links: Slur -> prevSlur
+                    final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precPart);
 
-                        // Links: Slur -> prevSlur
-                        Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precPart);
+                    // Apply the links possibilities
+                    for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                        final SlurInter slur = entry.getKey();
+                        final SlurInter prevSlur = entry.getValue();
 
-                        // Apply the links possibilities
-                        for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
-                            final SlurInter slur = entry.getKey();
-                            final SlurInter prevSlur = entry.getValue();
-
-                            slur.setExtension(LEFT, prevSlur);
-                            prevSlur.setExtension(RIGHT, slur);
-
-                            if (checkTie) {
-                                slur.checkCrossTie(prevSlur);
-                            }
-                        }
-
-                        orphans.removeAll(links.keySet());
-                        precOrphans.removeAll(links.values());
-                        SlurInter.discardOrphans(precOrphans, RIGHT);
+                        slur.setExtension(LEFT, prevSlur);
+                        prevSlur.setExtension(RIGHT, slur);
                     }
 
-                    SlurInter.discardOrphans(orphans, LEFT);
+                    orphans.removeAll(links.keySet());
+                    precOrphans.removeAll(links.values());
+                    SlurInter.discardOrphans(precOrphans, RIGHT);
+                }
+
+                SlurInter.discardOrphans(orphans, LEFT);
+            }
+        }
+    }
+
+    //--------------------//
+    // checkPageCrossTies //
+    //--------------------//
+    /**
+     * Within the systems of this page, check tie status for cross-system slurs.
+     */
+    public void checkPageCrossTies ()
+    {
+        for (SystemInfo system : systems.subList(1, systems.size())) {
+            // Examine every part in sequence
+            for (Part part : system.getParts()) {
+                final List<SlurInter> leftExtended = part.getSlurs(SlurInter.isBeginningExtended);
+
+                for (SlurInter slur : leftExtended) {
+                    final SlurInter prevSlur = slur.getExtension(LEFT);
+
+                    if (!prevSlur.isRemoved()) {
+                        slur.checkCrossTie(prevSlur);
+                    }
                 }
             }
         }

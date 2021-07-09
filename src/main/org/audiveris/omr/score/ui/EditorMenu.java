@@ -410,8 +410,8 @@ public class EditorMenu
 
             RhythmAction ()
             {
-                putValue(NAME, "Reprocess page rhythm");
-                putValue(SHORT_DESCRIPTION, "Reprocess rhythm on current page");
+                putValue(NAME, "Reprocess rhythm");
+                putValue(SHORT_DESCRIPTION, "Redo rhythm and systems connection for current page");
             }
 
             @Override

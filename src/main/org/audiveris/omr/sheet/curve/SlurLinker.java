@@ -623,7 +623,7 @@ public class SlurLinker
     {
 
         private final Scale.Fraction coverageHExt = new Scale.Fraction(
-                1.25,
+                2.0, // Was 1.25, now extended to cope with possible aug. dot between head and slur
                 "Length of extension for horizontal slur coverage");
 
         private final Scale.Fraction coverageHIn = new Scale.Fraction(

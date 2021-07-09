@@ -201,9 +201,9 @@ public interface Inter
     void setContextualGrade (double value);
 
     /**
-     * Report the core bounds for this interpretation.
+     * Report (a COPY of) the core bounds for this interpretation.
      *
-     * @return a small core box
+     * @return a COPY of core box
      */
     Rectangle2D getCoreBounds ();
 
@@ -386,7 +386,7 @@ public interface Inter
      * Report a COPY of the bounding box based on MusicFont symbol.
      *
      * @param interline scaling factor
-     * @return the symbol bounding box
+     * @return a copy of the symbol bounding box
      * @see #getBounds()
      */
     Rectangle getSymbolBounds (int interline);

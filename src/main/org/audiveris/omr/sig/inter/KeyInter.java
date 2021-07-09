@@ -242,10 +242,6 @@ public class KeyInter
     {
         if (bounds == null) {
             bounds = Entities.getBounds(getMembers());
-
-            if (bounds == null) {
-                return null;
-            }
         }
 
         if (bounds == null) {

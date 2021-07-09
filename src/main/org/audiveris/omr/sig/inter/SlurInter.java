@@ -57,6 +57,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,10 +75,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -162,6 +165,14 @@ public class SlurInter
         }
         return false;
     };
+
+    /** Predicate for an extended slur at the end of its system/part. */
+    public static final Predicate<SlurInter> isEndingExtended
+            = (SlurInter slur) -> slur.getExtension(RIGHT) != null;
+
+    /** Predicate for an extended slur at the beginning of its system/part. */
+    public static final Predicate<SlurInter> isBeginningExtended
+            = (SlurInter slur) -> slur.getExtension(LEFT) != null;
 
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
@@ -337,7 +348,7 @@ public class SlurInter
     public boolean checkAbnormal ()
     {
         // Being a tie status means it's OK, even perhaps across sheets
-        if (!isTie()) {
+        if (isTie()) {
             setAbnormal(false);
 
             return false;
@@ -365,8 +376,12 @@ public class SlurInter
     /**
      * Check whether the cross-system slur connection is a tie.
      * <p>
-     * This method assumes that 'this' and 'prevSlur' belong to the same logical part but in
-     * separate systems.
+     * This method assumes that 'this' and 'prevSlur' belong to the same logical part but in two
+     * systems in sequence:
+     * <ul>
+     * <li>Either within the same page (during PAGE step),
+     * <li>Or from one page/sheet to the next (during score refinement at end of transcription).
+     * </ul>
      *
      * @param prevSlur slur at the end of previous system (perhaps in previous sheet)
      */
@@ -777,8 +792,16 @@ public class SlurInter
      */
     public void setTie (boolean tie)
     {
+        if (isVip()) {
+            logger.info("VIP {} setTie {}", this, tie);
+        }
+
         if (this.tie != tie) {
             this.tie = tie;
+
+            if (tie) {
+                logger.debug("Tie for {}", this);
+            }
 
             checkAbnormal();
 
@@ -786,6 +809,31 @@ public class SlurInter
                 sig.getSystem().getSheet().getStub().setModified(true);
             }
         }
+    }
+
+    //-----------//
+    // preRemove //
+    //-----------//
+    @Override
+    public Set<? extends Inter> preRemove (WrappedBoolean cancel)
+    {
+        final Set<Inter> inters = new LinkedHashSet<>();
+
+        inters.add(this);
+
+        // If this slur has an extension to another slur, remove that other slur (now an orphan).
+        // NOTA: We do this EVEN IF this other slur is a manual slur, because today we have no way
+        // to handle the del/undel lifecycle of this direct cross-system inter reference
+        // similar to the lifecycle we have for inter relations within the same SIG.
+        for (HorizontalSide hSide : HorizontalSide.values()) {
+            final SlurInter otherSlur = getExtension(hSide);
+
+            if (otherSlur != null) {
+                inters.add(otherSlur);
+            }
+        }
+
+        return inters;
     }
 
     //--------//
@@ -809,16 +857,6 @@ public class SlurInter
             part.removeSlur(this);
         } else {
             logger.info("{} no part to remove from.", this);
-        }
-
-        // Cut cross-system slur extension if any
-        for (HorizontalSide side : HorizontalSide.values()) {
-            SlurInter extension = getExtension(side);
-
-            if (extension != null) {
-                extension.setExtension(side.opposite(), null);
-                setExtension(side, null);
-            }
         }
 
         super.remove(extensive);
@@ -1069,9 +1107,9 @@ public class SlurInter
         }
     }
 
-    //-------//
-    // Model //
-    //-------//
+//-------//
+// Model //
+//-------//
     public static class Model
             implements InterUIModel
     {
@@ -1106,9 +1144,9 @@ public class SlurInter
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
+//-----------//
+// Constants //
+//-----------//
     private static class Constants
             extends ConstantSet
     {
@@ -1132,9 +1170,9 @@ public class SlurInter
                 "Maximum ordinate distance for pointing a slur");
     }
 
-    //--------//
-    // Editor //
-    //--------//
+//--------//
+// Editor //
+//--------//
     /**
      * User editor for a slur.
      * <p>

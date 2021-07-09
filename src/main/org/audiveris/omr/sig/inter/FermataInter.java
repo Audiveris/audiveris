@@ -166,7 +166,7 @@ public class FermataInter
             bounds = Entities.getBounds(getMembers());
         }
 
-        return new Rectangle(bounds);
+        return super.getBounds();
     }
 
     //--------//
