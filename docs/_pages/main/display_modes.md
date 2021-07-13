@@ -9,9 +9,9 @@ nav_order: 1
 
 |  | Binary tab | Data tab |
 | --- | --- | --- |
-| Physical mode | ![](../assets/images/physical1.png) | ![](../assets/images/physical2.png) |
-| Combined mode | ![](../assets/images/combined1.png) | ![](../assets/images/combined2.png) |
-| Logical mode | ![](../assets/images/logical1.png) | ![](../assets/images/logical2.png) |
+| ![](../assets/images/ModePhysical.png) Physical mode | ![](../assets/images/physical1.png) | ![](../assets/images/physical2.png) |
+| ![](../assets/images/ModeCombined.png) Combined mode | ![](../assets/images/combined1.png) | ![](../assets/images/combined2.png) |
+| ![](../assets/images/ModeLogical.png) Logical mode | ![](../assets/images/logical1.png) | ![](../assets/images/logical2.png) |
 
 For the sheet panel you can choose between 3 display modes:
 

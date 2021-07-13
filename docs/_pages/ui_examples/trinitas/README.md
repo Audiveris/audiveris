@@ -8,17 +8,20 @@ nav_order: 1
 # O lux beata Trinitas
 {: .no_toc }
 
-This session concerns the processing of an old office hymn available on IMSLP site:
+**NOTA**:
+You will notice that description of user edition is very detailed in this example, perhaps too much.
+This was done on purpose, so that the session content could be used as introductory material.
+{: .nota-bg }
+
+The case at hand describes the processing of an old office hymn available on IMSLP site.
+You can download it directly via the button here below:
 
 [O lux beata Trinitas](https://imslp.org/wiki/O_lux_beata_Trinitas_(Alberti%2C_Johann_Friedrich))
 {: .btn .text-center }
 
-This case originated from [issue #481](https://github.com/Audiveris/audiveris/issues/481)
+The case originated from [issue #481](https://github.com/Audiveris/audiveris/issues/481)
 posted on Audiveris forum, which led to several discussions and engine improvements,
-and finally it's integration in Audiveris handbook.
-
-Description of user edition is very detailed in this session, in order to be usable as an
-introductory example.
+and finally it's integration as a UI example into Audiveris handbook.
 
 Main score specificities:
 - Book of 3 movements over 5 sheets
@@ -41,29 +44,146 @@ Table of contents
 {:toc}
 ---
 
+## Program launch
+
+There are many ways to install/build then launch Audiveris program, depending on your environment.
+
+If you haven't done so, move to [Audiveris releases on github](https://github.com/Audiveris/audiveris/releases) to retrieve the latest release.
+
+Under Windows, you can simply run the installer (for example Audiveris_Setup-5.2.2-windows-x86_64.exe
+).
+Under Windows, Linux and MacOS, you can decide to clone Audiveris project locally and then build it.
+In any case, you will have to make sure that proper Java version (Java 11) is installed.
+
+Here below are the first messages displayed, when pressing Windows start icon,
+selecting Audiveris folder, then Audiveris program:
+
+```
+Audiveris version 5.2.2
+
+LogUtil. Property logback.configurationFile not defined, skipped.
+LogUtil. Configuration found C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\logback.xml
+LogUtil. Logging to C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\log\20210710T121739.log
+
+Loaded plugins from C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\plugins.xml
+Classifier loaded XML norms.
+Classifier data loaded from default uri file:///D:/soft/audiveris-github/development/res/basic-classifier.zip
+Versions. Poll frequency: Weekly, next poll on: 17-Jul-2021
+```
+
+Quick explanations about these early messages :
+
+1. Program version (e.g. 5.2.2)
+2. Logging:   
+   - Logging can be customized, here we are using a user-defined configuration file.  
+   - All session messages are also written into a dedicated user file,
+     named according to session date and time (e.g. 20210710T121739.log)
+3. Configuration:   
+   - User plugins if any to ease access to companion programs like MuseScore, Finale, etc.
+   - Glyph classifier trained data.
+4. Check for new version on GitHub site
+
 ## Initial processing
 
-1. Let's load the PDF file into Audiveris 5.2.    
+1. Let's load the input file O.lux.beata.Trinitas.Alberti.Johann.Friedrich.pdf into Audiveris 5.2.    
    A quick look at the images shows it is of rather good quality.   
-   So, let's launch the whole book transcription...   
+   So, via `Book | Transcribe Book` menu item, let's launch the whole book transcription...   
    Done in 2'30, about 30" per sheet.
 
-2. Here are the engine results:
+2. The last message says `[O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Scores built: 3` which
+   means that 3 movements have been transcribed in this book.
+
+3. Before getting into user actions, let's save the current project status,
+   via command `Book | Save Book` or command `Book | Save Book as...`.   
+   We choose the latter to shrink project name from "O.lux.beata.Trinitas.Alberti.Johann.Friedrich"
+   to simply "Trinitas".
+   ```
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /book.xml
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#1/BINARY.png
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#1/sheet#1.xml
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#2/BINARY.png
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#2/sheet#2.xml
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#3/BINARY.png
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#3/sheet#3.xml
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#4/BINARY.png
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#4/sheet#4.xml
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#5/BINARY.png
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Stored /sheet#5/sheet#5.xml
+   [O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Book stored as D:\soft\cases\Issue-481\Trinitas.omr
+   ```
+4. Top of Audiveris window is now like this:   
+   ![](initial_trinitas.png)   
+   Notice the "memory meter" on window upper right corner which gives 324/706 MB  
+   Notice also that we have the 5 sheets of Trinitas book in memory.
+   This is indicated by the 5 tabs on window left side:
+   there are 5 tabs because the book contains 5 sheets, and these tabs appear in standard font
+   because they are currently loaded.   
+   5 sheets is not a really high number, but let's do something to save on memory, an action
+   specifically useful for books with dozens of sheets or more:   
+   Command `Book | Swap Book Sheets` gets rid of all sheets from memory
+   -- except the current sheet and after storing them to disk if so needed --   
+   ```
+   Disposed sheet#2
+   Disposed sheet#3
+   Disposed sheet#4
+   Disposed sheet#5
+   ```
+   Audiveris window has changed:
+   ![](initial_swapped.png)   
+   All tabs, except tab #1, now appear in gray and memory meter now shows 99/512 MB.
+   We can select again any of these gray tabs, and the corresponding sheet gets reloaded from disk.
+   ```
+   [Trinitas#2] Loaded /sheet#2/sheet#2.xml
+   [Trinitas#3] Loaded /sheet#3/sheet#3.xml
+   [Trinitas#4] Loaded /sheet#4/sheet#4.xml
+   [Trinitas#5] Loaded /sheet#5/sheet#5.xml
+   ```   
+   If you look carefully, you can see that, even with all sheets back in memory, the total memory
+   consumption is just 164/531 MB, far below the initial 324/706.
+   This is so because a bunch of transient data, needed to transcribe sheets, is no longer needed
+   and has been disposed of, via the store/reload process.
+
+   Even more efficiently, we could also:
+   1. Close the book using `Book | Close Book` command (or `Ctrl-W` shortcut).
+      We would be prompted to save the book if so needed.
+   2. Reopen the latest closed book (at its latest opened sheet), via
+      `Book | Most recent book` command (or `Ctrl+Shift-T` shortcut).
+   3. Going through all book sheets, total memory would stay at about 105 MB.
+
+## Raw results
+
+Here are sheet results, right out of the OMR engine:   
+We have selected `View | Show score voice` or `F8` command so that voices in the same part
+be displayed in different colors.   
+-- Note: You can ask your browser to display each of these sheet images in a separate tab --
 
 | Sheet#1 | Sheet#2 | Sheet#3 | Sheet#4 | Sheet#5 |
 | :---: | :---: | :---: | :---: | :---: |
 | ![](sheet1_init.png) | ![](sheet2_init.png) | ![](sheet3_init.png) | ![](sheet4_init.png) | ![](sheet5_init.png) |
 
-Almost all measures are in pink! Except for sheet #3.    
-What caused such a disastrous rhythm result on a rather good input?
+First impression is that almost all measures, except for sheet #3, are displayed in pink!
+
+A **pink** measure indicates that **rhythm** analysis has failed for that measure:
+- Either because some chord starting time could not be determined,
+- Or because some voice was computed to complete after the theoretical measure end,
+  as derived from time signature.
+
+So, what caused such a disastrous rhythm result on a rather good input?
 
 We can double-check the time signatures. All have been correctly recognized:
-* Common-cut beginning of sheet #1
-* 3/4 beginning of sheet #3 (the one with no signaled errors)
-* Common-cut beginning of sheet #4
+* **Common-cut** beginning of sheet #1
+* **3/4** beginning of sheet #3 (the one with no signaled errors)
+* **Common-cut** beginning of sheet #4
 
 Let's have a closer look, with colorized voices (`View | Show score Voices`) and
 with chord IDs displayed (`View | Show chord IDs`).
+
+**NOTA**: Chord IDs are dynamically assigned within each sheet by Audiveris program.
+If you replay this processing even with just a slight difference in the engine code or parameters,
+some chord IDs may be different that those listed in this handbook version.
+Purpose of using chord IDs is to ease user mapping between snapshots and text lines.
+{: .nota-bg }
+
 
 ## Sheet #1
 
@@ -97,7 +217,8 @@ To delete:
   Or use `<popup> | Inters...` contextual menu.
 
 Inserting 4/2 signature is more complex, since this is not one of the predefined time signatures:
-1. From the shape palette, we drag n' drop the custom (0/0) time signature.
+1. From the shape palette, we select the "Times" family (the family figured by a 4/4 sign) and
+   from this shape family, we drag n' drop the custom (0/0) time signature in correct location.
 2. Then in Inter board, we replace the custom 0/0 value by 4/2 value and press `Enter`.
 
 We do this for both common-cut sigs on first measure of sheet #1.
@@ -110,7 +231,7 @@ performed on measures.
 [In measure #12 remaining pink, we'll later see that a whole note has not been recognized].
 {: .nota-bg }
 
-With 4/2 clearly stated, among the 16 measures in sheet, we now have 10 in white.
+With 4/2 clearly stated, among the 16 measures in sheet, we now have 11 in white.
 A significant improvement! :-)
 
 ### Sheet #1, Measure #4
@@ -146,19 +267,19 @@ measure-long rests, they are just plain rests with a duration of 1/1:
 - They belong to a time slot,
 - Their voice can contain other notes or rests.
 
-So, we open the book parameters, and:
-1. We set this option for the whole book (so that it applies to all sheets in book)
-2. We explicitly unset this option for sheet #3.
+So, we open the `Book | Set Book Parameters...` dialog, and:
+1. We *set* this option for the whole book (so that it applies to all sheets in book)
+2. We explicitly *unset* this option for sheet #3.
 
-| Whole Book | Except Sheet #3 |
+| Whole Trinitas Book | Except Trinitas Sheet #3 |
 | :---: | :---: |
 | ![](partial_whole_rests_book.png) |  ![](partial_whole_rests_sheet.png)  |
 
-We don't forget to press the `OK` button to commit the parameters.
+We don't forget to press the `OK` or `Apply` button to commit the parameters.
 
-Then, we use contextual `<popup> | Page #1 | Reprocess page rhythm` to update the page.
+Then, we use contextual `<popup> | Page #1 | Reprocess rhythm` to update the page.
 
-Measure #4 now looks like:
+Measure #4 now looks like this (notice chords #3381 and #2836 are now in the same green voice):
 
 ![](sheet1_m4_ok.png)
 
@@ -178,7 +299,7 @@ We can see that voice #1 end time is displayed as 'M' (M for Measure), meaning f
 which is OK for a measure-long rest as the breve rest.
 
 Also, voice #2 now contains chord #3381 (whole rest, but not measure-long rest)
-followed by chord #2838 (whole note), to sum up to value 2 as the following voices
+followed by chord #2836 (whole note), to sum up to value 2 as the following voices
 in measure.
 
 Here is the updated view on first slot content
@@ -198,7 +319,7 @@ In fact, its whole rest of chord #3374 had been mistaken for a half rest:
 | :---: | :---: |
 |![](sheet1_m1_half_rest.png)|![](sheet1_m1_binary.png)|
 
-If we click on this rest, the Pixel board gives HALF_REST shape.
+If we click on this rest, the Inter board gives HALF_REST shape.
 But the binary view clearly indicates it should be a WHOLE_REST shape.
 
 The measure strip confirms the fact that chord #3374 duration is only 1/2,
@@ -243,31 +364,13 @@ A new chord (#3420) has replaced the former chord #3374, and the measure is now 
 
 ![](sheet1_m5.png)
 
-This pink measure exhibits two rather obvious problems:
-- A false 16th rest on the upper left corner.   
+This pink measure exhibits a rather obvious problem:
+- A false 16th rest on the upper left corner (chord #3391).   
   Hint: the measure background goes much too high with respect to the staff line,
   indicating some abnormal chord located there.
   We can simply delete it.
 
-- A half note not recognized at beginning of lower staff.    
-  We have to manually create it, first the stem, and then the note head:
-  1. For the stem we can select with the left mouse a suitable underlying glyph.    
-    Then in shape palette, select the Physicals family, and make a double-click on
-    the stem button.  
-    [Note we could also drag n' drop the stem shape from the palette to proper target
-    location, but we had a helpful glyph there...]
-  2. For the note head, we generally can't rely on glyphs underneath, so we directly  
-     drag the half head shape from the palette, pass over the target staff and finally
-     drop the head shape next to our stem.
-
-UPDATE: Recently, Audiveris added direct support for half-notes and quarter-notes.
-These are **compound notes**, made of a head and a stem (either up or down).   
-So, instead of composing the note by inserting stem and head separately,
-for the case at hand you can now directly drag n' drop the HALF_NOTE_UP shape.
-{: .nota-bg }
-
-These modifications automatically trigger a rhythm update for the measure at hand.
-Note the measure voices have been re-arranged:
+This modification automatically triggers a rhythm update for the measure at hand:
 
 ![](sheet1_m5_ok.png)
 
@@ -283,55 +386,43 @@ This cannot fit within a 4/2 measure duration, and is confirmed by the measure s
 MeasureStack#7
     |0       |1/4     |1/2     |1       |3/2     |5/2     |3
 --- P1
-V 1 |Ch#2871 ===========================|Ch#2866 |........|2
-V 2 |Ch#2877 ==================|Ch#2873 =========|........|2 (ts:2/1)
-V 5 |Ch#2888 |Ch#2890 |Ch#2901 =========|Ch#2903 |Ch#2892 |3
-V 6 |Ch#2889 =========|Ch#2891 |........|........|........|1
+V 1 |Ch#2874 ===========================|Ch#2869 |........|2
+V 2 |Ch#2880 ==================|Ch#2876 =========|........|2 (ts:2/1)
+V 5 |Ch#2892 |Ch#2894 |Ch#2905 =========|Ch#2907 |Ch#2896 |3
+V 6 |Ch#2893 =========|Ch#2895 |........|........|........|1
 ```
 
-The fix is to force these 2 whole notes (chords #2901 & #2903) to be in separate voices:
+The fix is to force these 2 whole notes (chords #2905 & #2907) to be in separate voices:
 
 ![](sheet1_m7_separate_voices.png)
 
 ![](sheet1_m7_ok.png)
 
-### Sheet #1, Measure #9
+Since chord #2905 is still selected, it displays the "Separate Voice" relation with chord #2907
+as an orange-colored segment.
 
-![](sheet1_m9.png)
+If we increase the zoom ratio to 2 or above, there is now enough display room,
+and the relation name "SeparateVoice" explicitly appears:
 
-```
-MeasureStack#9
-    |0       |1/2     |1       |3/2     |2
---- P1
-V 1 |Ch#2906 |Ch#2908 |Ch#2909 |........|3/2
-V 2 |Ch#2907 |Ch#2932 =========|Ch#2910 |2
-V 5 |Ch#2950 =========|Ch#2933 |Ch#2934 |2
-V 6 |Ch#2951 =========|Ch#2952 =========|2 (ts:2/1)
-```
-This white measure exhibits a missing half note on upper staff.   
-So, we manually add the "half note up" from the shape palette.
-
-Result is now OK:
-```
-MeasureStack#9
-    |0       |1/2     |1       |3/2     |2
---- P1
-V 1 |Ch#2906 |Ch#3427 |Ch#2908 |Ch#2909 |2 (ts:4/2)
-V 2 |Ch#2907 |Ch#2932 =========|Ch#2910 |2
-V 5 |Ch#2950 =========|Ch#2933 |Ch#2934 |2
-V 6 |Ch#2951 =========|Ch#2952 =========|2 (ts:2/1)
-```
+![](sheet1_m7_separate_relation.png)
 
 ### Sheet #1, Measure #11
 
 ![](sheet1_m11.png)
 
-On upper staff, 3 whote notes in the same voice #1, while the half note stays alone in voice #2!
+On upper staff, 3 whote notes appear in the same voice #1 which is really too much,
+while a half note stays alone in voice #2!
 
-We can either separate the first 2 wholes (chords #2929 #2931)    
-or force half note (chord #2920) to share the same voice as whole chord #2931.
+We can either separate the first 2 wholes (chords #2934 and #2936)   
+or we declare half note (chord #2925) and whole chord #2936 as being in sequence in the same voice.
 
-Either action is OK.
+Either way is OK.
+
+To choose the latter, we select the "Next In Voice" relation between #2925 and #2936.
+![](sheet1_m11_sequence.png)
+
+And result is now OK:
+![](sheet1_m11_ok.png)
 
 ### Sheet #1, Measure #12
 
@@ -341,6 +432,16 @@ A missing whole note at beginning of upper staff.
 
 We select the glyph (which is almost intact, despite the half head on right) and assign it the
 whole note shape using the shape palette.
+
+To do so, in shape palette, we select the "HeadsAndDot" family figured by a black head and,
+while the target glyph is still selected, we use a double-click on the WHOLE_NOTE icon.
+
+**Remember**: the OMR engine uses a specific technique (*template matching*) to recognize heads.   
+The glyph classifier works correctly for isolated fixed-size symbols like a treble key but would
+work very poorly on heads because their underlying glyph is often difficult to retrieve
+(think of glyph merge between head and staff lines and/or between head and stem).   
+So, don't even think of Glyph Classifier top 5 output when dealing with heads!
+{: .nota-bg }
 
 ### Sheet #1, Measure #14
 
@@ -352,45 +453,28 @@ Fix is to force separate voices.
 In this rather simple case, we could improve the OMR engine algorithm by checking current voice
 end time when deciding to append or not the second whole note to voice #2. Room for improvement!
 
-### Sheet #1, Measure #15
-
-![](sheet1_m15.png)
-
-A missing half note at beginning of upper staff.    
-We insert it manually.
-
-A good side effect is that the OMR engine now assigns the two whole notes to separate voices.
-
-This concludes our manual work on Sheet #1, with no error left.
+This concludes our manual work on Sheet #1, with no rhythm error left.
 
 ## Sheet #2
 
-We update rhythm on whole sheet #2, via `<popup> | Page #1 | Reprocess page rhythm`, to benefit from
+We update rhythm on whole sheet #2, via `<popup> | Page #1 | Reprocess rhythm`, to benefit from
 the time signature fix (4/2) made on sheet #1.
 
-Only 3 measures left in pink, but let's review all measures.
-
-### Sheet #2, Measure #1
-
-![](sheet2_m1.png)
+Only 3 measures are left in pink, but let's review all measures.
 
 NOTA: While we work an a sheet, measure numbers are local to the sheet (to the page to be precise).
-Hence, even though sheet #2 image starts with a number "17", local measure numbers start at 1.
-
-We have a missing half note, to be created manually.
+Hence, even though sheet #2 image starts with a number "17", local measure numbers start at 1.   
+Don't worry, measure numbers will be consolidated when scores are refined at end of book
+transcription.
 
 ### Sheet #2, Measure #2
 
 ![](sheet2_m2.png)
 
-Again a missing half note.
-Inserting it manually makes the whole measure OK even for voices of upper staff.
+Again a missing whole note at the upper left.
+Inserting it manually makes the whole measure OK even for voices of lower staff.
 
-### Sheet #2, Measure #5
-
-![](sheet2_m5.png)
-
-Again a missing half note.
+![](sheet2_m2_ok.png)
 
 ### Sheet #2, Measure #6
 
@@ -407,15 +491,25 @@ However, the measure remains in pink:
 MeasureStack#6
     |0       |1/2     |3/4     |1       |5/4     |3/2     |7/4     |2       |5/2
 --- P1
-V 1 |Ch#2751 |Ch#2753 |Ch#2755 =========|Ch#2757 |Ch#2758 =========|........|2
-V 2 |Ch#2752 |Ch#2754 =========|Ch#2756 ==================|Ch#2759 |........|2
-V 5 |Ch#3390 ==================|Ch#2786 =========|........|........|........|3/2
-V 6 |Ch#2784 |Ch#2785 =========|Ch#2789 ===========================|Ch#3312 |5/2
+V 1 |Ch#2756 |Ch#2758 |Ch#2760 =========|Ch#2762 |Ch#2763 =========|........|2
+V 2 |Ch#2757 |Ch#2759 =========|Ch#2761 ==================|Ch#2764 |........|2
+V 5 |Ch#3403 ==================|Ch#2792 =========|........|........|........|3/2
+V 6 |Ch#2790 |Ch#2791 =========|Ch#2796 ===========================|Ch#3334 |5/2
 ```
 
-The half rest at end of lower staff (chord #3312) should not be linked to whole chord #2789
-but to half chord #2786.
-So we force either separate voices between #2789 and #3312 or same voice between #2786 and #3312.
+The half rest at end of lower staff (chord #3334) should not be linked to whole chord #2796
+but to half chord #2792.   
+So we force either "separate voices" between #2796 and #3334 or "next in voice" between #2792
+and #3334 to get correct rhythm:
+```
+MeasureStack#6
+    |0       |1/2     |3/4     |1       |5/4     |3/2     |7/4     |2
+--- P1
+V 1 |Ch#2756 |Ch#2758 |Ch#2760 =========|Ch#2762 |Ch#2763 =========|2
+V 2 |Ch#2757 |Ch#2759 =========|Ch#2761 ==================|Ch#2764 |2
+V 5 |Ch#3403 ==================|Ch#2792 =========|Ch#3334 =========|2
+V 6 |Ch#2790 |Ch#2791 =========|Ch#2796 ===========================|2
+```
 
 ### Sheet #2, Measure #9
 
@@ -445,58 +539,45 @@ This is a new movement, governed by a 3/4 time signature.
 
 No pink measure in this page, but let's have a closer look...
 
-### Sheet #3, Measure #5
-
-![](sheet3_m5.png)
-
 A missing quarter note.
 
-### Sheet #3, Measure #10
+### Sheet #3, Measure #11
 
-![](sheet3_m10.png)
+![](sheet3_m11.png)
 
-We have problems with slurs in this measure:
-1. On upper staff, a slur was not recognized.
-2. On lower staff, we do have a slur but it is linked to the wrong note head on its left side,
-certainly because it has been truncated on the left.
+On upper staff, we do have a slur but it is linked to the wrong note head on its right side,
+certain because this head is closer to slur end target.
 
-For the upper slur, we use a lasso to grab all the pixels that should compose the slur:
-![](sheet3_m10_upper_slur.png)
-
-And then, using the shape palette, we assign shape "SLUR_BELOW" to the compound glyph.
-
-This is not enough, the slur remains red, signaling that it lacks connection on some side.    
-By selecting this slur, we can see it is not linked on its left sign
--- perhaps because, due to presence of an augmentation dot in between, the slur ends too short
-before the correct note head.
-
-![](sheet3_m10_upper_slur_short.png)
-
-So we drag from this slur to the head of chord #4385.
+So we drag from this slur to the head of chord #4396, this move the slur-head relation off of
+chord #4395 head to chord #4396 head.
 
 For the slur on lower staff, which is linked to the wrong note head, we could also drag from the
-slur to the correct note head (chord #4417).
+slur to the correct note head (chord #4417):
 
-Another solution is to edit the slur:
-1. A double-click on the slur puts it in edit mode with its handles displayed.
-2. We press the left-most handle and drag it to the left, closer to the target note head.
-3. We release the handle when the slur displays its new connection to the target note head.
+![](sheet3_m11_ok.png)
 
-| Edition starting | Edition completed |
-| :---: | :---: |
-|![](sheet3_m10_lower_slur_edit.png)|![](sheet3_m10_lower_slur_ok.png)|
+### Sheet #3, Measure #14
 
-In the rest of the sheet, there are other slurs either not recognized or too short
-and/or not linked correctly.    
-The manual corrections are similar to what has been shown in the measure above.
+![](sheet3_m14.png)
 
-So, we complete this sheet #3 here.
+Here we have a false tiny slur on an un-detected inverted mordent.
+
+So we first delete the false slur.
+
+Then we select the underlying glyph for the mordent.
+
+![](sheet3_m14_classifier.png)
+
+This triggers the glyph classifier which proposes the MORDENT_INVERT shape with a 0.9824 grade.
+We thus simply click on this top 1 button.
+
+We then complete this sheet #3 here.
 
 ## Sheet #4
 
 As for sheet #1, we delete the common-cut time signatures and replace them with custom 4/2 sigs.
 
-4 measures are left in pink.
+3 measures are left in pink.
 
 ### Sheet #4, Measure #1 & #2
 
@@ -505,80 +586,59 @@ As for sheet #1, we delete the common-cut time signatures and replace them with 
 The first two measures are OK, but we would like to align their voices in the lower staff.
 
 So, we select last chord in measure #1 and first chord in measure #2, and use
-`<popup> | Chords | Same Voice` to get:
+`<popup> | Chords | Next In Voice` to get:
 
 ![](sheet4_m1_2_ok.png)
 
-And we do the same action between measure #2 and measure #3.
+And we do the same voice alignment action between measure #2 and measure #3.
 
-### Sheet #4, Measure #3
+All voices are correctly aligned for this system, but we may not like the fact that the lower staff
+exhibits voice #6 (displayed in orange) **above** voice #5 (displayed in cyan).
+This is so because Audiveris engine assigns the voices for measure-long rests first,
+and the "standard" voices only after.
 
-![](sheet4_m3.png)
+To swap these voices, we can use direct voice assignment as follows:
+We select (a head in) first voice chord in staff, for example chord #4290.
 
-Here, we have to fix two chords in opposite directions.
-1. We delete the upper stem, which is too long. The lower quarter head turns red.
-2. We select the lower stem glyph and assign it the stem shape.    
-   The former red quarter head gets connected to this new stem.
-3. We select the glyph of the former upper stem, and assign it the stem shape.    
-   It is displayed in red.
-4. We drag a half head from the shape palette to the upper location.   
-   It gets connected to the upper stem.
-5. The slur, still connected on its left to the lower quarter head,
-   has to be connected to the upper half head.   
-   It turns to correct voice color, because it is recognized as a tie.
+![](sheet4_m1_voice_assign.png)
 
-UPDATE: The fix can be easier, since we can directly insert a compound (head + stem) note:
-1. We delete the upper stem,
-2. We insert a half-note-up,
-3. We select the lower stem glyph and assign it the stem shape
-4. We connect the slur to the half note head
 
-![](sheet4_m3_ok.png)
+Then in the `Chords` popup menu, we select the "Preferred voice" directly for this chord.   
+We can see here that there was no voice assigned ("None").
+We select the desired voice number in the menu, that is voice #5 (cyan color).
 
-### Sheet #4, Measure #4
+The engine then swaps voices for this measure (#1), and also in following measures #2 and #3
+to fulfill the "Next In Voice" relations we had just set.
 
-![](sheet4_m4.png)
+![](sheet4_m1_2_3.png)
 
-Problem is similar to measure #3 above.
-So we should operate as described above.
+NOTA: This direct voice number assignment is still an experimental feature:
+- It is a *hard coding*, hence less flexible than the use of relations like "Next in Voice"
+  or "Separate Voices",
+- It is effective *only* for the starting chord of a voice in its measure.
+  Setting the voice number for another chord in voice will have no effect,
+  and in particular cannot be used as a means to link or unlink voices.
+  {: .nota-bg }
 
-For illustration purpose, we'll use roughly the same sequence but in a different order:
+### Sheet #4, Measure #7 and #8
 
-1. (Same) We delete the upper stem, which is too long. The lower quarter head turns red.
-2. (Different) Instead of creating lower stem, we recreate a shorter upper stem, by selecting
-   the underlying glyph and assigning the stem shape.
-   Unfortunately, the new upper stem, even being shorter than the previous one, is still close
-   enough to the lower quarter head, which gets (re)connected to the new stem!
-3. We drag a half head from the shape palette to the upper location.   
-   It gets connected to the upper stem.
-4. We select the lower stem glyph and assign it the stem shape.
-   It remains red, because it does *not* get connected to the lower quarter head
-   which is still connected to the upper stem.
-5. We force the connection by dragging lower stem to lower quarter head.   
-   Notice we now have a head  *"shared"* between the upper and lower stems (and thus chords)!
-6. To fix this, we select the upper right portion of this shared head ...
-7. And delete it.
-8. In the end, we can observe the correct result.
+| Half-measure #7a (seen as #7) | Half-measure #7b (seen as #8) |
+| :---: | :---: |
+| ![](sheet4_m7.png) | ![](sheet4_m8.png) |
 
-| Initial | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|![](sheet4_m4_0.png)|![](sheet4_m4_1.png)|![](sheet4_m4_2.png)|![](sheet4_m4_3.png)|![](sheet4_m4_4.png)|![](sheet4_m4_5.png)|![](sheet4_m4_6.png)|![](sheet4_m4_7.png)|![](sheet4_m4_8.png)|
+Here we have the strange layout of a measure that ends system #2 and starts system #3.
+Notice that system #2 ends with no barline, as opposed to the other systems.
+Each of these "half-measures" lasts has a duration of 1.
 
-The lesson we can draw is that we should be careful about the order of user modifications,
-because of the "automatic" connections performed by the OMR engine.
-
-We have kept this too complex case for the purpose of showing how to fix it.   
-In fact, a much safer approach, which avoids the risks of "automatic" connection, is to directly
-insert compound notes.
-{: .nota-bg }
+Audiveris can see these only as separate measures, numbered #7 and #8 respectively.   
+NOTA: Unfortunately, this shifts by 1 all the following measure numbers in this movement.
 
 ### Sheet #4, Measure #9
 
 ![](sheet4_m9.png)
 
-We align voices between measure #8 and this measure #9.
-
-We delete false slur on middle of lower staff.
+On lower staff, we align voices between measure #8 and this measure #9.   
+We also delete a false slur on middle of this staff.
 
 ### Sheet #4, Measure #11
 
@@ -595,76 +655,84 @@ rather than the preceding whole chord.
 We can see the pink background going very low under the measure staves.   
 This reveals the presence of an undesired 16th rest, to be deleted.
 
+### Sheet #4, Measure #13
+
+![](sheet4_m13.png)
+
+We align voices with preceding measure,
+delete two false small slurs and replace them by an inverted mordent.
+
 ### Sheet #4, Measure #14
 
 ![](sheet4_m14.png)
 
+This measure is not in pink because no voice lasts longer than measure duration (4/2),
+however the rhythm is strange:
+- On upper staff, we have 3 voices, while 2 would be enough.
+- On lower staff, we have 4 voices, while 2 would be enough.
+
 ```
 MeasureStack#14
-    |0       |1/4     |1/2     |1       |5/4     |3/2     |7/4     |2       |9/4     |5/2
+    |0       |1/4     |1/2     |1       |5/4     |3/2     |2
 --- P1
-V 1 |Ch#4376 ==================|Ch#3757 |Ch#3758 |Ch#3760 |Ch#3761 |Ch#3763 |Ch#3764 |5/2
-V 2 |Ch#3755 |Ch#3756 |........|........|........|........|........|........|........|1/2
-V 3 |........|........|........|........|........|Ch#3759 =========|Ch#3762 =========|5/2
-V 5 |Ch#3791 |Ch#3792 |Ch#3793 |........|........|........|........|........|........|1
-V 6 |Ch#3802 ==================|........|........|........|........|........|........|1
-V 7 |........|........|........|........|........|Ch#4377 ===========================|5/2
-V 8 |........|........|........|........|........|Ch#3800 ===========================|5/2
+V 1 |Ch#3759 |Ch#3760 |Ch#3761 |Ch#3764 =========|Ch#3767 |2
+V 2 |Ch#4340 ==================|Ch#3762 |Ch#3763 |Ch#3768 |7/4
+V 3 |........|........|........|Ch#3765 |Ch#3766 |Ch#3769 |7/4
+V 5 |Ch#3796 |Ch#3797 |Ch#3798 |........|........|........|1
+V 6 |Ch#3807 ==================|........|........|........|1
+V 7 |........|........|........|Ch#4341 ==================|2
+V 8 |........|........|........|Ch#3805 ==================|2
 ```
-On upper staff:
-- A missing half chord, to be inserted manually
-- A half rest has been mistaken for a whole rest.   
-  We delete it and assign the half rest to the underlying glyph.
+The measure strip shows that chord #4340 is considered as a whole rest.   
+Also clicking on this rest shows WHOLE_REST in Inter board.
 
-On lower staff:
-- A bad voice alignment. [It gets fixed when we correct the mistakes on upper staff]
+However, a look at the binary image gives a different result:   
+![](sheet4_m14_binary.png)
+
+Once again, this rest was mistaken for a whole rest because of its vertical location with respect
+to the related staff.
+So, we delete it and manually reassign the underlying glyph as a HALF_REST.
+
+This immediately fixes rhythm on both upper and lower staves.
 
 ### Sheet #4, Measure #15
 
 ![](sheet4_m15.png)
 
-We have no voice #1 on upper staff.   
-We reprocess this measure via `<popup> | Measure #15 | Reprocess  rhythm`.
+The sign at beginning of lower staff is a old sign for a multi-measure rest,
+a kind of entity not recognized by Audiveris.   
+Since measure duration is 2, we can manually insert a breve rest at measure center,
+and voice-link it (using "next in voice") with the corresponding whole note in previous measure.
 
-The sign at beginning of lower staff is a multi-measure rest,
-a kind of entity not yet handled by Audiveris.
+### Sheet #4, Measure #16
+
+![](sheet4_m16.png)
+
+Here again, we can manually insert breve rests in upper and lower staves.   
+And assign correct voice number (5) for starting chord #3836.
+
+![](sheet4_m16_ok.png)
 
 ### Sheet #4, Measure #17
 
 ![](sheet4_m17.png)
 
-```
-MeasureStack#17
-    |0       |1/4     |1/2     |3/4     |1       |3/2     |7/4     |2
---- P1
-V 1 |........|........|........|........|........|........|........|0
-V 2 |........|........|........|........|Ch#3828 ==================|2
-V 5 |Ch#3836 |Ch#3838 |Ch#3839 =========|Ch#3841 |Ch#3842 |Ch#3843 |2
-V 6 |Ch#3837 ==================|Ch#3840 |........|........|........|1
-V 7 |........|........|........|........|Ch#3862 ==================|2
-```
+There is an un-recognized whole note on upper left corner (to be inserted),
+a false slur (to be deleted)
+and an un-recognized inverted mordent (to be assigned from its underlying glyph).
 
-There is an un-recognized whole note on upper left corner.
+### Sheet #4, Measure #18
 
-Notice voice #1 is void on measure strip, and there are un-colorized chords in measure display.
+![](sheet4_m18.png)
 
-If we reprocess measure rhythm, via `<popup> | Measure #17 | Reprocess rhythm`, we can observe the
-following messages:
-
-```
-Measure{#17P1} No timeOffset for HeadChordInter{#3809(0.815/0.815) stf:9 slot#2 dur:1/2}
-Measure{#17P1} No timeOffset for HeadChordInter{#3811(0.812/0.812) stf:9 slot#6 dur:1/2}
-```
-
-We insert the missing whole note, and this fixes all the problems.
+Measure rhythm is correct, but in the upper staff we can align voices with previous measure.
 
 ### Sheet #4, Measure #19
 
 ![](sheet4_m19.png)
 
-An un-recognized mordent, with a false staccato dot in it.
-
-We delete the staccato and assign the MORDENT_INVERT shape.
+Finally a false staccato dot (to be deleted) and yet another inverted mordent to be assigned
+from its underlying glyph.
 
 This completes our work on sheet #4.
 
@@ -679,25 +747,41 @@ There are two measures left in pink in this sheet plus a few others to fix.
 
 ![](sheet5_m2.png)
 
-A missing half chord, and consequently a slur to reconnect to it.
+We have two slurs that should be recognized as tie slurs but are not
+(and are thus displayed in black, instead of a voice color).   
+The reason is that both are connected to a wrong head on their right side.
 
-### Sheet #5, Measure #3
+To fix this, we drag from each slur to the correct target head and release the mouse.   
+Each slur is now recognized as a tie slur and its color turns to the color of its underlying voice.
 
-![](sheet5_m3.png)
-
-A missing half chord.
+![](sheet5_m2_ok.png)
 
 ### Sheet #5, Measure #4
 
 ![](sheet5_m4.png)
 
-A missing half chord (in this half measure).
+A missing whole head (in this half measure).
+
+### Sheet #5, Measure #6
+
+![](sheet5_m6.png)
+
+In lower staff, voices to be aligned with previous measure, for example by setting "Next in Voice"
+relation between chords #3921 and #3907.
 
 ### Sheet #5, Measure #8
 
 ![](sheet5_m8.png)
 
-A missing quarter chord to insert and a false crescendo to delete.
+Lower staff: A false crescendo to delete and a breve rest to insert.
+
+Upper staff: a slur that should be a tie.
+The reason is this slur is not connected on its left side to the correct head,
+it must be moved from #3902 to #3901
+
+### Sheet #5, Measure #9
+
+Again a breve rest to be manually inserted.
 
 ### Sheet #5, Measure #10
 
@@ -706,7 +790,11 @@ A missing quarter chord to insert and a false crescendo to delete.
 Pink measure is due to incorrect voice connection in upper staff.
 
 Aligning voices correctly in upper staff has the side effect to align them correctly
- in lower staff as well.
+in lower staff as well.
+
+### Sheet #5, Measure #12
+
+In upper staff, voices to be swapped by connecting to corresponding voice in previous measure.
 
 ### Sheet #5, Measure #17
 
@@ -757,24 +845,101 @@ To do so, via a double-click, we put the symbol into edit mode, and drag its han
 | :---: | :---: |
 |![](sheet5_m17_1.png)   | ![](sheet5_m17_2.png)  |
 
+### Sheet #5, Measure #19
+
+Again a breve rest to be manually inserted.
+
 ### Sheet #5, Measure #20
 
 ![](sheet5_m20.png)
 
-We have a pink background with a missing half chord and its augmentation dot.
+We have a breve rest to insert on upper staff.
+Plus a small slur to delete and an inverted mordent to insert.
 
-We insert the half chord, the measure turns white.
+Apart from that, the role of a slur that connects to a rest is not obvious.
+Perhaps we can just ignore these slurs, and the next measure as well.
 
-But when assigning the dot augmentation it turns pink again.
-This is because the dot has been linked to the whole head below rather than to the desired half head.   
-This is due to the fact that the whole head is closer (in Euclidian sense) to the dot.
+This completes our work on sheet #5
 
-We could slightly shift the dot.   
-Instead, we simply drag from dot to target half head.
-This unlinks the dot from whole head and links it to half head.
+and concludes the whole editing session.
 
-| Wrong dot link | Fixed dot link |
-| :---: | :---: |
-|![](sheet5_m20_1.png)   | ![](sheet5_m20_2.png)  |
+## Completion
 
-This completes our work on sheet #5 and concludes the whole editing session.
+In this editing session, we have focused on pure musical content, that is essentially the rhythm
+aspect (chords organized in voices and time slots).
+
+### Text
+
+There are few textual elements in this book, most of them are located on first sheet.   
+We can see a mix of several languages the OCR had to deal with.
+
+Nota, for visual check:
+- original text is easier to read on binary view in physical mode ![](../../assets/images/ModePhysical.png)
+- while OCR output is easier to read on logical mode ![](../../assets/images/ModeLogical.png)
+
+Here below are all the textual elements found in this book
+(we ignore text that represents a measure number)
+
+| Original sentence | OCR output | Comments |
+| :--- | :--- | :--- | :---: |
+| O lux beata Trinitas |  ® fax Beam Ërinitas | Latin, gothic? font, OCR totally wrong |
+| _Der du bist drei in Einigkeit._ | Der du _bist drei_ in _Einigkeit._ |German, OCR mix of italic & standard  |
+| Restitution par P. Gouin. | Restitution par P. Gouin.| French  |
+| Johann Friedrich Alberti  | Johann Friedrich Alberti | |
+| (1642-1710) | (1642-1710) | |
+| _Versus primus._ | _Versusprimus._ | Latin, OCR merged as one word |
+| _Versus secundus._ | _Versus_ secunafus. | Latin, OCR mistake on "secundus" |
+| _Versus tertius._ | _Versus_ tertius. | Latin |
+| © Les Éditions Outremontaises - 2018 | © Les Editions Outremontaises - 2018 | French, OCR took 'É' for 'E'  |
+
+If we except the book title "O lux beata Trinitas" which OCR totally failed to recognize,
+probably because of its exotic font, raw Tesseract OCR results are pretty good.
+
+We can manually correct the few mistakes, via the Inter board.   
+This must be done word by word, by selecting the word and modifying its content
+(typing new characters and validating by pressing `Enter` key).
+
+Note that current Audiveris UI let us modify only the textual **content** of any word,
+not its **font** characteristics (such as font name, italic, bold, etc).
+
+![](trinitas_word.png)
+
+For manual text edition, text **content** is modified at _word_ level
+whereas text **role** is modified at _sentence_ level.
+
+In this book, nearly all sentences got their role correctly assigned by the OMR engine heuristics.
+Exception is "© Les Éditions Outremontaises - 2018" whose role appears to be "UnknownRole".
+
+To fix this, we select one word of this sentence and, in the Inter board,
+click on `To Ensemble` button (as you know, a sentence is modeled as an ensemble of words).
+
+We can then choose sentence proper role ("Rights"):
+
+![](sentence_role.png)
+
+### MusicXML export
+
+We can export to MusicXML via `Book | Export Book` menu item.
+This gives:
+```
+[Trinitas] Exporting sheet(s): [#1#2]
+[Trinitas] Score Trinitas.mvt1 exported to D:\soft\cases\Issue-481\Trinitas.mvt1.mxl
+[Trinitas] Exporting sheet(s): [#3]
+[Trinitas] Score Trinitas.mvt2 exported to D:\soft\cases\Issue-481\Trinitas.mvt2.mxl
+[Trinitas] Exporting sheet(s): [#4#5]
+[Trinitas] Score Trinitas.mvt3 exported to D:\soft\cases\Issue-481\Trinitas.mvt3.mxl
+```
+This book got exported as 3 separate .mxl files, one per detected movement.
+
+### Plugin
+
+If we have configured a few [plugins](../../advanced/plugins.md)
+to external programs such as MuseScore or Finale,
+clicking on the desired plugin would:
+1. Export an updated version of the 3 movements files, if so needed,
+2. Launch for example MuseScore on the 3 movement files.
+
+![](musescore.png)
+
+We can then for example listen to MuseScore playback on these movements.   
+This is an additional convenient way to check transcription results.

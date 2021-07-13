@@ -49,14 +49,14 @@ task history.
 Undo cancels the last task sequence (whether it was a do or a redo) with all its consequences.
 
 *   Press the **Undo** button ![](../assets/images/undo.png) on tool bar,
-*   Or type `CTRL`-`Z` (`Command`-`Z` for MacOS)
+*   Or type `Ctrl-Z` (`Command-Z` for MacOS)
 
 #### Redo
 
 Redo re-performs the last un-done task sequence.
 
 *   Press the **Redo** button ![](../assets/images/redo.png) on tool bar,
-*   Or type `SHIFT`-`CTRL`-`Z` (`SHIFT`-`Command`-`Z` for MacOS).
+*   Or type `Ctrl+Shift-Z` (`Command+Shift-Z` for MacOS).
 
 ## When to interact?
 

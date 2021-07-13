@@ -53,11 +53,11 @@ Here after, we list all the possible items of `Chords...` menu.
 
 ### Chord
 
-The gathering note heads into chords may need some user correction.
+The gathering of note heads into chord(s) may need some user correction.
 
 #### Split
 
-| one chord? | two chords? |
+| One chord? | Two chords? |
 | --- | --- |
 | ![](../assets/images/chord_split_1.png) | ![](../assets/images/chord_split_2.png) |
 
@@ -86,31 +86,71 @@ Audiveris algorithm for voice building is already very tricky.
 It tries to reconcile different heuristics, but in some cases the result may not be the one the
 user would expect.
 
-Purpose of the voice actions is to guide the software in voice building, by imposing that two
-given chords have the same or have different voices.
+Purpose of these voice actions is to guide the engine in voice building.
 
-#### [cancel] Same Voice
+#### [cancel] Next in Voice
 
-![](../assets/images/same_voice.png)
+![](../assets/images/next_in_voice.png)
 
-Here, by imposing the same voice between the two heads indicated by an arrow, we in fact "merge"
-the 2 voices into one, as follows:
+"Next in Voice" command operates on a horizontal sequence of 2 chords,
+say chord A and chord B, by establishing a relation from A to B,
+stating two things:
+1. That B voice should be dynamically **copied** from A.   
+   If later, for some reason, voice for A gets modified, the same modification will propagate to B.
+2. And that B should start at (A start time + A duration).   
+   In other words, B time slot should **immediately** follow A time slot.
 
-![](../assets/images/same_voice_after.png)
+So we have a double dynamic propagation rule: on voice and on time.
+This is the reason why "Next in Voice" should be chosen whenever possible over the now deprecated
+"Same Voice".
 
-You can always undo such task.
-Also if you want, much later in the process, to cancel this task, you can always select the same
-chords and you'll be offered to _cancel_ the task.
+Here is the result:
 
-![](../assets/images/same_voice_cancel.png)
+![](../assets/images/next_in_voice_after.png)
+
+You can always **undo** such task, as any other UI task described here,
+via `Sheet | Undo` or `Ctrl-Z` standard commands.
+
+Also if you want, much later in the process, to cancel this task, you can always get back
+to selecting the same chords and you'll be offered to **cancel** the task.   
+Cancelling this action removes the relation (and thus the related guidance).
+
+#### [cancel] ~~Same Voice~~
+
+"Same Voice" was a pre-version of "Next in Voice".
+
+It stated only that the two selected chords should belong to the same voice.
+Note it provided no information about related time values.
+
+This is the reason why it is now deprecated in favor of "Next in Voice" relation, and is kept mainly
+for upward compatibility with existing .omr files still containing old "Same Voice" indications.
 
 #### [cancel] Separate Voices
 
-This command imposes the voice algorithm to assign the selected chords to _separate_ voices.
+This command imposes the voice algorithm to assign the selected chords to **separate** voices.
 
-Note this is not exactly the reverse of "_same voice_" command:
+Note this is not exactly the reverse of "_next in voice_" command (or old "_same voice_" command):
 * Without any command, you let the algorithm decide with no guidance.
-* With a command (whether it's _same_ or _separate_), you explicitly guide the algorithm.
+* With a command (whether it's _next_, _same_ or _separate_), you explicitly guide the algorithm.
+
+#### [cancel] Preferred Voice
+
+Whereas "Next in Voice/Same Voice" and "Separate Voices" commands operate on 2 chords,
+by establishing a **dynamic** computing rule from chord A to chord B,
+"Preferred Voice" operates on the single chord at hand, by assigning this chord a **fixed** voice
+numeric value.
+
+This feature is still experimental, and is effective only on the _first chord_ in each measure voice.
+
+It can be useful only for the very first chord of a voice in a system:
+- Because the A-B relations can take place only within the same system (SIG), there is no way to
+establish a voice computing rule across systems.
+- Specifically, we may need a way to set the voice number of a chord at start of
+the very first measure of a movement.
+
+These are the two cases where this feature can be useful.   
+But except for these very specific cases, you are advised to not use this feature.
+In particular, do not think you could use it to somehow build voice sequences of chords!
 
 ### Time
 
@@ -130,15 +170,15 @@ abscissa-wise.
 So, we force these two notes to share the same time slot.
 
 Experience shows that the most efficient action is generally to grab the set of _all_ the chords
-that should share the same slot (a rather vertical selection in the _same_ part)
+that should share the same slot (a rather vertical selection **within the same part**)
 and apply the _Same Time Slot_ command on the whole set.
 
 #### [cancel] Separate Time Slots
 
-As opposed to the same time slot, this command is used to force time separation between two
+As opposed to "Same Time Slot", this command is used to force time separation between two
 chords that the engine has considered as adjacent.
 
 ---
 [^voice_sharing]: There is an on-going debate about the possibility for Audiveris to share [rest-] chords between voices. But for current 5.2 release, a chord can be assigned to exactly one voice.
 
- [^whole_chord]: Current heuristic for whole chords is to gather whole heads if they are aligned vertically and not more than one interline apart.
+[^whole_chord]: Current heuristic for whole chords is to gather whole heads if they are aligned vertically and not more than one interline apart.

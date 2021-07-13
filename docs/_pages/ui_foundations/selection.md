@@ -75,7 +75,7 @@ section entities, according to the current selection mode.
 *   **Adding an entity**: A left click on an entity while pressing the `CTRL` key (`Option` key for MacOS)
     adds this entity to the current selection, whether the selection was done via point or lasso.
 
-*   **Naming an entity**: Entering the integer ID of a glyph in the Glyph-Board spinner or the Id
+*   **Naming an entity**: Entering the integer ID of a glyph in the Glyph-Board spinner or the ID
     of an Inter in the Inter-Board spinner selects this entity.
 
   - **Pointing outside of any entity**:   
@@ -88,10 +88,10 @@ A right click opens the popup menu (with the entities selected so far)
 
 *   **Choosing relation in relations list**: Via the contextual popup menu, moving to a
     selected inter displays a sub-menu with all the relations the inter is part of.
-    Selecting a relation will remove this relation (after user confirmation).
+    Selecting a relation offers to dump or delete this relation.
 
 *   **Double-click**: A double-click with left mouse button on an Inter (not a Glyph) selects that
-   Inter and puts it in `Edition mode` (see Inter edit).
+   Inter and puts it in `Edition mode` (see [Inter edition](../ui_tools/edit_inter.md)).
 
 A selected inter may display links to its related inter entities.
 The links appear as short straight lines in light green color
@@ -167,7 +167,8 @@ together with the containers being pointed at.
 
 ![](../assets/images/containers_popup.png)
 
-For example, the popup above allows to access the containers related to current mouse location:
+For example, the popup above allows to access -- beside chords, inters and glyphs --
+the containers related to current mouse location:
 * Time slot,
 * Measure,
 * Staff,

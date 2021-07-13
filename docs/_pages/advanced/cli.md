@@ -156,11 +156,11 @@ again to the target step.
 
 Transcribes each book.
 
-#### --
+#### `--`
 
-This argument is not a real argument _per se_, but merely a delimiter so that each following
-argument in the command line is taken as an input file path (even if this argument begins with a `-`
-character).
+This argument (a double dash: "`--`") is not a real argument _per se_, but merely a delimiter
+so that each following argument in the command line is taken as an input file path
+(even if this argument begins with a `-` character).
 
 #### FILENAME
 

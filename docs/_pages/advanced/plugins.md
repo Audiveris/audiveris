@@ -45,7 +45,7 @@ providing the path to the exported file as an import argument.
 ### Plugins Configuration
 
 You can define one or more plugins, by creating a single XML file, named `plugins.xml`,
-in Audiveris configuration folder.
+in [Audiveris configuration folder](../folders/essential.md#config-folder).
 
 At Audiveris launch time, if a `plugins.xml` file is found in the configuration folder, then a
 proper pulldown `Plugins` menu and a plugin toolbar button are defined according to the file content.
@@ -70,15 +70,9 @@ Here below is an example of such `plugins.xml` file.
 -->
 <plugins>
 
-    <!-- EasyABC -->
-    <plugin id="EasyABC" tip="Export to EasyABC">
-        <arg>C:\Program Files (x86)\EasyABC\easy_abc.exe</arg>
-        <arg>{}</arg>
-    </plugin>
-
     <!-- MuseScore -->
     <plugin id="MuseScore" tip="Invoke MuseScore on score XML">
-        <arg>C:\Program Files (x86)\MuseScore 2\bin\MuseScore.exe</arg>
+        <arg>C:\Program Files\MuseScore 3\bin\MuseScore3.exe</arg>
         <arg>{}</arg>
     </plugin>
 
@@ -88,15 +82,21 @@ Here below is an example of such `plugins.xml` file.
         <arg>{}</arg>
     </plugin>
 
+    <!-- Finale Notepad -->
+    <plugin id="Finale Notepad" tip="Export to notepad of Finale">
+        <arg>C:\Program Files (x86)\Finale NotePad 2012\Finale NotePad.exe</arg>
+        <arg>{}</arg>
+    </plugin>
+
     <!-- PriMus -->
     <plugin id="PriMus" tip="Use of PriMus">
         <arg>C:\Program Files (x86)\PriMus Demo\PriMus.exe</arg>
         <arg>{}</arg>
     </plugin>
 
-    <!-- Finale Notepad -->
-    <plugin id="Finale Notepad" tip="Export to notepad of Finale">
-        <arg>C:\Program Files (x86)\Finale NotePad 2012\Finale NotePad.exe</arg>
+    <!-- EasyABC -->
+    <plugin id="EasyABC" tip="Export to EasyABC">
+        <arg>C:\Program Files (x86)\EasyABC\easy_abc.exe</arg>
         <arg>{}</arg>
     </plugin>
 

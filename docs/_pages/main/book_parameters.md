@@ -81,13 +81,26 @@ completes the dialog.
   NOTA: a switch can disable a feature only for the OMR automatic recognition, the feature remains
   available for manual user actions.
   {: .nota-bg }
-  * Articulations
-  * Chord names
-  * Fingering digits
-  * Frets roman digits
-  * Plucking
-  * Lyrics
-  * Lyrics even when located above staff
-  * Small black note heads
-  * Small void note heads
-  * Small whole note heads
+
+  * Use poor input mode
+  * Use of system indentation
+  * Link augmentation dot to both shared heads
+  * Keep loaded gray images
+  * Support for articulations
+  * Support for chord names
+  * Support for fingering digits
+  * Support for frets roman digits (I, II, IV...)
+  * Support for plucking (p, i, m, a)
+  * Support for lyrics
+  * Support for lyrics even located above staff
+  * Support for small black note heads
+  * Support for small void note heads
+  * Support for small whole note heads
+  * Support for cross note heads
+  * Support for implicit tuplets
+  * Support for guitar tablatures (6 lines)
+  * Support for bass tablatures (4 lines)
+  * Support for percussion staves (1 line)
+  * Support for partial whole rests
+  * Support for multi-whole head chords
+

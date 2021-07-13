@@ -65,3 +65,8 @@ Thumb.db
 
 # Gradle added files (temporary fix)
 gradle.properties
+
+# docs building files
+docs/.jekyll-metadata
+docs/Gemfile.lock
+docs/_site/

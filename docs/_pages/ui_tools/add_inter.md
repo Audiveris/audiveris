@@ -170,7 +170,7 @@ If you have numerous Inters of the **same shape** to add in a row, a convenient 
 temporarily to the "Repetitive Input" mode.
 
 Click on the toolbar icon or select menu item `Sheet | Toggle Repetitive Input` or use shortcut
-`CTRL + SHIFT + N` and this mode is now set on.
+`Ctrl+Shift-N` and this mode is now set on.
 
 ![](../assets/images/repetitive_input.png)
 
@@ -205,7 +205,7 @@ If relation constraints are not met, you will have to set the relation manually 
 ### Shortcuts for inter addition
 
 In order to make long editing sessions easier, there are a few shortcuts to assign interpretations
-without your hands leaving the keyboard.
+without having your hands leave the keyboard.
 
 They all work with a sequence of 2 strokes:
 1. First stroke selects a _family_ of shapes.   
