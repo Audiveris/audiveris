@@ -67,6 +67,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
@@ -442,7 +443,7 @@ public class ChordListMenu
                             "cancel Next in Voice",
                             "Cancel use of next in voice",
                             sig,
-                            same),
+                            nextInVoice),
                     listener);
         }
 
@@ -450,7 +451,7 @@ public class ChordListMenu
             if (separate == null) {
                 addItem(
                         new RelationAdditionItem(
-                                "Same Voice [deprecated, prefer Next in Voice]]",
+                                "Same Voice [deprecated, prefer Next in Voice]",
                                 "The two chords share the same voice",
                                 src,
                                 tgt,
@@ -937,6 +938,10 @@ public class ChordListMenu
                                      final AbstractChordInter target,
                                      final Relation relation)
         {
+            Objects.requireNonNull(relation, "null relation");
+            Objects.requireNonNull(source, "null source inter");
+            Objects.requireNonNull(target, "null target inter");
+
             setAction(new AbstractAction()
             {
                 @Override
@@ -967,6 +972,8 @@ public class ChordListMenu
                                     final SIGraph sig,
                                     final Relation relation)
         {
+            Objects.requireNonNull(relation, "null relation");
+
             setAction(new AbstractAction()
             {
                 @Override
