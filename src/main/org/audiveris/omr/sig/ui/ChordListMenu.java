@@ -429,12 +429,13 @@ public class ChordListMenu
 
         if (nextInVoice == null) {
             if (separate == null) {
-                addItem(new RelationAdditionItem(
-                        "Next in Voice",
-                        "The two chords are in sequence within the same voice",
-                        left,
-                        right,
-                        new NextInVoiceRelation()),
+                addItem(
+                        new RelationAdditionItem(
+                                "Next in Voice",
+                                "The two chords are in sequence within the same voice",
+                                left,
+                                right,
+                                new NextInVoiceRelation()),
                         listener);
             }
         } else {
@@ -451,7 +452,7 @@ public class ChordListMenu
             if (separate == null) {
                 addItem(
                         new RelationAdditionItem(
-                                "Same Voice [deprecated, prefer Next in Voice]",
+                                "Same Voice",
                                 "The two chords share the same voice",
                                 src,
                                 tgt,
