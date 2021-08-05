@@ -81,8 +81,6 @@ and the more general [Wiki][audiveris-wiki] set of articles.
 
 All releases are available on [Audiveris Releases][releases] page.
 
-The most recent stable version is release 5.2.2, published on July 9, 2021.
-
 [audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
 [workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow
 [audiveris-eg]:   htps://github.com/Audiveris/audiveris-eg

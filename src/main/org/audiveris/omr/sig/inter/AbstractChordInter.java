@@ -675,7 +675,7 @@ public abstract class AbstractChordInter
             computeLocations();
         }
 
-        return headLocation;
+        return new Point(headLocation);
     }
 
     //----------------//
@@ -934,7 +934,7 @@ public abstract class AbstractChordInter
             computeLocations();
         }
 
-        return tailLocation;
+        return new Point(tailLocation);
     }
 
     //---------------//
@@ -1254,7 +1254,7 @@ public abstract class AbstractChordInter
         if (group != null) {
             AbstractChordInter prevChord = null;
 
-            // Reminder: group.getAllChords() report beam chords plus interleaved rests if any
+            // Reminder: group.getAllChords() report head chords plus interleaved rest chords if any
             for (AbstractChordInter chord : group.getAllChords()) {
                 if (prevChord != null) {
                     try {

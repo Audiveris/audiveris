@@ -1612,9 +1612,8 @@ public class SigReducer
                 StemPortion portion = link.getStemPortion(head, stemLine, scale);
                 HorizontalSide headSide = link.getHeadSide();
 
-                if (((portion == STEM_BOTTOM) && (headSide != RIGHT)) || ((portion == STEM_TOP)
-                                                                                  && (headSide
-                                                                                              != LEFT))) {
+                if (((portion == STEM_BOTTOM) && (headSide != RIGHT))
+                            || ((portion == STEM_TOP) && (headSide != LEFT))) {
                     sig.removeEdge(rel);
                     links.remove(rel);
                     modifs++;

@@ -2343,7 +2343,7 @@ public class Book
                 stub.getSheet(); // Load sheet if needed, this performs the upgrade w/in sheet
                 upgraded.add(stub);
 
-                // Store (or swap=store+dispose) cleans table files
+                // Store (or swap=store+dispose). This also cleans table files
                 if (stub == currentStub) {
                     stub.storeSheet();
                 } else {
@@ -2384,7 +2384,8 @@ public class Book
             stubsToUpgrade.addAll(getStubsWithTableFiles());
 
             if (!stubsToUpgrade.isEmpty()) {
-                logger.info("{} stub(s) to upgrade in {}", stubsToUpgrade.size(), this);
+                logger.info("{} stub{} to upgrade in {}",
+                            stubsToUpgrade.size(), (stubsToUpgrade.size() > 1) ? "s" : "", this);
             }
         }
 
@@ -2394,26 +2395,18 @@ public class Book
     //------------------------//
     // getStubsWithOldVersion //
     //------------------------//
-    public Set<SheetStub> getStubsWithOldVersion ()
+    private Set<SheetStub> getStubsWithOldVersion ()
     {
         final Set<SheetStub> found = new LinkedHashSet<>();
-
-        // Check presence of old table files
         final Version bookVersion = new Version(getVersionValue());
 
-        if (bookVersion.compareTo(Versions.LATEST_UPGRADE) < 0) {
-            // Check each and every sheet, even if invalid
-            for (SheetStub stub : stubs) {
-                final String stubVersionStr = stub.getVersionValue();
-
-                if (stubVersionStr != null) {
-                    // Use sheet specific version
-                    if (new Version(stubVersionStr).compareTo(Versions.LATEST_UPGRADE) < 0) {
+        for (Version.UpgradeVersion upgradeVersion : Versions.UPGRADE_VERSIONS) {
+            if (bookVersion.compareTo(upgradeVersion) < 0) {
+                // Check each and every sheet stub, even if invalid
+                for (SheetStub stub : stubs) {
+                    if (upgradeVersion.upgradeNeeded(stub)) {
                         found.add(stub);
                     }
-                } else {
-                    // No sheet specific version, therefore we use book version
-                    found.add(stub);
                 }
             }
         }
@@ -2429,21 +2422,21 @@ public class Book
      *
      * @return the set of stubs with table files, perhaps empty but not null
      */
-    public Set<SheetStub> getStubsWithTableFiles ()
+    private Set<SheetStub> getStubsWithTableFiles ()
     {
         final Set<SheetStub> found = new LinkedHashSet<>();
         final Lock bookLock = getLock();
         bookLock.lock();
 
         try {
-            final Path bookPath = BookManager.getDefaultSavePath(this);
+            final Path theBookPath = BookManager.getDefaultSavePath(this);
 
-            if (!Files.exists(bookPath)) {
+            if (!Files.exists(theBookPath)) {
                 // No book project file yet
                 return found;
             }
 
-            final Path root = ZipFileSystem.open(bookPath);
+            final Path root = ZipFileSystem.open(theBookPath);
             for (SheetStub stub : stubs) {
                 final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
 

@@ -305,12 +305,8 @@ public class BeamLinker
      */
     public List<AbstractBeamInter> getSiblingBeamsAt (Point2D pt)
     {
+        final Line2D vertical = system.getSheet().getSkew().skewedVertical(pt);
         final List<Inter> members = beamGroup.getMembers();
-        final double slope = system.getSheet().getSkew().getSlope();
-        final int DY = 1000; // Not significant
-        final Line2D vertical = new Line2D.Double(
-                new Point2D.Double(pt.getX() + DY * slope, pt.getY() - DY),
-                new Point2D.Double(pt.getX() - DY * slope, pt.getY() + DY));
         final List<AbstractBeamInter> beams = new ArrayList<>();
         final int margin = params.maxBeamSideDx;
 
@@ -1197,17 +1193,24 @@ public class BeamLinker
                 final int maxIndex = sb.maxIndex();
                 int maxYGap = retriever.getGapMap().get(stemProfile);
 
-                // Expand until a stop condition is met
-                CLinker stoppingHeadLinker = null;
                 final Line2D stemLine = (yDir > 0) ? theoLine
                         : new Line2D.Double(theoLine.getP2(), theoLine.getP1());
+                StemItem stoppingHeadItem = null; // Latest acceptable stopping head
+                Set<Glyph> stoppingGlyphs = null; // Glyphs until latest acceptable stopping head
 
+                // Expand until a stop condition is met
                 for (int i = 0; i <= maxIndex; i++) {
                     final StemItem ev = sb.get(i);
 
                     // Show-stopping gap?
                     if ((ev instanceof GapItem) && (ev.contrib > maxYGap)) {
-                        return (stoppingHeadLinker != null) ? i - 1 : -1;
+                        if (stoppingHeadItem == null) {
+                            return -1;
+                        } else {
+                            glyphs.clear();
+                            glyphs.addAll(stoppingGlyphs);
+                            return sb.indexOf(stoppingHeadItem);
+                        }
                     } else if (ev instanceof LinkerItem
                                        && ((LinkerItem) ev).linker instanceof CLinker) {
                         // Head encountered
@@ -1215,7 +1218,7 @@ public class BeamLinker
                         final HeadInter clHead = cl.getHead();
 
                         // Can we stop before this head?
-                        if (stoppingHeadLinker != null) {
+                        if (stoppingHeadItem != null) {
                             // Gap close before head?
                             final GapItem gap = sb.getLastGapBefore(i);
 
@@ -1231,7 +1234,9 @@ public class BeamLinker
                                     if (clOpp.hasConcreteStart(linkProfile)) {
                                         logger.debug("{} separated from head#{}",
                                                      this, clHead.getId());
-                                        return sb.indexOf(gap) - 1;
+                                        glyphs.clear();
+                                        glyphs.addAll(stoppingGlyphs);
+                                        return sb.indexOf(stoppingHeadItem);
                                     }
                                 }
                             }
@@ -1245,7 +1250,6 @@ public class BeamLinker
                         }
 
                         relations.put(cl, hsRel);
-                        updateStemLine(ev.glyph, glyphs, stemLine);
 
                         // Could this head be a stopping head?
                         if ((hsRel.getHeadSide() == stoppingHeadSide) && !glyphs.isEmpty()) {
@@ -1254,34 +1258,23 @@ public class BeamLinker
                             final Line2D line = stemGlyph.getCenterLine();
                             final StemPortion sp = hsRel.getStemPortion(clHead, line, scale);
                             final boolean isEnd = (sp == ((yDir > 0) ? STEM_BOTTOM : STEM_TOP));
-                            stoppingHeadLinker = isEnd ? cl : null;
 
-                            // Once a first stopping head has been reached, let's use normal maxYGap
-                            maxYGap = retriever.getGapMap().get(
-                                    isEnd ? Profiles.STANDARD : stemProfile);
+                            if (isEnd) {
+                                stoppingHeadItem = ev;
+                                stoppingGlyphs = new LinkedHashSet<>(glyphs);
+
+                                // Once a first stopping head has been reached, use normal maxYGap
+                                maxYGap = retriever.getGapMap().get(Profiles.STANDARD);
+                            }
                         }
-                    } else if (ev instanceof LinkerItem
-                                       && ((LinkerItem) ev).linker instanceof BLinker) {
-                        // Beam encountered
-                        final BLinker bl = (BLinker) ((LinkerItem) ev).linker;
-                        final AbstractBeamInter beam = bl.getSource();
-                        updateStemLine(ev.glyph, glyphs, stemLine);
-//                        final BeamStemRelation bsRel = BeamStemRelation.checkRelation(
-//                                beam, stemLine, vSide, scale, stemProfile);
-//                        relations.put(bl, bsRel);
-                    } else if (ev instanceof LinkerItem
-                                       && ((LinkerItem) ev).linker instanceof VLinker) {
-                        // (Starting) Beam encountered
-                        final VLinker vl = (VLinker) ((LinkerItem) ev).linker;
-                        final AbstractBeamInter beam = vl.getSource();
-                        updateStemLine(ev.glyph, glyphs, stemLine);
-//                        final BeamStemRelation bsRel = BeamStemRelation.checkRelation(
-//                                beam, stemLine, vSide, scale, stemProfile);
-//                        relations.put(bl, bsRel);
-                    } else if (ev instanceof StemItem.GlyphItem) {
-                        // Plain glyph encountered
-                        updateStemLine(ev.glyph, glyphs, stemLine);
                     }
+
+                    // GapItem: No glyph
+                    // GlyphItem: Plain glyph encountered
+                    // CLinker: Compatible head encountered
+                    // VLinker: (Starting) Beam encountered
+                    // BLinker: Beam encountered
+                    updateStemLine(ev.glyph, glyphs, stemLine);
                 }
 
                 return maxIndex;

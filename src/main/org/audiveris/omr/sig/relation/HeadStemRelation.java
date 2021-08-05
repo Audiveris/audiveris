@@ -563,8 +563,8 @@ public class HeadStemRelation
         }
 
         // Prefer use of relation extension points over stem physical limits
-        Line2D leftLine = leftStem.computeExtendedLine();
-        Line2D rightLine = rightStem.computeExtendedLine();
+        Line2D leftLine = leftStem.computeExtendedLine(head);
+        Line2D rightLine = rightStem.computeExtendedLine(head);
 
         Rectangle headBox = head.getBounds();
         Point headCenter = head.getCenter();

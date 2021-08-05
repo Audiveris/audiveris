@@ -29,6 +29,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.BrowserLinkListener;
@@ -36,6 +37,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
 import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.Version.UpgradeVersion;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -108,19 +110,34 @@ public abstract class Versions
      * <li>Ledger now uses thickness and horizontal median line.
      * </ul>
      */
-    public static final Version INTER_GEOMETRY = new Version("5.2.1");
+    public static final UpgradeVersion INTER_GEOMETRY = new UpgradeVersion("5.2.1");
+
+    /**
+     * New handling of rest chords interleaved between beamed head chords.
+     */
+    public static final UpgradeVersion INTERLEAVED_RESTS = new UpgradeVersion("5.2.3")
+    {
+        @Override
+        public boolean upgradeNeeded (SheetStub stub)
+        {
+            if (stub.getVersion().compareTo(this) >= 0) {
+                return false;
+            }
+
+            // Interleaved rests are built and used starting at RHYTHMS step
+            return stub.getLatestStep().compareTo(Step.RHYTHMS) >= 0;
+        }
+    };
 
     //
     // NOTA: Add here below any new version for which some upgrade is necessary.
     //
     /**
      * Sequence of upgrade versions to check.
-     * NOTA: This sequence must be manually updated when a new version is added above.
+     * NOTA: This sequence must be manually updated when a new upgrade version is added above.
      */
-    public static final List<Version> UPGRADE_VERSIONS = Arrays.asList(INTER_GEOMETRY);
-
-    /** Latest upgrade version. */
-    public static final Version LATEST_UPGRADE = UPGRADE_VERSIONS.get(UPGRADE_VERSIONS.size() - 1);
+    public static final List<UpgradeVersion> UPGRADE_VERSIONS = Arrays.asList(
+            INTER_GEOMETRY, INTERLEAVED_RESTS);
 
     /** Resource injection. Lazily populated on GUI. */
     private static ResourceMap resources;
