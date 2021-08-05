@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.sheet.SheetStub;
+
 /**
  * Class {@code Version} handles the different components of a version string.
  * <p>
@@ -242,5 +244,29 @@ public class Version
     public String toString ()
     {
         return value;
+    }
+
+    //~ Inner classes ------------------------------------------------------------------------------
+    //----------------//
+    // UpgradeVersion //
+    //----------------//
+    /**
+     * A version with specific rules for detecting needed upgrade.
+     */
+    public static class UpgradeVersion
+            extends Version
+    {
+
+        public UpgradeVersion (String value)
+        {
+            super(value);
+        }
+
+        // Override if needed
+        public boolean upgradeNeeded (SheetStub stub)
+        {
+            // Test based purely on version value
+            return stub.getVersion().compareTo(this) < 0;
+        }
     }
 }

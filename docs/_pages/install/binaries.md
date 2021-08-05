@@ -20,13 +20,13 @@ Table of contents
 Audiveris installers for Windows are hosted on
 [https://github.com/Audiveris/audiveris/releases](https://github.com/Audiveris/audiveris/releases).
 
-The latest version available is:
-* Audiveris_Setup-5.2.1-windows-x86_64.exe
+Installers are named "Audiveris_Setup-X.Y.Z-windows-x86_64.exe" where X.Y.Z values
+refer to the related release.
 
 During installation, you will be prompted to associate the `.omr` file extension
 (which represents an Audiveris Book) to Audiveris software.
 
-After installation, your Windows start menu should contain a submenu named `Audiveris`
+After installation, your Windows start menu should contain a sub-menu named `Audiveris`
 (or `Audiveris32` for the old 32-bit version):
 
 ![](../assets/images/windows_start_menu.png)
