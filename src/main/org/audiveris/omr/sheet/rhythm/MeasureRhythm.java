@@ -33,11 +33,14 @@ import org.audiveris.omr.sheet.rhythm.Slot.CompoundSlot;
 import org.audiveris.omr.sheet.rhythm.Slot.MeasureSlot;
 import org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.relation.BeamRestRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -62,7 +65,7 @@ import java.util.TreeMap;
  * Class {@code MeasureRhythm} handles chords voices and time slots for a measure.
  * <p>
  * Voice and time information can be "propagated" from one chord to other chord(s) in the following
- * slots via two grouping mechanisms: tie and beam.
+ * slots via two grouping mechanisms: tie and beam, plus the "Next in Voice" manual relation.
  * <p>
  * Note that the beam mechanism is able to handle rests embraced between two beamed chords, such
  * rest chords inherit voice and time information (see example below).
@@ -142,6 +145,9 @@ public class MeasureRhythm
     public boolean process ()
     {
         removeTuplets(getImplicitTuplets());
+
+        clearInterleavedRests();
+        detectInterleavedRests();
 
         boolean ok = true;
 
@@ -263,6 +269,44 @@ public class MeasureRhythm
         }
 
         return compounds;
+    }
+
+    //-----------------------//
+    // clearInterleavedRests //
+    //-----------------------//
+    /**
+     * Clear all {@link BeamRestRelation} instances for this measure.
+     *
+     * @since 5.2.3 (before this release, information was (wrongly) detected on-the-fly and not
+     * recorded in project file)
+     */
+    private void clearInterleavedRests ()
+    {
+        for (BeamGroupInter beamGroup : measure.getBeamGroups()) {
+            for (Inter member : beamGroup.getMembers()) {
+                final AbstractBeamInter beam = (AbstractBeamInter) member;
+                for (Relation rel : beam.getSig().getRelations(beam, BeamRestRelation.class)) {
+                    beam.getSig().removeEdge(rel);
+                }
+            }
+        }
+    }
+
+    //------------------------//
+    // detectInterleavedRests //
+    //------------------------//
+    /**
+     * Detect the rest chords that are interleaved between beam chords, and record
+     * this information as a {@link BeamRestRelation} between beam and rest.
+     *
+     * @since 5.2.3 (before this release, information was (wrongly) detected on-the-fly and not
+     * recorded in project file)
+     */
+    private void detectInterleavedRests ()
+    {
+        for (BeamGroupInter beamGroup : measure.getBeamGroups()) {
+            beamGroup.detectInterleavedRests();
+        }
     }
 
     //-----------------------//

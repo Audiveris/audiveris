@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.util.Objects;
@@ -180,6 +181,40 @@ public class Skew
 
             return null;
         }
+    }
+
+    //------------------//
+    // skewedHorizontal //
+    //------------------//
+    /**
+     * Report a skewed horizontal line through the provided point.
+     *
+     * @param pt provided point
+     * @return a nearly horizontal line, starting at pt
+     */
+    public Line2D skewedHorizontal (Point2D pt)
+    {
+        final int DX = 1000; // Not significant
+
+        return new Line2D.Double(pt.getX(), pt.getY(),
+                                 pt.getX() + DX, pt.getY() + DX * slope);
+    }
+
+    //----------------//
+    // skewedVertical //
+    //----------------//
+    /**
+     * Report a skewed vertical line through the provided point.
+     *
+     * @param pt provided point
+     * @return a nearly vertical line, starting at pt
+     */
+    public Line2D skewedVertical (Point2D pt)
+    {
+        final int DY = 1000; // Not significant
+
+        return new Line2D.Double(pt.getX(), pt.getY(),
+                                 pt.getX() - DY * slope, pt.getY() + DY);
     }
 
     //----------//
