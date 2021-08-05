@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -324,6 +325,54 @@ public class StemInter
         for (Relation rel : sig.getRelations(this, AbstractStemConnection.class)) {
             AbstractStemConnection link = (AbstractStemConnection) rel;
             Point2D ext = link.getExtensionPoint();
+
+            if (ext != null) {
+                if (ext.getY() < extTop.getY()) {
+                    extTop = ext;
+                }
+
+                if (ext.getY() > extBottom.getY()) {
+                    extBottom = ext;
+                }
+            }
+        }
+
+        return new Line2D.Double(extTop, extBottom);
+    }
+
+    //---------------------//
+    // computeExtendedLine //
+    //---------------------//
+    /**
+     * Compute the extended line, taking only into account the stem connections from
+     * heads compatible with the provided head.
+     *
+     * @return the connection range
+     */
+    public Line2D computeExtendedLine (HeadInter head)
+    {
+        if (isRemoved()) {
+            return null;
+        }
+
+        // Heads in exclusion
+        final Set<Inter> excluded = new LinkedHashSet<>();
+        for (Relation rel : sig.getRelations(head, Exclusion.class)) {
+            excluded.add(sig.getOppositeInter(head, rel));
+        }
+
+        Point2D extTop = new Point2D.Double(median.getX1(), median.getY1());
+        Point2D extBottom = new Point2D.Double(median.getX2(), median.getY2());
+
+        for (Relation rel : sig.getRelations(this, AbstractStemConnection.class)) {
+            final AbstractStemConnection link = (AbstractStemConnection) rel;
+            final Inter otherHead = sig.getOppositeInter(this, rel);
+
+            if (excluded.contains(otherHead)) {
+                continue;
+            }
+
+            final Point2D ext = link.getExtensionPoint();
 
             if (ext != null) {
                 if (ext.getY() < extTop.getY()) {
@@ -724,10 +773,7 @@ public class StemInter
         if (getBounds().height >= scale.toPixels(constants.minLengthForSlope)) {
             return getMedian();
         } else {
-            final Point center = getCenter();
-            final double slope = sheet.getSkew().getSlope();
-            return new Line2D.Double(center, new Point2D.Double(center.x - slope * 1000,
-                                                                center.y + 1000));
+            return sheet.getSkew().skewedVertical(getCenter());
         }
     }
 

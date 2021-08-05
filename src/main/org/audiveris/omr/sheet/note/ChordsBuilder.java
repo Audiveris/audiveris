@@ -188,7 +188,7 @@ public class ChordsBuilder
             StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
             stems.add(stem);
 
-            Line2D stemLine = stem.computeExtendedLine();
+            Line2D stemLine = stem.computeExtendedLine(head);
             StemPortion portion = rel.getStemPortion(head, stemLine, null);
 
             if (portion != expected) {
