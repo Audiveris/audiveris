@@ -101,8 +101,7 @@ stating two things:
    In other words, B time slot should **immediately** follow A time slot.
 
 So we have a double dynamic propagation rule: on voice and on time.
-This is the reason why "Next in Voice" should be chosen whenever possible over the now deprecated
-"Same Voice".
+This is the reason why "Next in Voice" should be chosen whenever possible over "Same Voice".
 
 Here is the result:
 
@@ -115,21 +114,24 @@ Also if you want, much later in the process, to cancel this task, you can always
 to selecting the same chords and you'll be offered to **cancel** the task.   
 Cancelling this action removes the relation (and thus the related guidance).
 
-#### [cancel] ~~Same Voice~~
+#### [cancel] Same Voice
 
-"Same Voice" was a pre-version of "Next in Voice".
+"Same Voice" is weaker than "Next in Voice".
 
-It stated only that the two selected chords should belong to the same voice.
-Note it provided no information about related time values.
+It states only that the two selected chords should belong to the same voice.
 
-This is the reason why it is now deprecated in favor of "Next in Voice" relation, and is kept mainly
-for upward compatibility with existing .omr files still containing old "Same Voice" indications.
+It provides no information about related time values.   
+This is the reason why "Next in Voice" relation should be preferred whenever possible.
+
+Note that "Same Voice" (or "Next in Voice") can be used in the context of rest chords interleaved
+between beam head chords, to "push" these rests into the beam area.
+And conversely, "Separate Voice" can be used to "pull" these rests out of the beam area.
 
 #### [cancel] Separate Voices
 
 This command imposes the voice algorithm to assign the selected chords to **separate** voices.
 
-Note this is not exactly the reverse of "_next in voice_" command (or old "_same voice_" command):
+Note this is not exactly the reverse of "_next in voice_" command (or weaker "_same voice_" command):
 * Without any command, you let the algorithm decide with no guidance.
 * With a command (whether it's _next_, _same_ or _separate_), you explicitly guide the algorithm.
 
