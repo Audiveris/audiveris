@@ -125,7 +125,9 @@ public abstract class Versions
             }
 
             // Interleaved rests are built and used starting at RHYTHMS step
-            return stub.getLatestStep().compareTo(Step.RHYTHMS) >= 0;
+            final Step latestStep = stub.getLatestStep();
+
+            return (latestStep != null) && latestStep.compareTo(Step.RHYTHMS) >= 0;
         }
     };
 
