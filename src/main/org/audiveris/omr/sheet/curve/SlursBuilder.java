@@ -774,7 +774,7 @@ public class SlursBuilder
                                 SlurInter s = (SlurInter) sig.getOppositeInter(head, rel);
 
                                 if ((slur != s) && (slur.isTie() == s.isTie())) {
-                                    logger.info("{} collision {} & {} @ {}", side, slur, s, head);
+                                    logger.debug("{} collision {} & {} @ {}", side, slur, s, head);
 
                                     // TODO: handle collision ???
                                 }

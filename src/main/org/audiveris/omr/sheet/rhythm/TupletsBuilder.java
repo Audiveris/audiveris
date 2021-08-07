@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -167,17 +168,15 @@ public class TupletsBuilder
      */
     private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
     {
-        Point center = tuplet.getCenter();
+        final List<AbstractChordInter> chords = new ArrayList<>();
+        final Point tupletCenter = tuplet.getCenter();
 
         if (stack == null) {
-            return Collections.emptyList();
+            return chords;
         }
 
-        List<Staff> stavesAround = stack.getSystem().getStavesAround(center);
+        final List<Staff> stavesAround = stack.getSystem().getStavesAround(tupletCenter);
         logger.trace("{} around:{}", tuplet, stavesAround);
-
-        // Collect candidate chords (heads & rests based) within stack
-        List<AbstractChordInter> chords = new ArrayList<>();
 
         for (AbstractChordInter chord : stack.getStandardChords()) {
             final List<Staff> chordStaves = new ArrayList<>(chord.getStaves());
@@ -188,7 +187,7 @@ public class TupletsBuilder
             }
         }
 
-        Collections.sort(chords, new ByEuclidian(center));
+        Collections.sort(chords, new ByEuclidian(tupletCenter));
         logger.trace("Chords: {}", Inters.ids(chords));
 
         return chords;
@@ -208,6 +207,8 @@ public class TupletsBuilder
                                                                    List<AbstractChordInter> candidates)
     {
         logger.trace("{} getEmbracedChords", tuplet);
+
+        filterChordsOnAbscissa(tuplet, candidates);
 
         // We consider each candidate in turn, with its duration
         // in order to determine the duration base of the tuplet
@@ -270,6 +271,49 @@ public class TupletsBuilder
             logger.error("Incorrect tuplet shape");
 
             return 0;
+        }
+    }
+
+    //------------------------//
+    // filterChordsOnAbscissa //
+    //------------------------//
+    /**
+     * If two chords overlap horizontally, discard the one with higher vertical distance
+     * from the tuplet sign.
+     *
+     * @param tuplet     underlying tuplet sign
+     * @param candidates the chords candidates, ordered by euclidean distance to sign
+     */
+    private static void filterChordsOnAbscissa (TupletInter tuplet,
+                                                List<AbstractChordInter> candidates)
+    {
+        final Point pt = tuplet.getCenter();
+
+        for (int idx1 = 0; idx1 < candidates.size(); idx1++) {
+            final AbstractChordInter ch1 = candidates.get(idx1);
+            final Rectangle b1 = ch1.getBounds();
+            final Point p1 = ch1.getCenter();
+
+            for (int idx2 = idx1 + 1; idx2 < candidates.size(); idx2++) {
+                final AbstractChordInter ch2 = candidates.get(idx2);
+                final Rectangle b2 = ch2.getBounds();
+
+                if (GeoUtil.xOverlap(b1, b2) > 0) {
+                    // Discard ch1 or ch2, based on y-distance
+                    final Point p2 = ch2.getCenter();
+                    final int d1 = Math.abs(p1.y - pt.y);
+                    final int d2 = Math.abs(p2.y - pt.y);
+
+                    if (d1 < d2) {
+                        candidates.remove(ch2);
+                        idx2--;
+                    } else {
+                        candidates.remove(ch1);
+                        idx1--;
+                        break;
+                    }
+                }
+            }
         }
     }
 

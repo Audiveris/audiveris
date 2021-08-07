@@ -181,7 +181,7 @@ public class TupletInter
      */
     public List<AbstractChordInter> getChords ()
     {
-        List<AbstractChordInter> list = new ArrayList<>();
+        final List<AbstractChordInter> list = new ArrayList<>();
 
         for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
             list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
@@ -189,7 +189,7 @@ public class TupletInter
 
         Collections.sort(list, Inters.byAbscissa);
 
-        return Collections.unmodifiableList(list);
+        return list;
     }
 
     //-------------------//
