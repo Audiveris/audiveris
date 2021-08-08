@@ -395,7 +395,7 @@ public class SlotsRetriever
         // Sort measure standard chords by abscissa
         List<AbstractChordInter> stdChords = new ArrayList<>(measure.getStandardChords());
         purgeMeasureRestChords(stdChords);
-        Collections.sort(stdChords, Inters.byAbscissa);
+        Collections.sort(stdChords, Inters.byCenterAbscissa);
 
         // Populate graph with chords
         Graphs.addAllVertices(graph, stdChords);
@@ -719,7 +719,7 @@ public class SlotsRetriever
 
         for (int i = 0; i < stdChords.size(); i++) {
             final AbstractChordInter ch1 = stdChords.get(i);
-            final double x1 = stack.getXOffset(ch1.getCenterLeft());
+            final double x1 = stack.getXOffset(ch1.getCenter());
 
             for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
                 if (ch1.isVip() && ch2.isVip()) {
@@ -731,7 +731,7 @@ public class SlotsRetriever
                 }
 
                 // Check abscissa
-                final double x2 = stack.getXOffset(ch2.getCenterLeft());
+                final double x2 = stack.getXOffset(ch2.getCenter());
                 final double dx = Math.abs(x1 - x2);
 
                 if (dx <= maxSlotDx) {
@@ -757,7 +757,7 @@ public class SlotsRetriever
 
         for (int i = 0; i < stdChords.size(); i++) {
             final AbstractChordInter ch1 = stdChords.get(i);
-            final double x1 = stack.getXOffset(ch1.getCenterLeft());
+            final double x1 = stack.getXOffset(ch1.getCenter());
 
             OtherLoop:
             for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
@@ -774,7 +774,7 @@ public class SlotsRetriever
 
                 for (AbstractChordInter ch : equals) {
                     if (!areExplicitlySeparate(ch1, ch)) {
-                        final double x = stack.getXOffset(ch.getCenterLeft());
+                        final double x = stack.getXOffset(ch.getCenter());
                         final double dx = Math.abs(x1 - x);
 
                         if (dx <= maxSlotDx) {
@@ -787,7 +787,7 @@ public class SlotsRetriever
                 }
 
                 // Not directly close and no compatible equal found
-                final double x2 = stack.getXOffset(ch2.getCenterLeft());
+                final double x2 = stack.getXOffset(ch2.getCenter());
 
                 if (x1 < x2) {
                     setRel(ch1, ch2, BEFORE);
@@ -949,8 +949,8 @@ public class SlotsRetriever
             final AbstractChordInter ch2 = (AbstractChordInter) sig.getEdgeTarget(same);
 
             if ((ch1.getMeasure() == measure) && (ch2.getMeasure() == measure)) {
-                final double x1 = stack.getXOffset(ch1.getCenterLeft());
-                final double x2 = stack.getXOffset(ch2.getCenterLeft());
+                final double x1 = stack.getXOffset(ch1.getCenter());
+                final double x2 = stack.getXOffset(ch2.getCenter());
 
                 if (x1 < x2) {
                     setRel(ch1, ch2, BEFORE);
