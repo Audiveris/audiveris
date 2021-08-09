@@ -2275,7 +2275,7 @@ public class KeyBuilder
 
         // Beware: A too small value might miss final key signature items
         private final Scale.Fraction maxInnerPeakGap = new Scale.Fraction(
-                1.25,
+                1.35,
                 "Maximum inner peak gap within key signature");
     }
 
