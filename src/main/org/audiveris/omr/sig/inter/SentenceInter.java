@@ -25,6 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
@@ -36,6 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -46,13 +51,20 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
  * <p>
+ * Contained words are linked to this instance by {@link Containment} relations.
+ * <p>
  * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
- * Creator et al, Rights, ChordName, UnknownRole).
+ * Creator et al, Rights, ChordName, EndingNumber, EndingText, UnknownRole).
  * <p>
  * For Lyrics role, the specific subclass {@link LyricLineInter} is used.
- *
+ * <p>
+ * For ChordName role, SentenceInter class is used, but the contained (single) word is an
+ * instance of ChordNameInter.
  * <p>
  * <img alt="Sentence diagram" src="../../text/doc-files/Sentence_Hierarchy.png">
+ * <p>
+ * NOTA: We could have decided to use separate classes for each different sentence role.
+ * This is not the current implementation, hence caution is needed when changing sentence role.
  *
  * @author Hervé Bitteur
  */
@@ -434,5 +446,45 @@ public class SentenceInter
                 line.getRole());
 
         return sentence;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        if (role != TextRole.EndingNumber && role != TextRole.EndingText) {
+            return super.searchLinks(system);
+        }
+
+        // Look for a suitable EndingInter
+        final Link link = lookupEndingLink(system);
+
+        return (link != null) ? Collections.singleton(link) : Collections.emptySet();
+    }
+
+    //------------------//
+    // lookupEndingLink //
+    //------------------//
+    /**
+     * Try to detect link from a suitable containing ending.
+     *
+     * @param system surrounding system
+     * @return detected link or null
+     */
+    public Link lookupEndingLink (SystemInfo system)
+    {
+        final Rectangle textBox = getBounds();
+        final SIGraph theSig = system.getSig();
+        final List<Inter> endings = theSig.inters(EndingInter.class);
+
+        for (Inter ending : endings) {
+            if (textBox.intersects(ending.getBounds())) {
+                return new Link(ending, new EndingSentenceRelation(), false);
+            }
+        }
+
+        return null;
     }
 }

@@ -296,7 +296,7 @@ public class InterController
      * Plus some conversion for the sentence as well.
      *
      * @param sentence the sentence to modify
-     * @param newRole  the new role for the sentence, not null
+     * @param newRole  the new role for the sentence, not null (and different from current role)
      */
     @UIThread
     public void changeSentence (final SentenceInter sentence,
@@ -348,7 +348,7 @@ public class InterController
                     }
 
                     if (!seq.getTasks().isEmpty()) {
-                        // Remove the now useless original sentence
+                        // Remove the now useless original sentence (and its original relations)
                         seq.add(new RemovalTask(sentence));
                     }
 
@@ -379,7 +379,7 @@ public class InterController
                     }
 
                     if (!seq.getTasks().isEmpty()) {
-                        // Remove the now useless original sentence
+                        // Remove the now useless original sentence (and its original relations)
                         seq.add(new RemovalTask(sentence));
                     }
 
@@ -387,7 +387,9 @@ public class InterController
                 }
 
                 default: {
+                    // Convert to SentenceInter if so needed
                     final SentenceInter finalSentence;
+
                     if (sentence.getClass() != SentenceInter.class) {
                         // Create a basic SentenceInter
                         finalSentence = new SentenceInter(
@@ -400,6 +402,7 @@ public class InterController
                         finalSentence = sentence;
                     }
 
+                    // Convert each word to WordInter if so needed
                     for (Inter inter : sentence.getMembers()) {
                         if (inter.getClass() != WordInter.class) {
                             // LyricItem/ChordName -> WordInter
@@ -417,9 +420,10 @@ public class InterController
                     }
 
                     if (finalSentence == sentence) {
+                        // New role
                         seq.add(new SentenceRoleTask(sentence, newRole));
                     } else {
-                        // Remove original sentence
+                        // Remove original sentence (and its original relations)
                         seq.add(new RemovalTask(sentence));
                     }
 
@@ -1242,6 +1246,9 @@ public class InterController
     {
         new CtrlTask(DO, "addText")
         {
+            // Recognized sentences
+            private List<Inter> sentences = new ArrayList<>();
+
             @Override
             protected void build ()
             {
@@ -1271,9 +1278,7 @@ public class InterController
                 final boolean lyrics = shape == Shape.LYRICS;
                 final TextBuilder textBuilder = new TextBuilder(system, lyrics);
                 final List<TextLine> lines = textBuilder.processGlyph(
-                        buffer,
-                        relativeLines,
-                        glyph.getTopLeft());
+                        buffer, relativeLines, glyph.getTopLeft());
 
                 // Generate the sequence of word/line Inter additions
                 for (TextLine line : lines) {
@@ -1329,13 +1334,17 @@ public class InterController
 
                         word.setStaff(staff);
                     }
+
+                    if (sentence != null) {
+                        sentences.add(sentence);
+                    }
                 }
             }
 
             @Override
             protected void publish ()
             {
-                sheet.getInterIndex().publish(null);
+                sheet.getInterIndex().publish(sentences.isEmpty() ? null : sentences.get(0));
                 sheet.getGlyphIndex().publish(null);
 
                 if (!seq.isCancelled()) {

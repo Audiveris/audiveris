@@ -63,6 +63,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code WordInter} represents a text word.
+ * <p>
+ * The containing {@link SentenceInter} is linked by a {@link Containment} relation.
  *
  * @author Hervé Bitteur
  */

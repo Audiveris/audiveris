@@ -41,13 +41,11 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.EndingInter;
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
-import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
@@ -61,7 +59,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -149,32 +146,27 @@ public class EndingsBuilder
         return sheet.getGlyphIndex().registerOriginal(GlyphFactory.buildGlyph(parts));
     }
 
-    //--------------//
-    // grabSentence //
-    //--------------//
+    //---------------//
+    // grabSentences //
+    //---------------//
     /**
-     * Try to retrieve the text that should lie in the left corner of provided ending.
+     * Try to retrieve the sentence(s) that should lie in left corner of provided ending.
      *
      * @param ending provided ending
      */
-    private void grabSentence (EndingInter ending)
+    private void grabSentences (EndingInter ending)
     {
-        Rectangle box = ending.getBounds();
-        SIGraph sig = ending.getSig();
-        List<SentenceInter> found = new ArrayList<>();
-        List<Inter> systemSentences = sig.inters(SentenceInter.class);
+        for (Link link : ending.lookupSentenceLinks()) {
+            final SentenceInter sentence = (SentenceInter) link.partner;
+            ending.getSig().addEdge(ending, sentence, link.relation);
 
-        for (Inter si : systemSentences) {
-            if (box.contains(si.getBounds())) {
-                found.add((SentenceInter) si);
+            final String number = ending.getNumber();
+
+            if (sentence.getValue().equals(number)) {
+                sentence.setRole(TextRole.EndingNumber);
+            } else {
+                sentence.setRole(TextRole.EndingText);
             }
-        }
-
-        if (!found.isEmpty()) {
-            Collections.sort(found, Inters.byFullAbscissa);
-
-            SentenceInter sentence = found.get(0);
-            sig.addEdge(ending, sentence, new EndingSentenceRelation());
         }
     }
 
@@ -400,7 +392,7 @@ public class EndingsBuilder
             sig.addVertex(endingInter);
 
             // Ending text?
-            grabSentence(endingInter);
+            grabSentences(endingInter);
 
             return endingInter;
         }

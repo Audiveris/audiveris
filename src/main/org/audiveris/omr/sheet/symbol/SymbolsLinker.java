@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
+import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -197,9 +198,21 @@ public class SymbolsLinker
 
             break;
 
-            default:
+            case EndingNumber:
+            case EndingText: {
+                // Look for related ending
+                final Link link = sentence.lookupEndingLink(system);
 
-            // Roles other than [Lyrics, Direction, PartName, ChordName] stand by themselves
+                if ((link != null) && (null == sig.getRelation(link.partner, sentence,
+                                                               EndingSentenceRelation.class))) {
+                    sig.addEdge(link.partner, sentence, link.relation);
+                }
+            }
+
+            break;
+
+            default:
+            // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
             }
         } catch (Exception ex) {
             logger.warn("Error in linkOneSentence for {} {}", sentence, ex.toString(), ex);
@@ -282,6 +295,15 @@ public class SymbolsLinker
                     for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
                         sig.removeEdge(rel);
                     }
+                }
+            }
+
+            break;
+
+            case EndingNumber:
+            case EndingText: {
+                for (Relation rel : sig.getRelations(sentence, EndingSentenceRelation.class)) {
+                    sig.removeEdge(rel);
                 }
             }
 

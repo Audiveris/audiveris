@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code EndingSentenceRelation} represents a support relation between an ending
- * and its related text (such as "1." or "1,2").
+ * and its related number (such as "1." or "1,2") or text.
  *
  * @author Hervé Bitteur
  */
@@ -50,6 +50,7 @@ public class EndingSentenceRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        // An ending could have a number, plus perhaps a text different from number
+        return false;
     }
 }

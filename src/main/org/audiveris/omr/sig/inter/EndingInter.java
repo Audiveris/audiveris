@@ -67,11 +67,20 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class {@code EndingInter} represents an ending.
  * <p>
- * MusicXML spec:
+ * In compliance with MusicXML spec: <ul>
+ * <li>
  * The number attribute reflects the numeric values of what is under the ending line.
  * Single endings such as "1" or comma-separated multiple endings such as "1,2" may be used.
+ * (Audiveris also accepts numbers like "1.")
+ * <br>
+ * The related number (SentenceInter, EndingNumber role) is linked by an EndingSentenceRelation.
+ * <li>
  * The ending element text is used when the text displayed in the ending is different than what
  * appears in the number attribute.
+ * <br>
+ * The related text (SentenceInter, EndingText role) is linked by a separate EndingSentenceRelation.
+ * </ul>
+ *
  *
  * @author Hervé Bitteur
  */
@@ -195,13 +204,7 @@ public class EndingInter
     @Override
     public Rectangle getBounds ()
     {
-        Rectangle box = super.getBounds();
-
-        if (box != null) {
-            return box;
-        }
-
-        box = line.getBounds().union(leftLeg.getBounds());
+        Rectangle box = line.getBounds().union(leftLeg.getBounds());
 
         if (rightLeg != null) {
             box = box.union(rightLeg.getBounds());
@@ -284,8 +287,7 @@ public class EndingInter
      */
     public String getNumber ()
     {
-        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
-            SentenceInter sentence = (SentenceInter) sig.getOppositeInter(this, r);
+        for (SentenceInter sentence : getSentences()) {
             TextRole role = sentence.getRole();
             String value = sentence.getValue().trim();
 
@@ -331,8 +333,7 @@ public class EndingInter
     {
         final String number = getNumber();
 
-        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
-            SentenceInter sentence = (SentenceInter) sig.getOppositeInter(this, r);
+        for (SentenceInter sentence : getSentences()) {
             String value = sentence.getValue().trim();
 
             if (!value.equals(number)) {
@@ -366,6 +367,30 @@ public class EndingInter
         setBounds(null);
 
         return true;
+    }
+
+    //---------------------//
+    // lookupSentenceLinks //
+    //---------------------//
+    /**
+     * Try to detect links between this ending and included sentences (number / text).
+     *
+     * @return the detected links, perhaps empty
+     */
+    public Collection<Link> lookupSentenceLinks ()
+    {
+        final Rectangle box = getBounds();
+        final List<Link> links = new ArrayList<>();
+        final List<Inter> systemSentences = sig.inters(SentenceInter.class);
+        Collections.sort(systemSentences, Inters.byAbscissa);
+
+        for (Inter sentence : systemSentences) {
+            if (box.contains(sentence.getBounds())) {
+                links.add(new Link(sentence, new EndingSentenceRelation(), true));
+            }
+        }
+
+        return links;
     }
 
     //-------------//
@@ -457,6 +482,27 @@ public class EndingInter
         }
 
         return upgraded;
+    }
+
+    //--------------//
+    // getSentences //
+    //--------------//
+    /**
+     * Report the sorted sequence of included sentences (number and text).
+     *
+     * @return sequence of sentences, from left to right
+     */
+    private List<SentenceInter> getSentences ()
+    {
+        final List<SentenceInter> sentences = new ArrayList<>();
+
+        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
+            sentences.add((SentenceInter) sig.getOppositeInter(this, r));
+        }
+
+        Collections.sort(sentences, Inters.byAbscissa);
+
+        return sentences;
     }
 
     //-----------//
