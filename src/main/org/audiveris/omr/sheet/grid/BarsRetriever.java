@@ -2625,7 +2625,7 @@ public class BarsRetriever
                 "Lookup height for brace end above or below staff line");
 
         private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
-                20,
+                25,
                 "Maximum mean curvature radius for a brace");
 
         private final Constant.Boolean forceSinglePart = new Constant.Boolean(
