@@ -187,7 +187,7 @@ public class TupletsBuilder
             }
         }
 
-        Collections.sort(chords, new ByEuclidian(tupletCenter));
+        Collections.sort(chords, new ByEuclidean(tupletCenter));
         logger.trace("Chords: {}", Inters.ids(chords));
 
         return chords;
@@ -339,21 +339,21 @@ public class TupletsBuilder
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
-    // ByEuclidian //
+    // ByEuclidean //
     //-------------//
-    private static class ByEuclidian
+    private static class ByEuclidean
             implements Comparator<AbstractChordInter>
     {
 
         /** The location of the tuplet sign */
         private final Point signPoint;
 
-        ByEuclidian (Point signPoint)
+        ByEuclidean (Point signPoint)
         {
             this.signPoint = signPoint;
         }
 
-        /** Compare their euclidian distance from the signPoint reference */
+        /** Compare their euclidean distance from the signPoint reference */
         @Override
         public int compare (AbstractChordInter c1,
                             AbstractChordInter c2)

@@ -61,6 +61,14 @@ public class BeamRestRelation
         this.dy = dy;
     }
 
+    /**
+     * No-arg constructor needed by JAXB.
+     */
+    private BeamRestRelation ()
+    {
+        this.dy = 0;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getDistance //
