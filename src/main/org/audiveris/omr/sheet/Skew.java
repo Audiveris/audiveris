@@ -37,7 +37,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Skew} handles the skew angle of a given sheet picture.
+ * Class <code>Skew</code> handles the skew angle of a given sheet picture.
+ * <p>
+ * NOTA: A <i>positive</i> angle value means a <b>counter</b>-clockwise skew.
  *
  * @author Hervé Bitteur
  */
@@ -52,7 +54,9 @@ public class Skew
     // Persistent data
     //----------------
     //
-    /** Skew slope as measured. */
+    /**
+     * Value of skew slope (which is the tangent of angle value).
+     */
     @XmlAttribute(name = "slope")
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double5Adapter.class)
     private final double slope;
@@ -194,7 +198,7 @@ public class Skew
      */
     public Line2D skewedHorizontal (Point2D pt)
     {
-        final int DX = 1000; // Not significant
+        final int DX = 1_000; // Not significant
 
         return new Line2D.Double(pt.getX(), pt.getY(),
                                  pt.getX() + DX, pt.getY() + DX * slope);
@@ -211,7 +215,7 @@ public class Skew
      */
     public Line2D skewedVertical (Point2D pt)
     {
-        final int DY = 1000; // Not significant
+        final int DY = 1_000; // Not significant
 
         return new Line2D.Double(pt.getX(), pt.getY(),
                                  pt.getX() - DY * slope, pt.getY() + DY);
@@ -223,7 +227,10 @@ public class Skew
     @Override
     public String toString ()
     {
-        return "{Skew angle=" + angle + "}";
+        return new StringBuilder(new StringBuilder(getClass().getSimpleName()))
+                .append('{')
+                .append("slope:").append(slope)
+                .append('}').toString();
     }
 
     //----------------//

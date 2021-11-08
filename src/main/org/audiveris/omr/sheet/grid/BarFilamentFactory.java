@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code BarFilamentFactory} builds the underlying filament of a bar line
+ * Class <code>BarFilamentFactory</code> builds the underlying filament of a bar line
  * candidate.
  * <p>
  * As opposed to {@link FilamentFactory}, this class focused on the building of a single filament
@@ -72,7 +72,7 @@ public class BarFilamentFactory
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BarFilamentFactory} object.
+     * Creates a new <code>BarFilamentFactory</code> object.
      *
      * @param scale the related scale
      */
@@ -241,7 +241,7 @@ public class BarFilamentFactory
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all scale-dependent parameters.
+     * Class <code>Parameters</code> gathers all scale-dependent parameters.
      */
     private static class Parameters
     {

@@ -44,7 +44,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ArticulationInter} represents an articulation sign
+ * Class <code>ArticulationInter</code> represents an articulation sign
  * (TENUTO, ACCENT, STACCATO, STACCATISSIMO, MARCATO).
  *
  * @author Hervé Bitteur

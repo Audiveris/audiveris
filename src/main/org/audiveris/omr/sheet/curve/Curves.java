@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code Curves} is the platform used to handle several kinds of curves (slurs,
+ * Class <code>Curves</code> is the platform used to handle several kinds of curves (slurs,
  * wedges, endings) by walking along the arcs of a sheet skeleton.
  * <p>
  * We have to visit each pixel of the buffer, detect junction points and arcs departing or arriving
@@ -74,7 +74,7 @@ public class Curves
     private final Sheet sheet;
 
     /** View on skeleton, if any. */
-    private MyView view;
+    private CurveView view;
 
     /** Underlying skeleton. */
     private final Skeleton skeleton;
@@ -105,7 +105,7 @@ public class Curves
 
         // Display skeleton buffer?
         if ((OMR.gui != null) && constants.displayCurves.isSet()) {
-            view = new Curves.MyView(img);
+            view = new Curves.CurveView(img);
             sheet.getStub().getAssembly().addViewTab(
                     "Curves",
                     new ScrollImageView(sheet, view),
@@ -306,17 +306,17 @@ public class Curves
                 "Default thickness for a curve display");
     }
 
-    //--------//
-    // MyView //
-    //--------//
+    //-----------//
+    // CurveView //
+    //-----------//
     /**
      * View dedicated to skeleton arcs.
      */
-    private class MyView
+    private class CurveView
             extends ImageView
     {
 
-        MyView (BufferedImage image)
+        CurveView (BufferedImage image)
         {
             super(image);
         }

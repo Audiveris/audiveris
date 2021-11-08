@@ -28,7 +28,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import java.awt.Rectangle;
 
 /**
- * Class {@code AbstractDirectionInter} represents any direction.
+ * Class <code>AbstractDirectionInter</code> represents any direction.
  * Coda, text, pedal, segno, wedge.
  *
  * @author Hervé Bitteur
@@ -39,7 +39,7 @@ public abstract class AbstractDirectionInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code AbstractDirectionInter} object.
+     * Creates a new <code>AbstractDirectionInter</code> object.
      *
      * @param glyph the glyph to interpret
      * @param box   the precise object bounds (if different from glyph bounds)
@@ -55,7 +55,7 @@ public abstract class AbstractDirectionInter
     }
 
     /**
-     * Creates a new {@code AbstractDirectionInter} object.
+     * Creates a new <code>AbstractDirectionInter</code> object.
      *
      * @param glyph   the glyph to interpret
      * @param box     the precise object bounds (if different from glyph bounds)

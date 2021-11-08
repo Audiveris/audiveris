@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.inter;
 import java.util.List;
 
 /**
- * Interface {@code InterEnsemble} refers to an inter that is composed of other inters,
+ * Interface <code>InterEnsemble</code> refers to an inter that is composed of other inters,
  * with the ability to add or remove members.
  * <p>
  * Examples are:

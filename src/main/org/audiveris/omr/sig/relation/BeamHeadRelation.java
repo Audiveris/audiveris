@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BeamHeadRelation} is meant to boost cross support between beams and heads.
+ * Class <code>BeamHeadRelation</code> is meant to boost cross support between beams and heads.
  * <p>
  * Use of BeamHeadRelation:
  * <ul>
@@ -64,7 +64,7 @@ public class BeamHeadRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BeamHeadRelation} object.
+     * Creates a new <code>BeamHeadRelation</code> object.
      *
      * @param grade      quality of relation
      * @param onBeamSide true for head on beam side
@@ -77,7 +77,7 @@ public class BeamHeadRelation
     }
 
     /**
-     * Creates a new {@code BeamHeadRelation} object.
+     * Creates a new <code>BeamHeadRelation</code> object.
      *
      * @param grade quality of relation
      */

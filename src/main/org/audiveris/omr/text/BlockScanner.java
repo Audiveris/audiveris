@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code BlockScanner} launches the OCR on a buffer, typically a glyph buffer,
+ * Class <code>BlockScanner</code> launches the OCR on a buffer, typically a glyph buffer,
  * to retrieve the TextLine instance(s) this buffer represents.
  * <p>
  * As opposed to [@link SheetScanner}, here Tesseract is used in SINGLE_BLOCK layout mode,
@@ -60,7 +60,7 @@ public class BlockScanner
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code GlyphScanner} object that can work on a glyph or a buffer.
+     * Creates a new <code>GlyphScanner</code> object that can work on a glyph or a buffer.
      *
      * @param sheet underlying sheet
      */

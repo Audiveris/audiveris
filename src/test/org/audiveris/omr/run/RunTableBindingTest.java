@@ -39,7 +39,7 @@ import javax.xml.bind.PropertyException;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code RunTableBindingTest} tests the (un-)marshalling of RunTable.
+ * Class <code>RunTableBindingTest</code> tests the (un-)marshalling of RunTable.
  *
  * @author Hervé Bitteur
  */

@@ -38,7 +38,7 @@ import java.awt.Point;
 import javax.swing.WindowConstants;
 
 /**
- * Class {@code ChartPlotter} handles a frame filled by JFreeChart XYSeries.
+ * Class <code>ChartPlotter</code> handles a frame filled by JFreeChart XYSeries.
  *
  * @author Hervé Bitteur
  */
@@ -61,7 +61,7 @@ public class ChartPlotter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChartPlotter} object.
+     * Creates a new <code>ChartPlotter</code> object.
      *
      * @param title  chart title
      * @param xLabel x-axis label

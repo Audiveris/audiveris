@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.view;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code LocationDependent} indicates an entity whose behavior may depend
+ * Interface <code>LocationDependent</code> indicates an entity whose behavior may depend
  * on location currently defined (such as via user interface).
  *
  * @author Hervé Bitteur

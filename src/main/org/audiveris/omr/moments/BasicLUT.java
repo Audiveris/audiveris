@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 /**
- * Class {@code BasicLUT} is a straightforward LUT implementation.
+ * Class <code>BasicLUT</code> is a straightforward LUT implementation.
  *
  * @author Hervé Bitteur
  */

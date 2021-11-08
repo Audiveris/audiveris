@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code DistanceMatching} is a basic implementation of image matching based on
+ * Class <code>DistanceMatching</code> is a basic implementation of image matching based on
  * distances.
  *
  * @author Hervé Bitteur

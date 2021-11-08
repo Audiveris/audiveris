@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Class {@code AlignmentTest}
+ * Class <code>AlignmentTest</code>
  *
  * @author Hervé Bitteur
  */

@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sig.ui.InterController;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
 
@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code StubDependent} handles the dependency on current sheet stub availability
+ * Class <code>StubDependent</code> handles the dependency on current sheet stub availability
  * and current sheet stub activity.
  *
  * @author Hervé Bitteur
@@ -138,7 +138,7 @@ public abstract class StubDependent
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StubDependent} object.
+     * Creates a new <code>StubDependent</code> object.
      */
     protected StubDependent ()
     {
@@ -610,11 +610,11 @@ public abstract class StubDependent
 
             // Update stubIdle & stubTranscribable & repetitiveInputSelectable
             if (stub != null) {
-                final Step currentStep = stub.getCurrentStep();
+                final OmrStep currentStep = stub.getCurrentStep();
                 final boolean idle = currentStep == null;
                 setStubIdle(idle);
-                setStubTranscribable(idle && stub.isValid() && !stub.isDone(Step.last()));
-                setRepetitiveInputSelectable(idle && stub.isDone(Step.HEADS));
+                setStubTranscribable(idle && stub.isValid() && !stub.isDone(OmrStep.last()));
+                setRepetitiveInputSelectable(idle && stub.isDone(OmrStep.HEADS));
             } else {
                 setStubIdle(false);
                 setStubTranscribable(false);
@@ -666,7 +666,7 @@ public abstract class StubDependent
     private boolean isBookIdle (Book book)
     {
         for (SheetStub stub : book.getValidStubs()) {
-            final Step currentStep = stub.getCurrentStep();
+            final OmrStep currentStep = stub.getCurrentStep();
 
             if (currentStep != null) {
                 return false;
@@ -683,7 +683,7 @@ public abstract class StubDependent
     {
         // Book is assumed idle
         for (SheetStub stub : book.getValidStubs()) {
-            if (!stub.isDone(Step.last())) {
+            if (!stub.isDone(OmrStep.last())) {
                 return true;
             }
         }
@@ -721,6 +721,6 @@ public abstract class StubDependent
         }
 
         // Grid available?
-        setGridAvailable(stub.isDone(Step.GRID));
+        setGridAvailable(stub.isDone(OmrStep.GRID));
     }
 }

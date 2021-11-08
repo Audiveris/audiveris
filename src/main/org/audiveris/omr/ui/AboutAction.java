@@ -60,7 +60,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
 
 /**
- * Class {@code AboutAction} implements the About dialog.
+ * Class <code>AboutAction</code> implements the About dialog.
  *
  * @author Hervé Bitteur
  */

@@ -26,7 +26,7 @@ import ij.process.ByteProcessor;
 import java.awt.image.Kernel;
 
 /**
- * Class {@code GaussianGrayFilter} allows to run a Gaussian filter on an input image,
+ * Class <code>GaussianGrayFilter</code> allows to run a Gaussian filter on an input image,
  * assumed to contain only gray values [0..255].
  * <p>
  * This implementation is derived from Jerry Huxtable more general filter but limited to

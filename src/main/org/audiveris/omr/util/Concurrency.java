@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Interface {@code Concurrency} declares if an entity (class instance) can be used by
+ * Interface <code>Concurrency</code> declares if an entity (class instance) can be used by
  * concurrent threads.
  * This complements the JCIP annotations in a more dynamic way.
  *

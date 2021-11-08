@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.inter;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RestChordInter} is a AbstractChordInter composed of (one) rest.
+ * Class <code>RestChordInter</code> is a AbstractChordInter composed of (one) rest.
  *
  * @author Hervé Bitteur
  */
@@ -35,7 +35,7 @@ public class RestChordInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code RestChordInter} object.
+     * Creates a new <code>RestChordInter</code> object.
      *
      * @param grade the intrinsic grade
      */

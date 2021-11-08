@@ -73,7 +73,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code SlursBuilder} builds all slur curves from a sheet skeleton.
+ * Class <code>SlursBuilder</code> builds all slur curves from a sheet skeleton.
  *
  * @author Hervé Bitteur
  */

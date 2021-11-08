@@ -51,7 +51,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
 /**
- * Class {@code Rubber} keeps track of nothing more than a rectangle,
+ * Class <code>Rubber</code> keeps track of nothing more than a rectangle,
  * to define an area of interest.
  * <p>
  * The rectangle can be degenerated to a simple point, when both its width and height are zero.

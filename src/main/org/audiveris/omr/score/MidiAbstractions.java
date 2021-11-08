@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 /**
- * Class {@code MidiAbstractions} handles various MIDI abstractions
+ * Class <code>MidiAbstractions</code> handles various MIDI abstractions
  *
  * @author Hervé Bitteur
  */

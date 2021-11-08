@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code CircleModel} is a slur model based on Circle curve.
+ * Class <code>CircleModel</code> is a slur model based on Circle curve.
  *
  * @author Hervé Bitteur
  */

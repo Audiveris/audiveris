@@ -37,7 +37,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code StraightFilament} is a filament of sections, expected to be sufficiently
+ * Class <code>StraightFilament</code> is a filament of sections, expected to be sufficiently
  * straight to be represented as a basic line.
  *
  * @author Hervé Bitteur
@@ -53,7 +53,7 @@ public class StraightFilament
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StraightFilament} object.
+     * Creates a new <code>StraightFilament</code> object.
      *
      * @param interline scaling information
      */

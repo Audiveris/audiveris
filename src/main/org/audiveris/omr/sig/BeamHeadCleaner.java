@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 /**
- * Class {@code BeamHeadCleaner} remove all BeamHeadRelation links of a system
+ * Class <code>BeamHeadCleaner</code> remove all BeamHeadRelation links of a system
  * when they are no longer needed.
  *
  * @author Hervé Bitteur
@@ -48,7 +48,7 @@ public class BeamHeadCleaner
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BeamHeadCleaner} object.
+     * Creates a new <code>BeamHeadCleaner</code> object.
      *
      * @param system the system to process
      */

@@ -32,11 +32,11 @@ import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 
 /**
- * Interface {@code SymbolIcon} handles the display of a symbol.
+ * Interface <code>SymbolIcon</code> handles the display of a symbol.
  * A SymbolIcon can provide several features:
  * <ul>
  * <li>It can be used as an <b>icon</b> for buttons, menus, etc. For that purpose,
- * {@code SymbolIcon}
+ * <code>SymbolIcon</code>
  * implements the {@link Icon} interface.</li>
  * <li>It can be used as an <b>image</b> for precise drawing on score views, whatever the desired
  * scale and display ratio. See {@link #buildImage} and {@link #paintSymbol} methods.</li>

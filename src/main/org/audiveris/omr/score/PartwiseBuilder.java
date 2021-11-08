@@ -228,7 +228,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code PartwiseBuilder} builds a ProxyMusic MusicXML {@link ScorePartwise}
+ * Class <code>PartwiseBuilder</code> builds a ProxyMusic MusicXML {@link ScorePartwise}
  * from an Audiveris {@link Score} instance.
  *
  * @author Hervé Bitteur
@@ -1118,7 +1118,7 @@ public class PartwiseBuilder
 
             harmony.getHarmonyChord().add(root);
 
-            // Kind
+            // ChordKind
             Kind kind = factory.createKind();
             kind.setValue(kindOf(chordName.getKind().type));
             kind.setText(chordName.getKind().text);
@@ -1151,7 +1151,7 @@ public class PartwiseBuilder
 
             // Degrees?
             if (chordName.getDegrees() != null) {
-                for (ChordNameInter.Degree deg : chordName.getDegrees()) {
+                for (ChordNameInter.ChordDegree deg : chordName.getDegrees()) {
                     Degree degree = factory.createDegree();
 
                     DegreeValue value = factory.createDegreeValue();
@@ -1717,7 +1717,7 @@ public class PartwiseBuilder
                         SlotVoice info = voice.getSlotInfo(slot);
 
                         if ((info != null) && // Skip free slots
-                                (info.status == SlotVoice.Status.BEGIN)) {
+                                (info.status == SlotVoice.ChordStatus.BEGIN)) {
                             AbstractChordInter chord = info.chord;
                             clefIters.push(slot.getXOffset(), chord.getTopStaff());
 

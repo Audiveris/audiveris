@@ -50,7 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
- * Class {@code Main} is the main class for OMR application.
+ * Class <code>Main</code> is the main class for OMR application.
  * <p>
  * It deals with the main routine and its command line parameters.
  * It launches the User Interface, unless batch mode is selected.

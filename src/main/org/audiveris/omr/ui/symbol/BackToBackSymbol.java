@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BackToBackSymbol} displays a BACK_TO_BACK_REPEAT_SIGN.
+ * Class <code>BackToBackSymbol</code> displays a BACK_TO_BACK_REPEAT_SIGN.
  *
  * @author Hervé Bitteur
  */

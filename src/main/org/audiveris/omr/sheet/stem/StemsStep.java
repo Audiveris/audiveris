@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code StemsStep} implements <b>STEMS</b> step, which establishes all
+ * Class <code>StemsStep</code> implements <b>STEMS</b> step, which establishes all
  * possible relations between stems and note heads or beams.
  *
  * @author Hervé Bitteur

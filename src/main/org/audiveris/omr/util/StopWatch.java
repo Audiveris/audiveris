@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code StopWatch} is a watch that measures elapse time.
+ * Class <code>StopWatch</code> is a watch that measures elapse time.
  *
  * @author Hervé Bitteur
  */

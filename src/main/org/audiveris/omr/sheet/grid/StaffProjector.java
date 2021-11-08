@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code StaffProjector} is in charge of analyzing a staff projection onto
+ * Class <code>StaffProjector</code> is in charge of analyzing a staff projection onto
  * x-axis, in order to retrieve barlines candidates as well as staff start and stop
  * abscissae.
  * <p>
@@ -168,7 +168,7 @@ public class StaffProjector
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffProjector} object.
+     * Creates a new <code>StaffProjector</code> object.
      *
      * @param sheet     containing sheet
      * @param staff     staff to analyze

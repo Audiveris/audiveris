@@ -65,7 +65,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SheetScanner} runs OCR on the whole sheet, where good inters and
+ * Class <code>SheetScanner</code> runs OCR on the whole sheet, where good inters and
  * staves core areas have been blanked.
  * <p>
  * Tesseract is used in MULTI_BLOCK layout mode, meaning that the sheet main contain several blocks
@@ -92,7 +92,7 @@ public class SheetScanner
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TextPageScanner} object.
+     * Creates a new <code>TextPageScanner</code> object.
      *
      * @param sheet the sheet to process
      */
@@ -227,7 +227,7 @@ public class SheetScanner
     // TextsCleaner //
     //--------------//
     /**
-     * Class {@code TextsCleaner} erases shapes to prepare texts retrieval.
+     * Class <code>TextsCleaner</code> erases shapes to prepare texts retrieval.
      */
     private static class TextsCleaner
             extends PageCleaner
@@ -237,7 +237,7 @@ public class SheetScanner
         private final Parameters params;
 
         /**
-         * Creates a new {@code TextsCleaner} object.
+         * Creates a new <code>TextsCleaner</code> object.
          *
          * @param buffer page buffer
          * @param g      graphics context on buffer

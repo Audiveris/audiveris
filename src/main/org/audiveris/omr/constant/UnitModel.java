@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code UnitModel} implements a data model for units suitable for use in a
+ * Class <code>UnitModel</code> implements a data model for units suitable for use in a
  * JTreeTable.
  * <p>
  * A row in the UnitModel can be any instance of the 3 following types:
@@ -143,12 +143,12 @@ public class UnitModel
     // getChild //
     //----------//
     /**
-     * Returns the child of {@code parent} at index {@code index} in
+     * Returns the child of <code>parent</code> at index <code>index</code> in
      * the parent's child array.
      *
      * @param parent a node in the tree, obtained from this data source
      * @param i      the child index in parent sequence
-     * @return the child of {@code parent</code> at index <code>index}
+     * @return the child of <code>parent</code> at index <code>index</code>
      */
     @Override
     public Object getChild (Object parent,
@@ -179,10 +179,10 @@ public class UnitModel
     // getChildCount //
     //---------------//
     /**
-     * Returns the number of children of {@code parent}.
+     * Returns the number of children of <code>parent</code>.
      *
      * @param parent a node in the tree, obtained from this data source
-     * @return the number of children of the node {@code parent}
+     * @return the number of children of the node <code>parent</code>
      */
     @Override
     public int getChildCount (Object parent)
@@ -401,10 +401,10 @@ public class UnitModel
     // isLeaf //
     //--------//
     /**
-     * Returns {@code true} if {@code node} is a leaf.
+     * Returns <code>true</code> if <code>node</code> is a leaf.
      *
      * @param node a node in the tree, obtained from this data source
-     * @return true if {@code node} is a leaf
+     * @return true if <code>node</code> is a leaf
      */
     @Override
     public boolean isLeaf (Object node)

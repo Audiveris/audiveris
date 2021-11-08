@@ -22,7 +22,7 @@
 package org.audiveris.omr.glyph;
 
 /**
- * Enum {@code GlyphLayer} defines populations of glyph instances.
+ * Enum <code>GlyphLayer</code> defines populations of glyph instances.
  *
  * @author Hervé Bitteur
  */

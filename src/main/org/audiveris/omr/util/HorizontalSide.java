@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Enum {@code HorizontalSide} is meant to ease programmatic use of left and right
+ * Enum <code>HorizontalSide</code> is meant to ease programmatic use of left and right
  * sides of staves, lines, etc...
  *
  * @author Hervé Bitteur

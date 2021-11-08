@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.selection;
 import org.audiveris.omr.sheet.SheetStub;
 
 /**
- * Class {@code StubEvent} represent a SheetStub selection event, used to call attention
+ * Class <code>StubEvent</code> represent a SheetStub selection event, used to call attention
  * about a selected stub.
  *
  * @author Hervé Bitteur

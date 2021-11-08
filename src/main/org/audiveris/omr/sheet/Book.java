@@ -31,7 +31,6 @@ import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.ImageLoading;
 import org.audiveris.omr.log.LogUtil;
-import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.OpusExporter;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
@@ -46,13 +45,14 @@ import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Jaxb.OmrSchemaOutputResolver;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.NaturalSpec;
 import org.audiveris.omr.util.OmrExecutors;
@@ -102,149 +102,30 @@ import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Book} is the root class for handling a physical set of image input
+ * Class <code>Book</code> is the root class for handling a physical set of image input
  * files, resulting in one or several logical MusicXML scores.
  * <p>
  * A book instance generally corresponds to an input file containing one or several images, each
  * image resulting in a separate {@link Sheet} instance.
  * <p>
  * A sheet generally contains one or several systems.
- * An indented system (sometimes prefixed by part names) usually indicates a new movement.
- * Such indented system may appear in the middle of a sheet, thus (logical) movement frontiers do
+ * An indented system (sometimes prefixed by part names) usually indicates a new movement called
+ * "Score" in MusicXML.
+ * Such indented system may appear in the middle of a sheet, thus (logical) score frontiers do
  * not always match (physical) sheet frontiers.
  * <p>
  * A (super-) book may also contain (sub-) books to recursively gather a sequence of input files.
- * <p>
- * Methods are organized as follows:
- * <dl>
- * <dt>Administration</dt>
- * <dd>
- * <ul>
- * <li>{@link #getInputPath}</li>
- * <li>{@link #getAlias}</li>
- * <li>{@link #setAlias}</li>
- * <li>{@link #getRadix}</li>
- * <li>{@link #includeBook}</li>
- * <li>{@link #getOffset}</li>
- * <li>{@link #setOffset}</li>
- * <li>{@link #isDirty}</li>
- * <li>{@link #setDirty}</li>
- * <li>{@link #isModified}</li>
- * <li>{@link #setModified}</li>
- * <li>{@link #close}</li>
- * <li>{@link #closeFileSystem}</li>
- * <li>{@link #isClosing}</li>
- * <li>{@link #setClosing}</li>
- * <li>{@link #getLock}</li>
- * <li>{@link #openBookFile}</li>
- * <li>{@link #openBookFile(Path)}</li>
- * <li>{@link #openSheetFolder}</li>
- * <li>{@link #isUpgraded}</li>
- * <li>{@link #batchUpgradeBooks}</li>
- * <li>{@link #getVersion}</li>
- * <li>{@link #getVersionValue}</li>
- * <li>{@link #setVersionValue}</li>
- * <li>{@link #getStubsToUpgrade}</li>
- * <li>{@link #getStubsWithOldVersion}</li>
- * <li>{@link #getStubsWithTableFiles}</li>
- * <li>{@link #upgradeStubs}</li>
- * </ul>
- * </dd>
- *
- * <dt>SheetStubs</dt>
- * <dd>
- * <ul>
- * <li>{@link #createStubs}</li>
- * <li>{@link #createStubsTabs}</li>
- * <li>{@link #loadSheetImage}</li>
- * <li>{@link #isMultiSheet}</li>
- * <li>{@link #getStub}</li>
- * <li>{@link #getStubs}</li>
- * <li>{@link #getStubs(java.util.Collection)}</li>
- * <li>{@link #getSheetsSelection}</li>
- * <li>{@link #setSheetsSelection}</li>
- * <li>{@link #getSelectedStubs}</li>
- * <li>{@link #getFirstValidStub}</li>
- * <li>{@link #getValidSelectedStubs}</li>
- * <li>{@link #getValidStubs}</li>
- * <li>{@link #getValidStubs(java.util.List)}</li>
- * <li>{@link #removeStub}</li>
- * <li>{@link #hideInvalidStubs}</li>
- * <li>{@link #ids}</li>
- * <li>{@link #swapAllSheets}</li>
- * </ul>
- * </dd>
- *
- * <dt>Parameters</dt>
- * <dd>
- * <ul>
- * <li>{@link #promptedForUpgrade}</li>
- * <li>{@link #setPromptedForUpgrade}</li>
- * <li>{@link #getBinarizationFilter}</li>
- * <li>{@link #getOcrLanguages}</li>
- * <li>{@link #getProcessingSwitches}</li>
- * </ul>
- * </dd>
- *
- * <dt>Transcription</dt>
- * <dd>
- * <ul>
- * <li>{@link #resetTo}</li>
- * <li>{@link #transcribe}</li>
- * <li>{@link #reachBookStep}</li>
- * <li>{@link #updateScores}</li>
- * <li>{@link #reduceScores}</li>
- * <li>{@link #getScore}</li>
- * <li>{@link #getScores}</li>
- * <li>{@link #clearScores}</li>
- * <li>{@link #isMultiMovement}</li>
- * </ul>
- * </dd>
- *
- * <dt>Samples</dt>
- * <dd>
- * <ul>
- * <li>{@link #getSampleRepository}</li>
- * <li>{@link #getSpecificSampleRepository}</li>
- * <li>{@link #hasAllocatedRepository}</li>
- * <li>{@link #hasSpecificRepository}</li>
- * <li>{@link #sample}</li>
- * <li>{@link #annotate}</li>
- * </ul>
- * </dd>
- *
- * <dt>Artifacts</dt>
- * <dd>
- * <ul>
- * <li>{@link #getBrowserFrame}</li>
- * <li>{@link #getExportPathSansExt}</li>
- * <li>{@link #setExportPathSansExt}</li>
- * <li>{@link #getOpusExportPath}</li>
- * <li>{@link #getScoreExportPaths}</li>
- * <li>{@link #export}</li>
- * <li>{@link #getPrintPath}</li>
- * <li>{@link #setPrintPath}</li>
- * <li>{@link #print}</li>
- * <li>{@link #getBookPath}</li>
- * <li>{@link #store()}</li>
- * <li>{@link #store(java.nio.file.Path, boolean)}</li>
- * <li>{@link #storeBookInfo}</li>
- * <li>{@link #loadBook}</li>
- * </ul>
- * </dd>
- * </dl>
- *
- * <img src="doc-files/Book-Detail.png" alt="Book detals UML">
+ * But this feature is not yet implemented.
  *
  * @author Hervé Bitteur
  */
@@ -269,60 +150,120 @@ public class Book
     // Persistent data
     //----------------
     //
-    /** Related Audiveris version that last operated on this book. */
+    /** Audiveris version that last operated on this book. */
     @XmlAttribute(name = "software-version")
     private String version;
 
-    /** Related Audiveris build that last operated on this book. */
+    /** Audiveris build number that last operated on this book. */
     @XmlAttribute(name = "software-build")
     private String build;
-
-    /** Sub books, if any. */
-    @XmlElement(name = "sub-books")
-    private final List<Book> subBooks;
 
     /** Book alias, if any. */
     @XmlAttribute(name = "alias")
     private String alias;
 
-    /** Input path of the related image(s) file, if any. */
+    /**
+     * This is the path to the input image(s) file that led to this book.
+     * <p>
+     * The path was valid at book creation and recorded in the book .omr project file.
+     * It may not be relevant when the same .omr file is used on another machine.
+     */
     @XmlAttribute(name = "path")
     @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
     private final Path path;
 
-    /** Sheet offset of image file with respect to full work, if any. */
+    /**
+     * Sheet offset of image file with respect to full work, if any.
+     * <p>
+     * This feature of "<i>book of books</i>" is not yet implemented.
+     * <p>
+     * This element is meant to represent the number of the first sheet of this book within
+     * the containing super-book.
+     */
     @XmlAttribute(name = "offset")
     private Integer offset;
 
-    /** Indicate if the book scores must be updated. */
+    /** This boolean indicates if the book score(s) must be updated. */
     @XmlAttribute(name = "dirty")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean dirty = false;
 
-    /** Handling of binarization filter parameter. */
+    /**
+     * List of sub-books, if any.
+     * <p>
+     * This feature of "<i>book of books</i>" is not yet implemented.
+     * <p>
+     * This element is meant to refer to an external book included in this one.
+     */
+    @XmlElement(name = "sub-book")
+    private final List<Book> subBooks;
+
+    /**
+     * This element defines for the whole book a specific binarization filter to
+     * transform gray images into binary (black and white) images.
+     * <p>
+     * If present, this specification overrides any global specification made at application level,
+     * but can still be overridden at sheet level.
+     */
     @XmlElement(name = "binarization")
-    @XmlJavaTypeAdapter(FilterParam.Adapter.class)
+    @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
     private FilterParam binarizationFilter;
 
-    /** Handling of dominant language(s) for this book. */
+    /**
+     * This string specifies the dominant language(s) for this whole book.
+     * <p>
+     * For example, <code>eng+ita</code> specification will ask OCR to use English and Italian
+     * dictionaries and only those.
+     * <p>
+     * If present, this specification overrides any global specification made at application level,
+     * but can still be overridden at sheet level, for example by <code>eng+ita+deu</code>.
+     */
     @XmlElement(name = "ocr-languages")
-    @XmlJavaTypeAdapter(StringParam.Adapter.class)
+    @XmlJavaTypeAdapter(StringParam.JaxbAdapter.class)
     private StringParam ocrLanguages;
 
-    /** Handling of processing switches for this book. */
+    /**
+     * This is a set of specific processing switches for this book.
+     * <p>
+     * Each switch applies to the whole book, but can still be overridden at sheet level.
+     */
     @XmlElement(name = "processing")
-    @XmlJavaTypeAdapter(ProcessingSwitches.Adapter.class)
+    @XmlJavaTypeAdapter(ProcessingSwitches.JaxbAdapter.class)
     private ProcessingSwitches switches;
 
-    /** Specification of sheets selection, if any. */
+    /**
+     * This string, if any, is a specification of sheets selection.
+     * <p>
+     * For example, "1-3,5,10-12,30-" will limit the processing of this book to those sheets:
+     * <ul>
+     * <li>#1 through #3
+     * <li>#5
+     * <li>#10 through #12
+     * <li>#30 through last sheet in book
+     * </ul>
+     * NOTA: Among this selection, only the <b>valid</b> sheets will be processed.
+     * <p>
+     * If there is no selection specification, all (valid) sheets will be processed.
+     */
     @XmlElement(name = "sheets-selection")
     private String sheetsSelection;
 
-    /** Sequence of all sheets stubs got from image file. */
+    /** This is the sequence of all sheets stubs.
+     * <p>
+     * There is one small stub per image in the input file.
+     * <p>
+     * Every stub remains in memory until the book is closed.
+     * The corresponding sheet can be loaded or swapped on demand.
+     */
     @XmlElement(name = "sheet")
     private final List<SheetStub> stubs = new ArrayList<>();
 
-    /** Logical scores for this book. */
+    /**
+     * This is the sequence of logical scores detected in this book.
+     * <p>
+     * A logical score (also known as 'movement') generally begins with an indented system and can
+     * span several physical sheets.
+     */
     @XmlElement(name = "score")
     private final List<Score> scores = new ArrayList<>();
 
@@ -767,6 +708,24 @@ public class Book
         }
 
         return pathMap;
+    }
+
+    //----------------//
+    // generateSchema //
+    //----------------//
+    /**
+     * Generate the XSD schema definition file rooted at Book class.
+     *
+     * @param outputFileName full schema file name
+     */
+    public static void generateSchema (String outputFileName)
+    {
+        try {
+            SchemaOutputResolver sor = new OmrSchemaOutputResolver(outputFileName);
+            getJaxbContext().generateSchema(sor);
+        } catch (Exception ex) {
+            logger.warn("Error generating schema for Book {}", ex.toString(), ex);
+        }
     }
 
     //----------//
@@ -1679,7 +1638,7 @@ public class Book
     //--------------//
     /**
      * Open the book file (supposed to already exist at location provided by
-     * '{@code bookPath}' member) for reading or writing.
+     * '<code>bookPath</code>' member) for reading or writing.
      * <p>
      * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
@@ -1698,7 +1657,7 @@ public class Book
     //--------------//
     /**
      * Open the book file (supposed to already exist at location provided by
-     * '{@code bookPath}' parameter) for reading or writing.
+     * '<code>bookPath</code>' parameter) for reading or writing.
      * <p>
      * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
@@ -1782,7 +1741,7 @@ public class Book
      * @param theStubs the valid selected stubs
      * @return true if OK on all sheet actions
      */
-    public boolean reachBookStep (final Step target,
+    public boolean reachBookStep (final OmrStep target,
                                   final boolean force,
                                   final List<SheetStub> theStubs)
     {
@@ -1791,7 +1750,7 @@ public class Book
 
             if (!force) {
                 // Check against the least advanced step performed across all sheets concerned
-                Step least = getLeastStep(theStubs);
+                OmrStep least = getLeastStep(theStubs);
 
                 if ((least != null) && (least.compareTo(target) >= 0)) {
                     return true; // Nothing to do
@@ -1955,9 +1914,9 @@ public class Book
      *
      * @param step either LOAD or BINARY step only
      */
-    public void resetTo (Step step)
+    public void resetTo (OmrStep step)
     {
-        if (step != Step.LOAD && step != Step.BINARY) {
+        if (step != OmrStep.LOAD && step != OmrStep.BINARY) {
             logger.error("Method resetTo is reserved to LOAD and BINARY steps");
             return;
         }
@@ -1966,7 +1925,7 @@ public class Book
 
         for (SheetStub stub : getValidSelectedStubs()) {
             if (stub.isDone(step)) {
-                if (step == Step.LOAD) {
+                if (step == OmrStep.LOAD) {
                     stub.resetToGray();
                 } else {
                     stub.resetToBinary();
@@ -2202,7 +2161,7 @@ public class Book
     public boolean transcribe (List<SheetStub> theStubs,
                                List<Score> theScores)
     {
-        boolean ok = reachBookStep(Step.last(), false, theStubs);
+        boolean ok = reachBookStep(OmrStep.last(), false, theStubs);
 
         if (theScores.isEmpty()) {
             createScores(theStubs, theScores);
@@ -2590,12 +2549,12 @@ public class Book
      * @param theStubs the provided stubs
      * @return the least step, null if any stub has not reached the first step (LOAD)
      */
-    private Step getLeastStep (List<SheetStub> theStubs)
+    private OmrStep getLeastStep (List<SheetStub> theStubs)
     {
-        Step least = Step.last();
+        OmrStep least = OmrStep.last();
 
         for (SheetStub stub : theStubs) {
-            Step latest = stub.getLatestStep();
+            OmrStep latest = stub.getLatestStep();
 
             if (latest == null) {
                 return null; // This sheet has not been processed at all
@@ -2730,7 +2689,7 @@ public class Book
                                 || OMR.gui.displayConfirmation(
                                     msg + "\nConfirm reset to binary?",
                                     "Too old book version")) {
-                        resetTo(Step.BINARY);
+                        resetTo(OmrStep.BINARY);
                         logger.info("Book {} reset to binary.", radix);
                         version = WellKnowns.TOOL_REF;
                         build = WellKnowns.TOOL_BUILD;
@@ -2868,7 +2827,7 @@ public class Book
     //----------------//
     /**
      * Create a new book file system dedicated to this book at the location provided
-     * by '{@code bookpath}' member.
+     * by '<code>bookpath</code>' member.
      * If such file already exists, it is deleted beforehand.
      * <p>
      * When IO operations are finished, the book file must be closed via
@@ -2903,12 +2862,12 @@ public class Book
     //----------------//
     // getJaxbContext //
     //----------------//
-    private static JAXBContext getJaxbContext ()
+    public static JAXBContext getJaxbContext ()
             throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Book.class, RunTable.class);
+            jaxbContext = JAXBContext.newInstance(Book.class);
         }
 
         return jaxbContext;
@@ -2958,35 +2917,6 @@ public class Book
             }
 
             return super.setSpecific(specific);
-        }
-
-        /**
-         * JAXB adapter to mimic XmlValue.
-         */
-        public static class Adapter
-                extends XmlAdapter<String, OcrBookLanguages>
-        {
-
-            @Override
-            public String marshal (OcrBookLanguages val)
-                    throws Exception
-            {
-                if (val == null) {
-                    return null;
-                }
-
-                return val.getSpecific();
-            }
-
-            @Override
-            public OcrBookLanguages unmarshal (String str)
-                    throws Exception
-            {
-                OcrBookLanguages ol = new OcrBookLanguages();
-                ol.setSpecific(str);
-
-                return ol;
-            }
         }
     }
 }

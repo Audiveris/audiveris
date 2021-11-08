@@ -27,7 +27,7 @@ import org.jdesktop.application.SingleFrameApplication;
 import javax.swing.JFrame;
 
 /**
- * Class {@code OmrGui} defines the minimum offered by an OMR GUI.
+ * Class <code>OmrGui</code> defines the minimum offered by an OMR GUI.
  * <ul>
  * <li>A SingleFrameApplication as defined by Swing Application Framework</li>
  * <li>Various forms of message display to the end user</li>

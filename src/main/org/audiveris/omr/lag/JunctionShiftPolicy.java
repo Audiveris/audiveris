@@ -24,7 +24,7 @@ package org.audiveris.omr.lag;
 import org.audiveris.omr.run.Run;
 
 /**
- * Class {@code JunctionShiftPolicy} defines a junction policy based on the shift
+ * Class <code>JunctionShiftPolicy</code> defines a junction policy based on the shift
  * between the candidate run and the last run of the section.
  *
  * @author Hervé Bitteur

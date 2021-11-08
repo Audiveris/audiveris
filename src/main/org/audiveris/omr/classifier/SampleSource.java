@@ -24,7 +24,7 @@ package org.audiveris.omr.classifier;
 import java.util.List;
 
 /**
- * Interface {@code SampleSource} defines a source of samples
+ * Interface <code>SampleSource</code> defines a source of samples
  *
  * @author Hervé Bitteur
  */

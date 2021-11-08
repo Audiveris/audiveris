@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code MeasureFixer} visits the score hierarchy to fix measures:.
+ * Class <code>MeasureFixer</code> visits the score hierarchy to fix measures:.
  * <ul>
  * <li>Detect implicit measures (as pickup measures)</li>
  * <li>Detect first half repeat measures</li>
@@ -175,9 +175,10 @@ public class MeasureFixer
     {
         final SystemInfo system = stack.getSystem();
 
-        return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
-                       && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO)
-                                                                 < 0);
+        return (system.getIndexInPage() == 0)
+                       && (stack == system.getFirstStack())
+                       && (stackTermination != null)
+                       && (stackTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//

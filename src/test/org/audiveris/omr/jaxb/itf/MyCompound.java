@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code MyCompound}
+ * Class <code>MyCompound</code>
  *
  * @author Hervé Bitteur
  */
@@ -51,7 +51,7 @@ public class MyCompound
     MyBasicIndex<MyEntity> index;
 
     /**
-     * Creates a new {@code MyCompound} object.
+     * Creates a new <code>MyCompound</code> object.
      */
     public MyCompound ()
     {

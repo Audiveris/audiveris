@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Class {@code ZipFileSystem} gathers utility methods to read from and write to a zip
+ * Class <code>ZipFileSystem</code> gathers utility methods to read from and write to a zip
  * file (considered as a file system).
  * <p>
  * The {@link #create(java.nio.file.Path)} and {@link #open(java.nio.file.Path)} methods expect an
@@ -41,7 +41,7 @@ import java.util.Objects;
  * transparently under this root umbrella.
  * <p>
  * When IO operations are finished, the file system must be closed via a {@link FileSystem#close()}
- * on the root path like {@code root.getFileSystem().close();}
+ * on the root path like <code>root.getFileSystem().close();</code>
  *
  * @author Hervé Bitteur
  */
@@ -59,7 +59,7 @@ public abstract class ZipFileSystem
     // create //
     //--------//
     /**
-     * Create a new zip file system at the location provided by '{@code path}' parameter.
+     * Create a new zip file system at the location provided by '<code>path</code>' parameter.
      * If such file already exists, it is deleted beforehand.
      * <p>
      * When IO operations are finished, the file system must be closed via {@link FileSystem#close}
@@ -99,7 +99,7 @@ public abstract class ZipFileSystem
     //------//
     /**
      * Open a zip file system (supposed to already exist at location provided by
-     * '{@code path}' parameter) for reading or writing.
+     * '<code>path</code>' parameter) for reading or writing.
      * <p>
      * When IO operations are finished, the file system must be closed via {@link FileSystem#close}
      *

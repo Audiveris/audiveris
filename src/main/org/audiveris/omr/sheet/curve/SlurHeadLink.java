@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import java.util.Comparator;
 
 /**
- * Class {@code SlurHeadLink} formalizes a link between a slur end and a head
+ * Class <code>SlurHeadLink</code> formalizes a link between a slur end and a head
  * in a chord nearby.
  * <p>
  * Rather than chord box center point, we use chord box middle vertical line.
@@ -55,7 +55,7 @@ public class SlurHeadLink
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SlurHeadLink} object.
+     * Creates a new <code>SlurHeadLink</code> object.
      *
      * @param head the linked head
      * @param rel  precise relation instance

@@ -24,7 +24,7 @@ package org.audiveris.omr.moments;
 import java.util.Locale;
 
 /**
- * Class {@code BasicLegendreMoments} implements a descriptor for orthogonal Legendre
+ * Class <code>BasicLegendreMoments</code> implements a descriptor for orthogonal Legendre
  * moments.
  *
  * @author Hervé Bitteur

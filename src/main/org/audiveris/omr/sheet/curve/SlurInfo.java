@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code SlursInfo} gathers physical description of a slur.
+ * Class <code>SlursInfo</code> gathers physical description of a slur.
  * <p>
  * It is not meant to be persistent.
  * During slur building in SLURS step, it allows to check and implement the connection of smaller

@@ -28,7 +28,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code GeoUtil} gathers simple utilities related to geometry.
+ * Class <code>GeoUtil</code> gathers simple utilities related to geometry.
  *
  * @author Hervé Bitteur
  */

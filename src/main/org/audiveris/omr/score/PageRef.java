@@ -32,7 +32,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code PageRef} represents a page reference within a sheet stub.
+ * Class <code>PageRef</code> represents a page reference within a <code>SheetStub</code>.
+ * <p>
+ * The hierarchy of Book, SheetStub and PageRef instances always remains in memory,
+ * but Sheet and Page instances can be swapped out.
+ * <p>
+ * To this end, a PageRef instance provides enough information to:
+ * <ul>
+ * <li>Process the following pages in the same score, without having to load this page
+ * <li>Load this page on demand.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -45,16 +54,48 @@ public class PageRef
     // Persistent data
     //----------------
     //
+    /**
+     * This is the page number within the containing sheet.
+     * <ul>
+     * <li>Value is 1 if the sheet contains just 1 page (which is the most frequent case)
+     * <li>Value is in [1..n] range if there are n pages in the same sheet
+     * </ul>
+     */
     @XmlAttribute(name = "id")
     private final int id;
 
+    /**
+     * This boolean indicates that the page starts a new movement, generally because its
+     * first system is indented with respect to the other systems in the same sheet.
+     * <p>
+     * This attribute is present only if its boolean value is 'true'.
+     */
     @XmlAttribute(name = "movement-start")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private final boolean movementStart;
 
+    /**
+     * This integer value provides the increment on measure IDs brought by the page.
+     * <p>
+     * This would be the exact count of measures in the page, if there were no pickup measures,
+     * alternate endings or cautionary measures.
+     * <p>
+     * Knowing this value allows to assign measure IDs in the following page,
+     * without having to load this one.
+     */
     @XmlAttribute(name = "delta-measure-id")
     private Integer deltaMeasureId;
 
+    /**
+     * This time rational value corresponds to the last active time signature in the page.
+     * <p>
+     * For example, if the last active time signature is a COMMON time signature, this element will
+     * provide a 4/4 value.
+     * <p>
+     * Knowing this value allows to process rhythm and check measures in the following page,
+     * without having to load this one.
+     * <p>
+     */
     @XmlElement(name = "last-time-rational")
     private TimeRational lastTimeRational;
 
@@ -65,7 +106,7 @@ public class PageRef
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PageRef} object.
+     * Creates a new <code>PageRef</code> object.
      *
      * @param sheetNumber    sheet number within book
      * @param id             page id within sheet

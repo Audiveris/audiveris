@@ -37,7 +37,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code EnsembleHelper} gathers helping methods for ensembles.
+ * Class <code>EnsembleHelper</code> gathers helping methods for ensembles.
  *
  * @author Hervé Bitteur
  */

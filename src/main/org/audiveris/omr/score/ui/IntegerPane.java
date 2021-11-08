@@ -42,7 +42,7 @@ public class IntegerPane
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code IntegerPane} object.
+     * Creates a new <code>IntegerPane</code> object.
      *
      * @param title  pane title string
      * @param parent parent pane if any

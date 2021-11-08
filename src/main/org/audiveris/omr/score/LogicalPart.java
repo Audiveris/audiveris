@@ -36,8 +36,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code LogicalPart} describes a part at score or page level.
- * It can be "instantiated" in one or several SystemInfo by a {@link org.audiveris.omr.sheet.Part}.
+ * Class <code>LogicalPart</code> describes a part at score or page level.
+ * <p>
+ * It can be "instantiated" in one or several SystemInfo by a (physical)
+ * {@link org.audiveris.omr.sheet.Part} instance.
  * <p>
  * There is an intermediate LogicalPart instance at Page level, which abstracts the system parts at
  * page level, and which is then used when abstracting the part information from pages to score.
@@ -58,25 +60,54 @@ public class LogicalPart
     //----------------
     //
     /**
-     * Distinguished id for this logical part.
-     * (the same id is used by the corresponding physical Part in each System)
+     * This is the distinguished integer id for this logical part.
+     * <p>
+     * The same id is used by the corresponding physical part in each system where this part
+     * appears.
      */
-    @XmlAttribute
+    @XmlAttribute(name = "id")
     private int id;
 
-    /** Count of staves. */
+    /**
+     * This is the count of staves in this logical part.
+     * <p>
+     * The count of staves must be the same for a given logical part and for the corresponding
+     * physical part in each system.
+     * <p>
+     * Typical examples of count values are:
+     * <ul>
+     * <li>1 for a singer part
+     * <li>2 for a piano part
+     * <li>3 for an organ part
+     * </ul>
+     */
     @XmlAttribute(name = "staff-count")
     private final int staffCount;
 
-    /** Name for this part. */
-    @XmlAttribute
+    /**
+     * This is the name, often an instrument name, for this logical part.
+     * <p>
+     * It is generally located in the left margin of the very first physical part and the OCR can
+     * often recognize the text.
+     */
+    @XmlAttribute(name = "name")
     private String name;
 
-    /** Abbreviation for this part, if any. */
-    @XmlAttribute
+    /**
+     * This is the abbreviation, if any, used for this part name on the following systems.
+     * <p>
+     * It is also located in the left margin of the system, but the OCR often cannot find
+     * the abbreviation in its dictionary.
+     */
+    @XmlAttribute(name = "abbreviation")
     private String abbreviation;
 
-    /** Instrument MIDI program, if any. */
+    /**
+     * This is the instrument MIDI program, if any.
+     * <p>
+     * Audiveris uses heuristics to assign realistic MIDI programs in some frequent cases
+     * like "singer part + piano part".
+     */
     @XmlAttribute(name = "midi-program")
     private Integer midiProgram;
 

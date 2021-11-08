@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AliasPatterns} allows to apply patterns to file names to assign them an
+ * Class <code>AliasPatterns</code> allows to apply patterns to file names to assign them an
  * alias.
  *
  * @author Hervé Bitteur

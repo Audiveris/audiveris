@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code MeasuresStep} allocates the measures from the relevant bar lines.
+ * Class <code>MeasuresStep</code> allocates the measures from the relevant bar lines.
  *
  * @author Hervé Bitteur
  */
@@ -69,7 +69,7 @@ public class MeasuresStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MeasuresStep} object.
+     * Creates a new <code>MeasuresStep</code> object.
      */
     public MeasuresStep ()
     {

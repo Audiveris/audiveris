@@ -89,11 +89,10 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Staff} handles physical information of a staff with its lines.
+ * Class <code>Staff</code> handles physical information of a staff with its lines.
  * <p>
  * Note: All methods are meant to provide correct results, regardless of the actual number of lines
  * in the staff instance.
@@ -1945,31 +1944,6 @@ public class Staff
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
-    /**
-     * TODO: Still useful?
-     */
-    public static class Adapter
-            extends XmlAdapter<Integer, Staff>
-    {
-
-        @Override
-        public Integer marshal (Staff staff)
-                throws Exception
-        {
-            return staff.getId();
-        }
-
-        @Override
-        public Staff unmarshal (Integer id)
-                throws Exception
-        {
-            return null; // Handled later
-        }
-    }
-
     //---------------//
     // IndexedLedger //
     //---------------//

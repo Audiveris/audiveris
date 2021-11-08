@@ -66,7 +66,7 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code AbstractClassifier} is an abstract basis for all Classifier
+ * Class <code>AbstractClassifier</code> is an abstract basis for all Classifier
  * implementations.
  * <p>
  * It handles the storing and loading of shape classifier model together with features norms
@@ -552,7 +552,7 @@ public abstract class AbstractClassifier<M extends Object>
         final INDArray stds;
 
         /**
-         * Creates a new {@code Norms} object.
+         * Creates a new <code>Norms</code> object.
          *
          * @param means
          * @param stds

@@ -71,19 +71,19 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code RunTable} handles a rectangular assembly of oriented runs.
+ * Class <code>RunTable</code> handles a rectangular assembly of oriented runs.
  * <p>
- * A RunTable is implemented as an array of run sequences, each run sequence being encoded as RLE
- * (Run Length Encoding) as follows:
- * <p>
- * The very first run is always considered to be foreground.
- * If a sequence starts with background, the very first (foreground) length must be zero.
- * So, the RLE array always has an odd number of cells, beginning and ending with foreground.
- * An empty sequence is encoded as null (although an array containing no value is also accepted).
- * <p>
- * No zero value should be found in the sequence (except in position 0, followed by a positive
+ * A RunTable is implemented as an array of run sequences, each run sequence being encoded as
+ * RLE (<b>R</b>un <b>L</b>ength <b>E</b>ncoding) as follows:
+ * <ul>
+ * <li>The very first run is always considered to be foreground.
+ * <li>If a sequence starts with background, the very first (foreground) length must be zero.
+ * <li>So, the RLE array always has an odd number of cells, beginning and ending with foreground.
+ * <li>An empty sequence is encoded as null (although an array containing no value is also
+ * accepted).
+ * <li>No zero value can be found in the sequence (except in position 0, followed by a positive
  * background length and a positive foreground length).
- * <p>
+ * </ul>
  * We can have these various kinds of sequence, where 'F' stands for the length of a foreground run
  * and 'B' for the length of a background run:
  *
@@ -113,19 +113,33 @@ public class RunTable
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
-    /** Orientation, the same for this table and all contained runs. */
-    @XmlAttribute
+    /**
+     * This is the orientation (horizontal or vertical) chosen for all runs in the table.
+     */
+    @XmlAttribute(name = "orientation")
     private final Orientation orientation;
 
-    /** Width of the table. */
-    @XmlAttribute
+    /**
+     * This is the absolute width of the table along the x axis,
+     * regardless of table orientation.
+     */
+    @XmlAttribute(name = "width")
     private final int width;
 
-    /** Height of the table. */
-    @XmlAttribute
+    /**
+     * This is the absolute height of the table along the y axis,
+     * regardless of table orientation.
+     */
+    @XmlAttribute(name = "height")
     private final int height;
 
-    /** Sequences of runs. */
+    /**
+     * This is the list of sequences of runs.
+     * <ul>
+     * <li>In a vertical table, we have a horizontal list of vertical runs sequences.
+     * <li>In a horizontal table, we have a vertical list of horizontal runs sequences.
+     * </ul>
+     */
     @XmlElement(name = "runs")
     private final RunSequence[] sequences;
 
@@ -1725,13 +1739,22 @@ public class RunTable
     // RunSequence //
     //-------------//
     /**
-     * (package private) Sequence of runs, using run-length encoding.
+     * Class <code>RunSequence</code> is a sequence of run lengths within a
+     * <code>RunTable</code>, using run-length encoding.
+     * <p>
+     * Here is a marshalled example of one RunSequence:
+     * <p>
+     * <code>&lt;runs&gt;0 41 25 80 2 1 2 80 25&lt;/runs&gt;</code>
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(name = "runs")
     static class RunSequence
     {
 
+        /**
+         * This array of integers represents the lengths of aligned runs,
+         * one after the other, alternating foreground and background colors.
+         */
         @XmlValue
         private int[] rle;
 

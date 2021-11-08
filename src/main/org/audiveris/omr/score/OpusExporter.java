@@ -40,7 +40,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Class {@code OpusExporter} is meant to export an Opus of scores (movements).
+ * Class <code>OpusExporter</code> is meant to export an Opus of scores (movements).
  *
  * @author Hervé Bitteur
  */
@@ -56,7 +56,7 @@ public class OpusExporter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code OpusExporter} object on a related book.
+     * Creates a new <code>OpusExporter</code> object on a related book.
      *
      * @param book the book of scores to export
      */

@@ -101,7 +101,7 @@ import java.util.SortedMap;
 import java.util.function.Predicate;
 
 /**
- * Class {@code SigReducer} deals with SIG reduction.
+ * Class <code>SigReducer</code> deals with SIG reduction.
  * <ul>
  * <li>TODO: A small slur around a tuplet sign should be deleted (no interest).</li>
  * <li>TODO: A small slur around a dot should be deleted (it's a fermata instead).</li>
@@ -176,7 +176,7 @@ public class SigReducer
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SigReducer} object.
+     * Creates a new <code>SigReducer</code> object.
      *
      * @param system     the related system
      * @param purgeWeaks true for purging weak inters
@@ -292,7 +292,7 @@ public class SigReducer
 
             // Exclusion between stem and each intersected (non-linked) head
             for (Inter ih : intersectedHeads) {
-                sig.insertExclusion(stem, ih, Exclusion.Cause.OVERLAP);
+                sig.insertExclusion(stem, ih, Exclusion.ExclusionCause.OVERLAP);
             }
 
             // Mutual head exclusion based on head shape
@@ -315,7 +315,7 @@ public class SigReducer
                                 HeadInter head2 = (HeadInter) h2;
 
                                 if (head2.getStems().size() == 1) {
-                                    sig.insertExclusion(h1, h2, Exclusion.Cause.INCOMPATIBLE);
+                                    sig.insertExclusion(h1, h2, Exclusion.ExclusionCause.INCOMPATIBLE);
                                 }
                             }
                         }
@@ -484,7 +484,7 @@ public class SigReducer
                 Set<StemInter> set = entry.getValue();
 
                 if (set.size() > 1) {
-                    //////////////////////////////////////////////////HB sig.insertExclusions(set, Exclusion.Cause.OVERLAP);
+                    //////////////////////////////////////////////////HB sig.insertExclusions(set, Exclusion.ExclusionCause.OVERLAP);
                     //TODO:
                     // Instead of stem exclusion, we should disconnect head from some of these stems
                     // Either all the stems above or all the stems below
@@ -790,7 +790,7 @@ public class SigReducer
                     logger.info("VIP invasion between {} & {}", head, stem);
                 }
 
-                sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+                sig.insertExclusion(head, stem, Exclusion.ExclusionCause.OVERLAP);
             }
 
             modifs++;
@@ -1210,7 +1210,7 @@ public class SigReducer
                             logger.info("VIP {} preceding {}", note, timeSig);
                         }
 
-                        sig.insertExclusion(note, timeSig, Exclusion.Cause.INCOMPATIBLE);
+                        sig.insertExclusion(note, timeSig, Exclusion.ExclusionCause.INCOMPATIBLE);
                     }
                 }
             }
@@ -1249,7 +1249,7 @@ public class SigReducer
      * @param inters the collection of inters to process
      */
     private void detectOverlaps (List<Inter> inters,
-                                 Adapter adapter)
+                                 ReductionAdapter adapter)
     {
         logger.debug("S#{} detectOverlaps", system.getId());
         Collections.sort(inters, Inters.byAbscissa);
@@ -1347,7 +1347,7 @@ public class SigReducer
     {
         for (Inter i1 : set1) {
             for (Inter i2 : set2) {
-                sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
+                sig.insertExclusion(i1, i2, Exclusion.ExclusionCause.INCOMPATIBLE);
             }
         }
     }
@@ -1372,7 +1372,7 @@ public class SigReducer
         final SIGraph leftSig = left.getSig();
 
         if (leftSig.noSupport(left, right)) {
-            leftSig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
+            leftSig.insertExclusion(left, right, Exclusion.ExclusionCause.OVERLAP);
         }
     }
 
@@ -1628,7 +1628,7 @@ public class SigReducer
                             logger.info("VIP invasion between {} & {}", head, stem);
                         }
 
-                        sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+                        sig.insertExclusion(head, stem, Exclusion.ExclusionCause.OVERLAP);
                     }
 
                     continue StemGeometryScan;
@@ -1647,7 +1647,7 @@ public class SigReducer
      *
      * @return the collection of removed inters
      */
-    private Set<Inter> reduce (Adapter adapter)
+    private Set<Inter> reduce (ReductionAdapter adapter)
     {
         final Set<Inter> allRemoved = new LinkedHashSet<>();
 
@@ -1903,7 +1903,7 @@ public class SigReducer
             sig.removeAllEdges(toRemove);
 
             for (Inter head : toExclude) {
-                sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+                sig.insertExclusion(head, stem, Exclusion.ExclusionCause.OVERLAP);
             }
         }
 
@@ -1975,10 +1975,10 @@ public class SigReducer
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
-    private abstract static class Adapter
+    //------------------//
+    // ReductionAdapter //
+    //------------------//
+    private abstract static class ReductionAdapter
     {
 
         Set<Inter> deleted = new LinkedHashSet<>();
@@ -2027,7 +2027,7 @@ public class SigReducer
     // AdapterForFoundations //
     //-----------------------//
     private class AdapterForFoundations
-            extends Adapter
+            extends ReductionAdapter
     {
 
         @Override
@@ -2090,7 +2090,7 @@ public class SigReducer
     // AdapterForLinks //
     //-----------------//
     private class AdapterForLinks
-            extends Adapter
+            extends ReductionAdapter
     {
 
         @Override

@@ -21,7 +21,7 @@ public class ExportPatternTest
 {
 
     /**
-     * Creates a new {@code ExportPatternTest} object.
+     * Creates a new <code>ExportPatternTest</code> object.
      */
     public ExportPatternTest ()
     {

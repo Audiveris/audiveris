@@ -38,7 +38,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 /**
- * Class {@code MusicFontTest} generates a PDF file with all symbols
+ * Class <code>MusicFontTest</code> generates a PDF file with all symbols
  * from MusicalsSymbols font.
  *
  * @author Hervé Bitteur

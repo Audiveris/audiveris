@@ -57,7 +57,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code BeamStructure} handles one or several {@link BeamLine} instances,
+ * Class <code>BeamStructure</code> handles one or several {@link BeamLine} instances,
  * all retrieved from a single glyph.
  * This is a private working companion of {@link BeamsBuilder}.
  *

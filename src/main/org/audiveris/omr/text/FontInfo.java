@@ -101,7 +101,7 @@ public class FontInfo
     }
 
     /**
-     * Create a new {@code FontInfo} from another one and a specific point size.
+     * Create a new <code>FontInfo</code> from another one and a specific point size.
      *
      * @param org       the original font info
      * @param pointSize the specific point size
@@ -226,13 +226,13 @@ public class FontInfo
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * JAXB adapter for FontInfo.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<String, FontInfo>
     {
 

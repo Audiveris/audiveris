@@ -31,7 +31,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
- * Class {@code ShapeClassifier} points to the actual classifier instance in use.
+ * Class <code>ShapeClassifier</code> points to the actual classifier instance in use.
  *
  * @author Hervé Bitteur
  */
@@ -44,25 +44,18 @@ public abstract class ShapeClassifier
     private static final Logger logger = LoggerFactory.getLogger(ShapeClassifier.class);
 
     /** A future which reflects whether instance has been initialized. */
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(
-            new Callable<Void>()
-    {
-        @Override
-        public Void call ()
-                throws Exception
-        {
-            try {
-                logger.debug("Allocating instances for ShapeClassifier...");
-                ShapeClassifier.getInstance();
-                //                ShapeClassifier.getSecondInstance();
-                logger.debug("ShapeClassifier instances allocated.");
-            } catch (Exception ex) {
-                logger.warn("Error pre-loading ShapeClassifier", ex);
-                throw ex;
-            }
-
-            return null;
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(() -> {
+        try {
+            logger.debug("Allocating instances for ShapeClassifier...");
+            ShapeClassifier.getInstance();
+            //                ShapeClassifier.getSecondInstance();
+            logger.debug("ShapeClassifier instances allocated.");
+        } catch (Exception ex) {
+            logger.warn("Error pre-loading ShapeClassifier", ex);
+            throw ex;
         }
+        
+        return null;
     });
 
     //~ Constructors -------------------------------------------------------------------------------

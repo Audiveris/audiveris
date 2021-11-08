@@ -86,7 +86,7 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code MainGui} is the Java User Interface, the main class for displaying a
+ * Class <code>MainGui</code> is the Java User Interface, the main class for displaying a
  * sheet, the message log and the various tools.
  * <p>
  * This user interface is structured according to BSAF life-cycle.
@@ -133,7 +133,7 @@ public class MainGui
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MainGui} instance, to handle any user display and interaction.
+     * Creates a new <code>MainGui</code> instance, to handle any user display and interaction.
      */
     public MainGui ()
     {

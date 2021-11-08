@@ -53,7 +53,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 /**
- * Class {@code Trainer} handles a User Interface dedicated to the
+ * Class <code>Trainer</code> handles a User Interface dedicated to the
  * training and testing of a glyph classifier.
  * <p>
  * The frame is divided vertically in several parts:
@@ -315,7 +315,7 @@ public class Trainer
     {
 
         /**
-         * Enum {@code Activity} defines all activities in training.
+         * Enum <code>Activity</code> defines all activities in training.
          */
         static enum Activity
         {

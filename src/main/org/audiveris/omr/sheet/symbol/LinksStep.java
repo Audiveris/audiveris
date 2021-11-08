@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code LinksStep} implements <b>LINKS</b> step, which assigns relations between
+ * Class <code>LinksStep</code> implements <b>LINKS</b> step, which assigns relations between
  * certain symbols and makes a final reduction.
  *
  * @author Hervé Bitteur
@@ -85,7 +85,7 @@ public class LinksStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LinksStep} object.
+     * Creates a new <code>LinksStep</code> object.
      */
     public LinksStep ()
     {

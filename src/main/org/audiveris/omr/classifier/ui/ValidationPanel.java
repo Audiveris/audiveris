@@ -54,7 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JProgressBar;
 
 /**
- * Class {@code ValidationPanel} handles the validation of a classifier against a
+ * Class <code>ValidationPanel</code> handles the validation of a classifier against a
  * selected population of samples.
  *
  * @author Hervé Bitteur

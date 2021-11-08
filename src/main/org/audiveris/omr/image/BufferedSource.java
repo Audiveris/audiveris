@@ -26,7 +26,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 
 /**
- * Class {@code BufferedSource} wraps a BufferedImage as a PixelSource.
+ * Class <code>BufferedSource</code> wraps a BufferedImage as a PixelSource.
  *
  * @author Hervé Bitteur
  */

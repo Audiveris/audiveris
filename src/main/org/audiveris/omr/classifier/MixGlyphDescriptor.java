@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code MixGlyphDescriptor} is a glyph descriptor that mixes ART and Geometric
+ * Class <code>MixGlyphDescriptor</code> is a glyph descriptor that mixes ART and Geometric
  * moments.
  *
  * @author Hervé Bitteur
@@ -51,7 +51,7 @@ public class MixGlyphDescriptor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MixGlyphDescriptor} object.
+     * Creates a new <code>MixGlyphDescriptor</code> object.
      */
     public MixGlyphDescriptor ()
     {

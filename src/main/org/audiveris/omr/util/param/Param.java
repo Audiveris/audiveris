@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class {@code Param} defines data value at default level, book level, sheet level.
+ * Class <code>Param</code> defines data value at default level, book level, sheet level.
  * <p>
  * The {@link #getValue()} reports the current data value:
  * <ol>

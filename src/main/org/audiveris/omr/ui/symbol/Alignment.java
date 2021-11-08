@@ -29,7 +29,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code Alignment} defines how a location is to be understood (vertically and
+ * Class <code>Alignment</code> defines how a location is to be understood (vertically and
  * horizontally) with respect to symbol rectangular bounds.
  *
  * @author Hervé Bitteur

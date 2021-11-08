@@ -40,8 +40,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code HeadSeedScale} handles the head-seed typical abscissa distance, per shape
- * and per head horizontal side, in a sheet.
+ * Class <code>HeadSeedScale</code> handles in a sheet the typical abscissa distance
+ * between head and stem seed, per head shape and per head horizontal side.
  *
  * @author Hervé Bitteur
  */
@@ -58,7 +58,7 @@ public class HeadSeedScale
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadSeedScale} object.
+     * Creates a new <code>HeadSeedScale</code> object.
      */
     public HeadSeedScale ()
     {
@@ -146,16 +146,16 @@ public class HeadSeedScale
     }
 
     //------------//
-    // getContent //
+    // getEntries //
     //------------//
     /**
-     * Extract all values from this HeadSeedScale.
+     * Extract all entries from this HeadSeedScale.
      *
      * @return opaque content
      */
-    public Content getContent ()
+    public HeadSeedEntries getEntries ()
     {
-        final Content content = new Content();
+        final HeadSeedEntries content = new HeadSeedEntries();
 
         for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : global.entrySet()) {
             final Shape shape = entry.getKey();
@@ -163,7 +163,7 @@ public class HeadSeedScale
             for (Entry<HorizontalSide, Double> e : entry.getValue().entrySet()) {
                 final HorizontalSide hSide = e.getKey();
                 final Double dx = e.getValue();
-                content.list.add(new Content.Value(shape, hSide, dx));
+                content.list.add(new HeadSeedEntries.HeadSeed(shape, hSide, dx));
             }
         }
 
@@ -171,53 +171,67 @@ public class HeadSeedScale
     }
 
     //------------//
-    // setContent //
+    // setEntries //
     //------------//
     /**
-     * Populate this HeadSeedScale with values.
+     * Populate this HeadSeedScale with provided entries.
      *
-     * @param content provided content
+     * @param entries provided content
      */
-    public void setContent (Content content)
+    public void setEntries (HeadSeedEntries entries)
     {
-        for (Content.Value value : content.list) {
+        for (HeadSeedEntries.HeadSeed value : entries.list) {
             putDx(value.shape, value.side, value.dx);
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Content //
-    //---------//
+    //-----------------//
+    // HeadSeedEntries //
+    //-----------------//
     /**
-     * Opaque type meant to support (un-)marshalling of HeadSeedScale.
+     * Typical horizontal distances between note heads and stem seeds.
      */
-    public static class Content
+    public static class HeadSeedEntries
     {
 
+        /** Flat list of <code>HeadSeed</code> instances. */
         @XmlElement(name = "head-seed")
-        private final ArrayList<Value> list = new ArrayList<>();
+        private final ArrayList<HeadSeed> list = new ArrayList<>();
 
-        private Content ()
+        private HeadSeedEntries ()
         {
         }
 
-        private static class Value
+        /**
+         * Class <code>HeadSeed</code> describes, for the whole containing sheet,
+         * the typical horizontal distance measured between a specific head shape
+         * and a stem seed on a specific side of the head.
+         */
+        private static class HeadSeed
         {
 
-            @XmlAttribute
+            /** Shape of note head. */
+            @XmlAttribute(name = "shape")
             public final Shape shape;
 
-            @XmlAttribute
+            /** Head side where the stem seed is located. */
+            @XmlAttribute(name = "side")
             public final HorizontalSide side;
 
-            @XmlAttribute
+            /** Typical measured dx between seed center and head side.
+             * <p>
+             * Dx is positive if seed center lies outside head bounds and negative otherwise.
+             * <p>
+             * Value is defined with 1 digit maximum after the dot.
+             */
+            @XmlAttribute(name = "dx")
             @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
             public final Double dx;
 
-            public Value (Shape shape,
-                          HorizontalSide side,
-                          Double dx)
+            public HeadSeed (Shape shape,
+                             HorizontalSide side,
+                             Double dx)
             {
                 this.shape = shape;
                 this.side = side;
@@ -226,7 +240,7 @@ public class HeadSeedScale
 
             // No-arg constructor needed by JAXB
             @SuppressWarnings("unused")
-            private Value ()
+            private HeadSeed ()
             {
                 this(null, null, null);
             }

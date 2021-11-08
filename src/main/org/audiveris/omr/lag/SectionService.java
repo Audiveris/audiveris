@@ -30,7 +30,7 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.EntityIndex;
 
 /**
- * Class {@code SectionService} is an EntityService for sections.
+ * Class <code>SectionService</code> is an EntityService for sections.
  *
  * @author Hervé Bitteur
  */
@@ -46,7 +46,7 @@ public class SectionService
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SectionService} object.
+     * Creates a new <code>SectionService</code> object.
      *
      * @param index           underlying section index (typically a lag)
      * @param locationService related service for location info

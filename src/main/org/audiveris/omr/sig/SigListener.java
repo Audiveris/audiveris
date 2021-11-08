@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code SigListener} listens for SIG modifications.
+ * Class <code>SigListener</code> listens for SIG modifications.
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +49,7 @@ public class SigListener
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SigListener} object.
+     * Creates a new <code>SigListener</code> object.
      *
      * @param sig the underlying SIG
      */

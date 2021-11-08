@@ -52,9 +52,18 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AlterInter} represents an alteration (sharp, flat, natural,
- * double-sharp, double-flat).
- * It can be an accidental alteration or a part of a key signature.
+ * Class <code>AlterInter</code> represents an alteration.
+ * <p>
+ * Its shape can be:
+ * <ul>
+ * <li>FLAT
+ * <li>NATURAL
+ * <li>SHARP
+ * <li>DOUBLE_SHARP
+ * <li>DOUBLE_FLAT
+ * </ul>
+ * It is an accidental alteration or, if a derived <code>KeyAlterInter</code>, a part of a
+ * key signature.
  *
  * @author Hervé Bitteur
  */
@@ -69,7 +78,9 @@ public class AlterInter
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Measured pitch value. */
+    /**
+     * Measured pitch value.
+     */
     private final Double measuredPitch;
 
     //~ Constructors -------------------------------------------------------------------------------

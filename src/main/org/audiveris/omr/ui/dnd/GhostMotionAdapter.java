@@ -28,7 +28,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 /**
- * Class {@code GhostMotionAdapter} is a special MouseMotion adapter meant for dragging
+ * Class <code>GhostMotionAdapter</code> is a special MouseMotion adapter meant for dragging
  * the ghost image.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)

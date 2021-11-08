@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Store}
+ * Class <code>Store</code>
  *
  * @author Hervé Bitteur
  */
@@ -48,7 +48,7 @@ public class Store
     ArrayList<Fruit> fruits = new ArrayList<Fruit>();
 
     /**
-     * Creates a new {@code Store} object.
+     * Creates a new <code>Store</code> object.
      */
     public Store ()
     {

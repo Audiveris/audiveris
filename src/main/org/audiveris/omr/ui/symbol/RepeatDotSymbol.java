@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code RepeatDotSymbol} implements a decorated repeat dot symbol.
+ * Class <code>RepeatDotSymbol</code> implements a decorated repeat dot symbol.
  *
  * @author Hervé Bitteur
  */
@@ -46,7 +46,7 @@ public class RepeatDotSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code RepeatDotSymbol} (with decoration?) standard size
+     * Create a <code>RepeatDotSymbol</code> (with decoration?) standard size
      *
      * @param decorated true for a decorated image
      */
@@ -56,7 +56,7 @@ public class RepeatDotSymbol
     }
 
     /**
-     * Create a {@code RepeatDotSymbol} (with decoration?)
+     * Create a <code>RepeatDotSymbol</code> (with decoration?)
      *
      * @param isIcon    true for an icon
      * @param decorated true for a decorated image

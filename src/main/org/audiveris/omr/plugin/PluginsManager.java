@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PluginsManager} handles the collection of registered plugins.
+ * Class <code>PluginsManager</code> handles the collection of registered plugins.
  * <p>
  * Each registered plugin is represented by a menu item.
  * A plugin can be manually selected as default and directly launched by a dedicated toolbar button.
@@ -337,7 +337,7 @@ public class PluginsManager
     // PluginsHolder //
     //---------------//
     /**
-     * Class {@code PluginsHolder} is used to unmarshal the plugins root element.
+     * Class <code>PluginsHolder</code> is used to unmarshal the plugins root element.
      */
     @XmlAccessorType(XmlAccessType.NONE)
     @XmlRootElement(name = "plugins")
@@ -358,7 +358,7 @@ public class PluginsManager
     // MyMenuListener //
     //----------------//
     /**
-     * Class {@code MyMenuListener} is triggered when menu is entered.
+     * Class <code>MyMenuListener</code> is triggered when menu is entered.
      * <p>
      * This is meant to enable menu items only when a sheet is selected,
      * and to indicate the default plugin if any.

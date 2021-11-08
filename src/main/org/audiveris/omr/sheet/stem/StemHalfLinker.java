@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 import java.util.Set;
 
 /**
- * Interface {@code StemHalfLinker} handles connection above or below a StemLinker.
+ * Interface <code>StemHalfLinker</code> handles connection above or below a StemLinker.
  * <p>
  * For Beam: VLinker, for Head: CLinker.
  *

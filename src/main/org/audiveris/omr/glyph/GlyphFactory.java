@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Class {@code GlyphFactory} builds a collection of glyphs out of a provided {@link
+ * Class <code>GlyphFactory</code> builds a collection of glyphs out of a provided {@link
  * RunTable}.
  * <p>
  * A instance of this factory class is dedicated to the one-shot processing of a source.
@@ -99,7 +99,7 @@ public class GlyphFactory
         markedTable = new ArrayList<>(runTable.getSize());
 
         for (int iseq = 0, size = runTable.getSize(); iseq < size; iseq++) {
-            markedTable.add(new ArrayList<MarkedRun>());
+            markedTable.add(new ArrayList<>());
         }
     }
 
@@ -116,7 +116,7 @@ public class GlyphFactory
 
         for (int i = 0, len = lut.length; i < len; i++) {
             if ((i > 0) && (lut[i] == i)) {
-                bufs.add(new ArrayList<Sequence>());
+                bufs.add(new ArrayList<>());
             } else {
                 bufs.add(null);
             }

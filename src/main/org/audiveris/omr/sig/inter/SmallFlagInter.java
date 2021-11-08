@@ -28,7 +28,7 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SmallFlagInter} is a flag for grace note (with or without slash).
+ * Class <code>SmallFlagInter</code> is a flag for grace note (with or without slash).
  *
  * @author Hervé Bitteur
  */

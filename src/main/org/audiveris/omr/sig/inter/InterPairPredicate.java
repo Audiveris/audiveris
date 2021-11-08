@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 /**
- * Interface {@code InterPairPredicate}
+ * Interface <code>InterPairPredicate</code>
  *
  * @author Hervé Bitteur
  */
@@ -35,7 +35,7 @@ public interface InterPairPredicate
      *
      * @param one an Inter argument
      * @param two other Inter argument
-     * @return {@code true} if the input argument matches the predicate, otherwise {@code false}
+     * @return <code>true</code> if the input argument matches the predicate, otherwise <code>false</code>
      */
     boolean test (Inter one,
                   Inter two);

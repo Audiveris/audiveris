@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.dnd;
 
 /**
- * Interface {@code GhostDropListener} defines a listener interested in
+ * Interface <code>GhostDropListener</code> defines a listener interested in
  * {@link GhostDropEvent} instances
  *
  * @param <A> The type of action carried by the drop event

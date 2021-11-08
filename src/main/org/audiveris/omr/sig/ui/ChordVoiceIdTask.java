@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 
 /**
- * Class {@code ChordVoiceIdTask} handles the preferred voice ID for a chord.
+ * Class <code>ChordVoiceIdTask</code> handles the preferred voice ID for a chord.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +41,7 @@ public class ChordVoiceIdTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChordVoiceIdTask} object.
+     * Creates a new <code>ChordVoiceIdTask</code> object.
      *
      * @param chord the chord to modify
      * @param newId the new preferred voice ID

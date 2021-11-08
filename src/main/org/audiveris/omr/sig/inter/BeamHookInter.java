@@ -47,7 +47,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BeamHookInter} represents a beam hook interpretation.
+ * Class <code>BeamHookInter</code> represents a beam hook interpretation.
  *
  * @see BeamInter
  * @author Hervé Bitteur

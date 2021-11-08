@@ -26,8 +26,8 @@ import ij.process.ByteProcessor;
 import net.jcip.annotations.ThreadSafe;
 
 /**
- * Class {@code GlobalFilter} implements Interface {@code PixelFilter} by using a
- * global threshold on pixel value.
+ * Class <code>GlobalFilter</code> implements Interface <code>PixelFilter</code>
+ * by using a global threshold applied on all image pixels.
  *
  * @author Hervé Bitteur
  */

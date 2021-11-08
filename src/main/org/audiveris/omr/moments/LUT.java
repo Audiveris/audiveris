@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 /**
- * Interface {@code LUT} defines a lookup table.
+ * Interface <code>LUT</code> defines a lookup table.
  *
  * @author Hervé Bitteur
  */

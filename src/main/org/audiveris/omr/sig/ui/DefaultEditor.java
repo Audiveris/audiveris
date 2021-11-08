@@ -28,7 +28,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code DefaultEditor} provides just one handle to globally move the inter in
+ * Class <code>DefaultEditor</code> provides just one handle to globally move the inter in
  * any direction.
  */
 public class DefaultEditor
@@ -42,7 +42,7 @@ public class DefaultEditor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code DefaultEditor} object.
+     * Creates a new <code>DefaultEditor</code> object.
      *
      * @param inter DOCUMENT ME!
      */

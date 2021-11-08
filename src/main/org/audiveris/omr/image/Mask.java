@@ -32,7 +32,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 
 /**
- * Class {@code Mask} defines a mask to be applied on an image.
+ * Class <code>Mask</code> defines a mask to be applied on an image.
  * The mask defines a collection of points at which an image can be tested.
  * The mask is defined in an absolute location.
  *
@@ -74,12 +74,12 @@ public class Mask
     // apply //
     //-------//
     /**
-     * Apply the mask and call the provided Adapter for each relevant
+     * Apply the mask and call the provided MaskAdapter for each relevant
      * point of the mask.
      *
      * @param adapter call-back adapter for each relevant point of the mask
      */
-    public void apply (Adapter adapter)
+    public void apply (MaskAdapter adapter)
     {
         Point loc = rect.getLocation();
 
@@ -157,9 +157,9 @@ public class Mask
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
-    // Adapter //
+    // MaskAdapter //
     //---------//
-    public static interface Adapter
+    public static interface MaskAdapter
     {
 
         /**

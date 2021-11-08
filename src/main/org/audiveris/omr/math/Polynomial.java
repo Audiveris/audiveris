@@ -22,7 +22,7 @@
 package org.audiveris.omr.math;
 
 /**
- * Class {@code Polynomial} is a simple polynomial implementation.
+ * Class <code>Polynomial</code> is a simple polynomial implementation.
  * <p>
  * See http://introcs.cs.princeton.edu/java/92symbolic/Polynomial.java.html
  *

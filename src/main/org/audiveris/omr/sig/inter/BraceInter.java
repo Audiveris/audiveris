@@ -45,7 +45,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BraceInter} represents a brace.
+ * Class <code>BraceInter</code> represents a brace.
  *
  * @author Hervé Bitteur
  */

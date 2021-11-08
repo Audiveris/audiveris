@@ -45,7 +45,7 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code NeuralNetwork} implements a back-propagation neural
+ * Class <code>NeuralNetwork</code> implements a back-propagation neural
  * network, with one input layer, one hidden layer and one output layer.
  * The transfer function is the sigmoid.
  * <p>
@@ -796,7 +796,7 @@ public class NeuralNetwork
     // Backup //
     //--------//
     /**
-     * Class {@code Backup} is an opaque class that encapsulates a
+     * Class <code>Backup</code> is an opaque class that encapsulates a
      * snapshot of a NeuralNetwork internal memory (its weights).
      * A Backup instance can only be obtained through the use of {@link #backup}
      * method of a NeuralNetwork.

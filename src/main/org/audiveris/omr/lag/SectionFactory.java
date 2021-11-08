@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code SectionFactory} builds a collection of sections out of provided runs.
+ * Class <code>SectionFactory</code> builds a collection of sections out of provided runs.
  * <p>
  * To do so, this factory needs:
  * <ul>

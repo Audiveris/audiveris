@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 /**
- * Interface {@code InterVisitor} is used to visit any instance of shape interpretation.
+ * Interface <code>InterVisitor</code> is used to visit any instance of shape interpretation.
  * <p>
  * Listed by alphabetic order for easier manual browsing.
  *

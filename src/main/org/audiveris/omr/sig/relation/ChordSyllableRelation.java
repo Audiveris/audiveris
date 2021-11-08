@@ -43,7 +43,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordSyllableRelation} represents a support relation between a chord
+ * Class <code>ChordSyllableRelation</code> represents a support relation between a chord
  * and a lyric item (of syllable kind).
  *
  * @author Hervé Bitteur

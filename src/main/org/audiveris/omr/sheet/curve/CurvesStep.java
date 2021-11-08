@@ -26,7 +26,7 @@ import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.StepException;
 
 /**
- * Class {@code CurvesStep} retrieves all curves (slurs, wedges, endings) of a sheet.
+ * Class <code>CurvesStep</code> retrieves all curves (slurs, wedges, endings) of a sheet.
  *
  * @author Hervé Bitteur
  */

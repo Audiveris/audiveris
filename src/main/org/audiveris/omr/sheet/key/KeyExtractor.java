@@ -68,7 +68,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code KeyExtractor} is a companion of KeyBuilder, focused on extracting key
+ * Class <code>KeyExtractor</code> is a companion of KeyBuilder, focused on extracting key
  * alter glyphs from staff-free pixel source and recognizing them.
  *
  * @author Hervé Bitteur
@@ -106,7 +106,7 @@ public class KeyExtractor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeyExtractor} object.
+     * Creates a new <code>KeyExtractor</code> object.
      *
      * @param staff the underlying staff
      */

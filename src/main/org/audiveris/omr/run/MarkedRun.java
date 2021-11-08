@@ -22,7 +22,7 @@
 package org.audiveris.omr.run;
 
 /**
- * Class {@code MarkedRun} is a run with a mark.
+ * Class <code>MarkedRun</code> is a run with a mark.
  * This is meant to be a temporary structure used for building glyph(s) out of runs.
  *
  * @author Hervé Bitteur
@@ -37,7 +37,7 @@ public class MarkedRun
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MarkedRun} object.
+     * Creates a new <code>MarkedRun</code> object.
      *
      * @param run  a standard run
      * @param mark the assigned mark
@@ -49,7 +49,7 @@ public class MarkedRun
     }
 
     /**
-     * Creates a new {@code MarkedRun} object.
+     * Creates a new <code>MarkedRun</code> object.
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels

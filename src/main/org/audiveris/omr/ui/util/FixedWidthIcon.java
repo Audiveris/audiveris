@@ -47,7 +47,7 @@ public class FixedWidthIcon
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FixedIcon} object.
+     * Creates a new <code>FixedIcon</code> object.
      *
      * @param icon the underlying icon
      */

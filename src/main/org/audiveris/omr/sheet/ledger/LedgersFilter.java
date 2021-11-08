@@ -59,7 +59,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code LedgersFilter} filters the full sheet image for runs suitable for
+ * Class <code>LedgersFilter</code> filters the full sheet image for runs suitable for
  * ledgers.
  *
  * @author Hervé Bitteur
@@ -118,22 +118,15 @@ public class LedgersFilter
         final StaffManager staffManager = sheet.getStaffManager();
 
         // Filter to keep only the runs which stand outside of staves cores.
-        final RunTableFactory.Filter filter = new RunTableFactory.Filter()
-        {
-            @Override
-            public boolean check (int x,
-                                  int y,
-                                  int length)
-            {
-                Point center = new Point(x + (length / 2), y);
-                Staff staff = staffManager.getClosestStaff(center);
+        final RunTableFactory.Filter filter = (int x, int y, int length) -> {
+            Point center = new Point(x + (length / 2), y);
+            Staff staff = staffManager.getClosestStaff(center);
 
-                if (staff == null) {
-                    return false;
-                }
-
-                return staff.distanceTo(center) >= minDistanceFromStaff;
+            if (staff == null) {
+                return false;
             }
+
+            return staff.distanceTo(center) >= minDistanceFromStaff;
         };
 
         final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL, filter);

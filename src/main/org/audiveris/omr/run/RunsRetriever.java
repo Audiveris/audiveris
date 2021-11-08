@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code RunsRetriever} is in charge of reading a source of pixels and
+ * Class <code>RunsRetriever</code> is in charge of reading a source of pixels and
  * retrieving foreground runs and background runs from it.
  * <p>
  * What is done with the retrieved runs is essentially the purpose of the provided adapter.
@@ -52,7 +52,7 @@ public class RunsRetriever
     private final Orientation orientation;
 
     /** The adapter for pixel access and call-backs at run level */
-    private final Adapter adapter;
+    private final RunAdapter adapter;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -63,7 +63,7 @@ public class RunsRetriever
      *                    call-back action when a foreground run has just been read.
      */
     public RunsRetriever (Orientation orientation,
-                          Adapter adapter)
+                          RunAdapter adapter)
     {
         this.orientation = orientation;
         this.adapter = adapter;
@@ -204,13 +204,14 @@ public class RunsRetriever
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //------------//
+    // RunAdapter //
+    //------------//
     /**
-     * Interface {@code Adapter} is used to plug call-backs to a run retrieval process.
+     * Interface <code>RunAdapter</code> is used to plug call-backs to a run retrieval
+     * process.
      */
-    public static interface Adapter
+    public static interface RunAdapter
             extends Concurrency
     {
 

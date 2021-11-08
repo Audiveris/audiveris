@@ -24,7 +24,7 @@ package org.audiveris.omr.moments;
 import java.awt.image.WritableRaster;
 
 /**
- * Interface {@code MomentsExtractor} is a general definition for an extractor of
+ * Interface <code>MomentsExtractor</code> is a general definition for an extractor of
  * {@link OrthogonalMoments}.
  *
  * @param <D> the descriptor type

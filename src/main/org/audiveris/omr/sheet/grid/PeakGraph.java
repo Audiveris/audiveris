@@ -76,7 +76,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code PeakGraph} handles the graph of all StaffPeak instances in a sheet,
+ * Class <code>PeakGraph</code> handles the graph of all StaffPeak instances in a sheet,
  * linked by alignment/connection relationships.
  *
  * @author Hervé Bitteur
@@ -109,7 +109,7 @@ public class PeakGraph
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PeakGraph} object.
+     * Creates a new <code>PeakGraph</code> object.
      *
      * @param sheet      the sheet to process
      * @param projectors the projector for each staff

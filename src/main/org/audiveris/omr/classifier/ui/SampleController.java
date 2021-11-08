@@ -49,7 +49,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 /**
- * Class {@code SampleController} is a very basic sample controller, with no location
+ * Class <code>SampleController</code> is a very basic sample controller, with no location
  * service.
  *
  * @author Hervé Bitteur
@@ -70,7 +70,7 @@ public class SampleController
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleController} object.
+     * Creates a new <code>SampleController</code> object.
      *
      * @param sampleModel the underlying sample model
      */
@@ -212,7 +212,7 @@ public class SampleController
         };
 
         /**
-         * Create an {@code AssignAction} object.
+         * Create an <code>AssignAction</code> object.
          */
         public AssignAction ()
         {

@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 /**
- * Class {@code AdaptiveFilter} is an abstract implementation of {@code PixelFilter}
- * which provides foreground information based on mean value and standard deviation in
- * pixel neighborhood.
+ * Class <code>AdaptiveFilter</code> is an abstract implementation of
+ * <code>PixelFilter</code> which provides foreground information based on mean value
+ * and standard deviation in pixel neighborhood.
  * <br>
  * See work of <a href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
  * Sauvola et al.</a>

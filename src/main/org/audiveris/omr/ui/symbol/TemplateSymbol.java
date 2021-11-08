@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TemplateSymbol} defines a symbol meant only for template matching.
+ * Class <code>TemplateSymbol</code> defines a symbol meant only for template matching.
  * <p>
  * <b>BEWARE:</b>Don't use it for simple display, use a ShapeSymbol of proper shape instead.
  *

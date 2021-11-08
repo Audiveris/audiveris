@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimeTopBottomRelation} represents the relation between a top number and
+ * Class <code>TimeTopBottomRelation</code> represents the relation between a top number and
  * a bottom number in a time signature.
  *
  * @author Hervé Bitteur
@@ -42,7 +42,7 @@ public class TimeTopBottomRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeTopBottomRelation} object.
+     * Creates a new <code>TimeTopBottomRelation</code> object.
      */
     public TimeTopBottomRelation ()
     {

@@ -99,7 +99,7 @@ public class ButtonTabComponent
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ButtonTabComponent} object.
+     * Creates a new <code>ButtonTabComponent</code> object.
      *
      * @param pane the containing tabbed pane
      */

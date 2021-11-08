@@ -33,7 +33,7 @@ import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
- * Class {@code PluginAction} implements the concrete user action related to a
+ * Class <code>PluginAction</code> implements the concrete user action related to a
  * registered plugin.
  *
  * @author Hervé Bitteur

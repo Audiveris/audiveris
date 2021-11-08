@@ -24,7 +24,7 @@ package org.audiveris.omr.util;
 import org.audiveris.omr.constant.Constant;
 
 /**
- * Class {@code NamedDouble} is a documented Double.
+ * Class <code>NamedDouble</code> is a documented Double.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,7 @@ public class NamedDouble
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BasicNamedDouble} object.
+     * Creates a new <code>BasicNamedDouble</code> object.
      *
      * @param name         a name for this entity
      * @param quantityUnit unit used by value
@@ -61,7 +61,7 @@ public class NamedDouble
     }
 
     /**
-     * Creates a new {@code BasicNamedDouble} object based on a {@link Constant.Double}.
+     * Creates a new <code>BasicNamedDouble</code> object based on a {@link Constant.Double}.
      *
      * @param cst the provided Constant.DOuble instance
      */

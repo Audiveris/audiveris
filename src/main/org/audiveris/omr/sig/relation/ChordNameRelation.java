@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordNameRelation} represents a support relation between a chord
+ * Class <code>ChordNameRelation</code> represents a support relation between a chord
  * and a chordName (such as Am).
  *
  * @author Hervé Bitteur

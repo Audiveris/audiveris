@@ -29,7 +29,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 
 /**
- * Class {@code BarConnection} represents a concrete connection across staves between
+ * Class <code>BarConnection</code> represents a concrete connection across staves between
  * two barlines.
  * <p>
  * It indicates that the two linked staves belong to the same system and/or part.

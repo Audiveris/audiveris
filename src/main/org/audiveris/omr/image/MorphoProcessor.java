@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code MorphoProcessor}
+ * Class <code>MorphoProcessor</code>
  *
  * @author ?
  */

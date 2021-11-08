@@ -37,10 +37,14 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code TimeRational} is a marshallable and non-mutable structure,
- * meant to carry the actual rational members of a TimeSignature.
+ * Class <code>TimeRational</code> carries the actual rational members
+ * (beats/beat-type) of any time signature.
  * <p>
- * For example, (3/4) and (6/8) share the same rational value, but with different actual members.
+ * Let's take the example of '3/4' vs '6/8' time signatures:
+ * <ul>
+ * <li>They share the same mathematical (reduced) <b>rational</b> value: 3/4
+ * <li>But they represent different (non-reduced) <b>time rational</b> values
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -54,12 +58,29 @@ public class TimeRational
     private static final Logger logger = LoggerFactory.getLogger(TimeRational.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The actual numerator. */
-    @XmlAttribute
+    /**
+     * The non-reduced numerator indicates the number of beats.
+     * <p>
+     * For example:
+     * <ul>
+     * <li>3 for 3/4 time signature
+     * <li>6 for 6/8 time signature
+     * <li>4 for C ('common' time signature, worth 4/4)
+     * </ul>
+     */
+    @XmlAttribute(name = "num")
     public final int num;
 
-    /** The actual denominator. */
-    @XmlAttribute
+    /** The non-reduced denominator indicates the beat unit.
+     * <p>
+     * For example:
+     * <ul>
+     * <li>4 for 3/4 time signature
+     * <li>8 for 6/8 time signature
+     * <li>2 for 'common-cut' time signature, worth 2/2
+     * </ul>
+     */
+    @XmlAttribute(name = "den")
     public final int den;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -213,13 +234,13 @@ public class TimeRational
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * JAXB adapter for a TimeRational.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<String, TimeRational>
     {
 

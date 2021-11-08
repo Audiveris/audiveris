@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code ArticulationSymbol} implements an articulation symbol.
+ * Class <code>ArticulationSymbol</code> implements an articulation symbol.
  *
  * @author Hervé Bitteur
  */
@@ -53,7 +53,7 @@ public class ArticulationSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code ArticulationSymbol} (with decoration?) standard size
+     * Create a <code>ArticulationSymbol</code> (with decoration?) standard size
      *
      * @param shape     the precise shape
      * @param decorated true for a decorated image
@@ -67,7 +67,7 @@ public class ArticulationSymbol
     }
 
     /**
-     * Create a {@code ArticulationSymbol} (with decoration?)
+     * Create a <code>ArticulationSymbol</code> (with decoration?)
      *
      * @param isIcon    true for an icon
      * @param shape     the precise shape

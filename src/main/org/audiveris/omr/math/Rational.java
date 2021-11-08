@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code Rational} implements non-mutable rational numbers
+ * Class <code>Rational</code> implements non-mutable rational numbers
  * (composed of a numerator and a denominator).
  * <p>
  * Invariants:
@@ -39,9 +39,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * <li>The rational data is always kept in reduced form : gcd(num,den) == 1</li>
  * <li>The denominator value is always kept positive : den &ge; 1</li>
  * </ol>
- * <p>
- * It is (un)marshallable through JAXB.
- * </p>
  *
  * @author Hervé Bitteur
  */
@@ -73,12 +70,12 @@ public class Rational
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Final numerator value. */
-    @XmlAttribute
+    /** Numerator integer value, after rational reduction. */
+    @XmlAttribute(name = "num")
     public final int num;
 
-    /** Final denominator value. */
-    @XmlAttribute
+    /** Denominator integer value, after rational reduction. */
+    @XmlAttribute(name = "den")
     public final int den;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -468,13 +465,13 @@ public class Rational
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * JAXB adapter to un/marshal a Rational object as "num/den".
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<String, Rational>
     {
 

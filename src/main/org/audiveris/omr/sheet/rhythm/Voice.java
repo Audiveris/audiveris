@@ -26,7 +26,7 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Mark;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
-import static org.audiveris.omr.sheet.rhythm.SlotVoice.Status;
+import static org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Voice} gathers all informations related to a voice within a measure.
+ * Class <code>Voice</code> gathers all informations related to a voice within a measure.
  * <p>
  * A voice is a sequence of chords, each played at a certain time slot in the containing measure.
  *
@@ -131,11 +131,13 @@ public class Voice
 
     /** Excess voice duration, if any. */
     @XmlAttribute
-    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational excess;
 
     /**
-     * Old wholeRestChord, if any, to be replaced by measureRestChord.
+     * <b>Deprecated</b> Old wholeRestChord, if any.
+     * <p>
+     * Replaced by measureRestChord.
      */
     @XmlIDREF
     @XmlAttribute(name = "whole-rest-chord") // Renamed as measure-rest-chord
@@ -152,11 +154,14 @@ public class Voice
     private RestChordInter measureRestChord;
 
     /**
-     * Map (SlotId -> SlotVoice) to store chord information for each slot.
-     * If the voice/slot combination is empty, the voice is free for this slot.
-     * Otherwise, the active chord is referenced with a status flag to make a difference between a
+     * This map (SlotId -> SlotVoice) stores chord information for each slot.
+     * <ul>
+     * <li>If the voice/slot combination is empty, the voice is free for this slot.
+     * <li>Otherwise, the active chord is referenced with a status flag to make a difference between
+     * a
      * slot where the chord starts, and the potential following slots for which the chord is still
      * active.
+     * </ul>
      */
     @XmlElement
     private TreeMap<Integer, SlotVoice> slots;
@@ -245,7 +250,7 @@ public class Voice
                 measureRestChord.setVoice(this);
             } else if (slots != null) {
                 for (SlotVoice info : slots.values()) {
-                    if (info.status == Status.BEGIN) {
+                    if (info.status == ChordStatus.BEGIN) {
                         info.chord.justAssignVoice(this);
                         addChord(info.chord);
 
@@ -321,7 +326,7 @@ public class Voice
             if (info == null) {
                 if ((prevChord != null)
                             && (prevChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
-                    putSlotInfo(slot, new SlotVoice(prevChord, Status.CONTINUE));
+                    putSlotInfo(slot, new SlotVoice(prevChord, ChordStatus.CONTINUE));
                 }
             } else {
                 prevChord = info.chord;
@@ -403,7 +408,7 @@ public class Voice
         for (Slot slot : measure.getStack().getSlots()) {
             SlotVoice info = getSlotInfo(slot);
 
-            if ((info != null) && (info.status == Status.BEGIN)) {
+            if ((info != null) && (info.status == ChordStatus.BEGIN)) {
                 Rational timeOffset = slot.getTimeOffset();
 
                 if (timeOffset == null) {
@@ -531,7 +536,7 @@ public class Voice
                     for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
                         SlotVoice info = entry.getValue();
 
-                        if (info.status == Status.BEGIN) {
+                        if (info.status == ChordStatus.BEGIN) {
                             AbstractChordInter chord = info.chord;
 
                             // Skip the remaining parts of beam group, including embraced rests
@@ -863,7 +868,7 @@ public class Voice
 
         slots.put(slot.getId(), chordInfo);
 
-        if (chordInfo.status == Status.BEGIN) {
+        if (chordInfo.status == ChordStatus.BEGIN) {
             ///completeSlotTable();
         }
 
@@ -920,7 +925,7 @@ public class Voice
 
                 if (info != null) {
                     // Active chord => busy
-                    if (info.status == Status.BEGIN) {
+                    if (info.status == ChordStatus.BEGIN) {
                         sb.append("|Ch#").append(String.format("%-5s", info.chord.getId()));
 
                         Rational chordDuration = info.chord.getDuration();

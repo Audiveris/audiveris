@@ -30,7 +30,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code EvenStepSymbol} is the basis for symbols located on an even step position.
+ * Class <code>EvenStepSymbol</code> is the basis for symbols located on an even step position.
  * There is a ledger in the middle of the symbol.
  *
  * @author Hervé Bitteur

@@ -23,7 +23,7 @@ package org.audiveris.omr.step.ui;
 
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code StepMonitoring} handles the step progress notification to user, when
+ * Class <code>StepMonitoring</code> handles the step progress notification to user, when
  * running in interactive mode.
  *
  * @author Hervé Bitteur
@@ -122,7 +122,7 @@ public abstract class StepMonitoring
      * @param step the step notified
      */
     public static void notifyStep (final SheetStub stub,
-                                   final Step step)
+                                   final OmrStep step)
     {
         if (monitor != null) {
             final boolean finished = stub.getCurrentStep() == null;

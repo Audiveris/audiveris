@@ -69,7 +69,7 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Class {@code PageCleaner} erases selected inter instances on the provided graphics
+ * Class <code>PageCleaner</code> erases selected inter instances on the provided graphics
  * environment by painting them using white background color.
  * <p>
  * Painting uses various techniques:
@@ -120,7 +120,7 @@ public abstract class PageCleaner
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PageCleaner} object.
+     * Creates a new <code>PageCleaner</code> object.
      *
      * @param buffer sheet buffer
      * @param g      graphics context on buffer

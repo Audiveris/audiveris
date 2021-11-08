@@ -30,7 +30,7 @@ import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.ScrollImageView;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.step.AbstractStep;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.util.StopWatch;
@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code GridStep} implements <b>GRID</b> step, which retrieves all staves and
+ * Class <code>GridStep</code> implements <b>GRID</b> step, which retrieves all staves and
  * systems of a sheet.
  *
  * @author Hervé Bitteur
@@ -66,7 +66,7 @@ public class GridStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Step step,
+    public void displayUI (OmrStep step,
                            Sheet sheet)
     {
         sheet.getSheetEditor().refresh();

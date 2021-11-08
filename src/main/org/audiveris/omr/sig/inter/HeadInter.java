@@ -98,7 +98,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code HeadInter} represents a note head, that is any head shape including
+ * Class <code>HeadInter</code> represents a note head, that is any head shape including
  * whole and breve, but not a rest.
  * <p>
  * These rather round-shaped symbols are retrieved via template-matching technique.
@@ -121,7 +121,11 @@ public class HeadInter
     // Persistent data
     //----------------
     //
-    /** Deprecated. Old mirror instance, if any. */
+    /**
+     * <b>Deprecated</b> Old mirror instance, if any.
+     * <p>
+     * Replaced by the use of <code>MirrorRelation</code>.
+     */
     @Deprecated
     @XmlIDREF
     @XmlAttribute(name = "mirror")
@@ -138,7 +142,7 @@ public class HeadInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadInter} object.
+     * Creates a new <code>HeadInter</code> object.
      *
      * @param bounds  the object bounds
      * @param shape   the underlying shape
@@ -156,7 +160,7 @@ public class HeadInter
     }
 
     /**
-     * Creates a new {@code HeadInter} object.
+     * Creates a new <code>HeadInter</code> object.
      *
      * @param bounds the object bounds
      * @param shape  the underlying shape
@@ -907,7 +911,7 @@ public class HeadInter
         tasks.add(new AdditionTask(theSig, this, getBounds(), links));
 
         if (system.getSheet().getStub().getLatestStep()
-                .compareTo(org.audiveris.omr.step.Step.CHORDS) >= 0) {
+                .compareTo(org.audiveris.omr.step.OmrStep.CHORDS) >= 0) {
             // If we link head to a stem, create/update the related head chord
             boolean stemFound = false;
 

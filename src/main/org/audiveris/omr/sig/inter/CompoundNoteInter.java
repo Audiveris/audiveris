@@ -38,7 +38,7 @@ import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.CompoundNoteSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -59,7 +59,7 @@ import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.symbol.Symbols;
 
 /**
- * Class {@code CompoundNoteInter} represents a head combined with a stem.
+ * Class <code>CompoundNoteInter</code> represents a head combined with a stem.
  * <p>
  * Instances of this class are meant to be temporary, not put in SIG, just to ease manual insertion
  * of quarter and half notes.
@@ -88,7 +88,7 @@ public class CompoundNoteInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadInter} object.
+     * Creates a new <code>HeadInter</code> object.
      *
      * @param glyph  the underlying glyph if any
      * @param bounds the object bounds
@@ -230,7 +230,7 @@ public class CompoundNoteInter
 
         tasks.add(new LinkTask(theSig, head, stem, new HeadStemRelation()));
 
-        if (system.getSheet().getStub().getLatestStep().compareTo(Step.CHORDS) >= 0) {
+        if (system.getSheet().getStub().getLatestStep().compareTo(OmrStep.CHORDS) >= 0) {
             // Create the related head chord
             final HeadChordInter chord = new HeadChordInter(null);
             tasks.add(new AdditionTask(theSig, chord, stemBounds, Collections.emptySet()));

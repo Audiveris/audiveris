@@ -25,7 +25,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code BufferedSink} wraps a BufferedImage as a PixelSink.
+ * Class <code>BufferedSink</code> wraps a BufferedImage as a PixelSink.
  *
  * @author Hervé Bitteur
  */

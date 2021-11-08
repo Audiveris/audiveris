@@ -26,8 +26,8 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
 import org.audiveris.omr.util.VoidTask;
 
@@ -46,7 +46,7 @@ import javax.swing.JOptionPane;
 import javax.swing.event.MenuEvent;
 
 /**
- * Class {@code StepMenu} encapsulates the user interface needed to deal with
+ * Class <code>StepMenu</code> encapsulates the user interface needed to deal with
  * application steps.
  * Steps are represented by menu items, each one being a check box, to indicate the current status
  * regarding the execution of the step (done or not done).
@@ -109,7 +109,7 @@ public class StepMenu
         menu.removeAll();
 
         // List of Steps classes in proper order
-        for (Step step : Step.values()) {
+        for (OmrStep step : OmrStep.values()) {
             menu.add(new StepItem(step));
         }
     }
@@ -120,9 +120,9 @@ public class StepMenu
     {
 
         // The related step
-        Step step;
+        OmrStep step;
 
-        StepAction (Step step)
+        StepAction (OmrStep step)
         {
             super(step.toString());
             this.step = step;
@@ -140,11 +140,11 @@ public class StepMenu
                         throws Exception
                 {
                     try {
-                        Step sofar = stub.getLatestStep();
+                        OmrStep sofar = stub.getLatestStep();
 
                         if ((sofar != null) && (sofar.compareTo(step) >= 0)) {
                             // Make sure proper source is available for LOAD or BINARY target steps
-                            if (step == Step.LOAD) {
+                            if (step == OmrStep.LOAD) {
                                 final Path inputPath = stub.getBook().getInputPath();
 
                                 if (!Files.exists(inputPath)) {
@@ -155,7 +155,7 @@ public class StepMenu
 
                                     return null;
                                 }
-                            } else if (step == Step.BINARY) {
+                            } else if (step == OmrStep.BINARY) {
                                 final Picture picture = stub.getSheet().getPicture();
 
                                 if (null == picture.getSource(Picture.SourceKey.GRAY)) {
@@ -169,12 +169,12 @@ public class StepMenu
                             }
 
                             // Refine messages for very first steps (LOAD and BINARY)
-                            final String mid = (step.compareTo(Step.BINARY) <= 0) ? ""
+                            final String mid = (step.compareTo(OmrStep.BINARY) <= 0) ? ""
                                     : " from binary source";
 
                             if (!OMR.gui.displayConfirmation(
                                     "About to re-perform step " + step + mid + "."
-                                    + "\nDo you confirm?",
+                                            + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
                                     JOptionPane.WARNING_MESSAGE)) {
@@ -201,7 +201,7 @@ public class StepMenu
                 protected void finished ()
                 {
                     if (stub != null) {
-                        final Step latestStep = stub.getLatestStep();
+                        final OmrStep latestStep = stub.getLatestStep();
 
                         if (latestStep != null) {
                             // Select the assembly tab related to the latest step
@@ -217,13 +217,13 @@ public class StepMenu
     // StepItem //
     //----------//
     /**
-     * Class {@code StepItem} implements a checkable menu item linked to a given step.
+     * Class <code>StepItem</code> implements a checkable menu item linked to a given step.
      */
     private static class StepItem
             extends JCheckBoxMenuItem
     {
 
-        StepItem (Step step)
+        StepItem (OmrStep step)
         {
             super(new StepAction(step));
         }
@@ -253,7 +253,7 @@ public class StepMenu
     // MyMenuListener //
     //----------------//
     /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
+     * Class <code>MyMenuListener</code> is triggered when the whole sub-menu is entered.
      * This is done with respect to currently displayed sheet.
      * The steps already done are flagged as such.
      */

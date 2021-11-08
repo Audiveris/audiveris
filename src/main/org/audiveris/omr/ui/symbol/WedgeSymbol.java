@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code WedgeSymbol} implements a wedge symbol.
+ * Class <code>WedgeSymbol</code> implements a wedge symbol.
  * <p>
  * It looks like {@literal "<"} for CRESCENDO and {@literal ">"} for DIMINUENDO.
  *

@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code LagManager} keeps a catalog of Lag instances for a given sheet.
+ * Class <code>LagManager</code> keeps a catalog of Lag instances for a given sheet.
  *
  * @author Hervé Bitteur
  */
@@ -72,7 +72,7 @@ public class LagManager
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LagManager} object.
+     * Creates a new <code>LagManager</code> object.
      *
      * @param sheet the related sheet
      */

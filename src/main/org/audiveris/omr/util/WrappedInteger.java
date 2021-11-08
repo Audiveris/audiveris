@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code WrappedInteger} is a wrapper around an Integer, with the ability to set
+ * Class <code>WrappedInteger</code> is a wrapper around an Integer, with the ability to set
  * an initial value.
  *
  * @author Hervé Bitteur

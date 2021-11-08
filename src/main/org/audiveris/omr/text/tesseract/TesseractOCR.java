@@ -51,7 +51,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@code TesseractOCR} is an OCR service built on Google Tesseract engine.
+ * Class <code>TesseractOCR</code> is an OCR service built on Google Tesseract engine.
  * <p>
  * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.
  *

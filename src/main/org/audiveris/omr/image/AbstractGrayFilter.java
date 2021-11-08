@@ -28,7 +28,7 @@ import org.audiveris.omr.util.StopWatch;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code AbstractGrayFilter} is the basis for filters operating on gray-level
+ * Class <code>AbstractGrayFilter</code> is the basis for filters operating on gray-level
  * images.
  *
  * @author Hervé Bitteur

@@ -42,7 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code GlyphSlurInfo} is a degenerated {@link SlurInfo}, meant for a manual
+ * Class <code>GlyphSlurInfo</code> is a degenerated {@link SlurInfo}, meant for a manual
  * slur defined by its underlying glyph.
  *
  * @author Hervé Bitteur
@@ -114,7 +114,7 @@ public class GlyphSlurInfo
     // KeyPointsBuilder //
     //------------------//
     /**
-     * Class {@code KeyPointsBuilder} builds a slur from a provided glyph.
+     * Class <code>KeyPointsBuilder</code> builds a slur from a provided glyph.
      * <p>
      * This class is meant for manual slur built on a selected glyph, by using exactly 4 key points
      * evenly spaced along the glyph abscissa axis.
@@ -127,7 +127,7 @@ public class GlyphSlurInfo
         private final RunTable rt;
 
         /**
-         * Creates a new {@code KeyPointsBuilder} object.
+         * Creates a new <code>KeyPointsBuilder</code> object.
          *
          * @param glyph the underlying glyph
          */

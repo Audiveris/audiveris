@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code NoExclusion} is used to formalize that two Inters, generally originating
+ * Class <code>NoExclusion</code> is used to formalize that two Inters, generally originating
  * from mirrored entities, do not exclude each other, although they overlap.
  * This occurs with beams of mirrored stems.
  *

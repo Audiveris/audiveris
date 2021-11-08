@@ -32,7 +32,7 @@ import java.util.Objects;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerIdModel} is an ID spinner model backed by a {@link EntityIndex}.
+ * Class <code>SpinnerIdModel</code> is an ID spinner model backed by a {@link EntityIndex}.
  *
  * @author Hervé Bitteur
  * @param <E> precise type for handled entity
@@ -53,7 +53,7 @@ public class SpinnerIdModel<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SpinnerIdModel} object.
+     * Creates a new <code>SpinnerIdModel</code> object.
      *
      * @param index the underlying entity index
      */

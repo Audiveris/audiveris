@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.field;
 
 /**
- * Class {@code LIntegerField} is an {@link LTextField}, whose field is meant to handle
+ * Class <code>LIntegerField</code> is an {@link LTextField}, whose field is meant to handle
  * an integer value.
  *
  * @author Hervé Bitteur

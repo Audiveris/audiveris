@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.sig.inter.Inter;
 
 /**
- * Class {@code RelationPair} is a mutable pair composed of source inter and target inter.
+ * Class <code>RelationPair</code> is a mutable pair composed of source inter and target inter.
  * <p>
  * It can be used for method input/output.
  *
@@ -40,7 +40,7 @@ public class RelationPair
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RelationPair} object.
+     * Creates a new <code>RelationPair</code> object.
      *
      * @param source source inter
      * @param target target inter

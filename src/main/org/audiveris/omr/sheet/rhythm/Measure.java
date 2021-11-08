@@ -86,8 +86,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Measure} represents a measure in a system part, it vertically embraces
- * all the staves (usually 1 or 2) of the containing part.
+ * Class <code>Measure</code> represents a measure in a system <code>Part</code>.
+ * <p>
+ * It vertically embraces the staves (usually 1 or 2) of the containing part.
+ * <p>
+ * It is contained in a <code>MeasureStack</code> which embraces all the vertically aligned
+ * <code>Measure</code> instances in the same <code>System</code>.
  *
  * @see MeasureStack
  * @author Hervé Bitteur
@@ -122,12 +126,20 @@ public class Measure
     @XmlElement(name = "right-barline")
     private PartBarline rightBarline;
 
-    /** <b>OLD</b> Groups of beams in this measure. */
+    /**
+     * <b>Deprecated</b> Groups of beams in this measure.
+     * <p>
+     * Replaced by beamGroups element.
+     */
     @Deprecated
-    @XmlElementRef
+    @XmlElementRef(name = "beam-group")
     private LinkedHashSet<OldBeamGroup> oldBeamGroups;
 
-    /** Groups of beams in this measure. */
+    /**
+     * This is the list of <code>BeamGroupInter</code> instances in this measure.
+     * <p>
+     * NOTA: This replaces the now deprecated beam-group hash set.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "beam-groups")
@@ -214,7 +226,7 @@ public class Measure
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Measure} object.
+     * Creates a new <code>Measure</code> object.
      *
      * @param part the containing part
      */

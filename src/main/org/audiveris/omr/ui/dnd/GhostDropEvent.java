@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.dnd;
 
 /**
- * Class {@code GhostDropEvent} is the type of event that is handed to any {@link
+ * Class <code>GhostDropEvent</code> is the type of event that is handed to any {@link
  * GhostDropListener} instance.
  *
  * @param <A> the precise type of the action carried by the drop

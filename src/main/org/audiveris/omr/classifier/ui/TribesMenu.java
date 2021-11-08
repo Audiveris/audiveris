@@ -40,7 +40,7 @@ import java.util.Collection;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code TribesMenu} displays a collection of glyphs for Tribe population.
+ * Class <code>TribesMenu</code> displays a collection of glyphs for Tribe population.
  *
  * @author Hervé Bitteur
  */
@@ -58,7 +58,7 @@ public class TribesMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TribeMenu} object.
+     * Creates a new <code>TribeMenu</code> object.
      *
      * @param sheet DOCUMENT ME!
      */

@@ -49,7 +49,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code StaffLine} represents a simple final staff line.
+ * Class <code>StaffLine</code> represents a simple final staff line.
  *
  * @author Hervé Bitteur
  */
@@ -93,7 +93,7 @@ public class StaffLine
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffLine} object.
+     * Creates a new <code>StaffLine</code> object.
      *
      * @param points    all the defining points
      * @param thickness mean line thickness
@@ -340,13 +340,13 @@ public class StaffLine
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * Meant for JAXB handling of LineInfo interface.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<StaffLine, LineInfo>
     {
 

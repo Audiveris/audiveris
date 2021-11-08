@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Sheet;
 import java.awt.Graphics2D;
 
 /**
- * Interface {@code SimpleSheetPainter} is a simple painter working on a sheet.
+ * Interface <code>SimpleSheetPainter</code> is a simple painter working on a sheet.
  *
  * @author Hervé Bitteur
  */

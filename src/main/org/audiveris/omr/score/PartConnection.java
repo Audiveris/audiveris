@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code PartConnection} is in charge of finding the connections of parts across
+ * Class <code>PartConnection</code> is in charge of finding the connections of parts across
  * systems (and pages) so that a part always represents the same instrument all along
  * the score.
  * <p>
@@ -66,7 +66,7 @@ public class PartConnection
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PartConnection} object.
+     * Creates a new <code>PartConnection</code> object.
      *
      * @param sequences the list of sequences of part candidates
      */
@@ -300,7 +300,7 @@ public class PartConnection
     // Candidate //
     //-----------//
     /**
-     * Interface {@code Candidate} is used to process part candidates, regardless whether they are
+     * Interface <code>Candidate</code> is used to process part candidates, regardless whether they are
      * provided as:
      * <ul>
      * <li>System physical {@link org.audiveris.omr.sheet.Part} instances when merging system parts

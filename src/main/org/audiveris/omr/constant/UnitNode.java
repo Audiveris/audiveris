@@ -24,7 +24,7 @@ package org.audiveris.omr.constant;
 import org.slf4j.Logger;
 
 /**
- * Class {@code UnitNode} represents a unit (class) in the hierarchy of nodes.
+ * Class <code>UnitNode</code> represents a unit (class) in the hierarchy of nodes.
  * It represents a class and can have either a Logger, a ConstantSet, or both.
  *
  * @author Hervé Bitteur

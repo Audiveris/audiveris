@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code PartGroup} describes a group of parts.
+ * Class <code>PartGroup</code> describes a group of parts.
  *
  * @author Hervé Bitteur
  */
@@ -43,9 +43,10 @@ public class PartGroup
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
-     * Kind of symbol that defines the group of parts.
+     * Enum <code>PartGroupingSymbol</code> describes all symbols that can be used to
+     * define a group of parts.
      */
-    public static enum Symbol
+    public static enum PartGroupingSymbol
     {
         bracket,
         brace,
@@ -56,15 +57,15 @@ public class PartGroup
     // Persistent data
     //----------------
     //
-    /** Group level. */
+    /** Grouping level, counted from 1. */
     @XmlAttribute
     private final int number;
 
-    /** Symbol used. */
+    /** Symbol used for grouping parts. */
     @XmlAttribute
-    private final Symbol symbol;
+    private final PartGroupingSymbol symbol;
 
-    /** Use bar line connections?. */
+    /** Does this group use barline connections? */
     @XmlAttribute
     private final boolean barline;
 
@@ -76,17 +77,17 @@ public class PartGroup
     @XmlAttribute(name = "last-staff")
     private int lastStaffId;
 
-    /** Name. */
+    /** Group name, if any. */
     @XmlAttribute
     private String name;
 
-    /** Abbreviation. */
+    /** Group abbreviation, if any. */
     @XmlAttribute
     private String abbreviation;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Build a {@code PartGroup} object.
+     * Build a <code>PartGroup</code> object.
      *
      * @param number       group level
      * @param symbol       symbol used
@@ -94,7 +95,7 @@ public class PartGroup
      * @param firstStaffId ID of first staff in group
      */
     public PartGroup (int number,
-                      Symbol symbol,
+                      PartGroupingSymbol symbol,
                       boolean barline,
                       int firstStaffId)
     {
@@ -201,7 +202,7 @@ public class PartGroup
      *
      * @return the symbol
      */
-    public Symbol getSymbol ()
+    public PartGroupingSymbol getSymbol ()
     {
         return symbol;
     }
@@ -223,7 +224,7 @@ public class PartGroup
      */
     public boolean isBrace ()
     {
-        return symbol == Symbol.brace;
+        return symbol == PartGroupingSymbol.brace;
     }
 
     //----------//

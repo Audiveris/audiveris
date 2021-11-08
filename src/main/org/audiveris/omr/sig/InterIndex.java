@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code InterIndex} keeps an index of all Inter instances registered
+ * Class <code>InterIndex</code> keeps an index of all Inter instances registered
  * in a sheet, regardless of their containing system.
  *
  * @author Hervé Bitteur

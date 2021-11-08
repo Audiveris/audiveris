@@ -25,7 +25,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.text.TextRole;
 
 /**
- * Class {@code SentenceRoleTask} changes the role of a sentence.
+ * Class <code>SentenceRoleTask</code> changes the role of a sentence.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,7 @@ public class SentenceRoleTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SentenceTask} object.
+     * Creates a new <code>SentenceTask</code> object.
      *
      * @param sentence the sentence to modify
      * @param newRole  the new role for the sentence

@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code StemChecker} checks a glyph as a suitable stem (or stem seed).
+ * Class <code>StemChecker</code> checks a glyph as a suitable stem (or stem seed).
  *
  * @author Hervé Bitteur
  */

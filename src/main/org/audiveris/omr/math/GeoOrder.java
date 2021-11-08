@@ -22,7 +22,7 @@
 package org.audiveris.omr.math;
 
 /**
- * Enum {@code GeoOrder} defines some geometric ordering.
+ * Enum <code>GeoOrder</code> defines some geometric ordering.
  *
  * @author Hervé Bitteur
  */

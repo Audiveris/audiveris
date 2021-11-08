@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code SampleSheet} gathers samples from the same sheet.
+ * Class <code>SampleSheet</code> gathers samples from the same sheet.
  * <p>
  * A SampleSheet is just a container for one or several samples belonging to the same sheet.
  * <p>
@@ -123,7 +123,7 @@ public class SampleSheet
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleSheet} object.
+     * Creates a new <code>SampleSheet</code> object.
      *
      * @param descriptor related descriptor
      */
@@ -133,7 +133,7 @@ public class SampleSheet
     }
 
     /**
-     * Creates a new {@code SampleSheet} object from a SampleList parameter.
+     * Creates a new <code>SampleSheet</code> object from a SampleList parameter.
      *
      * @param value      the (unmarshalled) SampleList
      * @param descriptor the related descriptor

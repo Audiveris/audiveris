@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code AugmentationSymbol} implements a decorated augmentation symbol.
+ * Class <code>AugmentationSymbol</code> implements a decorated augmentation symbol.
  *
  * @author Hervé Bitteur
  */
@@ -50,7 +50,7 @@ public class AugmentationSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code AugmentationSymbol} (with decoration?) standard size
+     * Create a <code>AugmentationSymbol</code> (with decoration?) standard size
      *
      * @param decorated true for a decorated image
      */
@@ -60,7 +60,7 @@ public class AugmentationSymbol
     }
 
     /**
-     * Create a {@code AugmentationSymbol} (with decoration?)
+     * Create a <code>AugmentationSymbol</code> (with decoration?)
      *
      * @param isIcon    true for an icon
      * @param decorated true for a decorated image

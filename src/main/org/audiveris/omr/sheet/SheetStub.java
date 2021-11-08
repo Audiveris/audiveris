@@ -35,8 +35,8 @@ import org.audiveris.omr.sheet.Picture.TableKey;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
@@ -80,84 +80,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code SheetStub} represents a placeholder in a {@link Book} to decouple the
- * Book instance from the actual {@link Sheet} instances and avoid loading all of them
- * in memory.
+ * Class <code>SheetStub</code> is a placeholder in a <code>Book</code> to
+ * decouple the Book instance from the actual <code>Sheet</code> instance.
  * <p>
- * Methods are organized as follows:
- * <dl>
- * <dt>Administration</dt>
- * <dd>
- * <ul>
- * <li>{@link #getId}</li>
- * <li>{@link #getBook}</li>
- * <li>{@link #getNum}</li>
- * <li>{@link #getNumber}</li>
- * <li>{@link #hasSheet}</li>
- * <li>{@link #getSheet}</li>
- * <li>{@link #swapSheet}</li>
- * <li>{@link #decideOnRemoval}</li>
- * <li>{@link #setModified}</li>
- * <li>{@link #isModified}</li>
- * <li>{@link #getVersion}</li>
- * <li>{@link #getVersionValue}</li>
- * <li>{@link #setVersionValue}</li>
- * <li>{@link #isUpgraded}</li>
- * <li>{@link #setUpgraded}</li>
- * <li>{@link #close}</li>
- * <li>{@link #getLock}</li>
- * <li>{@link #storeSheet}</li>
- * </ul>
- * </dd>
- * <dt>Pages</dt>
- * <dd>
- * <ul>
- * <li>{@link #addPageRef}</li>
- * <li>{@link #addPageRef(int,PageRef)}</li>
- * <li>{@link #clearPageRefs}</li>
- * <li>{@link #getFirstPageRef}</li>
- * <li>{@link #getLastPageRef}</li>
- * <li>{@link #getPageRefs}</li>
- * <li>{@link #removePageRef}</li>
- * </ul>
- * </dd>
- * <dt>Parameters</dt>
- * <dd>
- * <ul>
- * <li>{@link #getBinarizationFilter}</li>
- * <li>{@link #getOcrLanguages}</li>
- * <li>{@link #getProcessingSwitches}</li>
- * <li>{@link #getProfile}</li>
- * </ul>
- * </dd>
- * <dt>Transcription</dt>
- * <dd>
- * <ul>
- * <li>{@link #reset}</li>
- * <li>{@link #resetToBinary}</li>
- * <li>{@link #resetToGray}</li>
- * <li>{@link #reachStep}</li>
- * <li>{@link #getCurrentStep}</li>
- * <li>{@link #getLatestStep}</li>
- * <li>{@link #transcribe}</li>
- * <li>{@link #done}</li>
- * <li>{@link #isDone}</li>
- * <li>{@link #invalidate}</li>
- * <li>{@link #isValid}</li>
- * <li>{@link #validate}</li>
- * </ul>
- * </dd>
- * <dt>UI</dt>
- * <dd>
- * <ul>
- * <li>{@link #getAssembly}</li>
- * </ul>
- * </dd>
- * </dl>
+ * This avoids having to keep all sheets in memory, but rather load any needed sheet on demand.
  *
  * @author Hervé Bitteur
  */
@@ -175,40 +104,76 @@ public class SheetStub
     // Persistent data
     //----------------
     //
-    /** Index of sheet, counted from 1, in the image file. */
+    /**
+     * This is the rank of sheet, counted from 1, within the book image(s) file.
+     */
     @XmlAttribute(name = "number")
     private final int number;
 
-    /** Related Audiveris version that last operated on this sheet. */
+    /**
+     * Audiveris version that last operated on this particular sheet.
+     * <p>
+     * This version may be older than the version recorded at book level.
+     */
     @XmlAttribute(name = "version")
     private volatile String versionValue;
 
-    /** Indicate a sheet that contains no music. */
+    /**
+     * If true, this boolean signals that the sheet contains no valid music
+     * from OMR point of view.
+     * <p>
+     * This occurs mainly at the beginning or the end of a book, where some sheets may be left
+     * blank or contain just illustrations.
+     * <p>
+     * Sheet invalidity can generally be detected during the <code>SCALE</code> step.
+     * <p>
+     * By default, this boolean is false and not present in the project XML data.
+     */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean invalid;
 
-    /** Handling of binarization filter parameter. */
+    /**
+     * Applies a specific binarization filter to transform the sheet gray image into a
+     * binary (black and white) image.
+     * <p>
+     * If present, this specification overrides any specification made at book or application
+     * levels.
+     */
     @XmlElement(name = "binarization")
-    @XmlJavaTypeAdapter(FilterParam.Adapter.class)
+    @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
     private FilterParam binarizationFilter;
 
-    /** Handling of dominant language(s) for this sheet. */
+    /**
+     * This string specifies the dominant language(s) to guide OCR on this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book or application
+     * levels.
+     */
     @XmlElement(name = "ocr-languages")
-    @XmlJavaTypeAdapter(StringParam.Adapter.class)
+    @XmlJavaTypeAdapter(StringParam.JaxbAdapter.class)
     private StringParam ocrLanguages;
 
-    /** Handling of processing switches for this sheet. */
+    /**
+     * This is a set of specific processing switches for this sheet.
+     * <p>
+     * If present, a specific switch value overrides any value specified for the same switch at book
+     * or application levels.
+     */
     @XmlElement(name = "processing")
-    @XmlJavaTypeAdapter(ProcessingSwitches.Adapter.class)
+    @XmlJavaTypeAdapter(ProcessingSwitches.JaxbAdapter.class)
     private ProcessingSwitches switches;
 
-    /** All steps already performed on this sheet. */
+    /**
+     * This is the sequence of steps already performed on this sheet.
+     */
     @XmlList
     @XmlElement(name = "steps")
-    private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
+    private final EnumSet<OmrStep> doneSteps = EnumSet.noneOf(OmrStep.class);
 
-    /** Pages references. */
+    /**
+     * List of logical references to the pages contained in the corresponding sheet.
+     */
     @XmlElement(name = "page")
     private final List<PageRef> pageRefs = new ArrayList<>();
 
@@ -226,7 +191,7 @@ public class SheetStub
     private volatile Sheet sheet;
 
     /** The step being performed on the sheet. */
-    private volatile Step currentStep;
+    private volatile OmrStep currentStep;
 
     /** Has this sheet been modified, WRT its persisted data. */
     private volatile boolean modified = false;
@@ -239,7 +204,7 @@ public class SheetStub
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetStub} object.
+     * Creates a new <code>SheetStub</code> object.
      *
      * @param book   the containing book instance
      * @param number the 1-based sheet number within the containing book
@@ -368,7 +333,7 @@ public class SheetStub
      *
      * @param step the provided step
      */
-    public final void done (Step step)
+    public final void done (OmrStep step)
     {
         doneSteps.add(step);
     }
@@ -425,7 +390,7 @@ public class SheetStub
      *
      * @return the current step or null
      */
-    public Step getCurrentStep ()
+    public OmrStep getCurrentStep ()
     {
         return currentStep;
     }
@@ -438,7 +403,7 @@ public class SheetStub
      *
      * @param step the current step
      */
-    public void setCurrentStep (Step step)
+    public void setCurrentStep (OmrStep step)
     {
         currentStep = step;
     }
@@ -502,11 +467,11 @@ public class SheetStub
      *
      * @return the latest step done, or null
      */
-    public Step getLatestStep ()
+    public OmrStep getLatestStep ()
     {
-        Step latest = null;
+        OmrStep latest = null;
 
-        for (Step step : Step.values()) {
+        for (OmrStep step : OmrStep.values()) {
             if (isDone(step)) {
                 latest = step;
             }
@@ -616,7 +581,7 @@ public class SheetStub
      */
     public int getProfile ()
     {
-        return getProcessingSwitches().getValue(ProcessingSwitches.Switch.poorInputMode) ? 1 : 0;
+        return getProcessingSwitches().getValue(ProcessingSwitch.poorInputMode) ? 1 : 0;
     }
 
     //----------//
@@ -638,7 +603,7 @@ public class SheetStub
                 // We have to recheck sheet, which may have just been allocated
                 if (sh == null) {
                     // Actually load the sheet
-                    if (!isDone(Step.LOAD)) {
+                    if (!isDone(OmrStep.LOAD)) {
                         // LOAD not yet performed: load from book image file
                         try {
                             this.sheet = sh = new Sheet(this, null, false);
@@ -767,7 +732,7 @@ public class SheetStub
      * @param step the step to check
      * @return true if already performed
      */
-    public boolean isDone (Step step)
+    public boolean isDone (OmrStep step)
     {
         return doneSteps.contains(step);
     }
@@ -908,21 +873,21 @@ public class SheetStub
      * @param force  if true and step already reached, stub is reset and processed until step
      * @return true if OK, false if not OK (including when a step paused)
      */
-    public boolean reachStep (Step target,
+    public boolean reachStep (OmrStep target,
                               boolean force)
     {
         final StubsController ctrl = (OMR.gui != null) ? StubsController.getInstance() : null;
         final StopWatch watch = new StopWatch("reachStep " + target);
-        EnumSet<Step> neededSteps = null;
+        EnumSet<OmrStep> neededSteps = null;
         boolean ok = false;
         getLock().lock(); // Wait for completion of early processing if any
         logger.debug("reachStep got lock on {}", this);
 
         try {
-            final Step latestStep = getLatestStep();
+            final OmrStep latestStep = getLatestStep();
 
             if (force && (target.compareTo(latestStep) <= 0)) {
-                if (target.compareTo(Step.BINARY) > 0) {
+                if (target.compareTo(OmrStep.BINARY) > 0) {
                     resetToBinary();
                 } else {
                     resetToGray();
@@ -942,7 +907,7 @@ public class SheetStub
                 ctrl.markTab(this, Colors.SHEET_BUSY);
             }
 
-            for (final Step step : neededSteps) {
+            for (final OmrStep step : neededSteps) {
                 watch.start(step.name());
                 StepMonitoring.notifyMsg(step.toString());
                 logger.debug("reachStep {} towards {}", step, target);
@@ -1153,7 +1118,7 @@ public class SheetStub
      */
     public boolean transcribe ()
     {
-        return reachStep(Step.last(), false);
+        return reachStep(OmrStep.last(), false);
     }
 
     //----------------//
@@ -1218,12 +1183,12 @@ public class SheetStub
     /**
      * Do just one specified step, synchronously, with display of related UI if any.
      * <p>
-     * Step duration is guarded by a timeout, so that processing cannot get blocked infinitely.
+     * OmrStep duration is guarded by a timeout, so that processing cannot get blocked infinitely.
      *
      * @param step the step to perform
      * @throws Exception
      */
-    private void doOneStep (final Step step)
+    private void doOneStep (final OmrStep step)
             throws Exception
     {
         final int timeout = Main.getSheetStepTimeOut();
@@ -1302,12 +1267,12 @@ public class SheetStub
     //----------------//
     // getNeededSteps //
     //----------------//
-    private EnumSet<Step> getNeededSteps (Step target)
+    private EnumSet<OmrStep> getNeededSteps (OmrStep target)
     {
-        EnumSet<Step> neededSteps = EnumSet.noneOf(Step.class);
+        EnumSet<OmrStep> neededSteps = EnumSet.noneOf(OmrStep.class);
 
         // Add all needed steps
-        for (Step step : EnumSet.range(Step.first(), target)) {
+        for (OmrStep step : EnumSet.range(OmrStep.first(), target)) {
             if (!isDone(step)) {
                 neededSteps.add(step);
             }
@@ -1410,35 +1375,6 @@ public class SheetStub
             }
 
             return super.setSpecific(specific);
-        }
-
-        /**
-         * JAXB adapter to mimic XmlValue.
-         */
-        public static class Adapter
-                extends XmlAdapter<String, OcrSheetLanguages>
-        {
-
-            @Override
-            public String marshal (OcrSheetLanguages val)
-                    throws Exception
-            {
-                if (val == null) {
-                    return null;
-                }
-
-                return val.getSpecific();
-            }
-
-            @Override
-            public OcrSheetLanguages unmarshal (String str)
-                    throws Exception
-            {
-                OcrSheetLanguages ol = new OcrSheetLanguages();
-                ol.setSpecific(str);
-
-                return ol;
-            }
         }
     }
 }

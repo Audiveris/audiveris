@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code AbstractFlagInter} is the basis for (standard) FlagInter as well as
+ * Class <code>AbstractFlagInter</code> is the basis for (standard) FlagInter as well as
  * SmallFlagInter for grace notes.
  *
  * @author Hervé Bitteur
@@ -72,14 +72,14 @@ public abstract class AbstractFlagInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractFlagInter} object.
+     * Creates a new <code>AbstractFlagInter</code> object.
      */
     protected AbstractFlagInter ()
     {
     }
 
     /**
-     * Creates a new {@code AbstractFlagInter} object.
+     * Creates a new <code>AbstractFlagInter</code> object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape

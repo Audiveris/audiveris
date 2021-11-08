@@ -29,7 +29,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code DoubleBarlineSymbol} displays two thin barlines
+ * Class <code>DoubleBarlineSymbol</code> displays two thin barlines
  *
  * @author Hervé Bitteur
  */

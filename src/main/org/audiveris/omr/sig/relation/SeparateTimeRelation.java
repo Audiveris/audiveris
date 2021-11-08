@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SeparateTimeRelation} indicates that the source and target chords
+ * Class <code>SeparateTimeRelation</code> indicates that the source and target chords
  * should belong to separate time slots.
  *
  * @author Hervé Bitteur
@@ -36,7 +36,7 @@ public class SeparateTimeRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code SeparateTimeRelation} object.
+     * Creates a new <code>SeparateTimeRelation</code> object.
      */
     public SeparateTimeRelation ()
     {

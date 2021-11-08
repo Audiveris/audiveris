@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code BlackHeadSizer}
+ * Class <code>BlackHeadSizer</code>
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +71,7 @@ public class BlackHeadSizer
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BlackHeadSizer} object.
+     * Creates a new <code>BlackHeadSizer</code> object.
      *
      * @param sheet related sheet
      */
@@ -319,7 +319,7 @@ public class BlackHeadSizer
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
      */
     private static class Parameters
     {

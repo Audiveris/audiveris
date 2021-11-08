@@ -24,7 +24,7 @@ package org.audiveris.omr.util.param;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code StringParam} is a param for string.
+ * Class <code>StringParam</code> is a param for string.
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ public class StringParam
     /**
      * JAXB adapter for StringParam type.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<String, StringParam>
     {
 

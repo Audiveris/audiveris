@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code LinkedSection} is a working wrapper around a section considered as
+ * Class <code>LinkedSection</code> is a working wrapper around a section considered as
  * immutable, since all modifying operations on the underlying section raise
  * UnsupportedOperationException.
  * <p>
@@ -79,7 +79,7 @@ public class LinkedSection
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LinkedSection} object.
+     * Creates a new <code>LinkedSection</code> object.
      *
      * @param section the underlying section
      */

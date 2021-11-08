@@ -51,7 +51,7 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 
 /**
- * Class {@code StickFactory} builds a set of straight filaments (stem seeds / ledgers).
+ * Class <code>StickFactory</code> builds a set of straight filaments (stem seeds / ledgers).
  * <p>
  * As opposed to wavy filaments meant for staff lines, a stem seed or a ledger is rather short,
  * straight and really vertical (stem) or horizontal (ledger).
@@ -113,7 +113,7 @@ public class StickFactory
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StickFactory} object.
+     * Creates a new <code>StickFactory</code> object.
      *
      * @param orientation          sticks orientation (VERTICAL for stems, HORIZONTAL for ledgers)
      * @param system               the system to process

@@ -27,7 +27,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.sheet.ProcessingSwitches;
-import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -84,7 +84,7 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -103,7 +103,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code InterFactory} generates the inter instances corresponding to
+ * Class <code>InterFactory</code> generates the inter instances corresponding to
  * to an acceptable symbol evaluation in a given system.
  * <p>
  * (Generally there is one inter instance per evaluation, an exception is the case of full time
@@ -427,7 +427,7 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations) ? ArticulationInter.createValidAdded(
+            return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter.createValidAdded(
                     glyph, shape, grade, system, systemHeadChords)
                     : null;
 
@@ -500,7 +500,7 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(Switch.fingerings) ? new FingeringInter(glyph, shape, grade)
+            return switches.getValue(ProcessingSwitch.fingerings) ? new FingeringInter(glyph, shape, grade)
                     : null;
 
         // Plucking
@@ -508,7 +508,7 @@ public class InterFactory
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(Switch.pluckings) ? new PluckingInter(glyph, shape, grade)
+            return switches.getValue(ProcessingSwitch.pluckings) ? new PluckingInter(glyph, shape, grade)
                     : null;
 
         // Romans
@@ -524,7 +524,7 @@ public class InterFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return switches.getValue(Switch.frets) ? new FretInter(glyph, shape, grade) : null;
+            return switches.getValue(ProcessingSwitch.frets) ? new FretInter(glyph, shape, grade) : null;
 
         // Others
         default:
@@ -747,7 +747,7 @@ public class InterFactory
         case THIN_BARLINE:
         case THICK_BARLINE:
 
-            if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
                 return new BarlineInter(null, shape, GRADE, null, null);
             } else {
                 return new StaffBarlineInter(shape, GRADE);

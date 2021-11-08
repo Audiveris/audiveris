@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code IntUtil} gathers convenient methods related to Integer handling.
+ * Class <code>IntUtil</code> gathers convenient methods related to Integer handling.
  *
  * @author Hervé Bitteur
  */

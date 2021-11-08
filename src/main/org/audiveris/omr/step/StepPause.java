@@ -22,7 +22,7 @@
 package org.audiveris.omr.step;
 
 /**
- * Class {@code StepPause} is a soft version of {@link StepException} so that processing
+ * Class <code>StepPause</code> is a soft version of {@link StepException} so that processing
  * can gracefully stop at end of current step.
  * <p>
  * Current step is considered as successfully done, but processing stops at step end.
@@ -36,7 +36,7 @@ public class StepPause
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Construct an {@code StepPause} with detail message.
+     * Construct an <code>StepPause</code> with detail message.
      *
      * @param message the related message
      */

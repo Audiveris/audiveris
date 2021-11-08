@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code LedgerSymbol} implements a ledger symbol.
+ * Class <code>LedgerSymbol</code> implements a ledger symbol.
  *
  * @author Hervé Bitteur
  */

@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.field;
 import java.util.Scanner;
 
 /**
- * Class {@code LDoubleField} is an {@link LTextField}, whose field is meant to handle
+ * Class <code>LDoubleField</code> is an {@link LTextField}, whose field is meant to handle
  * a double value.
  *
  * @author Hervé Bitteur

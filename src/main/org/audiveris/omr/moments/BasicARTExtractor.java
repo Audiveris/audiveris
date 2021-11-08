@@ -29,7 +29,7 @@ import org.audiveris.omr.util.StopWatch;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code BasicARTExtractor} implements extraction of ART Moments.
+ * Class <code>BasicARTExtractor</code> implements extraction of ART Moments.
  * <p>
  * See MPEG-7 Experimentation Model for the original C++ code
  *

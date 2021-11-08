@@ -22,7 +22,7 @@
 package org.audiveris.omr.glyph;
 
 /**
- * Interface {@code GlyphLink} represents a relationship (such as neighborhood) between
+ * Interface <code>GlyphLink</code> represents a relationship (such as neighborhood) between
  * two glyphs instances.
  *
  * @author Hervé Bitteur

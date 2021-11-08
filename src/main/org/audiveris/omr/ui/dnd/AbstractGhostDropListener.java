@@ -30,7 +30,7 @@ import java.awt.Rectangle;
 import javax.swing.JComponent;
 
 /**
- * Class {@code AbstractGhostDropListener} is a default implementation for the {@link
+ * Class <code>AbstractGhostDropListener</code> is a default implementation for the {@link
  * GhostDropListener} interface.
  *
  * @param <A> The type of action carried by the drop

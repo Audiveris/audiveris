@@ -54,7 +54,7 @@ import java.util.ListIterator;
 import java.util.Set;
 
 /**
- * Class {@code SegmentsBuilder} retrieves straight segments that can be used to build
+ * Class <code>SegmentsBuilder</code> retrieves straight segments that can be used to build
  * wedges or endings.
  *
  * @author Hervé Bitteur

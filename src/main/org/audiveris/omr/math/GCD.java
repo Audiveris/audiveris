@@ -24,7 +24,7 @@ package org.audiveris.omr.math;
 import java.util.Collection;
 
 /**
- * Class {@code GCD} gathers several functions to compute Greatest Common Divisor
+ * Class <code>GCD</code> gathers several functions to compute Greatest Common Divisor
  * of a ensemble of integer values.
  *
  * @author Hervé Bitteur

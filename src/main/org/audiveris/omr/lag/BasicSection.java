@@ -61,7 +61,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code BasicSection} is a basic implementation of {@link Section}.
+ * Class <code>BasicSection</code> is a basic implementation of {@link Section}.
  *
  * @author Hervé Bitteur
  */
@@ -121,7 +121,7 @@ public class BasicSection
     }
 
     /**
-     * Creates a new {@code BasicSection} object from a {@link DynamicSection} instance.
+     * Creates a new <code>BasicSection</code> object from a {@link DynamicSection} instance.
      *
      * @param ds the provided dynamic section instance
      */
@@ -1009,13 +1009,13 @@ public class BasicSection
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * Meant for JAXB handling of Section interface.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<BasicSection, Section>
     {
 

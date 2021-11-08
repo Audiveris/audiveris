@@ -51,7 +51,7 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code DynamicsInter} represents a dynamics indication (such as mf).
+ * Class <code>DynamicsInter</code> represents a dynamics indication (such as mf).
  *
  * @author Hervé Bitteur
  */

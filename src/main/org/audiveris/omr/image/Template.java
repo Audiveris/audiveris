@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Class {@code Template} implements a template to be used for matching evaluation on a
+ * Class <code>Template</code> implements a template to be used for matching evaluation on a
  * distance transform image.
  * <p>
  * There are several topics to consider in a template specification:

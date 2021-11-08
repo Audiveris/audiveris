@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Class {@code Clock} provides various features related to the current date and time,
+ * Class <code>Clock</code> provides various features related to the current date and time,
  * as well as the elapsed time since the beginning of the application.
  *
  * @author Hervé Bitteur

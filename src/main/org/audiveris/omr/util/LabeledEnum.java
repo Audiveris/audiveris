@@ -26,7 +26,7 @@ import org.jdesktop.application.ResourceMap;
 import java.util.Objects;
 
 /**
- * Class {@code LabeledEnum} is an entry composed of an enum value and a string value.
+ * Class <code>LabeledEnum</code> is an entry composed of an enum value and a string value.
  * <p>
  * This can be used to mimic documented (or localized) Enum type.
  *
@@ -129,7 +129,7 @@ public class LabeledEnum<E extends Enum<E>>
             final E value = values[i];
             final String key = prefix + value.name();
             final String label = resources.getString(key);
-            labeled[i] = new LabeledEnum<E>(value, (label != null) ? label : value.name());
+            labeled[i] = new LabeledEnum<>(value, (label != null) ? label : value.name());
         }
 
         return labeled;

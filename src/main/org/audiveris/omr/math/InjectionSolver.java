@@ -24,7 +24,7 @@ package org.audiveris.omr.math;
 import java.util.Arrays;
 
 /**
- * Class {@code InjectionSolver} handles the injection of a collection of elements
+ * Class <code>InjectionSolver</code> handles the injection of a collection of elements
  * (called domain) into another collection of elements (called range, or co-domain).
  * <p>
  * It finds a mapping that minimizes the global mapping distance, given the individual distance for
@@ -154,7 +154,7 @@ public class InjectionSolver
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
     /**
-     * Interface {@code Distance} provides the measurement for individual mapping costs.
+     * Interface <code>Distance</code> provides the measurement for individual mapping costs.
      */
     public static interface Distance
     {

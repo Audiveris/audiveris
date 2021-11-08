@@ -10,7 +10,7 @@ import org.audiveris.omr.util.Table;
 import java.util.LinkedList;
 
 /**
- * Class {@code WatershedGrayLevel} implements Gray-Level Watershed Segmentation
+ * Class <code>WatershedGrayLevel</code> implements Gray-Level Watershed Segmentation
  *
  * @author Xavier Philippeau
  */

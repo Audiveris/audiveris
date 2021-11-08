@@ -31,6 +31,7 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -56,9 +58,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.Result;
+import javax.xml.transform.stream.StreamResult;
 
 /**
- * Class {@code Jaxb} provides a collection of type adapters and facades for JAXB.
+ * Class <code>Jaxb</code> provides methods to help [un]marshalling objects,
+ * together with many JAXB adapters and type facades.
+ * <ul>
+ * <li>These adapters and facades are meant for predefined classes we cannot annotate.
+ * <li>For our own OMR classes that we can annotate, facades are not needed and JAXB adapters
+ * should preferably be located in the class itself.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -70,6 +80,7 @@ public abstract class Jaxb
 
     //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
+    @SuppressWarnings("unused")
     private Jaxb ()
     {
     }
@@ -174,6 +185,84 @@ public abstract class Jaxb
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // MarshalLogger //
+    //---------------//
+    /**
+     * A logger specific for marshalling.
+     */
+    public static class MarshalLogger
+            extends Marshaller.Listener
+    {
+
+        @Override
+        public void afterMarshal (Object source)
+        {
+            logger.info("GL afterMarshal  {}", source);
+        }
+
+        @Override
+        public void beforeMarshal (Object source)
+        {
+            logger.info("GL beforeMarshal {}", source);
+        }
+    }
+
+    //-----------------//
+    // UnmarshalLogger //
+    //-----------------//
+    /**
+     * Specific logger for unmarshalling.
+     */
+    public static class UnmarshalLogger
+            extends Unmarshaller.Listener
+    {
+
+        @Override
+        public void afterUnmarshal (Object target,
+                                    Object parent)
+        {
+            logger.info("GL afterUnmarshal parent:{} of {}", parent, target);
+        }
+
+        @Override
+        public void beforeUnmarshal (Object target,
+                                     Object parent)
+        {
+            logger.info("GL beforeUnmarshal parent:{} for target {}", parent, target.getClass());
+        }
+    }
+
+    //-------------------------//
+    // OmrSchemaOutputResolver //
+    //-------------------------//
+    /**
+     * A SchemaOutputResolver meant for this OMR application.
+     */
+    public static class OmrSchemaOutputResolver
+            extends SchemaOutputResolver
+    {
+
+        /** Output file name. */
+        private final String outputFileName;
+
+        public OmrSchemaOutputResolver (String outputFileName)
+        {
+            this.outputFileName = outputFileName;
+        }
+
+        @Override
+        public Result createOutput (String namespaceURI,
+                                    String suggestedFileName)
+        {
+            File file = new File(outputFileName);
+            StreamResult result = new StreamResult(file);
+            result.setSystemId(file.getAbsolutePath());
+
+            return result;
+        }
+    }
+
     //----------------------//
     // AtomicIntegerAdapter //
     //----------------------//
@@ -267,47 +356,86 @@ public abstract class Jaxb
             return facade.getCurve();
         }
 
-        @XmlRootElement
+        /**
+         * Class <code>CubicFacade</code> is a JAXB-compatible facade for predefined
+         * {@link java.awt.geom.CubicCurve2D.Double} class.
+         * <p>
+         * All coordinates are coded with a maximum of 1 digit after the dot.
+         *
+         * @author Hervé Bitteur
+         */
+        @XmlRootElement(name = "cubic")
         private static class CubicFacade
         {
 
+            /**
+             * Abscissa of the start point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double x1;
 
+            /**
+             * Ordinate of the start point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double y1;
 
+            /**
+             * Abscissa of the first control point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double ctrlx1;
 
+            /**
+             * Ordinate of the first control point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double ctrly1;
 
+            /**
+             * Abscissa of the second control point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double ctrlx2;
 
+            /**
+             * Ordinate of the second control point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double ctrly2;
 
+            /**
+             * Abscissa of the end point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double x2;
 
+            /**
+             * Ordinate of the end point of the cubic curve segment.
+             */
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double y2;
 
-            // Needed for JAXB
-            CubicFacade ()
+            /** No-arg constructor needed for JAXB. */
+            @SuppressWarnings("unused")
+            private CubicFacade ()
             {
             }
 
+            /**
+             * Creates an instance of <code>CubicFacade</code> from a {@link CubicCurve2D}
+             * parameter.
+             *
+             * @param curve the CubicCurve2D instance to interface.
+             */
             CubicFacade (CubicCurve2D curve)
             {
                 this.x1 = curve.getX1();
@@ -359,24 +487,32 @@ public abstract class Jaxb
             return facade.getDimension();
         }
 
+        /**
+         * Class <code>DimensionFacade</code> is a JAXB-compatible facade for predefined
+         * {@link java.awt.geom.Dimension} class.
+         */
+        @XmlRootElement(name = "dimension")
         private static class DimensionFacade
         {
 
+            /** The width dimension. */
             @XmlAttribute(name = "w")
             public int width;
 
+            /** The height dimension. */
             @XmlAttribute(name = "h")
             public int height;
 
             /**
              * Needed for JAXB.
              */
-            DimensionFacade ()
+            @SuppressWarnings("unused")
+            private DimensionFacade ()
             {
             }
 
             /**
-             * Creates a new DimensionFacade object.
+             * Creates a new <code>DimensionFacade</code> object.
              *
              * @param dimension the interfaced dimension
              */
@@ -579,20 +715,37 @@ public abstract class Jaxb
             return facade.getLine();
         }
 
-        @XmlRootElement
+        /**
+         * Class <code>Line2DFacade</code> is a JAXB-compatible facade for predefined
+         * {@link java.awt.geom.Line2D.Double} class.
+         */
+        @XmlRootElement(name = "line2d")
         private static class Line2DFacade
         {
 
+            /**
+             * Start point of line.
+             */
             @XmlElement
             public Point2DFacade p1;
 
+            /**
+             * End point of line.
+             */
             @XmlElement
             public Point2DFacade p2;
 
-            Line2DFacade ()
+            /** No-arg constructor needed for JAXB. */
+            @SuppressWarnings("unused")
+            private Line2DFacade ()
             {
             }
 
+            /**
+             * Creates a <code>Line2DFacade</code> from a {@link Line2D} parameter.
+             *
+             * @param line the Line2D instance to interface
+             */
             Line2DFacade (Line2D line)
             {
                 Objects.requireNonNull(line, "Cannot create Line2DFacade with a null line");
@@ -600,6 +753,11 @@ public abstract class Jaxb
                 p2 = new Point2DFacade(line.getP2());
             }
 
+            /**
+             * Report the interfaced Line2D object.
+             *
+             * @return the interfaced object
+             */
             public Line2D getLine ()
             {
                 return new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
@@ -608,43 +766,11 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                final StringBuilder sb = new StringBuilder("Line2DF{");
-
-                if (p1 != null) {
-                    sb.append("p1:").append(p1);
-                }
-
-                if (p2 != null) {
-                    sb.append(",p2:").append(p2);
-                }
-
-                sb.append('}');
-
-                return sb.toString();
+                return new StringBuilder("Line2DF{")
+                        .append("p1:").append(p1)
+                        .append(",p2:").append(p2)
+                        .append('}').toString();
             }
-        }
-    }
-
-    //---------------//
-    // MarshalLogger //
-    //---------------//
-    /**
-     * A logger specific for marshalling.
-     */
-    public static class MarshalLogger
-            extends Marshaller.Listener
-    {
-
-        @Override
-        public void afterMarshal (Object source)
-        {
-            logger.info("GL afterMarshal  {}", source);
-        }
-
-        @Override
-        public void beforeMarshal (Object source)
-        {
-            logger.info("GL beforeMarshal {}", source);
         }
     }
 
@@ -745,26 +871,48 @@ public abstract class Jaxb
             return facade.getPoint();
         }
 
+        /**
+         * Class <code>PointFacade</code> is a JAXB-compatible facade for predefined
+         * {@link java.awt.Point} class.
+         */
+        @XmlRootElement(name = "point")
         private static class PointFacade
         {
 
+            /**
+             * Point abscissa.
+             */
             @XmlAttribute
             public int x;
 
+            /**
+             * Point ordinate.
+             */
             @XmlAttribute
             public int y;
 
             // Needed for JAXB
-            PointFacade ()
+            @SuppressWarnings("unused")
+            private PointFacade ()
             {
             }
 
+            /**
+             * Creates a <code>PointFacade</code> object from a Point parameter.
+             *
+             * @param point the Point to interface
+             */
             PointFacade (Point point)
             {
                 this.x = point.x;
                 this.y = point.y;
             }
 
+            /**
+             * Report the interfaced Point.
+             *
+             * @return the Point value
+             */
             public Point getPoint ()
             {
                 return new Point(x, y);
@@ -773,12 +921,10 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                final StringBuilder sb = new StringBuilder("PointF{");
-                sb.append("x:").append(x);
-                sb.append(",y:").append(y);
-                sb.append('}');
-
-                return sb.toString();
+                return new StringBuilder("PointF{")
+                        .append("x:").append(x)
+                        .append(",y:").append(y)
+                        .append('}').toString();
             }
         }
     }
@@ -815,25 +961,49 @@ public abstract class Jaxb
             return facade.getRectangle2D();
         }
 
+        /**
+         * Class <code>Rectangle2DFacade</code> is a JAXB-compatible facade for predefined
+         * {@link java.awt.geom.Rectangle2D} class.
+         * <p>
+         * All values are coded with a maximum of 3 digits after the dot.
+         */
+        @XmlRootElement(name = "rectangle2d")
         private static class Rectangle2DFacade
         {
 
+            /**
+             * Abscissa of upper-left corner of rectangle.
+             */
             @XmlAttribute(name = "x")
             @XmlJavaTypeAdapter(type = double.class, value = Double3Adapter.class)
             public double x;
 
+            /**
+             * Ordinate of upper-left corner of rectangle.
+             */
             @XmlAttribute(name = "y")
             @XmlJavaTypeAdapter(type = double.class, value = Double3Adapter.class)
             public double y;
 
+            /**
+             * Width of rectangle.
+             */
             @XmlAttribute(name = "w")
             @XmlJavaTypeAdapter(type = double.class, value = Double3Adapter.class)
             public double width;
 
+            /**
+             * Height of rectangle.
+             */
             @XmlAttribute(name = "h")
             @XmlJavaTypeAdapter(type = double.class, value = Double3Adapter.class)
             public double height;
 
+            /**
+             * Creates a <code>Rectangle2DFacade</code> object from a Rectangle2D parameter.
+             *
+             * @param rect the provided Rectangle2D
+             */
             Rectangle2DFacade (Rectangle2D rect)
             {
                 x = rect.getX();
@@ -842,6 +1012,10 @@ public abstract class Jaxb
                 height = rect.getHeight();
             }
 
+            /**
+             * No-arg constructor needed for JAXB.
+             */
+            @SuppressWarnings("unused")
             private Rectangle2DFacade ()
             {
             }
@@ -885,31 +1059,57 @@ public abstract class Jaxb
             return facade.getRectangle();
         }
 
+        /**
+         * Class <code>RectangleFacade</code> is a JAXB-compatible facade for predefined
+         * {@link java.awt.Rectangle} class.
+         */
+        @XmlRootElement(name = "rectangle")
         private static class RectangleFacade
         {
 
+            /**
+             * Abscissa of upper-left corner of rectangle.
+             */
             @XmlAttribute
             public int x;
 
+            /**
+             * Ordinate of upper-left corner of rectangle.
+             */
             @XmlAttribute
             public int y;
 
+            /**
+             * Width of rectangle.
+             */
             @XmlAttribute(name = "w")
             public int width;
 
+            /**
+             * Height of rectangle.
+             */
             @XmlAttribute(name = "h")
             public int height;
 
-            RectangleFacade ()
-            {
-            }
-
-            RectangleFacade (Rectangle rect)
+            /**
+             * Creates a <code>RectangleFacade</code> object from a Rectangle parameter.
+             *
+             * @param rect the provided Rectangle
+             */
+            public RectangleFacade (Rectangle rect)
             {
                 x = rect.x;
                 y = rect.y;
                 width = rect.width;
                 height = rect.height;
+            }
+
+            /**
+             * No-arg constructor needed for JAXB.
+             */
+            @SuppressWarnings("unused")
+            private RectangleFacade ()
+            {
             }
 
             public Rectangle getRectangle ()
@@ -920,14 +1120,12 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                final StringBuilder sb = new StringBuilder("RectangleF{");
-                sb.append("x:").append(x);
-                sb.append(",y:").append(y);
-                sb.append(",w:").append(width);
-                sb.append(",h:").append(height);
-                sb.append('}');
-
-                return sb.toString();
+                return new StringBuilder("RectangleF{")
+                        .append("x:").append(x)
+                        .append(",y:").append(y)
+                        .append(",w:").append(width)
+                        .append(",h:").append(height)
+                        .append('}').toString();
             }
         }
     }
@@ -965,54 +1163,45 @@ public abstract class Jaxb
         }
     }
 
-    //-----------------//
-    // UnmarshalLogger //
-    //-----------------//
-    /**
-     * Specific logger for unmarshalling.
-     */
-    public static class UnmarshalLogger
-            extends Unmarshaller.Listener
-    {
-
-        @Override
-        public void afterUnmarshal (Object target,
-                                    Object parent)
-        {
-            logger.info("GL afterUnmarshal parent:{} of {}", parent, target);
-        }
-
-        @Override
-        public void beforeUnmarshal (Object target,
-                                     Object parent)
-        {
-            logger.info("GL beforeUnmarshal parent:{} for target {}", parent, target.getClass());
-        }
-    }
-
     //---------------//
     // Point2DFacade //
     //---------------//
     /**
-     * A facade to Point2D.
+     * Class <code>Point2DFacade</code> is a JAXB-compatible facade for predefined
+     * {@link java.awt.geom.Point2D.Double} class.
+     * <p>
+     * All coordinates are coded with a maximum of 1 digit after the dot.
      */
-    @XmlRootElement
+    @XmlRootElement(name = "point2d")
     private static class Point2DFacade
     {
 
+        /**
+         * Abscissa value.
+         */
         @XmlAttribute
         @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
         public double x;
 
+        /**
+         * Ordinate value.
+         */
         @XmlAttribute
         @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
         public double y;
 
-        Point2DFacade ()
+        /** No-arg constructor needed for JAXB. */
+        @SuppressWarnings("unused")
+        private Point2DFacade ()
         {
         }
 
-        Point2DFacade (Point2D point)
+        /**
+         * Creates a new <code>Point2DFacade</code> object from a Point2D parameter.
+         *
+         * @param point the Point2D object to interface
+         */
+        public Point2DFacade (Point2D point)
         {
             this.x = point.getX();
             this.y = point.getY();
@@ -1026,12 +1215,10 @@ public abstract class Jaxb
         @Override
         public String toString ()
         {
-            final StringBuilder sb = new StringBuilder("Point2DF{");
-            sb.append("x:").append(x);
-            sb.append(",y:").append(y);
-            sb.append('}');
-
-            return sb.toString();
+            return new StringBuilder("Point2DF{")
+                    .append("x:").append(x)
+                    .append(",y:").append(y)
+                    .append('}').toString();
         }
     }
 }

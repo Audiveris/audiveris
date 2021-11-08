@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code Entities} provides utility methods for entities.
+ * Class <code>Entities</code> provides utility methods for entities.
  *
  * @author Hervé Bitteur
  */
@@ -253,7 +253,7 @@ public class Entities
 
             if ((bounds != null) && rect.intersects(bounds)) {
                 if (list == null) {
-                    list = new ArrayList<E>();
+                    list = new ArrayList<>();
                 }
 
                 list.add(entity);

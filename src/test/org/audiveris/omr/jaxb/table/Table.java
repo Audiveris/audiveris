@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Class {@code Table}
+ * Class <code>Table</code>
  *
  * @author Hervé Bitteur
  */
@@ -51,7 +51,7 @@ public class Table
     public final RunSequence[] sequences;
 
     /**
-     * Creates a new {@code Table} object.
+     * Creates a new <code>Table</code> object.
      *
      * @param width     DOCUMENT ME!
      * @param height    DOCUMENT ME!

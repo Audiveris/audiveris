@@ -26,7 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import java.util.Objects;
 
 /**
- * Class {@code TimeValue} represents a class of <b>equivalent</b> time signatures that
+ * Class <code>TimeValue</code> represents a class of <b>equivalent</b> time signatures that
  * can be checked in a system column of time-signatures.
  * <ul>
  * <li>"C" (COMMON_TIME) and 4/4 (either whole "4/4" or pair "4","4") are NOT equivalent, because
@@ -51,7 +51,7 @@ public class TimeValue
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeValue} object.
+     * Creates a new <code>TimeValue</code> object.
      *
      * @param specificShape the specific whole specificShape (COMMON_TIME or CUT_TIME) or null!
      * @param timeRational  the exact time rational value (6/8 != 3/4)

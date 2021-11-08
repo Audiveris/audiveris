@@ -26,7 +26,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
 
 /**
- * Class {@code RelationTask} acts on relations, by linking or unlinking inters.
+ * Class <code>RelationTask</code> acts on relations, by linking or unlinking inters.
  *
  * @author Hervé Bitteur
  */
@@ -43,7 +43,7 @@ public abstract class RelationTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RelationTask} object.
+     * Creates a new <code>RelationTask</code> object.
      *
      * @param sig        the underlying sig
      * @param relation   the relation task is focused upon

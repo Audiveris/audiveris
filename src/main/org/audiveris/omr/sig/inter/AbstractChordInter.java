@@ -59,7 +59,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
+ * Class <code>AbstractChordInter</code> represents an ensemble of notes (rests, heads)
  * attached to the same stem if any, and that start on the same time slot in a part.
  * <p>
  * A chord made of small heads (typically used in Acciaccatura and Appoggiatura) is a
@@ -122,7 +122,7 @@ public abstract class AbstractChordInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractChordInter} object.
+     * Creates a new <code>AbstractChordInter</code> object.
      *
      * @param grade the interpretation quality
      */

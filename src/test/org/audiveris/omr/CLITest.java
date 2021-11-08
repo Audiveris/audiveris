@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr;
 
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.Dumping;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -43,7 +43,7 @@ public class CLITest
     private final CLI instance = new CLI("AudiverisTest");
 
     /**
-     * Creates a new {@code CLITest} object.
+     * Creates a new <code>CLITest</code> object.
      */
     public CLITest ()
     {
@@ -160,7 +160,7 @@ public class CLITest
         assertEquals(true, params.batchMode);
         assertEquals(true, params.helpMode);
         assertEquals(Arrays.asList(2, 3, 5).toString(), params.getSheetIds().toString());
-        assertEquals(Step.PAGE, params.step);
+        assertEquals(OmrStep.PAGE, params.step);
         assertEquals(2, params.arguments.size());
         assertEquals("myScript.xml", params.arguments.get(0).toString());
         assertEquals("my Input.pdf", params.arguments.get(1).toString());
@@ -175,7 +175,7 @@ public class CLITest
         String[] args = new String[]{"-step", "PAGE"};
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
-        assertEquals(Step.PAGE, params.step);
+        assertEquals(OmrStep.PAGE, params.step);
     }
 
     @Test

@@ -38,7 +38,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * Class {@code NameSet} encapsulates the handling of a list of names,
+ * Class <code>NameSet</code> encapsulates the handling of a list of names,
  * a typical use is a history of file names.
  * <p>
  * Actually, rather than a set, it is a list where the most recently used

@@ -28,7 +28,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BracketConnectorInter} represents a vertical connector between two
+ * Class <code>BracketConnectorInter</code> represents a vertical connector between two
  * brackets inters across staves.
  *
  * @author Hervé Bitteur

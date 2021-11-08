@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code SheetReduction} works at sheet level to reduce the duplicated inters
+ * Class <code>SheetReduction</code> works at sheet level to reduce the duplicated inters
  * located in inter-system areas (gutters).
  * <p>
  * Since there is no reliable way to decide upfront if a glyph located between systems belongs to
@@ -61,7 +61,7 @@ public class SheetReduction
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code SheetReduction} object.
+     * Create a new <code>SheetReduction</code> object.
      *
      * @param sheet the sheet to reduce
      */

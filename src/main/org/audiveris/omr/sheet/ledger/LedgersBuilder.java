@@ -81,7 +81,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code LedgersBuilder} retrieves ledgers for a system.
+ * Class <code>LedgersBuilder</code> retrieves ledgers for a system.
  * <p>
  * Each virtual line of ledgers is processed, one after the other, going away from the reference
  * staff, above and below:
@@ -610,7 +610,7 @@ public class LedgersBuilder
             for (LedgerInter other : ledgers.subList(i + 1, ledgers.size())) {
                 if (GeoUtil.xOverlap(ledgerBox, other.getBounds()) > 0) {
                     // Abscissa overlap
-                    exclusions.add(sig.insertExclusion(ledger, other, Exclusion.Cause.OVERLAP));
+                    exclusions.add(sig.insertExclusion(ledger, other, Exclusion.ExclusionCause.OVERLAP));
                 } else {
                     break; // End of reachable neighbors
                 }

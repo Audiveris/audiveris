@@ -49,7 +49,7 @@ public class BooleanPane
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BooleanPane} object.
+     * Creates a new <code>BooleanPane</code> object.
      *
      * @param title  pane title string
      * @param parent parent pane if any

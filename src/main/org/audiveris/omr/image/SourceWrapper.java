@@ -24,7 +24,7 @@ package org.audiveris.omr.image;
 import ij.process.ByteProcessor;
 
 /**
- * Class {@code SourceWrapper} wraps a PixelSource.
+ * Class <code>SourceWrapper</code> wraps a PixelSource.
  *
  * @author Hervé Bitteur
  */

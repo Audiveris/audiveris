@@ -86,7 +86,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code AnnotationsBuilder} processes a sheet to build the symbols Annotations
+ * Class <code>AnnotationsBuilder</code> processes a sheet to build the symbols Annotations
  * for an OMR DataSet.
  *
  * @author Hervé Bitteur
@@ -135,7 +135,7 @@ public class AnnotationsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AnnotationsBuilder} object.
+     * Creates a new <code>AnnotationsBuilder</code> object.
      *
      * @param sheet the sheet to export
      * @param path  path to annotations file

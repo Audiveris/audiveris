@@ -40,7 +40,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Class {@code Inters} gathers utilities on inter instances.
+ * Class <code>Inters</code> gathers utilities on inter instances.
  *
  * @author Hervé Bitteur
  */

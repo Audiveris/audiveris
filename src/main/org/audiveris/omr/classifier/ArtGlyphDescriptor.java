@@ -26,7 +26,7 @@ import org.audiveris.omr.moments.ARTMoments;
 import org.audiveris.omr.moments.GeometricMoments;
 
 /**
- * Class {@code ArtGlyphDescriptor} defines glyph features based on ART moments plus
+ * Class <code>ArtGlyphDescriptor</code> defines glyph features based on ART moments plus
  * some geometric moments.
  *
  * @author Hervé Bitteur
@@ -41,7 +41,7 @@ public class ArtGlyphDescriptor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ArtGlyphDescriptor} object.
+     * Creates a new <code>ArtGlyphDescriptor</code> object.
      */
     public ArtGlyphDescriptor ()
     {

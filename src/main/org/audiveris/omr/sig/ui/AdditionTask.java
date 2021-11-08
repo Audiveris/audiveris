@@ -29,7 +29,7 @@ import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
- * Class {@code AdditionTask} adds an Inter instance, together with its relations.
+ * Class <code>AdditionTask</code> adds an Inter instance, together with its relations.
  *
  * @author Hervé Bitteur
  */

@@ -42,7 +42,7 @@ public class BasicTimeBuilder
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code BasicTimeBuilder} object.
+     * Creates a new <code>BasicTimeBuilder</code> object.
      *
      * @param staff  underlying staff
      * @param column containing time column

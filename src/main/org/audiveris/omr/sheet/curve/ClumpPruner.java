@@ -52,7 +52,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Class {@code ClumpPruner} prunes a clump of competing slurs, and keep the best one
+ * Class <code>ClumpPruner</code> prunes a clump of competing slurs, and keep the best one
  * by evaluating the connections to embraced chords.
  * <p>
  * It works at sheet level as a companion of {@link SlursBuilder}.
@@ -234,7 +234,7 @@ public class ClumpPruner
     // SlurEntry //
     //-----------//
     /**
-     * Class {@code SlurEntry} handles link data for a slur.
+     * Class <code>SlurEntry</code> handles link data for a slur.
      */
     private static class SlurEntry
     {

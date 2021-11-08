@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 
 /**
- * Class {@code IdUtil} provides features related to ID string, composed of a prefix
+ * Class <code>IdUtil</code> provides features related to ID string, composed of a prefix
  * string (zero, one or several letters) followed by digits.
  * Examples of such IDs are: G123, I45, O-678, PRF-101, 2345
  *

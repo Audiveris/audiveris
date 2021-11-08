@@ -8,7 +8,7 @@ package org.audiveris.omr.image;
 import ij.process.ByteProcessor;
 
 /**
- * Class {@code ChamferDistance} implements a Distance Transform operation using
+ * Class <code>ChamferDistance</code> implements a Distance Transform operation using
  * chamfer masks.
  *
  * @author Code by Xavier Philippeau <br>

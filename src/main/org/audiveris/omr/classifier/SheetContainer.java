@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.audiveris.omr.classifier.SheetContainer.Adapter;
+import org.audiveris.omr.classifier.SheetContainer.HashMapAdapter;
 import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code SheetContainer} contains descriptions of sample sheets, notably their
+ * Class <code>SheetContainer</code> contains descriptions of sample sheets, notably their
  * ID, their name and alias(es) and the hash-code of their binary image if any.
  * <p>
  * Its main purpose is to avoid unnecessary loading of sheet images in memory.
@@ -81,7 +81,7 @@ public class SheetContainer
     //----------------
     /** Map (RunTable Hash code => list of sheet descriptors). */
     @XmlElement(name = "sheets")
-    @XmlJavaTypeAdapter(Adapter.class)
+    @XmlJavaTypeAdapter(HashMapAdapter.class)
     private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<>();
 
     // Transient data
@@ -94,7 +94,7 @@ public class SheetContainer
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetContainer} object. Needed for JAXB.
+     * Creates a new <code>SheetContainer</code> object. Needed for JAXB.
      */
     public SheetContainer ()
     {
@@ -410,13 +410,13 @@ public class SheetContainer
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //----------------//
+    // HashMapAdapter //
+    //----------------//
     /**
      * JAXB adapter to support a HashMap.
      */
-    public static class Adapter
+    public static class HashMapAdapter
             extends XmlAdapter<ContainerValue, HashMap<Integer, List<Descriptor>>>
     {
 

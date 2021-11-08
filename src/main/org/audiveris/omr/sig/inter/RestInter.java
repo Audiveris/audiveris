@@ -50,7 +50,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RestInter} represents a rest note.
+ * Class <code>RestInter</code> represents a rest note.
  *
  * @author Hervé Bitteur
  */

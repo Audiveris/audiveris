@@ -26,6 +26,8 @@ import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+import org.audiveris.omr.sig.inter.ChordNameInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.proxymusic.AccidentalText;
 import org.audiveris.proxymusic.AccidentalValue;
@@ -50,7 +52,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.JAXBElement;
 
 /**
- * Class {@code MusicXML} gathers convenient methods dealing with MusicXML data
+ * Class <code>MusicXML</code> gathers convenient methods dealing with MusicXML data
  *
  * @author Hervé Bitteur
  */
@@ -360,12 +362,13 @@ public abstract class MusicXML
     // kindOf //
     //--------//
     /**
-     * Convert from Audiveris ChordNameInter.Kind.Type type to Proxymusic KindValue type
+     * Converts from Audiveris <code>ChordNameInter.ChordKind.ChordType</code> type
+     * to Proxymusic <code>KindValue</code> type
      *
-     * @param type Audiveris enum ChordSymbol.Type
+     * @param type Audiveris enum ChordSymbol.ChordType
      * @return Proxymusic enum KindValue
      */
-    public static KindValue kindOf (org.audiveris.omr.sig.inter.ChordNameInter.Kind.Type type)
+    public static KindValue kindOf (ChordNameInter.ChordKind.ChordType type)
     {
         return KindValue.valueOf(type.toString());
     }
@@ -374,12 +377,12 @@ public abstract class MusicXML
     // stepOf //
     //--------//
     /**
-     * Convert from Audiveris Step type to Proxymusic Step type
+     * Convert from Audiveris NoteStep type to Proxymusic NoteStep type
      *
      * @param step Audiveris enum step
      * @return Proxymusic enum step
      */
-    public static Step stepOf (org.audiveris.omr.sig.inter.HeadInter.Step step)
+    public static Step stepOf (HeadInter.NoteStep step)
     {
         return Step.fromValue(step.toString());
     }
@@ -388,13 +391,13 @@ public abstract class MusicXML
     // typeOf //
     //--------//
     /**
-     * Convert from Audiveris ChordNameInter.Degree.DegreeType to Proxymusic DegreeTypeValue
+     * Converts from Audiveris <code>ChordNameInter.ChordDegree.DegreeType</code>
+     * to Proxymusic <code>DegreeTypeValue</code>.
      *
      * @param type Audiveris enum DegreeType
      * @return Proxymusic enum DegreeTypeValue
      */
-    public static DegreeTypeValue typeOf (
-            org.audiveris.omr.sig.inter.ChordNameInter.Degree.DegreeType type)
+    public static DegreeTypeValue typeOf (ChordNameInter.ChordDegree.DegreeType type)
     {
         return DegreeTypeValue.valueOf(type.toString());
     }

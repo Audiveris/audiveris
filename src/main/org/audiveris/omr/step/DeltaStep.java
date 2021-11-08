@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code DeltaStep} computes the delta value as a kind of recognition level on a
+ * Class <code>DeltaStep</code> computes the delta value as a kind of recognition level on a
  * whole sheet.
  *
  * @author Hervé Bitteur

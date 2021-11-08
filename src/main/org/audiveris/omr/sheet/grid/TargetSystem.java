@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetSystem} is an immutable perfect destination object for a system.
+ * Class <code>TargetSystem</code> is an immutable perfect destination object for a system.
  *
  * @author Hervé Bitteur
  */

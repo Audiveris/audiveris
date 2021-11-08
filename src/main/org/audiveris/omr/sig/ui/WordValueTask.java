@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.WordInter;
 
 /**
- * Class {@code WordValueTask} handle the text value update of a word.
+ * Class <code>WordValueTask</code> handle the text value update of a word.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +41,7 @@ public class WordValueTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code WordTask} object.
+     * Creates a new <code>WordTask</code> object.
      *
      * @param word     the word to modify
      * @param newValue new word value

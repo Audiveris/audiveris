@@ -26,7 +26,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code Run} implements a contiguous run of pixels of the same color.
+ * Class <code>Run</code> implements a contiguous run of pixels of the same color
+ * (black or white).
  * <p>
  * Note that the direction (vertical or horizontal) is not relevant.
  *
@@ -37,17 +38,24 @@ public class Run
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel. */
-    @XmlAttribute
+    /**
+     * This is the abscissa integer value (for a horizontal run)
+     * or the ordinate integer value (for a vertical run) of the first pixel encountered
+     * in the run.
+     */
+    @XmlAttribute(name = "start")
     protected int start;
 
-    /** Number of pixels. */
-    @XmlAttribute
+    /**
+     * This is the total number of pixels that compose the run, all of the same color,
+     * until a different color is encountered or the image bound is reached.
+     */
+    @XmlAttribute(name = "length")
     protected int length;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Run} instance.
+     * Creates a new <code>Run</code> instance.
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels
@@ -60,7 +68,7 @@ public class Run
     }
 
     /**
-     * Creates a new {@code Run} object from an existing one.
+     * Creates a new <code>Run</code> object from an existing one.
      *
      * @param that the run to copy
      */

@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code TextBasedItem} is an abstract TextItem with baseline and confidence
+ * Class <code>TextBasedItem</code> is an abstract TextItem with baseline and confidence
  * informations.
  *
  * @author Hervé Bitteur

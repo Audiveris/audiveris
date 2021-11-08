@@ -30,7 +30,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code TableUtil} gathers utilities to dump basic table content.
+ * Class <code>TableUtil</code> gathers utilities to dump basic table content.
  *
  * @author Hervé Bitteur
  */

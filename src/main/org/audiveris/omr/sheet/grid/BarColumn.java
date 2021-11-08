@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
- * Class {@code BarColumn} handles a system-based column of aligned projection peaks,
+ * Class <code>BarColumn</code> handles a system-based column of aligned projection peaks,
  * since column consistency helps handle barline candidates.
  * <ul>
  * <li>By definition, all members (peaks) of a column are aligned.
@@ -75,7 +75,7 @@ public class BarColumn
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BarColumn} object.
+     * Creates a new <code>BarColumn</code> object.
      *
      * @param system    the containing system
      * @param peakGraph the sheet graph of peaks

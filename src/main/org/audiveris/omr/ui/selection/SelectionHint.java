@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.selection;
 
 /**
- * Enum {@code SelectionHint} gives a hint about what observers should do with the
+ * Enum <code>SelectionHint</code> gives a hint about what observers should do with the
  * published selection.
  *
  * @author Hervé Bitteur

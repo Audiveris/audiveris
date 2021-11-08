@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordWedgeRelation} represents a support relation between a chord and
+ * Class <code>ChordWedgeRelation</code> represents a support relation between a chord and
  * a wedge nearby.
  *
  * @author Hervé Bitteur
@@ -55,7 +55,7 @@ public class ChordWedgeRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChordWedgeRelation} object.
+     * Creates a new <code>ChordWedgeRelation</code> object.
      *
      * @param side which side of the wedge
      */

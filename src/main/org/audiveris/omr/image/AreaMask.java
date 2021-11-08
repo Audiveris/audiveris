@@ -29,7 +29,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 
 /**
- * Class {@code AreaMask} drives processing of locations using an absolute mask.
+ * Class <code>AreaMask</code> drives processing of locations using an absolute mask.
  *
  * @author Hervé Bitteur
  */
@@ -59,13 +59,13 @@ public class AreaMask
     // apply //
     //-------//
     /**
-     * Apply the mask and call the provided Adapter for each relevant
+     * Apply the mask and call the provided AreaMaskAdapter for each relevant
      * point of the mask.
      *
      * @param adapter call-back adapter for each relevant point of the mask
      * @return the number of points within mask area
      */
-    public int apply (Adapter adapter)
+    public int apply (AreaMaskAdapter adapter)
     {
         int count = 0;
 
@@ -101,12 +101,9 @@ public class AreaMask
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
-    // Adapter //
+    // AreaMaskAdapter //
     //---------//
-    /**
-     *
-     */
-    public static interface Adapter
+    public static interface AreaMaskAdapter
     {
 
         /**
@@ -124,7 +121,7 @@ public class AreaMask
     // ForeCounter //
     //-------------//
     private static class ForeCounter
-            implements Adapter
+            implements AreaMaskAdapter
     {
 
         private final ByteProcessor filter;

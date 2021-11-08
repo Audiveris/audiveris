@@ -50,7 +50,7 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 
 /**
- * Class {@code ChordSplitter} handles the splitting of a chord due to conflicting ties.
+ * Class <code>ChordSplitter</code> handles the splitting of a chord due to conflicting ties.
  * <p>
  * The problem is as follows: Several ties may arrive on different heads of a same chord, but they
  * must all come from a same other chord, otherwise the chord is in fact made of two chords (if not
@@ -124,7 +124,7 @@ public class ChordSplitter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChordSplitter} object.
+     * Creates a new <code>ChordSplitter</code> object.
      *
      * @param chord   the chord to split
      * @param side    the ties side where the chord is linked

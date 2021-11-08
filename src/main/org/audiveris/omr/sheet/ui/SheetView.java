@@ -44,7 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 /**
- * Class {@code SheetView} gathers a specific view (Binary, Data, ..) on a sheet with
+ * Class <code>SheetView</code> gathers a specific view (Binary, Data, ..) on a sheet with
  * its related column of boards.
  * <p>
  * It uses a JSplitPane:

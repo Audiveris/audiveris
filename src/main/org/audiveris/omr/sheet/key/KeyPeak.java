@@ -48,7 +48,7 @@ public class KeyPeak
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeyPeak} object.
+     * Creates a new <code>KeyPeak</code> object.
      *
      * @param start  x at peak start
      * @param main   x at max y

@@ -24,7 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.math.Rational;
 
 /**
- * Class {@code DurationFactor} handles a rational representation of duration
+ * Class <code>DurationFactor</code> handles a rational representation of duration
  * modification, such as those triggered by a tuplet.
  * <p>
  * Since in {@link Rational} super class, 'num' and 'den' are reduced by their GCD, in this class

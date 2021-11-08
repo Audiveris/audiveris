@@ -26,7 +26,7 @@ import org.audiveris.omr.sig.inter.AbstractInter;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code MirrorRelation} formalizes the relation between two mirrored inters.
+ * Class <code>MirrorRelation</code> formalizes the relation between two mirrored inters.
  * <p>
  * This relation replaced the deprecated mirror field member in {@link AbstractInter}
  *

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetPage} is an immutable perfect destination object for a page.
+ * Class <code>TargetPage</code> is an immutable perfect destination object for a page.
  *
  * @author Hervé Bitteur
  */

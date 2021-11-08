@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code RestSymbol} implements rest symbols whose decoration uses staff lines
+ * Class <code>RestSymbol</code> implements rest symbols whose decoration uses staff lines
  * as background.
  *
  * @author Hervé Bitteur

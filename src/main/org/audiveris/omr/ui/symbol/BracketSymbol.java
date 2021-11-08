@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BracketSymbol} displays a BRACKET symbol: [
+ * Class <code>BracketSymbol</code> displays a BRACKET symbol: [
  * <p>
  * <img src="doc-files/BracketUpperSerif.png" alt="Bracket upper serif">
  * <p>

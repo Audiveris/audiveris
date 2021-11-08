@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Class {@code CrossDetector} browses the horizontal gutters between systems for inters
+ * Class <code>CrossDetector</code> browses the horizontal gutters between systems for inters
  * which overlap across systems.
  *
  * @author Hervé Bitteur
@@ -65,7 +65,7 @@ public class CrossDetector
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code CrossDetector} object.
+     * Creates a new <code>CrossDetector</code> object.
      *
      * @param sheet the underlying sheet
      */

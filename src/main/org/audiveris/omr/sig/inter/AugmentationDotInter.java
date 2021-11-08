@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -51,7 +52,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AugmentationDotInter} represents an augmentation dot for
+ * Class <code>AugmentationDotInter</code> represents an augmentation dot for
  * a note (head or rest) or another dot.
  *
  * @author Hervé Bitteur
@@ -66,7 +67,7 @@ public class AugmentationDotInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AugmentationDotInter} object.
+     * Creates a new <code>AugmentationDotInter</code> object.
      *
      * @param glyph underlying glyph
      * @param grade evaluation value
@@ -606,7 +607,7 @@ public class AugmentationDotInter
                 final int bf2 = h2.getChord().getBeamsOrFlagsNumber();
 
                 if ((bf1 == bf2) || system.getSheet().getStub().getProcessingSwitches().getValue(
-                        ProcessingSwitches.Switch.bothSharedHeadDots)) {
+                        ProcessingSwitch.bothSharedHeadDots)) {
                     // Link to both
                     links.add(new Link(h1, new AugmentationRelation(), true));
                     links.add(new Link(h2, new AugmentationRelation(), true));

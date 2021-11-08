@@ -25,7 +25,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code LedgersStep} implements <b>LEDGERS</b> step, which retrieves all
+ * Class <code>LedgersStep</code> implements <b>LEDGERS</b> step, which retrieves all
  * possible ledger interpretations.
  *
  * @author Hervé Bitteur
@@ -61,7 +61,7 @@ public class LedgersStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Step step,
+    public void displayUI (OmrStep step,
                            Sheet sheet)
     {
         if (AdvancedTopics.Topic.DEBUG.isSet()) {

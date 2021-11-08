@@ -35,7 +35,7 @@ import org.audiveris.omr.ui.view.ScrollView;
 import java.util.Arrays;
 
 /**
- * Class {@code LagController} is a first attempt to provide an easy view on a lag in
+ * Class <code>LagController</code> is a first attempt to provide an easy view on a lag in
  * the context of sheet glyphs.
  *
  * @author Hervé Bitteur
@@ -52,11 +52,11 @@ public class LagController
     private final SheetTab tab;
 
     /** Related user display if any */
-    private MyView view;
+    private LagView view;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LagController} object.
+     * Creates a new <code>LagController</code> object.
      *
      * @param sheet related sheet
      * @param lag   the full horizontal lag
@@ -93,7 +93,7 @@ public class LagController
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyView(sheet.getGlyphIndex());
+        view = new LagView(sheet.getGlyphIndex());
 
         sheet.getStub().getAssembly().addViewTab(
                 tab,
@@ -105,20 +105,20 @@ public class LagController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // MyView //
-    //--------//
-    private class MyView
+    //---------//
+    // LagView //
+    //---------//
+    private class LagView
             extends NestView
     {
 
-        MyView (GlyphIndex glyphIndex)
+        LagView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(lag), sheet);
 
             setLocationService(sheet.getLocationService());
 
-            setName(tab + "-MyView");
+            setName(tab + "-LagView");
         }
     }
 }

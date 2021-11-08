@@ -34,7 +34,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TextFont} is meant to simplify the use of text font for pieces of text
+ * Class <code>TextFont</code> is meant to simplify the use of text font for pieces of text
  * such as titles, directions, lyrics, etc.
  *
  * @author Hervé Bitteur
@@ -64,9 +64,9 @@ public class TextFont
      *
      * @param fontName the font name. This can be a font face name or a font
      *                 family name, and may represent either a logical font or
-     *                 a physical font found in this {@code GraphicsEnvironment}.
-     * @param style    bit-mask style constant for the {@code Font}
-     * @param size     the point size of the {@code Font}
+     *                 a physical font found in this <code>GraphicsEnvironment</code>.
+     * @param style    bit-mask style constant for the <code>Font</code>
+     * @param size     the point size of the <code>Font</code>
      */
     public TextFont (String fontName,
                      int style,
@@ -91,7 +91,7 @@ public class TextFont
     /**
      * Creates a new TextFont object.
      *
-     * @param size the point size of the {@code Font}
+     * @param size the point size of the <code>Font</code>
      */
     public TextFont (float size)
     {

@@ -31,7 +31,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code SlashedFlagSymbol} displays a SMALL_FLAG_SLASH.
+ * Class <code>SlashedFlagSymbol</code> displays a SMALL_FLAG_SLASH.
  *
  * @author Hervé Bitteur
  */
@@ -45,7 +45,7 @@ public class SlashedFlagSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SmallFlagSymbol} object.
+     * Creates a new <code>SmallFlagSymbol</code> object.
      */
     public SlashedFlagSymbol ()
     {
@@ -53,7 +53,7 @@ public class SlashedFlagSymbol
     }
 
     /**
-     * Creates a new {@code SmallFlagSymbol} object.
+     * Creates a new <code>SmallFlagSymbol</code> object.
      *
      * @param isIcon true for an icon
      */

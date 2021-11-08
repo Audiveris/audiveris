@@ -31,7 +31,7 @@ import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
- * Class {@code RelationAction} displays a relation and selects the other interpretation
+ * Class <code>RelationAction</code> displays a relation and selects the other interpretation
  * (source or target).
  *
  * @author Hervé Bitteur

@@ -30,7 +30,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code ZoomAssembly} is a UI assembly of a zoom slider plus a view.
+ * Class <code>ZoomAssembly</code> is a UI assembly of a zoom slider plus a view.
  *
  * @author Hervé Bitteur
  */
@@ -53,7 +53,7 @@ public class ZoomAssembly
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code ZoomAssembly} object.
+     * Creates a new <code>ZoomAssembly</code> object.
      */
     public ZoomAssembly ()
     {

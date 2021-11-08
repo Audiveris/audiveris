@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code EndingSentenceRelation} represents a support relation between an ending
+ * Class <code>EndingSentenceRelation</code> represents a support relation between an ending
  * and its related number (such as "1." or "1,2") or text.
  *
  * @author Hervé Bitteur

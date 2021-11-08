@@ -39,7 +39,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 /**
- * Class {@code HiLoPeakFinder} finds value peaks of an IntegerFunction, using
+ * Class <code>HiLoPeakFinder</code> finds value peaks of an IntegerFunction, using
  * derivative hilos.
  * <p>
  * A derivative HiLo is a range in x that begins with strong positive derivatives (Hi) and ends with
@@ -97,7 +97,7 @@ public class HiLoPeakFinder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HiLoPeakFinder} object on (sub-)domain of provided function.
+     * Creates a new <code>HiLoPeakFinder</code> object on (sub-)domain of provided function.
      *
      * @param name     a name for this finder
      * @param function underlying function x &rarr; y
@@ -123,7 +123,7 @@ public class HiLoPeakFinder
     }
 
     /**
-     * Creates a new {@code HiLoPeakFinder} object aligned on provided function.
+     * Creates a new <code>HiLoPeakFinder</code> object aligned on provided function.
      *
      * @param name     a name for this finder
      * @param function underlying function x &rarr; y

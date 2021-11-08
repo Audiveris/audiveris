@@ -33,7 +33,7 @@ import javax.media.jai.Warp;
 import javax.media.jai.WarpGrid;
 
 /**
- * Class {@code JaiDewarper} is meant to keep JAI-based de-warping features separate
+ * Class <code>JaiDewarper</code> is meant to keep JAI-based de-warping features separate
  * from the rest of Audiveris application, and thus save on jar download.
  *
  * @author Hervé Bitteur

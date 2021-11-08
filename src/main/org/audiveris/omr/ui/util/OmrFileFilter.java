@@ -28,7 +28,7 @@ import java.util.Arrays;
 import javax.swing.filechooser.FileFilter;
 
 /**
- * Class {@code OmrFileFilter} is a special file filter, based on file extensions
+ * Class <code>OmrFileFilter</code> is a special file filter, based on file extensions
  *
  * @author Hervé Bitteur
  */
@@ -125,8 +125,8 @@ public class OmrFileFilter
      *
      * @param dir  the directory in which the file was found.
      * @param name the name of the file.
-     * @return {@code true} if and only if the name should be
-     *         included in the file list; {@code false} otherwise.
+     * @return <code>true</code> if and only if the name should be
+     *         included in the file list; <code>false</code> otherwise.
      */
     @Override
     public boolean accept (File dir,

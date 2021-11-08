@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code BarFilamentBuilder}
+ * Class <code>BarFilamentBuilder</code>
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +49,7 @@ public class BarFilamentBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BarFilamentBuilder} object.
+     * Creates a new <code>BarFilamentBuilder</code> object.
      *
      * @param sheet the containing sheet
      */

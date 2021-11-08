@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code EndingSymbol} implements an ending symbol
+ * Class <code>EndingSymbol</code> implements an ending symbol
  *
  * @author Hervé Bitteur
  */

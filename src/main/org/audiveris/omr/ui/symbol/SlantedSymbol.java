@@ -30,7 +30,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code SlantedSymbol} draws symbols made of several slanted parts.
+ * Class <code>SlantedSymbol</code> draws symbols made of several slanted parts.
  * (such as in DYNAMICS_FP, where both the F and the P are slanted and appear too far from each
  * other)
  *

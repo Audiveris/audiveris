@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ConstantBasedParam} is a {@link Param} backed by an application constant
+ * Class <code>ConstantBasedParam</code> is a {@link Param} backed by an application constant
  * as is the case for many default Param.
  *
  * @author Hervé Bitteur
@@ -46,7 +46,7 @@ public class ConstantBasedParam<E, C extends Constant<E>>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ConstantBasedParam} object.
+     * Creates a new <code>ConstantBasedParam</code> object.
      *
      * @param constant the underlying constant
      */

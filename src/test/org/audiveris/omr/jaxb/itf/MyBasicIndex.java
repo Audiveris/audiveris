@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code MyBasicIndex}
+ * Class <code>MyBasicIndex</code>
  *
  * @author Hervé Bitteur
  * @param <E>
@@ -56,11 +56,11 @@ public class MyBasicIndex<E extends MyEntity>
 
     /** Collection of all entities registered. */
     @XmlElement(name = "entities")
-    @XmlJavaTypeAdapter(SnapAdapter.class)
+    @XmlJavaTypeAdapter(HashMapAdapter.class)
     protected final ConcurrentHashMap<Integer, E> allEntities = new ConcurrentHashMap<Integer, E>();
 
     /**
-     * Creates a new {@code MyBasicIndex} object.
+     * Creates a new <code>MyBasicIndex</code> object.
      *
      * @param name DOCUMENT ME!
      */
@@ -70,7 +70,7 @@ public class MyBasicIndex<E extends MyEntity>
     }
 
     /**
-     * Creates a new {@code MyBasicIndex} object.
+     * Creates a new <code>MyBasicIndex</code> object.
      */
     public MyBasicIndex ()
     {
@@ -116,7 +116,7 @@ public class MyBasicIndex<E extends MyEntity>
     }
 
     /**
-     * Class {@code Snap} is just a flat list of entities, with each item name based on
+     * Class <code>Snap</code> is just a flat list of entities, with each item name based on
      * actual item type.
      *
      * @param <E> the specific entity type
@@ -137,7 +137,7 @@ public class MyBasicIndex<E extends MyEntity>
      *
      * @param <E> the specific entity type
      */
-    private static class SnapAdapter<E extends MyAbstractEntity>
+    private static class HashMapAdapter<E extends MyAbstractEntity>
             extends XmlAdapter<Snap<E>, ConcurrentHashMap<Integer, E>>
     {
 

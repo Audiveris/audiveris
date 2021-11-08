@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Fruit}
+ * Class <code>Fruit</code>
  *
  * @author Hervé Bitteur
  */
@@ -39,7 +39,7 @@ public abstract class Fruit
     final String id;
 
     /**
-     * Creates a new {@code Fruit} object.
+     * Creates a new <code>Fruit</code> object.
      */
     public Fruit ()
     {
@@ -47,7 +47,7 @@ public abstract class Fruit
     }
 
     /**
-     * Creates a new {@code Fruit} object.
+     * Creates a new <code>Fruit</code> object.
      *
      * @param id DOCUMENT ME!
      */

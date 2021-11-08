@@ -31,7 +31,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code StemSymbol} implements a stem symbol.
+ * Class <code>StemSymbol</code> implements a stem symbol.
  *
  * @author Hervé Bitteur
  */
@@ -48,7 +48,7 @@ public class StemSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code StemSymbol} (with decoration?) standard size
+     * Create a <code>StemSymbol</code> (with decoration?) standard size
      *
      * @param decorated true for a decorated image
      */
@@ -58,7 +58,7 @@ public class StemSymbol
     }
 
     /**
-     * Create a {@code StemSymbol}(with decoration?)
+     * Create a <code>StemSymbol</code>(with decoration?)
      *
      * @param isIcon    true for an icon
      * @param decorated true for a decorated image

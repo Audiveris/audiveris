@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TurnSlashSymbol} displays a TURN symbol with a vertical slash.
+ * Class <code>TurnSlashSymbol</code> displays a TURN symbol with a vertical slash.
  *
  * @author Hervé Bitteur
  */

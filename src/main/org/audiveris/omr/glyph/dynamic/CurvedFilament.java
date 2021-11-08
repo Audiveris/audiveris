@@ -43,7 +43,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code CurvedFilament} is a (perhaps wavy) filament of sections, represented
+ * Class <code>CurvedFilament</code> is a (perhaps wavy) filament of sections, represented
  * as a natural spline.
  *
  * @author Hervé Bitteur
@@ -67,7 +67,7 @@ public class CurvedFilament
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code CurvedFilament} object.
+     * Creates a new <code>CurvedFilament</code> object.
      *
      * @param interline     scaling information
      * @param segmentLength typical length between points

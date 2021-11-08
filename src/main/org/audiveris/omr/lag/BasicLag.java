@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@code BasicLag} is a basic implementation of {@link Lag} interface.
+ * Class <code>BasicLag</code> is a basic implementation of {@link Lag} interface.
  *
  * @author Hervé Bitteur
  */

@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code WedgesBuilder} retrieves the wedges (crescendo, diminuendo) out of
+ * Class <code>WedgesBuilder</code> retrieves the wedges (crescendo, diminuendo) out of
  * segments found in sheet skeleton.
  *
  * @author Hervé Bitteur

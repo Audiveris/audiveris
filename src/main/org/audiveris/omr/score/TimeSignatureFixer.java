@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code TimeSignatureFixer} can visit the score hierarchy to check whether each
+ * Class <code>TimeSignatureFixer</code> can visit the score hierarchy to check whether each
  * of the time signatures is consistent with most of measures intrinsic time signature.
  *
  * @author Hervé Bitteur

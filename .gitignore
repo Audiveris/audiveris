@@ -41,6 +41,8 @@ data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
 private/*
+schemas/build
+schemas/build/*
 target/*
 \.orig\..*$
 \.orig$

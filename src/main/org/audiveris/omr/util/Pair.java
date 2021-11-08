@@ -24,7 +24,7 @@ package org.audiveris.omr.util;
 import java.util.Objects;
 
 /**
- * Class {@code Pair} is a pair of compatible items.
+ * Class <code>Pair</code> is a pair of compatible items.
  *
  * @author Hervé Bitteur
  *
@@ -40,7 +40,7 @@ public class Pair<E>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Pair} object.
+     * Creates a new <code>Pair</code> object.
      *
      * @param one DOCUMENT ME!
      * @param two DOCUMENT ME!

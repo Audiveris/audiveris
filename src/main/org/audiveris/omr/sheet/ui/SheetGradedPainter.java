@@ -33,7 +33,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 /**
- * Class {@code SheetGradedPainter} paints a sheet using shape-based colors and
+ * Class <code>SheetGradedPainter</code> paints a sheet using shape-based colors and
  * grade-based opacity.
  *
  * @author Hervé Bitteur
@@ -52,7 +52,7 @@ public class SheetGradedPainter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetGradedPainter} object.
+     * Creates a new <code>SheetGradedPainter</code> object.
      *
      * @param sheet            the sheet to paint
      * @param g                Graphic context

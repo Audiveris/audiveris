@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 /**
- * Interface {@code OrthogonalMoments} is a general definition for a descriptor of
+ * Interface <code>OrthogonalMoments</code> is a general definition for a descriptor of
  * orthogonal moments.
  *
  * @param <D> the descriptor type

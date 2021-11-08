@@ -29,7 +29,7 @@ public class BasicTimeColumn
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BasicColumn} object.
+     * Creates a new <code>BasicColumn</code> object.
      *
      * @param stack   stack to be worked upon
      * @param timeSet set of time symbols found in stack
@@ -39,7 +39,7 @@ public class BasicTimeColumn
     {
         super(stack.getSystem());
         this.stack = stack;
-        this.timeSet = new LinkedHashSet<Inter>(timeSet);
+        this.timeSet = new LinkedHashSet<>(timeSet);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public class BasicTimeColumn
         class Line
         {
 
-            List<Item> items = new ArrayList<Item>();
+            List<Item> items = new ArrayList<>();
 
             Double meanOffset = null;
 

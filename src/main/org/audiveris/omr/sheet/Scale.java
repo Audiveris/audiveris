@@ -39,52 +39,87 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Scale} encapsulates what drives the scale of a sheet, starting by the
+ * Class <code>Scale</code> encapsulates what drives the scale of a sheet, starting by the
  * distance between two staff lines (center to center).
  * <p>
- * Primary informations: This data is always detected, otherwise the current page is detected as not
- * being a music page.
+ * <ol>
+ * <li>Primary informations: This data is always detected, otherwise the current page is detected as
+ * not being a music page and thus flagged as <i>invalid</i>.
  * <ul>
- * <li><b>Staff interline</b>: min, main, max. (Vertical distance measured from line center to line
- * center)</li>
- * <li><b>Staff line thickness</b> (fore): min, main, max.</li>
+ * <li><b>Staff interline</b>:
+ * Typical vertical distance measured from line center to line center.
+ * <li><b>Staff line thickness</b>:
+ * Typical vertical run length, the number of contiguous black pixels in staff line height.
  * </ul>
  * <p>
- * Secondary informations: This data is always made available, either based on detected value or
+ * <li>Secondary informations: This data is always made available, either based on detected value or
  * derived from other information.
  * <ul>
- * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical foreground runs
- * signals the presence of beams.
- * Otherwise it is computed as a ratio of main background length between staff lines.</li>
- * <li><b>Stem thickness</b>: main, max. These values are computed during STEM_SEEDS step.</li>
+ * <li><b>Beam thickness</b>:
+ * A second peak in the histogram of vertical black runs signals the presence of beams.
+ * Otherwise a guess value is computed as a ratio of main white length between staff lines.
+ * <li><b>Stem thickness</b>: Computed during STEM_SEEDS step.
  * </ul>
  * <p>
- * Optional informations: This data may exist or not, according to the sheet at hand.
+ * <li>Optional informations: This data may exist or not, according to the sheet at hand.
  * <ul>
- * <li><b>Black head</b>: Typical width and height measured for black heads.</li>
- * <li><b>Music font</b>: Precise point size determined for music font rendering of heads.</li>
- * <li><b>Small staff scale</b>:
- * If a second peak is detected in the histogram of staff interlines, it signals the presence of
- * staves with a different interline value.
- * For small staves, a specific small Scale structure is then included.</li>
+ * <li><b>Black head</b>: Typical width and height measured for black heads.
+ * <li><b>Music font</b>: Precise point size determined for music font rendering of heads.
+ * <li><b>Small staff</b>: If a second peak is detected in the histogram of staff interlines,
+ * it signals the presence of staves with a different interline value.
+ * For small staves, a specific small Scale structure is then included.
+ * <li><b>Head-Seed</b>: Typical horizontal distance between note head bounds and stem seed,
+ * per head shape and head side.
+ * This info is retrieved in HEADS step and used in STEMS step to precisely detect stem
+ * candidates around each head even in poor-quality sheets.
  * </ul>
+ * </ol>
  * <p>
  * This class also provides methods for converting values based on what the interline and the line
  * thickness are actually worth.
- * There are two different measurements, pixels and fractions:
- * <dl>
- * <dt><b>pixel</b></dt>
- * <dd>This is simply an absolute number of pixels, so generally an integer.</dd>
- * <dt><b>(interline) Fraction</b></dt>
- * <dd>This is a number (or fraction) of interlines.
- * Typical unit value for interline is around 20 pixels.</dd>
- * <dt><b>(interline) AreaFraction</b></dt>
- * <dd>This is a number (or fraction) of square interlines, meant to measure glyph area or weight.
- * Typical unit value for interline area is around 400 pixels.</dd>
- * <dt><b>LineFraction</b></dt>
- * <dd>This is a number (or fraction) of line thickness.
- * Typical unit value for line is around 4 pixels.</dd>
- * </dl>
+ * <br>There are two different measurements: pixels and fractions.
+ * <table border="thin">
+ * <tr>
+ * <th style="padding: 10px; text-align:center">Measurement</th>
+ * <th style="padding: 10px; text-align:center">Value</th>
+ * </tr>
+ * <tr>
+ * <td style="padding: 10px">Pixel</td>
+ * <td style="padding: 10px">This is simply an absolute number (or fraction) of pixels.</td>
+ * </tr>
+ * <tr>
+ * <td style="padding: 10px">(interline) Fraction</td>
+ * <td style="padding: 10px">This is a number (or fraction) of interlines.
+ * <br>Typical unit value for interline is around 20 pixels.</td>
+ * </tr>
+ * <tr>
+ * <td style="padding: 10px">(interline) AreaFraction</td>
+ * <td style="padding: 10px">This is a number (or fraction) of square interlines,
+ * meant to measure glyph area or weight.
+ * <br>Typical unit value for interline area is around 400 pixels.</td>
+ * </tr>
+ * <tr>
+ * <td style="padding: 10px">LineFraction</td>
+ * <td style="padding: 10px">This is a number (or fraction) of line thickness.
+ * <br>Typical unit value for line is around 4 pixels.</td>
+ * </tr>
+ * </table>
+ *
+ * <h4>Example of marshalled Scale element</h4>
+ * <pre>
+ * &lt;scale&gt;
+ *      &lt;interline min="18" main="19" max="19"/&gt;
+ *      &lt;line min="2" main="3" max="4"/&gt;
+ *      &lt;beam main-thickness="10"/&gt;
+ *      &lt;stem main-thickness="2" max-thickness="3"/&gt;
+ *      &lt;black-head mean-width="22.9" sigma-width="0.3" mean-height="20" sigma-height="1.5"/&gt;
+ *      &lt;music-font name="MusicalSymbols" point-size="76"/&gt;
+ *      &lt;head-seeds&gt;
+ *          &lt;head-seed shape="NOTEHEAD_BLACK" side="LEFT" dx="1.5"/&gt;
+ *          &lt;head-seed shape="NOTEHEAD_BLACK" side="RIGHT" dx="1.5"/&gt;
+ *      &lt;/head-seeds&gt;
+ * &lt;/scale&gt;
+ * </pre>
  *
  * @author Hervé Bitteur
  */
@@ -138,33 +173,35 @@ public class Scale
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Interline scale. */
+    /**
+     * Typical vertical distance between a staff line center and the next line center
+     * within the same staff.
+     */
     @XmlElement(name = "interline")
     private InterlineScale interlineScale;
 
-    /** Line thickness scale. */
+    /** Typical thickness of staff lines. */
     @XmlElement(name = "line")
     private LineScale lineScale;
 
-    /** Beam scale. */
+    /** Typical thickness of beams and beam hooks. */
     @XmlElement(name = "beam")
     private BeamScale beamScale;
 
-    /** Stem scale. */
+    /** Typical thickness of stems. */
     @XmlElement(name = "stem")
     private StemScale stemScale;
 
-    /** Black head scale. */
+    /** Typical dimension of isolated black heads. */
     @XmlElement(name = "black-head")
     private BlackHeadScale blackHeadScale;
 
-    /** Music font scale. */
+    /** Music font to fit typical black heads. */
     @XmlElement(name = "music-font")
     private MusicFontScale musicFontScale;
 
-    /** Head-stem scale. */
-    //    @XmlElement(name = "head-seed")
-    //    @XmlJavaTypeAdapter(HeadSeedScale.Adapter.class)
+    /** Typical horizontal distances between note heads and stem seeds. */
+    @XmlElement(name = "head-seeds")
     private HeadSeedScale headSeedScale;
 
     /** Scale for small staves, if any. */
@@ -866,36 +903,36 @@ public class Scale
     {
         return interlineScale.main * val;
     }
-
-    //--------------------//
-    // getHeadSeedContent //
-    //--------------------//
-    /**
-     * Mean for JAXB marshalling only.
-     */
-    @SuppressWarnings("unused")
-    @XmlElement(name = "head-seeds")
-    private HeadSeedScale.Content getHeadSeedContent ()
-    {
-        if (headSeedScale == null) {
-            return null;
-        }
-
-        return headSeedScale.getContent();
-    }
-
-    //--------------------//
-    // setHeadSeedContent //
-    //--------------------//
-    /**
-     * Meant for JAXB unmarshalling only.
-     */
-    @SuppressWarnings("unused")
-    private void setHeadSeedContent (HeadSeedScale.Content content)
-    {
-        headSeedScale = new HeadSeedScale();
-        headSeedScale.setContent(content);
-    }
+//
+//    //--------------------//
+//    // getHeadSeedContent //
+//    //--------------------//
+//    /**
+//     * Mean for JAXB marshalling only.
+//     */
+//    @SuppressWarnings("unused")
+//    @XmlElement(name = "head-seeds")
+//    private HeadSeedScale.HeadSeedEntries getHeadSeedContent ()
+//    {
+//        if (headSeedScale == null) {
+//            return null;
+//        }
+//
+//        return headSeedScale.getEntries();
+//    }
+//
+//    //--------------------//
+//    // setHeadSeedEntries //
+//    //--------------------//
+//    /**
+//     * Meant for JAXB unmarshalling only.
+//     */
+//    @SuppressWarnings("unused")
+//    private void setHeadSeedEntries (HeadSeedScale.HeadSeedEntries entries)
+//    {
+//        headSeedScale = new HeadSeedScale();
+//        headSeedScale.setEntries(entries);
+//    }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
@@ -926,32 +963,34 @@ public class Scale
     // BeamScale //
     //-----------//
     /**
-     * Class {@code BeamScale} keeps scaling information about beams in a sheet.
+     * Class <code>BeamScale</code> keeps scaling information about beams in a sheet.
      * <p>
      * Generally, there are enough beam-based vertical runs in a sheet to produce a visible peak in
      * the sheet histogram of vertical run lengths.
-     * In some cases, however, there is just a few beam-based vertical runs, and so the sheet
-     * histogram reveals no beam peak. The main value for beam thickness is then extrapolated as a
-     * pre-defined fraction of sheet interline, and flagged as such in this BeamScale instance.
-     * <p>
-     * When beams are actually retrieved (during BEAMS step), the vertical distance between beams of
-     * the same group is also measured and recorded in this BeamScale as mean value and standard
-     * deviation.
+     * In some cases, however, there are just a few beam-based vertical runs, and so the sheet
+     * histogram reveals no significant beam peak.
+     * The main value for beam thickness is then extrapolated as a pre-defined fraction of sheet
+     * interline, and flagged as such in this BeamScale instance.
      */
     @XmlAccessorType(XmlAccessType.NONE)
     public static class BeamScale
     {
 
-        /** Most frequent beam thickness. */
+        /** This is the most frequent beam thickness value. */
         @XmlAttribute(name = "main-thickness")
         private final int main;
 
-        /** Measured or extrapolated. */
+        /**
+         * This indicates that, for lack of enough measurements, the typical beam
+         * thickness had to be extrapolated.
+         * <p>
+         * <b>BEWARE</b>: An extrapolated value is much less reliable than a measured one.
+         */
         @XmlAttribute(name = "extra")
         private final Boolean extra;
 
         /**
-         * Creates a new {@code BeamScale} object.
+         * Creates a new <code>BeamScale</code> object.
          *
          * @param main         most frequent beam thickness
          * @param extrapolated true if not enough measurements are available
@@ -1012,31 +1051,37 @@ public class Scale
     // BlackHeadScale //
     //----------------//
     /**
-     * Class {@code BlackHeadScale} keeps scaling information about single black heads
-     * in a sheet.
+     * Class <code>BlackHeadScale</code> keeps scaling information about dimension of
+     * single black heads in a sheet.
+     * <p>
+     * This data is used to derive MusicFontScale.
      */
     @XmlAccessorType(XmlAccessType.NONE)
     public static class BlackHeadScale
     {
 
+        /** Mean value for black head width. */
         @XmlAttribute(name = "mean-width")
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
         final double widthMean;
 
+        /** Standard deviation value for black head width. */
         @XmlAttribute(name = "sigma-width")
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
         final double widthStd;
 
+        /** Mean value for black head height. */
         @XmlAttribute(name = "mean-height")
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
         final double heightMean;
 
+        /** Standard deviation value for black head height. */
         @XmlAttribute(name = "sigma-height")
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
         final double heightStd;
 
         /**
-         * Creates a new {@code BlackHeadScale} object.
+         * Creates a new <code>BlackHeadScale</code> object.
          *
          * @param widthMean  width mean value
          * @param widthStd   width standard deviation
@@ -1396,7 +1441,8 @@ public class Scale
     // MusicFontScale //
     //----------------//
     /**
-     * Class {@code MusicFontScale} keeps scaling information about music font in sheet.
+     * Class <code>MusicFontScale</code> keeps scaling information about music font
+     * in sheet.
      * <p>
      * It can optionally handle a small font size for small staves in sheet.
      */
@@ -1404,16 +1450,16 @@ public class Scale
     public static class MusicFontScale
     {
 
-        /** Font name. */
+        /** This is the name of the music font. */
         @XmlAttribute(name = "name")
         final String name;
 
-        /** Font size, specified in typographic point value. */
+        /** This is the size of the music font, specified in typographic point value. */
         @XmlAttribute(name = "point-size")
         final int pointSize;
 
         /**
-         * Creates a new {@code MusicFontScale} object.
+         * Creates a new <code>MusicFontScale</code> object.
          *
          * @param name      name of font, not null
          * @param pointSize point size for standard large staff, not null
@@ -1451,12 +1497,10 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("MusicFont{");
-            sb.append("name:").append(name);
-            sb.append(" pointSize:").append(pointSize);
-            sb.append('}');
-
-            return sb.toString();
+            return new StringBuilder("MusicFont{")
+                    .append("name:").append(name)
+                    .append(" pointSize:").append(pointSize)
+                    .append('}').toString();
         }
     }
 
@@ -1464,7 +1508,7 @@ public class Scale
     // StemScale //
     //-----------//
     /**
-     * Class {@code StemScale} keeps scaling information about stems in a sheet.
+     * Class <code>StemScale</code> keeps scaling information about stems in a sheet.
      * <p>
      * It handles main and max values for stem thickness.
      * <p>
@@ -1484,7 +1528,7 @@ public class Scale
         private final int max;
 
         /**
-         * Creates a new {@code StemScale} object.
+         * Creates a new <code>StemScale</code> object.
          *
          * @param main most frequent thickness
          * @param max  max thickness

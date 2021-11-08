@@ -22,7 +22,7 @@
 package org.audiveris.omr.check;
 
 /**
- * Class {@code CheckResult} encapsulates the <b>result</b> of a check, composed of a
+ * Class <code>CheckResult</code> encapsulates the <b>result</b> of a check, composed of a
  * value (double) and a flag which can be RED, YELLOW or GREEN.
  *
  * @author Hervé Bitteur

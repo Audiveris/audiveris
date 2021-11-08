@@ -15,7 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * Class {@code LoggingStream} defines an OutputStream that writes contents to a Logger
+ * Class <code>LoggingStream</code> defines an OutputStream that writes contents to a Logger
  * upon each call to flush().
  * <p>
  * <a

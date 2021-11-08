@@ -73,13 +73,13 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code SystemInfo} gathers information from the original picture about a
+ * Class <code>SystemInfo</code> gathers information from the original picture about a
  * retrieved system.
  * <p>
  * Most of the OMR processing is done in parallel at system level.
  * <p>
- * This class is named {@code SystemInfo} to avoid continuous name clash with ubiquitous
- * {@code java.lang.System} class.
+ * This class is named <code>SystemInfo</code> to avoid continuous name clash with ubiquitous
+ * <code>java.lang.System</code> class.
  *
  * @author Hervé Bitteur
  */
@@ -1404,7 +1404,7 @@ public class SystemInfo
         case WHOLE_REST: {
             final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
-            return !switches.getValue(ProcessingSwitches.Switch.partialWholeRests);
+            return !switches.getValue(ProcessingSwitch.partialWholeRests);
         }
 
         default:

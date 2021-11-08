@@ -33,7 +33,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 
 /**
- * Class {@code DynamicSection} is a section that can evolve by adding runs or
+ * Class <code>DynamicSection</code> is a section that can evolve by adding runs or
  * translating its location.
  *
  * @author Hervé Bitteur
@@ -47,7 +47,7 @@ public class DynamicSection
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code DynamicSection} object.
+     * Creates a new <code>DynamicSection</code> object.
      *
      * @param orientation provided orientation for the section
      */

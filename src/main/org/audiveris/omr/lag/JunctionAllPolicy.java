@@ -24,7 +24,7 @@ package org.audiveris.omr.lag;
 import org.audiveris.omr.run.Run;
 
 /**
- * Class {@code JunctionAllPolicy} defines a junction policy which imposes no condition
+ * Class <code>JunctionAllPolicy</code> defines a junction policy which imposes no condition
  * on run consistency, thus taking all runs considered.
  *
  * @author Hervé Bitteur

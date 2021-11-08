@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SeparateVoiceRelation} indicates that the source and target chords
+ * Class <code>SeparateVoiceRelation</code> indicates that the source and target chords
  * should belong to separate voices.
  *
  * @author Hervé Bitteur
@@ -36,7 +36,7 @@ public class SeparateVoiceRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code SeparateVoiceRelation} object.
+     * Creates a new <code>SeparateVoiceRelation</code> object.
      */
     public SeparateVoiceRelation ()
     {

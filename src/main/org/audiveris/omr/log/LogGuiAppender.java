@@ -29,7 +29,7 @@ import org.audiveris.omr.OMR;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
- * Class {@code LogGuiAppender} is a log appender that appends the logging messages to
+ * Class <code>LogGuiAppender</code> is a log appender that appends the logging messages to
  * the GUI.
  * <p>
  * It uses an intermediate queue to cope with initial conditions when the GUI is not yet ready to

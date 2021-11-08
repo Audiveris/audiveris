@@ -57,7 +57,7 @@ import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Entities;
 
 /**
- * Class {@code FilamentFactory} builds filaments (long series of sections) out of a
+ * Class <code>FilamentFactory</code> builds filaments (long series of sections) out of a
  * collection of sections.
  * <p>
  * These filaments are meant to represent good candidates for (horizontal) staff lines and ledgers
@@ -1122,7 +1122,7 @@ public class FilamentFactory<F extends Filament>
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all scale-dependent parameters.
+     * Class <code>Parameters</code> gathers all scale-dependent parameters.
      */
     private class Parameters
     {

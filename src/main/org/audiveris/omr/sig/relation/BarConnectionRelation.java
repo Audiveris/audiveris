@@ -28,7 +28,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BarConnectionRelation} records the relation between two bar lines
+ * Class <code>BarConnectionRelation</code> records the relation between two bar lines
  * connected across staves, so that they can support each other.
  *
  * @author Hervé Bitteur
@@ -54,7 +54,7 @@ public class BarConnectionRelation
     }
 
     /**
-     * Creates a new {@code BarConnectionRelation} object.
+     * Creates a new <code>BarConnectionRelation</code> object.
      */
     public BarConnectionRelation ()
     {

@@ -24,7 +24,7 @@ package org.audiveris.omr.util;
 import java.util.regex.Matcher;
 
 /**
- * Class {@code RegexUtil} gathers utility features related to Regex.
+ * Class <code>RegexUtil</code> gathers utility features related to Regex.
  *
  * @author Hervé Bitteur
  */

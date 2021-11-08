@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimeNumberInter} represents a top or bottom number
+ * Class <code>TimeNumberInter</code> represents a top or bottom number
  * (gathering one or several digits) in a time signature.
  *
  * @author Hervé Bitteur

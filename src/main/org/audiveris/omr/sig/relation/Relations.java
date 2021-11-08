@@ -69,7 +69,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * Class {@code Relations} gathers utilities for Relation classes and instances.
+ * Class <code>Relations</code> gathers utilities for Relation classes and instances.
  *
  * @author Hervé Bitteur
  */

@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PluckingInter} represents the fingering for guitar right-hand.
+ * Class <code>PluckingInter</code> represents the fingering for guitar right-hand.
  *
  * @author Hervé Bitteur
  */
@@ -40,13 +40,16 @@ public class PluckingInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Letter for the finger. (p, i, m, a) */
+    /**
+     * The letter attribute is a char ('p', 'i', 'm' or 'a') that indicates the right-hand
+     * finger to be used.
+     */
     @XmlAttribute
     private final char letter;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PluckingInter} object.
+     * Creates a new <code>PluckingInter</code> object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape

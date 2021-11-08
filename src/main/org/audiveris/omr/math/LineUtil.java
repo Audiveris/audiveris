@@ -25,7 +25,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code LineUtil} is a collection of utilities related to lines.
+ * Class <code>LineUtil</code> is a collection of utilities related to lines.
  *
  * @author Hervé Bitteur
  */

@@ -21,23 +21,18 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.ScaleBuilder;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.ui.DeltaView;
-import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetTab;
-import org.audiveris.omr.ui.BoardsPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ScaleStep} implements <b>SCALE</b> step, which determines the general
- * scaling informations of a sheet, based essentially on the mean distance between staff
- * lines.
+ * Class <code>ScaleStep</code> implements <b>SCALE</b> step, which determines the
+ * general scaling informations of a sheet, based essentially on the mean distance
+ * between staff lines.
  *
  * @author Hervé Bitteur
  */
@@ -45,8 +40,6 @@ public class ScaleStep
         extends AbstractStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
@@ -59,22 +52,6 @@ public class ScaleStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // displayUI //
-    //-----------//
-    @Override
-    public void displayUI (Step step,
-                           Sheet sheet)
-    {
-        if (constants.displayDelta.isSet()) {
-            // Display delta view
-            sheet.getStub().getAssembly().addViewTab(
-                    SheetTab.DELTA_TAB,
-                    new DeltaView(sheet),
-                    new BoardsPane(new PixelBoard(sheet)));
-        }
-    }
-
     //------//
     // doit //
     //------//
@@ -94,18 +71,5 @@ public class ScaleStep
     public SheetTab getSheetTab ()
     {
         return SheetTab.BINARY_TAB;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displayDelta = new Constant.Boolean(
-                false,
-                "Should we display the Delta view?");
     }
 }

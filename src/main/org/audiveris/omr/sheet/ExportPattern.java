@@ -32,7 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class {@code ExportPattern} handles the naming of possible exports.
+ * Class <code>ExportPattern</code> handles the naming of possible exports.
  *
  * @author Hervé Bitteur
  */

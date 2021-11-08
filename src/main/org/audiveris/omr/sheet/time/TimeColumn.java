@@ -79,7 +79,7 @@ public abstract class TimeColumn
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Column} object.
+     * Creates a new <code>Column</code> object.
      *
      * @param system the underlying system
      */

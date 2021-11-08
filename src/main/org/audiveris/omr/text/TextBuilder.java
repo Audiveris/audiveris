@@ -36,6 +36,7 @@ import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.math.GeoUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -77,17 +78,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code TextBuilder} works at system level, providing features to check, build
+ * Class <code>TextBuilder</code> works at system level, providing features to check, build
  * and reorganize text items, including interacting with the OCR engine.
  * <p>
  * This builder can operate in 3 different modes:
  * <ol>
  * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
- * <br>{@code manualLyrics == null;}
+ * <br><code>manualLyrics == null;</code>
  * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
- * <br>{@code manualLyrics == true;}
+ * <br><code>manualLyrics == true;</code>
  * <li><b>Manual as non-lyrics</b>: Manual mode, for which text role is imposed as non lyrics.
- * <br>{@code manualLyrics == false;}
+ * <br><code>manualLyrics == false;</code>
  * </ol>
  *
  * @author Hervé Bitteur
@@ -749,7 +750,7 @@ public class TextBuilder
     private void mapLyricLines (List<TextLine> longLines)
     {
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-        final boolean aboveAllowed = switches.getValue(ProcessingSwitches.Switch.lyricsAboveStaff);
+        final boolean aboveAllowed = switches.getValue(ProcessingSwitch.lyricsAboveStaff);
 
         for (TextLine line : longLines) {
             if (line.getRole() != TextRole.Lyrics) {

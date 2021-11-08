@@ -51,7 +51,7 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code BoardsPane} defines a view on a set of user {@link
+ * Class <code>BoardsPane</code> defines a view on a set of user {@link
  * Board} instances, where data related to current point, run, section,
  * glyph, etc can be displayed in dedicated boards.
  * <p>

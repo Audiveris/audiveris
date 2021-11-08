@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ImgGlyphDescriptor} is a glyph descriptor based directly on the pixels
+ * Class <code>ImgGlyphDescriptor</code> is a glyph descriptor based directly on the pixels
  * of glyph properly scaled image.
  *
  * @author Hervé Bitteur
@@ -46,7 +46,7 @@ public class ImgGlyphDescriptor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ImgGlyphDescriptor} object.
+     * Creates a new <code>ImgGlyphDescriptor</code> object.
      */
     public ImgGlyphDescriptor ()
     {

@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.selection;
 import org.audiveris.omr.image.AnchoredTemplate;
 
 /**
- * Class {@code AnchoredTemplateEvent} represents a selection of Template with a
+ * Class <code>AnchoredTemplateEvent</code> represents a selection of Template with a
  * specific anchor.
  *
  * @author Hervé Bitteur
@@ -38,7 +38,7 @@ public class AnchoredTemplateEvent
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AnchoredTemplateEvent} object.
+     * Creates a new <code>AnchoredTemplateEvent</code> object.
      *
      * @param source           the entity that created this event
      * @param hint             how the event originated

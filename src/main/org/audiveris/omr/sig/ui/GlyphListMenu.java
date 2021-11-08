@@ -41,7 +41,7 @@ import java.util.Collection;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code GlyphListMenu} displays a collection of glyphs.
+ * Class <code>GlyphListMenu</code> displays a collection of glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -59,7 +59,7 @@ public class GlyphListMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code GlyphMenu} object.
+     * Creates a new <code>GlyphMenu</code> object.
      *
      * @param sheet the related sheet
      */

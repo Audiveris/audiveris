@@ -17,7 +17,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * Class {@code TiffSplit}
+ * Class <code>TiffSplit</code>
  *
  * @author Hervé Bitteur
  */

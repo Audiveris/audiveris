@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Please refer to {@link ConstantManager} for a detailed explanation on how the current value of
  * any given Constant is determined at run-time.
  * <p>
- * The class {@code Constant} is not meant to be used directly (it is abstract), but rather through
+ * The class <code>Constant</code> is not meant to be used directly (it is abstract), but rather through
  * any of its subclasses:
  * <ul>
  * <li>{@link Constant.Angle}</li>

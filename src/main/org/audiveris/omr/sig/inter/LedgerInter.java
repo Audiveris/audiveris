@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code LedgerInter} represents a Ledger interpretation.
+ * Class <code>LedgerInter</code> represents a Ledger interpretation.
  *
  * @author Hervé Bitteur
  */

@@ -25,7 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.sheet.ProcessingSwitches;
-import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
 
@@ -49,7 +49,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code ShapeSet} defines a set of related shapes, for example the "Rests" set
+ * Class <code>ShapeSet</code> defines a set of related shapes, for example the "Rests" set
  * gathers all rest shapes from MULTI_REST down to ONE_128TH_REST.
  * <p>
  * It handles additional properties over a simple EnumSet, especially assigned colors and its
@@ -779,19 +779,19 @@ public class ShapeSet
 
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
-        if (!switches.getValue(Switch.smallBlackHeads)) {
+        if (!switches.getValue(ProcessingSwitch.smallBlackHeads)) {
             set.remove(NOTEHEAD_BLACK_SMALL);
         }
 
-        if (!switches.getValue(Switch.smallVoidHeads)) {
+        if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
             set.remove(NOTEHEAD_VOID_SMALL);
         }
 
-        if (!switches.getValue(Switch.smallWholeHeads)) {
+        if (!switches.getValue(ProcessingSwitch.smallWholeHeads)) {
             set.remove(WHOLE_NOTE_SMALL);
         }
 
-        if (!switches.getValue(Switch.crossHeads)) {
+        if (!switches.getValue(ProcessingSwitch.crossHeads)) {
             set.remove(NOTEHEAD_CROSS);
         }
 
@@ -849,15 +849,15 @@ public class ShapeSet
 
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
-        if (!switches.getValue(Switch.smallBlackHeads)) {
+        if (!switches.getValue(ProcessingSwitch.smallBlackHeads)) {
             set.remove(NOTEHEAD_BLACK_SMALL);
         }
 
-        if (!switches.getValue(Switch.smallVoidHeads)) {
+        if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
             set.remove(NOTEHEAD_VOID_SMALL);
         }
 
-        if (!switches.getValue(Switch.crossHeads)) {
+        if (!switches.getValue(ProcessingSwitch.crossHeads)) {
             set.remove(NOTEHEAD_CROSS);
         }
 
@@ -883,7 +883,7 @@ public class ShapeSet
 
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
-        if (!switches.getValue(Switch.smallVoidHeads)) {
+        if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
             set.remove(NOTEHEAD_VOID_SMALL);
         }
 

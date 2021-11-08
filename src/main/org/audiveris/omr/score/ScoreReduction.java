@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Class {@code ScoreReduction} reduces the logical parts for a score,
+ * Class <code>ScoreReduction</code> reduces the logical parts for a score,
  * based on the merge of Audiveris Page instances.
  * <p>
  * <b>Features not yet implemented:</b>

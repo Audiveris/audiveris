@@ -26,8 +26,8 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.RunClass;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omrdataset.api.TablatureAreas;
 
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ import java.util.SortedSet;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code RunTablatureCheck} checks for presence of tablatures and export their
+ * Class <code>RunTablatureCheck</code> checks for presence of tablatures and export their
  * precise locations if any.
  *
  * @author Hervé Bitteur
@@ -58,7 +58,7 @@ public class RunTablatureCheck
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunTablatureCheck} object.
+     * Creates a new <code>RunTablatureCheck</code> object.
      *
      * @param book     book to process
      * @param sheetIds sheet IDS if any
@@ -79,7 +79,7 @@ public class RunTablatureCheck
         try {
             for (SheetStub stub : book.getValidStubs()) {
                 if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
-                    if (stub.isDone(Step.GRID)) {
+                    if (stub.isDone(OmrStep.GRID)) {
                         final List<Rectangle> areas = new ArrayList<>();
                         final Sheet sheet = stub.getSheet();
 

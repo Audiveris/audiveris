@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation {@code UIThread} indicates a method which can be called only from the
+ * Annotation <code>UIThread</code> indicates a method which can be called only from the
  * UI thread (EDT: Event Dispatching Thread), or a whole class dedicated to UI.
  * <p>
  * A non-UI thread must use the {@link javax.swing.SwingUtilities#invokeLater(Runnable doRun)} or

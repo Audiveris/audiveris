@@ -24,7 +24,7 @@ package org.audiveris.omr.sheet.note;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitches;
-import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -66,7 +66,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code ChordsBuilder} works, at system level to gather, staff by staff, all
+ * Class <code>ChordsBuilder</code> works, at system level to gather, staff by staff, all
  * notes (heads and rests) into chords.
  * <p>
  * We assume a chord belongs to just one staff. To be modified if a chord could belong to several
@@ -98,7 +98,7 @@ public class ChordsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChordsBuilder} object.
+     * Creates a new <code>ChordsBuilder</code> object.
      *
      * @param system the dedicated system
      */
@@ -339,7 +339,7 @@ public class ChordsBuilder
     private void detectWholeVerticals (List<HeadInter> wholeHeads)
     {
         final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
-        final boolean multiWhole = switches.getValue(Switch.multiWholeHeadChords);
+        final boolean multiWhole = switches.getValue(ProcessingSwitch.multiWholeHeadChords);
 
         Collections.sort(wholeHeads, Inters.byCenterOrdinate);
 

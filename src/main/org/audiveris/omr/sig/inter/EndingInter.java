@@ -65,7 +65,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code EndingInter} represents an ending.
+ * Class <code>EndingInter</code> represents an ending.
  * <p>
  * In compliance with MusicXML spec: <ul>
  * <li>
@@ -99,24 +99,24 @@ public class EndingInter
     // Persistent Data
     //----------------
     //
-    /** Mandatory left leg. */
+    /** Mandatory left leg, defined from top to bottom. */
     @XmlElement(name = "left-leg")
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D leftLeg;
 
-    /** Horizontal line. */
+    /** Horizontal line, defined from left to right. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D line;
 
-    /** Optional right leg, if any. */
+    /** Optional right leg, if any, defined from top to bottom. */
     @XmlElement(name = "right-leg")
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D rightLeg;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EndingInter} object.
+     * Creates a new <code>EndingInter</code> object.
      *
      * @param line     precise line
      * @param leftLeg  mandatory left leg
@@ -137,7 +137,7 @@ public class EndingInter
     }
 
     /**
-     * Creates a new {@code EndingInter} object, meant for user manual handling.
+     * Creates a new <code>EndingInter</code> object, meant for user manual handling.
      *
      * @param withRightLeg true for an ending with a right leg
      * @param grade        interpretation quality

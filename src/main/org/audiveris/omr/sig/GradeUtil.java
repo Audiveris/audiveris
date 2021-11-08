@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 /**
- * Class {@code GradeUtil} gathers utility methods dealing with grade computation.
+ * Class <code>GradeUtil</code> gathers utility methods dealing with grade computation.
  *
  * @author Hervé Bitteur
  */

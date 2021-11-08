@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code WrappedDouble} is a wrapper around a Double, with the ability to set
+ * Class <code>WrappedDouble</code> is a wrapper around a Double, with the ability to set
  * an initial value.
  *
  * @author Hervé Bitteur

@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.field;
 import javax.swing.JLabel;
 
 /**
- * Class {@code LLabel} is a labeled label.
+ * Class <code>LLabel</code> is a labeled label.
  *
  * @author Hervé Bitteur
  */
@@ -34,7 +34,7 @@ public class LLabel
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code LLabel} object, with default center alignment
+     * Creates a new <code>LLabel</code> object, with default center alignment
      *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
@@ -46,7 +46,7 @@ public class LLabel
     }
 
     /**
-     * Creates a new {@code LLabel} object.
+     * Creates a new <code>LLabel</code> object.
      *
      * @param horizontalAlignment horizontal alignment
      */
@@ -56,7 +56,7 @@ public class LLabel
     }
 
     /**
-     * Creates a new {@code LLabel} object.
+     * Creates a new <code>LLabel</code> object.
      *
      * @param label               the string to be used as label text
      * @param tip                 the related tool tip text

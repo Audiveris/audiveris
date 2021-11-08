@@ -34,8 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code BeamsStep} implements <b>BEAMS</b> step, which uses the spots produced
- * by an image closing operation to retrieve all possible beam interpretations.
+ * Class <code>BeamsStep</code> implements <b>BEAMS</b> step, which uses the spots
+ * produced by an image closing operation to retrieve all possible beam interpretations.
  *
  * @author Hervé Bitteur
  */

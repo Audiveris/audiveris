@@ -40,7 +40,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 
 /**
- * Class {@code StaffPeak} represents a peak in staff projection onto x-axis.
+ * Class <code>StaffPeak</code> represents a peak in staff projection onto x-axis.
  * <p>
  * Such peak may indicate a brace portion, a barline portion, a bracket portion or just garbage.
  *
@@ -128,7 +128,7 @@ public class StaffPeak
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffPeak} object.
+     * Creates a new <code>StaffPeak</code> object.
      *
      * @param staff   containing staff
      * @param top     top ordinate

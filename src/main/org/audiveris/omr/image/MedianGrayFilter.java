@@ -26,7 +26,7 @@ import ij.process.ByteProcessor;
 import java.util.Arrays;
 
 /**
- * Class {@code MedianGrayFilter} allows to run a median filter on an input image,
+ * Class <code>MedianGrayFilter</code> allows to run a median filter on an input image,
  * assumed to contain only gray values [0..255].
  *
  * @author Hervé Bitteur

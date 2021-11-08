@@ -34,7 +34,7 @@ import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.CLOSED_OPTION;
 
 /**
- * Class {@code StaffSelection} aims at selecting proper staff, based on user location.
+ * Class <code>StaffSelection</code> aims at selecting proper staff, based on user location.
  *
  * @author Hervé Bitteur
  */

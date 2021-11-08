@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AbstractWeightedEntity}
+ * Class <code>AbstractWeightedEntity</code>
  *
  * @author Hervé Bitteur
  */
@@ -58,7 +58,9 @@ public abstract class AbstractWeightedEntity
     // Persistent data
     //----------------
     //
-    /** Assigned groups, if any. */
+    /**
+     * This is the set of <code>GlyphGroup</code> instance this entity is part of.
+     */
     @XmlList
     @XmlAttribute
     protected EnumSet<GlyphGroup> groups = EnumSet.noneOf(GlyphGroup.class);
@@ -71,7 +73,7 @@ public abstract class AbstractWeightedEntity
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractSymbol} object.
+     * Creates a new <code>AbstractSymbol</code> object.
      */
     protected AbstractWeightedEntity ()
     {

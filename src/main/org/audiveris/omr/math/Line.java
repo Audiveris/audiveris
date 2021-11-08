@@ -24,7 +24,7 @@ package org.audiveris.omr.math;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code Line} handles the equation of a line (or more generally some curved
+ * Interface <code>Line</code> handles the equation of a line (or more generally some curved
  * line for which Y can be computed from X), whatever its orientation.
  *
  * @author Hervé Bitteur

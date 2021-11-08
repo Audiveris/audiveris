@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code InterEditor} allows to edit an Inter instance set into edit mode.
+ * Class <code>InterEditor</code> allows to edit an Inter instance set into edit mode.
  * <p>
  * Edition means the ability to modify the underlying inter, by shifting or resizing it.
  * Creation of an InterEditor instance, can start in two different ways:
@@ -121,7 +121,7 @@ public abstract class InterEditor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code InterEditor} object.
+     * Create a new <code>InterEditor</code> object.
      *
      * @param inter the inter instance being edited
      */
@@ -434,7 +434,7 @@ public abstract class InterEditor
     // Handle //
     //--------//
     /**
-     * A {@code Handle} represents a control point in the geometry of an inter.
+     * A <code>Handle</code> represents a control point in the geometry of an inter.
      * <p>
      * If is rendered as a small square and can be moved by the user via mouse or keyboard.
      * <p>
@@ -448,7 +448,7 @@ public abstract class InterEditor
         protected final Point2D handleCenter;
 
         /**
-         * Create a {@code InterHandle} object.
+         * Create a <code>InterHandle</code> object.
          *
          * @param center absolute coordinates of handle center
          */

@@ -50,7 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code SampleContext} displays a sample within the context image of its
+ * Class <code>SampleContext</code> displays a sample within the context image of its
  * containing sheet.
  *
  * @author Hervé Bitteur
@@ -79,7 +79,7 @@ public class SampleContext
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleContext} object.
+     * Creates a new <code>SampleContext</code> object.
      *
      * @param repository the underlying repository
      */

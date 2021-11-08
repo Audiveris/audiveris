@@ -22,7 +22,7 @@
 package org.audiveris.omr.step;
 
 /**
- * Class {@code StepException} describes a logical exception detected while doing OMR
+ * Class <code>StepException</code> describes a logical exception detected while doing OMR
  * processing, and which should immediately stop the current Step.
  *
  * @author Hervé Bitteur
@@ -33,7 +33,7 @@ public class StepException
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Construct an {@code StepException} with detail message.
+     * Construct an <code>StepException</code> with detail message.
      *
      * @param message the related message
      */
@@ -43,7 +43,7 @@ public class StepException
     }
 
     /**
-     * Construct an {@code StepException} from an existing exception.
+     * Construct an <code>StepException</code> from an existing exception.
      *
      * @param ex the related exception
      */

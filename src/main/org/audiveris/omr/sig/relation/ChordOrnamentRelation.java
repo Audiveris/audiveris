@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.Scale;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordOrnamentRelation} represents the relation between a head-chord and
+ * Class <code>ChordOrnamentRelation</code> represents the relation between a head-chord and
  * an ornament.
  *
  * @author Hervé Bitteur

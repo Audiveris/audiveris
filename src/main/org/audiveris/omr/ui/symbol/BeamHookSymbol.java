@@ -28,7 +28,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BeamHookSymbol} implements a decorated beam hook symbol
+ * Class <code>BeamHookSymbol</code> implements a decorated beam hook symbol
  *
  * @author Hervé Bitteur
  */

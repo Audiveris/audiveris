@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Class {@code WindowsRegistry} provides a basic interface to Windows registry,
+ * Class <code>WindowsRegistry</code> provides a basic interface to Windows registry,
  * implemented to top on CLI "reg" command.
  *
  * @author Hervé Bitteur

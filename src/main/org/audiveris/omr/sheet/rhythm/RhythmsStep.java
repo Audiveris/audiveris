@@ -78,7 +78,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Class {@code RhythmsStep} is a comprehensive step that handles the timing of every
+ * Class <code>RhythmsStep</code> is a comprehensive step that handles the timing of every
  * relevant item within a page.
  *
  * @author Hervé Bitteur
@@ -150,7 +150,7 @@ public class RhythmsStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RhythmsStep} object.
+     * Creates a new <code>RhythmsStep</code> object.
      */
     public RhythmsStep ()
     {

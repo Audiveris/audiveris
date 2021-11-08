@@ -52,7 +52,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 /**
- * Class {@code StubsSelection} handles a dialog where user can specify stubs selection.
+ * Class <code>StubsSelection</code> handles a dialog where user can specify stubs selection.
  *
  * @author Hervé Bitteur
  */
@@ -85,7 +85,7 @@ public class StubsSelection
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StubsSelection} object for the provided book.
+     * Creates a new <code>StubsSelection</code> object for the provided book.
      *
      * @param book related book
      */

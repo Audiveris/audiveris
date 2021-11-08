@@ -27,7 +27,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 /**
- * Abstract class {@code GradeImpacts} defines data that impact a resulting grade value.
+ * Abstract class <code>GradeImpacts</code> defines data that impact a resulting grade value.
  * <p>
  * It uses 3 parallel arrays for:
  * <ul>

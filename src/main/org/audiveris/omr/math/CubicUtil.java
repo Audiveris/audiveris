@@ -29,7 +29,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code CubicUtil} gathers utility functions related to cubic bezier curves
+ * Class <code>CubicUtil</code> gathers utility functions related to cubic bezier curves
  * ({@link CubicCurve2D})
  *
  * @author Hervé Bitteur

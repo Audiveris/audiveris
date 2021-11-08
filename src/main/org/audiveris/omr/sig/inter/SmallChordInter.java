@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.inter;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SmallChordInter} is a chord composed of small heads,
+ * Class <code>SmallChordInter</code> is a chord composed of small heads,
  * typically (slashed) Acciaccatura and (un-slashed) Appoggiatura.
  *
  * @author Hervé Bitteur
@@ -36,7 +36,7 @@ public class SmallChordInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code SmallChordInter} object.
+     * Creates a new <code>SmallChordInter</code> object.
      *
      * @param grade the intrinsic grade
      */

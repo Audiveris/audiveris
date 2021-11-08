@@ -34,7 +34,7 @@ import java.awt.Rectangle;
 import java.util.List;
 
 /**
- * Class {@code RunTableFactory} retrieves the runs structure out of a given pixel
+ * Class <code>RunTableFactory</code> retrieves the runs structure out of a given pixel
  * source and builds the related {@link RunTable} structure.
  *
  * @author Hervé Bitteur
@@ -179,7 +179,7 @@ public class RunTableFactory
     // HorizontalAdapter //
     //-------------------//
     /**
-     * Adapter for horizontal runs.
+     * RunAdapter for horizontal runs.
      */
     private class HorizontalAdapter
             extends MyAdapter
@@ -219,7 +219,7 @@ public class RunTableFactory
     // MyAdapter //
     // ----------//
     private abstract class MyAdapter
-            implements RunsRetriever.Adapter
+            implements RunsRetriever.RunAdapter
     {
 
         /** The source to read runs of pixels from. */
@@ -295,7 +295,7 @@ public class RunTableFactory
     // VerticalAdapter //
     //-----------------//
     /**
-     * Adapter for vertical runs.
+     * RunAdapter for vertical runs.
      */
     private class VerticalAdapter
             extends MyAdapter

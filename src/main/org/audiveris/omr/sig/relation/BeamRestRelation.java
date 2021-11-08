@@ -21,14 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Class {@code BeamRestRelation} implements the geometric link between a beam
- * and an interleaved stem.
+ * Class <code>BeamRestRelation</code> implements the geometric link between a beam
+ * and an interleaved rest.
  *
  * @author Hervé Bitteur
  */
@@ -42,15 +43,15 @@ public class BeamRestRelation
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * Vertical distance (in pixels) between rest center and beam median line.
-     * Absolute value.
+     * The dy attribute is the absolute vertical distance, in pixels, between the rest
+     * center and the beam median line.
      */
     @XmlAttribute
     private final int dy;
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code BeamRestRelation} object.
+     * Creates a new <code>BeamRestRelation</code> object.
      *
      * @param dy absolute vertical distance beam median and rest center
      */

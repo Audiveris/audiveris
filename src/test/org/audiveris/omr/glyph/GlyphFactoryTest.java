@@ -24,7 +24,7 @@ public class GlyphFactoryTest
     private static final Dimension dim = new Dimension(15, 10);
 
     /**
-     * Creates a new {@code GlyphFactoryTest} object.
+     * Creates a new <code>GlyphFactoryTest</code> object.
      */
     public GlyphFactoryTest ()
     {

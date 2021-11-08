@@ -27,7 +27,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import java.util.List;
 
 /**
- * Class {@code SystemMergeTask} implements the merge of two systems.
+ * Class <code>SystemMergeTask</code> implements the merge of two systems.
  *
  * @author Hervé Bitteur
  */
@@ -47,7 +47,7 @@ public class SystemMergeTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SystemMergeTask} object.
+     * Creates a new <code>SystemMergeTask</code> object.
      *
      * @param system DOCUMENT ME!
      */

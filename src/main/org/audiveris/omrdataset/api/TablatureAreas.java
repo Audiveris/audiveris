@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omrdataset.api;
 
+import org.audiveris.omr.util.Jaxb.RectangleAdapter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +43,12 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code TablatureAreas} describes areas occupied by tablatures in sheet.
+ * Class <code>TablatureAreas</code> describes areas occupied by tablatures in sheet.
  *
  * @author Hervé Bitteur
  */
@@ -72,7 +72,7 @@ public class TablatureAreas
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TablatureAreas} object.
+     * Creates a new <code>TablatureAreas</code> object.
      *
      * @param areas tablature areas
      */
@@ -149,85 +149,5 @@ public class TablatureAreas
         }
 
         return jaxbContext;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------------------//
-    // RectangleAdapter //
-    //------------------//
-    /**
-     * Adapter for Rectangle.
-     */
-    public static class RectangleAdapter
-            extends XmlAdapter<RectangleAdapter.RectangleFacade, Rectangle>
-    {
-
-        @Override
-        public RectangleFacade marshal (Rectangle rect)
-                throws Exception
-        {
-            if (rect == null) {
-                return null;
-            }
-
-            return new RectangleFacade(rect);
-        }
-
-        @Override
-        public Rectangle unmarshal (RectangleFacade facade)
-                throws Exception
-        {
-            if (facade == null) {
-                return null;
-            }
-
-            return facade.getRectangle();
-        }
-
-        private static class RectangleFacade
-        {
-
-            @XmlAttribute
-            public int x;
-
-            @XmlAttribute
-            public int y;
-
-            @XmlAttribute(name = "w")
-            public int width;
-
-            @XmlAttribute(name = "h")
-            public int height;
-
-            RectangleFacade ()
-            {
-            }
-
-            RectangleFacade (Rectangle rect)
-            {
-                x = rect.x;
-                y = rect.y;
-                width = rect.width;
-                height = rect.height;
-            }
-
-            public Rectangle getRectangle ()
-            {
-                return new Rectangle(x, y, width, height);
-            }
-
-            @Override
-            public String toString ()
-            {
-                final StringBuilder sb = new StringBuilder("RectangleF{");
-                sb.append("x:").append(x);
-                sb.append(",y:").append(y);
-                sb.append(",w:").append(width);
-                sb.append(",h:").append(height);
-                sb.append('}');
-
-                return sb.toString();
-            }
-        }
     }
 }

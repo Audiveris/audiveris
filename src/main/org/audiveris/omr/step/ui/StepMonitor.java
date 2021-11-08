@@ -35,7 +35,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code StepMonitor} is the user interface entity that allows to monitor step
+ * Class <code>StepMonitor</code> is the user interface entity that allows to monitor step
  * progression.
  *
  * @author Hervé Bitteur

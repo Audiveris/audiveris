@@ -29,7 +29,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.BrowserLinkListener;
@@ -71,9 +71,10 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
+import org.kohsuke.github.GHAsset;
 
 /**
- * Class {@code Versions} gathers key versions for upgrade checks.
+ * Class <code>Versions</code> gathers key versions for upgrade checks.
  * <p>
  * It can poll Audiveris project site (GitHub) to check for availability of a more recent release
  * than the current software.
@@ -125,9 +126,9 @@ public abstract class Versions
             }
 
             // Interleaved rests are built and used starting at RHYTHMS step
-            final Step latestStep = stub.getLatestStep();
+            final OmrStep latestStep = stub.getLatestStep();
 
-            return (latestStep != null) && latestStep.compareTo(Step.RHYTHMS) >= 0;
+            return (latestStep != null) && latestStep.compareTo(OmrStep.RHYTHMS) >= 0;
         }
     };
 
@@ -265,6 +266,8 @@ public abstract class Versions
 
             GHRelease latestRelease = repository.getLatestRelease();
             logger.debug("Latest release: {}", latestRelease);
+
+            List<GHAsset> assets = latestRelease.listAssets().toList();
 
             // Remember the date this poll  was made
             Calendar now = new GregorianCalendar();

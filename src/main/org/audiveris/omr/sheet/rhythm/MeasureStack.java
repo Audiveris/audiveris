@@ -74,7 +74,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code MeasureStack} represents a vertical stack of {@link Measure} instances,
+ * Class <code>MeasureStack</code> represents a vertical stack of {@link Measure} instances,
  * embracing all parts of a system.
  * <p>
  * This approach is convenient to use vertical alignments when dealing with time slots.
@@ -90,8 +90,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>Courtesy measures that may be found at end of system (containing just cautionary key or time
  * signatures) have an ID with C suffix (nC).</li>
  * </ul>
- * <li>IDs, as exported in MusicXML, combine the page-based IDs to provide score-based (absolute)
- * IDs.</li>
+ * <li>IDs, as exported in MusicXML, combine the (local) page-based IDs to provide (global)
+ * score-based IDs.</li>
  * </ol>
  *
  * @see Measure
@@ -113,9 +113,9 @@ public class MeasureStack
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
-     * All special kinds of measures.
+     * Enum <code>SpecialMeasure</code> describes all special kinds of measures.
      */
-    public enum Special
+    public enum SpecialMeasure
     {
         PICKUP,
         FIRST_HALF,
@@ -128,7 +128,7 @@ public class MeasureStack
     // Persistent data
     //----------------
     //
-    /** (Page-based) measure Id. */
+    /** Measure Id (within the containing page). */
     @XmlAttribute
     private Integer id;
 
@@ -140,55 +140,62 @@ public class MeasureStack
     @XmlAttribute
     private int right;
 
-    /** Sequence of time slots within the measure, from left to right. */
-    @XmlElementRef
-    private final List<Slot> slots = new ArrayList<>();
-
     /** Indication for special measure stack. */
     @XmlAttribute
-    private Special special;
+    private SpecialMeasure special;
 
-    /** Repeat sign on either side of the measure stack. */
+    /** Repeat sign on side (left or right) of the measure stack. */
     @XmlList
     @XmlAttribute(name = "repeat")
     private Set<HorizontalSide> repeats;
 
     /** Theoretical measure stack duration, based on current time signature. */
     @XmlAttribute(name = "expected")
-    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational expectedDuration;
 
     /**
      * Actual measure stack duration, based on durations of contained chords.
-     * If the stack contains no note (head or rest), actual duration is ZERO.
-     * If the stack contains only whole rest(s), actual duration is given by current time signature.
-     * Otherwise, duration is computed from contained slots and voices.
-     * If stack timing fails for whatever reason, actual duration may be left as null.
+     * <ul>
+     * <li>If the stack contains no note (head or rest), actual duration is ZERO.
+     * <li>If the stack contains only measure-long rest(s), actual duration is given by current
+     * time signature.
+     * <li>Otherwise, duration is computed from contained slots and voices.
+     * <li>If stack timing fails for whatever reason, actual duration may be left as null.
+     * </ul>
      */
     @XmlAttribute(name = "duration")
-    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational actualDuration;
 
     /** Excess measure stack duration, if any. */
     @XmlAttribute(name = "excess")
-    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational excess;
 
     /**
      * Anomaly detected, if any.
-     * Deprecated since individual measures can now be flagged as abnormal.
+     * <p>
+     * <i>Deprecated</i> since individual measures can now be flagged as abnormal.
      */
     @Deprecated
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean abnormal;
 
-    /** Still unassigned tuplets within stack. */
+    /** Still unassigned tuplets within the measure stack. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "tuplets")
     @Trimmable.Collection
     private final LinkedHashSet<TupletInter> stackTuplets = new LinkedHashSet<>();
+
+    /**
+     * BINGO
+     * Sequence of time slots within the measure stack, from left to right.
+     */
+    @XmlElementRef
+    private final List<Slot> slots = new ArrayList<>();
 
     // Transient data
     //---------------
@@ -202,7 +209,7 @@ public class MeasureStack
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MeasureStack} object.
+     * Creates a new <code>MeasureStack</code> object.
      *
      * @param system containing system
      */
@@ -939,7 +946,7 @@ public class MeasureStack
     public String getPageId ()
     {
         if (id != null) {
-            return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + id
+            return ((special == SpecialMeasure.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + id
                            + (isCautionary() ? CAUTIONARY_SUFFIX : "");
         }
 
@@ -1038,7 +1045,7 @@ public class MeasureStack
             return null;
         }
 
-        return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "")
+        return ((special == SpecialMeasure.SECOND_HALF) ? SECOND_HALF_PREFIX : "")
                        + (pageMeasureIdOffset + id);
     }
 
@@ -1424,7 +1431,7 @@ public class MeasureStack
      */
     public boolean isCautionary ()
     {
-        return special == Special.CAUTIONARY;
+        return special == SpecialMeasure.CAUTIONARY;
     }
 
     //-------------//
@@ -1437,7 +1444,7 @@ public class MeasureStack
      */
     public boolean isFirstHalf ()
     {
-        return special == Special.FIRST_HALF;
+        return special == SpecialMeasure.FIRST_HALF;
     }
 
     //------------//
@@ -1450,7 +1457,7 @@ public class MeasureStack
      */
     public boolean isImplicit ()
     {
-        return (special == Special.PICKUP) || (special == Special.SECOND_HALF);
+        return (special == SpecialMeasure.PICKUP) || (special == SpecialMeasure.SECOND_HALF);
     }
 
     //----------//
@@ -1731,7 +1738,7 @@ public class MeasureStack
      */
     public void setCautionary ()
     {
-        special = Special.CAUTIONARY;
+        special = SpecialMeasure.CAUTIONARY;
     }
 
     //--------------//
@@ -1742,7 +1749,7 @@ public class MeasureStack
      */
     public void setFirstHalf ()
     {
-        special = Special.FIRST_HALF;
+        special = SpecialMeasure.FIRST_HALF;
     }
 
     //-----------//
@@ -1753,7 +1760,7 @@ public class MeasureStack
      */
     public void setPickup ()
     {
-        special = Special.PICKUP;
+        special = SpecialMeasure.PICKUP;
     }
 
     //---------------//
@@ -1764,7 +1771,7 @@ public class MeasureStack
      */
     public void setSecondHalf ()
     {
-        special = Special.SECOND_HALF;
+        special = SpecialMeasure.SECOND_HALF;
     }
 
     //---------//

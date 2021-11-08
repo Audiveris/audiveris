@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code RunBoard} is dedicated to display of Run information.
+ * Class <code>RunBoard</code> is dedicated to display of Run information.
  *
  * @author Hervé Bitteur
  */

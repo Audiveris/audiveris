@@ -45,7 +45,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code BookManager} is a singleton which provides administrative features
+ * Class <code>BookManager</code> is a singleton which provides administrative features
  * for book instances.
  * <p>
  * It handles the collection of all book instances currently loaded, as well as the list of books

@@ -143,7 +143,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code SigValue} represents the content of a SIG for use by JAXB.
+ * Class <code>SigValue</code> represents the content of a SIG for use by JAXB.
  * <p>
  * All Inter instances are defined within their containing SIG.
  * If referred from outside SIG, they are handled via XmlIDREF's.
@@ -159,9 +159,11 @@ public class SigValue
     private static final Logger logger = LoggerFactory.getLogger(SigValue.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    // NOTA: For easier review, class names here below should be listed alphabetically.
     /**
-     * All CONCRETE inters found in sig, gathered here as true defs. No abstract!
-     * For easier review, class names are listed alphabetically.
+     * All CONCRETE inters found in sig are gathered here as true defs.
+     * <br>
+     * No abstract!
      */
     @XmlElementWrapper(name = "inters")
     @XmlElementRefs({
@@ -291,13 +293,13 @@ public class SigValue
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * Meant for JAXB handling of SIG.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<SigValue, SIGraph>
     {
 
@@ -346,16 +348,17 @@ public class SigValue
     // RelationValue //
     //---------------//
     /**
-     * Class {@code RelationValue} represents the content of an inter Relation for JAXB.
+     * Class <code>RelationValue</code> represents the JAXB-compatible content of a
+     * relation established between two inters.
      */
     private static class RelationValue
     {
 
-        /** Relation source vertex ID. */
+        /** Inter ID for the relation source. */
         @XmlAttribute(name = "source")
         public int sourceId;
 
-        /** Relation target vertex ID. */
+        /** Inter ID for the relation target. */
         @XmlAttribute(name = "target")
         public int targetId;
 
@@ -413,7 +416,7 @@ public class SigValue
         public Relation relation;
 
         /**
-         * Creates a new {@code RelationValue} object.
+         * Creates a new <code>RelationValue</code> object.
          *
          * @param source   source inter
          * @param target   target inter

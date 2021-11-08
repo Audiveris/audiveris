@@ -46,7 +46,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code LineCluster} is meant to aggregate instances of {@link Filament} that
+ * Class <code>LineCluster</code> is meant to aggregate instances of {@link Filament} that
  * are linked by {@link FilamentComb} instances and thus a cluster represents a staff
  * candidate, perhaps augmented above and/or below by "virtual lines" of ledgers.
  *

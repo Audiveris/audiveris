@@ -29,7 +29,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code HeadsSymbol} displays a column of several identical heads.
+ * Class <code>HeadsSymbol</code> displays a column of several identical heads.
  * (black, void or whole)
  * <p>
  * [NOTA: Class no longer used, but kept for potential future interest]

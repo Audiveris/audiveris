@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code OmrFont} is meant to simplify the use of rendering symbols when using a
+ * Class <code>OmrFont</code> is meant to simplify the use of rendering symbols when using a
  * Text or a Music font.
  *
  * @author Hervé Bitteur

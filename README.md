@@ -1,6 +1,6 @@
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
 
-# Audiveris - Open-source Optical Music Recognition (v5.2)
+# Audiveris - Open-source Optical Music Recognition (v5.3)
 
 The goal of an OMR application is to allow the end-user to transcribe a score image into
 its symbolic counterpart.

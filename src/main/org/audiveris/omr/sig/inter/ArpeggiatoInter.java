@@ -48,7 +48,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ArpeggiatoInter} represents the arpeggiato notation along the heads
+ * Class <code>ArpeggiatoInter</code> represents the arpeggiato notation along the heads
  * of a chord.
  *
  * @author Hervé Bitteur
@@ -66,7 +66,7 @@ public class ArpeggiatoInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ArpeggiatoInter} object.
+     * Creates a new <code>ArpeggiatoInter</code> object.
      *
      * @param glyph the arpeggiato glyph
      * @param grade the interpretation quality

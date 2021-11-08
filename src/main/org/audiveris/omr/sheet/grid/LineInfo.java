@@ -33,11 +33,11 @@ import java.awt.geom.Point2D;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Interface {@code LineInfo} describes the handling of one staff line.
+ * Interface <code>LineInfo</code> describes the handling of one staff line.
  *
  * @author Hervé Bitteur
  */
-@XmlJavaTypeAdapter(StaffLine.Adapter.class)
+@XmlJavaTypeAdapter(StaffLine.JaxbAdapter.class)
 public interface LineInfo
 {
     //~ Methods ------------------------------------------------------------------------------------

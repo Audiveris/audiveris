@@ -32,7 +32,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code GlobalDescriptor} describes a {@link GlobalFilter}
+ * Class <code>GlobalDescriptor</code> describes a {@link GlobalFilter} which applies
+ * the same global threshold on all pixels of the input image.
  *
  * @author Hervé Bitteur
  */
@@ -46,7 +47,9 @@ public class GlobalDescriptor
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The threshold value for the whole pixel source. */
+    /**
+     * The <b>same</b> threshold value to apply on <b>all</b> pixels of the source.
+     */
     @XmlAttribute(name = "threshold")
     public final int threshold;
 

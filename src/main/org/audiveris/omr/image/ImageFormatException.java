@@ -22,7 +22,7 @@
 package org.audiveris.omr.image;
 
 /**
- * Class {@code ImageFormatException} describes an exception raised when a non-handled
+ * Class <code>ImageFormatException</code> describes an exception raised when a non-handled
  * format is detected in an image file.
  *
  * @author Hervé Bitteur
@@ -33,7 +33,7 @@ public class ImageFormatException
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Construct an {@code ImageFormatException} with provided detail message.
+     * Construct an <code>ImageFormatException</code> with provided detail message.
      *
      * @param message the message describing this exception
      */

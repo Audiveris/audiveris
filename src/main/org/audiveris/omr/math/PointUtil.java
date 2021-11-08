@@ -30,7 +30,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 /**
- * Class {@code PointUtil} gathers utility methods for points (and vectors).
+ * Class <code>PointUtil</code> gathers utility methods for points (and vectors).
  *
  * @author Hervé Bitteur
  */

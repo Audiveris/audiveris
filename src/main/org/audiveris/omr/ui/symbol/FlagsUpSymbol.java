@@ -26,7 +26,7 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 import org.audiveris.omr.ui.symbol.FlagsDownSymbol.MyParams;
 
 /**
- * Class {@code FlagsUpSymbol} displays a pack of several flags up
+ * Class <code>FlagsUpSymbol</code> displays a pack of several flags up
  *
  * @author Hervé Bitteur
  */

@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
 
 /**
- * Class {@code FileDropHandler} handles the dropping of files onto the
+ * Class <code>FileDropHandler</code> handles the dropping of files onto the
  * main application window.
  *
  * @author Hervé Bitteur
@@ -185,12 +185,12 @@ public class FileDropHandler
 
         private final File file;
 
-        private final Step dropStep;
+        private final OmrStep dropStep;
 
         private Book book;
 
         DropInputTask (File file,
-                       Step dropStep)
+                       OmrStep dropStep)
         {
             this.file = file;
             this.dropStep = dropStep;

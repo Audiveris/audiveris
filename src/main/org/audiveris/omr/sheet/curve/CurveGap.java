@@ -34,7 +34,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 
 /**
- * Class {@code CurveGap} handles a gap between a curve and an arc.
+ * Class <code>CurveGap</code> handles a gap between a curve and an arc.
  *
  * @author Hervé Bitteur
  */

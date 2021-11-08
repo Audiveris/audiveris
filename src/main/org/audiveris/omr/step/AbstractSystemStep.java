@@ -36,7 +36,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
- * Abstract class {@code AbstractSystemStep} is a basis for any step working on the
+ * Abstract class <code>AbstractSystemStep</code> is a basis for any step working on the
  * sheet systems, perhaps in parallel.
  *
  * @param <C> context type
@@ -62,7 +62,7 @@ public abstract class AbstractSystemStep<C>
     // clearErrors //
     //-------------//
     @Override
-    public void clearErrors (Step step,
+    public void clearErrors (OmrStep step,
                              Sheet sheet)
     {
         // Void, since this is done system per system
@@ -116,7 +116,7 @@ public abstract class AbstractSystemStep<C>
      * @param step   the step we are interested in
      * @param system the system to clear of errors
      */
-    protected void clearSystemErrors (Step step,
+    protected void clearSystemErrors (OmrStep step,
                                       SystemInfo system)
     {
         if (OMR.gui != null) {

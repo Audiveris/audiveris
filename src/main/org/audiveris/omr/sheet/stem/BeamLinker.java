@@ -91,7 +91,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class {@code BeamLinker} handles the connections from a beam to the nearby
+ * Class <code>BeamLinker</code> handles the connections from a beam to the nearby
  * stems and heads.
  * <p>
  * For every beam, we look for connectable stem seeds and for stumps that point outside beam.
@@ -152,7 +152,7 @@ public class BeamLinker
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BeamLinker} object and populates beam stumps.
+     * Creates a new <code>BeamLinker</code> object and populates beam stumps.
      *
      * @param beam      the beam inter to link
      * @param retriever the driving system-level StemsRetriever instance
@@ -1051,6 +1051,7 @@ public class BeamLinker
             //-----------//
             // setLinked //
             //-----------//
+            @Override
             public void setLinked (boolean linked)
             {
                 BLinker.this.setLinked(linked);
@@ -1168,7 +1169,7 @@ public class BeamLinker
             /**
              * Expand current stem from beam as much as possible.
              * <p>
-             * If {@code stemProfile} == Profiles.BEAM_SIDE then we are linking a beam side, so:
+             * If <code>stemProfile</code> == Profiles.BEAM_SIDE then we are linking a beam side, so:
              * <ol>
              * <li>At least one head must be reached from the beam,
              * <li>The stem must end with a head on correct side.

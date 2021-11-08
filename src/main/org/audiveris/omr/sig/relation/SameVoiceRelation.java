@@ -24,11 +24,10 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SameVoiceRelation} indicates that the source and target chords
+ * Class <code>SameVoiceRelation</code> indicates that the source and target chords
  * should belong to the same voice, but tells nothing about time slots
  * (except that they cannot belong to the same time slot, of course).
  * <p>
- * Warning: This relation is kept essentially for compatibility with old .omr files.
  * Users are encouraged to use the more powerful {@link NextInVoiceRelation} whenever possible.
  *
  * @see NextInVoiceRelation
@@ -42,7 +41,7 @@ public class SameVoiceRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code SameVoiceRelation} object.
+     * Creates a new <code>SameVoiceRelation</code> object.
      */
     public SameVoiceRelation ()
     {

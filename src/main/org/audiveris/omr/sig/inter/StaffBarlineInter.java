@@ -45,7 +45,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -75,12 +75,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code StaffBarlineInter} represents a logical barline for one staff only.
+ * Class <code>StaffBarlineInter</code> represents a logical barline for one staff only.
  * <p>
  * A {@link PartBarline} is a logical barline for one part, a vertical sequence composed of one
- * {@code StaffBarlineInter} for each staff in the part.
+ * <code>StaffBarlineInter</code> for each staff in the part.
  * <p>
- * A {@code StaffBarlineInter} is a horizontal sequence of one or several {@link BarlineInter}
+ * A <code>StaffBarlineInter</code> is a horizontal sequence of one or several {@link BarlineInter}
  * instances.
  * <p>
  * Barline-related entities such as repeat dot(s), ending(s), fermata(s), segno or coda are
@@ -111,7 +111,7 @@ public final class StaffBarlineInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffBarlineInter} object from a shape.
+     * Creates a new <code>StaffBarlineInter</code> object from a shape.
      *
      * @param shape THIN_BARLINE, THICK_BARLINE, DOUBLE_BARLINE,FINAL_BARLINE,
      *              REVERSE_FINAL_BARLINE, LEFT_REPEAT_SIGN,
@@ -130,7 +130,7 @@ public final class StaffBarlineInter
     }
 
     /**
-     * Creates a new {@code StaffBarlineInter} object from its Barline members.
+     * Creates a new <code>StaffBarlineInter</code> object from its Barline members.
      *
      * @param members the barline members
      */
@@ -844,7 +844,7 @@ public final class StaffBarlineInter
         final SystemInfo system = staff.getSystem();
         final Sheet sheet = system.getSheet();
 
-        if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
             return tasks;
         }
 
@@ -911,7 +911,7 @@ public final class StaffBarlineInter
 
         inters.add(this);
 
-        if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
             return inters;
         }
 

@@ -33,10 +33,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Abstract class {@code Support} is a relation between interpretation instances that
- * support one another.
+ * Abstract class <code>Support</code> is a relation between two interpretation instances,
+ * designated as the source and the target, that support one another.
  * <p>
- * Typical example is a mutual support between a stem and a note head, or between a stem and a beam.
+ * Typical examples are mutual support:
+ * <ul>
+ * <li>between a stem and a note head
+ * <li>between a stem and a beam
+ * </ul>
+ * <p>
+ * Depending on the precise support relation class and on the quality of the geometric junction,
+ * the source and the target instances will have their contextual grades benefit from this relation
+ * instance.
  *
  * @author Hervé Bitteur
  */
@@ -50,12 +58,14 @@ public abstract class Support
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Quality of the geometric junction. */
+    /**
+     * The [0..1] quality value of the geometric junction.
+     */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
     protected double grade;
 
-    /** Details about grade (for debugging). */
+    /** Details about grade (mainly for debugging). */
     protected GradeImpacts impacts;
 
     //~ Constructors -------------------------------------------------------------------------------

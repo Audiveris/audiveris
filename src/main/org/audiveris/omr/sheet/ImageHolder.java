@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class {@code ImageHolder} is a placeholder for image, backed up on disk.
+ * Class <code>ImageHolder</code> is a placeholder for image, backed up on disk.
  * <p>
  * It holds the reference of the image, at least the path to its copy on disk, and (on demand) the
  * image itself read from disk.
@@ -55,7 +55,7 @@ public class ImageHolder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ImageHolder} object.
+     * Creates a new <code>ImageHolder</code> object.
      *
      * @param key image key
      */

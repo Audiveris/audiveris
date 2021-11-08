@@ -24,7 +24,7 @@ package org.audiveris.omr.check;
 import org.audiveris.omr.util.Vip;
 
 /**
- * Interface {@code Checkable} describes a class of objects that can
+ * Interface <code>Checkable</code> describes a class of objects that can
  * be checked, generally via a suite of individual checks.
  *
  * @author Hervé Bitteur

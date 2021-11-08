@@ -26,12 +26,12 @@ import org.audiveris.omr.ui.OmrGui;
 import org.jdesktop.application.Task;
 
 /**
- * Class {@code BasicTask} is an Application Framework Task for Audiveris application.
+ * Class <code>BasicTask</code> is an Application Framework Task for Audiveris application.
  *
- * @param <T> the result type returned by this {@code SwingWorker's}
- *            {@code doInBackground} and {@code get} methods
+ * @param <T> the result type returned by this <code>SwingWorker's</code>
+ *            <code>doInBackground</code> and <code>get</code> methods
  * @param <V> the type used for carrying out intermediate results by this
- *            {@code SwingWorker's} {@code publish} and {@code process} methods
+ *            <code>SwingWorker's</code> <code>publish</code> and <code>process</code> methods
  * @author Hervé Bitteur
  */
 public abstract class BasicTask<T, V>

@@ -58,7 +58,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 /**
- * Class {@code MeasuresBuilder} is in charge, at system level, of ensuring barlines
+ * Class <code>MeasuresBuilder</code> is in charge, at system level, of ensuring barlines
  * consistency and of building all measures.
  *
  * @author Hervé Bitteur
@@ -82,7 +82,7 @@ public class MeasuresBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MeasuresBuilder} object.
+     * Creates a new <code>MeasuresBuilder</code> object.
      *
      * @param system the dedicated system
      */
@@ -466,7 +466,7 @@ public class MeasuresBuilder
     // Column //
     //--------//
     /**
-     * A {@code Column} is a vertical sequence of (groups of) barlines across the whole
+     * A <code>Column</code> is a vertical sequence of (groups of) barlines across the whole
      * system, useful to indicate holes.
      */
     private class Column

@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code CheckBoard} defines a board dedicated to the display of check result
+ * Class <code>CheckBoard</code> defines a board dedicated to the display of check result
  * information.
  *
  * @param <C> The {@link Checkable} type to be checked (can be an entity context)

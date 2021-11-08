@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Basket}
+ * Class <code>Basket</code>
  *
  * @author Hervé Bitteur
  */

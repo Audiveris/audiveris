@@ -25,8 +25,8 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.RunClass;
-import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.SortedSet;
 
 /**
- * Class {@code RunSmallStaffCheck}
+ * Class <code>RunSmallStaffCheck</code>
  *
  * @author Hervé Bitteur
  */
@@ -47,7 +47,7 @@ public class RunSmallStaffCheck
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunSmallStaffCheck} object.
+     * Creates a new <code>RunSmallStaffCheck</code> object.
      *
      * @param book     book to process
      * @param sheetIds sheet IDS if any
@@ -64,7 +64,7 @@ public class RunSmallStaffCheck
     {
         for (SheetStub stub : book.getValidStubs()) {
             if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
-                if (stub.isDone(Step.GRID)) {
+                if (stub.isDone(OmrStep.GRID)) {
                     Sheet sheet = stub.getSheet();
 
                     for (Staff staff : sheet.getStaffManager().getStaves()) {

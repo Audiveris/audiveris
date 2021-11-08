@@ -27,8 +27,8 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.RunClass;
-import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 /**
- * Class {@code RunPartCheck}
+ * Class <code>RunPartCheck</code>
  *
  * @author Hervé Bitteur
  */
@@ -51,7 +51,7 @@ public class RunPartCheck
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunPartCheck} object.
+     * Creates a new <code>RunPartCheck</code> object.
      *
      * @param book     book to process
      * @param sheetIds sheet IDS if any
@@ -70,7 +70,7 @@ public class RunPartCheck
             if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
                 logger.info("RunPartCheck. process {}", stub);
 
-                if (stub.isDone(Step.GRID)) {
+                if (stub.isDone(OmrStep.GRID)) {
                     Sheet sheet = stub.getSheet();
 
                     for (SystemInfo system : sheet.getSystems()) {

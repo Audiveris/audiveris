@@ -24,7 +24,7 @@ package org.audiveris.omr.score;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code PartData} gathers descriptive information at score level for a part.
+ * Class <code>PartData</code> gathers descriptive information at score level for a part.
  *
  * @author Hervé Bitteur
  */
@@ -32,17 +32,21 @@ public class PartData
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Name of the part, such as found in left margin of a part. */
-    @XmlAttribute
+    /**
+     * This is the name of the part, such as found in left margin of the part staves.
+     */
+    @XmlAttribute(name = "name")
     public final String name;
 
-    /** Midi Instrument. */
-    @XmlAttribute
+    /**
+     * Midi Instrument.
+     */
+    @XmlAttribute(name = "program")
     public final int program;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PartData} object.
+     * Creates a new <code>PartData</code> object.
      *
      * @param name    part name
      * @param program midi program number

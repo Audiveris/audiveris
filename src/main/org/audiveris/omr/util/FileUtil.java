@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code FileUtil} gathers convenient utility methods for files (and paths).
+ * Class <code>FileUtil</code> gathers convenient utility methods for files (and paths).
  *
  * @author Hervé Bitteur
  */
@@ -403,14 +403,8 @@ public abstract class FileUtil
         // create a matcher and return a filter that uses it.
         final FileSystem fs = dir.getFileSystem();
         final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-        final DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>()
-        {
-            @Override
-            public boolean accept (Path entry)
-            {
-                return matcher.matches(entry.getFileName());
-            }
-        };
+        final DirectoryStream.Filter<Path> filter = (Path entry) ->
+                matcher.matches(entry.getFileName());
 
         return fs.provider().newDirectoryStream(dir, filter);
     }

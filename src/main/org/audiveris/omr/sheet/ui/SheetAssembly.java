@@ -24,7 +24,7 @@ package org.audiveris.omr.sheet.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.util.ClosableTabbedPane;
@@ -56,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SheetAssembly} is a UI assembly dedicated to the display of various
+ * Class <code>SheetAssembly</code> is a UI assembly dedicated to the display of various
  * views around the same sheet.
  * All views share the same zoom and the same position within their containing {@link JScrollPane}.
  * <p>
@@ -117,7 +117,7 @@ public class SheetAssembly
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code SheetAssembly} instance dedicated to one sheet stub.
+     * Create a new <code>SheetAssembly</code> instance dedicated to one sheet stub.
      *
      * @param stub the related sheet stub
      */
@@ -252,7 +252,7 @@ public class SheetAssembly
         // Display the related boards
         displayBoards();
 
-        if (stub.hasSheet() && (stub.getLatestStep().compareTo(Step.HEADS) >= 0)) {
+        if (stub.hasSheet() && (stub.getLatestStep().compareTo(OmrStep.HEADS) >= 0)) {
             // Update repetitiveInput checkbox
             BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
         }

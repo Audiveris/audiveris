@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code StemAlignmentRelation} is used to formalize that two stems are strongly
+ * Class <code>StemAlignmentRelation</code> is used to formalize that two stems are strongly
  * aligned with each other (because they both derive from a larger root stem) and that
  * they share the same time slot.
  *

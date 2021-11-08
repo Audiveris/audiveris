@@ -34,7 +34,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
 /**
- * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the handling of a
+ * Class <code>ShapeSymbol</code> extends the {@link BasicSymbol} with the handling of a
  * related {@link Shape}.
  * <p>
  * A ShapeSymbol thus adds several features:

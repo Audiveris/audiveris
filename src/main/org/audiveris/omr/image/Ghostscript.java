@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class {@code Ghostscript} provides the path to a suitable Ghostscript executable,
+ * Class <code>Ghostscript</code> provides the path to a suitable Ghostscript executable,
  * which may depend on underlying OS and architecture, and on versions found.
  *
  * @author Hervé Bitteur

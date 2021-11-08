@@ -42,7 +42,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Class {@code TestStep} is an attempt to add a pseudo step for specific tests.
+ * Class <code>TestStep</code> is an attempt to add a pseudo step for specific tests.
  *
  * @author Hervé Bitteur
  */
@@ -53,7 +53,7 @@ public class TestStep
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code TestStep} object.
+     * Creates a new <code>TestStep</code> object.
      */
     public TestStep ()
     {

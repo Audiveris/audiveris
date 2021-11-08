@@ -21,7 +21,7 @@
 // </editor-fold>
 
 /**
- * Class {@code Audiveris} is simply a convenient entry point to OMR, which
+ * Class <code>Audiveris</code> is simply a convenient entry point to OMR, which
  * delegates the call to {@link org.audiveris.omr.Main#main}.
  *
  * @author Hervé Bitteur

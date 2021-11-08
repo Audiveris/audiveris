@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FermataDotInter} represents a dot in a fermata symbol.
+ * Class <code>FermataDotInter</code> represents a dot in a fermata symbol.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,7 @@ public class FermataDotInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code FermataDotInter} object.
+     * Creates a new <code>FermataDotInter</code> object.
      *
      * @param glyph underlying glyph
      * @param grade evaluation value

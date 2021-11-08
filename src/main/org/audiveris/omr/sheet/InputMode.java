@@ -22,7 +22,7 @@
 package org.audiveris.omr.sheet;
 
 /**
- * Class {@code InputMode} is meant to specify processing mode based on input quality.
+ * Class <code>InputMode</code> is meant to specify processing mode based on input quality.
  *
  * @author Hervé Bitteur
  */

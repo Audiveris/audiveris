@@ -33,7 +33,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FlagInter} represents one or several flags.
+ * Class <code>FlagInter</code> represents one or several flags.
  *
  * @author Hervé Bitteur
  */

@@ -22,7 +22,7 @@
 package org.audiveris.omr.jaxb.itf;
 
 /**
- * Interface {@code MyEntity}
+ * Interface <code>MyEntity</code>
  *
  * @author Hervé Bitteur
  */

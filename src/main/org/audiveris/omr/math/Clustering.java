@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code Clustering} gathers objects according to their similarity.
+ * Class <code>Clustering</code> gathers objects according to their similarity.
  * It uses the implementation of Expectation-Maximization algorithm published by Xavier Philippeau
  * on <a
  * href=

@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code LineModel} implements a curve model as a straight line.
+ * Class <code>LineModel</code> implements a curve model as a straight line.
  *
  * @author Hervé Bitteur
  */

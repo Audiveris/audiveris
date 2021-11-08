@@ -39,7 +39,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code Zoom} encapsulates a zoom ratio, which is typically the ratio between
+ * Class <code>Zoom</code> encapsulates a zoom ratio, which is typically the ratio between
  * display values (such as the size of the display of an entity) and model values
  * (such as the size of the entity itself).
  * <p>
@@ -351,23 +351,17 @@ public class Zoom
             slider.setFocusable(false);
             slider.setDoubleValue(ratio);
 
-            slider.addChangeListener(
-                    new ChangeListener()
-            {
-                @Override
-                public void stateChanged (ChangeEvent e)
-                {
-                    // Forward the new zoom ratio
-                    if (constants.continuousSliderReading.getValue() || !slider
-                            .getValueIsAdjusting()) {
-                        double newRatio = slider.getDoubleValue();
-                        logger.debug("Slider firing zoom newRatio={}", newRatio);
-
-                        // Stop condition to avoid endless loop between
-                        // slider and zoom
-                        if (Math.abs(newRatio - ratio) > .001) {
-                            forceRatio(newRatio);
-                        }
+            slider.addChangeListener((ChangeEvent e) -> {
+                // Forward the new zoom ratio
+                if (constants.continuousSliderReading.getValue() || !slider
+                        .getValueIsAdjusting()) {
+                    double newRatio = slider.getDoubleValue();
+                    logger.debug("Slider firing zoom newRatio={}", newRatio);
+                    
+                    // Stop condition to avoid endless loop between
+                    // slider and zoom
+                    if (Math.abs(newRatio - ratio) > .001) {
+                        forceRatio(newRatio);
                     }
                 }
             });

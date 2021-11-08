@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code Voices} connects voices and harmonizes their IDs (and thus colors)
+ * Class <code>Voices</code> connects voices and harmonizes their IDs (and thus colors)
  * within a stack, a system, a page or a score.
  *
  * @author Hervé Bitteur

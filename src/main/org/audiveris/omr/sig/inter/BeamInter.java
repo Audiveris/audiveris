@@ -29,7 +29,7 @@ import java.awt.geom.Line2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BeamInter} represents a (full) beam interpretation, as opposed
+ * Class <code>BeamInter</code> represents a (full) beam interpretation, as opposed
  * to a beam hook interpretation.
  *
  * @see BeamHookInter

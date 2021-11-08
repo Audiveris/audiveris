@@ -55,8 +55,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Class {@code SheetDiff} measures the difference between input data (the input sheet
- * picture) and output data (the recognized entities).
+ * Class <code>SheetDiff</code> measures the difference between input data
+ * (the input sheet picture) and output data (the recognized entities).
  *
  * @author Hervé Bitteur
  */
@@ -104,7 +104,7 @@ public class SheetDiff
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code SheetDiff} object.
+     * Create a <code>SheetDiff</code> object.
      *
      * @param sheet related sheet
      */
@@ -182,7 +182,7 @@ public class SheetDiff
         if (OMR.gui != null) {
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.DIFF_TAB,
-                    new ScrollView(new MyView(xor)),
+                    new ScrollView(new DiffView(xor)),
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
@@ -427,15 +427,15 @@ public class SheetDiff
                 "Global threshold to binarize delta results");
     }
 
-    //--------//
-    // MyView //
-    //--------//
-    private class MyView
+    //----------//
+    // DiffView //
+    //----------//
+    private class DiffView
             extends ImageView
             implements PropertyChangeListener
     {
 
-        MyView (ByteProcessor filtered)
+        DiffView (ByteProcessor filtered)
         {
             super(filtered.getBufferedImage());
             setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
@@ -448,9 +448,6 @@ public class SheetDiff
                     new WeakPropertyChangeListener(this));
         }
 
-        //----------------//
-        // propertyChange //
-        //----------------//
         @Override
         public void propertyChange (PropertyChangeEvent evt)
         {

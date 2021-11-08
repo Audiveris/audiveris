@@ -60,7 +60,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
- * Class {@code TargetBuilder} is in charge of building a "perfect" definition of target
+ * Class <code>TargetBuilder</code> is in charge of building a "perfect" definition of target
  * systems, staves and lines as well as the de-warp grid that allows to transform the
  * original image in to the perfect image.
  *

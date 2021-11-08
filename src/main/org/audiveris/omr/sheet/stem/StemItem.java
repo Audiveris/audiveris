@@ -35,7 +35,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code StemItem} is an abstract class to formalize any item used when trying to
+ * Class <code>StemItem</code> is an abstract class to formalize any item used when trying to
  * build a stem (glyph, beam-based linker, head-based linker, gap).
  *
  * @author Hervé Bitteur
@@ -61,7 +61,7 @@ public abstract class StemItem
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code StemItem} object.
+     * Create a <code>StemItem</code> object.
      *
      * @param line    segment from top to bottom, can be degenerated to a single refPt
      * @param glyph   underlying glyph is any
@@ -106,7 +106,7 @@ public abstract class StemItem
     {
 
         /**
-         * Create a {@code GapItem} object;
+         * Create a <code>GapItem</code> object;
          *
          * @param line the top down gap line
          */
@@ -156,7 +156,7 @@ public abstract class StemItem
     {
 
         /**
-         * Create a {@code GlyphItem} object.
+         * Create a <code>GlyphItem</code> object.
          *
          * @param glyph   underlying glyph (non null)
          * @param contrib positive contribution to stem length
@@ -228,7 +228,7 @@ public abstract class StemItem
         final StemLinker linker;
 
         /**
-         * Create a {@code LinkerItem} object.
+         * Create a <code>LinkerItem</code> object.
          *
          * @param linker the underlying head or beam linker
          */

@@ -30,7 +30,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code AreaUtil} gathers static utility methods for Area instances.
+ * Class <code>AreaUtil</code> gathers static utility methods for Area instances.
  *
  * @author Hervé Bitteur
  */

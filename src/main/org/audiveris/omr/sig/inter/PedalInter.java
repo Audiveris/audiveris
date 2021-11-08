@@ -38,7 +38,7 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PedalInter} represents a pedal (start) or pedal up (stop) event.
+ * Class <code>PedalInter</code> represents a pedal (start) or pedal up (stop) event.
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +49,7 @@ public class PedalInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code PedalInter} object.
+     * Creates a new <code>PedalInter</code> object.
      *
      * @param glyph the pedal glyph
      * @param shape PEDAL_MARK (start) or PEDAL_UP_MARK (stop)

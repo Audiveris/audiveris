@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code FlagsDownSymbol} displays a pack of several flags down
+ * Class <code>FlagsDownSymbol</code> displays a pack of several flags down
  *
  * @author Hervé Bitteur
  */

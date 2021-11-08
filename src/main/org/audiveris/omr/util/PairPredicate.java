@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Interface {@code PairPredicate}
+ * Interface <code>PairPredicate</code>
  *
  * @author Hervé Bitteur
  *
@@ -37,7 +37,7 @@ public interface PairPredicate<E>
      *
      * @param one an entity
      * @param two another entity
-     * @return {@code true} if the input argument matches the predicate, otherwise {@code false}
+     * @return <code>true</code> if the input argument matches the predicate, otherwise <code>false</code>
      */
     boolean test (E one,
                   E two);

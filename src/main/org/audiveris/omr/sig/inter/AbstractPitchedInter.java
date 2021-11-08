@@ -37,8 +37,29 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractPitchedInter} is an abstract Inter class to carry pitch
+ * Class <code>AbstractPitchedInter</code> is an abstract Inter class to carry pitch
  * information.
+ * <p>
+ * Pitch is counted from 0 on staff mid line and increases in top down direction:
+ * <pre>
+ *
+ *     etc
+ *     -6  -- first ledger above
+ *     -5
+ * +-- -4 ----------------------
+ * |   -3
+ * +-- -2 ----------------------
+ * |   -1
+ * +--  0 ----------------------
+ * |    1
+ * +--  2 ----------------------
+ * |    3
+ * +--  4 ----------------------
+ *      5
+ *      6  -- first ledger below
+ *     etc
+ *
+ * </pre>
  *
  * @author Hervé Bitteur
  */
@@ -62,7 +83,9 @@ public abstract class AbstractPitchedInter
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The assigned pitch. */
+    /**
+     * The assigned pitch coded as a double value, 1 digit maximum after the dot.
+     */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
     protected Double pitch;

@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.relation;
 
 /**
- * Enum {@code StemPortion} defines which portion of a stem is used in a relation with
+ * Enum <code>StemPortion</code> defines which portion of a stem is used in a relation with
  * another object (head, beam, flag).
  *
  * @author Hervé Bitteur

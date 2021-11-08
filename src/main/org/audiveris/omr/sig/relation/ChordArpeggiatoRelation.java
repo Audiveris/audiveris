@@ -32,7 +32,7 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordArpeggiatoRelation} represents a relation between a (head) chord
+ * Class <code>ChordArpeggiatoRelation</code> represents a relation between a (head) chord
  * and an arpeggiato.
  *
  * @author Hervé Bitteur
@@ -47,7 +47,7 @@ public class ChordArpeggiatoRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ArpeggiatoChordRelation} object.
+     * Creates a new <code>ArpeggiatoChordRelation</code> object.
      *
      * @param grade relation quality
      */
@@ -57,7 +57,7 @@ public class ChordArpeggiatoRelation
     }
 
     /**
-     * Creates a new {@code ArpeggiatoChordRelation} object.
+     * Creates a new <code>ArpeggiatoChordRelation</code> object.
      */
     public ChordArpeggiatoRelation ()
     {

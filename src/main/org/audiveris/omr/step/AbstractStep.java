@@ -87,7 +87,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Abstract class {@code AbstractStep} provides a convenient basis for any {@link Step}
+ * Abstract class <code>AbstractStep</code> provides a convenient basis for any {@link OmrStep}
  * implementation.
  *
  * @author Hervé Bitteur
@@ -158,7 +158,7 @@ public abstract class AbstractStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractStep} object.
+     * Creates a new <code>AbstractStep</code> object.
      */
     public AbstractStep ()
     {
@@ -174,7 +174,7 @@ public abstract class AbstractStep
      * @param step  step concerned
      * @param sheet related sheet
      */
-    public void clearErrors (Step step,
+    public void clearErrors (OmrStep step,
                              Sheet sheet)
     {
         if (OMR.gui != null) {
@@ -191,7 +191,7 @@ public abstract class AbstractStep
      * @param step  step just completed
      * @param sheet related sheet
      */
-    public void displayUI (Step step,
+    public void displayUI (OmrStep step,
                            Sheet sheet)
     {
         // Void by default

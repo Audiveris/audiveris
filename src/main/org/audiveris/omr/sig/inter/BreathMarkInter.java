@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BreathMarkInter} represents a comma-shaped break mark above a staff.
+ * Class <code>BreathMarkInter</code> represents a comma-shaped break mark above a staff.
  *
  * @author Hervé Bitteur
  */
@@ -48,7 +48,7 @@ public class BreathMarkInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BreathMarkInter} object.
+     * Creates a new <code>BreathMarkInter</code> object.
      *
      * @param glyph the breathMark glyph
      * @param grade the interpretation quality

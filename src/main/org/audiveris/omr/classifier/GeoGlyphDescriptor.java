@@ -25,7 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.moments.GeometricMoments;
 
 /**
- * Class {@code GeoGlyphDescriptor} defines glyph features based on Geometric moments.
+ * Class <code>GeoGlyphDescriptor</code> defines glyph features based on Geometric moments.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,7 @@ public class GeoGlyphDescriptor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code GeoGlyphDescriptor} object.
+     * Creates a new <code>GeoGlyphDescriptor</code> object.
      */
     public GeoGlyphDescriptor ()
     {

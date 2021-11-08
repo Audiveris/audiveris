@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code RemovalScenario} defines order of inter removals.
+ * Class <code>RemovalScenario</code> defines order of inter removals.
  *
  * @author Hervé Bitteur
  */
@@ -63,7 +63,7 @@ public class RemovalScenario
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates an {@code RemovalScenario} object.
+     * Creates an <code>RemovalScenario</code> object.
      */
     public RemovalScenario ()
     {

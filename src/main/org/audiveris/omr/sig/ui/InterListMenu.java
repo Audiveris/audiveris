@@ -53,7 +53,7 @@ import java.util.TreeMap;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code InterListMenu} displays a collection of interpretations.
+ * Class <code>InterListMenu</code> displays a collection of interpretations.
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +71,7 @@ public class InterListMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterListMenu} object.
+     * Creates a new <code>InterListMenu</code> object.
      *
      * @param sheet the related sheet
      */
@@ -103,16 +103,10 @@ public class InterListMenu
                 "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
 
         // To delete all listed inters when item is clicked upon
-        item.addActionListener(
-                new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                if (OMR.gui.displayConfirmation(
-                        "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
-                    sheet.getInterController().removeInters(sysInters);
-                }
+        item.addActionListener((ActionEvent e) -> {
+            if (OMR.gui.displayConfirmation(
+                    "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
+                sheet.getInterController().removeInters(sysInters);
             }
         });
 

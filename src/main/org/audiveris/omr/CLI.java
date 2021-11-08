@@ -28,9 +28,9 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.RunClass;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.NaturalSpec;
@@ -67,7 +67,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code CLI} parses and holds the parameters of the command line interface.
+ * Class <code>CLI</code> parses and holds the parameters of the command line interface.
  * <p>
  * Any item starting with the '&#64;' character is interpreted as referring to a file, whose content
  * is expanded in line.
@@ -132,22 +132,21 @@ public class CLI
         List<CliTask> tasks = new ArrayList<>();
 
         // Task kind is fully determined by argument extension
-        for (Path argument : params.arguments) {
-            String str = argument.toString().trim().replace('\\', '/');
+        params.arguments.stream()
+                .map(argument -> argument.toString().trim().replace('\\', '/'))
+                .filter(str -> (!str.isEmpty()))
+                .forEachOrdered(str -> {
+                    final Path path = Paths.get(str);
 
-            if (!str.isEmpty()) {
-                final Path path = Paths.get(str);
-
-                if (str.endsWith(OMR.BOOK_EXTENSION)) {
-                    tasks.add(new BookTask(path));
-                } else if (str.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
-                    tasks.add(new SamplesTask(path));
-                } else {
-                    // Everything else is considered as an image input file
-                    tasks.add(new InputTask(path));
-                }
-            }
-        }
+                    if (str.endsWith(OMR.BOOK_EXTENSION)) {
+                        tasks.add(new BookTask(path));
+                    } else if (str.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
+                        tasks.add(new SamplesTask(path));
+                    } else {
+                        // Everything else is considered as an image input file
+                        tasks.add(new InputTask(path));
+                    }
+                });
 
         return tasks;
     }
@@ -309,7 +308,7 @@ public class CLI
         // Print all steps
         buf.append("\nSheet steps are in order:");
 
-        for (Step step : Step.values()) {
+        for (OmrStep step : OmrStep.values()) {
             buf.append(String.format("%n    %-10s : %s", step.toString(), step.getDescription()));
         }
 
@@ -324,13 +323,13 @@ public class CLI
             throws CmdLineException
     {
         if (params.transcribe) {
-            if ((params.step != null) && (params.step != Step.last())) {
+            if ((params.step != null) && (params.step != OmrStep.last())) {
                 String msg = "'-transcribe' option not compatible with '-step " + params.step
                                      + "' option";
                 throw new CmdLineException(parser, msg);
             }
 
-            params.step = Step.last();
+            params.step = OmrStep.last();
         }
     }
 
@@ -747,7 +746,11 @@ public class CLI
      */
     public static class Parameters
     {
-        // Fields are kept in alphabetical order
+
+        /** The set of sheet IDs to load. */
+        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)",
+                handler = IntArrayOptionHandler.class)
+        private ArrayList<Integer> sheets;
 
         /** Help mode. */
         @Option(name = "-help", help = true, usage = "Display general help then stop")
@@ -757,18 +760,13 @@ public class CLI
         @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
 
-        /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)",
-                handler = IntArrayOptionHandler.class)
-        private ArrayList<Integer> sheets;
-
         /** Should book be transcribed?. */
         @Option(name = "-transcribe", usage = "Transcribe whole book")
         boolean transcribe;
 
         /** Specific step. */
         @Option(name = "-step", usage = "Define a specific target step")
-        Step step;
+        OmrStep step;
 
         /** Force step re-processing. */
         @Option(name = "-force", usage = "Force step/transcribe re-processing")

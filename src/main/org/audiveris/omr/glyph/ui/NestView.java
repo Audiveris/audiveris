@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code NestView} is a view that combines the display of several lags to
+ * Class <code>NestView</code> is a view that combines the display of several lags to
  * represent a nest of glyphs.
  *
  * @author Hervé Bitteur

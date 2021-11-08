@@ -32,7 +32,7 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordTupletRelation} represents the relation between a chord and an
+ * Class <code>ChordTupletRelation</code> represents the relation between a chord and an
  * embracing tuplet sign.
  *
  * @author Hervé Bitteur
@@ -51,7 +51,7 @@ public class ChordTupletRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TupletChordRelation} object.
+     * Creates a new <code>TupletChordRelation</code> object.
      *
      * @param shape the tuplet shape (currently either TUPLET_THREE or TUPLET_SIX)
      */

@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Interface {@code Vip} allows to flag an object as a VIP and generally triggers
+ * Interface <code>Vip</code> allows to flag an object as a VIP and generally triggers
  * specific debugging printouts related to this object.
  *
  * @author Hervé Bitteur
@@ -32,14 +32,14 @@ public interface Vip
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * (Debug) Report whether this object is flagged as VIP
+     * (Debug) Reports whether this object is flagged as VIP
      *
      * @return true if VIP
      */
     boolean isVip ();
 
     /**
-     * (Debug) Assign the VIP flag
+     * (Debug) Assigns the VIP flag
      *
      * @param vip true if VIP, false if not
      */

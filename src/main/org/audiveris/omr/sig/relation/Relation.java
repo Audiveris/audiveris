@@ -40,8 +40,17 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Abstract class {@code Relation} describes a relation between two Inter instances
- * within the same SIG.
+ * Abstract class <code>Relation</code> describes a relation (edge) between two Inter
+ * instances (vertices) within the same SIG (which implies the same SystemInfo).
+ * <p>
+ * There are many concrete classes that derive from this abstract class.
+ * Most of them are named according to the same pattern:
+ * <p>
+ * <code>FooBarRelation</code> is a relation class with:
+ * <ul>
+ * <li><code>FooInter</code> as a <b>source</b> Inter of the relation
+ * <li><code>BarInter</code> as a <b>target</b> Inter of the relation
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -58,7 +67,7 @@ public abstract class Relation
     // Persistent data
     //----------------
     //
-    /** Indicates that this relation was set manually. */
+    /** If "true", this relation was set manually. */
     @XmlAttribute(name = "manual")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean manual;
@@ -84,6 +93,7 @@ public abstract class Relation
      * Report a dump of this relation in the provided sig context.
      *
      * @param sig containing sig
+     * @return the dump as a string
      */
     public String dumpOf (SIGraph sig)
     {

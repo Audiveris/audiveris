@@ -46,7 +46,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code PixelBoard} is a board that displays pixel information as provided by
+ * Class <code>PixelBoard</code> is a board that displays pixel information as provided by
  * other entities (output side), and which can also be used by a user to directly
  * specify pixel coordinate values by entering numerical values in the fields
  * (input side).

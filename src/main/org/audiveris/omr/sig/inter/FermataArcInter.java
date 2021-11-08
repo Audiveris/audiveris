@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FermataArcInter} represents the arc part of a fermata, either upright or
+ * Class <code>FermataArcInter</code> represents the arc part of a fermata, either upright or
  * inverted.
  * <p>
  * Combined with a FermataDotInter, it can lead to a (full) FermataInter.
@@ -45,7 +45,7 @@ public class FermataArcInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code FermataArcInter} object.
+     * Creates a new <code>FermataArcInter</code> object.
      *
      * @param glyph the fermata arc glyph
      * @param shape FERMATA_ARC or FERMATA_ARC_BELOW

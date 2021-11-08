@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code GridBuilder} computes the grid of systems of a sheet picture, based on
+ * Class <code>GridBuilder</code> computes the grid of systems of a sheet picture, based on
  * the retrieval of horizontal staff lines and of vertical bar lines.
  * <p>
  * The actual processing is delegated to 3 companions:<ul>

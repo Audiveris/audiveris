@@ -41,7 +41,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
- * Class {@code EntityView} is a basic graphical view for an entity type.
+ * Class <code>EntityView</code> is a basic graphical view for an entity type.
  *
  * @param <E> precise entity type
  * @author Hervé Bitteur
@@ -63,7 +63,7 @@ public class EntityView<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EntityView} object.
+     * Creates a new <code>EntityView</code> object.
      *
      * @param entityService the underlying entity service
      */

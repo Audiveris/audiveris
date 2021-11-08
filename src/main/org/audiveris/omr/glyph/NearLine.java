@@ -29,7 +29,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Interface {@code NearLine} describes an entity close to a straight line.
+ * Interface <code>NearLine</code> describes an entity close to a straight line.
  *
  * @author Hervé Bitteur
  */

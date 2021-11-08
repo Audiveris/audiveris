@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code HeadHeadRelation} represents the relation support between two heads
+ * Class <code>HeadHeadRelation</code> represents the relation support between two heads
  * (of the same kind) on a shared stem.
  *
  * @author Hervé Bitteur
@@ -42,7 +42,7 @@ public class HeadHeadRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadHeadRelation} object.
+     * Creates a new <code>HeadHeadRelation</code> object.
      */
     public HeadHeadRelation ()
     {

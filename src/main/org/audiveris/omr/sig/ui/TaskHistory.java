@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TaskHistory} handles a history of UITaskList instances, with the
+ * Class <code>TaskHistory</code> handles a history of UITaskList instances, with the
  * ability to add, undo and redo.
  * <p>
  * Within an UITaskList, all tasks are handled as a whole, to cope with dependent tasks.

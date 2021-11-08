@@ -29,7 +29,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code ArpeggiatosSymbol} displays a column of several arpeggiato.
+ * Class <code>ArpeggiatosSymbol</code> displays a column of several arpeggiato.
  * Class is not used.
  *
  * @author Hervé Bitteur

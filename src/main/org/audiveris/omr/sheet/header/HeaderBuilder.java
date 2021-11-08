@@ -48,7 +48,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 /**
- * Class {@code HeaderBuilder} handles the header at the beginning of a given system.
+ * Class <code>HeaderBuilder</code> handles the header at the beginning of a given system.
  * <p>
  * A staff always begins with the standard sequence of 3 kinds of components: (clef, key-sig?,
  * time-sig?).

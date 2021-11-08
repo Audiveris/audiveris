@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 
 /**
- * Class {@code KeySlice} represents a rectangular slice of a key signature, likely to
+ * Class <code>KeySlice</code> represents a rectangular slice of a key signature, likely to
  * contain an alteration item.
  *
  * @author Hervé Bitteur
@@ -68,7 +68,7 @@ public class KeySlice
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeySlice} object.
+     * Creates a new <code>KeySlice</code> object.
      *
      * @param rect bounds of the slice
      * @param roi  the container in staff KeyBuilder

@@ -48,8 +48,8 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PartBarline} represents a logical barline for a part, that is made of
- * one {@code StaffBarlineInter} for each staff in the part.
+ * Class <code>PartBarline</code> represents a logical barline for a part, that is made of
+ * one <code>StaffBarlineInter</code> for each staff in the part.
  * <p>
  * In the case of "back to back" repeat configuration, we use two instances of this class, one
  * for the backward repeat and one for the forward repeat.
@@ -90,7 +90,11 @@ public class PartBarline
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** <b>OLD</b> underlying {@link StaffBarlineInter} instances. */
+    /**
+     * <b>Deprecated</b> Underlying {@link OldStaffBarline} instances.
+     * <p>
+     * Replaced by staffBarlines element.
+     */
     @Deprecated
     @XmlElement(name = "staff-barline")
     private List<OldStaffBarline> oldStaffBarlines;
@@ -106,7 +110,7 @@ public class PartBarline
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PartBarline} object.
+     * Creates a new <code>PartBarline</code> object.
      */
     public PartBarline ()
     {

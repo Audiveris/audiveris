@@ -40,7 +40,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code TestFacade}
+ * Class <code>TestFacade</code>
  *
  * @author Hervé Bitteur
  */

@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code SlurSymbol} implements a slur symbol.
+ * Class <code>SlurSymbol</code> implements a slur symbol.
  *
  * @author Hervé Bitteur
  */

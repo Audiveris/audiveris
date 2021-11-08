@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code BeamLine} represents a sequence of aligned BeamItem instances.
+ * Class <code>BeamLine</code> represents a sequence of aligned BeamItem instances.
  * There may be one or several BeamLine instances in a BeamStructure, one for each index.
  *
  * @author Hervé Bitteur

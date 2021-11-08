@@ -55,7 +55,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 /**
- * Class {@code GuiActions} gathers general actions triggered from the main GUI.
+ * Class <code>GuiActions</code> gathers general actions triggered from the main GUI.
  *
  * @author Hervé Bitteur
  */

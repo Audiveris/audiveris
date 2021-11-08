@@ -85,7 +85,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class {@code HeadLinker} handles the connections from a head to nearby stems,
+ * Class <code>HeadLinker</code> handles the connections from a head to nearby stems,
  * processing the four corners around head.
  * <p>
  * We have to handle the case where stem pixels between a head and a compatible beam are reduced
@@ -145,7 +145,7 @@ public class HeadLinker
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadLinker} object.
+     * Creates a new <code>HeadLinker</code> object.
      *
      * @param head      the head inter to link
      * @param retriever the driving system-level StemsRetriever
@@ -486,7 +486,7 @@ public class HeadLinker
         private boolean closed;
 
         /**
-         * Creates a {@code SLinker} object and populates head side stump.
+         * Creates a <code>SLinker</code> object and populates head side stump.
          *
          * @param hSide dedicated head horizontal side
          */

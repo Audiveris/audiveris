@@ -24,7 +24,7 @@ package org.audiveris.omr.lag;
 import org.audiveris.omr.run.Run;
 
 /**
- * Interface {@code JunctionPolicy} encapsulates the policy that decides if a run can
+ * Interface <code>JunctionPolicy</code> encapsulates the policy that decides if a run can
  * extend a given section.
  * <p>
  * If not, the run is part of a new section, linked to the previous one by a junction.

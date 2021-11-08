@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code KeyRoi} handles the region of interest for key retrieval,
+ * Class <code>KeyRoi</code> handles the region of interest for key retrieval,
  * split horizontally into vertical slices.
  *
  * @author Hervé Bitteur
@@ -74,7 +74,7 @@ public class KeyRoi
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeyRoi} object.
+     * Creates a new <code>KeyRoi</code> object.
      *
      * @param staff        containing staff
      * @param keyShape     SHARP or FLAT

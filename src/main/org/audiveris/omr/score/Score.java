@@ -44,8 +44,40 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Score} represents a single movement, and is composed of one or several
- * pages.
+ * Class <code>Score</code> represents a single movement, and is composed of one or
+ * several instances of <code>Page</code> class.
+ * <p>
+ * The diagram below presents the roles of <code>Book</code> vs <code>Score</code>
+ * and of <code>Sheet</code> vs <code>Page</code>:
+ * <p>
+ * The book at hand contains 3 sheets
+ * (certainly because the input PDF or TIFF file contained 3 images):
+ * <ol>
+ * <li><code>Sheet</code> #1 begins with an indented system, which indicates the start of a movement
+ * (named a <code>Score</code> by MusicXML).
+ * There is no other indented system, so this <code>Sheet</code> contains a single
+ * <code>Page</code>.
+ * <li><code>Sheet</code> #2 exhibits an indentation for its system #3.
+ * So, this indented system ends the previous score and starts a new one.
+ * We have thus 2 <code>Page</code> instances in this <code>Sheet</code>.
+ * <li><code>Sheet</code> #3 has no indented system and is thus composed of a single
+ * <code>Page</code>
+ * </ol>
+ * <p>
+ * To summarize, we have 2 scores in 3 sheets:
+ * <ol>
+ * <li><code>Score</code> #1, composed of:
+ * <ol>
+ * <li>single <code>Page</code> #1 of <code>Sheet</code> #1, followed by
+ * <li><code>Page</code> #1 of <code>Sheet</code> #2
+ * </ol>
+ * <li><code>Score</code> #2, composed of:
+ * <ol>
+ * <li><code>Page</code> #2 of <code>Sheet</code> #2, followed by
+ * <li>single <code>Page</code> #1 of <code>Sheet</code> #3
+ * </ol>
+ * </ol>
+ * <img src="doc-files/Book-vs-Score.png" alt="Book-vs-Score UML">
  *
  * @author Hervé Bitteur
  */
@@ -70,13 +102,17 @@ public class Score
      * Score id, within containing book.
      * see {@link #getId()}.
      */
-    /** LogicalPart list for the whole score. */
+    /**
+     * This is the list of <code>LogicalPart</code>'s defined for the whole score.
+     */
     @XmlElement(name = "logical-part")
     private List<LogicalPart> logicalParts;
 
-    /** Pages links. */
+    /**
+     * This is the list of references to score pages, as seen from this score.
+     */
     @XmlElement(name = "page")
-    private final List<PageLink> pageLinks = new ArrayList<>();
+    private final List<ScorePageRef> pageLinks = new ArrayList<>();
 
     // Transient data
     //---------------
@@ -85,10 +121,12 @@ public class Score
     @Navigable(false)
     private Book book;
 
-    /** Page references. */
-    private ArrayList<PageRef> pageRefs = new ArrayList<>();
+    /**
+     * References to score pages, as seen from their containing sheet stubs.
+     */
+    private final ArrayList<PageRef> pageRefs = new ArrayList<>();
 
-    /** Referenced pages. */
+    /** Actual score pages. */
     private ArrayList<Page> pages;
 
     /** Handling of parts name and program. */
@@ -123,7 +161,7 @@ public class Score
                             PageRef pageRef)
     {
         pageRefs.add(pageRef);
-        pageLinks.add(new PageLink(stubNumber, pageRef.getId()));
+        pageLinks.add(new ScorePageRef(stubNumber, pageRef.getId()));
     }
 
     //-------//
@@ -218,11 +256,12 @@ public class Score
     // getId //
     //-------//
     /**
-     * Report the score ID, if any
+     * The score ID is the rank, starting at 1, of this <code>score</code>
+     * in the containing <code>book</code>.
      *
-     * @return the id, or null
+     * @return the score id
      */
-    @XmlAttribute
+    @XmlAttribute(name = "id")
     public Integer getId ()
     {
         final int index = book.getScores().indexOf(this);
@@ -635,7 +674,7 @@ public class Score
     private void afterUnmarshal (Unmarshaller u,
                                  Object parent)
     {
-        for (PageLink pageLink : pageLinks) {
+        for (ScorePageRef pageLink : pageLinks) {
             SheetStub stub = book.getStub(pageLink.sheetNumber);
 
             if (pageLink.sheetPageId > 0) {
@@ -744,43 +783,6 @@ public class Score
                 "Volume",
                 78,
                 "Default Volume in 0..127 range");
-    }
-
-    //----------//
-    // PageLink //
-    //----------//
-    private static class PageLink
-    {
-
-        @XmlAttribute(name = "sheet-number")
-        public final int sheetNumber;
-
-        @XmlAttribute(name = "sheet-page-id")
-        public final int sheetPageId;
-
-        PageLink (int sheetNumber,
-                  int sheetPageId)
-        {
-            this.sheetNumber = sheetNumber;
-            this.sheetPageId = sheetPageId;
-        }
-
-        private PageLink ()
-        {
-            this.sheetNumber = 0;
-            this.sheetPageId = 0;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("PageLink{");
-            sb.append("sheetNumber:").append(sheetNumber);
-            sb.append(" sheetPageId:").append(sheetPageId);
-            sb.append('}');
-
-            return sb.toString();
-        }
     }
 
     //------------//

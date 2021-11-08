@@ -22,7 +22,7 @@
 package org.audiveris.omr.step;
 
 /**
- * Class {@code ProcessingCancellationException} describes the exception raised then the
+ * Class <code>ProcessingCancellationException</code> describes the exception raised then the
  * processing of a sheet has been canceled (typically because of time out).
  *
  * @author Hervé Bitteur
@@ -33,7 +33,7 @@ public class ProcessingCancellationException
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Construct an {@code ProcessingCancellationException} with no detail
+     * Construct an <code>ProcessingCancellationException</code> with no detail
      * message.
      */
     public ProcessingCancellationException ()
@@ -42,7 +42,7 @@ public class ProcessingCancellationException
     }
 
     /**
-     * Construct an {@code ProcessingCancellationException} with detail
+     * Construct an <code>ProcessingCancellationException</code> with detail
      * message.
      *
      * @param message the related message
@@ -53,7 +53,7 @@ public class ProcessingCancellationException
     }
 
     /**
-     * Construct an {@code ProcessingCancellationException} from an
+     * Construct an <code>ProcessingCancellationException</code> from an
      * existing exception.
      *
      * @param ex the related exception

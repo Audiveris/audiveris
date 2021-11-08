@@ -26,7 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.run.Run;
 
 /**
- * Class {@code JunctionRatioPolicy} defines a junction policy based on the ratio
+ * Class <code>JunctionRatioPolicy</code> defines a junction policy based on the ratio
  * between the length of the candidate run and the mean length of the section runs so far.
  *
  * @author Hervé Bitteur

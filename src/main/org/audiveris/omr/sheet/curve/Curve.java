@@ -48,7 +48,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Class {@code Curve} is a shaped curve built from arcs of points, with the ability
+ * Class <code>Curve</code> is a shaped curve built from arcs of points, with the ability
  * to merge instances into larger ones according to underlying shape model(s).
  *
  * @author Hervé Bitteur

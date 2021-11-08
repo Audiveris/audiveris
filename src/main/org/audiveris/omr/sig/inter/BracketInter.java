@@ -48,7 +48,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BracketInter} represents the portion of a bracket limited to a staff.
+ * Class <code>BracketInter</code> represents the portion of a bracket limited to a staff.
  * <p>
  * A bracket that spans several staves is modeled as one BracketInter per staff, interleaved by
  * {@link BracketConnectorInter} instances.
@@ -89,7 +89,7 @@ public class BracketInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BracketInter} object.
+     * Creates a new <code>BracketInter</code> object.
      *
      * @param glyph   the underlying glyph
      * @param impacts the assignment details
@@ -108,7 +108,7 @@ public class BracketInter
     }
 
     /**
-     * Creates a new {@code BracketInter} object, meant for manual use.
+     * Creates a new <code>BracketInter</code> object, meant for manual use.
      *
      * @param grade inter quality
      */

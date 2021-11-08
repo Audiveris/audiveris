@@ -28,7 +28,7 @@ import java.awt.Rectangle;
 import java.lang.ref.WeakReference;
 
 /**
- * Class {@code WeakGlyph} is a WeakReference to (and an Entity facade for) a Glyph.
+ * Class <code>WeakGlyph</code> is a WeakReference to (and an Entity facade for) a Glyph.
  *
  * @author Hervé Bitteur
  */
@@ -39,7 +39,7 @@ public class WeakGlyph
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code WeakGlyph} object.
+     * Creates a new <code>WeakGlyph</code> object.
      *
      * @param referent the actual glyph, which may no longer exist
      */

@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code SymbolInfo} handles info about one OMR symbol (name, bounding box).
+ * Class <code>SymbolInfo</code> handles info about one OMR symbol (name, bounding box).
  *
  * @author Hervé Bitteur
  */
@@ -80,7 +80,7 @@ public class SymbolInfo
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SymbolInfo} object.
+     * Creates a new <code>SymbolInfo</code> object.
      *
      * @param omrShape  symbol OMR shape
      * @param interline related interline

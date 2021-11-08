@@ -52,12 +52,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
- * (part of) {@link Sheet}.
+ * Class <code>Page</code> represents a page in the score hierarchy, and corresponds to a
+ * {@link Sheet} or a portion of it.
  * <p>
- * One or several Page instances compose a {@link Score}. But a page has no fixed link to its
- * containing score since the set of scores may evolve while sheets/pages are transcribed in any
- * order.
+ * One or several Page instances compose a {@link Score}.
+ * <p>
+ * NOTA: During the transcription process, a page has no fixed link to its containing score since
+ * the set of scores may evolve while sheets/pages are being transcribed in any order.
  *
  * @author Hervé Bitteur
  */
@@ -72,11 +73,11 @@ public class Page
     // Persistent data
     //----------------
     //
-    /** Page ID. */
-    @XmlAttribute
+    /** This is the rank of this page, counted from 1 in the containing sheet. */
+    @XmlAttribute(name = "id")
     private final int id;
 
-    /** Does this page start a movement?. */
+    /** Does this page start a movement? */
     @XmlAttribute(name = "movement-start")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean movementStart;
@@ -85,7 +86,12 @@ public class Page
     @XmlAttribute(name = "measure-count")
     private Integer measureCount;
 
-    /** Progression of measure id within this page. */
+    /**
+     * Progression of measure id within this page.
+     * <p>
+     * This is sometimes less than the raw measure count, because of special measures
+     * (pickup, repeat, courtesy) that don't increment measure IDs.
+     */
     @XmlAttribute(name = "delta-measure-id")
     private Integer deltaMeasureId;
 
@@ -93,11 +99,11 @@ public class Page
     @XmlElement(name = "last-time-rational")
     private TimeRational lastTimeRational;
 
-    /** LogicalPart list for the page. */
+    /** This is the list of LogicalPart's for this page. */
     @XmlElement(name = "logical-part")
     private List<LogicalPart> logicalParts;
 
-    /** (Sub)list of systems, within sheet systems. */
+    /** This is the (sub)list of systems for this page, within the sheet systems. */
     @XmlElement(name = "system")
     private List<SystemInfo> systems;
 
@@ -112,10 +118,10 @@ public class Page
     @Navigable(false)
     private Score score;
 
-    /** Id of first system in sheet, if any. */
+    /** Id of page first system in sheet. */
     private Integer firstSystemId;
 
-    /** Id of last system in sheet, if any. */
+    /** Id of page last system in sheet. */
     private Integer lastSystemId;
 
     /** Greatest duration divisor (in this page). */

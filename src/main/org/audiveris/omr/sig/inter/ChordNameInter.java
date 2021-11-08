@@ -25,8 +25,8 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.ChordNameInter.Degree.DegreeType;
-import static org.audiveris.omr.sig.inter.ChordNameInter.Kind.Type.*;
+import org.audiveris.omr.sig.inter.ChordNameInter.ChordDegree.DegreeType;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.*;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code ChordNameInter} is a formatted piece of text that
+ * Class <code>ChordNameInter</code> is a formatted piece of text that
  * describes a chord symbol such as F#m7, Emb5, D7#5, Am7b5, A(9) or BMaj7/D#.
  * <p>
  * This class is organized according to the target MusicXML harmony element.
@@ -204,21 +204,21 @@ public class ChordNameInter
     private static final Pattern degPattern = Pattern.compile(degPat);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Root. */
-    @XmlElement
-    private Pitch root;
+    /** Chord root. */
+    @XmlElement(name = "root")
+    private ChordNamePitch root;
 
-    /** Kind. */
-    @XmlElement
-    private Kind kind;
+    /** Chord kind. */
+    @XmlElement(name = "kind")
+    private ChordKind kind;
 
-    /** Bass, if any. */
-    @XmlElement
-    private Pitch bass;
+    /** Chord bass, if any. */
+    @XmlElement(name = "bass")
+    private ChordNamePitch bass;
 
-    /** Degrees, if any. */
+    /** Chord degrees, if any. */
     @XmlElement(name = "degree")
-    private List<Degree> degrees;
+    private List<ChordDegree> degrees;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -244,10 +244,10 @@ public class ChordNameInter
      * @param degrees additions / subtractions / alterations if any
      */
     public ChordNameInter (WordInter w,
-                           Pitch root,
-                           Kind kind,
-                           Pitch bass,
-                           List<Degree> degrees)
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordNamePitch bass,
+                           List<ChordDegree> degrees)
     {
         super(
                 w.getGlyph(),
@@ -273,10 +273,10 @@ public class ChordNameInter
      * @param degrees  additions / subtractions / alterations if any
      */
     public ChordNameInter (TextWord textWord,
-                           Pitch root,
-                           Kind kind,
-                           Pitch bass,
-                           List<Degree> degrees)
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordNamePitch bass,
+                           List<ChordDegree> degrees)
     {
         super(textWord);
         this.root = root;
@@ -295,10 +295,10 @@ public class ChordNameInter
      * @param degrees  additions / subtractions / alterations if any
      */
     public ChordNameInter (TextWord textWord,
-                           Pitch root,
-                           Kind kind,
-                           Pitch bass,
-                           Degree... degrees)
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordNamePitch bass,
+                           ChordDegree... degrees)
     {
         this(textWord, root, kind, bass, Arrays.asList(degrees));
     }
@@ -312,9 +312,9 @@ public class ChordNameInter
      * @param degrees  additions / subtractions / alterations if any
      */
     public ChordNameInter (TextWord textWord,
-                           Pitch root,
-                           Kind kind,
-                           Degree... degrees)
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordDegree... degrees)
     {
         this(textWord, root, kind, null, Arrays.asList(degrees));
     }
@@ -343,7 +343,7 @@ public class ChordNameInter
     /**
      * @return the bass
      */
-    public Pitch getBass ()
+    public ChordNamePitch getBass ()
     {
         return bass;
     }
@@ -351,7 +351,7 @@ public class ChordNameInter
     /**
      * @return the degrees
      */
-    public List<Degree> getDegrees ()
+    public List<ChordDegree> getDegrees ()
     {
         return degrees;
     }
@@ -359,7 +359,7 @@ public class ChordNameInter
     /**
      * @return the kind
      */
-    public Kind getKind ()
+    public ChordKind getKind ()
     {
         return kind;
     }
@@ -367,7 +367,7 @@ public class ChordNameInter
     /**
      * @return the root
      */
-    public Pitch getRoot ()
+    public ChordNamePitch getRoot ()
     {
         return root;
     }
@@ -426,7 +426,7 @@ public class ChordNameInter
         }
 
         if (degrees != null) {
-            for (Degree degree : degrees) {
+            for (ChordDegree degree : degrees) {
                 sb.append(" deg:").append(degree);
             }
         }
@@ -517,25 +517,25 @@ public class ChordNameInter
 
             if (matcher.matches()) {
                 // Root
-                Pitch root = Pitch.create(
+                ChordNamePitch root = ChordNamePitch.create(
                         getGroup(matcher, ROOT_STEP),
                         getGroup(matcher, ROOT_ALTER));
 
                 // Degrees
                 String degStr = getGroup(matcher, DEGS);
-                List<Degree> degrees = Degree.createList(degStr, null);
-                Degree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
+                List<ChordDegree> degrees = ChordDegree.createList(degStr, null);
+                ChordDegree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
                 String firstDegStr = (firstDeg != null) ? Integer.toString(degrees.get(0).value)
                         : "";
 
                 // (maj7) special stuff
                 String pmaj7 = standard(matcher, PMAJ7);
 
-                // Kind
-                Kind kind = Kind.create(matcher, firstDegStr + pmaj7);
+                // ChordKind
+                ChordKind kind = ChordKind.create(matcher, firstDegStr + pmaj7);
 
                 // Bass
-                Pitch bass = Pitch.create(
+                ChordNamePitch bass = ChordNamePitch.create(
                         getGroup(matcher, BASS_STEP),
                         getGroup(matcher, BASS_ALTER));
 
@@ -550,12 +550,12 @@ public class ChordNameInter
                 String parStr = getGroup(matcher, PARS);
 
                 if (!parStr.isEmpty()) {
-                    degrees.addAll(Degree.createList(parStr, firstDeg));
+                    degrees.addAll(ChordDegree.createList(parStr, firstDeg));
                 } else {
                     String noParStr = getGroup(matcher, NO_PARS);
 
                     if (!noParStr.isEmpty()) {
-                        degrees.addAll(Degree.createList(noParStr, firstDeg));
+                        degrees.addAll(ChordDegree.createList(noParStr, firstDeg));
                     }
                 }
 
@@ -666,10 +666,10 @@ public class ChordNameInter
         }
     }
 
-    //--------//
-    // Degree //
-    //--------//
-    public static class Degree
+    //-------------//
+    // ChordDegree //
+    //-------------//
+    public static class ChordDegree
     {
 
         public static enum DegreeType
@@ -696,17 +696,17 @@ public class ChordNameInter
         @XmlAttribute
         public final String text;
 
-        public Degree (int value,
-                       Integer alter,
-                       DegreeType type)
+        public ChordDegree (int value,
+                            Integer alter,
+                            DegreeType type)
         {
             this(value, alter, type, "");
         }
 
-        public Degree (int value,
-                       Integer alter,
-                       DegreeType type,
-                       String text)
+        public ChordDegree (int value,
+                            Integer alter,
+                            DegreeType type,
+                            String text)
         {
             this.value = value;
             this.alter = alter;
@@ -715,7 +715,7 @@ public class ChordNameInter
         }
 
         // Needed for JAXB
-        private Degree ()
+        private ChordDegree ()
         {
             value = 0;
             alter = null;
@@ -745,16 +745,16 @@ public class ChordNameInter
 
         //
         /**
-         * Build a sequence of Degree instances from the provided string
+         * Build a sequence of ChordDegree instances from the provided string
          *
          * @param str      the provided string, without parentheses, such as 7b13
          * @param dominant the chord dominant degree, if any, otherwise null
          * @return the list of degrees
          */
-        public static List<Degree> createList (String str,
-                                               Degree dominant)
+        public static List<ChordDegree> createList (String str,
+                                                    ChordDegree dominant)
         {
-            List<Degree> degrees = new ArrayList<>();
+            List<ChordDegree> degrees = new ArrayList<>();
 
             if ((str == null) || str.isEmpty()) {
                 return degrees;
@@ -784,20 +784,20 @@ public class ChordNameInter
                 final String altStr = getGroup(matcher, DEG_ALTER);
                 final Integer alter = Alter.toAlter(altStr);
 
-                degrees.add(new Degree(deg, alter, type, ""));
+                degrees.add(new ChordDegree(deg, alter, type, ""));
             }
 
             return degrees;
         }
     }
 
-    //------//
-    // Kind //
-    //------//
-    public static class Kind
+    //-----------//
+    // ChordKind //
+    //-----------//
+    public static class ChordKind
     {
 
-        public static enum Type
+        public static enum ChordType
         {
             MAJOR,
             MINOR,
@@ -837,7 +837,7 @@ public class ChordNameInter
 
         /** Precise type of kind. (subset of the 33 Music XML values) */
         @XmlAttribute
-        public final Type type;
+        public final ChordType type;
 
         /** Flag to signal parentheses, if any. */
         @XmlAttribute
@@ -853,28 +853,28 @@ public class ChordNameInter
         @XmlAttribute
         public final String text;
 
-        public Kind (Type type)
+        public ChordKind (ChordType type)
         {
             this(type, "", false, false);
         }
 
-        public Kind (Type type,
-                     String text)
+        public ChordKind (ChordType type,
+                          String text)
         {
             this(type, text, false, false);
         }
 
-        public Kind (Type type,
-                     String text,
-                     boolean symbol)
+        public ChordKind (ChordType type,
+                          String text,
+                          boolean symbol)
         {
             this(type, text, symbol, false);
         }
 
-        public Kind (Type type,
-                     String text,
-                     boolean symbol,
-                     boolean parentheses)
+        public ChordKind (ChordType type,
+                          String text,
+                          boolean symbol,
+                          boolean parentheses)
         {
             this.type = type;
             this.parentheses = parentheses;
@@ -883,7 +883,7 @@ public class ChordNameInter
         }
 
         // For JAXB
-        private Kind ()
+        private ChordKind ()
         {
             this.type = null;
             this.parentheses = false;
@@ -917,15 +917,15 @@ public class ChordNameInter
         }
 
         /**
-         * Create proper Kind object from a provided matcher, augmented
+         * Create proper ChordKind object from a provided matcher, augmented
          * by dominant string if any.
          *
          * @param matcher  matcher on input string
          * @param dominant dominant information if any, empty string otherwise
-         * @return Kind instance, or null if failed
+         * @return ChordKind instance, or null if failed
          */
-        private static Kind create (Matcher matcher,
-                                    String dominant)
+        private static ChordKind create (Matcher matcher,
+                                         String dominant)
         {
             String kindStr = getGroup(matcher, KIND);
 
@@ -937,10 +937,10 @@ public class ChordNameInter
 
             switch (susStr.toLowerCase()) {
             case "sus2":
-                return new Kind(SUSPENDED_SECOND, kindStr, false, parentheses);
+                return new ChordKind(SUSPENDED_SECOND, kindStr, false, parentheses);
 
             case "sus4":
-                return new Kind(SUSPENDED_FOURTH, kindStr, false, parentheses);
+                return new ChordKind(SUSPENDED_FOURTH, kindStr, false, parentheses);
 
             case "": // Fall through
 
@@ -952,7 +952,7 @@ public class ChordNameInter
                                        + standard(matcher, DIM)
                                        + standard(matcher, HDIM)
                                        + dominant;
-            Type type = typeOf(str);
+            ChordType type = typeOf(str);
 
             // Special case for Triangle sign => maj7 rather than major
             if ((type == MAJOR) && getGroup(matcher, MAJ).equals(DELTA)) {
@@ -964,16 +964,16 @@ public class ChordNameInter
                                      || getGroup(matcher, MIN).equals("-")
                                      || getGroup(matcher, AUG).equals("+");
 
-            return (type != null) ? new Kind(type, kindStr, symbol, parentheses) : null;
+            return (type != null) ? new ChordKind(type, kindStr, symbol, parentheses) : null;
         }
 
         /**
-         * Convert a provided string to proper Type value.
+         * Convert a provided string to proper ChordType value.
          *
          * @param str provided string, assumed to contain only 'standard' values
          * @return the corresponding type, or null if none found
          */
-        private static Type typeOf (String str)
+        private static ChordType typeOf (String str)
         {
             switch (str) {
             case "":
@@ -1053,35 +1053,35 @@ public class ChordNameInter
         }
     }
 
-    //-------//
-    // Pitch //
-    //-------//
+    //----------------//
+    // ChordNamePitch //
+    //----------------//
     @XmlAccessorType(XmlAccessType.NONE)
-    public static class Pitch
+    public static class ChordNamePitch
     {
 
         /** Related step. */
         @XmlAttribute
-        public final AbstractNoteInter.Step step;
+        public final AbstractNoteInter.NoteStep step;
 
         /** Alteration, if any. */
         @XmlAttribute
         public final Integer alter;
 
-        public Pitch (AbstractNoteInter.Step step,
-                      Integer alter)
+        public ChordNamePitch (AbstractNoteInter.NoteStep step,
+                               Integer alter)
         {
             this.step = step;
             this.alter = alter;
         }
 
-        public Pitch (AbstractNoteInter.Step step)
+        public ChordNamePitch (AbstractNoteInter.NoteStep step)
         {
             this(step, 0);
         }
 
         // For JAXB
-        private Pitch ()
+        private ChordNamePitch ()
         {
             this.step = null;
             this.alter = null;
@@ -1100,20 +1100,22 @@ public class ChordNameInter
         }
 
         /**
-         * Create a Pitch object from provided step and alter strings
+         * Create a <code>ChordNamePitch</code> object from provided step and alter strings
          *
          * @param stepStr  provided step string
          * @param alterStr provided alteration string
-         * @return Pitch instance, or null if failed
+         * @return ChordNamePitch instance, or null if failed
          */
-        public static Pitch create (String stepStr,
-                                    String alterStr)
+        public static ChordNamePitch create (String stepStr,
+                                             String alterStr)
         {
             stepStr = stepStr.trim();
             alterStr = alterStr.trim();
 
             if (!stepStr.isEmpty()) {
-                return new Pitch(AbstractNoteInter.Step.valueOf(stepStr), Alter.toAlter(alterStr));
+                return new ChordNamePitch(
+                        AbstractNoteInter.NoteStep.valueOf(stepStr),
+                        Alter.toAlter(alterStr));
             } else {
                 return null;
             }
@@ -1126,18 +1128,18 @@ public class ChordNameInter
     private static class ChordStructure
     {
 
-        public final Pitch root;
+        public final ChordNamePitch root;
 
-        public final Kind kind;
+        public final ChordKind kind;
 
-        public final Pitch bass;
+        public final ChordNamePitch bass;
 
-        public final List<Degree> degrees;
+        public final List<ChordDegree> degrees;
 
-        public ChordStructure (Pitch root,
-                               Kind kind,
-                               Pitch bass,
-                               List<Degree> degrees)
+        public ChordStructure (ChordNamePitch root,
+                               ChordKind kind,
+                               ChordNamePitch bass,
+                               List<ChordDegree> degrees)
         {
             this.root = root;
             this.kind = kind;

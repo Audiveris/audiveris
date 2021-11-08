@@ -24,7 +24,7 @@ package org.audiveris.omr.text;
 import java.awt.Rectangle;
 
 /**
- * Class {@code TextChar} manages information about a OCR-decoded character.
+ * Class <code>TextChar</code> manages information about a OCR-decoded character.
  *
  * @author Hervé Bitteur
  */

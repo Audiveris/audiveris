@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 /**
- * Class {@code LegendreMoments} defines a descriptor for orthogonal Legendre moments.
+ * Class <code>LegendreMoments</code> defines a descriptor for orthogonal Legendre moments.
  *
  * @author Hervé Bitteur
  */

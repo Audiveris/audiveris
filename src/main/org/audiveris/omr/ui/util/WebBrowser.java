@@ -33,7 +33,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 
 /**
- * Class {@code WebBrowser} gathers functionality to browse a webpage in an external
+ * Class <code>WebBrowser</code> gathers functionality to browse a webpage in an external
  * web browser.
  * It uses reflection for compatibility with Java 5 and Mac OS X.
  * <p>

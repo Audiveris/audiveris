@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Actions} handles all actions descriptors.
+ * Class <code>Actions</code> handles all actions descriptors.
  *
  * @author Hervé Bitteur
  */

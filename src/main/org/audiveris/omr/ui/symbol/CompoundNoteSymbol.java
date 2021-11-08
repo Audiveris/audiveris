@@ -36,7 +36,7 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.CompoundNoteInter;
 
 /**
- * Class {@code CompoundNoteSymbol} implements a head + stem symbol.
+ * Class <code>CompoundNoteSymbol</code> implements a head + stem symbol.
  *
  * @author Hervé Bitteur
  */

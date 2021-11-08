@@ -38,7 +38,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 /**
- * Class {@code ScoreExporter} exports the provided score to a MusicXML file, stream or
+ * Class <code>ScoreExporter</code> exports the provided score to a MusicXML file, stream or
  * DOM.
  *
  * @author Hervé Bitteur
@@ -55,7 +55,7 @@ public class ScoreExporter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code ScoreExporter} object, on a related score instance.
+     * Create a new <code>ScoreExporter</code> object, on a related score instance.
      *
      * @param score the score to export (cannot be null)
      */
@@ -130,8 +130,9 @@ public class ScoreExporter
             Marshalling.marshal(scorePartwise, zos, signed, 2);
             mof.close();
         } else {
-            Marshalling.marshal(scorePartwise, os, signed, 2);
-            os.close();
+            try (os) {
+                Marshalling.marshal(scorePartwise, os, signed, 2);
+            }
         }
     }
 

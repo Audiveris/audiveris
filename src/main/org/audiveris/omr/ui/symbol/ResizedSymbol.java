@@ -27,7 +27,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code ResizedSymbol} is a {@link ShapeSymbol} with a ratio different from 1.
+ * Class <code>ResizedSymbol</code> is a {@link ShapeSymbol} with a ratio different from 1.
  * This is meant for shapes like G_CLEF_SMALL and F_CLEF_SMALL.
  *
  * @author Hervé Bitteur

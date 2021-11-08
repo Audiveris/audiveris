@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code SectionSets} handles a collection of section sets,
+ * Class <code>SectionSets</code> handles a collection of section sets,
  * with the ability to (un)marshal its content using the sections ids.
  *
  * @author Hervé Bitteur

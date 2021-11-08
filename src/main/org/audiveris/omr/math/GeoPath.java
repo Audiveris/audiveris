@@ -29,7 +29,7 @@ import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code GeoPath} is a Path2D.Double with some additions
+ * Class <code>GeoPath</code> is a Path2D.Double with some additions
  *
  * @author Hervé Bitteur
  */
@@ -48,7 +48,7 @@ public class GeoPath
     /**
      * Creates a new GeoPath object.
      *
-     * @param s the specified {@code Shape} object
+     * @param s the specified <code>Shape</code> object
      */
     public GeoPath (Shape s)
     {
@@ -58,8 +58,8 @@ public class GeoPath
     /**
      * Creates a new GeoPath object.
      *
-     * @param s  the specified {@code Shape} object
-     * @param at the specified {@code AffineTransform} object
+     * @param s  the specified <code>Shape</code> object
+     * @param at the specified <code>AffineTransform</code> object
      */
     public GeoPath (Shape s,
                     AffineTransform at)

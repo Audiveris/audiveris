@@ -26,7 +26,7 @@ import ij.process.ByteProcessor;
 import java.util.Arrays;
 
 /**
- * Class {@code ByteUtil} gathers convenient methods dealing with bytes.
+ * Class <code>ByteUtil</code> gathers convenient methods dealing with bytes.
  *
  * @author Hervé Bitteur
  */

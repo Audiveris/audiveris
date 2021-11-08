@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code UnlinkTask}
+ * Class <code>UnlinkTask</code>
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +41,7 @@ public class UnlinkTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code UnlinkTask} object.
+     * Creates a new <code>UnlinkTask</code> object.
      *
      * @param sig      the underlying sig
      * @param relation the relation task is focused upon

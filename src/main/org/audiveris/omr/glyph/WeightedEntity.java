@@ -30,7 +30,7 @@ import java.awt.geom.Point2D;
 import java.util.EnumSet;
 
 /**
- * Interface {@code WeightedEntity} is the base interface for a (fixed or dynamic) set
+ * Interface <code>WeightedEntity</code> is the base interface for a (fixed or dynamic) set
  * of pixels.
  *
  * @author Hervé Bitteur

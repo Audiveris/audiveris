@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 
 /**
- * Class {@code StaffHeader} gathers information about the (Clef + Key + Time) sequence
+ * Class <code>StaffHeader</code> gathers information about the (Clef + Key + Time) sequence
  * at the beginning of a staff.
  *
  * @author Hervé Bitteur
@@ -98,7 +98,7 @@ public class StaffHeader
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffHeader} object.
+     * Creates a new <code>StaffHeader</code> object.
      *
      * @param start start of header (measure start)
      */

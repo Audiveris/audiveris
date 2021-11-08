@@ -27,7 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code GhostComponentAdapter} is a {@link GhostDropAdapter} whose image is
+ * Class <code>GhostComponentAdapter</code> is a {@link GhostDropAdapter} whose image is
  * copied from the appearance of the component where the mouse is pressed.
  *
  * @param <A> The precise type of action carried by the drop

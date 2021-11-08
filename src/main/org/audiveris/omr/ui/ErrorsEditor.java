@@ -23,7 +23,7 @@ package org.audiveris.omr.ui;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code ErrorsEditor} handles the set of error messages recorded during the
+ * Class <code>ErrorsEditor</code> handles the set of error messages recorded during the
  * translation from sheet to score, allowing the user to interactively browse the errors
  * and go to the related location in the sheet view.
  *
@@ -119,7 +119,7 @@ public class ErrorsEditor
     //                          final Glyph glyph,
     //                          final String text)
     //    {
-    //        final Step step = getCurrentStep();
+    //        final OmrStep step = getCurrentStep();
     //
     //        SwingUtilities.invokeLater(
     //                new Runnable()
@@ -168,7 +168,7 @@ public class ErrorsEditor
      *
      * @param step the step we are interested in
      */
-    public void clearStep (final Step step)
+    public void clearStep (final OmrStep step)
     {
         //            SwingUtilities.invokeLater(
         //                    new Runnable()
@@ -208,7 +208,7 @@ public class ErrorsEditor
      * @param step     the step we are interested in
      * @param systemId the id of system to clear
      */
-    public void clearSystem (final Step step,
+    public void clearSystem (final OmrStep step,
                              final int systemId)
     {
         //            SwingUtilities.invokeLater(
@@ -263,7 +263,7 @@ public class ErrorsEditor
             implements Comparable<Record>
     {
 
-        final Step step;
+        final OmrStep step;
 
         //
         //        final OldSystemNode node;
@@ -272,7 +272,7 @@ public class ErrorsEditor
 
         final String text;
 
-        Record (Step step,
+        Record (OmrStep step,
                 //                       OldSystemNode node,
                 Glyph glyph,
                 String text)
@@ -345,7 +345,7 @@ public class ErrorsEditor
     //     *
     //     * @return the step being done
     //     */
-    //    private Step getCurrentStep ()
+    //    private OmrStep getCurrentStep ()
     //    {
     //        return sheet.getCurrentStep();
     //    }

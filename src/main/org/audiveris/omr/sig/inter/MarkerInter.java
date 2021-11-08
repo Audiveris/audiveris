@@ -38,7 +38,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code MarkerInter} represents a navigation marker.
+ * Class <code>MarkerInter</code> represents a navigation marker.
  * Shape can be coda, segno, dacapo (D.C.), dal segno (D.S.).
  *
  * @author Hervé Bitteur
@@ -50,7 +50,7 @@ public class MarkerInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code MarkerInter} object.
+     * Creates a new <code>MarkerInter</code> object.
      *
      * @param glyph underlying glyph if any
      * @param shape precise shape (CODA, SEGNO, DA_CAPO, DAL_SEGNO)

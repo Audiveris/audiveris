@@ -36,7 +36,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 
 /**
- * Class {@code GlyphDescriptor} provides glyph features for shape classifiers.
+ * Class <code>GlyphDescriptor</code> provides glyph features for shape classifiers.
  *
  * @author Hervé Bitteur
  */
@@ -52,7 +52,7 @@ public abstract class GlyphDescriptor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code GlyphDescriptor} object.
+     * Creates a new <code>GlyphDescriptor</code> object.
      *
      * @param name distinctive descriptor name
      */

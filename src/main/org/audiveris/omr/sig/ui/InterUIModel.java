@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.ui;
 
 /**
- * Class {@code InterUIModel} gathers the data to be modified or transferred when UI
+ * Class <code>InterUIModel</code> gathers the data to be modified or transferred when UI
  * works on an Inter.
  *
  * @author Hervé Bitteur

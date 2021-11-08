@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code ScopedPanel} is a panel corresponding to a given scope tab.
+ * Class <code>ScopedPanel</code> is a panel corresponding to a given scope tab.
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +49,7 @@ public class ScopedPanel
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ScopedPanel} object.
+     * Creates a new <code>ScopedPanel</code> object.
      *
      * @param name  panel name
      * @param panes contained data panes

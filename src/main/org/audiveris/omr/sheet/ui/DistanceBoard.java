@@ -33,7 +33,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code DistanceBoard} is a PixelBoard where the 'level' field is in fact used
+ * Class <code>DistanceBoard</code> is a PixelBoard where the 'level' field is in fact used
  * to display distance value.
  *
  * @author Hervé Bitteur
@@ -51,7 +51,7 @@ public class DistanceBoard
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code DistanceBoard} object.
+     * Create a <code>DistanceBoard</code> object.
      *
      * @param sheet related sheet
      * @param table distance table to browse

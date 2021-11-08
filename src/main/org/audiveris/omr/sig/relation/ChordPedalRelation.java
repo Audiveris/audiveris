@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordPedalRelation} represents a support relation between a chord
+ * Class <code>ChordPedalRelation</code> represents a support relation between a chord
  * and a pedal item (either start or stop).
  *
  * @author Hervé Bitteur

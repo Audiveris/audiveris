@@ -66,7 +66,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code SlotsRetriever} is in charge, within one measure of a system,
+ * Class <code>SlotsRetriever</code> is in charge, within one measure of a system,
  * to organize all chords into vertical slots.
  * <p>
  * Voices and time offsets are not considered yet, they will be handled later.
@@ -203,7 +203,7 @@ public class SlotsRetriever
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SlotsBuilder} object for a measure.
+     * Creates a new <code>SlotsBuilder</code> object for a measure.
      *
      * @param measure      the provided measure
      * @param useWideSlots true for wide slots, false for narrow slots
@@ -1065,38 +1065,6 @@ public class SlotsRetriever
         }
     }
 
-    //-----------//
-    // ChordPair //
-    //-----------//
-    /**
-     * Meant to store a pair of chords found as being adjacent.
-     */
-    private static class ChordPair
-    {
-
-        final AbstractChordInter one;
-
-        final AbstractChordInter two;
-
-        ChordPair (AbstractChordInter one,
-                   AbstractChordInter two)
-        {
-            this.one = one;
-            this.two = two;
-            logger.debug(
-                    "Adjacent {}@{} & {}@{}",
-                    one,
-                    one.getHeadLocation(),
-                    two,
-                    two.getHeadLocation());
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "{ch#" + one.getId() + ",ch#" + two.getId() + "}";
-        }
-    }
 
     //-----------//
     // Constants //

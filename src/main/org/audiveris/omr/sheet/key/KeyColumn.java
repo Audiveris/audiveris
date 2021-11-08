@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code KeyColumn} manages the system consistency for a column of staff-based
+ * Class <code>KeyColumn</code> manages the system consistency for a column of staff-based
  * KeyBuilder instances.
  * <p>
  * First, each staff header in the system is independently searched for peaks, then slices.
@@ -113,7 +113,7 @@ public class KeyColumn
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeyColumn} object.
+     * Creates a new <code>KeyColumn</code> object.
      *
      * @param system underlying system
      */

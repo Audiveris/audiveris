@@ -27,7 +27,7 @@ import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
 /**
- * Class {@code HeadCorner} defines the four corners suitable for head connection to stem.
+ * Class <code>HeadCorner</code> defines the four corners suitable for head connection to stem.
  *
  * @author Hervé Bitteur
  */

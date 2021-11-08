@@ -31,7 +31,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
- * Class {@code OcrUtil} gathers utility features related to OCR.
+ * Class <code>OcrUtil</code> gathers utility features related to OCR.
  *
  * @author Hervé Bitteur
  */

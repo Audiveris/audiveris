@@ -47,7 +47,7 @@ import java.util.TreeMap;
 import javax.swing.AbstractListModel;
 
 /**
- * Class {@code Language} handles the collection of language codes with their related
+ * Class <code>Language</code> handles the collection of language codes with their related
  * full name, as well as the default language specification.
  * <p>
  * A language specification specifies a list of languages.

@@ -42,7 +42,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code SampleMenu} is a menu dedicated to picking a glyph as a shape sample.
+ * Class <code>SampleMenu</code> is a menu dedicated to picking a glyph as a shape sample.
  *
  * @author Hervé Bitteur
  */
@@ -62,7 +62,7 @@ public class SampleMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleMenu} object.
+     * Creates a new <code>SampleMenu</code> object.
      *
      * @param glyph the selected glyph
      * @param sheet the containing sheet
@@ -141,15 +141,10 @@ public class SampleMenu
             extends JMenu
     {
 
-        private final ActionListener listener = new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                JMenuItem source = (JMenuItem) e.getSource();
-                Shape shape = Shape.valueOf(source.getText());
-                addSample(shape);
-            }
+        private final ActionListener listener = (ActionEvent e) -> {
+            JMenuItem source = (JMenuItem) e.getSource();
+            Shape shape = Shape.valueOf(source.getText());
+            addSample(shape);
         };
 
         AssignMenu (Set<Shape> shapes)
@@ -185,17 +180,10 @@ public class SampleMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    addSample(shape);
-                }
+            ShapeSet.addAllShapes(this, (ActionEvent e) -> {
+                JMenuItem source = (JMenuItem) e.getSource();
+                Shape shape = Shape.valueOf(source.getText());
+                addSample(shape);
             });
         }
     }

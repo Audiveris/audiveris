@@ -54,7 +54,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Glyph} is a symbol made of a fixed set of pixels.
+ * Class <code>Glyph</code> is a symbol made of a fixed set of pixels.
  * <p>
  * A glyph is un-mutable, meaning one cannot add or remove pixels to/from an existing instance,
  * although one can always create another glyph instance with the proper collection of pixels.
@@ -97,7 +97,9 @@ public class Glyph
     @XmlAttribute(name = "top")
     protected final int top;
 
-    /** Runs of pixels that compose the glyph. Gives all runs, thus width, height, etc... */
+    /**
+     * This is the table of runs of pixels that compose the glyph.
+     */
     @XmlElement(name = "run-table")
     protected final RunTable runTable;
 
@@ -131,7 +133,7 @@ public class Glyph
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BasicGlyph} object.
+     * Creates a new <code>BasicGlyph</code> object.
      *
      * @param left     abscissa of top left corner
      * @param top      ordinate of top left corner

@@ -45,7 +45,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code StaffFilament} is a {@link CurvedFilament}, used as (part of) a
+ * Class <code>StaffFilament</code> is a {@link CurvedFilament}, used as (part of) a
  * candidate staff line, thus a filament within a cluster.
  * <p>
  * It is a CurvedFilament augmented by combs and cluster information.

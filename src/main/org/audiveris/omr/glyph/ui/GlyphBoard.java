@@ -44,7 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code GlyphBoard} defines a UI board dedicated to the display of {@link Glyph}
+ * Class <code>GlyphBoard</code> defines a UI board dedicated to the display of {@link Glyph}
  * information.
  *
  * @author Hervé Bitteur

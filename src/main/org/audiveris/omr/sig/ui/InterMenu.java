@@ -50,7 +50,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code InterMenu} builds a menu around a given inter.
+ * Class <code>InterMenu</code> builds a menu around a given inter.
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +71,7 @@ public class InterMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterMenu} object.
+     * Creates a new <code>InterMenu</code> object.
      *
      * @param inter     originating inter
      * @param relations set of inter relations
@@ -90,7 +90,7 @@ public class InterMenu
         Inter ensemble = inter.getEnsemble();
 
         if (ensemble != null) {
-            menu.add(new JMenuItem(new ToEnsembleAction(ensemble)));
+            menu.add(new JMenuItem(new MenuToEnsembleAction(ensemble)));
         }
 
         // Edit mode
@@ -225,20 +225,20 @@ public class InterMenu
         }
     }
 
-    //------------------//
-    // ToEnsembleAction //
-    //------------------//
+    //----------------------//
+    // MenuToEnsembleAction //
+    //----------------------//
     /**
      * Ability to select the ensemble of underlying inter.
      */
-    private static class ToEnsembleAction
+    private static class MenuToEnsembleAction
             extends AbstractAction
     {
 
         /** Target ensemble. */
         private final Inter ensemble;
 
-        public ToEnsembleAction (Inter ensemble)
+        public MenuToEnsembleAction (Inter ensemble)
         {
             this.ensemble = ensemble;
 

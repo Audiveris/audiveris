@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Apple}
+ * Class <code>Apple</code>
  *
  * @author Hervé Bitteur
  */
@@ -38,7 +38,7 @@ public class Apple
     final String name;
 
     /**
-     * Creates a new {@code Apple} object.
+     * Creates a new <code>Apple</code> object.
      */
     public Apple ()
     {
@@ -46,7 +46,7 @@ public class Apple
     }
 
     /**
-     * Creates a new {@code Apple} object.
+     * Creates a new <code>Apple</code> object.
      *
      * @param id   DOCUMENT ME!
      * @param name DOCUMENT ME!

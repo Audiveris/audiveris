@@ -41,7 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code ScrollView} contains a JScrollPane, which provides a comprehensive
+ * Class <code>ScrollView</code> contains a JScrollPane, which provides a comprehensive
  * combination of the following entities.
  * <dl>
  * <dt><b>view:</b></dt>
@@ -211,7 +211,7 @@ public class ScrollView
     //--------------------//
     /**
      * Retrieve a copy of the rubber rectangle, or a zero-height, zero-width rectangle
-     * at {@code getRubberFocus()} if the rubber rectangle does not exist.
+     * at <code>getRubberFocus()</code> if the rubber rectangle does not exist.
      *
      * @return the rubber selection, or null if the view is null
      */

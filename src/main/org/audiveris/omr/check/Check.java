@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code Check} encapsulates the <b>definition</b> of a check,
+ * Class <code>Check</code> encapsulates the <b>definition</b> of a check,
  * which can later be used on a whole population of objects.
  * <p>
  * Checks are generally gathered in {@link CheckSuite} instances.

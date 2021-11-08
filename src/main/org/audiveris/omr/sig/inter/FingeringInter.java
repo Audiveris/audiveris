@@ -28,7 +28,7 @@ import org.audiveris.omrdataset.api.OmrShape;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FingeringInter} represents the fingering for guitar left-hand.
+ * Class <code>FingeringInter</code> represents the fingering for guitar left-hand.
  *
  * @author Hervé Bitteur
  */

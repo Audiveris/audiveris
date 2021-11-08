@@ -46,7 +46,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code SectionCompound} represents a dynamic collection of sections, allowing
+ * Class <code>SectionCompound</code> represents a dynamic collection of sections, allowing
  * to define a growing compound out of these sections.
  *
  * @author Hervé Bitteur
@@ -74,14 +74,14 @@ public class SectionCompound
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code SectionCompound} object.
+     * Create a new <code>SectionCompound</code> object.
      */
     public SectionCompound ()
     {
     }
 
     /**
-     * Creates a new {@code SectionCompound} object.
+     * Creates a new <code>SectionCompound</code> object.
      *
      * @param interline ignored!
      */

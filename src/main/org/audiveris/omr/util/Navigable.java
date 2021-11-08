@@ -22,8 +22,8 @@
 package org.audiveris.omr.util;
 
 /**
- * Annotation {@code Navigable} is used to drive the browsing done by
- * {@code BookBrowser}.
+ * Annotation <code>Navigable</code> is used to drive the browsing done by
+ * <code>BookBrowser</code>.
  */
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

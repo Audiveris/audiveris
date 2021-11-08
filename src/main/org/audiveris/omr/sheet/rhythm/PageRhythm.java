@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code PageRhythm} handles rhythm data on a sheet page.
+ * Class <code>PageRhythm</code> handles rhythm data on a sheet page.
  * <p>
  * Rhythm is governed by time signatures found in staff header, discovered later down the staff, or
  * even inferred from measures content.
@@ -95,7 +95,7 @@ public class PageRhythm
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PageRhythm} object.
+     * Creates a new <code>PageRhythm</code> object.
      *
      * @param page the dedicated page
      */

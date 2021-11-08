@@ -29,7 +29,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 
 /**
- * Class {@code LocationDependentMenu}
+ * Class <code>LocationDependentMenu</code>
  *
  * @author Hervé Bitteur
  */

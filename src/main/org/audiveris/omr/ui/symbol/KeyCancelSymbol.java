@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 
 /**
- * Class {@code KeyCancelSymbol} displays a Key Signature cancel symbol, using a
+ * Class <code>KeyCancelSymbol</code> displays a Key Signature cancel symbol, using a
  * dynamically computed sequence of natural signs.
  *
  * @author Hervé Bitteur
@@ -35,7 +35,7 @@ public class KeyCancelSymbol
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code KeyCancelSymbol} object
+     * Creates a new <code>KeyCancelSymbol</code> object
      *
      * @param isIcon true for an icon
      */

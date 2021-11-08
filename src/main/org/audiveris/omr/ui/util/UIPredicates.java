@@ -28,7 +28,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code UIPredicates} gathers convenient methods to check user gesture.
+ * Class <code>UIPredicates</code> gathers convenient methods to check user gesture.
  *
  * @author Hervé Bitteur
  */

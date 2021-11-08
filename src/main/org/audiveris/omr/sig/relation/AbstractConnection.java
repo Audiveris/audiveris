@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractConnection} serves as a basis for support based on precise
+ * Class <code>AbstractConnection</code> serves as a basis for support based on precise
  * connection.
  *
  * @author Hervé Bitteur
@@ -54,21 +54,30 @@ public abstract class AbstractConnection
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * Horizontal gap at connection (specified in interline fraction).
-     * Positive value for an 'out' distance (true gap).
-     * Negative value for an 'in' distance (overlap).
+     * Horizontal gap at connection.
+     * <p>
+     * The gap value is specified in interline fraction with 3 digits maximum after the dot.
+     * <p>
+     * This value can be:
+     * <ul>
+     * <li><i>Positive</i> for an '<b>out</b>' distance (we have a true gap).
+     * <li><i>Negative</i> for an '<b>in</b>' distance (we have an overlap).
+     * </ul>
      */
     @XmlAttribute
-    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
-    protected Double dx;
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
+    protected double dx;
 
     /**
-     * Vertical gap at connection (specified in interline fraction).
-     * Absolute value.
+     * Vertical gap at connection.
+     * <p>
+     * The gap value is specified in interline fraction with 3 digits maximum after the dot.
+     * <p>
+     * This is always an absolute value.
      */
     @XmlAttribute
-    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
-    protected Double dy;
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
+    protected double dy;
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
@@ -194,14 +203,10 @@ public abstract class AbstractConnection
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if ((dx != null) && (dy != null)) {
-            sb.append("@(").append(String.format("%.2f", dx)).append(",")
-                    .append(String.format("%.2f", dy)).append(")");
-        }
-
-        return sb.toString();
+        return new StringBuilder(super.internals())
+                .append("@(").append(String.format("%.2f", dx))
+                .append(",").append(String.format("%.2f", dy)).append(")")
+                .toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

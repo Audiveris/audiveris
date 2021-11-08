@@ -44,7 +44,7 @@ import java.util.List;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Interface {@code Section} describes an <b>immutable</b> section of contiguous and
+ * Interface <code>Section</code> describes an <b>immutable</b> section of contiguous and
  * compatible {@link Run} instances.
  * <p>
  * NOTA: Cross-section source/target relationship are not handled here, but in
@@ -67,7 +67,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
-@XmlJavaTypeAdapter(BasicSection.Adapter.class)
+@XmlJavaTypeAdapter(BasicSection.JaxbAdapter.class)
 public interface Section
         extends Entity, Oriented
 {

@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Slot} represents a roughly defined time slot within a measure stack,
+ * Class <code>Slot</code> represents a roughly defined time slot within a measure stack,
  * or just within a measure, to gather all chords that start at the same time.
  * <p>
  * On the diagram shown, slots are indicated by vertical blue lines.
@@ -79,20 +79,20 @@ public class Slot
     // Persistent data
     //----------------
     //
-    /** Sequential Id unique within the containing stack. Starts at 1. */
+    /** This is the rank of this slot within the containing stack, starting at 1. */
     @XmlAttribute
     protected int id;
 
-    /** Reference abscissa offset since measure start. */
+    /** Abscissa offset since measure start. */
     @XmlAttribute(name = "x-offset")
     protected int xOffset;
 
     /** Time offset since measure start. */
     @XmlAttribute(name = "time-offset")
-    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     protected Rational timeOffset;
 
-    /** Is slot suspicious?. */
+    /** Is this slot suspicious? */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean suspicious;
@@ -159,7 +159,7 @@ public class Slot
                 for (Voice voice : measure.getVoices()) {
                     final SlotVoice slotVoice = voice.getSlotInfo(this);
 
-                    if ((slotVoice != null) && (slotVoice.status == SlotVoice.Status.BEGIN)) {
+                    if ((slotVoice != null) && (slotVoice.status == SlotVoice.ChordStatus.BEGIN)) {
                         incomings.add(slotVoice.chord);
 
                         // Forward timeOffset to incoming chord
@@ -679,7 +679,7 @@ public class Slot
         protected Measure measure;
 
         /**
-         * Creates a new {@code MeasureSlot} object.
+         * Creates a new <code>MeasureSlot</code> object.
          *
          * @param id        the slot id within the containing measure stack
          * @param measure   the containing measure

@@ -72,11 +72,14 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
- * instance of {@link SystemInfo}.
+ * Class <code>Part</code> is the <b>physical</b> gathering of {@link Staff} instances
+ * within an instance of {@link SystemInfo}.
  * <p>
  * It loosely corresponds to a single instrument, typical examples are a singer (1 staff), a piano
  * (2 staves) and an organ (3 staves).
+ * <p>
+ * Among these staves, we can find (standard) 5-line staves, one-line (percussion) staves or
+ * 4-line/6-line tablatures.
  * <p>
  * Since the instrument usually persists from one system to the next, we can define the notion of
  * {@link LogicalPart}.
@@ -90,8 +93,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * However, the part as a whole may appear (or disappear?) from one system to the next.
  * <p>
  * During export to MusicXML, dummy parts (and their contained dummy staves and measures) can be
- * on-the-fly <i>virtually</i> inserted into the structure of page/system/part/measure/staff
+ * virtually inserted <i>on-the-fly</i> into the structure of page/system/part/measure/staff
  * to ease the handling of logical parts along the pages and score.
+ * <p>
+ * TODO: include the image of a "merged grand staff".
  *
  * @author Hervé Bitteur
  */
@@ -112,44 +117,53 @@ public class Part
     //----------------
     //
     /**
-     * Id of this part within the system, or set as logical part ID.
-     * <b>BEWARE</b>, this ID is not always an index, hence don't use it as an index!
+     * Id of this part, initially set as the 1-based rank within the system,
+     * but later set as the ID value of its related logical part.
+     * <p>
+     * <b>BEWARE</b>, this ID is not to be used as an index!
      */
-    @XmlAttribute
+    @XmlAttribute(name = "id")
     private int id;
 
-    /** Name, if any, that faces this system part. */
+    /** This is the text, if any, that faces this system part in the left margin. */
     @XmlIDREF
-    @XmlAttribute
+    @XmlAttribute(name = "name")
     private SentenceInter name;
 
-    /** Indicate a merged grand staff part, made of 2 staves not clearly separated. */
+    /**
+     * This boolean indicates a <i>merged grand staff</i> part, made of 2 staves
+     * not separated by a standard gutter.
+     */
     @XmlAttribute(name = "merged-grand-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean merged;
 
-    /** Staves in this part. */
+    /** This is the vertical sequence of staves in this part. */
     @XmlElementRefs({
         @XmlElementRef(type = Staff.class),
         @XmlElementRef(type = OneLineStaff.class),
         @XmlElementRef(type = Tablature.class)})
     private final List<Staff> staves = new ArrayList<>();
 
-    /** Starting barline, if any. (the others are linked to measures) */
+    /**
+     * This is the part starting barline, if any.
+     * <p>
+     * (The following barlines are linked to measures)
+     */
     @XmlElement(name = "left-barline")
     private PartBarline leftBarline;
 
-    /** Measures in this part. */
+    /** This is the horizontal sequence of measures in this part. */
     @XmlElement(name = "measure")
     private final List<Measure> measures = new ArrayList<>();
 
-    /** Lyric lines in this part. To be kept sorted vertically. */
+    /** This is the vertical sequence of lyric lines in this part. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "lyric-lines")
     private List<LyricLineInter> lyrics;
 
-    /** Slurs in this part. */
+    /** This is the collection of slurs in this part. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "slurs")
@@ -162,12 +176,12 @@ public class Part
     @Navigable(false)
     private SystemInfo system;
 
-    /** Indicate a dummy physical part. Used only during MusicXML export. */
+    /** Indicates a dummy physical part. Used only during MusicXML export. */
     private boolean dummy;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new instance of {@code Part}.
+     * Creates a new instance of <code>Part</code>.
      *
      * @param system the containing system
      */

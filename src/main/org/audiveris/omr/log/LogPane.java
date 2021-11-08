@@ -45,8 +45,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 /**
- * Class {@code LogPane} defines the pane dedicated to application-level
- * messages, those that are logged using the {@code Logger} class.
+ * Class <code>LogPane</code> defines the pane dedicated to application-level
+ * messages, those that are logged using the <code>Logger</code> class.
  *
  * @author Hervé Bitteur
  */

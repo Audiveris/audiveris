@@ -44,7 +44,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code OrnamentInter} represents an ornament interpretation.
+ * Class <code>OrnamentInter</code> represents an ornament interpretation.
  * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED)
  * and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
  *

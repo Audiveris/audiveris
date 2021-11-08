@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordArticulationRelation} is a connection between a head-based chord
+ * Class <code>ChordArticulationRelation</code> is a connection between a head-based chord
  * and an articulation sign (tenuto, accent, staccato, staccatissimo, marcato).
  *
  * @author Hervé Bitteur

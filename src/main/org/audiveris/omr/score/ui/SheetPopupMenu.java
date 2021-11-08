@@ -34,7 +34,7 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 /**
- * Class {@code SheetPopupMenu} is a general sheet pop-up menu meant to host sub-menus.
+ * Class <code>SheetPopupMenu</code> is a general sheet pop-up menu meant to host sub-menus.
  *
  * @author Hervé Bitteur
  */
@@ -53,7 +53,7 @@ public class SheetPopupMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetPopupMenu} object.
+     * Creates a new <code>SheetPopupMenu</code> object.
      *
      * @param sheet the related sheet
      */

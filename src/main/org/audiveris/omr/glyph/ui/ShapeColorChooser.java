@@ -53,7 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code ShapeColorChooser} offers a convenient user interface to choose proper
+ * Class <code>ShapeColorChooser</code> offers a convenient user interface to choose proper
  * color for each glyph shape.
  * It is derived from the Sun Java tutorial ColorChooserDemo.
  * <p>

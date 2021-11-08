@@ -73,7 +73,7 @@ import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.text.BlockScanner;
 import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.OcrUtil;
@@ -115,7 +115,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code InterController} is the UI in charge of dealing with Inter and
+ * Class <code>InterController</code> is the UI in charge of dealing with Inter and
  * Relation instances (addition, removal, modifications) to correct OMR output,
  * with the ability to undo and redo at will.
  * <p>
@@ -153,7 +153,7 @@ public class InterController
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code IntersController} object.
+     * Creates a new <code>IntersController</code> object.
      *
      * @param sheet the underlying sheet
      */
@@ -895,9 +895,9 @@ public class InterController
             }
 
             @Override
-            protected Step firstImpactedStep ()
+            protected OmrStep firstImpactedStep ()
             {
-                return Step.RHYTHMS;
+                return OmrStep.RHYTHMS;
             }
         }.execute();
     }
@@ -922,9 +922,9 @@ public class InterController
             }
 
             @Override
-            protected Step firstImpactedStep ()
+            protected OmrStep firstImpactedStep ()
             {
-                return Step.RHYTHMS;
+                return OmrStep.RHYTHMS;
             }
 
         }.execute();
@@ -1667,14 +1667,14 @@ public class InterController
             }
 
             // Re-processKeyboard impacted steps
-            final Step latestStep = sheet.getStub().getLatestStep();
-            final Step firstStep = firstImpactedStep();
+            final OmrStep latestStep = sheet.getStub().getLatestStep();
+            final OmrStep firstStep = firstImpactedStep();
             logger.debug("firstStep: {}", firstStep);
 
             if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
-                final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
+                final EnumSet<OmrStep> steps = EnumSet.range(firstStep, latestStep);
 
-                for (Step step : steps) {
+                for (OmrStep step : steps) {
                     logger.debug("Impact {}", step);
                     step.impact(seq, opKind);
                 }
@@ -1701,7 +1701,7 @@ public class InterController
          *
          * @return the first impacted step
          */
-        protected Step firstImpactedStep ()
+        protected OmrStep firstImpactedStep ()
         {
             // Classes of inter and relation instances involved
             final Set<Class> classes = new HashSet<>();
@@ -1718,7 +1718,7 @@ public class InterController
                 }
             }
 
-            for (Step step : Step.values()) {
+            for (OmrStep step : OmrStep.values()) {
                 for (Class classe : classes) {
                     if (step.isImpactedBy(classe)) {
                         return step; // First step impacted

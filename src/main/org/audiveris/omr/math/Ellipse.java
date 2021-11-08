@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 import static java.lang.Math.*;
 
 /**
- * Class {@code Ellipse} implements the direct algorithm of Fitzgibbon
+ * Class <code>Ellipse</code> implements the direct algorithm of Fitzgibbon
  * et al, improved by Halir et al, to find the ellipse which best
  * approximates a collection of points.
  * <p>

@@ -124,7 +124,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * Class {@code SheetPainter} provides a basis to paint sheet content.
+ * Class <code>SheetPainter</code> provides a basis to paint sheet content.
  * <p>
  * It is specialized in:
  * <ul>
@@ -406,7 +406,7 @@ public abstract class SheetPainter
     // SigPainter //
     //------------//
     /**
-     * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
+     * Class <code>SigPainter</code> paints all the {@link Inter} instances of a SIG.
      * <p>
      * Its life ends with the painting of a sheet.
      * <p>
@@ -446,7 +446,7 @@ public abstract class SheetPainter
         protected final Stroke ledgerStroke;
 
         /**
-         * Creates a new {@code SigPainter} object.
+         * Creates a new <code>SigPainter</code> object.
          */
         public SigPainter ()
         {

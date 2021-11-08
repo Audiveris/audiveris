@@ -28,7 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Class {@code SheetPath} is a (book) Path potentially augmented with sheet number
+ * Class <code>SheetPath</code> is a (book) Path potentially augmented with sheet number
  * within the book.
  *
  * @author Hervé Bitteur
@@ -51,7 +51,7 @@ public class SheetPath
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetPath} object.
+     * Creates a new <code>SheetPath</code> object.
      *
      * @param bookPath DOCUMENT ME!
      */
@@ -61,7 +61,7 @@ public class SheetPath
     }
 
     /**
-     * Creates a new {@code SheetPath} object.
+     * Creates a new <code>SheetPath</code> object.
      *
      * @param bookPath    DOCUMENT ME!
      * @param sheetNumber DOCUMENT ME!

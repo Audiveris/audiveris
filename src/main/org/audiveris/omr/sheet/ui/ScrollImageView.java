@@ -25,7 +25,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.view.ScrollView;
 
 /**
- * Class {@code ScrollImageView}
+ * Class <code>ScrollImageView</code>
  *
  * @author Hervé Bitteur
  */

@@ -28,7 +28,7 @@ import org.audiveris.omr.glyph.GlyphsModel;
 import org.audiveris.omr.ui.selection.EntityService;
 
 /**
- * Class {@code SampleModel} is a very basic sample model, used to handle
+ * Class <code>SampleModel</code> is a very basic sample model, used to handle
  * addition/deletion of samples.
  *
  * @author Hervé Bitteur
@@ -42,7 +42,7 @@ public class SampleModel
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleModel} object.
+     * Creates a new <code>SampleModel</code> object.
      *
      * @param repository    the sample repository
      * @param sampleService the event service for samples

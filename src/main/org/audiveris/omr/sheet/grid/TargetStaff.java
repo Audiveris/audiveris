@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetStaff} is an immutable perfect destination object for a staff.
+ * Class <code>TargetStaff</code> is an immutable perfect destination object for a staff.
  *
  * @author Hervé Bitteur
  */

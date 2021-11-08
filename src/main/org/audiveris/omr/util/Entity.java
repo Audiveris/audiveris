@@ -25,7 +25,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code Entity} describes an entity with an assigned ID, and with
+ * Interface <code>Entity</code> describes an entity with an assigned ID, and with
  * minimal geometric features (bounding box and point containment).
  *
  * @author Hervé Bitteur
@@ -36,7 +36,7 @@ public interface Entity
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Tell whether the entity contains the provided point.
+     * Tells whether the entity contains the provided point.
      * <p>
      * This is mostly used to detect when an entity is pointed at.
      *
@@ -46,35 +46,35 @@ public interface Entity
     boolean contains (Point point);
 
     /**
-     * Report details about this entity.
+     * Reports details about this entity.
      *
      * @return a string dump
      */
     String dumpOf ();
 
     /**
-     * Return (a copy of) the absolute bounding box.
+     * Returns (a copy of) the absolute bounding box.
      *
      * @return a COPY of the bounding rectangle
      */
     Rectangle getBounds ();
 
     /**
-     * Report the full ID of this entity.
+     * Reports the full ID of this entity.
      *
      * @return the entity full ID
      */
     String getFullId ();
 
     /**
-     * Report the ID of this entity
+     * Reports the ID of this entity
      *
      * @return the entity ID
      */
     int getId ();
 
     /**
-     * Assign an ID to this entity
+     * Assigns an ID to this entity
      *
      * @param id the ID to be assigned to the entity
      */

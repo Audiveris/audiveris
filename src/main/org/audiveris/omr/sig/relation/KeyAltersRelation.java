@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code KeyAltersRelation} represents the support relation between the
+ * Class <code>KeyAltersRelation</code> represents the support relation between the
  * alterations items of a key signature.
  *
  * @author Hervé Bitteur
@@ -42,7 +42,7 @@ public class KeyAltersRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeyAltersRelation} object.
+     * Creates a new <code>KeyAltersRelation</code> object.
      */
     public KeyAltersRelation ()
     {

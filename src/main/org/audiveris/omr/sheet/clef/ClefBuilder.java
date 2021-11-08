@@ -82,7 +82,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code ClefBuilder} extracts the clef symbol at the beginning of a staff.
+ * Class <code>ClefBuilder</code> extracts the clef symbol at the beginning of a staff.
  * <p>
  * Retrieving the clef kind (Treble, Bass, Alto or Tenor) is important for checking consistency with
  * potential key signature in the staff.
@@ -482,7 +482,7 @@ public class ClefBuilder
             }
         }
 
-        sig.insertExclusions(clefList, Exclusion.Cause.OVERLAP);
+        sig.insertExclusions(clefList, Exclusion.ExclusionCause.OVERLAP);
     }
 
     //------------//

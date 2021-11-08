@@ -31,7 +31,15 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code KeyAlterInter} is an Alteration inter, which is part of a key signature.
+ * Class <code>KeyAlterInter</code> is an Alteration inter which is part of a key
+ * signature.
+ * <p>
+ * Its shape can be:
+ * <ul>
+ * <li>FLAT
+ * <li>NATURAL
+ * <li>SHARP
+ * </ul>
  *
  * @author Hervé Bitteur
  */

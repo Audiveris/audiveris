@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code FilamentComb} describe a series of y values corresponding to horizontal
+ * Class <code>FilamentComb</code> describe a series of y values corresponding to horizontal
  * staff filaments rather regularly separated.
  *
  * @author Hervé Bitteur

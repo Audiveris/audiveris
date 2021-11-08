@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code NextInVoiceRelation} indicates that the source chord (on left)
+ * Class <code>NextInVoiceRelation</code> indicates that the source chord (on left)
  * and the target chord (on right) are in direct sequence
  * (that is with no other chord in between) within the same voice.
  * <p>
@@ -41,7 +41,7 @@ public class NextInVoiceRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code NextInVoiceRelation} object.
+     * Creates a new <code>NextInVoiceRelation</code> object.
      */
     public NextInVoiceRelation ()
     {

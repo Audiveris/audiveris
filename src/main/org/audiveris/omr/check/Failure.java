@@ -22,7 +22,7 @@
 package org.audiveris.omr.check;
 
 /**
- * Class {@code Failure} is the root of all results that store a failure.
+ * Class <code>Failure</code> is the root of all results that store a failure.
  *
  * @author Hervé Bitteur
  */
@@ -39,7 +39,7 @@ public class Failure
     /**
      * Create a new Failure object.
      *
-     * @param comment A comment that describe the failure reason
+     * @param comment A comment that describes the failure reason
      */
     public Failure (String comment)
     {

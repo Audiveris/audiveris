@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FermataBarRelation} represents the relation between a fermata and
+ * Class <code>FermataBarRelation</code> represents the relation between a fermata and
  * a barline.
  *
  * @author Hervé Bitteur

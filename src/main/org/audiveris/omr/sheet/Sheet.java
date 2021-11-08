@@ -58,8 +58,8 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterController;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.PageStep;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
@@ -109,100 +109,27 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code Sheet} corresponds to one image in a book image file.
+ * Class <code>Sheet</code> corresponds to one image in a book image file.
  * <p>
  * If a movement break occurs in the middle of a sheet, this sheet will contain at least two pages,
  * but in most cases there is exactly one {@link Page} instance per Sheet instance.
  * <p>
- * Methods are organized as follows:
- * <dl>
- * <dt>Administration</dt>
- * <dd>
- * <ul>
- * <li>{@link #getId}</li>
- * <li>{@link #getStub}</li>
- * <li>{@link #getSheetFileName}</li>
- * <li>{@link #store}</li>
- * <li>{@link #unmarshal}</li>
- * <li>{@link #afterReload}</li>
- * <li>{@link #reset}</li>
- * <li>{@link #getLagManager}</li>
- * <li>{@link #getFilamentIndex}</li>
- * <li>{@link #getGlyphIndex}</li>
- * <li>{@link #getInterIndex}</li>
- * <li>{@link #getPersistentIdGenerator}</li>
- * </ul>
- * </dd>
- * <dt>Pages, Systems and Staves</dt>
- * <dd>
- * <ul>
- * <li>{@link #addPage}</li>
- * <li>{@link #addPage(int,Page)}</li>
- * <li>{@link #removePage}</li>
- * <li>{@link #getPages}</li>
- * <li>{@link #getLastPage}</li>
- * <li>{@link #getStaffManager}</li>
- * <li>{@link #getSystemManager}</li>
- * <li>{@link #getSystems}</li>
- * <li>{@link #dumpSystemInfos}</li>
- * </ul>
- * </dd>
- * <dt>Samples</dt>
- * <dd>
- * <ul>
- * <li>{@link #annotate()}</li>
- * <li>{@link #annotate(Path)}</li>
- * <li>{@link #sample}</li>
- * </ul>
- * </dd>
- * <dt>Artifacts</dt>
- * <dd>
- * <ul>
- * <li>{@link #setImage}</li>
- * <li>{@link #hasPicture}</li>
- * <li>{@link #getPicture}</li>
- * <li>{@link #getHeight}</li>
- * <li>{@link #getWidth}</li>
- * <li>{@link #setScale}</li>
- * <li>{@link #getScale}</li>
- * <li>{@link #getInterline}</li>
- * <li>{@link #setSkew}</li>
- * <li>{@link #getSkew}</li>
- * <li>{@link #print}</li>
- * <li>{@link #export}</li>
- * <li>{@link #setSheetDelta}</li>
- * <li>{@link #getSheetDelta}</li>
- * </ul>
- * </dd>
- * <dt>UI</dt>
- * <dd>
- * <ul>
- * <li>{@link #getSheetEditor}</li>
- * <li>{@link #createBinaryView}</li>
- * <li>{@link #createGrayView}</li>
- * <li>{@link #displayDataTab}</li>
- * <li>{@link #displayMainTabs}</li>
- * <li>{@link #getErrorsEditor}</li>
- * <li>{@link #getGlyphsController}</li>
- * <li>{@link #getInterController}</li>
- * <li>{@link #getLocationService}</li>
- * <li>{@link #addItemRenderer}</li>
- * <li>{@link #renderItems}</li>
- * </ul>
- * </dd>
- * </dl>
  * The picture below represents the data model used for marshalling/unmarshalling a sheet to/from
- * a sheet#n.xml file within a book .omr file
- * <p>
- * Most entities are represented here. Some Inter instances are listed only via their containing
- * entity, such as tuplets in MeasureStack, slurs and lyrics in Part, ledgers and bars in Staff,
- * graceChords and restChords in Measure, wholeChord in Voice.
- * <p>
- * Once an instance of Sheet has been unmarshalled, transient members of some entities need to
- * be properly set. This is the purpose of the "afterReload()" methods which are called in a certain
- * order as mentioned by the "(ar #n)" indications on these entities.
+ * a <code>sheet#N.xml</code> file within a book <code>.omr</code> file.
  * <p>
  * <img alt="Sheet Binding" src="doc-files/SheetBinding.png">
+ * <p>
+ * Legend:
+ * <ul>
+ * <li>Most entities are represented in the diagram.
+ * Some Inter instances are listed only via their containing entity, such as tuplets in
+ * MeasureStack, slurs and lyrics in Part, ledgers and bars in Staff, graceChords and restChords in
+ * Measure, measureRestChord in Voice.
+ * <li>Once an instance of Sheet has been unmarshalled, transient members of some entities need to
+ * be properly set.
+ * This is the purpose of the <code>afterReload()</code> methods which are called
+ * in a certain order as mentioned by the <code>(ar #n)</code> indications on these entities.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -232,24 +159,37 @@ public class Sheet
     // Persistent data
     //----------------
     //
-    /** Global id used to uniquely identify a persistent entity instance. */
+    /**
+     * Every sheet persistent entity (whether it's a Glyph or an Inter instance)
+     * is assigned a unique sequential id within the sheet.
+     * <p>
+     * This 'last-persistent-id' item records the last ID assigned in the sheet.
+     */
     @XmlAttribute(name = "last-persistent-id")
     @XmlJavaTypeAdapter(Jaxb.AtomicIntegerAdapter.class)
     private final AtomicInteger lastPersistentId = new AtomicInteger(0);
 
-    /** The related picture. */
+    /**
+     * The related picture.
+     */
     @XmlElement(name = "picture")
     private Picture picture;
 
-    /** Global scale for this sheet. */
+    /**
+     * Global scale for this sheet.
+     */
     @XmlElement(name = "scale")
     private Scale scale;
 
-    /** Global skew. */
+    /**
+     * Global skew measured for this sheet.
+     */
     @XmlElement(name = "skew")
     private Skew skew;
 
-    /** Corresponding page(s). A single sheet may relate to several pages. */
+    /**
+     * Corresponding page(s). A single sheet may relate to several pages.
+     */
     @XmlElement(name = "page")
     private final List<Page> pages = new ArrayList<>();
 
@@ -259,6 +199,10 @@ public class Sheet
      */
     private GlyphIndex glyphIndex;
 
+    /**
+     * Number attribute.
+     * See annotated get/set methods: {@link #getNumber()}
+     */
     // Transient data
     //---------------
     //
@@ -308,7 +252,7 @@ public class Sheet
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Sheet} object with a binary table.
+     * Creates a new <code>Sheet</code> object with a binary table.
      *
      * @param stub        the related sheet stub
      * @param binaryTable the binary table, if any
@@ -324,7 +268,7 @@ public class Sheet
     }
 
     /**
-     * Create a new {@code Sheet} instance with an image.
+     * Create a new <code>Sheet</code> instance with an image.
      *
      * @param stub        the related sheet stub
      * @param image       the already loaded image, if any
@@ -344,7 +288,7 @@ public class Sheet
     }
 
     /**
-     * Create a new {@code Sheet} instance within a book.
+     * Create a new <code>Sheet</code> instance within a book.
      *
      * @param stub the related sheet stub
      */
@@ -434,7 +378,7 @@ public class Sheet
             initTransients(stub);
 
             // Make sure hLag & vLag are available and their sections dispatched to relevant systems
-            if (stub.isDone(Step.GRID)) {
+            if (stub.isDone(OmrStep.GRID)) {
                 systemManager.dispatchHorizontalSections();
                 systemManager.dispatchVerticalSections();
             }
@@ -450,9 +394,9 @@ public class Sheet
 
             // Check version for interleaved rests
             if (stub.getVersion().compareTo(Versions.INTERLEAVED_RESTS) < 0) {
-                final Step latestStep = stub.getLatestStep();
+                final OmrStep latestStep = stub.getLatestStep();
 
-                if (latestStep.compareTo(Step.RHYTHMS) >= 0) {
+                if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
                     for (Page page : pages) {
                         new PageRhythm(page).process();
                     }
@@ -460,7 +404,7 @@ public class Sheet
                     stub.setUpgraded(true);
                 }
 
-                if (latestStep.compareTo(Step.PAGE) >= 0) {
+                if (latestStep.compareTo(OmrStep.PAGE) >= 0) {
                     new PageStep().doit(this);
                 }
             }
@@ -600,9 +544,9 @@ public class Sheet
      */
     public void displayMainTabs ()
     {
-        if (stub.isDone(Step.GRID)) {
+        if (stub.isDone(OmrStep.GRID)) {
             displayDataTab(); // Display DATA tab
-        } else if (stub.isDone(Step.BINARY)) {
+        } else if (stub.isDone(OmrStep.BINARY)) {
             createBinaryView(); // Display BINARY tab
         } else {
             createGrayView(); // Display GRAY tab
@@ -982,7 +926,7 @@ public class Sheet
                 createGrayView();
             }
 
-            done(Step.LOAD);
+            done(OmrStep.LOAD);
         } catch (ImageFormatException ex) {
             String msg = "Unsupported image format in file " + stub.getBook().getInputPath()
                                  + "\n"
@@ -1324,7 +1268,7 @@ public class Sheet
      *
      * @param step the provided step
      */
-    private void done (Step step)
+    private void done (OmrStep step)
     {
         stub.done(step);
     }
@@ -1341,11 +1285,10 @@ public class Sheet
     // getGlyphIndexContent // Needed for JAXB
     //----------------------//
     /**
-     * Mean for JAXB marshalling only.
-     *
-     * @return collection of glyphs from glyphIndex.weakIndex
+     * This is the index of all <code>Glyph</code> instances registered in
+     * the containing sheet.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unused")
     @XmlElement(name = "glyph-index")
     @XmlJavaTypeAdapter(GlyphListAdapter.class)
     private ArrayList<Glyph> getGlyphIndexContent ()
@@ -1365,7 +1308,7 @@ public class Sheet
      *
      * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unused")
     private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
     {
         getGlyphIndex().setEntities(glyphs);
@@ -1375,7 +1318,7 @@ public class Sheet
     // getNumber // Needed for JAXB
     //-----------//
     /**
-     * Sheet 1-based number within book.
+     * This is the rank of sheet, counted from 1, within the book image(s) file.
      */
     @XmlAttribute(name = "number")
     private int getNumber ()
@@ -1469,8 +1412,8 @@ public class Sheet
             createBinaryView();
         }
 
-        done(Step.LOAD);
-        done(Step.BINARY);
+        done(OmrStep.LOAD);
+        done(OmrStep.BINARY);
     }
 
     //-------//
@@ -1481,7 +1424,7 @@ public class Sheet
      *
      * @param step the starting step
      */
-    void reset (Step step)
+    void reset (OmrStep step)
     {
         switch (step) {
         default:
@@ -1564,7 +1507,7 @@ public class Sheet
     //----------------//
     // getJaxbContext //
     //----------------//
-    private static JAXBContext getJaxbContext ()
+    public static JAXBContext getJaxbContext ()
             throws JAXBException
     {
         // Lazy creation
@@ -1595,6 +1538,10 @@ public class Sheet
     //-----------//
     // GlyphList // For glyphIndex (un)marshalling
     //-----------//
+    /**
+     * Class <code>GlyphList</code> is a JAXB-compatible list of <code>Glyph</code>
+     * instances.
+     */
     private static class GlyphList
     {
 

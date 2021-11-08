@@ -28,7 +28,7 @@ import org.audiveris.omr.glyph.Grades;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ClefKeyRelation} represents a support relation between a clef and a
+ * Class <code>ClefKeyRelation</code> represents a support relation between a clef and a
  * compatible key signature.
  *
  * @author Hervé Bitteur
@@ -43,7 +43,7 @@ public class ClefKeyRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ClefKeyRelation} object.
+     * Creates a new <code>ClefKeyRelation</code> object.
      */
     public ClefKeyRelation ()
     {

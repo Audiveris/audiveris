@@ -1,0 +1,318 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                            s c h e m a s : b u i l d . g r a d l e                             //
+//                                                                                                //
+//--------------------------------------------------------------------------------------------------
+// The goals of this 'schemas' sub-project are:
+//
+// 1. Generate the 2 XSD schemas that correspond to book.xml and sheet#N.xml files found in any
+//    .omr Audiveris project file.
+//    Purpose is to allow any consumer to read these files regardless of the coding language.
+//    These schemas could also be used for validation purposes.
+//
+// 2. Automatically generate the end-user documentation for these book.xml and sheet#N.xml files
+//    in order to replace the existing out-of-date documentation that was written manually.
+//
+// Project structuring:
+//    
+// The jaxb2-maven-plugin should be able to generate the JavaDoc-annotated schemas from Java
+// source files. Unfortunately, I could not make it work.
+//
+// So, the current working solution is as follows:
+//    Global task: genSchemaDoc
+//
+// 1. Use JAXB (already used in Audiveris [un]marshalling) to generate plain schemas from the Java 
+//    sources.
+//    They are called 'plain' because these JAXB-generated schemas contain no JavaDoc information.
+//    Tasks: genPlainSchemas (genPlainSchemaRoot, genPlainSchemaSheet)
+//
+// 2. Call jaxb2-maven-plugin as a basic Java library to annotate the plain schemas with JavaDoc 
+//    retrieved from the relevant Java sources.
+//    Tasks: injectJavadoc
+//
+// 3. Add header text at beginning of each schema, renamed according to the root class,
+//    and collect the names of linked image files.
+//    Tasks: completeSchemas (completeSchemaRoot, completeSchemaSheet)
+//
+// 4. Copy selected images from doc-files folders of Java sources into a single doc-files folder
+//    next to the XSD and HTML files, so that links to images can work.
+//    Tasks: copyImages
+//
+// 5. Use xs3p XSLT file and an xsltproc to generate the HTML files from the annotated schemas.
+//    Tasks: checkXsltProc, genHtmls (genHtmlBook, genHtmlSheet)
+//
+// 5b.Try to replace xsltproc by Saxon HE, in order to avoid installation of xsltproc software.
+//    As of today, the HTML output is not OK yet (no correct handling of javadoc html tags)
+//--------------------------------------------------------------------------------------------------
+
+apply plugin: 'java'
+
+repositories { 
+  jcenter() 
+    maven {
+        name = 'mvnrepository' 
+        url = 'https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE'
+    }
+}
+
+dependencies { 
+    compile(
+        [group: 'org.codehaus.mojo', name: 'jaxb2-maven-plugin', version: '2.5.0'],
+        [group: 'org.apache.maven.plugin-tools', name: 'maven-plugin-annotations', version: '3.5.1'],
+        [group: 'net.sf.saxon', name: 'Saxon-HE', version: '10.6']
+    )
+}
+
+// Main task
+task genSchemaDoc {
+    group "Documentation"
+    description "Generate commented schemas and HTML doc to document Audiveris .omr format"
+    
+    dependsOn(':classes')
+    dependsOn('injectJavadoc')    
+    dependsOn('completeSchemas')    
+    dependsOn('copyImages')    
+    dependsOn('genHtmls')    
+}
+
+task createFolders {
+    description "Prepare target schemas structure"
+    
+    doFirst  {
+        mkdir "build/work"
+        mkdir "build/output/doc-files"
+    }     
+}
+
+task genPlainSchemas {
+    description "Generate all plain schemas, without javadoc"
+}
+
+task completeSchemas {
+    description "Add header text to schemas"
+}
+
+task genHtmls {
+    description "Generate all HTMLs from annotated schemas"
+    group "Documentation"
+}
+
+
+ext.toCopy = [] // Names of image files to copy
+
+task copyImages(type: Copy) {
+    description "Copy all image files into a single doc-files directory"
+    dependsOn('createFolders')
+    
+    int copied = 0
+    def images = fileTree(dir: '../src/main', includes: ['**/*.png']) 
+    includeEmptyDirs = false    
+    from images
+    into "build/output/doc-files"
+    
+    eachFile {  fileCopyDetails ->
+        // Check file name against list of names to copy
+        String fName = fileCopyDetails.getName()
+        
+        if (project.ext.toCopy.contains(fName)) {
+            println "Copying image " + fName
+            // Discard directory hierarchy information and copy the file
+            fileCopyDetails.setPath(fName)
+            copied++
+        } else {
+            exclude() 
+        }
+    }
+    
+    doLast {
+        println copied + " images to " + destinationDir
+    }
+}
+
+task injectJavadoc(type: JavaExec) {
+    description "Annotate plain schemas with JavaDoc content"
+    dependsOn(genPlainSchemas)
+    dependsOn(compileJava)
+    
+    main = 'org.audiveris.schema.SchemaAnnotator'
+    classpath sourceSets.main.runtimeClasspath
+    args=["build/work", "build/output", "../src/main/org/audiveris/omr"]
+}
+
+// Defining 'debug' task allows to set its arguments later
+task debug(type: JavaExec) {
+    description "Annotate plain schemas with JavaDoc content in DEBUG mode"
+    dependsOn(genPlainSchemas)
+    dependsOn('classes')
+    
+    main = 'org.audiveris.schema.SchemaAnnotator'
+    classpath = sourceSets.main.runtimeClasspath
+    args=["build/work", "build/output", "../src/main/org/audiveris/omr"]
+    debug true
+}
+
+ext.xsltprocFound = 'no'
+task checkXsltProc {
+    description "Verifies that xsltproc is installed"
+    
+    doLast {
+        try {
+            def path = "xsltproc"
+            def proc = [path, "--version"].execute()
+            proc.waitFor()
+            println ""
+            println "xsltproc found. Output for --version option is as follows:"
+            println proc.in.text.trim()
+            println ""
+            project.ext.xsltprocFound = 'yes'
+        } catch (exception) {
+            println "*** =================================================="
+            println "*** xsltproc not found!"
+            println "***    Annotated XSD schemas will still be generated,"
+            println "***    but no HTML will be derived from them."
+            println "*** =================================================="
+        }        
+    }
+}
+
+// Definition of tasks for root-classes Book and Sheet
+[["cls" : "Book",  "src" : "org.audiveris.omr.sheet.Book",  "sch" : "schema1.xsd"],
+ ["cls" : "Sheet", "src" : "org.audiveris.omr.sheet.Sheet", "sch" : "schema2.xsd"]].each { map ->
+    def cls = "${map["cls"]}"
+    def src = "${map["src"]}"
+    def sch = "${map["sch"]}"   
+    
+    // Generating plain schema
+    task ("genPlainSchema$cls", type: JavaExec) {
+        description "Generate plain XSD schema for $cls class"
+        dependsOn(createFolders)
+  
+        main = 'org.audiveris.omr.SchemaGeneration'
+        classpath = rootProject.sourceSets.main.runtimeClasspath
+        args=["$src", "build/work/$sch"]
+        
+        doFirst {
+            println "Generating plain build/work/$sch for $cls class"
+        }
+    }    
+    genPlainSchemas.dependsOn("genPlainSchema$cls")    
+    
+    // Adding schema header to complete (annotated) schemaN.xsd as <RootClass>.xsd
+    // While reading all input lines, we record the name of each linked image file
+    task ("completeSchema$cls") {
+        description "Complete schema ${cls}.xsd"
+        dependsOn(injectJavadoc)
+        
+        doLast {
+            File target = file("build/output/${cls}.xsd")  
+            if (target.exists()) {
+                delete target
+            }
+                        
+            boolean done = false
+            String lineSeparator = System.getProperty("line.separator")
+
+            // We'll check each xsd line for image link to doc-files, something like:
+            // <img src="doc-files/Book-vs-Sheet.png" alt="Book-vs-Sheet UML">
+            // to retrieve file name: Book-vs-Sheet.png
+            String pattern = "src=\"doc-files/([^\"]*)\""
+            
+            file("build/output/$sch").eachLine() { srcLine ->
+                // Insert external header text at beginning of schema
+                if (!done && (srcLine.indexOf("element") != -1)) {
+                    done = true;
+
+                    File header = file("schemaHeaderFor${cls}.xsd")
+                    if (header.exists()) {
+                        header.eachLine() { hdrLine ->                    
+                            hdrLine.eachMatch(pattern) { group ->  
+                                println "Got image " + group[1]
+                                project.ext.toCopy.add(group[1])
+                            }
+                            
+                            target << hdrLine << lineSeparator
+                        }
+                    } else {
+                        println "No $header to include"
+                    }
+                }
+                
+                srcLine.eachMatch(pattern) { group ->  
+                    println "Got image " + group[1]
+                    project.ext.toCopy.add(group[1])
+                }
+                
+                target << srcLine << lineSeparator
+            }            
+        }        
+    }
+    completeSchemas.dependsOn("completeSchema$cls")
+    copyImages.dependsOn("completeSchema$cls")
+    
+    // Generating HTML from complete schema
+    task ("genHtml$cls", type: Exec) {
+        description "Generate HTML for $cls class using xsltproc"
+        group "Documentation"
+        dependsOn('checkXsltProc')
+        dependsOn("completeSchema$cls")
+
+        doFirst {
+            def args = (rootProject.ext.targetOSName == "windows") ? ["cmd", "/c"] : []
+            //def styleSheet = "d:/soft/xs3p/xs3p-1.1.5/xs3p.xsl"
+            //def styleSheet = "d:/soft/xs3p/bitfehler/xs3p.xsl"
+            //def styleSheet = "d:/soft/xs3p/mapudo/xs3p.xsl"
+            //def styleSheet = "d:/soft/xs3p/infojunkie/xs3p.xsl"
+            def styleSheet = "xs3p.xsl"
+            
+            if (project.ext.xsltprocFound == 'yes') {
+                println "Generating HTML for $cls class"
+
+                args.add("xsltproc")
+                args.addAll(["--stringparam", "title", "$cls-rooted Schema Documentation"])
+                args.addAll(["--stringparam", "printNSPrefixes", "false"])
+                args.addAll(["--stringparam", "xmlDocWidth", "60"])
+                args.addAll(["--stringparam", "useTypeShortcut", "true"])
+                args.addAll(["--stringparam", "useMarkdown", "false"])
+                ///args.addAll(["--stringparam", "debug", "true"])
+                args.add("--nonet")
+                args.addAll(["--output", "build/output/${cls}.html"])
+                args.add(styleSheet)
+                args.add("build/output/${cls}.xsd")
+            } else {
+                println "*** No HTML generated from ${cls}.xsd schema"
+            }
+             
+            commandLine args
+        }
+        
+        genHtmls.dependsOn("genHtml$cls")
+    }
+    
+    // Generating HTML from complete schema
+    // Trying Saxon HE to replace xsltproc
+    // NOTA: this does not work correctly for html tags, further investigation is needed
+    task ("newGenHtml$cls", type: JavaExec) {
+        description "Generate HTML for $cls class using Saxon-HE"
+        group "Documentation"
+        dependsOn("completeSchema$cls")
+
+        def styleSheet = "xs3p.xsl"
+                  
+        def opts = []
+        opts.add("-xsl:${styleSheet}")
+        opts.add("-s:build/output/${cls}.xsd")
+        opts.add("-o:build/output/${cls}.html")
+        opts.add("title=${cls}-rooted Schema Documentation")
+        opts.add("printNSPrefixes=false")
+        opts.add("xmlDocWidth=60")
+        opts.add("useTypeShortcut=true")
+        opts.add("useMarkdown=false")
+        ///opts.add("debug=true")
+
+        args opts
+        main 'net.sf.saxon.Transform'
+        classpath sourceSets.main.runtimeClasspath
+        
+        ///genHtmls.dependsOn("newGenHtml$cls")    
+    }
+}

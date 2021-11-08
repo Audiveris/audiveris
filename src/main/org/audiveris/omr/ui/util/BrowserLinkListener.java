@@ -32,7 +32,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 /**
- * Class {@code BrowserLinkListener} provides a HyperlinkListener that launches
+ * Class <code>BrowserLinkListener</code> provides a HyperlinkListener that launches
  * a browser on the link selected by the user.
  *
  * @author Hervé Bitteur

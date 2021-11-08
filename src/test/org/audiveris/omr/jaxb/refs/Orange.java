@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Orange}
+ * Class <code>Orange</code>
  *
  * @author Hervé Bitteur
  */
@@ -38,7 +38,7 @@ public class Orange
     final String name;
 
     /**
-     * Creates a new {@code Orange} object.
+     * Creates a new <code>Orange</code> object.
      *
      * @param id   DOCUMENT ME!
      * @param name DOCUMENT ME!
@@ -51,7 +51,7 @@ public class Orange
     }
 
     /**
-     * Creates a new {@code Orange} object.
+     * Creates a new <code>Orange</code> object.
      */
     public Orange ()
     {

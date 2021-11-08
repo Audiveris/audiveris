@@ -79,7 +79,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MouseInputAdapter;
 
 /**
- * Class {@code SampleListing} is a private companion of {@link SampleBrowser},
+ * Class <code>SampleListing</code> is a private companion of {@link SampleBrowser},
  * it is in charge of a list of samples, gathered by shape.
  * <p>
  * It is implemented as a list of ShapePane instances, one per shape, each ShapePane instance
@@ -121,7 +121,7 @@ class SampleListing
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleListing} object.
+     * Creates a new <code>SampleListing</code> object.
      */
     SampleListing (SampleBrowser browser,
                    SampleRepository repository)
@@ -279,28 +279,6 @@ class SampleListing
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------//
-    // GradedSample //
-    //--------------//
-    private static class GradedSample
-    {
-
-        public static final Comparator<GradedSample> byReverseGrade = (o1, o2)
-                -> Double.compare(o2.grade, o1.grade);
-
-        final double grade;
-
-        final Sample sample;
-
-        GradedSample (double grade,
-                      Sample sample)
-        {
-            this.grade = grade;
-            this.sample = sample;
-        }
-    }
-
     //----------------//
     // SampleRenderer //
     //----------------//
@@ -391,7 +369,7 @@ class SampleListing
          * visible element becomes the first completely visible element
          * <li>if scrolling up, returns the distance to scroll so that the first
          * visible element becomes the last completely visible element
-         * <li>returns {@code visibleRect.height} if the list is empty
+         * <li>returns <code>visibleRect.height</code> if the list is empty
          * </ul>
          * <p>
          * For us:
@@ -399,7 +377,8 @@ class SampleListing
          * "Element" could be the next/previous shapePane?
          *
          * @param visibleRect the view area visible within the viewport
-         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
+         * @param orientation <code>SwingConstants.HORIZONTAL</code> or
+         *                    <code>SwingConstants.VERTICAL</code>
          * @param direction   less or equal to zero to scroll up, greater than zero for down
          * @return the "block" increment for scrolling in the specified direction; always positive
          */
@@ -431,7 +410,8 @@ class SampleListing
          * Returns the distance to scroll to expose the next or previous row.
          *
          * @param visibleRect the view area visible within the viewport
-         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
+         * @param orientation <code>SwingConstants.HORIZONTAL</code> or
+         *                    <code>SwingConstants.VERTICAL</code>
          * @param direction   less or equal to zero to scroll up, greater than zero for down
          * @return the "unit" increment for scrolling in the specified direction; always positive
          */
@@ -776,7 +756,7 @@ class SampleListing
                         sample,
                         sample.getInterline());
                 double grade = evals[sample.getShape().ordinal()].grade;
-                list.add(new GradedSample(grade, sample));
+                list.add(new GradedSample(sample, grade));
             }
 
             logger.info("All grades computed.");

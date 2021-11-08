@@ -27,7 +27,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code LongRestSymbol} is an implementation for a LONG_REST symbol.
+ * Class <code>LongRestSymbol</code> is an implementation for a LONG_REST symbol.
  *
  * @author Hervé Bitteur
  */

@@ -26,7 +26,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 
 /**
- * Class {@code LCheckBox} is a logical combination of a JLabel and a JCheckBox,
+ * Class <code>LCheckBox</code> is a logical combination of a JLabel and a JCheckBox,
  * a "Labeled Check", where the label describes the dynamic content of the check box.
  *
  * @author Hervé Bitteur

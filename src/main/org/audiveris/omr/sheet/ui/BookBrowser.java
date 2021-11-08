@@ -76,7 +76,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- * Class {@code BookBrowser} provides a user interface (a frame) where the whole book
+ * Class <code>BookBrowser</code> provides a user interface (a frame) where the whole book
  * information can be browsed as a tree.
  *
  * @author Hervé Bitteur
@@ -110,7 +110,7 @@ public class BookBrowser
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BookBrowser} object.
+     * Creates a new <code>BookBrowser</code> object.
      *
      * @param book the related book
      */

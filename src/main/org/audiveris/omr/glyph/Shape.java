@@ -36,14 +36,13 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Enum {@code Shape} defines the comprehensive enumeration of glyph shapes.
+ * Enum <code>Shape</code> defines the comprehensive enumeration of glyph shapes.
  * <p>
- * The enumeration begins with physical shapes (which are the only ones usable for training) and
- * ends with additional (logical) shapes. The method {@link #isTrainable()} can be used to
- * disambiguate between physical and logical shapes.
+ * The enumeration begins with physical shapes (which are the only ones usable for training of the
+ * glyph classifier) and ends with additional (logical) shapes.
  * <p>
- * <b>Nota</b>: All the physical shapes <b>MUST</b> have different characteristics for the training
- * to work correctly.
+ * <b>NOTA</b>: All the physical shapes <b>MUST</b> have different characteristics for the glyph
+ * classifier training to work correctly.
  * The same physical shape can lead to different logical shapes according to the context.
  * Two physical shapes are in this case (their name ends with "<i>_set</i>" to make this clear):
  * <ul>

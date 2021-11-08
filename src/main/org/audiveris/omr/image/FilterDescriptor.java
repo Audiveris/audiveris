@@ -31,8 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Management data meant to describe an implementation instance of a PixelFilter.
- * (kind of filter + related parameters)
+ * Class <code>FilterDescriptor</code> allows to configure a binarization
+ * <code>PixelFilter</code>.
+ * <p>
+ * This configuration defines the kind of the chosen filter and its related parameters values.
  *
  * @author Hervé Bitteur
  */

@@ -32,6 +32,7 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Picture.SourceKey;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -41,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code BinaryStep} implements <b>BINARY</b> step, which binarizes the initial
+ * Class <code>BinaryStep</code> implements <b>BINARY</b> step, which binarizes the initial
  * sheet image, using proper filter, to come up with a black-and-white image.
  *
  * @author Hervé Bitteur
@@ -68,7 +69,7 @@ public class BinaryStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Step step,
+    public void displayUI (OmrStep step,
                            Sheet sheet)
     {
         sheet.createBinaryView();
@@ -106,7 +107,7 @@ public class BinaryStep
 
         // Discard GRAY image from disk?
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-        final boolean keepGray = switches.getValue(ProcessingSwitches.Switch.keepGrayImages);
+        final boolean keepGray = switches.getValue(ProcessingSwitch.keepGrayImages);
 
         if (!keepGray) {
             sheet.getPicture().discardImage(Picture.ImageKey.GRAY);

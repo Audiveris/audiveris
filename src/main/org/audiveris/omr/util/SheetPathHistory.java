@@ -26,7 +26,7 @@ import org.audiveris.omr.constant.Constant;
 import java.nio.file.Path;
 
 /**
- * Class {@code SheetPathHistory} is a history of SheetPath entities.
+ * Class <code>SheetPathHistory</code> is a history of SheetPath entities.
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ public class SheetPathHistory
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code SheetPathHistory} object.
+     * Creates a new <code>SheetPathHistory</code> object.
      *
      * @param name           a name for this history instance
      * @param constant       backing constant on disk

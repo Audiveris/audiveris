@@ -29,7 +29,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code NonDraggableSymbol} implements a double-size non-draggable symbol: X
+ * Class <code>NonDraggableSymbol</code> implements a double-size non-draggable symbol: X
  *
  * @author Hervé Bitteur
  */

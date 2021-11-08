@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.relation;
 
 /**
- * Abstract class {@code Rhythm} gathers all specific relations focused on rhythm
+ * Abstract class <code>Rhythm</code> gathers all specific relations focused on rhythm
  * (voice and time slot).
  *
  * @author Hervé Bitteur

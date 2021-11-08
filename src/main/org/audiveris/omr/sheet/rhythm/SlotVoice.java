@@ -30,10 +30,11 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SlotVoice} defines which chord, if any, represents a voice in a given
+ * Class <code>SlotVoice</code> defines which chord, if any, represents a voice in a given
  * slot.
  * <p>
- * If a voice is still active in a given slot, there is an instance of {@code SlotVoice} for it.
+ * If a voice is still active in a given slot, there is an instance of <code>SlotVoice</code> for
+ * it.
  * Its status is:
  * <ul>
  * <li><b>BEGIN</b> if the voice begins at the slot.
@@ -48,13 +49,13 @@ public class SlotVoice
 {
     //~ Enumerations -------------------------------------------------------------------------------
 
-    //--------//
-    // Status //
-    //--------//
+    //-------------//
+    // ChordStatus //
+    //-------------//
     /**
      * Voice status of a chord with respect to a slot.
      */
-    public static enum Status
+    public static enum ChordStatus
     {
         /** The chord begins at this slot (it's one of slot incoming chords). */
         BEGIN,
@@ -63,14 +64,14 @@ public class SlotVoice
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related chord. */
+    /** This is the chord that represents this voice in this slot. */
     @XmlIDREF
     @XmlAttribute
     public final AbstractChordInter chord;
 
-    /** Current status. */
+    /** Current status: does the chord start or does it continue at this slot. */
     @XmlAttribute
-    public final Status status;
+    public final ChordStatus status;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -80,7 +81,7 @@ public class SlotVoice
      * @param status tell if the chord is starting or continuing at this slot
      */
     public SlotVoice (AbstractChordInter chord,
-                      Status status)
+                      ChordStatus status)
     {
         this.chord = chord;
         this.status = status;

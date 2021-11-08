@@ -53,7 +53,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 
 /**
- * Class {@code Board} defines the common properties of any user board such as
+ * Class <code>Board</code> defines the common properties of any user board such as
  * PixelBoard, SectionBoard, and the like.
  * <p>
  * Each board has a standard header composed of a title, a horizontal separator and optionally a
@@ -77,7 +77,7 @@ import javax.swing.text.JTextComponent;
  * unsubscribes the Board instance from the same event classes.
  * </p>
  * <p>
- * This {@code Board} class is still an abstract class, since the onEvent() method must be
+ * This <code>Board</code> class is still an abstract class, since the onEvent() method must be
  * provided by every subclass.
  * </p>
  *

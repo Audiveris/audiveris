@@ -33,7 +33,7 @@ import java.awt.geom.Line2D;
 import java.util.List;
 
 /**
- * Class {@code AbstractStaffVerticalInter} is a {@link AbstractVerticalInter} whose
+ * Class <code>AbstractStaffVerticalInter</code> is a {@link AbstractVerticalInter} whose
  * height is expected to be the staff height.
  * <p>
  * It is the basis for {@link BarlineInter} and {@link BracketInter}.
@@ -46,7 +46,7 @@ public abstract class AbstractStaffVerticalInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code AbstractStaffVerticalInter} object, with its grade.
+     * Creates a new <code>AbstractStaffVerticalInter</code> object, with its grade.
      *
      * @param glyph   the underlying glyph
      * @param shape   the assigned shape
@@ -64,7 +64,7 @@ public abstract class AbstractStaffVerticalInter
     }
 
     /**
-     * Creates a new {@code AbstractStaffVerticalInter} object, with detailed impacts.
+     * Creates a new <code>AbstractStaffVerticalInter</code> object, with detailed impacts.
      *
      * @param glyph  the underlying glyph
      * @param shape  the assigned shape

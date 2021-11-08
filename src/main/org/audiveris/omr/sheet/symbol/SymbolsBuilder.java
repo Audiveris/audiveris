@@ -60,7 +60,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code SymbolsBuilder} is in charge, at system level, of retrieving all
+ * Class <code>SymbolsBuilder</code> is in charge, at system level, of retrieving all
  * possible symbols interpretations.
  *
  * @author Hervé Bitteur
@@ -420,7 +420,7 @@ public class SymbolsBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
      */
     private static class Parameters
     {

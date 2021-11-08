@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.selection;
 
 /**
- * Class {@code MouseMovement} defines which phase of user action
+ * Class <code>MouseMovement</code> defines which phase of user action
  * generated the event.
  * <p>
  * For example, we may decide to update minimal information while the user is moving the mouse, and

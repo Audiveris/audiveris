@@ -25,7 +25,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * Class {@code AbstractMenuListener} is a void implementation of {@link MenuListener}
+ * Class <code>AbstractMenuListener</code> is a void implementation of {@link MenuListener}
  * interface.
  *
  * @author Hervé Bitteur

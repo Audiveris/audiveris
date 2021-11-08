@@ -31,7 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code Arc} represents a sequence of points, with perhaps a junction point at
+ * Class <code>Arc</code> represents a sequence of points, with perhaps a junction point at
  * start and perhaps a junction point at stop.
  * <p>
  * An arc has no "intrinsic" orientation, it is simply built according to the orientation of the

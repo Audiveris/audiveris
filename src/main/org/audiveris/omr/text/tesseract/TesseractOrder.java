@@ -56,7 +56,7 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * Class {@code TesseractOrder} carries a processing order submitted to Tesseract OCR
+ * Class <code>TesseractOrder</code> carries a processing order submitted to Tesseract OCR
  * program.
  *
  * @author Hervé Bitteur

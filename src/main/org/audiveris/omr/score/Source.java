@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code Source} precisely describes the source of a Score.
+ * Class <code>Source</code> precisely describes the source of a Score.
  * <p>
  * Within a given input file (or URI), perhaps composed of several sheet images, the relevant sheets
  * are listed, each with the systems processed for the ScorePartwise instance at hand.

@@ -30,7 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JSlider;
 
 /**
- * Class {@code LogSlider} is a specific {@link JSlider} which handles double values
+ * Class <code>LogSlider</code> is a specific {@link JSlider} which handles double values
  * with a logarithmic scale (while normal JSlider handles only integer values).
  * <p>
  * As with a basic JSlider, any external entity can be notified of new slider value, by first
@@ -56,7 +56,7 @@ public class LogSlider
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LogSlider} instance.
+     * Creates a new <code>LogSlider</code> instance.
      *
      * @param base        to specify the base of logarithm, generally either 2 or 10.
      * @param minors      number of minor intervals within one major interval (if specified as 1
@@ -138,7 +138,7 @@ public class LogSlider
     /**
      * Use the provided value, to set the slider internal position.
      *
-     * @param d a {@code double} value, such as 32 or 0.125.
+     * @param d a <code>double</code> value, such as 32 or 0.125.
      */
     public void setDoubleValue (double d)
     {

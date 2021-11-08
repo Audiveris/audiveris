@@ -46,7 +46,7 @@ import java.util.Arrays;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BasicSymbol} is the base for implementing instances of {@link SymbolIcon}
+ * Class <code>BasicSymbol</code> is the base for implementing instances of {@link SymbolIcon}
  * interface.
  * <p>
  * It does not handle a specific Shape as its subclass {@link ShapeSymbol}, but only handles a

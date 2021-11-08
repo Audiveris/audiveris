@@ -36,7 +36,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code AbstractActionMenu}
+ * Class <code>AbstractActionMenu</code>
  * <p>
  * In a menu, actions are physically grouped by semantic tag and
  * separators are inserted between such groups.

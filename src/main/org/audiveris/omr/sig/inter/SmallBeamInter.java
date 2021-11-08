@@ -29,7 +29,7 @@ import java.awt.geom.Line2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SmallBeamInter} represents a small (cue) beam.
+ * Class <code>SmallBeamInter</code> represents a small (cue) beam.
  *
  * @author Hervé Bitteur
  */

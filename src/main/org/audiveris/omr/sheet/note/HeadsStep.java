@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code HeadsStep} implements <b>HEADS</b> step, which uses distance matching
+ * Class <code>HeadsStep</code> implements <b>HEADS</b> step, which uses distance matching
  * technique to retrieve all possible interpretations of note heads (black, void or
  * whole) but no note rests.
  *
@@ -52,7 +52,7 @@ public class HeadsStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadsStep} object.
+     * Creates a new <code>HeadsStep</code> object.
      */
     public HeadsStep ()
     {

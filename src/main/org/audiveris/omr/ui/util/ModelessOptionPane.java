@@ -41,7 +41,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code ModelessOptionPane} is a basis for providing dialogs similar to
+ * Class <code>ModelessOptionPane</code> is a basis for providing dialogs similar to
  * the ones provided by JOptionPane, but in a mode-less way.
  *
  * @author Hervé Bitteur
@@ -59,18 +59,18 @@ public class ModelessOptionPane
     //-------------------//
     /**
      * Spawn a mode-less dialog where the number of choices is determined by the
-     * {@code optionType} parameter.
+     * <code>optionType</code> parameter.
      *
-     * @param parentComponent determines the {@code Frame} in which the dialog is displayed; if
-     *                        {@code null}, or if the {@code parentComponent} has no {@code Frame},
-     *                        a default {@code Frame} is used
-     * @param message         the {@code Object} to display
+     * @param parentComponent determines the <code>Frame</code> in which the dialog is displayed; if
+     *                        <code>null</code>, or if the <code>parentComponent</code> has no <code>Frame</code>,
+     *                        a default <code>Frame</code> is used
+     * @param message         the <code>Object</code> to display
      * @param title           the title string for the dialog
      * @param optionType      an int designating the options available on the dialog:
-     *                        {@code YES_NO_OPTION}, {@code YES_NO_CANCEL_OPTION}, or
-     *                        {@code OK_CANCEL_OPTION}
+     *                        <code>YES_NO_OPTION</code>, <code>YES_NO_CANCEL_OPTION</code>, or
+     *                        <code>OK_CANCEL_OPTION</code>
      * @return an int indicating the option selected by the user
-     * @exception HeadlessException if {@code GraphicsEnvironment}/code} returns {@code true}
+     * @exception HeadlessException if <code>GraphicsEnvironment</code>/code} returns <code>true</code>
      * @see java.awt.GraphicsEnvironment#isHeadless
      */
     public static int showModelessConfirmDialog (Component parentComponent,

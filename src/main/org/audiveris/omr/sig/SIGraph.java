@@ -34,7 +34,7 @@ import org.audiveris.omr.sig.inter.Inters.ClassPredicate;
 import org.audiveris.omr.sig.inter.Inters.ClassesPredicate;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.sig.relation.Exclusion.Cause;
+import org.audiveris.omr.sig.relation.Exclusion.ExclusionCause;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.relation.Relations.RelationClassPredicate;
@@ -71,12 +71,12 @@ import java.util.function.Predicate;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code SIGraph} represents the Symbol Interpretation Graph that aims at
+ * Class <code>SIGraph</code> represents the Symbol Interpretation Graph that aims at
  * finding the best global interpretation of all symbols in a system.
  *
  * @author Hervé Bitteur
  */
-@XmlJavaTypeAdapter(SigValue.Adapter.class)
+@XmlJavaTypeAdapter(SigValue.JaxbAdapter.class)
 public class SIGraph
         extends DefaultListenableGraph<Inter, Relation>
         implements DirectedGraph<Inter, Relation>
@@ -766,7 +766,7 @@ public class SIGraph
      */
     public Exclusion insertExclusion (Inter inter1,
                                       Inter inter2,
-                                      Cause cause)
+                                      ExclusionCause cause)
     {
         final boolean direct = inter1.getId() < inter2.getId();
         final Inter source = direct ? inter1 : inter2;
@@ -812,7 +812,7 @@ public class SIGraph
      * @return the exclusions inserted
      */
     public List<Relation> insertExclusions (Collection<? extends Inter> inters,
-                                            Cause cause)
+                                            ExclusionCause cause)
     {
         final List<Inter> list = new ArrayList<>(inters);
         final List<Relation> exclusions = new ArrayList<>();

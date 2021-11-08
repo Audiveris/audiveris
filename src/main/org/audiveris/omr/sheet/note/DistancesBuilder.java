@@ -57,7 +57,7 @@ import java.util.List;
 import java.util.SortedMap;
 
 /**
- * Class {@code DistancesBuilder} provides the distance table to be used for notes
+ * Class <code>DistancesBuilder</code> provides the distance table to be used for notes
  * retrieval.
  *
  * @author Hervé Bitteur
@@ -79,7 +79,7 @@ public class DistancesBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code DistancesBuilder} object.
+     * Creates a new <code>DistancesBuilder</code> object.
      *
      * @param sheet related sheet
      */

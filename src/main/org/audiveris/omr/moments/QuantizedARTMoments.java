@@ -24,7 +24,7 @@ package org.audiveris.omr.moments;
 import java.util.Arrays;
 
 /**
- * Class {@code QuantizedARTMoments} handles a quantized region-based
+ * Class <code>QuantizedARTMoments</code> handles a quantized region-based
  * shape descriptor.
  * <p>
  * See MPEG-7 Experimentation Model for the original C++ code

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code CompoundFactory} build compounds out of sections or other compounds.
+ * Class <code>CompoundFactory</code> build compounds out of sections or other compounds.
  *
  * @author Hervé Bitteur
  */

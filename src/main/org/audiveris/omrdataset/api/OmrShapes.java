@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code OmrShapes} complements enum {@link OmrShape} with related features.
+ * Class <code>OmrShapes</code> complements enum {@link OmrShape} with related features.
  *
  * @author Hervé Bitteur
  */

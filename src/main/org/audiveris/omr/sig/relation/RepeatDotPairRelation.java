@@ -31,7 +31,7 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RepeatDotPairRelation} represents the relation between two repeat dots
+ * Class <code>RepeatDotPairRelation</code> represents the relation between two repeat dots
  * in a pair.
  *
  * @author Hervé Bitteur

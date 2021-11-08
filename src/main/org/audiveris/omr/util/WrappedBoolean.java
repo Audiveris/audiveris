@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code WrappedBoolean} is a specific wrapper around a boolean,
+ * Class <code>WrappedBoolean</code> is a specific wrapper around a boolean,
  * meant to carry an output boolean as method parameter.
  *
  * @author Hervé Bitteur

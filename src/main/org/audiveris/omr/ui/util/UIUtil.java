@@ -66,7 +66,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 /**
- * Class {@code UIUtil} gathers utilities related to User Interface
+ * Class <code>UIUtil</code> gathers utilities related to User Interface
  *
  * @author Hervé Bitteur and Brenton Partridge
  */

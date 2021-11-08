@@ -22,7 +22,7 @@
 package org.audiveris.omr.classifier;
 
 /**
- * Class {@code Annotations} gathers definitions about symbols annotations.
+ * Class <code>Annotations</code> gathers definitions about symbols annotations.
  *
  * @author Hervé Bitteur
  */

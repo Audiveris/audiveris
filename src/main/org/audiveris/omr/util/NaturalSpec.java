@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Class {@code NaturalSpec} handles a specification of one or several natural numbers,
+ * Class <code>NaturalSpec</code> handles a specification of one or several natural numbers,
  * assumed to be non negative and increasing.
  *
  * @author Hervé Bitteur

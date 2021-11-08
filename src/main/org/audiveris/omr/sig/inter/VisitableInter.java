@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 /**
- * Interface {@code VisitableInterpretation} must be implemented by any class to be
+ * Interface <code>VisitableInterpretation</code> must be implemented by any class to be
  * visited by an InterVisitor.
  *
  * @author Hervé Bitteur

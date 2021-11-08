@@ -40,9 +40,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimePairInter} is a time signature composed of two halves (num and den).
+ * Class <code>TimePairInter</code> is a time signature composed of two halves
+ * (num and den).
  * <p>
- * It is an ensemble composed of 2 TimeNumberInter instances, one for top, one for bottom.
+ * It is an Inter ensemble composed of 2 TimeNumberInter instances, one for top, one for bottom.
  *
  * @author Hervé Bitteur
  */
@@ -285,7 +286,7 @@ public class TimePairInter
     // createAdded //
     //-------------//
     /**
-     * Create and add a {@code TimePairInter} object from its two halves.
+     * Create and add a <code>TimePairInter</code> object from its two halves.
      *
      * @param num numerator: non-null, registered in sig
      * @param den denominator: non-null, registered in sig

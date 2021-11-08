@@ -27,7 +27,7 @@ import org.audiveris.omr.sheet.Scale;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordSentenceRelation} represents a support relation between a chord
+ * Class <code>ChordSentenceRelation</code> represents a support relation between a chord
  * and a sentence.
  *
  * @author Hervé Bitteur

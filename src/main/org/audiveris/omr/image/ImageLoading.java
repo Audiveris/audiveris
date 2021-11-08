@@ -56,7 +56,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 
 /**
- * Class {@code ImageLoading} handles the loading of one or several images out of an
+ * Class <code>ImageLoading</code> handles the loading of one or several images out of an
  * input file.
  * <p>
  * It works in two phases:

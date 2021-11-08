@@ -37,17 +37,17 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
 /**
- * Class {@code WaitingTask} is an application background task that can display a
+ * Class <code>WaitingTask</code> is an application background task that can display a
  * temporary waiting dialog until the task is completed.
  * <p>
- * Method {@code doInBackground} must be provided in subclass.
+ * Method <code>doInBackground</code> must be provided in subclass.
  * <p>
- * Method {@code finished} can be provided in subclass to trigger some other action when the task
+ * Method <code>finished</code> can be provided in subclass to trigger some other action when the task
  * is completed.
  *
- * @param <T> the result type returned by {@code doInBackground} and {@code get} methods
- * @param <V> the type used for carrying out intermediate results by {@code publish} and
- *            {@code process} methods
+ * @param <T> the result type returned by <code>doInBackground</code> and <code>get</code> methods
+ * @param <V> the type used for carrying out intermediate results by <code>publish</code> and
+ *            <code>process</code> methods
  *
  * @author Hervé Bitteur
  */
@@ -64,7 +64,7 @@ public abstract class WaitingTask<T, V>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code WaitingTask} with default dialog title and display delay.
+     * Create a <code>WaitingTask</code> with default dialog title and display delay.
      *
      * @param application   The SingleFrameApplication umbrella
      * @param dialogMessage message in the waiting dialog
@@ -76,7 +76,7 @@ public abstract class WaitingTask<T, V>
     }
 
     /**
-     * Create a {@code WaitingTask}.
+     * Create a <code>WaitingTask</code>.
      *
      * @param application The SingleFrameApplication umbrella
      * @param message     message in the waiting dialog

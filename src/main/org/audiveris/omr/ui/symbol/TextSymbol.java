@@ -30,7 +30,7 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code TextSymbol} implements a decorated text symbol
+ * Class <code>TextSymbol</code> implements a decorated text symbol
  *
  * @author Hervé Bitteur
  */

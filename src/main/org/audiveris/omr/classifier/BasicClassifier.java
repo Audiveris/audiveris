@@ -60,7 +60,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BasicClassifier} is the pre-DL4J classifier, based on a home-built
+ * Class <code>BasicClassifier</code> is the pre-DL4J classifier, based on a home-built
  * shallow network operating on MixGlyphDescriptor.
  *
  * @author Hervé Bitteur

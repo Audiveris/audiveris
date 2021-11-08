@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code GlyphService} is an EntityService for glyphs.
+ * Class <code>GlyphService</code> is an EntityService for glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -60,7 +60,7 @@ public class GlyphService
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code GlyphService} object.
+     * Creates a new <code>GlyphService</code> object.
      *
      * @param index           underlying glyph index
      * @param locationService related service for location info

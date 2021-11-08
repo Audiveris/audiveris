@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimeCustomInter} is a user-populated time signature.
+ * Class <code>TimeCustomInter</code> is a user-populated time signature.
  *
  * @author Hervé Bitteur
  */
@@ -65,7 +65,7 @@ public class TimeCustomInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeCustomInter} object.
+     * Creates a new <code>TimeCustomInter</code> object.
      *
      * @param num   numerator value, perhaps zero
      * @param den   denominator value, perhaps zero

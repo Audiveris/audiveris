@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code LyricLineInter} gathers one line of lyrics.
+ * Class <code>LyricLineInter</code> gathers one line of lyrics.
  * <p>
  * A lyric line is composed of instances of {@link LyricItemInter}, which can be Syllables, Hyphens,
  * Extensions or Elisions
@@ -58,7 +58,7 @@ public class LyricLineInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code LyricLineInter} object.
+     * Creates a new <code>LyricLineInter</code> object.
      *
      * @param bounds   the bounding box
      * @param grade    the interpretation quality
@@ -72,7 +72,7 @@ public class LyricLineInter
     }
 
     /**
-     * Creates a new {@code LyricLineInter} object, meant for manual use.
+     * Creates a new <code>LyricLineInter</code> object, meant for manual use.
      *
      * @param grade the interpretation quality
      */
@@ -270,7 +270,7 @@ public class LyricLineInter
             }
 
             // We process only syllable items
-            if (item.getItemKind() == LyricItemInter.ItemKind.Syllable) {
+            if (item.getItemKind() == LyricItemInter.LyricItemKind.Syllable) {
                 item.defineSyllabicType(precedingItem, followingItem);
             }
 
@@ -308,7 +308,7 @@ public class LyricLineInter
     // create //
     //--------//
     /**
-     * Create a {@code LyricLineInter} from a TextLine.
+     * Create a <code>LyricLineInter</code> from a TextLine.
      *
      * @param line the OCR'ed text line
      * @return the LyricLine inter

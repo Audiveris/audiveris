@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code CheckSuite} represents a suite of homogeneous checks, meaning that all
+ * Class <code>CheckSuite</code> represents a suite of homogeneous checks, meaning that all
  * checks in the suite work on the same object type.
  * <p>
  * Every check in the suite is assigned a <b>weight</b>, to represent its relative importance in

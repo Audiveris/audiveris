@@ -56,12 +56,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code GlyphIndex} implements an index of (weak references to) Glyph instances.
+ * Class <code>GlyphIndex</code> implements an index of (weak references to) Glyph instances.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement
+@XmlRootElement(name = "glyph-index")
 public class GlyphIndex
         implements EntityIndex<Glyph>
 {
@@ -95,7 +95,7 @@ public class GlyphIndex
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code GlyphIndex} object.
+     * Creates a new <code>GlyphIndex</code> object.
      */
     public GlyphIndex ()
     {

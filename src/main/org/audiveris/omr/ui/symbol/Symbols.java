@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.EnumMap;
 
 /**
- * Class {@code Symbols} manages all {@link ShapeSymbol} instances, both for the simple
+ * Class <code>Symbols</code> manages all {@link ShapeSymbol} instances, both for the simple
  * symbols and for a few decorated symbols.
  *
  * @author Hervé Bitteur

@@ -56,7 +56,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code LogUtil} handles logging features based on underlying LogBack binding.
+ * Class <code>LogUtil</code> handles logging features based on underlying LogBack binding.
  *
  * @author Hervé Bitteur
  */

@@ -69,7 +69,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code SymbolsFilter} prepares a sheet image to allow the retrieval of symbols.
+ * Class <code>SymbolsFilter</code> prepares a sheet image to allow the retrieval of symbols.
  * <ul>
  * <li>Staff lines are removed,
  * <li>All good inter instances are erased,
@@ -142,7 +142,7 @@ public class SymbolsFilter
         if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
             sheet.getStub().getAssembly().addViewTab(
                     "Symbols",
-                    new ScrollImageView(sheet, new MyView(img, optionalsMap)),
+                    new ScrollImageView(sheet, new SymbolsView(img, optionalsMap)),
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
@@ -235,7 +235,7 @@ public class SymbolsFilter
     // SymbolsCleaner //
     //----------------//
     /**
-     * Class {@code SymbolsCleaner} erases Inter instances to prepare symbols retrieval.
+     * Class <code>SymbolsCleaner</code> erases Inter instances to prepare symbols retrieval.
      * <ul>
      * <li>All the "strong" Inter instances are simply erased.</li>
      * <li>The "weak" ones are also erased but saved apart as optional glyphs.
@@ -260,7 +260,7 @@ public class SymbolsFilter
         private List<Glyph> systemWeaks;
 
         /**
-         * Creates a new {@code SymbolsEraser} object.
+         * Creates a new <code>SymbolsEraser</code> object.
          *
          * @param buffer page buffer
          * @param g      graphics context on buffer
@@ -479,21 +479,21 @@ public class SymbolsFilter
         }
     }
 
-    //--------//
-    // MyView //
-    //--------//
+    //-------------//
+    // SymbolsView //
+    //-------------//
     /**
      * View dedicated to symbols.
      */
-    private class MyView
+    private class SymbolsView
             extends ImageView
     {
 
         // All optional glyphs. */
         private final Set<Glyph> optionals;
 
-        MyView (BufferedImage image,
-                Map<SystemInfo, List<Glyph>> optionalMap)
+        SymbolsView (BufferedImage image,
+                     Map<SystemInfo, List<Glyph>> optionalMap)
         {
             super(image);
 

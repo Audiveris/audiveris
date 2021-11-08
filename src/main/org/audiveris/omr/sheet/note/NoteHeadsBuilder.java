@@ -90,7 +90,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 
 /**
- * Class {@code NoteHeadsBuilder} retrieves the void note heads, the black note heads,
+ * Class <code>NoteHeadsBuilder</code> retrieves the void note heads, the black note heads,
  * the grace notes and the whole notes for a system.
  * <p>
  * It uses a distance matching approach which works well for such symbols that exhibit a fixed
@@ -200,7 +200,7 @@ public class NoteHeadsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code NoteHeadsBuilder} object.
+     * Creates a new <code>NoteHeadsBuilder</code> object.
      *
      * @param system      the system to process
      * @param distances   the distance table
@@ -853,7 +853,7 @@ public class NoteHeadsBuilder
                             }
                         } else {
                             // Use exclusion
-                            sig.insertExclusion(purged, kept, Exclusion.Cause.OVERLAP);
+                            sig.insertExclusion(purged, kept, Exclusion.ExclusionCause.OVERLAP);
                         }
                     }
                 } else if (rightBox.x > xMax) {
@@ -1910,7 +1910,7 @@ public class NoteHeadsBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
      */
     private static class Parameters
     {

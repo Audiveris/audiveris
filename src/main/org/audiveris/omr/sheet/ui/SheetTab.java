@@ -22,7 +22,7 @@
 package org.audiveris.omr.sheet.ui;
 
 /**
- * Class {@code SheetTab} gathers all available tab names in sheet assemblies.
+ * Class <code>SheetTab</code> gathers all available tab names in sheet assemblies.
  *
  * @author Hervé Bitteur
  */

@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code MusicFont} is meant to simplify the use of the underlying music font
+ * Class <code>MusicFont</code> is meant to simplify the use of the underlying music font
  * when rendering score views.
  * <p>
  * The strategy is to use a properly scaled instance of this class to carry out the drawing of music
@@ -112,7 +112,7 @@ public class MusicFont
     /**
      * Creates a new MusicFont object.
      *
-     * @param sizePts        the point size of the {@code Font}
+     * @param sizePts        the point size of the <code>Font</code>
      * @param staffInterline the staff interline value where this font is used
      */
     private MusicFont (int sizePts,

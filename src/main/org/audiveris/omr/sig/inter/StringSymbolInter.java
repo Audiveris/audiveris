@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 /**
- * Interface {@code StringSymbolInter} flags a Symbol Inter which can be mistaken for a
+ * Interface <code>StringSymbolInter</code> flags a Symbol Inter which can be mistaken for a
  * word, and vice versa.
  * Examples of such shapes:
  * <ul>

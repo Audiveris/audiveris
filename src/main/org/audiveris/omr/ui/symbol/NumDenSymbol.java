@@ -30,7 +30,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code NumDenSymbol} displays a time sig, with numerator and denominator.
+ * Class <code>NumDenSymbol</code> displays a time sig, with numerator and denominator.
  *
  * @author Hervé Bitteur
  */

@@ -35,7 +35,7 @@ import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
- * Class {@code InterAction} is the base for Inter actions, with or without relations.
+ * Class <code>InterAction</code> is the base for Inter actions, with or without relations.
  *
  * @author Hervé Bitteur
  */

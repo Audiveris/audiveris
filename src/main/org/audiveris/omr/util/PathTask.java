@@ -24,7 +24,7 @@ package org.audiveris.omr.util;
 import java.nio.file.Path;
 
 /**
- * Class {@code PathTask} is a VoidTask that operates on a path.
+ * Class <code>PathTask</code> is a VoidTask that operates on a path.
  *
  * @author Hervé Bitteur
  */
@@ -38,14 +38,14 @@ public abstract class PathTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PathTask} object.
+     * Creates a new <code>PathTask</code> object.
      */
     public PathTask ()
     {
     }
 
     /**
-     * Creates a new {@code PathTask} object.
+     * Creates a new <code>PathTask</code> object.
      *
      * @param path the related path
      */

@@ -25,7 +25,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 /**
- * Class {@code AbstractMouseListener} is a void implementation of {@link MouseListener}
+ * Class <code>AbstractMouseListener</code> is a void implementation of {@link MouseListener}
  * interface.
  *
  * @author Hervé Bitteur

@@ -40,7 +40,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AugmentationRelation} represents the relation between an augmentation
+ * Class <code>AugmentationRelation</code> represents the relation between an augmentation
  * dot and the related note (head or rest) instance.
  * <p>
  * NOTA: An augmentation can be considered as linked to at most one note (<b>single target</b>)

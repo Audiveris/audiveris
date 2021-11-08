@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code Sections} handles features related to a collection of sections.
+ * Class <code>Sections</code> handles features related to a collection of sections.
  *
  * @author Hervé Bitteur
  */

@@ -69,7 +69,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code BeamGroupInter} represents a group of related beams.
+ * Class <code>BeamGroupInter</code> represents a group of related beams.
  * <p>
  * Beams within the same group support each other.
  * <p>
@@ -99,7 +99,9 @@ public class BeamGroupInter
     // Persistent data
     //----------------
     //
-    /** Indicates a beam group that is linked to more than one staff. */
+    /**
+     * This boolean indicates a beam group that is linked to more than one staff.
+     */
     @XmlAttribute(name = "multi-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean multiStaff;

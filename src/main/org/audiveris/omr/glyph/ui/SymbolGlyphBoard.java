@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code SymbolGlyphBoard} defines an extended glyph board, with normalized
+ * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with normalized
  * values for weight, width and height.
  * <p>
  * <img alt="Image of SymbolGlyphBoard" src="doc-files/SymbolGlyphBoard.png">

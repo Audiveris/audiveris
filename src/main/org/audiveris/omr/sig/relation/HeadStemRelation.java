@@ -61,7 +61,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code HeadStemRelation} represents the relation support between a head and a
+ * Class <code>HeadStemRelation</code> represents the relation support between a head and a
  * stem.
  * <p>
  * A special configuration is known as the canonical "shared" configuration.
@@ -98,7 +98,7 @@ public class HeadStemRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadStemRelation} object.
+     * Creates a new <code>HeadStemRelation</code> object.
      */
     public HeadStemRelation ()
     {

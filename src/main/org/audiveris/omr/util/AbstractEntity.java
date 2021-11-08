@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.util.Jaxb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractEntity}
+ * Class <code>AbstractEntity</code> represents an entity with an assigned ID,
+ * and with minimal geometric features (bounding box and point containment).
+ * <p>
+ * It can also be flagged as VIP, generally to trigger ad-hoc debugging features.
+ * <p>
+ * <code>Glyph</code> and <code>Inter</code> classes are such entities.
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +55,9 @@ public abstract class AbstractEntity
     // Persistent data
     //----------------
     //
-    /** Identity for debugging. */
+    /**
+     * Unique integer id within the containing sheet.
+     */
     @XmlID
     @XmlAttribute(name = "id")
     @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
@@ -131,7 +139,6 @@ public abstract class AbstractEntity
         } catch (Throwable ex) {
             // Temporarily, some internals may not be printable
             // Hence, to not perturb debugging print outs, we use a basic placeholder here
-            ///logger.warn("toString ex:" + ex, ex);
             sb.append("<invalid-internals>");
         }
 
@@ -144,7 +151,7 @@ public abstract class AbstractEntity
     // internals //
     //-----------//
     /**
-     * Report description of object internals.
+     * Reports description of object internals.
      *
      * @return internals description
      */

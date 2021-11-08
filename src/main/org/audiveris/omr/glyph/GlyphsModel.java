@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 /**
- * Class {@code GlyphsModel} is a common model for synchronous glyph handling.
+ * Class <code>GlyphsModel</code> is a common model for synchronous glyph handling.
  * <p>
  * Nota: User gesture should trigger actions in GlyphsController which will asynchronously delegate
  * to this model.

@@ -32,7 +32,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code FermataArcSymbol} implements Fermata Arc symbols with the related dot
+ * Class <code>FermataArcSymbol</code> implements Fermata Arc symbols with the related dot
  * as decoration.
  *
  * @author Hervé Bitteur

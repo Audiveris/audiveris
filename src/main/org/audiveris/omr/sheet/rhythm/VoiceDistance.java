@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code VoiceDistance} provides a kind of distance between two chords,
+ * Class <code>VoiceDistance</code> provides a kind of distance between two chords,
  * to evaluate if they could to belong to the same voice.
  * <p>
  * This abstract class provides two concrete implementations:
@@ -59,7 +59,7 @@ public abstract class VoiceDistance
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code VoiceDistance} object.
+     * Creates a new <code>VoiceDistance</code> object.
      *
      * @param scale Sheet global scale
      */

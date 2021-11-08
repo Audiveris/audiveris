@@ -54,7 +54,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code VerticalsBuilder} is in charge of retrieving major vertical sticks of a
+ * Class <code>VerticalsBuilder</code> is in charge of retrieving major vertical sticks of a
  * system.
  * <p>
  * The purpose is to use these major vertical sticks as seeds for stems.

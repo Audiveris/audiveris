@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.note.ChordsBuilder;
 import org.audiveris.omr.step.AbstractSystemStep;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code SymbolsStep} retrieves fixed-shape symbols in a system.
+ * Class <code>SymbolsStep</code> retrieves fixed-shape symbols in a system.
  * <p>
  * This accounts for rests, flags, dots, tuplets, alterations, ...
  *
@@ -70,7 +70,7 @@ public class SymbolsStep
     // displayUI //
     //-----------//
     @Override
-    public void displayUI (Step step,
+    public void displayUI (OmrStep step,
                            Sheet sheet)
     {
         sheet.getSheetEditor().refresh();

@@ -28,7 +28,7 @@ import java.awt.Rectangle;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code ScreenPoint} encapsulates a point defined with respect to the screen.
+ * Class <code>ScreenPoint</code> encapsulates a point defined with respect to the screen.
  *
  * @author Hervé Bitteur
  */

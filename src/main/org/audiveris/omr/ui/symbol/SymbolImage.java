@@ -25,7 +25,7 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code SymbolImage} is a {@link BufferedImage} with the ability to define a
+ * Class <code>SymbolImage</code> is a {@link BufferedImage} with the ability to define a
  * reference point, specified as a translation from the area center.
  *
  * @author Hervé Bitteur

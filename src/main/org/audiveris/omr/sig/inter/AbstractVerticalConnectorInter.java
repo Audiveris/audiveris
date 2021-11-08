@@ -31,7 +31,7 @@ import java.awt.geom.Line2D;
 import java.util.List;
 
 /**
- * Class {@code AbstractVerticalConnectorInter} represents a vertical connector between
+ * Class <code>AbstractVerticalConnectorInter</code> represents a vertical connector between
  * staves.
  * <p>
  * It is the basis for {@link BarConnectorInter} and {@link BracketConnectorInter}.
@@ -44,7 +44,7 @@ public class AbstractVerticalConnectorInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code AbstractVerticalConnectorInter} object.
+     * Creates a new <code>AbstractVerticalConnectorInter</code> object.
      *
      * @param connection the underlying connection
      * @param shape      the assigned shape
@@ -58,7 +58,7 @@ public class AbstractVerticalConnectorInter
     }
 
     /**
-     * Creates a new {@code AbstractVerticalConnectorInter} object.
+     * Creates a new <code>AbstractVerticalConnectorInter</code> object.
      *
      * @param shape  the assigned shape
      * @param grade  quality

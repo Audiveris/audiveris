@@ -29,7 +29,16 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Handles a range of values using a (min, main, max) triplet.
+ * Class <code>Range</code> handles a range of integer keys using a (min, main, max)
+ * triplet for some function.
+ * <p>
+ * A typical example is a vertical projection on a horizontal line to detect peaks:
+ * <ul>
+ * <li>Abscissa values are the keys
+ * <li>For each abscissa value we have a projection height, function of abscissa value
+ * <li>For some peak in the projection, we can define a Range (min, main, max) with the abscissa
+ * values at beginning, maximum projection height and end of the peak.
+ * </ul>
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "range")
@@ -42,20 +51,20 @@ public class Range
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Key at beginning of range. */
-    @XmlAttribute
+    @XmlAttribute(name = "min")
     public final int min;
 
-    /** Key at highest count in range. */
-    @XmlAttribute
+    /** Key at highest function value in range. */
+    @XmlAttribute(name = "main")
     public final int main;
 
     /** Key at end of range. */
-    @XmlAttribute
+    @XmlAttribute(name = "max")
     public final int max;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Range} object.
+     * Creates a new <code>Range</code> object.
      *
      * @param min  x start value
      * @param main x at highest y value

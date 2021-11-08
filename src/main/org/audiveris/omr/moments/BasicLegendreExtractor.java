@@ -27,7 +27,7 @@ import static org.audiveris.omr.moments.LegendreMoments.*;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code BasicLegendreExtractor} implements extraction of Legendre moments.
+ * Class <code>BasicLegendreExtractor</code> implements extraction of Legendre moments.
  *
  * @author Hervé Bitteur
  */

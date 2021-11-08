@@ -45,7 +45,7 @@ import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
 import org.audiveris.omr.sig.ui.InterController;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
@@ -91,7 +91,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code BookActions} gathers all UI actions related to current book.
+ * Class <code>BookActions</code> gathers all UI actions related to current book.
  * <p>
  * Swing EDT processes Runnable instances found in its event queue.
  * Via {@link SwingUtilities} new Runnable instances can further be appended to the event queue.
@@ -393,7 +393,7 @@ public class BookActions
         final SheetStub stub = StubsController.getCurrentStub();
 
         try {
-            if (stub.isDone(Step.BINARY)) {
+            if (stub.isDone(OmrStep.BINARY)) {
                 final SheetAssembly assembly = stub.getAssembly();
                 final SheetTab tab = SheetTab.BINARY_TAB;
 
@@ -424,7 +424,7 @@ public class BookActions
         final SheetStub stub = StubsController.getCurrentStub();
 
         try {
-            if (stub.isDone(Step.GRID)) {
+            if (stub.isDone(OmrStep.GRID)) {
                 final SheetAssembly assembly = stub.getAssembly();
                 final SheetTab tab = SheetTab.DATA_TAB;
 
@@ -476,7 +476,7 @@ public class BookActions
     {
         final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub.isDone(Step.GRID)) {
+        if (stub.isDone(OmrStep.GRID)) {
             final SheetAssembly assembly = stub.getAssembly();
             final SheetTab tab = SheetTab.NO_STAFF_TAB;
 
@@ -508,7 +508,7 @@ public class BookActions
     {
         final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub.isDone(Step.GRID)) {
+        if (stub.isDone(OmrStep.GRID)) {
             final SheetAssembly assembly = stub.getAssembly();
             final SheetTab tab = SheetTab.STAFF_LINE_TAB;
 
@@ -906,7 +906,7 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            if (stub.isDone(Step.BINARY)) {
+            if (stub.isDone(OmrStep.BINARY)) {
                 new ScaleBuilder(stub.getSheet()).displayChart();
             } else {
                 logger.info(resources.getString("noScaleData"));
@@ -986,7 +986,7 @@ public class BookActions
             return;
         }
 
-        if (stub.isDone(Step.STEM_SEEDS)) {
+        if (stub.isDone(OmrStep.STEM_SEEDS)) {
             new StemScaler(stub.getSheet()).displayChart();
         } else {
             logger.info(resources.getString("noStemData"));
@@ -1123,7 +1123,7 @@ public class BookActions
     @Action(enabledProperty = BOOK_IDLE)
     public Task<Void, Void> resetBookToBinary (ActionEvent e)
     {
-        return resetBook(Step.BINARY);
+        return resetBook(OmrStep.BINARY);
     }
 
     //-----------------//
@@ -1150,7 +1150,7 @@ public class BookActions
             }
         }
 
-        return resetBook(Step.LOAD);
+        return resetBook(OmrStep.LOAD);
     }
 
     //------------//
@@ -1726,7 +1726,7 @@ public class BookActions
     //-----------//
     // resetBook //
     //-----------//
-    private Task<Void, Void> resetBook (Step step)
+    private Task<Void, Void> resetBook (OmrStep step)
     {
         final Book book = StubsController.getCurrentBook();
 
@@ -2228,7 +2228,7 @@ public class BookActions
                 LogUtil.start(sheet.getStub());
 
                 if (checkParameters(sheet)) {
-                    sheet.getStub().reachStep(Step.PAGE, false);
+                    sheet.getStub().reachStep(OmrStep.PAGE, false);
                     sheet.export(sheetExportPath);
                 }
             } catch (Throwable ex) {
@@ -2266,10 +2266,10 @@ public class BookActions
 
         final Book book;
 
-        final Step step;
+        final OmrStep step;
 
         public ResetBookTask (Book book,
-                              Step step)
+                              OmrStep step)
         {
             this.book = book;
             this.step = step;

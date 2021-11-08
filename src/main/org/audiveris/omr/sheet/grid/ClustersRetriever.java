@@ -29,7 +29,7 @@ import org.audiveris.omr.math.Histogram;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.sheet.ProcessingSwitches;
-import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
@@ -60,7 +60,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code ClustersRetriever} performs vertical samplings of the horizontal
+ * Class <code>ClustersRetriever</code> performs vertical samplings of the horizontal
  * filaments in order to detect regular patterns of a preferred interline value and
  * aggregate the filaments into clusters of lines.
  * <p>
@@ -235,16 +235,16 @@ public class ClustersRetriever
             final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
             // Processing tablatures?
-            if (switches.getValue(Switch.sixStringTablatures)) {
+            if (switches.getValue(ProcessingSwitch.sixStringTablatures)) {
                 combSizes.add(6);
-            } else if (switches.getValue(Switch.fourStringTablatures)) {
+            } else if (switches.getValue(ProcessingSwitch.fourStringTablatures)) {
                 combSizes.add(4);
             } else {
                 combSizes.add(5);
             }
 
             // Processing percussion one-line staves?
-            if (switches.getValue(Switch.oneLineStaves)) {
+            if (switches.getValue(ProcessingSwitch.oneLineStaves)) {
                 combSizes.add(1);
             }
 
@@ -1362,7 +1362,7 @@ public class ClustersRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to
+     * Class <code>Parameters</code> gathers all constants related to
      * horizontal frames.
      */
     private static class Parameters

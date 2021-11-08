@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 
 /**
- * Class {@code KeyFlatSymbol} displays a Key Signature symbol.
+ * Class <code>KeyFlatSymbol</code> displays a Key Signature symbol.
  *
  * @author Hervé Bitteur
  */

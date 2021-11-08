@@ -75,7 +75,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SampleRepository} handles the store of {@link Sample} instances,
+ * Class <code>SampleRepository</code> handles the store of {@link Sample} instances,
  * across multiple sheets and possibly multiple OMR sessions.
  * <p>
  * The repository is implemented as a collection of {@link SampleSheet} instances, to ease the
@@ -1740,7 +1740,7 @@ public class SampleRepository
     // LoadListener //
     //-------------//
     /**
-     * Interface {@code LoadListener} defines the entries to a UI entity
+     * Interface <code>LoadListener</code> defines the entries to a UI entity
      * which monitors the loading of samples by the sample repository.
      */
     public static interface LoadListener

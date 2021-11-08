@@ -87,7 +87,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Abstract class {@code AbstractBeamInter} is the basis for {@link BeamInter},
+ * Abstract class <code>AbstractBeamInter</code> is the basis for {@link BeamInter},
  * {@link BeamHookInter} and {@link SmallBeamInter} classes.
  * <p>
  * The following image shows two beams - a (full) beam and a beam hook:
@@ -111,12 +111,12 @@ public abstract class AbstractBeamInter
     // Persistent data
     //----------------
     //
-    /** Beam height. */
+    /** Beam thickness, with maximum 1 digit after the dot. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
     protected double height;
 
-    /** Median line. */
+    /** Median line, defined from left to right. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     protected Line2D median;

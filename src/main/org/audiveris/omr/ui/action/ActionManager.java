@@ -53,7 +53,7 @@ import javax.swing.JToolBar;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code ActionManager} handles the instantiation and dressing of actions,
+ * Class <code>ActionManager</code> handles the instantiation and dressing of actions,
  * their organization in the menus and the tool bar, and their enabling.
  *
  * @author Hervé Bitteur

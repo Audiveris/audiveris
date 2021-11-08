@@ -49,7 +49,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BeamStemRelation} implements the geometric link between a beam
+ * Class <code>BeamStemRelation</code> implements the geometric link between a beam
  * (or beam hook) and a stem.
  *
  * @author Hervé Bitteur
@@ -68,13 +68,16 @@ public class BeamStemRelation
                                                              constants.yWeight.getValue()};
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Which portion of beam is used?. */
+    /**
+     * The beam-portion attribute indicates on which portion of the beam (center or side)
+     * the stem is connected.
+     */
     @XmlAttribute(name = "beam-portion")
     private BeamPortion beamPortion;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BeamStemRelation} object.
+     * Creates a new <code>BeamStemRelation</code> object.
      */
     public BeamStemRelation ()
     {

@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code MySymbol}
+ * Class <code>MySymbol</code>
  *
  * @author Hervé Bitteur
  */
@@ -39,7 +39,7 @@ public class MySymbol
     private final int weight;
 
     /**
-     * Creates a new {@code MySymbol} object.
+     * Creates a new <code>MySymbol</code> object.
      */
     public MySymbol ()
     {
@@ -47,7 +47,7 @@ public class MySymbol
     }
 
     /**
-     * Creates a new {@code MySymbol} object.
+     * Creates a new <code>MySymbol</code> object.
      *
      * @param weight DOCUMENT ME!
      */

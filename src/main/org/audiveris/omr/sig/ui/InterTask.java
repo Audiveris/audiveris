@@ -34,7 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
+ * Class <code>InterTask</code> is the elementary task (focused on an Inter) that can be
  * done, undone and redone by the {@link InterController}.
  *
  * @author Hervé Bitteur
@@ -55,7 +55,7 @@ public abstract class InterTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterTask} object.
+     * Creates a new <code>InterTask</code> object.
      *
      * @param sig           the underlying sig
      * @param inter         the inter task is focused upon

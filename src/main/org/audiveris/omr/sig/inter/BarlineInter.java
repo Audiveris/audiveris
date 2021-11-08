@@ -30,7 +30,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.WrappedBoolean;
 
@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BarlineInter} represents an interpretation of barline (thin or thick
+ * Class <code>BarlineInter</code> represents an interpretation of barline (thin or thick
  * vertical segment).
  * <p>
  * A barline that spans several staves is modeled as one BarlineInter per staff, interleaved by
@@ -320,7 +320,7 @@ public class BarlineInter
 
         inters.add(this);
 
-        if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
             return inters;
         }
 

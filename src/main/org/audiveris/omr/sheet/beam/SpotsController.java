@@ -46,7 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Class {@code SpotsController} displays the retrieved spot glyphs for beams.
+ * Class <code>SpotsController</code> displays the retrieved spot glyphs for beams.
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +71,7 @@ public class SpotsController
     private final Lag spotLag;
 
     /** User display. */
-    private MyView view;
+    private SpotsView view;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -113,7 +113,7 @@ public class SpotsController
     {
         final GlyphIndex index = sheet.getGlyphIndex();
         spotLag.setEntityService(new SectionService(spotLag, sheet.getLocationService()));
-        view = new MyView(index);
+        view = new SpotsView(index);
         sheet.getStub().getAssembly().addViewTab(
                 SheetTab.BEAM_SPOT_TAB,
                 new ScrollView(view),
@@ -124,20 +124,20 @@ public class SpotsController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // MyView //
-    //--------//
-    private class MyView
+    //-----------//
+    // SpotsView //
+    //-----------//
+    private class SpotsView
             extends NestView
     {
 
-        MyView (GlyphIndex glyphIndex)
+        SpotsView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(spotLag), sheet);
 
             setLocationService(sheet.getLocationService());
 
-            setName("SpotsController-MyView");
+            setName("SpotsController-SpotsView");
         }
 
         //--------//

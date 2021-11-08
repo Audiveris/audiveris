@@ -36,7 +36,7 @@ import java.util.ListIterator;
 import java.util.Set;
 
 /**
- * Class {@code UITaskList} is a sequence of {@link UITask} instances, meant to
+ * Class <code>UITaskList</code> is a sequence of {@link UITask} instances, meant to
  * be handled as a whole.
  *
  * @author Hervé Bitteur
@@ -69,7 +69,7 @@ public class UITaskList
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterTaskList} object.
+     * Creates a new <code>InterTaskList</code> object.
      *
      * @param tasks sequence of related tasks
      */
@@ -79,7 +79,7 @@ public class UITaskList
     }
 
     /**
-     * Creates a new {@code InterTaskList} object.
+     * Creates a new <code>InterTaskList</code> object.
      *
      * @param tasks sequence of related tasks
      */

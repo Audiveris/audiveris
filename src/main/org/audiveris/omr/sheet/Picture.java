@@ -73,12 +73,12 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Picture} starts from the original BufferedImage to provide all {@link
+ * Class <code>Picture</code> starts from the original BufferedImage to provide all {@link
  * PixelSource} instances derived from it.
  * <p>
- * The {@code Picture} constructor takes a provided original image, whatever its format and color
- * model, and converts it if necessary to come up with a usable gray-level PixelSource: the GRAY
- * source.
+ * The <code>Picture</code> constructor takes a provided original image, whatever its format and
+ * color model, and converts it if necessary to come up with a usable gray-level PixelSource:
+ * the GRAY source.
  * <p>
  * Besides the GRAY source, this class handles a collection of sources, all of the same
  * dimension, with the ability to retrieve them on demand or dispose them, via {@link #getSource}
@@ -90,9 +90,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet pre-multiplied.
- * <h1>Overview of transforms:<br>
- * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
- * </h1>
+ * <p>
+ * <img src="doc-files/ImageTransforms.png" alt="Image Transforms UML">
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -175,7 +174,11 @@ public class Picture
     @XmlAttribute(name = "height")
     private final int height;
 
-    /** Old map of all handled run tables. */
+    /**
+     * <b>Deprecated</b> Old map of all handled run tables.
+     * <p>
+     * Replaced by standard images.
+     */
     @Deprecated
     @XmlElementWrapper(name = "tables")
     private EnumMap<TableKey, RunTableHolder> oldTables = new EnumMap<>(TableKey.class);

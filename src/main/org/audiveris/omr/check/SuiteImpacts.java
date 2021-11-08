@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code SuiteImpacts} is a GradeImpacts implementation based on an underlying
+ * Class <code>1</code> is a GradeImpacts implementation based on an underlying
  * CheckSuite.
  *
  * @author Hervé Bitteur

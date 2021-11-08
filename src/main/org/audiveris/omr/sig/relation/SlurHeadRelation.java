@@ -27,7 +27,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
@@ -43,8 +43,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SlurHeadRelation} represents a link between a slur and one of the two
- * embraced note heads.
+ * Class <code>SlurHeadRelation</code> represents the relation between a slur and
+ * an embraced note head on slur side.
  *
  * @author Hervé Bitteur
  */
@@ -63,7 +63,7 @@ public class SlurHeadRelation
     // Persistent data
     //----------------
     //
-    /** Left or right side of the slur. */
+    /** This is the slur side (left or right) where the head is located. */
     @XmlAttribute(name = "side")
     private HorizontalSide side;
 
@@ -75,7 +75,7 @@ public class SlurHeadRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SlurNoteRelation} object.
+     * Creates a new <code>SlurNoteRelation</code> object.
      *
      * @param side the left or right side of the slur
      */
@@ -112,9 +112,9 @@ public class SlurHeadRelation
 
         if (isManual() || slur.isManual()) {
             final SIGraph sig = slur.getSig();
-            final Step latestStep = sig.getSystem().getSheet().getStub().getLatestStep();
+            final OmrStep latestStep = sig.getSystem().getSheet().getStub().getLatestStep();
 
-            if (latestStep.compareTo(Step.LINKS) >= 0) {
+            if (latestStep.compareTo(OmrStep.LINKS) >= 0) {
                 // Check for a tie
                 List<Inter> systemHeadChords = sig.inters(HeadChordInter.class); // Costly...
                 slur.checkStaffTie(systemHeadChords);

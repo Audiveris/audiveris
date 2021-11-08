@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AlterHeadRelation} represents the relation support between an accidental
+ * Class <code>AlterHeadRelation</code> represents the relation support between an accidental
  * alteration (sharp, flat, natural, double-sharp, double-flat) and a note head.
  *
  * @author Hervé Bitteur

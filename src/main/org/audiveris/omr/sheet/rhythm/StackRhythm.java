@@ -36,7 +36,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
- * Class {@code StackRhythm} computes the rhythm content of a given MeasureStack.
+ * Class <code>StackRhythm</code> computes the rhythm content of a given MeasureStack.
  * <p>
  * This class builds the time slots and voices that result from stack content, and checks for the
  * "time correctness" of the stack.
@@ -55,7 +55,7 @@ public class StackRhythm
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StackRhythm} object.
+     * Creates a new <code>StackRhythm</code> object.
      *
      * @param stack the measure stack to process
      */
@@ -241,7 +241,7 @@ public class StackRhythm
 
                         if (time != null) {
                             Slot slot = timeToSlot.get(time);
-                            voice.putSlotInfo(slot, new SlotVoice(chord, SlotVoice.Status.BEGIN));
+                            voice.putSlotInfo(slot, new SlotVoice(chord, SlotVoice.ChordStatus.BEGIN));
                         } else {
                             measure.setAbnormal(true);
                         }

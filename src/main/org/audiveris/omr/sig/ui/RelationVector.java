@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code RelationVector} represents a dynamic vector from starting inter(s) to
+ * Class <code>RelationVector</code> represents a dynamic vector from starting inter(s) to
  * potential stopping inter(s), in order to finally set a relation between them.
  *
  * @author Hervé Bitteur

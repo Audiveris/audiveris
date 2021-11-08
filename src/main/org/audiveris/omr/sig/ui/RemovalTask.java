@@ -25,7 +25,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
 
 /**
- * Class {@code RemovalTask} removes an inter (with its relations).
+ * Class <code>RemovalTask</code> removes an inter (with its relations).
  *
  * @author Hervé Bitteur
  */
@@ -35,7 +35,7 @@ public class RemovalTask
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code RemovalTask} object.
+     * Creates a new <code>RemovalTask</code> object.
      *
      * @param inter the inter to remove
      */

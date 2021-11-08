@@ -80,29 +80,24 @@ public class CursorController
     public static ActionListener createListener (final Component component,
                                                  final ActionListener mainActionListener)
     {
-        ActionListener actionListener = new ActionListener()
-        {
-            @Override
-            public void actionPerformed (final ActionEvent ae)
+        ActionListener actionListener = (final ActionEvent ae) -> {
+            TimerTask timerTask = new TimerTask()
             {
-                TimerTask timerTask = new TimerTask()
+                @Override
+                public void run ()
                 {
-                    @Override
-                    public void run ()
-                    {
-                        component.setCursor(busyCursor);
-                    }
-                };
-
-                Timer timer = new Timer();
-
-                try {
-                    timer.schedule(timerTask, DELAY);
-                    mainActionListener.actionPerformed(ae);
-                } finally {
-                    timer.cancel();
-                    component.setCursor(defaultCursor);
+                    component.setCursor(busyCursor);
                 }
+            };
+            
+            Timer timer = new Timer();
+            
+            try {
+                timer.schedule(timerTask, DELAY);
+                mainActionListener.actionPerformed(ae);
+            } finally {
+                timer.cancel();
+                component.setCursor(defaultCursor);
             }
         };
 

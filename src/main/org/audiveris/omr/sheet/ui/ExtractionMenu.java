@@ -47,7 +47,7 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code ExtractionMenu} allows to save the current sheet image, or a rectangular
+ * Class <code>ExtractionMenu</code> allows to save the current sheet image, or a rectangular
  * portion of it, to disk, usually for later analysis.
  *
  * @author Hervé Bitteur

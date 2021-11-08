@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code LocalHistogram}
+ * Class <code>LocalHistogram</code>
  *
  * @author ?
  */
@@ -217,10 +217,9 @@ public class LocalHistogram
         int tmin = 255;
         int tmax = 0;
 
-        for (int g = 0; g < pg.length; g++) {
-            y = i + pg[g][0];
-            x = j + pg[g][1];
-
+        for (int[] pg1 : pg) {
+            y = i + pg1[0];
+            x = j + pg1[1];
             try {
                 if ((x >= width) || (y >= height) || (x < 0) || (y < 0)) {
                     if (type == 0) {
@@ -235,21 +234,17 @@ public class LocalHistogram
                 k = x + (width * y);
                 logger.warn("AIOB x: {} y: {} index: {}", x, y, k);
             }
-
             if (type == 0) {
-                bin = (k + pg[g][2]) - 255;
+                bin = (k + pg1[2]) - 255;
             } else {
-                bin = k - pg[g][2] + 255;
+                bin = k - pg1[2] + 255;
             }
-
             if (tmin > bin) {
                 tmin = bin;
             }
-
             if (tmax < bin) {
                 tmax = bin;
             }
-
             histogram[bin]++;
         }
 

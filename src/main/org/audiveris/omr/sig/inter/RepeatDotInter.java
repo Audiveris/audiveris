@@ -44,7 +44,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RepeatDotInter} represents a repeat dot, near a bar line.
+ * Class <code>RepeatDotInter</code> represents a repeat dot, near a bar line.
  *
  * @author Hervé Bitteur
  */

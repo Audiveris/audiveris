@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.2">
+<diagram program="umlet" version="14.3.0">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -64,7 +64,7 @@ slurs
       <x>230</x>
       <y>560</y>
       <w>70</w>
-      <h>200</h>
+      <h>190</h>
     </coordinates>
     <panel_attributes>(ar #4)
 *Staff*
@@ -76,9 +76,8 @@ right
 small?
 short?
 --
-ledgerMap
-bars
-notes</panel_attributes>
+ledgers
+bars</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -222,7 +221,7 @@ tuplets</panel_attributes>
     <coordinates>
       <x>490</x>
       <y>280</y>
-      <w>120</w>
+      <w>130</w>
       <h>120</h>
     </coordinates>
     <panel_attributes>(ar #8)
@@ -232,7 +231,7 @@ id
 termination
 inferredTimeSig
 --
-wholeRestChord</panel_attributes>
+measureRestChord</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -274,13 +273,13 @@ status</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>580</x>
+      <x>590</x>
       <y>270</y>
-      <w>90</w>
+      <w>80</w>
       <h>50</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;70;30</additional_attributes>
+    <additional_attributes>30;30;60;30</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
@@ -352,18 +351,21 @@ number</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>590</x>
-      <y>20</y>
-      <w>260</w>
-      <h>100</h>
+      <x>560</x>
+      <y>0</y>
+      <w>290</w>
+      <h>120</h>
     </coordinates>
-    <panel_attributes>Sheet Marshalling / Unmarshalling
+    <panel_attributes>*Sheet Marshalling / Unmarshalling*
 bg=#ffaaaa
+
 by-nesting:
 by-reference:
 recomputed:
 
-ar #n: afterReload() sequence number</panel_attributes>
+ar #n: afterReload() sequence number
+
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -599,7 +601,7 @@ shape</panel_attributes>
       <x>810</x>
       <y>880</y>
       <w>60</w>
-      <h>50</h>
+      <h>60</h>
     </coordinates>
     <panel_attributes>*Relation*
 bg=#ffaaaa
@@ -615,7 +617,7 @@ grade</panel_attributes>
       <w>80</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
 source</panel_attributes>
     <additional_attributes>10.0;20.0;60.0;20.0</additional_attributes>
   </element>
@@ -623,26 +625,13 @@ source</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>750</x>
-      <y>900</y>
+      <y>910</y>
       <w>80</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
 target</panel_attributes>
     <additional_attributes>10.0;20.0;60.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <type>com.baselet.element.old.element.Relation</type>
-    <coordinates>
-      <x>720</x>
-      <y>910</y>
-      <w>188</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;&lt;-
-m1=members
-ensemble</panel_attributes>
-    <additional_attributes>40;30;130;30;130;60;30;60;30;50</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
@@ -842,7 +831,7 @@ multiStaff?</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>680</x>
-      <y>20</y>
+      <y>10</y>
       <w>170</w>
       <h>50</h>
     </coordinates>
@@ -853,7 +842,7 @@ multiStaff?</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>680</x>
-      <y>40</y>
+      <y>30</y>
       <w>170</w>
       <h>50</h>
     </coordinates>
@@ -864,7 +853,7 @@ multiStaff?</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>680</x>
-      <y>60</y>
+      <y>50</y>
       <w>170</w>
       <h>50</h>
     </coordinates>
@@ -960,12 +949,12 @@ glyph</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>230</x>
-      <y>730</y>
+      <y>720</y>
       <w>50</w>
-      <h>90</h>
+      <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;70</additional_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>

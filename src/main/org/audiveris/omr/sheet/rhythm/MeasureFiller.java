@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code MeasureFiller} works at system level to fill each measure with its
+ * Class <code>MeasureFiller</code> works at system level to fill each measure with its
  * relevant inters.
  *
  * @author Hervé Bitteur
@@ -54,7 +54,7 @@ public class MeasureFiller
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MeasureFiller} object.
+     * Creates a new <code>MeasureFiller</code> object.
      *
      * @param system the containing system
      */

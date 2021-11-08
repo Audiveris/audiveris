@@ -28,7 +28,7 @@ import ch.qos.logback.core.AppenderBase;
 import org.audiveris.omr.step.ui.StepMonitoring;
 
 /**
- * Class {@code LogStepAppender} uses the flow of logging messages (assumed to be
+ * Class <code>LogStepAppender</code> uses the flow of logging messages (assumed to be
  * filtered on INFO level at least) to notify a slight progress.
  * <p>
  * Filtering on level is performed in the logging configuration file (if any).

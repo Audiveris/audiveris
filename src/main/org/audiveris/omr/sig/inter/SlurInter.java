@@ -92,7 +92,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code SlurInter} represents a slur interpretation.
+ * Class <code>SlurInter</code> represents a slur interpretation.
  *
  * @author Hervé Bitteur
  */
@@ -210,7 +210,7 @@ public class SlurInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SlurInter} object.
+     * Creates a new <code>SlurInter</code> object.
      *
      * @param info    the underlying slur information
      * @param impacts the assignment details
@@ -234,7 +234,7 @@ public class SlurInter
     }
 
     /**
-     * Creates a new {@code SlurInter} object (meant for manual assignment).
+     * Creates a new <code>SlurInter</code> object (meant for manual assignment).
      *
      * @param above true for a slur above notes, false for a slur below notes
      * @param grade inter grade
@@ -946,7 +946,7 @@ public class SlurInter
             return false;
         }
 
-        // Step
+        // NoteStep
         if (h1.getStep() != h2.getStep()) {
             return false;
         }

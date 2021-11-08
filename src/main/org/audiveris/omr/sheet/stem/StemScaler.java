@@ -64,7 +64,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code StemScaler} retrieves the typical thickness of stems in a sheet.
+ * Class <code>StemScaler</code> retrieves the typical thickness of stems in a sheet.
  * <p>
  * Computation is based on histogram of lengths of horizontal runs.
  * For precise results, we have to "remove" the detected bar lines (and connections) otherwise their

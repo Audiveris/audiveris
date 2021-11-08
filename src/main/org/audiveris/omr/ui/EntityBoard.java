@@ -56,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code EntityBoard} is a basic board related to an entity type.
+ * Class <code>EntityBoard</code> is a basic board related to an entity type.
  *
  * @param <E> precise entity type
  * @author Hervé Bitteur
@@ -111,7 +111,7 @@ public class EntityBoard<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EntityBoard} object, with all entity fields by default.
+     * Creates a new <code>EntityBoard</code> object, with all entity fields by default.
      *
      * @param desc          board descriptor
      * @param entityService the underlying entity service
@@ -125,7 +125,7 @@ public class EntityBoard<E extends Entity>
     }
 
     /**
-     * Creates a new {@code EntityBoard} object, with selected entity fields.
+     * Creates a new <code>EntityBoard</code> object, with selected entity fields.
      *
      * @param desc          board descriptor
      * @param entityService the underlying entity service

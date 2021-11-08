@@ -27,7 +27,7 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 /**
- * Interface {@code Model} attempts to factor out characteristics that are typical
+ * Interface <code>Model</code> attempts to factor out characteristics that are typical
  * of a slur or line shape (or a side portion for a long slur).
  * <p>
  * The main purpose is to decouple slur retrieval from the actual mathematical item handled (circle,

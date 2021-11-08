@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code EntityListEvent} represents a selected list of entities.
+ * Class <code>EntityListEvent</code> represents a selected list of entities.
  * <p>
  * It is assumed to be a set actually (no duplication of items) but the last item in the list is
  * used for subscribers interested by a single entity (such as a GlyphBoard). Hence it is more
@@ -48,7 +48,7 @@ public class EntityListEvent<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EntityListEvent} object.
+     * Creates a new <code>EntityListEvent</code> object.
      *
      * @param source   the entity that created this event
      * @param hint     hint about event origin (or null)
@@ -70,7 +70,7 @@ public class EntityListEvent<E extends Entity>
     }
 
     /**
-     * Creates a new {@code EntityListEvent} object.
+     * Creates a new <code>EntityListEvent</code> object.
      *
      * @param source   the entity that created this event
      * @param hint     hint about event origin (or null)

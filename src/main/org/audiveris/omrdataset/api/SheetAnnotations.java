@@ -45,7 +45,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code SheetAnnotations} represents the symbols information for a sheet.
+ * Class <code>SheetAnnotations</code> represents the symbols information for a sheet.
  * It's essentially a sequence of: {symbol name + symbol bounding box}
  *
  * @author Hervé Bitteur
@@ -82,7 +82,7 @@ public class SheetAnnotations
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetAnnotations} object.
+     * Creates a new <code>SheetAnnotations</code> object.
      */
     public SheetAnnotations ()
     {

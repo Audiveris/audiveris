@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code InterService} is an EntityService for inters.
+ * Class <code>InterService</code> is an EntityService for inters.
  *
  * @author Hervé Bitteur
  */
@@ -62,7 +62,7 @@ public class InterService
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterService} object.
+     * Creates a new <code>InterService</code> object.
      *
      * @param index           underlying inter index
      * @param locationService related service for location info

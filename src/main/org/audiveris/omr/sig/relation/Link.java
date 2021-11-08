@@ -29,7 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Seen from an Inter instance, class {@code Link} describes a <b>potential</b> relation
+ * Seen from an Inter instance, class <code>Link</code> describes a <b>potential</b> relation
  * with another Inter instance (the partner).
  * <p>
  * This is meant to deal with a <b>potential</b> relation between the inter instance and the
@@ -59,7 +59,7 @@ public class Link
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Link} object.
+     * Creates a new <code>Link</code> object.
      *
      * @param partner  the partnering inter instance
      * @param relation the relation with this partner

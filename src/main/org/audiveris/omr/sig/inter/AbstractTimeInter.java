@@ -58,8 +58,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractTimeInter} represents a time signature, with either one (full)
- * symbol (COMMON, CUT or predefined combo) or a pair of top and bottom numbers.
+ * Class <code>AbstractTimeInter</code> represents a time signature, with:
+ * <ul>
+ * <li>either one (full) symbol (COMMON, CUT or predefined combo)
+ * <li>or a pair of top and bottom numbers
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -114,9 +117,9 @@ public abstract class AbstractTimeInter
     // Persistent data
     //----------------
     //
-    /** TimeRational components. */
+    /** TimeRational value encoded as a "num/den" string. */
     @XmlAttribute(name = "time-rational")
-    @XmlJavaTypeAdapter(TimeRational.Adapter.class)
+    @XmlJavaTypeAdapter(TimeRational.JaxbAdapter.class)
     protected TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -506,7 +509,7 @@ public abstract class AbstractTimeInter
     //-----------------//
     /**
      * Look for a predefined shape, if any, that would correspond to the current
-     * {@code num} and {@code den} values of this time sig.
+     * <code>num</code> and <code>den</code> values of this time sig.
      *
      * @return the shape found or null
      */

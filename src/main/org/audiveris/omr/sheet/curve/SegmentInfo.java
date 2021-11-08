@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code SegmentInfo} gathers physical description of a segment.
+ * Class <code>SegmentInfo</code> gathers physical description of a segment.
  *
  * @author Hervé Bitteur
  */

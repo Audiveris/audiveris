@@ -31,7 +31,7 @@ import java.awt.geom.Line2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BarConnectorInter} represents a vertical connector between two bar
+ * Class <code>BarConnectorInter</code> represents a vertical connector between two bar
  * lines across staves.
  *
  * @author Hervé Bitteur
@@ -43,7 +43,7 @@ public class BarConnectorInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code BarConnectorInter} object.
+     * Creates a new <code>BarConnectorInter</code> object.
      *
      * @param connection the underlying connection
      * @param shape      the assigned shape
@@ -57,7 +57,7 @@ public class BarConnectorInter
     }
 
     /**
-     * Creates a new {@code BarConnectorInter} object.
+     * Creates a new <code>BarConnectorInter</code> object.
      *
      * @param shape  the assigned shape
      * @param grade  quality

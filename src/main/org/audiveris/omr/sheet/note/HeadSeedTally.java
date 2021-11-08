@@ -41,7 +41,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class {@code HeadSeedTally} records the actual abscissa distance between a head and
+ * Class <code>HeadSeedTally</code> records the actual abscissa distance between a head and
  * stem seed, per shape and per head side, for all stem-based heads, usually in a system.
  *
  * @author Hervé Bitteur
@@ -59,7 +59,7 @@ public class HeadSeedTally
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadSeedTally} object.
+     * Creates a new <code>HeadSeedTally</code> object.
      */
     public HeadSeedTally ()
     {

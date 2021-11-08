@@ -90,7 +90,7 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
+ * Class <code>ShapeBoard</code> hosts a palette of shapes for insertion and assignment of
  * inter.
  * <p>
  * Shapes are gathered and presented in separate families that are mutually exclusive.

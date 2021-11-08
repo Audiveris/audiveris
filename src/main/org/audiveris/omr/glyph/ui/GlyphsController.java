@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code GlyphsController} is a common basis for interactive glyph handling,
+ * Class <code>GlyphsController</code> is a common basis for interactive glyph handling,
  * used by any user interface which needs to act on the actual glyph data.
  * <p>
  * Since the bus of user selections is used, the methods of this class are meant to be used from

@@ -29,7 +29,7 @@ import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
-import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.*;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
 import org.audiveris.omr.sig.ui.HorizontalEditor;
@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code KeyInter} represents a key signature on a staff.
+ * Class <code>KeyInter</code> represents a key signature on a staff.
  * <p>
  * <img src="doc-files/KeySignatures.png" alt="Example of key signatures in different clefs">
  *
@@ -77,12 +77,12 @@ public class KeyInter
     public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<>(ClefKind.class);
 
     /** Sharp keys note steps. */
-    private static final AbstractNoteInter.Step[] SHARP_STEPS
-            = new AbstractNoteInter.Step[]{F, C, G, D, A, E, B};
+    private static final AbstractNoteInter.NoteStep[] SHARP_STEPS
+            = new AbstractNoteInter.NoteStep[]{F, C, G, D, A, E, B};
 
     /** Flat keys note steps. */
-    private static final AbstractNoteInter.Step[] FLAT_STEPS
-            = new AbstractNoteInter.Step[]{B, E, A, D, G, C, F};
+    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS
+            = new AbstractNoteInter.NoteStep[]{B, E, A, D, G, C, F};
 
     static {
         SHARP_PITCHES_MAP.put(TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
@@ -229,7 +229,7 @@ public class KeyInter
      * @param step note step
      * @return the key-based alteration (either -1, 0 or +1)
      */
-    public int getAlterFor (AbstractNoteInter.Step step)
+    public int getAlterFor (AbstractNoteInter.NoteStep step)
     {
         return getAlterFor(step, getFifths());
     }
@@ -626,7 +626,7 @@ public class KeyInter
      * @param signature key signature
      * @return the key-based alteration (either -1, 0 or +1)
      */
-    public static int getAlterFor (AbstractNoteInter.Step step,
+    public static int getAlterFor (AbstractNoteInter.NoteStep step,
                                    int signature)
     {
         if (signature > 0) {

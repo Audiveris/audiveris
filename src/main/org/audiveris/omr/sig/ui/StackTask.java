@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 
 /**
- * Class {@code StackTask} implements the on demand re-processing of a stack.
+ * Class <code>StackTask</code> implements the on demand re-processing of a stack.
  *
  * @author Hervé Bitteur
  */
@@ -38,7 +38,7 @@ public class StackTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StackTask} object.
+     * Creates a new <code>StackTask</code> object.
      *
      * @param stack the impacted stack
      */

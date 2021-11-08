@@ -22,7 +22,7 @@
 package org.audiveris.omr.sheet;
 
 /**
- * Class {@code Profiles} gathers all defined profile levels.
+ * Class <code>Profiles</code> gathers all defined profile levels.
  *
  * @author Hervé Bitteur
  */

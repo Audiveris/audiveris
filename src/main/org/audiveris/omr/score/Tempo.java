@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code Tempo} handles the default tempo value.
+ * Class <code>Tempo</code> handles the default tempo value.
  *
  * @author Hervé Bitteur
  */

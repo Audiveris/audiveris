@@ -31,7 +31,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
@@ -61,7 +61,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code AdvancedTopics} gathers all topics that are relevant for advanced users
+ * Class <code>AdvancedTopics</code> gathers all topics that are relevant for advanced users
  * or developers only.
  *
  * @author Hervé Bitteur
@@ -257,7 +257,7 @@ public abstract class AdvancedTopics
     {
 
         // ComboBox for desired step
-        private final JComboBox<Step> stepBox;
+        private final JComboBox<OmrStep> stepBox;
 
         EarlyPane ()
         {
@@ -265,7 +265,7 @@ public abstract class AdvancedTopics
             final String tip = resource.getString(className + ".stepBox.toolTipText");
 
             // Define stepBox
-            stepBox = new JComboBox<>(Step.values());
+            stepBox = new JComboBox<>(OmrStep.values());
             stepBox.setToolTipText(tip);
             stepBox.addActionListener(this);
 
@@ -282,7 +282,7 @@ public abstract class AdvancedTopics
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            Step step = stepBox.getItemAt(stepBox.getSelectedIndex());
+            OmrStep step = stepBox.getItemAt(stepBox.getSelectedIndex());
             StubsController.setEarlyStep(step);
         }
     }

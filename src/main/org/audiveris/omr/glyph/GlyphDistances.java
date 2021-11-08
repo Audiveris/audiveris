@@ -30,7 +30,7 @@ import java.awt.Rectangle;
 import java.util.Iterator;
 
 /**
- * Class {@code GlyphDistances} handles distances around a glyph.
+ * Class <code>GlyphDistances</code> handles distances around a glyph.
  * It uses a chamfer distance table computed around the given glyph.
  *
  * @author Hervé Bitteur

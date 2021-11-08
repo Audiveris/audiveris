@@ -39,7 +39,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BeamSymbol} implements beam symbols.
+ * Class <code>BeamSymbol</code> implements beam symbols.
  * <p>
  * Note: on score, beams are painted using areas rather than symbols.
  * However, beam symbols (decorated and non-decorated) are still needed for user drag and drop.

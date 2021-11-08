@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Class {@code BarAlignment} represents an alignment found between a bar peak in one
+ * Class <code>BarAlignment</code> represents an alignment found between a bar peak in one
  * staff and another bar peak in the staff below.
  *
  * @author Hervé Bitteur

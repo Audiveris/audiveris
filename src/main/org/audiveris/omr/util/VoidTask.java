@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code VoidTask} is an Application Framework Task for Audiveris application,
+ * Class <code>VoidTask</code> is an Application Framework Task for Audiveris application,
  * with no generic parameters to handle.
  *
  * @author Hervé Bitteur

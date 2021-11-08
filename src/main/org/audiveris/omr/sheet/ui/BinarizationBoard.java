@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 
 /**
- * Class {@code BinarizationBoard} is a board meant to display the
+ * Class <code>BinarizationBoard</code> is a board meant to display the
  * context of binarization for a given pixel location.
  *
  * @author Hervé Bitteur

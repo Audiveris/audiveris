@@ -41,7 +41,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code MemoryMeter} encapsulates the display of a linear memory meter in MB
+ * Class <code>MemoryMeter</code> encapsulates the display of a linear memory meter in MB
  * (both used and total), together with a garbage-collection button.
  * <P>
  * There is a alarm threshold that triggers a color switch to red whenever the used memory exceeds

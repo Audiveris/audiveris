@@ -49,7 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code SampleBoard} defines a UI board for {@link Sample} entities.
+ * Class <code>SampleBoard</code> defines a UI board for {@link Sample} entities.
  *
  * @author Hervé Bitteur
  */
@@ -105,7 +105,7 @@ public class SampleBoard
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleBoard} object.
+     * Creates a new <code>SampleBoard</code> object.
      *
      * @param controller the sample controller
      */

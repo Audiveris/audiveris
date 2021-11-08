@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.text.FontInfo;
@@ -49,19 +50,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code SentenceInter} represents a full sentence of words.
+ * Class <code>SentenceInter</code> represents a full sentence of words.
  * <p>
- * Contained words are linked to this instance by {@link Containment} relations.
+ * Contained words are members of the sentence ensemble, and thus linked to this instance by
+ * {@link Containment} relations.
  * <p>
- * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
- * Creator et al, Rights, ChordName, EndingNumber, EndingText, UnknownRole).
+ * This SentenceInter class is used for any text role other than Lyrics (Title, Direction, Number,
+ * PartName, Creator et al, Rights, ChordName, EndingNumber, EndingText, UnknownRole).
  * <p>
  * For Lyrics role, the specific subclass {@link LyricLineInter} is used.
  * <p>
  * For ChordName role, SentenceInter class is used, but the contained (single) word is an
  * instance of ChordNameInter.
  * <p>
- * <img alt="Sentence diagram" src="../../text/doc-files/Sentence_Hierarchy.png">
+ * <img alt="Sentence diagram" src="doc-files/Sentence_Hierarchy.png">
  * <p>
  * NOTA: We could have decided to use separate classes for each different sentence role.
  * This is not the current implementation, hence caution is needed when changing sentence role.
@@ -93,7 +95,7 @@ public class SentenceInter
     //
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
-    @XmlJavaTypeAdapter(FontInfo.Adapter.class)
+    @XmlJavaTypeAdapter(FontInfo.JaxbAdapter.class)
     protected FontInfo meanFont;
 
     /** Role of this sentence. */
@@ -102,7 +104,7 @@ public class SentenceInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SentenceInter} object.
+     * Creates a new <code>SentenceInter</code> object.
      *
      * @param bounds   the bounding box
      * @param grade    the interpretation quality
@@ -121,7 +123,7 @@ public class SentenceInter
     }
 
     /**
-     * Creates a new {@code SentenceInter} object, meant for user handling of glyph.
+     * Creates a new <code>SentenceInter</code> object, meant for user handling of glyph.
      *
      * @param role  the sentence role, if known
      * @param grade the interpretation quality
@@ -432,7 +434,7 @@ public class SentenceInter
     // create //
     //--------//
     /**
-     * Create a {@code SentenceInter} from a TextLine.
+     * Create a <code>SentenceInter</code> from a TextLine.
      *
      * @param line the OCR'ed text line
      * @return the sentence inter

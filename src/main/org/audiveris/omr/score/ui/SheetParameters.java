@@ -42,7 +42,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 /**
- * Class {@code SheetParameters} is a dialog that allows the user to manage sheet
+ * Class <code>SheetParameters</code> is a dialog that allows the user to manage sheet
  * parameters (such as scaling data).
  *
  * @author Hervé Bitteur
@@ -72,7 +72,7 @@ public class SheetParameters
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetParameters} object.
+     * Creates a new <code>SheetParameters</code> object.
      *
      * @param sheet the underlying sheet
      */
@@ -248,7 +248,7 @@ public class SheetParameters
     // ScalingParam //
     //--------------//
     /**
-     * An integer {@code Param}, backed by Scale structure.
+     * An integer <code>Param</code>, backed by Scale structure.
      */
     private class ScalingParam
             extends Param<Integer>

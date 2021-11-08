@@ -57,7 +57,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * Class {@code Options} defines the user interface to edit application constants.
+ * Class <code>Options</code> defines the user interface to edit application constants.
  *
  * @author Hervé Bitteur
  */

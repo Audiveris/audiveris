@@ -48,7 +48,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code ChordsStep} gathers notes into chords and handle their relationships.
+ * Class <code>ChordsStep</code> gathers notes into chords and handle their relationships.
  *
  * @author Hervé Bitteur
  */

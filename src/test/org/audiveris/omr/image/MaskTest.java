@@ -51,7 +51,7 @@ public class MaskTest
     {
         System.out.println("apply");
 
-        Mask.Adapter adapter = new Mask.Adapter()
+        Mask.MaskAdapter adapter = new Mask.MaskAdapter()
         {
             @Override
             public void process (int x,

@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Class {@code OldStaffBarline} is a temporary fix to keep compatibility with old
+ * Class <code>OldStaffBarline</code> is a temporary fix to keep compatibility with old
  * .omr files.
  * <p>
  * Replaced by {@link StaffBarlineInter}.

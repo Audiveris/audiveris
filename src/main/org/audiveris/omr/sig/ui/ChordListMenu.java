@@ -77,7 +77,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
 /**
- * Class {@code ChordListMenu} displays a collection of chords.
+ * Class <code>ChordListMenu</code> displays a collection of chords.
  *
  * @author Hervé Bitteur
  */
@@ -99,7 +99,7 @@ public class ChordListMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChordListMenu} object.
+     * Creates a new <code>ChordListMenu</code> object.
      *
      * @param sheet the related sheet
      */

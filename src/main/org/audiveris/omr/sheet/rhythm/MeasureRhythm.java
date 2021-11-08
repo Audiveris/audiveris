@@ -24,10 +24,9 @@ package org.audiveris.omr.sheet.rhythm;
 import org.audiveris.omr.math.Rational;
 import static org.audiveris.omr.math.Rational.THREE_OVER_TWO;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.rhythm.ChordsMapper.ChordPair;
 import org.audiveris.omr.sheet.rhythm.ChordsMapper.Mapping;
 import org.audiveris.omr.sheet.rhythm.Slot.CompoundSlot;
 import org.audiveris.omr.sheet.rhythm.Slot.MeasureSlot;
@@ -62,7 +61,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code MeasureRhythm} handles chords voices and time slots for a measure.
+ * Class <code>MeasureRhythm</code> handles chords voices and time slots for a measure.
  * <p>
  * Voice and time information can be "propagated" from one chord to other chord(s) in the following
  * slots via two grouping mechanisms: tie and beam, plus the "Next in Voice" manual relation.
@@ -115,7 +114,7 @@ public class MeasureRhythm
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code MeasureRhythm} object.
+     * Creates a new <code>MeasureRhythm</code> object.
      *
      * @param measure the measure to process
      */
@@ -129,7 +128,7 @@ public class MeasureRhythm
         voiceDistance = part.isMerged() ? new VoiceDistance.Merged(scale)
                 : new VoiceDistance.Separated(scale);
         implicitTuplets = sheet.getStub().getProcessingSwitches().getValue(
-                ProcessingSwitches.Switch.implicitTuplets);
+                ProcessingSwitch.implicitTuplets);
         tupletGenerator = implicitTuplets ? new TupletGenerator(measure) : null;
     }
 
@@ -830,8 +829,8 @@ public class MeasureRhythm
         private void applyMapping ()
         {
             for (ChordPair pair : mapping.pairs) {
-                AbstractChordInter ch = pair.newChord;
-                AbstractChordInter act = pair.oldChord;
+                AbstractChordInter ch = pair.one;
+                AbstractChordInter act = pair.two;
                 ch.setVoice(act.getVoice());
 
                 if (act.getTimeOffset() != null) {
@@ -1229,8 +1228,8 @@ public class MeasureRhythm
                         final List<AbstractChordInter> setChords = getSetChords(narrowChords);
 
                         for (ChordPair pair : mapping.pairsOf(narrowChords)) {
-                            final AbstractChordInter ch = pair.newChord;
-                            final AbstractChordInter act = pair.oldChord;
+                            final AbstractChordInter ch = pair.one;
+                            final AbstractChordInter act = pair.two;
                             final Rational end = act.getEndTime();
 
                             if (end == null) {
@@ -1373,9 +1372,9 @@ public class MeasureRhythm
                 } else {
                     // Check for extinct voice chord with an explicit relation to a rookie
                     for (ChordPair p : whiteList) {
-                        if ((p.oldChord == lastChord) && (rookies.contains(p.newChord))) {
+                        if ((p.two == lastChord) && (rookies.contains(p.one))) {
                             actives.add(lastChord);
-                            extinctExplicits.add(p.oldChord);
+                            extinctExplicits.add(p.two);
 
                             break;
                         }

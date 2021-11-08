@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 /**
- * Class {@code BasicARTMoments} implements a basic region-based shape descriptor.
+ * Class <code>BasicARTMoments</code> implements a basic region-based shape descriptor.
  * <p>
  * See MPEG-7 Experimentation Model for the original C++ code
  *

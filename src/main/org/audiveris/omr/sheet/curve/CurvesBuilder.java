@@ -63,7 +63,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code CurvesBuilder} is an abstract basis to build curves on top of the
+ * Class <code>CurvesBuilder</code> is an abstract basis to build curves on top of the
  * underlying skeleton for slurs (see {@link SlursBuilder}), as well as wedges and
  * endings (see {@link SegmentsBuilder}).
  *

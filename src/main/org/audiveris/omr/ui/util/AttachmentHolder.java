@@ -26,7 +26,7 @@ import java.awt.Shape;
 import java.util.Map;
 
 /**
- * Interface {@code AttachmentHolder} defines the handling of visual attachments than
+ * Interface <code>AttachmentHolder</code> defines the handling of visual attachments than
  * can be displayed on user views.
  *
  * @author Hervé Bitteur

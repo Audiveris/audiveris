@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Abstract class {@code AbstractGlyphMenu} is the base for glyph-based menus.
+ * Abstract class <code>AbstractGlyphMenu</code> is the base for glyph-based menus.
  *
  * @author Hervé Bitteur
  */

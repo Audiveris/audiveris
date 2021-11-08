@@ -24,7 +24,7 @@ package org.audiveris.omrdataset.api;
 import java.util.EnumSet;
 
 /**
- * Class {@code OmrShape} is the OMR-Dataset definition of symbol shapes.
+ * Class <code>OmrShape</code> is the OMR-Dataset definition of symbol shapes.
  * <p>
  * This is a small subset of the list of symbol names described by SMuFL specification available at
  * <a href="http://www.smufl.org/">http://www.smufl.org/</a>.
@@ -41,8 +41,8 @@ import java.util.EnumSet;
  * <li><b>none</b>.
  * This is a special name to indicate the absence of any valid symbol.
  * <li><b>arpeggiato</b>.
- * We could find only arpeggiato's ending with an arrow head, either {@code arpeggiatoUp} or
- * {@code arpeggiatoDown}.
+ * We could find only arpeggiato's ending with an arrow head, either <code>arpeggiatoUp</code> or
+ * <code>arpeggiatoDown</code>.
  * <li><b>keyFlat</b>, <b>keyNatural</b>, <b>keySharp</b>.
  * They represent flat, natural and sharp signs within a key signature.
  * We hope that full-context training will allow to recognize them as such.

@@ -67,8 +67,8 @@ public interface TreeTableModel
     public String getColumnName (int column);
 
     /**
-     * Returns the value to be displayed for node {@code node}, at column
-     * number {@code column}.
+     * Returns the value to be displayed for node <code>node</code>, at column
+     * number <code>column</code>.
      *
      * @param node   provided node
      * @param column desired column number
@@ -78,8 +78,8 @@ public interface TreeTableModel
                               int column);
 
     /**
-     * Indicates whether the cell for node {@code node}, at column
-     * number {@code column} is editable.
+     * Indicates whether the cell for node <code>node</code>, at column
+     * number <code>column</code> is editable.
      *
      * @param node   provided node
      * @param column provided column number
@@ -89,8 +89,8 @@ public interface TreeTableModel
                                    int column);
 
     /**
-     * Sets the value for node {@code node}, at column number
-     * {@code column}.
+     * Sets the value for node <code>node</code>, at column number
+     * <code>column</code>.
      *
      * @param aValue new value
      * @param column specified column number

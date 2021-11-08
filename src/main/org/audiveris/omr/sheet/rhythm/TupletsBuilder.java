@@ -51,7 +51,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code TupletsBuilder} tries to connect every tuplet symbol in a measure stack
+ * Class <code>TupletsBuilder</code> tries to connect every tuplet symbol in a measure stack
  * to its embraced chords.
  *
  * @author Hervé Bitteur
@@ -68,7 +68,7 @@ public class TupletsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TupletsBuilder} object.
+     * Creates a new <code>TupletsBuilder</code> object.
      *
      * @param stack the dedicated stack
      */

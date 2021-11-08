@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code OttavaClefSymbol} displays a clef (bass or treble) with the addition of
+ * Class <code>OttavaClefSymbol</code> displays a clef (bass or treble) with the addition of
  * an ottava (alta or bassa).
  *
  * @author Hervé Bitteur

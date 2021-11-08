@@ -24,7 +24,7 @@ package org.audiveris.omr;
 import org.audiveris.omr.ui.OmrGui;
 
 /**
- * Class {@code OMR} gathers definitions and dependencies for an OMR application.
+ * Class <code>OMR</code> gathers definitions and dependencies for an OMR application.
  * <p>
  * <img alt="OMR diagram" src="doc-files/Omr.png">
  *

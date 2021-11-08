@@ -29,7 +29,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code MedianGrayFilterTest}
+ * Class <code>MedianGrayFilterTest</code>
  *
  * @author Hervé Bitteur
  */

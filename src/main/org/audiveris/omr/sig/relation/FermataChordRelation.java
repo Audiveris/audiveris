@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FermataChordRelation} represents the relation between a fermata and
+ * Class <code>FermataChordRelation</code> represents the relation between a fermata and
  * a chord.
  *
  * @author Hervé Bitteur

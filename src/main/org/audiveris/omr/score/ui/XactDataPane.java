@@ -72,7 +72,7 @@ public abstract class XactDataPane<E>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code XactDataPane} object.
+     * Creates a new <code>XactDataPane</code> object.
      *
      * @param title  pane title
      * @param parent parent pane if any

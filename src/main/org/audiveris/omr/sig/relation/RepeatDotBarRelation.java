@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RepeatDotBarRelation} represents the relation between a repeat dot and
+ * Class <code>RepeatDotBarRelation</code> represents the relation between a repeat dot and
  * the related bar line.
  *
  * @author Hervé Bitteur

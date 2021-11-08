@@ -25,7 +25,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
 /**
- * Class {@code SeparablePopupMenu} is a popup menu which is able to collapse unneeded
+ * Class <code>SeparablePopupMenu</code> is a popup menu which is able to collapse unneeded
  * separators.
  * <p>
  * This is derived from {@link SeparableMenu}.

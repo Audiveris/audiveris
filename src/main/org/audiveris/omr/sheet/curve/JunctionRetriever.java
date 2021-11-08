@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code JunctionRetriever} scans all image pixels to retrieve junction pixels
+ * Class <code>JunctionRetriever</code> scans all image pixels to retrieve junction pixels
  * and flag them as such with a specific color.
  * <p>
  * A point is a junction point if it has more than 2 immediate neighbors in the 8 peripheral cells

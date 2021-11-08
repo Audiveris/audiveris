@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ChordsLinker} works at system level to handle relations between chords
+ * Class <code>ChordsLinker</code> works at system level to handle relations between chords
  * and other entities.
  * <p>
  * These relationships can be addressed only when ALL system chord candidates have been retrieved.
@@ -60,7 +60,7 @@ public class ChordsLinker
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ChordsLinker} object.
+     * Creates a new <code>ChordsLinker</code> object.
      *
      * @param system the dedicated system
      */

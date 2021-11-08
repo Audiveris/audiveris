@@ -39,7 +39,7 @@ import java.awt.geom.Line2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FlagStemRelation} represents the relation support between a flag and a
+ * Class <code>FlagStemRelation</code> represents the relation support between a flag and a
  * stem.
  *
  * @author Hervé Bitteur

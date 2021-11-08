@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code MyGlyph}
+ * Class <code>MyGlyph</code>
  *
  * @author Hervé Bitteur
  */
@@ -39,7 +39,7 @@ public class MyGlyph
     private final String name;
 
     /**
-     * Creates a new {@code MyGlyph} object.
+     * Creates a new <code>MyGlyph</code> object.
      */
     public MyGlyph ()
     {
@@ -47,7 +47,7 @@ public class MyGlyph
     }
 
     /**
-     * Creates a new {@code MyGlyph} object.
+     * Creates a new <code>MyGlyph</code> object.
      *
      * @param name DOCUMENT ME!
      */

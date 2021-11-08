@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code HeadStemsCleaner} checks and cleans up an ensemble of stems around a head.
+ * Class <code>HeadStemsCleaner</code> checks and cleans up an ensemble of stems around a head.
  *
  * @author Hervé Bitteur
  */
@@ -59,7 +59,7 @@ public class HeadStemsCleaner
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a {@code HeadStemsCleaner} object.
+     * Creates a <code>HeadStemsCleaner</code> object.
      *
      * @param head the underlying head
      */
@@ -217,7 +217,7 @@ public class HeadStemsCleaner
                     logger.info("VIP invasion between {} & {}", head, worstStem);
                 }
 
-                sig.insertExclusion(head, worstStem, Exclusion.Cause.OVERLAP);
+                sig.insertExclusion(head, worstStem, Exclusion.ExclusionCause.OVERLAP);
             }
         }
 

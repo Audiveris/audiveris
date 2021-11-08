@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 /**
- * Class {@code AbstractInterVisitor} is a void implementation for {@link InterVisitor}
+ * Class <code>AbstractInterVisitor</code> is a void implementation for {@link InterVisitor}
  * meant to ease the coding of concrete sub-classes.
  * <p>
  * For easier browsing, keep visit() methods sorted by alphabetical order of Inter class.

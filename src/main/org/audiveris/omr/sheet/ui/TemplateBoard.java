@@ -62,7 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code TemplateBoard} allows to select a template (shape, anchor) and present
+ * Class <code>TemplateBoard</code> allows to select a template (shape, anchor) and present
  * the evaluation result at current location.
  *
  * @author Hervé Bitteur
@@ -109,7 +109,7 @@ public class TemplateBoard
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TemplateBoard} object.
+     * Creates a new <code>TemplateBoard</code> object.
      *
      * @param sheet           related sheet
      * @param table           the table of distances

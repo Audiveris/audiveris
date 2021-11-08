@@ -64,7 +64,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code EndingsBuilder} retrieves the endings out of segments found in sheet
+ * Class <code>EndingsBuilder</code> retrieves the endings out of segments found in sheet
  * skeleton.
  *
  * @author Hervé Bitteur

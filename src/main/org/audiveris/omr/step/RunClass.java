@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Book;
 import java.util.SortedSet;
 
 /**
- * Class {@code RunClass} is the abstract basis for specific processing.
+ * Class <code>RunClass</code> is the abstract basis for specific processing.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,7 @@ public abstract class RunClass
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunClass} object.
+     * Creates a new <code>RunClass</code> object.
      *
      * @param book     the book to process
      * @param sheetIds specific sheet IDs if any

@@ -47,7 +47,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FermataInter} represents a full fermata interpretation, either upright
+ * Class <code>FermataInter</code> represents a full fermata interpretation, either upright
  * or inverted, combining an arc and a dot.
  * <p>
  * <img src=
@@ -80,7 +80,7 @@ public class FermataInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FermataInter} object.
+     * Creates a new <code>FermataInter</code> object.
      *
      * @param shape the fermata shape (FERMATA or FERMATA_BELOW)
      * @param grade the interpretation quality

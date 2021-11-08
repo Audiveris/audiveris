@@ -50,7 +50,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code HeadChordInter} is a AbstractChordInter composed of heads and possibly
+ * Class <code>HeadChordInter</code> is a AbstractChordInter composed of heads and possibly
  * a stem.
  * <p>
  * Heads are linked via {@link Containment} relation and stem via {@link ChordStemRelation}.
@@ -91,7 +91,7 @@ public class HeadChordInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadChordInter} object.
+     * Creates a new <code>HeadChordInter</code> object.
      *
      * @param grade the intrinsic grade
      */

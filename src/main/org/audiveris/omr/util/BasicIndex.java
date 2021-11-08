@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code BasicIndex}
+ * Class <code>BasicIndex</code>
  *
  * @param <E> precise type for indexed entities
  *
@@ -73,7 +73,7 @@ public class BasicIndex<E extends Entity>
     //
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
-    @XmlJavaTypeAdapter(Adapter.class)
+    @XmlJavaTypeAdapter(MapAdapter.class)
     protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<>();
 
     // Transient data
@@ -90,7 +90,7 @@ public class BasicIndex<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BasicIndex} object.
+     * Creates a new <code>BasicIndex</code> object.
      *
      * @param lastId provided ID generator, perhaps null
      */
@@ -101,7 +101,7 @@ public class BasicIndex<E extends Entity>
     }
 
     /**
-     * Creates a new {@code BasicIndex} object.
+     * Creates a new <code>BasicIndex</code> object.
      */
     protected BasicIndex ()
     {
@@ -462,13 +462,13 @@ public class BasicIndex<E extends Entity>
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //------------------//
-    // InterfaceAdapter //
-    //------------------//
+    //--------------//
+    // IndexAdapter //
+    //--------------//
     /**
      * @param <E> precise entity type
      */
-    public static class InterfaceAdapter<E extends AbstractEntity>
+    public static class IndexAdapter<E extends AbstractEntity>
             extends XmlAdapter<BasicIndex<E>, EntityIndex<E>>
     {
 
@@ -487,16 +487,16 @@ public class BasicIndex<E extends Entity>
         }
     }
 
-    //---------//
-    // Adapter //
-    //---------//
+    //------------//
+    // MapAdapter //
+    //------------//
     /**
      * This adapter converts an un-mappable ConcurrentHashMap<String, E> to/from
      * a JAXB-mappable IndexValue<E> (a flat list).
      *
      * @param <E> the specific entity type
      */
-    private static class Adapter<E extends AbstractEntity>
+    private static class MapAdapter<E extends AbstractEntity>
             extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<Integer, E>>
     {
 
@@ -529,7 +529,7 @@ public class BasicIndex<E extends Entity>
     // IndexValue //
     //------------//
     /**
-     * Class {@code IndexValue} is just a flat list of entities, with each item name
+     * Class <code>IndexValue</code> is just a flat list of entities, with each item name
      * based on actual item type.
      *
      * @param <E> the specific entity type

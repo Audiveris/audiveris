@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 
 /**
- * Class {@code SectionBoard} defines a board dedicated to the display of {@link
+ * Class <code>SectionBoard</code> defines a board dedicated to the display of {@link
  * Section} information, it can also be used as an input means by directly entering the
  * section id in the proper Id spinner.
  *

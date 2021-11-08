@@ -46,7 +46,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class {@code ConstantManager} manages the persistency of the whole population of
+ * Class <code>ConstantManager</code> manages the persistency of the whole population of
  * Constants, including their mapping to properties, their storing on disk and their
  * reloading from disk.
  * <p>
@@ -69,10 +69,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * This declaration must be read as follows:
  * <ul>
- * <li>{@code minResolution} is the Java object used in the application.
+ * <li><code>minResolution</code> is the Java object used in the application.
  * It is defined as a Constant.Integer, a subtype of Constant meant to host Integer values</li>
- * <li>{@code "Pixels"} specifies the unit used. Here we are counting in pixels.</li>
- * <li>{@code 11} is the constant value. This is the value used by the application, provided it is
+ * <li><code>"Pixels"</code> specifies the unit used. Here we are counting in pixels.</li>
+ * <li><code>11</code> is the constant value. This is the value used by the application, provided it is
  * not overridden in the USER properties file or later via a dedicated GUI tool.</li>
  * <li><code>"Minimum resolution, expressed as number of pixels per interline" </code> is the
  * constant description, which will be used as a tool tip in the GUI interface in charge of editing
@@ -80,7 +80,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </ul>
  * </li>
  * <li>Then, <b>USER</b> values, contained in a property file named <em><b>"run.properties"</b></em>
- * can assign overriding values to some constants. For example, the {@code minInterline} constant
+ * can assign overriding values to some constants. For example, the <code>minInterline</code> constant
  * above could be altered by the following line in this user file:
  *
  * <pre>
@@ -89,7 +89,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * This file is modified every time the user updates the value of a constant by means of the
  * provided Constant user interface at run-time.
- * The file is not mandatory, and is located in the user application data {@code config} folder.
+ * The file is not mandatory, and is located in the user application data <code>config</code> folder.
  * Its values override the SOURCE corresponding constants.
  * Typically, these USER values represent some modification made by the end user at run-time and
  * thus saved from one run to the other.
@@ -101,7 +101,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Persistency here depends on the way Audiveris is running:
  * <ul>
  * <li>When running in <i>batch</i> mode, these CLI-defined constant values <b>are not</b> persisted
- * in the USER file, unless the constant {@code omr.Main.persistBatchCliConstants} is set to
+ * in the USER file, unless the constant <code>omr.Main.persistBatchCliConstants</code> is set to
  * true.</li>
  * <li>When running in <i>interactive</i> mode, these CLI-defined constant values <b>are</b> always
  * persisted in the USER file.</li>
@@ -351,15 +351,8 @@ public class ConstantManager
         private void loadFromFile ()
         {
             try {
-                InputStream in = null;
-
-                try {
-                    in = new FileInputStream(path.toFile());
+                try (InputStream in = new FileInputStream(path.toFile())) {
                     properties.load(in);
-                } finally {
-                    if (in != null) {
-                        in.close();
-                    }
                 }
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
@@ -429,11 +422,8 @@ public class ConstantManager
                 // First make sure the directory exists (Brenton patch)
                 Files.createDirectories(path.getParent());
 
-                // Then write down the properties
-                FileOutputStream out = null;
-
-                try {
-                    out = new FileOutputStream(path.toFile());
+                try ( // Then write down the properties
+                        FileOutputStream out = new FileOutputStream(path.toFile())) {
                     properties.store(out, " Audiveris user properties file. Do not edit");
                 } catch (FileNotFoundException ex) {
                     logger.warn(
@@ -441,10 +431,6 @@ public class ConstantManager
                             path.toAbsolutePath());
                 } catch (IOException ex) {
                     logger.warn("Error while storing the property file {}", path.toAbsolutePath());
-                } finally {
-                    if (out != null) {
-                        out.close();
-                    }
                 }
             } catch (IOException ex) {
                 logger.warn("Could not create folder " + path.getParent(), ex);

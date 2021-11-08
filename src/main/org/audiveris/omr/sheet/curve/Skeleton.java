@@ -60,7 +60,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code Skeleton} handles the skeleton structure used for slurs and segments
+ * Class <code>Skeleton</code> handles the skeleton structure used for slurs and segments
  * retrieval, including the navigation along the skeleton.
  * <p>
  * We use special color values to record information directly within the skeleton buffer.
@@ -517,7 +517,7 @@ public class Skeleton
     // CurvesCleaner //
     //---------------//
     /**
-     * Class {@code CurvesCleaner} erases shapes and glyphs to prepare curves retrieval.
+     * Class <code>CurvesCleaner</code> erases shapes and glyphs to prepare curves retrieval.
      * <p>
      * The specificity of this cleaner is to keep track of non-crossable inters that have been
      * erased.

@@ -72,7 +72,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code InterBoard} defines a UI board for {@link Inter} information.
+ * Class <code>InterBoard</code> defines a UI board for {@link Inter} information.
  *
  * @author Hervé Bitteur
  */
@@ -123,7 +123,7 @@ public class InterBoard
     private final DeassignAction deassignAction = new DeassignAction();
 
     /** To select ensemble. */
-    private final ToEnsembleAction toEnsAction = new ToEnsembleAction();
+    private final BoardToEnsembleAction toEnsAction = new BoardToEnsembleAction();
 
     /** To set into Edit mode. */
     private final LCheckBox edit = new LCheckBox(resources.getString("edit.text"),
@@ -576,14 +576,14 @@ public class InterBoard
         }
     }
 
-    //------------------//
-    // ToEnsembleAction //
-    //------------------//
-    private class ToEnsembleAction
+    //-----------------------//
+    // BoardToEnsembleAction //
+    //-----------------------//
+    private class BoardToEnsembleAction
             extends AbstractAction
     {
 
-        public ToEnsembleAction ()
+        public BoardToEnsembleAction ()
         {
             super(resources.getString("ToEnsembleAction.text"));
             putValue(Action.SHORT_DESCRIPTION,

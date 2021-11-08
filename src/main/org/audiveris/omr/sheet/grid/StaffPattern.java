@@ -26,7 +26,7 @@ import ij.process.ByteProcessor;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code StaffPattern} is used to retrieve the vertical position that best fits
+ * Class <code>StaffPattern</code> is used to retrieve the vertical position that best fits
  * the lines of a staff.
  *
  * @author Hervé Bitteur
@@ -49,7 +49,7 @@ public class StaffPattern
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffPattern} object.
+     * Creates a new <code>StaffPattern</code> object.
      *
      * @param count     number of lines
      * @param width     width of probe

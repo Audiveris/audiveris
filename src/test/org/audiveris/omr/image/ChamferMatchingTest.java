@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code ChamferMatchingTest}
+ * Class <code>ChamferMatchingTest</code>
  *
  * @author Hervé Bitteur
  */

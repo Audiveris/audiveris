@@ -46,7 +46,7 @@ import org.audiveris.omr.sig.ui.ChordListMenu;
 import org.audiveris.omr.sig.ui.GlyphListMenu;
 import org.audiveris.omr.sig.ui.InterListMenu;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 import org.audiveris.omr.util.HorizontalSide;
@@ -64,7 +64,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
+ * Class <code>EditorMenu</code> defines the pop-up menu which is linked to the current
  * selection in page editor view.
  * <p>
  * It points to several sub-menus: chords, inters, glyphs, slot, measure, staff, page, extraction
@@ -326,9 +326,8 @@ public class EditorMenu
 
             private void update ()
             {
-                setEnabled(
-                        (stack != null) && (stack != stack.getSystem().getLastStack()) && (sheet
-                        .getStub().getLatestStep().compareTo(Step.MEASURES) >= 0));
+                setEnabled((stack != null) && (stack != stack.getSystem().getLastStack()) && (sheet
+                        .getStub().getLatestStep().compareTo(OmrStep.MEASURES) >= 0));
             }
         }
 
@@ -357,7 +356,7 @@ public class EditorMenu
                     setEnabled(false);
                 } else {
                     // Action enabled only if step >= RHYTHMS
-                    setEnabled(sheet.getStub().getLatestStep().compareTo(Step.RHYTHMS) >= 0);
+                    setEnabled(sheet.getStub().getLatestStep().compareTo(OmrStep.RHYTHMS) >= 0);
                 }
             }
         }
@@ -426,7 +425,7 @@ public class EditorMenu
                     setEnabled(false);
                 } else {
                     // Action enabled only if step >= RHYTHMS
-                    setEnabled(sheet.getStub().getLatestStep().compareTo(Step.RHYTHMS) >= 0);
+                    setEnabled(sheet.getStub().getLatestStep().compareTo(OmrStep.RHYTHMS) >= 0);
                 }
             }
         }
@@ -706,7 +705,7 @@ public class EditorMenu
                     final List<SystemInfo> systems = sheet.getSystemManager().getSystems();
                     boolean isLast = system == systems.get(systems.size() - 1);
                     setEnabled(!isLast
-                                       && (sheet.getStub().getLatestStep().compareTo(Step.GRID) >= 0));
+                                       && (sheet.getStub().getLatestStep().compareTo(OmrStep.GRID) >= 0));
                 }
             }
         }

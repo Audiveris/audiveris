@@ -38,7 +38,7 @@ import java.nio.file.Paths;
 import javax.swing.JMenu;
 
 /**
- * Class {@code HistoryMenu} defines a menu filled with a history of paths.
+ * Class <code>HistoryMenu</code> defines a menu filled with a history of paths.
  *
  * @author Hervé Bitteur
  */
@@ -60,7 +60,7 @@ public class HistoryMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HistoryMenu} object.
+     * Creates a new <code>HistoryMenu</code> object.
      *
      * @param history       the underlying path history
      * @param pathTaskClass the task launched to process the selected path

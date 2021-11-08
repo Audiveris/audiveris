@@ -29,7 +29,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SimpleSheetPainter;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code BookPdfOutput} produces a physical PDF output of a book.
+ * Class <code>BookPdfOutput</code> produces a physical PDF output of a book.
  *
  * @author Hervé Bitteur
  */
@@ -96,7 +96,7 @@ public class BookPdfOutput
             fos = new FileOutputStream(file);
 
             for (SheetStub stub : stubs) {
-                if (!stub.isDone(Step.GRID)) {
+                if (!stub.isDone(OmrStep.GRID)) {
                     logger.info("{} has not reached GRID step yet, no printout.", stub);
 
                     continue;

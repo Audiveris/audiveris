@@ -26,7 +26,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- * Class {@code SectionView} defines one view meant for display of a given section.
+ * Class <code>SectionView</code> defines one view meant for display of a given section.
  *
  * @author Hervé Bitteur
  */

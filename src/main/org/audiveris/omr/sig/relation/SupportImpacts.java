@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.sig.GradeImpacts;
 
 /**
- * Class {@code SupportImpacts} handles impacts for a supporting relation.
+ * Class <code>SupportImpacts</code> handles impacts for a supporting relation.
  *
  * @author Hervé Bitteur
  */

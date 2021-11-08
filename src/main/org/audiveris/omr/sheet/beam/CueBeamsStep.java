@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code CueBeamsStep} implements <b>CUE_BEAMS</b> step, which attempts to
+ * Class <code>CueBeamsStep</code> implements <b>CUE_BEAMS</b> step, which attempts to
  * retrieve beams for cue notes.
  *
  * @author Hervé Bitteur

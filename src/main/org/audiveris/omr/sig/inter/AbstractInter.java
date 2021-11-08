@@ -46,7 +46,7 @@ import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -92,16 +92,16 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.audiveris.omr.sheet.Profiles;
 
 /**
- * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
+ * Class <code>AbstractInter</code> is the abstract implementation basis for {@link Inter}
  * interface.
  * <p>
  * As a general policy, subclasses can provide convenient creation static methods, which should
  * be consistently named as follows:
  * <ul>
- * <li>{@code create} for just inter creation.
- * <li>{@code createValid} for inter creation and validation (if failed, inter is not created).
- * <li>{@code createAdded} for inter creation and addition to SIG.
- * <li>{@code createValidAdded} for inter creation, validation and addition to SIG.
+ * <li><code>create</code> for just inter creation.
+ * <li><code>createValid</code> for inter creation and validation (if failed, inter is not created).
+ * <li><code>createAdded</code> for inter creation and addition to SIG.
+ * <li><code>createValidAdded</code> for inter creation, validation and addition to SIG.
  * </ul>
  *
  * @author Hervé Bitteur
@@ -120,7 +120,7 @@ public abstract class AbstractInter
     // Persistent data
     //----------------
     //
-    /** The assigned shape. */
+    /** The shape assigned to this Inter. */
     @Navigable(false)
     @XmlAttribute(name = "shape")
     protected Shape shape;
@@ -130,44 +130,45 @@ public abstract class AbstractInter
     @XmlAttribute(name = "glyph")
     protected Glyph glyph;
 
-    /** Object bounds, perhaps different from glyph bounds. */
-    @XmlElement(name = "bounds")
-    @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
-    protected Rectangle bounds;
-
-    /** The quality of this interpretation. */
+    /** The [0..1] confidence value for this Inter <i>in isolation</i>. */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     private Double grade;
 
-    /** Is it abnormal?. */
-    @XmlAttribute(name = "abnormal")
-    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean abnormal;
-
-    /** Is it frozen?. */
-    @XmlAttribute(name = "frozen")
-    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean frozen;
-
-    /** Is it manual?. */
-    @XmlAttribute(name = "manual")
-    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    protected boolean manual;
-
-    /** Is it implicit?. */
-    @XmlAttribute(name = "implicit")
-    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean implicit;
-
-    /** The contextual grade of this interpretation, if any. */
+    /** The [0..1] confidence value for this Inter <i>in context</i>. */
     @XmlAttribute(name = "ctx-grade")
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     protected Double ctxGrade;
 
-    /** Related staff, if any. Marshalled via its ID, see {@link #getStaffId()}. */
+    /** If "true", this Inter was detected as abnormal by the engine. */
+    @XmlAttribute(name = "abnormal")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean abnormal;
+
+    /** If "true", this Inter is no longer modifiable by the engine. */
+    @XmlAttribute(name = "frozen")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean frozen;
+
+    /** If "true", this Inter was created implicitly by the engine. */
+    @XmlAttribute(name = "implicit")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean implicit;
+
+    /** If "true", this Inter was created manually by the end-user. */
+    @XmlAttribute(name = "manual")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    protected boolean manual;
+
+    /** See {@link #getStaffId()} */
+    /** The staff, if any, this Inter relates to. Marshalled via the staff id. */
     @Navigable(false)
     protected Staff staff;
+
+    /** The Inter bounds, perhaps different from glyph bounds. */
+    @XmlElement(name = "bounds")
+    @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
+    protected Rectangle bounds;
 
     // Transient data
     //---------------
@@ -240,7 +241,7 @@ public abstract class AbstractInter
     }
 
     /**
-     * Creates a new {@code AbstractInter} object.
+     * Creates a new <code>AbstractInter</code> object.
      */
     protected AbstractInter ()
     {
@@ -1329,9 +1330,9 @@ public abstract class AbstractInter
             // Make sure the underlying glyph remains accessible
             if (glyph != null) {
                 final SystemInfo system = sig.getSystem();
-                final Step step = system.getSheet().getStub().getLatestStep();
+                final OmrStep step = system.getSheet().getStub().getLatestStep();
 
-                if (step != null && step.compareTo(Step.CURVES) >= 0) {
+                if (step != null && step.compareTo(OmrStep.CURVES) >= 0) {
                     system.addFreeGlyph(glyph);
                 }
             }
@@ -1583,13 +1584,13 @@ public abstract class AbstractInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //-------------//
+    // JaxbAdapter //
+    //-------------//
     /**
      * Meant for JAXB handling of Inter interface.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<AbstractInter, Inter>
     {
 

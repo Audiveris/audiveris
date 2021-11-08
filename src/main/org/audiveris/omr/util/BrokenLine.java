@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.util.Jaxb;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.audiveris.omr.constant.Constant;
@@ -46,7 +47,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code BrokenLine} handles the broken line defined by a sequence of points
+ * Class <code>BrokenLine</code> handles the broken line defined by a sequence of points
  * which can be modified at any time.
  * <p>
  * This class make use of several distance parameters, presented here from smaller to larger:

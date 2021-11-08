@@ -22,9 +22,10 @@
 package org.audiveris.omr.glyph;
 
 /**
- * This enumeration is used to group glyph instances by their intended use.
+ * Enum <code>GlyphGroup</code> describes the various labels meant to gather glyph
+ * instances by their intended use.
  * <p>
- * A single glyph instance can be assigned several groups.
+ * A single glyph instance can belong to several groups.
  *
  * @author Hervé Bitteur
  */
@@ -33,7 +34,7 @@ public enum GlyphGroup
     /** Only the first ones are needed. */
     BEAM_SPOT("Beam-oriented spot"),
     BLACK_HEAD_SPOT("BlackHead-oriented spot"),
-    BLACK_STACK_SPOT("Stack of blackHead-oriented spot"),
+    BLACK_STACK_SPOT("Stack of BlackHead-oriented spot"),
     HEAD_SPOT("Head-oriented spot"),
     VERTICAL_SEED("Stem-oriented seed"),
     SYMBOL("Fixed symbol"),

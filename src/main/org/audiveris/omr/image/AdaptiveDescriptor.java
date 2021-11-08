@@ -35,7 +35,24 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AdaptiveDescriptor} describes an {@link AdaptiveFilter}
+ * Class <code>AdaptiveDescriptor</code> describes the configuration parameters of a
+ * {@link AdaptiveFilter}.
+ * <p>
+ * To decide if a pixel at coordinates (x,y) is a foreground or a background pixel, an adaptive
+ * filter compares the pixel value at (x,y) with a threshold value dynamically computed in the
+ * neighborhood of (x,y) point.
+ * <p>
+ * The threshold is computed as follows:
+ * <pre>
+ *      threshold = (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev)
+ * </pre>
+ * where:
+ * <ul>
+ * <li><code>mean</code> and <code>stdDev</code> are respectively the mean value and the
+ * standard deviation value of the pixels in the neighborhood
+ * <li><code>MEAN_COEFF</code> and <code>STD_DEV_COEFF</code> are constant coefficients.
+ * These coefficients are configured by the filter descriptor.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -51,11 +68,15 @@ public class AdaptiveDescriptor
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveDescriptor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Coefficient for mean. */
+    /** In the threshold formula, this parameter defines the coefficient value applied to
+     * the <code>mean</code> pixel value in any point neighborhood. */
     @XmlAttribute(name = "mean-coeff")
     public final double meanCoeff;
 
-    /** Coefficient for standard deviation. */
+    /**
+     * In the threshold formula, this parameter defines the coefficient value applied to
+     * the <code>standard deviation</code> of pixel values in any point neighborhood.
+     */
     @XmlAttribute(name = "std-dev-coeff")
     public final double stdDevCoeff;
 

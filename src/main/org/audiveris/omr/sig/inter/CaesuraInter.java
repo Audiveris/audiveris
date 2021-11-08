@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code CaesuraInter} represents a caesura sign above a staff.
+ * Class <code>CaesuraInter</code> represents a caesura sign above a staff.
  *
  * @author Hervé Bitteur
  */
@@ -48,7 +48,7 @@ public class CaesuraInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code CaesuraInter} object.
+     * Creates a new <code>CaesuraInter</code> object.
      *
      * @param glyph the caesura glyph
      * @param grade the interpretation quality

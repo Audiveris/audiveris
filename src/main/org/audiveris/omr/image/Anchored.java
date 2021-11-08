@@ -25,7 +25,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Interface {@code Anchored} handles anchor positions relative to a rectangular area.
+ * Interface <code>Anchored</code> handles anchor positions relative to a rectangular area.
  *
  * @author Hervé Bitteur
  */

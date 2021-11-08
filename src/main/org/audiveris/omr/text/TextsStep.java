@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code TextsStep} discovers text items in a system area.
+ * Class <code>TextsStep</code> discovers text items in a system area.
  *
  * @author Hervé Bitteur
  */

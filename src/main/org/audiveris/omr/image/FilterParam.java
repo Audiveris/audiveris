@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code FilterParam} is a param on FilterDescriptor.
+ * Class <code>FilterParam</code> is a param on FilterDescriptor.
  *
  * @author Hervé Bitteur
  */
@@ -40,12 +40,12 @@ public class FilterParam
     /**
      * JAXB adapter.
      */
-    public static class Adapter
-            extends XmlAdapter<Adapter.Value, FilterParam>
+    public static class JaxbAdapter
+            extends XmlAdapter<JaxbAdapter.FilterDescriptorValue, FilterParam>
     {
 
         @Override
-        public Value marshal (FilterParam fp)
+        public FilterDescriptorValue marshal (FilterParam fp)
                 throws Exception
         {
             if (fp == null) {
@@ -58,14 +58,14 @@ public class FilterParam
                 return null;
             }
 
-            Value value = new Value();
+            FilterDescriptorValue value = new FilterDescriptorValue();
             value.filter = specific;
 
             return value;
         }
 
         @Override
-        public FilterParam unmarshal (Value value)
+        public FilterParam unmarshal (FilterDescriptorValue value)
                 throws Exception
         {
             if (value == null) {
@@ -79,9 +79,13 @@ public class FilterParam
         }
 
         /**
-         * Flattened value for un/marshalling.
+         * Class <code>FilterDescriptorValue</code> is meant to [un]marshal
+         * the description of a binarization filter (global or adaptive).
+         *
+         * @see GlobalDescriptor
+         * @see AdaptiveDescriptor
          */
-        protected static class Value
+        protected static class FilterDescriptorValue
         {
 
             @XmlElementRefs({

@@ -36,7 +36,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
- * Class {@code GhostGlassPane} is a special glasspane, meant for displaying an image
+ * Class <code>GhostGlassPane</code> is a special glasspane, meant for displaying an image
  * being dragged and finally dropped.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)

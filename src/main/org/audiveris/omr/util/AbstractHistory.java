@@ -35,7 +35,7 @@ import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code AbstractHistory} handles a limited history of entities.
+ * Class <code>AbstractHistory</code> handles a limited history of entities.
  *
  * @param <E> entity type
  *
@@ -59,7 +59,7 @@ public abstract class AbstractHistory<E>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractHistory} object.
+     * Creates a new <code>AbstractHistory</code> object.
      *
      * @param name           a name for this history instance
      * @param constant       backing constant on disk

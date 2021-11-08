@@ -53,7 +53,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
 /**
- * Class {@code PictureView} defines the view dedicated to the display of the picture
+ * Class <code>PictureView</code> defines the view dedicated to the display of the picture
  * image of a music sheet.
  *
  * @author Hervé Bitteur
@@ -78,7 +78,7 @@ public class PictureView
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code PictureView} instance, dedicated to a sheet.
+     * Create a new <code>PictureView</code> instance, dedicated to a sheet.
      *
      * @param sheet    the related sheet
      * @param sheetTab the desired tab (initial or binary)
@@ -89,7 +89,7 @@ public class PictureView
         this.sheet = sheet;
         this.sheetTab = sheetTab;
 
-        view = new MyView();
+        view = new RunTableView();
         view.setName("Picture-View");
         view.setPreferredSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
 
@@ -119,10 +119,10 @@ public class PictureView
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // MyView //
-    //--------//
-    private class MyView
+    //--------------//
+    // RunTableView //
+    //--------------//
+    private class RunTableView
             extends RubberPanel
     {
 

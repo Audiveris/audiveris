@@ -70,7 +70,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code SheetResultPainter} paints the items resulting from the processing of a
+ * Class <code>SheetResultPainter</code> paints the items resulting from the processing of a
  * sheet.
  * <p>
  * A same default color is used for most of items. If coloredVoice flag is set, all items related to
@@ -111,7 +111,7 @@ public class SheetResultPainter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetResultPainter} object.
+     * Creates a new <code>SheetResultPainter</code> object.
      *
      * @param sheet         the sheet to process
      * @param g             Graphic context

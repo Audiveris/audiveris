@@ -26,7 +26,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
 /**
- * Class {@code Grades} gathers in one class all the various evaluation grades used
+ * Class <code>Grades</code> gathers in one class all the various evaluation grades used
  * throughout the application.
  *
  * @author Hervé Bitteur

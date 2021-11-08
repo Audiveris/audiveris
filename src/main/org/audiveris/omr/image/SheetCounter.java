@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SheetCounter} is a stand-alone utility to count sheets in files
+ * Class <code>SheetCounter</code> is a stand-alone utility to count sheets in files
  * (either books or image files).
  *
  * @author Hervé Bitteur

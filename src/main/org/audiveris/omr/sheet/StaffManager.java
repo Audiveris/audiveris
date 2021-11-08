@@ -54,7 +54,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code StaffManager} handles physical information about all the real staves of
+ * Class <code>StaffManager</code> handles physical information about all the real staves of
  * a sheet.
  * <p>
  * It knows nothing about the dummy staves (created in dummy parts).

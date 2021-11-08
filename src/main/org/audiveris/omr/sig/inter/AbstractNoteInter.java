@@ -40,7 +40,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * Class {@code AbstractNoteInter} is an abstract base for all notes interpretations,
+ * Class <code>AbstractNoteInter</code> is an abstract base for all notes interpretations,
  * that is heads (with or without stem) and rests.
  *
  * @author Hervé Bitteur
@@ -59,8 +59,10 @@ public abstract class AbstractNoteInter
     private static final Map<Shape, Rational> shapeDurations = buildShapeDurations();
 
     //~ Enumerations -------------------------------------------------------------------------------
-    /** Names of the various note steps. */
-    public static enum Step
+    /**
+     * Enum <code>NoteStep</code> describes the names of the various note steps.
+     */
+    public static enum NoteStep
     {
         /** La */
         A,
@@ -245,7 +247,7 @@ public abstract class AbstractNoteInter
      *
      * @return the note step
      */
-    public Step getStep ()
+    public NoteStep getStep ()
     {
         AbstractChordInter chord = getChord();
         Measure measure = chord.getMeasure();

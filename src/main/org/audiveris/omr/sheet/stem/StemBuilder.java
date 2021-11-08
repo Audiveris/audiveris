@@ -66,7 +66,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code StemBuilder} handles the building of one stem, by holding the sequence of
+ * Class <code>StemBuilder</code> handles the building of one stem, by holding the sequence of
  * {@link StemItem} instances (glyphs, linkers, gaps).
  * <p>
  * It is used from {@link BeamLinker} when linking a beam via stem to heads, and from
@@ -119,7 +119,7 @@ public class StemBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code StemBuilder} object.
+     * Create a <code>StemBuilder</code> object.
      *
      * @param builder        the system-level StemsRetriever
      * @param startLinker    starting linker (cannot be null)

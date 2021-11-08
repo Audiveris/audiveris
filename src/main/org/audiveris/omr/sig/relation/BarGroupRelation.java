@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BarGroupRelation} groups 2 bar lines.
+ * Class <code>BarGroupRelation</code> groups 2 bar lines.
  *
  * @author Hervé Bitteur
  */

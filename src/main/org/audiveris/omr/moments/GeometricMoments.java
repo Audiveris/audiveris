@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 
 /**
- * Class {@code GeometricMoments} encapsulates the set of all geometric moments that
+ * Class <code>GeometricMoments</code> encapsulates the set of all geometric moments that
  * characterize an image.
  * <p>
  * We use only central moments (invariant Hu moments are disabled by default).

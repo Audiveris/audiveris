@@ -29,7 +29,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code TransformedSymbol} displays a baseShape symbol with AffineTransform.
+ * Class <code>TransformedSymbol</code> displays a baseShape symbol with AffineTransform.
  *
  * @author Hervé Bitteur
  */

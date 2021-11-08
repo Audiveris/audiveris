@@ -22,7 +22,7 @@
 package org.audiveris.omr.image;
 
 /**
- * Interface {@code MorphoConstants}
+ * Interface <code>MorphoConstants</code>
  *
  * @author ?
  */

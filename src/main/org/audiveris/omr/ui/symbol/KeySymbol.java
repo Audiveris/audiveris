@@ -32,7 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code KeySymbol} displays a Key Signature symbol.
+ * Class <code>KeySymbol</code> displays a Key Signature symbol.
  *
  * @author Hervé Bitteur
  */

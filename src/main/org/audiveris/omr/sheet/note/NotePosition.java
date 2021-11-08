@@ -25,7 +25,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.Staff.IndexedLedger;
 
 /**
- * Class {@code NotePosition} handles the precise position of a note-like entity,
+ * Class <code>NotePosition</code> handles the precise position of a note-like entity,
  * with respect to its related staff.
  *
  * @author Hervé Bitteur

@@ -28,11 +28,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
- * Class {@code ChordsMapper} tries to voice-map incoming chords to active chords.
+ * Class <code>ChordsMapper</code> tries to voice-map incoming chords to active chords.
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +53,7 @@ public class ChordsMapper
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a {@code ChordsMapper} object.
+     * Creates a <code>ChordsMapper</code> object.
      *
      * @param news             incoming chords to map
      * @param olds             available previous chords
@@ -107,58 +106,6 @@ public class ChordsMapper
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // ChordPair //
-    //-----------//
-    public static class ChordPair
-    {
-
-        public final AbstractChordInter newChord;
-
-        public final AbstractChordInter oldChord;
-
-        public ChordPair (AbstractChordInter newChord,
-                          AbstractChordInter oldChord)
-        {
-            this.newChord = newChord;
-            this.oldChord = oldChord;
-        }
-
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (!(obj instanceof ChordPair)) {
-                return false;
-            }
-
-            final ChordPair that = (ChordPair) obj;
-
-            return (newChord == that.newChord) && (oldChord == that.oldChord);
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            int hash = 3;
-            hash = (79 * hash) + Objects.hashCode(this.newChord);
-            hash = (79 * hash) + Objects.hashCode(this.oldChord);
-
-            return hash;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("ChordPair{");
-            sb.append("n:#").append(newChord.getId());
-            sb.append(',');
-            sb.append("o:#").append(oldChord.getId());
-            sb.append('}');
-
-            return sb.toString();
-        }
-    }
-
     //---------//
     // Mapping //
     //---------//
@@ -180,8 +127,8 @@ public class ChordsMapper
         public AbstractChordInter ref (AbstractChordInter ch)
         {
             for (ChordPair pair : pairs) {
-                if (pair.newChord == ch) {
-                    return pair.oldChord;
+                if (pair.one == ch) {
+                    return pair.two;
                 }
             }
 
@@ -199,7 +146,7 @@ public class ChordsMapper
             List<ChordPair> found = null;
 
             for (ChordPair pair : pairs) {
-                final AbstractChordInter ch = pair.newChord;
+                final AbstractChordInter ch = pair.one;
 
                 if (collection.contains(ch)) {
                     if (found == null) {
@@ -244,8 +191,8 @@ public class ChordsMapper
 
             // White list
             for (ChordPair pair : whiteList) {
-                if (pair.oldChord == oldChord) {
-                    if (pair.newChord == newChord) {
+                if (pair.two == oldChord) {
+                    if (pair.one == newChord) {
                         if (details != null) {
                             details.append("WHITE");
                         }
@@ -263,7 +210,7 @@ public class ChordsMapper
 
             // Black list
             for (ChordPair pair : blackList) {
-                if ((pair.newChord == newChord) && (pair.oldChord == oldChord)) {
+                if ((pair.one == newChord) && (pair.two == oldChord)) {
                     if (details != null) {
                         details.append("BLACK");
                     }

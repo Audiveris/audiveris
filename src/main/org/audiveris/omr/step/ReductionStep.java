@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code ReductionStep} implements <b>REDUCTION</b> step, which tries to reduce
+ * Class <code>ReductionStep</code> implements <b>REDUCTION</b> step, which tries to reduce
  * the SIG incrementally after structures (notes + stems + beams) have been retrieved.
  *
  * @author Hervé Bitteur

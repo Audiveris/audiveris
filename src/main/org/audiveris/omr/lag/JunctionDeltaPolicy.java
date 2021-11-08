@@ -24,7 +24,7 @@ package org.audiveris.omr.lag;
 import org.audiveris.omr.run.Run;
 
 /**
- * Class {@code JunctionDeltaPolicy} defines a junction policy based on the delta
+ * Class <code>JunctionDeltaPolicy</code> defines a junction policy based on the delta
  * between the length of the candidate run and the length of the last run of the section.
  *
  * @author Hervé Bitteur

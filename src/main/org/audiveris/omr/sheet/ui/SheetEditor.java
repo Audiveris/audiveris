@@ -107,7 +107,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code SheetEditor} defines, for a given sheet, a UI pane from which all
+ * Class <code>SheetEditor</code> defines, for a given sheet, a UI pane from which all
  * processing actions can be launched and their results checked.
  *
  * @author Hervé Bitteur
@@ -127,7 +127,7 @@ public class SheetEditor
     private final Sheet sheet;
 
     /** Sheet view. */
-    private final MyView view;
+    private final EditorView view;
 
     private final ShapeBoard shapeBoard;
 
@@ -156,7 +156,7 @@ public class SheetEditor
 
         pageMenu = new EditorMenu(sheet);
 
-        view = new MyView(sheet.getGlyphIndex());
+        view = new EditorView(sheet.getGlyphIndex());
         view.setLocationService(sheet.getLocationService());
 
         List<Board> boards = new ArrayList<>();
@@ -523,14 +523,14 @@ public class SheetEditor
         }
     }
 
-    //--------//
-    // MyView //
-    //--------//
+    //------------//
+    // EditorView //
+    //------------//
     /**
      * This is the main view, displaying the sheet image with sections, glyphs and inters
      * for edition.
      */
-    private final class MyView
+    private final class EditorView
             extends NestView
     {
 
@@ -549,14 +549,14 @@ public class SheetEditor
         /** When sequence of keys are typed. */
         private final SheetKeyListener keyListener = new SheetKeyListener();
 
-        private MyView (GlyphIndex glyphIndex)
+        private EditorView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(),
                   Arrays.asList(
                           sheet.getLagManager().getLag(Lags.HLAG),
                           sheet.getLagManager().getLag(Lags.VLAG)),
                   sheet);
-            setName("SymbolsEditor-MyView");
+            setName("SymbolsEditor-EditorView");
 
             // Subscribe to all lags for SectionSet events
             for (Lag lag : lags) {

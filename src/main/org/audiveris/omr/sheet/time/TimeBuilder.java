@@ -51,7 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code TimeBuilder} is the abstract basis for handling a time signature (such
+ * Class <code>TimeBuilder</code> is the abstract basis for handling a time signature (such
  * as 4/4 or C) from a staff.
  * <p>
  * Subclass {@link HeaderTimeBuilder} is used at the beginning of a staff (in staff header) while
@@ -123,7 +123,7 @@ public abstract class TimeBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeBuilder} object.
+     * Creates a new <code>TimeBuilder</code> object.
      *
      * @param staff  the underlying staff
      * @param column the column manager
@@ -294,7 +294,7 @@ public abstract class TimeBuilder
                         // Halves support each other
                         sig.addEdge(top, bottom, new TimeTopBottomRelation());
                     } else {
-                        sig.insertExclusion(top, bottom, Exclusion.Cause.INCOMPATIBLE);
+                        sig.insertExclusion(top, bottom, Exclusion.ExclusionCause.INCOMPATIBLE);
                     }
                 }
             }

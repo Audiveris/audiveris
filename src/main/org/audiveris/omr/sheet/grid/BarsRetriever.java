@@ -47,7 +47,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.BarColumn.Chain;
-import org.audiveris.omr.sheet.grid.PartGroup.Symbol;
+import org.audiveris.omr.sheet.grid.PartGroup.PartGroupingSymbol;
 import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.*;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractVerticalConnectorInter;
@@ -105,7 +105,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code BarsRetriever} focuses on the retrieval of vertical barlines, brackets
+ * Class <code>BarsRetriever</code> focuses on the retrieval of vertical barlines, brackets
  * and braces.
  * <p>
  * Barlines are used to:
@@ -821,7 +821,8 @@ public class BarsRetriever
 
                         if (peak.isBracketEnd(TOP)) {
                             // Start bracket group
-                            pg = new PartGroup(level, Symbol.bracket, botConn, staff.getId());
+                            pg = new PartGroup(
+                                    level, PartGroupingSymbol.bracket, botConn, staff.getId());
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
                             logger.debug("Staff#{} start bracket {}", staff.getId(), pg);
@@ -845,7 +846,8 @@ public class BarsRetriever
                         }
                     } else if (!isConnected(peak, TOP) && isConnected(peak, BOTTOM)) {
                         // Start square group
-                        PartGroup pg = new PartGroup(level, Symbol.square, botConn, staff.getId());
+                        PartGroup pg = new PartGroup(
+                                level, PartGroupingSymbol.square, botConn, staff.getId());
                         allGroups.add(pg);
                         activeGroups.put(level, pg);
                         logger.debug("Staff#{} start square {}", staff.getId(), pg);
@@ -882,7 +884,8 @@ public class BarsRetriever
                     if (bracePeak.isBraceEnd(TOP)) {
                         // (We may have a brace group on hold at this level if bottom was missed)
                         // Start brace group
-                        PartGroup pg = new PartGroup(level, Symbol.brace, botConn, staff.getId());
+                        PartGroup pg = new PartGroup(
+                                level, PartGroupingSymbol.brace, botConn, staff.getId());
                         allGroups.add(pg);
                         activeGroups.put(level, pg);
                         logger.debug("Staff#{} start brace {}", staff.getId(), pg);

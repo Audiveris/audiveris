@@ -32,7 +32,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 /**
- * Class {@code UILookAndFeel} enables to select the UI Look and Feel to be used in this
+ * Class <code>UILookAndFeel</code> enables to select the UI Look and Feel to be used in this
  * application.
  *
  * @author Hervé Bitteur and Brenton Partridge

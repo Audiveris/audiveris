@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 /**
- * Interface {@code ARTMoments} defines a region shape features descriptor based on
+ * Interface <code>ARTMoments</code> defines a region shape features descriptor based on
  * Angular Radial Transform.
  * <p>
  * See MPEG-7 Experimentation Model for the original C++ code

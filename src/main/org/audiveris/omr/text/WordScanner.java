@@ -30,7 +30,7 @@ import java.awt.Rectangle;
 import java.util.List;
 
 /**
- * Class {@code WordScanner} is a scanner to retrieve words out of a string content,
+ * Class <code>WordScanner</code> is a scanner to retrieve words out of a string content,
  * while mapping each word to a sequence of TextChar instances.
  *
  * @author Hervé Bitteur
@@ -236,7 +236,7 @@ public abstract class WordScanner
     // ManualScanner //
     //---------------//
     /**
-     * Class {@code ManualScanner} is a specific scanner using manual text content,
+     * Class <code>ManualScanner</code> is a specific scanner using manual text content,
      * whose length may be different from the sequence of TextChar instances.
      */
     public static class ManualScanner
@@ -279,7 +279,7 @@ public abstract class WordScanner
     // OcrScanner //
     //------------//
     /**
-     * Class {@code OcrScanner} is a basic scanner for which the sequence of TextChar's
+     * Class <code>OcrScanner</code> is a basic scanner for which the sequence of TextChar's
      * is parallel to String content.
      */
     public static class OcrScanner

@@ -79,7 +79,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class {@code PageStep} handles connections between systems in a page.
+ * Class <code>PageStep</code> handles connections between systems in a page.
  * <ul>
  * <li>Duplicated inters between systems are resolved.</li>
  * <li>Physical system Part instances are abstracted into LogicalPart instances.</li>
@@ -188,7 +188,7 @@ public class PageStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PageStep} object.
+     * Creates a new <code>PageStep</code> object.
      */
     public PageStep ()
     {

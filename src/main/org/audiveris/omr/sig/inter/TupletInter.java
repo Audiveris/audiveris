@@ -51,7 +51,7 @@ import java.util.SortedSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TupletInter} represents a tuplet sign (3 or 6).
+ * Class <code>TupletInter</code> represents a tuplet sign (3 or 6).
  * <p>
  * A tuplet inter cannot be assigned a staff immediately, since it may be located between staves and
  * not related to the closest one.
@@ -77,7 +77,7 @@ public class TupletInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TupletInter} object.
+     * Creates a new <code>TupletInter</code> object.
      *
      * @param glyph the tuplet glyph
      * @param shape TUPLET_THREE or TUPLET_SIX

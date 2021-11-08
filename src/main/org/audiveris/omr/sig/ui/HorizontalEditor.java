@@ -28,7 +28,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code HorizontalEditor} provides just one handle to globally move the inter
+ * Class <code>HorizontalEditor</code> provides just one handle to globally move the inter
  * horizontally only.
  *
  * @author Hervé Bitteur
@@ -46,7 +46,7 @@ public class HorizontalEditor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HorizontalEditor} object.
+     * Creates a new <code>HorizontalEditor</code> object.
      *
      * @param inter DOCUMENT ME!
      */

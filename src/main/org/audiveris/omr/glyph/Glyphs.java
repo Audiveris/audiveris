@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * Class {@code Glyphs} gathers static methods operating on a collection of glyphs.
+ * Class <code>Glyphs</code> gathers static methods operating on a collection of glyphs.
  *
  * @author Hervé Bitteur
  */

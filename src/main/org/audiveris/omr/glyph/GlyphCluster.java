@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code GlyphCluster} handles a cluster of connected glyphs, to retrieve all
+ * Class <code>GlyphCluster</code> handles a cluster of connected glyphs, to retrieve all
  * acceptable compounds built on subsets of these glyphs.
  * <p>
  * The processing of any given subset consists in the following:
@@ -58,7 +58,7 @@ public class GlyphCluster
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Environment adapter. */
-    private final Adapter adapter;
+    private final GlyphAdapter adapter;
 
     /** Group, if any, to be assigned to created glyphs. */
     private final GlyphGroup group;
@@ -70,7 +70,7 @@ public class GlyphCluster
      * @param adapter the environment adapter
      * @param group   group to be assigned, if any
      */
-    public GlyphCluster (Adapter adapter,
+    public GlyphCluster (GlyphAdapter adapter,
                          GlyphGroup group)
     {
         this.adapter = adapter;
@@ -229,13 +229,13 @@ public class GlyphCluster
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
+    //--------------//
+    // GlyphAdapter //
+    //--------------//
     /**
      * Interface to be implemented by a user of GlyphCluster.
      */
-    public static interface Adapter
+    public static interface GlyphAdapter
     {
 
         /**
@@ -297,7 +297,7 @@ public class GlyphCluster
 
     //~ Inner Classes ------------------------------------------------------------------------------
     public abstract static class AbstractAdapter
-            implements Adapter
+            implements GlyphAdapter
     {
 
         /** For debug only */

@@ -29,7 +29,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * Class {@code PoorManAlgebra} is a "poor man" implementation for a small number of
+ * Class <code>PoorManAlgebra</code> is a "poor man" implementation for a small number of
  * classes of Nd4j and DeepLearning4j.
  * <p>
  * They are meant for temporary use in Audiveris 5.x where we want to remove dependency on these

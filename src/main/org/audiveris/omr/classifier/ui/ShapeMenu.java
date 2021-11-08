@@ -38,7 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code ShapeMenu} is a menu dedicated to assigning an inter to a glyph.
+ * Class <code>ShapeMenu</code> is a menu dedicated to assigning an inter to a glyph.
  *
  * @author Hervé Bitteur
  */
@@ -60,7 +60,7 @@ public class ShapeMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ShapeMenu} object.
+     * Creates a new <code>ShapeMenu</code> object.
      *
      * @param glyph the selected glyph
      * @param sheet the containing sheet
@@ -71,15 +71,10 @@ public class ShapeMenu
         this.sheet = sheet;
         this.glyph = glyph;
 
-        shapeListener = new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                JMenuItem source = (JMenuItem) e.getSource();
-                Shape shape = Shape.valueOf(source.getText());
-                sheet.getInterController().assignGlyph(glyph, shape);
-            }
+        shapeListener = (ActionEvent e) -> {
+            JMenuItem source = (JMenuItem) e.getSource();
+            Shape shape = Shape.valueOf(source.getText());
+            sheet.getInterController().assignGlyph(glyph, shape);
         };
 
         populateMenu();

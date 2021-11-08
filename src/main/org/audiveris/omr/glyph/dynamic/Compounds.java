@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Class {@code Compounds} is a collection of static convenient methods,
+ * Class <code>Compounds</code> is a collection of static convenient methods,
  * providing features related to a collection of SectionCompound instances.
  *
  * @author Hervé Bitteur

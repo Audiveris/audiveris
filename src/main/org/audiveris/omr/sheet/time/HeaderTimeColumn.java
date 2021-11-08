@@ -38,7 +38,7 @@ public class HeaderTimeColumn
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code HeaderTimeColumn} object.
+     * Creates a new <code>HeaderTimeColumn</code> object.
      *
      * @param system containing system
      */

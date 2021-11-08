@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code HeadersStep} implements <b>HEADERS</b> step, which handles the beginning
+ * Class <code>HeadersStep</code> implements <b>HEADERS</b> step, which handles the beginning
  * of every staff in a system.
  *
  * @author Hervé Bitteur
@@ -43,7 +43,7 @@ public class HeadersStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadersStep} object.
+     * Creates a new <code>HeadersStep</code> object.
      */
     public HeadersStep ()
     {

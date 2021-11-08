@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code DataHolder} is a place holder for sheet internal data.
+ * Class <code>DataHolder</code> is a place holder for sheet internal data.
  * <p>
  * It handles:
  * <ul>
@@ -82,7 +82,7 @@ public abstract class DataHolder<T>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code DataHolder} object.
+     * Creates a new <code>DataHolder</code> object.
      *
      * @param pathString dedicated path within sheet internals
      */

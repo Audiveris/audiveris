@@ -24,7 +24,7 @@ package org.audiveris.omr.constant;
 import java.util.Comparator;
 
 /**
- * Abstract class {@code Node} represents a node in the hierarchy of packages and units
+ * Abstract class <code>Node</code> represents a node in the hierarchy of packages and units
  * (aka classes).
  *
  * @author Hervé Bitteur
@@ -89,7 +89,7 @@ public abstract class Node
     // toString //
     //----------//
     /**
-     * Since {@code toString()} is used by JTreeTable to display the
+     * Since <code>toString()</code> is used by JTreeTable to display the
      * node name, this method returns the last path component of the
      * node, in other words the non-qualified name.
      *

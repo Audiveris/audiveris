@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.selection;
 
 /**
- * Class {@code PixelEvent} represent a Pixel Level selection.
+ * Class <code>PixelEvent</code> represent a Pixel Level selection.
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ public class PixelEvent
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PixelEvent} object.
+     * Creates a new <code>PixelEvent</code> object.
      *
      * @param source   the entity that created this event
      * @param hint     hint about event origin

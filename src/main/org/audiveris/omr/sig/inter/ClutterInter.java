@@ -27,7 +27,7 @@ import org.audiveris.omr.glyph.Shape;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ClutterInter} is an inter meant to ease the creation of CLUTTER samples.
+ * Class <code>ClutterInter</code> is an inter meant to ease the creation of CLUTTER samples.
  *
  * @author Hervé Bitteur
  */
@@ -38,7 +38,7 @@ public class ClutterInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code ClutterInter} object.
+     * Creates a new <code>ClutterInter</code> object.
      *
      * @param glyph Underlying glyph
      * @param grade quality grade

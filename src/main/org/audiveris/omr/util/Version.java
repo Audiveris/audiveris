@@ -24,7 +24,7 @@ package org.audiveris.omr.util;
 import org.audiveris.omr.sheet.SheetStub;
 
 /**
- * Class {@code Version} handles the different components of a version string.
+ * Class <code>Version</code> handles the different components of a version string.
  * <p>
  * (Quoting semantic versioning)
  * <br>
@@ -60,12 +60,14 @@ public class Version
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code Version} object and parse its components.
+     * Create a <code>Version</code> object and parse its components.
      * <p>
      * Accepted tag formats to infer version number:
      * <ul>
      * <li>5.2.1-alpha
+     * <li>5.2.1-beta
      * <li>5.2.1
+     * <li>5.3-alpha
      * <li>5.3
      * <li>6.0
      * </ul>
@@ -92,10 +94,21 @@ public class Version
         final int dot2 = value.indexOf('.', dot1 + 1);
 
         if (dot2 == -1) {
-            minor = Integer.decode(value.substring(dot1 + 1, len));
+            // Perhaps 5.3
+            // Perhaps 5.3-alpha
             patch = 0;
-            label = "";
+            final int dash = value.indexOf('-', dot1 + 1);
+
+            if (dash == -1) {
+                minor = Integer.decode(value.substring(dot1 + 1, len));
+                label = "";
+            } else {
+                minor = Integer.decode(value.substring(dot1 + 1, dash));
+                label = value.substring(dash + 1, len);
+            }
         } else {
+            // Perhaps 5.2.1-beta
+            // Perhaps 5.2.1
             minor = Integer.decode(value.substring(dot1 + 1, dot2));
 
             final int dash = value.indexOf('-', dot2 + 1);
@@ -187,8 +200,8 @@ public class Version
      * More strict equality check, where label is involved.
      *
      * @param obj the reference object with which to compare.
-     * @return {@code true} if this object is the same as the obj argument;
-     *         {@code false} otherwise.
+     * @return <code>true</code> if this object is the same as the obj argument;
+     *         <code>false</code> otherwise.
      */
     public boolean equalsWithLabel (Object obj)
     {

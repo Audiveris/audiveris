@@ -26,7 +26,7 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityService;
 
 /**
- * Class {@code FilamentBoard} is an EntityBoard for filaments.
+ * Class <code>FilamentBoard</code> is an EntityBoard for filaments.
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ public class FilamentBoard
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code FilamentBoard} object.
+     * Creates a new <code>FilamentBoard</code> object.
      *
      * @param service  filament service
      * @param selected true for pre-selected

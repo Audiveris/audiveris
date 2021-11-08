@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code StaffLineCleaner} handles the "removal" of staff line pixels.
+ * Class <code>StaffLineCleaner</code> handles the "removal" of staff line pixels.
  * <ol>
  * <li>It removes from global {@link Lags#HLAG} lag the (horizontal) sections used by staff lines.
  * <li>It dispatches vertical and remaining horizontal sections into their containing system(s).
@@ -63,7 +63,7 @@ public class StaffLineCleaner
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffLineCleaner} object.
+     * Creates a new <code>StaffLineCleaner</code> object.
      *
      * @param sheet the related sheet, which holds the v and h lags
      */

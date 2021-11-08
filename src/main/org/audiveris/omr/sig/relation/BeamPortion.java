@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.util.HorizontalSide;
 
 /**
- * Enum {@code BeamPortion} defines which portion of a beam is used in a relation with
+ * Enum <code>BeamPortion</code> defines which portion of a beam is used in a relation with
  * a stem.
  *
  * @author Hervé Bitteur

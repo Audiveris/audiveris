@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code ArcView} presents the arc items in a desired orientation.
+ * Class <code>ArcView</code> presents the arc items in a desired orientation.
  *
  * @author Hervé Bitteur
  */

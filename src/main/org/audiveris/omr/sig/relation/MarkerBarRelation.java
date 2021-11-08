@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code MarkerBarRelation} represents the geographical relation between a marker
+ * Class <code>MarkerBarRelation</code> represents the geographical relation between a marker
  * and a StaffBarline.
  *
  * @author Hervé Bitteur

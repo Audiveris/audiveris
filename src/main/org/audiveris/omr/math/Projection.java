@@ -22,7 +22,7 @@
 package org.audiveris.omr.math;
 
 /**
- * Class {@code Projection} handles cumulated values projected on an axis.
+ * Class <code>Projection</code> handles cumulated values projected on an axis.
  *
  * @author Hervé Bitteur
  */

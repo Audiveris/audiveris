@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code OldBeamGroup} represents a group of related beams.
+ * Class <code>OldBeamGroup</code> represents a group of related beams.
  * <p>
  * This class is now deprecated (replaced by {@link BeamGroupInter} and is kept here only to allow
  * migration of old .omr files.

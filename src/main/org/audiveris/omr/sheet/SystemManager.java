@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code SystemManager} handles physical information about all the systems of a
+ * Class <code>SystemManager</code> handles physical information about all the systems of a
  * given sheet.
  * <p>
  * Note that systems of the same sheet may belong to separate pages (this is the case when a new
@@ -125,7 +125,7 @@ public class SystemManager
     {
         final SheetStub stub = sheet.getStub();
         final ProcessingSwitches switches = stub.getProcessingSwitches();
-        final boolean useIndentation = switches.getValue(ProcessingSwitches.Switch.indentations);
+        final boolean useIndentation = switches.getValue(ProcessingSwitch.indentations);
         Page page = null;
 
         // Look at left indentation of (deskewed) systems

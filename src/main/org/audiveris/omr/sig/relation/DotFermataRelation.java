@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code DotFermataRelation} represents the relation between a dot and a
+ * Class <code>DotFermataRelation</code> represents the relation between a dot and a
  * compatible fermata arc.
  * <p>
  * Implementation remark:

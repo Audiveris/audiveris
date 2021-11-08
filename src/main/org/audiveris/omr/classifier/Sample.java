@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Sample} represents a sample of a shape with the related glyph.
+ * Class <code>Sample</code> represents a sample of a shape with the related glyph.
  * Such Sample instances are used to train classifiers.
  *
  * @author Hervé Bitteur
@@ -91,7 +91,7 @@ public class Sample
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code ShapeSample} object.
+     * Creates a new <code>ShapeSample</code> object.
      *
      * @param left      sheet-based abscissa of top-left corner
      * @param top       sheet-based ordinate of top-left corner
@@ -117,7 +117,7 @@ public class Sample
     }
 
     /**
-     * Creates a new {@code Sample} object from a glyph.
+     * Creates a new <code>Sample</code> object from a glyph.
      *
      * @param glyph     the originating glyph
      * @param interline sheet interline
@@ -146,7 +146,7 @@ public class Sample
      * We need equality strictly based on reference.
      *
      * @param obj the reference object with which to compare.
-     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     * @return <code>true</code> if this object is the same as the obj argument; <code>false</code> otherwise.
      */
     @Override
     public boolean equals (Object obj)

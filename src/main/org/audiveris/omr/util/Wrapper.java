@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code Wrapper} is used to wrap a mutable input value
+ * Class <code>Wrapper</code> is used to wrap a mutable input value
  *
  * @param <T> The specific type for carried value
  * @author Hervé Bitteur
@@ -36,7 +36,7 @@ public class Wrapper<T>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Wrapper} object.
+     * Creates a new <code>Wrapper</code> object.
      *
      * @param value underlying value
      */

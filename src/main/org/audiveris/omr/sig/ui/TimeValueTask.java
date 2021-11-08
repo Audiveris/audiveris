@@ -25,7 +25,7 @@ import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 
 /**
- * Class {@code TimeValueTask} handles the time value update of a time signature.
+ * Class <code>TimeValueTask</code> handles the time value update of a time signature.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,7 @@ public class TimeValueTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeValueTask} object.
+     * Creates a new <code>TimeValueTask</code> object.
      *
      * @param custom  custom time signature to modify
      * @param newTime new time value

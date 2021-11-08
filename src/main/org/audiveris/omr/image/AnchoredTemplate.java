@@ -24,7 +24,7 @@ package org.audiveris.omr.image;
 import org.audiveris.omr.image.Anchored.Anchor;
 
 /**
- * Class {@code AnchoredTemplate} is a Template handled through a specific Anchor.
+ * Class <code>AnchoredTemplate</code> is a Template handled through a specific Anchor.
  *
  * @author Hervé Bitteur
  */
@@ -40,7 +40,7 @@ public class AnchoredTemplate
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AnchoredTemplate} object.
+     * Creates a new <code>AnchoredTemplate</code> object.
      *
      * @param anchor   anchor WRT template
      * @param template the template

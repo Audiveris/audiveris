@@ -30,7 +30,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Tablature} is a staff dedicated to a fretted string instrument like
+ * Class <code>Tablature</code> is a staff dedicated to a fretted string instrument like
  * the guitar, where the lines represent the instrument strings, and numbers on a line
  * represent fret numbers.
  * <p>
@@ -46,7 +46,7 @@ public class Tablature
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code Tablature} object.
+     * Creates a new <code>Tablature</code> object.
      *
      * @param id                the id of the tablature
      * @param left              abscissa of the left side

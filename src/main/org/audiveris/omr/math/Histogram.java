@@ -34,7 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Histogram} is an histogram implementation which handles integer counts
+ * Class <code>Histogram</code> is an histogram implementation which handles integer counts
  * in buckets, the buckets identities being values of type K.
  *
  * @param <K> the precise number type for histogram buckets

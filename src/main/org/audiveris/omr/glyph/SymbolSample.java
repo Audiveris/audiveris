@@ -37,7 +37,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
 /**
- * Class {@code SymbolSample} is an artificial symbol, built from a font icon.
+ * Class <code>SymbolSample</code> is an artificial symbol, built from a font icon.
  * It is used to generate glyph instances for training, when no real glyph
  * (glyph retrieved from scanned sheet) is available.
  *
@@ -71,7 +71,7 @@ public class SymbolSample
     // create //
     //--------//
     /**
-     * Create a {@code SymbolSample}.
+     * Create a <code>SymbolSample</code>.
      *
      * @param shape     assigned shape
      * @param symbol    the font-based symbol

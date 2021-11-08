@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code TupletGenerator} check each voice of a measure for suitable implicit
+ * Class <code>TupletGenerator</code> check each voice of a measure for suitable implicit
  * tuplet signs.
  * <p>
  * We have to choose the type (3 or 6) for all inserted tuplet instances and their locations.
@@ -87,7 +87,7 @@ public class TupletGenerator
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a {@code TupletGenerator} object.
+     * Create a <code>TupletGenerator</code> object.
      *
      * @param measure the underlying measure
      */

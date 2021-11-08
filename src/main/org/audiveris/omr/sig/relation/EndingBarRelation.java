@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code EndingBarRelation} connects an ending side with a bar line.
+ * Class <code>EndingBarRelation</code> connects an ending side with a bar line.
  *
  * @author Hervé Bitteur
  */

@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code Circle} handles a portion of circle which approximates
+ * Class <code>Circle</code> handles a portion of circle which approximates
  * a collection of points.
  * <p>
  * Besides usual characteristics of a circle (center, radius), and of a circle arc (start and stop

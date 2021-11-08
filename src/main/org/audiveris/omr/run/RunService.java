@@ -36,7 +36,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code RunService} provides a Run service on top of a RunTable.
+ * Class <code>RunService</code> provides a Run service on top of a RunTable.
  *
  * @author Hervé Bitteur
  */
@@ -61,7 +61,7 @@ public class RunService
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunService} object.
+     * Creates a new <code>RunService</code> object.
      *
      * @param name  name for the service
      * @param table the underlying run table

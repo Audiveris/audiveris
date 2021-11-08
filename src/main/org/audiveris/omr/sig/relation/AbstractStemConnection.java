@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractStemConnection} is the basis for connections to a stem.
+ * Class <code>AbstractStemConnection</code> is the basis for connections to a stem.
  *
  * @author Hervé Bitteur
  */

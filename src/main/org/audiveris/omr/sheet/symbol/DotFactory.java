@@ -70,7 +70,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code DotFactory} is a companion of {@link InterFactory}, dedicated to the
+ * Class <code>DotFactory</code> is a companion of {@link InterFactory}, dedicated to the
  * interpretation of dot-shaped symbols.
  * <p>
  * Some dot processing can be done instantly while the symbol is being built, other dot processing

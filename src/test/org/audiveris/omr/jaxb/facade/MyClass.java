@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code MyClass}
+ * Class <code>MyClass</code>
  *
  * @author Hervé Bitteur
  */
@@ -66,7 +66,7 @@ public class MyClass
     public final Map<Integer, String> allEntities = new ConcurrentHashMap<Integer, String>();
 
     /**
-     * Creates a new {@code MyClass} object.
+     * Creates a new <code>MyClass</code> object.
      */
     public MyClass ()
     {
@@ -76,7 +76,7 @@ public class MyClass
     }
 
     /**
-     * Creates a new {@code MyClass} object.
+     * Creates a new <code>MyClass</code> object.
      *
      * @param name   DOCUMENT ME!
      * @param origin DOCUMENT ME!

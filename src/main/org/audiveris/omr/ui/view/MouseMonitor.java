@@ -27,7 +27,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code MouseMonitor} defines the entries of an entity to be notified of
+ * Interface <code>MouseMonitor</code> defines the entries of an entity to be notified of
  * mouse actions.
  * This is ordinarily used in conjunction with a {@link org.audiveris.omr.ui.view.Rubber}.
  *

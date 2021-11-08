@@ -69,7 +69,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code TemplateFactory} builds needed instances of {@link Template} class
+ * Class <code>TemplateFactory</code> builds needed instances of {@link Template} class
  * and keeps a catalog per desired point size and shape.
  * <p>
  * Today there is just a single template per Shape (and pointSize).
@@ -954,7 +954,7 @@ public class TemplateFactory
         final Map<Shape, Template> templates = new EnumMap<>(Shape.class);
 
         /**
-         * Create a {@code Catalog} object.
+         * Create a <code>Catalog</code> object.
          *
          * @param pointSize provided pointSize value
          */

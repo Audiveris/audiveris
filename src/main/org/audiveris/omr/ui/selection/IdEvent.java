@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.selection;
 
 /**
- * Class {@code IdEvent} is an event that conveys an entity ID.
+ * Class <code>IdEvent</code> is an event that conveys an entity ID.
  *
  * @author Hervé Bitteur
  */

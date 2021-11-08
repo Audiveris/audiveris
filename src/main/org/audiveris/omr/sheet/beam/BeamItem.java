@@ -30,7 +30,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BeamItem} represents one beam candidate, using a very simple
+ * Class <code>BeamItem</code> represents one beam candidate, using a very simple
  * parallelogram definition.
  *
  * @author Hervé Bitteur

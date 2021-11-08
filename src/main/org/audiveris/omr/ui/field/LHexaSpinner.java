@@ -30,7 +30,7 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /**
- * Class {@code LHexaSpinner} is an LIntegerSpinner with values displayed in hexadecimal.
+ * Class <code>LHexaSpinner</code> is an LIntegerSpinner with values displayed in hexadecimal.
  *
  * @author Hervé Bitteur
  */

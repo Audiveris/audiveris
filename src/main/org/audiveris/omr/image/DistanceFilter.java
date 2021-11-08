@@ -26,7 +26,7 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.util.Table;
 
 /**
- * Class {@code DistanceFilter} implements a {@link PixelFilter} on top of a distance
+ * Class <code>DistanceFilter</code> implements a {@link PixelFilter} on top of a distance
  * image.
  *
  * @author Hervé Bitteur

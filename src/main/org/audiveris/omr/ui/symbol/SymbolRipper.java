@@ -69,7 +69,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SymbolRipper} is a stand-alone utility to generate the
+ * Class <code>SymbolRipper</code> is a stand-alone utility to generate the
  * textual description of a symbol.
  * <p>
  * Symbol appearance is "ripped" from a musical font.

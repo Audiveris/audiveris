@@ -24,7 +24,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 /**
- * Class {@code MomentsExtractorTest}
+ * Class <code>MomentsExtractorTest</code>
  *
  * @author Hervé Bitteur
  */

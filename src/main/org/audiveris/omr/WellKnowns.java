@@ -42,7 +42,7 @@ import java.util.jar.JarFile;
 import javax.swing.filechooser.FileSystemView;
 
 /**
- * Class {@code WellKnowns} gathers top public static final data to be shared within
+ * Class <code>WellKnowns</code> gathers top public static final data to be shared within
  * Audiveris application.
  * <p>
  * Note that a few initial operations are performed here, because they need to take place before any

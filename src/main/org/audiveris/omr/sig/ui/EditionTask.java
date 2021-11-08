@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * Class {@code EditionTask} modifies the location and/or geometry of an inter
+ * Class <code>EditionTask</code> modifies the location and/or geometry of an inter
  *
  * @author Hervé Bitteur
  */
@@ -46,7 +46,7 @@ public class EditionTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EditionTask} object.
+     * Creates a new <code>EditionTask</code> object.
      *
      * @param editor  DOCUMENT ME!
      * @param links   DOCUMENT ME!

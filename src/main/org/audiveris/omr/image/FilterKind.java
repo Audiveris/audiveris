@@ -22,7 +22,7 @@
 package org.audiveris.omr.image;
 
 /**
- * Class {@code FilterKind} handles the various kinds of {@link PixelFilter}
+ * Class <code>FilterKind</code> handles the various kinds of {@link PixelFilter}
  * implementations.
  *
  * @author Hervé Bitteur

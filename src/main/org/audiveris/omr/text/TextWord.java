@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Class {@code TextWord} defines a structure to report all information about an
+ * Class <code>TextWord</code> defines a structure to report all information about an
  * OCR-decoded (or manual) word.
  *
  * @author Hervé Bitteur

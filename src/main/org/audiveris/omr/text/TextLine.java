@@ -46,7 +46,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code TextLine} defines a non-mutable structure to report all information on
+ * Class <code>TextLine</code> defines a non-mutable structure to report all information on
  * one OCR-decoded line.
  *
  * @author Hervé Bitteur

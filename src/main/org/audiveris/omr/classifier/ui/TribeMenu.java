@@ -45,7 +45,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code TribeMenu}
+ * Class <code>TribeMenu</code>
  *
  * @author Hervé Bitteur
  */
@@ -68,7 +68,7 @@ public class TribeMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TribeMenu} object.
+     * Creates a new <code>TribeMenu</code> object.
      *
      * @param glyph the selected glyph
      * @param sheet the containing sheet
@@ -206,17 +206,10 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    selectBest(shape);
-                }
+            ShapeSet.addAllShapes(this, (ActionEvent e) -> {
+                JMenuItem source = (JMenuItem) e.getSource();
+                Shape shape = Shape.valueOf(source.getText());
+                selectBest(shape);
             });
         }
     }

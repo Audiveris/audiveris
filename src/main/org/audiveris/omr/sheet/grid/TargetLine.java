@@ -26,7 +26,7 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code TargetLine} is an immutable perfect destination object for a staff line.
+ * Class <code>TargetLine</code> is an immutable perfect destination object for a staff line.
  *
  * @author Hervé Bitteur
  */

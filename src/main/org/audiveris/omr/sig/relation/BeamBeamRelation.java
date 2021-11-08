@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BeamBeamRelation} is meant to formalize support within beams of the same
+ * Class <code>BeamBeamRelation</code> is meant to formalize support within beams of the same
  * group (provided there is no exclusion between them).
  *
  * @author Hervé Bitteur
@@ -47,7 +47,7 @@ public class BeamBeamRelation
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BeamBeamRelation} object.
+     * Creates a new <code>BeamBeamRelation</code> object.
      */
     public BeamBeamRelation ()
     {

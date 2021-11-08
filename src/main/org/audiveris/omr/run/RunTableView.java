@@ -37,7 +37,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code RunTableView} displays a view on an run table.
+ * Class <code>RunTableView</code> displays a view on an run table.
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +54,7 @@ public class RunTableView
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunTableView} object.
+     * Creates a new <code>RunTableView</code> object.
      *
      * @param name            name for the view
      * @param table           the underlying table of runs

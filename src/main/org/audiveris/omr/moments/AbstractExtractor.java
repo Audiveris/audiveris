@@ -24,7 +24,7 @@ package org.audiveris.omr.moments;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code AbstractExtractor} provides the basis for moments extraction.
+ * Class <code>AbstractExtractor</code> provides the basis for moments extraction.
  *
  * @param <D> actual descriptor type
  * @author Hervé Bitteur

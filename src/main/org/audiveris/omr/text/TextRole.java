@@ -26,7 +26,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitches;
-import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -42,7 +42,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code TextRole} describes the role of a piece of text (typically a sentence).
+ * Class <code>TextRole</code> describes the role of a piece of text (typically a sentence).
  *
  * @author Hervé Bitteur
  */
@@ -226,7 +226,7 @@ public enum TextRole
                 return ChordName;
             } else {
                 if (lyricsAllowed && hasVowel ///&& lyricCloseAboveStaff
-                            && (switches.getValue(Switch.lyricsAboveStaff)) && (!isMainlyItalic)) {
+                            && (switches.getValue(ProcessingSwitch.lyricsAboveStaff)) && (!isMainlyItalic)) {
                     return Lyrics;
                 } else {
                     return Direction;
@@ -242,11 +242,11 @@ public enum TextRole
             } else if (lyricsAllowed
                                && hasVowel
                                && !isMainlyItalic
-                               && (switches.getValue(Switch.lyrics)
-                                           || switches.getValue(Switch.lyricsAboveStaff))
+                               && (switches.getValue(ProcessingSwitch.lyrics)
+                                           || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
                                && ((partPosition == StaffPosition.BELOW_STAVES)
                                            || ((partPosition == StaffPosition.ABOVE_STAVES)
-                                                       && switches.getValue(Switch.lyricsAboveStaff)))) {
+                                                       && switches.getValue(ProcessingSwitch.lyricsAboveStaff)))) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -268,7 +268,7 @@ public enum TextRole
 
             if (part.getStaves().size() == 1) {
                 if (lyricsAllowed && hasVowel && !isMainlyItalic && (switches
-                        .getValue(Switch.lyrics) || switches.getValue(Switch.lyricsAboveStaff))
+                        .getValue(ProcessingSwitch.lyrics) || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
                             && (partPosition == StaffPosition.BELOW_STAVES)) {
                     return Lyrics;
                 }

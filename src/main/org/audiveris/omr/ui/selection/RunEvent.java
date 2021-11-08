@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.selection;
 import org.audiveris.omr.run.Run;
 
 /**
- * Class {@code RunEvent} represents a Run selection.
+ * Class <code>RunEvent</code> represents a Run selection.
  *
  * @author Hervé Bitteur
  */

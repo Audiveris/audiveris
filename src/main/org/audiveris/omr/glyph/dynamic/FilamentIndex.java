@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code FilamentIndex} is a global index for handled filaments in a sheet.
+ * Class <code>FilamentIndex</code> is a global index for handled filaments in a sheet.
  *
  * @author Hervé Bitteur
  */
@@ -65,7 +65,7 @@ public class FilamentIndex
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FilamentIndex} object.
+     * Creates a new <code>FilamentIndex</code> object.
      *
      * @param sheet the related sheet
      */

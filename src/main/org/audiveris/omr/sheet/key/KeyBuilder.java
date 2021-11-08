@@ -71,7 +71,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code KeyBuilder} retrieves a staff key signature through the vertical
+ * Class <code>KeyBuilder</code> retrieves a staff key signature through the vertical
  * projection to x-axis of the foreground pixels in a given abscissa range of a staff.
  * <p>
  * An instance typically handles the initial key signature, perhaps void, at the beginning of a
@@ -194,7 +194,7 @@ public class KeyBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code KeyBuilder} object.
+     * Creates a new <code>KeyBuilder</code> object.
      *
      * @param column       the containing KeyColumn
      * @param staff        the underlying staff

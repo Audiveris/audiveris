@@ -30,7 +30,7 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
 /**
- * Class {@code SeparableToolBar} is a tool bar which is able to collapse unneeded separators
+ * Class <code>SeparableToolBar</code> is a tool bar which is able to collapse unneeded separators
  *
  * @author Brenton Partridge
  */

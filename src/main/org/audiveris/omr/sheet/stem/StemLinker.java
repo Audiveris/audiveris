@@ -28,7 +28,7 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 /**
- * Interface {@code StemLinker} abstract the common features of beam and head linkers.
+ * Interface <code>StemLinker</code> abstract the common features of beam and head linkers.
  *
  * @author Hervé Bitteur
  */

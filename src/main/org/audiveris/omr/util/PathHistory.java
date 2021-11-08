@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Class {@code PathHistory} handles a history of paths, as used for latest input or
+ * Class <code>PathHistory</code> handles a history of paths, as used for latest input or
  * book files.
  *
  * @author Hervé Bitteur
@@ -38,7 +38,7 @@ public class PathHistory
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code PathHistory} object.
+     * Creates a new <code>PathHistory</code> object.
      *
      * @param name           a name for this history instance
      * @param constant       backing constant on disk

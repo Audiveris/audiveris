@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Interface {@code OmrEngine} defines the API of an OMR engine.
+ * Interface <code>OmrEngine</code> defines the API of an OMR engine.
  * <p>
  * OMR deals with instances of {@link Book} class.
  * <p>

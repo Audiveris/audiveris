@@ -39,7 +39,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code PixelBuffer} handles a plain rectangular buffer of bytes.
+ * Class <code>PixelBuffer</code> handles a plain rectangular buffer of bytes.
  * <p>
  * It is an efficient {@link PixelFilter} both for writing and for reading.
  *

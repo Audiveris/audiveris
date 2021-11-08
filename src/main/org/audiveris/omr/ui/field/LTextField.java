@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.field;
 import javax.swing.JTextField;
 
 /**
- * Class {@code LTextField} is a {@link LField}, where the field is a text field.
+ * Class <code>LTextField</code> is a {@link LField}, where the field is a text field.
  *
  * @author Hervé Bitteur
  */

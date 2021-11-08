@@ -68,7 +68,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class {@code SlurLinker} retrieves the potential left and right links of a single slur
+ * Class <code>SlurLinker</code> retrieves the potential left and right links of a single slur
  * with the most suitable heads found in slur side areas.
  * <ul>
  * <li>Rather <b>horizontal</b> slurs have specific side areas, select intersected chords,
@@ -97,7 +97,7 @@ public class SlurLinker
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SlurLinker} object.
+     * Creates a new <code>SlurLinker</code> object.
      *
      * @param sheet the containing sheet
      */

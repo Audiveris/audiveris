@@ -24,7 +24,7 @@ package org.audiveris.omr.util.param;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code BooleanParam} is a Param for Boolean.
+ * Class <code>BooleanParam</code> is a Param for Boolean.
  * <p>
  * No longer used. Remove it?
  *
@@ -38,7 +38,7 @@ public class BooleanParam
     /**
      * JAXB adapter for BooleanParam type.
      */
-    public static class Adapter
+    public static class JaxbAdapter
             extends XmlAdapter<String, BooleanParam>
     {
 

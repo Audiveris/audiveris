@@ -60,7 +60,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code WedgeInter} represents a wedge (crescendo or diminuendo).
+ * Class <code>WedgeInter</code> represents a wedge (crescendo or diminuendo).
  * <p>
  * <img alt="Wedge image"
  * src=
@@ -118,7 +118,7 @@ public class WedgeInter
     }
 
     /**
-     * Creates a new {@code WedgeInter} object, meant for manual assignment.
+     * Creates a new <code>WedgeInter</code> object, meant for manual assignment.
      *
      * @param glyph underlying glyph, if any
      * @param shape CRESCENDO or DIMINUENDO

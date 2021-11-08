@@ -38,7 +38,7 @@ import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 
 /**
- * Class {@code ImageUtil} gathers convenient static methods working on images.
+ * Class <code>ImageUtil</code> gathers convenient static methods working on images.
  * <p>
  * TODO: Perhaps chaining JAI commands into a single operation would be more efficient (memory-wise
  * and performance-wise) that performing each bulk operation one after the other. It would also

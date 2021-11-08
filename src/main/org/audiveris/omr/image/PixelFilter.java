@@ -24,7 +24,7 @@ package org.audiveris.omr.image;
 import ij.process.ByteProcessor;
 
 /**
- * Interface {@code PixelFilter} reports the foreground pixels of a {@link PixelSource}.
+ * Interface <code>PixelFilter</code> reports the foreground pixels of a {@link PixelSource}.
  *
  * @author Hervé Bitteur
  */

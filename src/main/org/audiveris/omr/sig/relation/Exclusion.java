@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Exclusion} is a relation that indicates exclusion between two
+ * Class <code>Exclusion</code> is a relation that indicates exclusion between two
  * possible interpretations.
  *
  * @author Hervé Bitteur
@@ -37,9 +37,9 @@ public class Exclusion
     //~ Enumerations -------------------------------------------------------------------------------
 
     /**
-     * Cause of exclusion.
+     * Enum <code>ExclusionCause</code> describes the cause for exclusion.
      */
-    public enum Cause
+    public enum ExclusionCause
     {
         /** Physical overlap. */
         OVERLAP,
@@ -49,7 +49,7 @@ public class Exclusion
 
     //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute
-    public final Cause cause;
+    public final ExclusionCause cause;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -57,7 +57,7 @@ public class Exclusion
      *
      * @param cause root cause of this exclusion
      */
-    public Exclusion (Cause cause)
+    public Exclusion (ExclusionCause cause)
     {
         this.cause = cause;
     }

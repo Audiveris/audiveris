@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Plugin} describes a plugin instance, encapsulating the relationship
+ * Class <code>Plugin</code> describes a plugin instance, encapsulating the relationship
  * with an external program to consume MusicXML export.
  * <p>
  * A plugin element is an XML fragment, made of:
@@ -87,7 +87,7 @@ public class Plugin
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Plugin} object.
+     * Creates a new <code>Plugin</code> object.
      *
      * @param id   Unique name
      * @param tip  Description text

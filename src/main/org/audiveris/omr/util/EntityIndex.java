@@ -32,13 +32,13 @@ import java.util.List;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Interface {@code EntityIndex} describes a collection manager, with the ability to
+ * Interface <code>EntityIndex</code> describes a collection manager, with the ability to
  * retrieve a entity within the collection based on its (strictly positive integer) ID.
  *
  * @param <E> specific type for entity
  * @author Hervé Bitteur
  */
-@XmlJavaTypeAdapter(BasicIndex.InterfaceAdapter.class)
+@XmlJavaTypeAdapter(BasicIndex.IndexAdapter.class)
 public interface EntityIndex<E extends Entity>
 {
     //~ Methods ------------------------------------------------------------------------------------

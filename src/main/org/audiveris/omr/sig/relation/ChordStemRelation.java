@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordStemRelation} represents a HeadChord - Stem relation.
+ * Class <code>ChordStemRelation</code> represents a HeadChord - Stem relation.
  *
  * @author Hervé Bitteur
  */

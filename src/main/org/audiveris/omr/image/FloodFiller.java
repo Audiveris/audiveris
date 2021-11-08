@@ -24,7 +24,7 @@ package org.audiveris.omr.image;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code FloodFiller}
+ * Class <code>FloodFiller</code>
  *
  * @author Hervé Bitteur
  */

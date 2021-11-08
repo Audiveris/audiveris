@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SelectionPanel} handles a user panel to select samples from repository.
+ * Class <code>SelectionPanel</code> handles a user panel to select samples from repository.
  * <p>
  * This class is a dedicated companion of {@link Trainer}.
  * It handles the current selection among samples (both the training set and the test set).
@@ -320,37 +319,6 @@ class SelectionPanel
                 "samples",
                 10,
                 "Minimum sample count per shape for training");
-    }
-
-    //--------------//
-    // GradedSample //
-    //--------------//
-    /**
-     * Handle a sample together with its grade.
-     */
-    private static class GradedSample
-    {
-
-        /** For comparing GradedSample instances in reverse grade order. */
-        static final Comparator<GradedSample> reverseGradeComparator
-                = (GradedSample gs1, GradedSample gs2) -> Double.compare(gs2.grade, gs1.grade);
-
-        final Sample sample;
-
-        final double grade;
-
-        GradedSample (Sample sample,
-                      double grade)
-        {
-            this.sample = sample;
-            this.grade = grade;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "GradedSample{" + sample + " " + grade + "}";
-        }
     }
 
     private class ParamAction

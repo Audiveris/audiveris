@@ -62,7 +62,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code WordInter} represents a text word.
+ * Class <code>WordInter</code> represents a text word.
  * <p>
  * The containing {@link SentenceInter} is linked by a {@link Containment} relation.
  *
@@ -87,7 +87,7 @@ public class WordInter
 
     /** Detected font attributes. */
     @XmlAttribute(name = "font")
-    @XmlJavaTypeAdapter(FontInfo.Adapter.class)
+    @XmlJavaTypeAdapter(FontInfo.JaxbAdapter.class)
     protected FontInfo fontInfo;
 
     /** Precise word starting point on the baseline. */
@@ -97,7 +97,7 @@ public class WordInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code WordInter} object, with TEXT shape.
+     * Creates a new <code>WordInter</code> object, with TEXT shape.
      *
      * @param textWord the OCR'ed text word
      */
@@ -107,7 +107,7 @@ public class WordInter
     }
 
     /**
-     * Creates a new {@code WordInter} object, with provided shape.
+     * Creates a new <code>WordInter</code> object, with provided shape.
      *
      * @param textWord the OCR'ed text word
      * @param shape    specific shape (TEXT or LYRICS)
@@ -125,7 +125,7 @@ public class WordInter
     }
 
     /**
-     * Creates a new {@code WordInter} object from an original WordInter,
+     * Creates a new <code>WordInter</code> object from an original WordInter,
      * with provided shape.
      *
      * @param word  the original word inter
@@ -144,7 +144,7 @@ public class WordInter
     }
 
     /**
-     * Creates a new {@code WordInter} object, with all details.
+     * Creates a new <code>WordInter</code> object, with all details.
      *
      * @param glyph    underlying glyph
      * @param bounds   bounding box
@@ -169,7 +169,7 @@ public class WordInter
     }
 
     /**
-     * Creates a new {@code WordInter} object meant for manual assignment.
+     * Creates a new <code>WordInter</code> object meant for manual assignment.
      *
      * @param shape specific shape (TEXT or LYRICS)
      * @param grade inter grade

@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Containment} represents an ensemble - member relation.
+ * Class <code>Containment</code> represents an ensemble - member relation.
  *
  * @author Hervé Bitteur
  */

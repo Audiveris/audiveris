@@ -29,7 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JTabbedPane;
 
 /**
- * Class {@code ClosableTabbedPane} is a JTabbedPane where each tab can be closed by
+ * Class <code>ClosableTabbedPane</code> is a JTabbedPane where each tab can be closed by
  * the user.
  * <p>
  * Each tab in this tabbed pane is assigned a {@link ButtonTabComponent}.

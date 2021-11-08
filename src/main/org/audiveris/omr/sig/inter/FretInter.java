@@ -27,7 +27,7 @@ import org.audiveris.omr.glyph.Shape;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FretInter} represents a fret number for guitar left-hand.
+ * Class <code>FretInter</code> represents a fret number for guitar left-hand.
  *
  * @author Hervé Bitteur
  */
@@ -43,7 +43,7 @@ public class FretInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FretInter} object.
+     * Creates a new <code>FretInter</code> object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape

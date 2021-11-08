@@ -50,7 +50,7 @@ import java.awt.Stroke;
 import java.util.List;
 
 /**
- * Class {@code InterDnd} handles one DnD operation with a moving inter (ghost).
+ * Class <code>InterDnd</code> handles one DnD operation with a moving inter (ghost).
  * <p>
  * The dragged inter originates from the ShapeBoard, it can move between systems
  * (as opposed to an {@link InterEditor}) until the inter is finally dropped into a system
@@ -101,7 +101,7 @@ public class InterDnd
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterDnd} object.
+     * Creates a new <code>InterDnd</code> object.
      *
      * @param ghost  the inter being dragged
      * @param sheet  the containing sheet

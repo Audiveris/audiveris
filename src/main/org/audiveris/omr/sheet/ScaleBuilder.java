@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
+ * Class <code>ScaleBuilder</code> computes the global scale of a given sheet by processing
  * the image vertical runs.
  * <p>
  * Adding the most frequent black run length to the most frequent white run length,

@@ -43,7 +43,7 @@ public class RunTableTest
     private static final Dimension dim = new Dimension(10, 5);
 
     /**
-     * Creates a new {@code RunTableTest} object.
+     * Creates a new <code>RunTableTest</code> object.
      */
     public RunTableTest ()
     {

@@ -37,7 +37,7 @@ import java.awt.Stroke;
 import java.util.Collection;
 
 /**
- * Class {@code InterTracker} paints a moving Inter together with attachments and
+ * Class <code>InterTracker</code> paints a moving Inter together with attachments and
  * decorations dynamically evaluated (support relations, intermediate ledgers, etc).
  * <p>
  * It is used by {@link InterDnd} and by {@link InterEditor}.
@@ -62,7 +62,7 @@ public class InterTracker
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates an {@code InterTracker} object.
+     * Creates an <code>InterTracker</code> object.
      *
      * @param inter the inter to follow
      * @param sheet the containing sheet

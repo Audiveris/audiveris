@@ -47,7 +47,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code SelectionPainter} is meant to paint just selected items.
+ * Class <code>SelectionPainter</code> is meant to paint just selected items.
  *
  * @author Hervé Bitteur
  */
@@ -62,7 +62,7 @@ public class SelectionPainter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SelectionPainter} object.
+     * Creates a new <code>SelectionPainter</code> object.
      *
      * @param sheet the sheet to paint
      * @param g     Graphic context

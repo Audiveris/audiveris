@@ -59,10 +59,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code LyricItemInter} is a specific subclass of Text, meant for one
+ * Class <code>LyricItemInter</code> is a specific subclass of Text, meant for one
  * item of a {@link LyricLineInter}.
- * <p>
- * Its kind is either Syllable, Hyphen, Extension or Elision.
  *
  * @author Hervé Bitteur
  */
@@ -77,13 +75,13 @@ public class LyricItemInter
     private static final Logger logger = LoggerFactory.getLogger(LyricItemInter.class);
 
     //~ Enumerations -------------------------------------------------------------------------------
-    //----------//
-    // ItemKind //
-    //----------//
+    //---------------//
+    // LyricItemKind //
+    //---------------//
     /**
-     * Describes the kind of this lyrics item.
+     * Enum <code>LyricItemKind</code> describes the kind of a lyric item.
      */
-    public static enum ItemKind
+    public static enum LyricItemKind
     {
         /** Just an elision. */
         Elision,
@@ -116,7 +114,7 @@ public class LyricItemInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Lyrics kind. */
     @XmlAttribute(name = "kind")
-    private ItemKind itemKind;
+    private LyricItemKind itemKind;
 
     /** Characteristics of the lyrics syllable, if any. */
     @XmlAttribute(name = "syllabic")
@@ -155,7 +153,7 @@ public class LyricItemInter
     }
 
     /**
-     * Creates a new {@code LyricItemInter} object meant for manual assignment.
+     * Creates a new <code>LyricItemInter</code> object meant for manual assignment.
      *
      * @param grade inter grade
      */
@@ -198,7 +196,7 @@ public class LyricItemInter
     @Override
     public boolean checkAbnormal ()
     {
-        if (itemKind == ItemKind.Syllable) {
+        if (itemKind == LyricItemKind.Syllable) {
             // Check if connected to a head chord
             setAbnormal(getHeadChord() == null);
         }
@@ -219,13 +217,13 @@ public class LyricItemInter
     public void defineSyllabicType (LyricItemInter prevItem,
                                     LyricItemInter nextItem)
     {
-        if ((prevItem != null) && (prevItem.itemKind == ItemKind.Hyphen)) {
-            if ((nextItem != null) && (nextItem.itemKind == ItemKind.Hyphen)) {
+        if ((prevItem != null) && (prevItem.itemKind == LyricItemKind.Hyphen)) {
+            if ((nextItem != null) && (nextItem.itemKind == LyricItemKind.Hyphen)) {
                 syllabicType = SyllabicType.MIDDLE;
             } else {
                 syllabicType = SyllabicType.END;
             }
-        } else if ((nextItem != null) && (nextItem.itemKind == ItemKind.Hyphen)) {
+        } else if ((nextItem != null) && (nextItem.itemKind == LyricItemKind.Hyphen)) {
             syllabicType = SyllabicType.BEGIN;
         } else {
             syllabicType = SyllabicType.SINGLE;
@@ -257,7 +255,7 @@ public class LyricItemInter
      *
      * @return item kind (Syllable, Hyphen, ...)
      */
-    public ItemKind getItemKind ()
+    public LyricItemKind getItemKind ()
     {
         return itemKind;
     }
@@ -270,7 +268,7 @@ public class LyricItemInter
      *
      * @param itemKind item kind
      */
-    public void setItemKind (ItemKind itemKind)
+    public void setItemKind (LyricItemKind itemKind)
     {
         this.itemKind = itemKind;
     }
@@ -327,11 +325,11 @@ public class LyricItemInter
     {
         super.setValue(value);
 
-        ItemKind oldKind = itemKind;
+        LyricItemKind oldKind = itemKind;
         itemKind = inferItemKind();
 
         if ((sig != null) && (itemKind != oldKind)) {
-            if (itemKind == ItemKind.Syllable) {
+            if (itemKind == LyricItemKind.Syllable) {
                 // Try to set relation with chord
                 final int profile = Math.max(getProfile(), sig.getSystem().getProfile());
                 mapToChord(profile);
@@ -555,7 +553,7 @@ public class LyricItemInter
     public Collection<Link> searchLinks (SystemInfo system)
     {
         // We can map only syllables
-        if (itemKind != ItemKind.Syllable) {
+        if (itemKind != LyricItemKind.Syllable) {
             return Collections.emptyList();
         }
 
@@ -617,7 +615,7 @@ public class LyricItemInter
      */
     public boolean isSyllable ()
     {
-        return itemKind == ItemKind.Syllable;
+        return itemKind == LyricItemKind.Syllable;
     }
 
     //-------------//
@@ -640,16 +638,16 @@ public class LyricItemInter
     /**
      * Infer item kind from content.
      */
-    private ItemKind inferItemKind ()
+    private LyricItemKind inferItemKind ()
     {
         if (ELISION_STRING.equals(value)) {
-            return ItemKind.Elision;
+            return LyricItemKind.Elision;
         } else if (EXTENSIONS.contains(value)) {
-            return ItemKind.Extension;
+            return LyricItemKind.Extension;
         } else if (HYPHEN_STRING.equals(value)) {
-            return ItemKind.Hyphen;
+            return LyricItemKind.Hyphen;
         } else {
-            return ItemKind.Syllable;
+            return LyricItemKind.Syllable;
         }
     }
 

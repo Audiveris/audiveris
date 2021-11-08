@@ -27,7 +27,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code FlatSymbol} handles a flat or double-flat symbol with a refPoint.
+ * Class <code>FlatSymbol</code> handles a flat or double-flat symbol with a refPoint.
  *
  * @author Hervé Bitteur
  */

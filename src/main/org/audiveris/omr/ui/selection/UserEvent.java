@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Interface {@code UserEvent} defines the common behavior of user events that are
+ * Interface <code>UserEvent</code> defines the common behavior of user events that are
  * stored as selections, and handled by the EventBus.
  *
  * @param <E> type of conveyed data

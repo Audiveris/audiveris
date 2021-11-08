@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Tribe} defines a group of glyphs that compete for a symbol.
+ * Class <code>Tribe</code> defines a group of glyphs that compete for a symbol.
  * <p>
  * This is meant for testing classifier in its ability to separate the best candidate from other
  * sub-optimal candidates.
@@ -57,7 +57,7 @@ public class Tribe
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Tribe} object.
+     * Creates a new <code>Tribe</code> object.
      *
      * @param best the best sample for tribe underlying symbol
      */

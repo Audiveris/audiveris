@@ -41,7 +41,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Class {@code NaturalSpline} defines a natural (cubic) spline interpolated on a
+ * Class <code>NaturalSpline</code> defines a natural (cubic) spline interpolated on a
  * sequence of knots.
  * <p>
  * Internally the spline is composed of a sequence of curves, one curve between two consecutive

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code SelectionService} is an OMR customized version of an EventService as
+ * Class <code>SelectionService</code> is an OMR customized version of an EventService as
  * provided by the EventBus framework, to handle one or several UserEvent classes.
  * <p>
  * Because the same service can be used to convey different sub-classes of UserEvent, we cannot

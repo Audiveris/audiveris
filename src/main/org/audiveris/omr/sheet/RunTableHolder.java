@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class {@code RunTableHolder} holds the reference to a run table, at least the path
+ * Class <code>RunTableHolder</code> holds the reference to a run table, at least the path
  * to its marshalled data on disk, and (on demand) the unmarshalled run table itself.
  *
  * @author Hervé Bitteur
@@ -54,7 +54,7 @@ public class RunTableHolder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code RunTableHolder} object.
+     * Creates a new <code>RunTableHolder</code> object.
      *
      * @param key table key
      */

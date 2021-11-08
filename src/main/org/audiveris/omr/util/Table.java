@@ -25,7 +25,7 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 /**
- * Interface {@code Table} provides a rectangular table implemented as a single array
+ * Interface <code>Table</code> provides a rectangular table implemented as a single array
  * of desired type (byte, short, int).
  *
  * @author Hervé Bitteur

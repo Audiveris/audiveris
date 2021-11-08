@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Class {@code PageReduction} reduces the parts of each system to a list of parts
+ * Class <code>PageReduction</code> reduces the parts of each system to a list of parts
  * defined at page level.
  *
  * @author Hervé Bitteur

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code StringUtil} provides String utilities.
+ * Class <code>StringUtil</code> provides String utilities.
  *
  * @author Hervé Bitteur
  */

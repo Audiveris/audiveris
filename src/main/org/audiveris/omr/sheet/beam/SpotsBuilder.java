@@ -60,7 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SpotsBuilder} performs morphology analysis to retrieve the major spots
+ * Class <code>SpotsBuilder</code> performs morphology analysis to retrieve the major spots
  * that compose beams.
  * <p>
  * It can work on a whole sheet or on a snapshot of cues aggregate.

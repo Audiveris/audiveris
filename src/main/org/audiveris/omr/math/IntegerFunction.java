@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code IntegerFunction} represents a function y = f(x), where x &amp; y are
+ * Class <code>IntegerFunction</code> represents a function y = f(x), where x &amp; y are
  * integers.
  * <p>
  * For any x value between xMin and xMax, y is defined as value(x).
@@ -59,7 +59,7 @@ public class IntegerFunction
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates an instance of {@code IntegerFunction}.
+     * Creates an instance of <code>IntegerFunction</code>.
      *
      * @param xMin minimum x value
      * @param xMax maximum x value

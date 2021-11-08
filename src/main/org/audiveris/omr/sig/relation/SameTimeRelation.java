@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.relation;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SameTimeRelation} indicates that the source and target chords
+ * Class <code>SameTimeRelation</code> indicates that the source and target chords
  * should share the same time slot.
  *
  * @author Hervé Bitteur
@@ -36,7 +36,7 @@ public class SameTimeRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code SameTimeRelation} object.
+     * Creates a new <code>SameTimeRelation</code> object.
      */
     public SameTimeRelation ()
     {

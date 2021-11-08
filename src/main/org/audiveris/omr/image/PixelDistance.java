@@ -24,7 +24,7 @@ package org.audiveris.omr.image;
 import java.util.Comparator;
 
 /**
- * Class {@code PixelDistance} records a distance at a given pixel location.
+ * Class <code>PixelDistance</code> records a distance at a given pixel location.
  *
  * @author Hervé Bitteur
  */

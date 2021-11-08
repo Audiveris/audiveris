@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code VerticalFilter} is a specialization of
+ * Class <code>VerticalFilter</code> is a specialization of
  * {@link AdaptiveFilter} which computes mean and standard
  * deviation values based on vertical tiles of integrals.
  * <p>

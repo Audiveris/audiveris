@@ -38,7 +38,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * Class {@code TestRefs}
+ * Class <code>TestRefs</code>
  *
  * @author Hervé Bitteur
  */

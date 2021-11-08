@@ -30,7 +30,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code OneLineStaff} is a one-line staff dedicated to percussion instrument.
+ * Class <code>OneLineStaff</code> is a one-line staff dedicated to percussion instrument.
  * <p>
  * Note that percussion can also be found using standard 5-line staves.
  * <p>
@@ -48,7 +48,7 @@ public class OneLineStaff
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a {@code OneLineStaff} object
+     * Create a <code>OneLineStaff</code> object
      *
      * @param id                the id of the staff
      * @param left              abscissa of the left side

@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractVerticalInter} is the basis for rather vertical inter classes.
+ * Class <code>AbstractVerticalInter</code> is the basis for rather vertical inter classes.
  * <ul>
  * <li>{@link StemInter} and {@link ArpeggiatoInter} that can be smaller or taller than staff
  * height.
@@ -61,19 +61,19 @@ public abstract class AbstractVerticalInter
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Item width. */
+    /** The average thickness in pixels for this vertical item. */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
     protected Double width;
 
-    /** Median line, from top to bottom. */
+    /** The vertical median line, defined from top to bottom. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     protected Line2D median;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractVerticalInter} object.
+     * Creates a new <code>AbstractVerticalInter</code> object.
      *
      * @param glyph   the underlying glyph
      * @param shape   the assigned shape
@@ -103,7 +103,7 @@ public abstract class AbstractVerticalInter
     }
 
     /**
-     * Creates a new {@code AbstractVerticalInter} object.
+     * Creates a new <code>AbstractVerticalInter</code> object.
      *
      * @param glyph   the underlying glyph
      * @param shape   the assigned shape
@@ -123,7 +123,7 @@ public abstract class AbstractVerticalInter
     }
 
     /**
-     * Creates a new {@code AbstractVerticalInter} object.
+     * Creates a new <code>AbstractVerticalInter</code> object.
      *
      * @param glyph  the underlying glyph
      * @param shape  the assigned shape
@@ -153,7 +153,7 @@ public abstract class AbstractVerticalInter
     }
 
     /**
-     * Creates a new {@code AbstractVerticalInter} object.
+     * Creates a new <code>AbstractVerticalInter</code> object.
      *
      * @param glyph the underlying glyph
      * @param shape the assigned shape

@@ -70,7 +70,7 @@ class TribeList
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TribeList} object.
+     * Creates a new <code>TribeList</code> object.
      *
      * @param sampleSheet the containing sample sheet
      */

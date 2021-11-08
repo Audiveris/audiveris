@@ -27,7 +27,7 @@ import org.audiveris.omr.glyph.Shape;
 import java.util.Comparator;
 
 /**
- * Class {@code Evaluation} gathers a glyph shape, its grade and, if any, details about
+ * Class <code>Evaluation</code> gathers a glyph shape, its grade and, if any, details about
  * its failure (name of the check that failed).
  *
  * @author Hervé Bitteur
@@ -118,7 +118,7 @@ public class Evaluation
         public final String test;
 
         /**
-         * Create a {@code Failure} object.
+         * Create a <code>Failure</code> object.
          *
          * @param test the test which failed
          */

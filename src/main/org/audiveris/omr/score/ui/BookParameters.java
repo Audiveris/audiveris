@@ -30,7 +30,7 @@ import org.audiveris.omr.image.FilterKind;
 import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.ProcessingSwitches;
-import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
@@ -64,7 +64,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code BookParameters} is a dialog that allows the user to easily manage the
+ * Class <code>BookParameters</code> is a dialog that allows the user to easily manage the
  * most frequent parameters.
  * <p>
  * It addresses:
@@ -160,7 +160,7 @@ public class BookParameters
 
         ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
 
-        for (Switch key : Switch.values()) {
+        for (ProcessingSwitch key : ProcessingSwitch.values()) {
             SwitchPane switchPane = new SwitchPane(key, null, defaultSwitches.getParam(key));
             defaultPanes.add(switchPane);
         }
@@ -185,7 +185,7 @@ public class BookParameters
                 bookPanes.add(bookTextPane);
             }
 
-            for (Switch key : Switch.values()) {
+            for (ProcessingSwitch key : ProcessingSwitch.values()) {
                 Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
                 bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
             }
@@ -210,7 +210,7 @@ public class BookParameters
                         sheetPanes.add(sheetTextPane);
                     }
 
-                    for (Switch key : Switch.values()) {
+                    for (ProcessingSwitch key : ProcessingSwitch.values()) {
                         Param<Boolean> bp = s.getProcessingSwitches().getParam(key);
                         sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
@@ -401,7 +401,7 @@ public class BookParameters
      * @return corresponding pane
      */
     private static SwitchPane getPane (ScopedPanel panel,
-                                       Switch key)
+                                       ProcessingSwitch key)
     {
         for (XactDataPane pane : panel.getPanes()) {
             if (pane instanceof SwitchPane) {
@@ -653,9 +653,9 @@ public class BookParameters
             extends BooleanPane
     {
 
-        final Switch key;
+        final ProcessingSwitch key;
 
-        SwitchPane (Switch key,
+        SwitchPane (ProcessingSwitch key,
                     XactDataPane<Boolean> parent,
                     Param<Boolean> model)
         {
@@ -686,7 +686,7 @@ public class BookParameters
             return r + 2;
         }
 
-        public Switch getKey ()
+        public ProcessingSwitch getKey ()
         {
             return key;
         }
@@ -697,7 +697,7 @@ public class BookParameters
             return 1;
         }
 
-        private static String textOf (Switch key)
+        private static String textOf (ProcessingSwitch key)
         {
             // Priority given to text in resources file if any
             final String desc = resources.getString("Switch." + key + ".text");
@@ -706,7 +706,7 @@ public class BookParameters
             return (desc != null) ? desc : key.getConstant().getDescription();
         }
 
-        private static String tipOf (Switch key)
+        private static String tipOf (ProcessingSwitch key)
         {
             return resources.getString("Switch." + key + ".toolTipText");
         }

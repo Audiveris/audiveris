@@ -32,7 +32,7 @@ import java.util.TreeMap;
 import javax.media.jai.JAI;
 
 /**
- * Class {@code JaiLoader} is meant to keep JAI-based image features separate from the
+ * Class <code>JaiLoader</code> is meant to keep JAI-based image features separate from the
  * rest of Audiveris application, and thus saving on jar download.
  *
  * @author Brenton Partridge

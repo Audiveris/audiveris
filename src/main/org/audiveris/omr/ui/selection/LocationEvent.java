@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 
 /**
- * Class {@code LocationEvent} is UI Event that represents a new location (a rectangle,
+ * Class <code>LocationEvent</code> is UI Event that represents a new location (a rectangle,
  * perhaps degenerated to a point) within the Sheet coordinates space.
  *
  * @author Hervé Bitteur

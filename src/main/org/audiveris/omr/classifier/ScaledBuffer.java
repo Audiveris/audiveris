@@ -31,7 +31,7 @@ import org.audiveris.omr.util.ByteUtil;
 import java.awt.Point;
 
 /**
- * Class {@code ScaledBuffer} produces a rectangular buffer, with size normalized by
+ * Class <code>ScaledBuffer</code> produces a rectangular buffer, with size normalized by
  * reference interline value, and centered on glyph centroid.
  *
  * @author Hervé Bitteur

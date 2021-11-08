@@ -28,7 +28,7 @@ import org.audiveris.omr.util.ByteUtil;
 import java.awt.Point;
 
 /**
- * Class {@code Lags} gathers utilities for lags.
+ * Class <code>Lags</code> gathers utilities for lags.
  *
  * @author Hervé Bitteur
  */

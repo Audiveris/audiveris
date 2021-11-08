@@ -36,9 +36,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ClefInter} handles a Clef interpretation.
+ * Class <code>ClefInter</code> handles a Clef interpretation.
  * <p>
- * The following image, directly pulled from wikipedia, explains the most popular clefs today
+ * The following image, borrowed from wikipedia, explains the most popular clefs today
  * (Treble, Alto, Tenor and Bass) and for each presents where the "Middle C" note (C4) would take
  * place.
  * <p>
@@ -46,8 +46,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  * "http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
  * alt="Middle C in four clefs">
  * <p>
- * Step line of the clef : -4 for top line (Baritone), -2 for Bass and Tenor,
- * 0 for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
+ * NoteStep line of the clef:
+ * <ul>
+ * <li>-4 for top line (Baritone)
+ * <li>-2 for Bass and Tenor
+ * <li> 0 for Alto
+ * <li>+2 for Treble and Mezzo-Soprano
+ * <li>+4 for bottom line (Soprano)
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -311,7 +317,7 @@ public class ClefInter
      * @param pitch the pitch position of the note
      * @return the corresponding note step
      */
-    private HeadInter.Step noteStepOf (int pitch)
+    private HeadInter.NoteStep noteStepOf (int pitch)
     {
         switch (shape) {
         case G_CLEF:
@@ -319,18 +325,18 @@ public class ClefInter
         case G_CLEF_8VA:
         case G_CLEF_8VB:
         case PERCUSSION_CLEF:
-            return HeadInter.Step.values()[(71 - pitch) % 7];
+            return HeadInter.NoteStep.values()[(71 - pitch) % 7];
 
         case C_CLEF:
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return HeadInter.Step.values()[((72 + (int) Math.rint(this.pitch)) - pitch) % 7];
+            return HeadInter.NoteStep.values()[((72 + (int) Math.rint(this.pitch)) - pitch) % 7];
 
         case F_CLEF:
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            return HeadInter.Step.values()[(73 - pitch) % 7];
+            return HeadInter.NoteStep.values()[(73 - pitch) % 7];
 
         default:
             logger.error("No note step defined for {}", this);
@@ -529,8 +535,8 @@ public class ClefInter
      * @param pitchPosition the pitch position of the provided note
      * @return the corresponding note step
      */
-    public static HeadInter.Step noteStepOf (ClefInter clef,
-                                             int pitchPosition)
+    public static HeadInter.NoteStep noteStepOf (ClefInter clef,
+                                                 int pitchPosition)
     {
         if (clef == null) {
             return defaultClef.noteStepOf(pitchPosition);

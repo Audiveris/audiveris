@@ -26,7 +26,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
 
 /**
- * Class {@code LinkTask}
+ * Class <code>LinkTask</code>
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ public class LinkTask
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new {@code LinkTask} object.
+     * Creates a new <code>LinkTask</code> object.
      *
      * @param sig      the underlying sig
      * @param source   the source inter

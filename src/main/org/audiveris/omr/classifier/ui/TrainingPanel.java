@@ -60,7 +60,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code TrainingPanel} is a panel dedicated to the training of a classifier.
+ * Class <code>TrainingPanel</code> is a panel dedicated to the training of a classifier.
  * <p>
  * It is a dedicated companion of class {@link Trainer}.
  *

@@ -29,7 +29,7 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.SelectionService;
@@ -63,7 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code StubsController} is the UI Controller in charge of user interactions
+ * Class <code>StubsController</code> is the UI Controller in charge of user interactions
  * with the sheets stubs.
  * <p>
  * Multiple stubs are handled by means of a tabbed pane. For each tab, and thus for each stub, we
@@ -114,7 +114,7 @@ public class StubsController
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create the {@code StubsController} singleton.
+     * Create the <code>StubsController</code> singleton.
      */
     private StubsController ()
     {
@@ -751,7 +751,7 @@ public class StubsController
                 logger.debug("checkStubStatus got lock on {}", stub);
 
                 if (early) {
-                    final Step earlyStep = getEarlyStep();
+                    final OmrStep earlyStep = getEarlyStep();
 
                     if (earlyStep != null) {
                         logger.debug("EarlyStep. reachStep {} on {}", earlyStep, stub);
@@ -958,7 +958,7 @@ public class StubsController
      *
      * @return the default target step
      */
-    public static Step getEarlyStep ()
+    public static OmrStep getEarlyStep ()
     {
         return constants.earlyStep.getValue();
     }
@@ -971,7 +971,7 @@ public class StubsController
      *
      * @param step the default target step
      */
-    public static void setEarlyStep (Step step)
+    public static void setEarlyStep (OmrStep step)
     {
         if (step != getEarlyStep()) {
             constants.earlyStep.setValue(step);
@@ -1022,9 +1022,9 @@ public class StubsController
             extends ConstantSet
     {
 
-        private final Constant.Enum<Step> earlyStep = new Constant.Enum<>(
-                Step.class,
-                Step.BINARY,
+        private final Constant.Enum<OmrStep> earlyStep = new Constant.Enum<>(
+                OmrStep.class,
+                OmrStep.BINARY,
                 "Early step triggered when an empty stub tab is selected ");
 
         private final Constant.Ratio initialZoomRatio = new Constant.Ratio(

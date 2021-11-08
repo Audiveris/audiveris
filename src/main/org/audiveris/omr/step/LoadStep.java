@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code LoadStep} loads the image for a sheet, from a provided image file.
+ * Class <code>LoadStep</code> loads the image for a sheet, from a provided image file.
  *
  * @author Hervé Bitteur
  */

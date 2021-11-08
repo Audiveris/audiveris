@@ -42,13 +42,14 @@ import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextsStep;
 
 /**
- * Enum {@code Step} describes the steps of sheet processing pipeline.
+ * Enum <code>OmrStep</code> describes the sequence of sheet processing steps in the OMR
+ * engine pipeline.
  * <p>
- * <img src="doc-files/Step.png" alt="Step image">
+ * <img src="doc-files/Step.png" alt="Image of all OMR steps">
  *
  * @author Hervé Bitteur
  */
-public enum Step
+public enum OmrStep
 {
     LOAD("Get the sheet gray picture", new LoadStep()),
     BINARY("Binarize the sheet gray picture", new BinaryStep()),
@@ -78,13 +79,13 @@ public enum Step
     private final AbstractStep helper;
 
     /**
-     * Create an instance of {@code Step}.
+     * Create an instance of <code>Step</code>.
      *
      * @param description step description
      * @param helper      step implementation
      */
-    private Step (String description,
-                  AbstractStep helper)
+    private OmrStep (String description,
+                     AbstractStep helper)
     {
         this.description = description;
         this.helper = helper;
@@ -98,7 +99,7 @@ public enum Step
      *
      * @return the first step
      */
-    public static Step first ()
+    public static OmrStep first ()
     {
         return values()[0];
     }
@@ -111,7 +112,7 @@ public enum Step
      *
      * @return the last step
      */
-    public static Step last ()
+    public static OmrStep last ()
     {
         return values()[values().length - 1];
     }

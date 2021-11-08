@@ -32,8 +32,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Class {@code Trimmable} allows to nullify some empty collection fields before being
- * marshalled and to reallocate proper empty collection after being marshalled.
+ * Class <code>Trimmable</code> allows to nullify some empty collection fields before
+ * being marshalled and to reallocate proper empty collection after being marshalled.
  *
  * @author Hervé Bitteur
  */
@@ -118,7 +118,7 @@ public abstract class Trimmable
 
     //~ Annotations --------------------------------------------------------------------------------
     /**
-     * Annotation {@code Collection} flags a collection field as trimmable.
+     * Annotation <code>Collection</code> flags a collection field as trimmable.
      * <p>
      * NOTA: This can apply only on concrete collection class, not on collection interface.
      * For example ArrayList but not List.

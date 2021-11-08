@@ -37,7 +37,7 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 
 /**
- * Class {@code EntityService} handles user selection on top of a given
+ * Class <code>EntityService</code> handles user selection on top of a given
  * {@link EntityIndex}.
  * <p>
  * The set of events allowed on the service is defined via the constructor.
@@ -71,7 +71,7 @@ public class EntityService<E extends Entity>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code EntityService} object with no underlying index.
+     * Creates a new <code>EntityService</code> object with no underlying index.
      *
      * @param name            service name
      * @param locationService related location service, or null if none
@@ -88,7 +88,7 @@ public class EntityService<E extends Entity>
     }
 
     /**
-     * Creates a new {@code EntityService} object.
+     * Creates a new <code>EntityService</code> object.
      *
      * @param index           underlying index
      * @param locationService related location service, or null if none

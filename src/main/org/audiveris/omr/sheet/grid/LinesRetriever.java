@@ -88,7 +88,7 @@ import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.TOP;
 
 /**
- * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
+ * Class <code>LinesRetriever</code> retrieves the staff lines of a sheet.
  *
  * @author Hervé Bitteur
  */
@@ -1488,7 +1488,7 @@ public class LinesRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants
+     * Class <code>Parameters</code> gathers all pre-scaled constants
      * related to horizontal frames.
      */
     private static class Parameters

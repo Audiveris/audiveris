@@ -28,7 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.image.RenderedImage;
 
 /**
- * Class {@code ImageView} displays a view on an image.
+ * Class <code>ImageView</code> displays a view on an image.
  * Typically, subclasses would have to only override the {@link #renderItems} method.
  *
  * @author Hervé Bitteur

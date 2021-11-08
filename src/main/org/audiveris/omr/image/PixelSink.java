@@ -22,7 +22,7 @@
 package org.audiveris.omr.image;
 
 /**
- * Interface {@code PixelSink} defines the operations expected from a rectangular pixel
+ * Interface <code>PixelSink</code> defines the operations expected from a rectangular pixel
  * sink.
  *
  * @author Hervé Bitteur

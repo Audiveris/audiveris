@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code BasicAttachmentHolder} is a simple implementation of
+ * Class <code>BasicAttachmentHolder</code> is a simple implementation of
  * {@link AttachmentHolder} interface.
  *
  * @author Hervé Bitteur

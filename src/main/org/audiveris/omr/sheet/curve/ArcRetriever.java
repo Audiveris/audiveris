@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code ArcRetriever} retrieves all arcs and store the interesting ones in
+ * Class <code>ArcRetriever</code> retrieves all arcs and store the interesting ones in
  * skeleton arcsMap (and voidArcsMap for void arcs).
  * Each non-void arc has its two ending points flagged with a specific gray value to remember the
  * arc shape.
@@ -85,9 +85,9 @@ public class ArcRetriever
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
-     * Status for current move along arc.
+     * MoveStatus for current move along arc.
      */
-    private static enum Status
+    private static enum MoveStatus
     {
         /** One more point on arc. */
         CONTINUE,
@@ -347,7 +347,7 @@ public class ArcRetriever
      * @param reverse current orientation
      * @return code describing the move performed if any. The new position is stored in (cx, cy).
      */
-    private Status move (Arc arc,
+    private MoveStatus move (Arc arc,
                          int x,
                          int y,
                          boolean reverse)
@@ -365,7 +365,7 @@ public class ArcRetriever
                 arc.setJunction(junctionPt, reverse);
                 lastDir = dir;
 
-                return Status.SWITCH;
+                return MoveStatus.SWITCH;
             }
         }
 
@@ -379,12 +379,12 @@ public class ArcRetriever
             if (pix == ARC) {
                 lastDir = dir;
 
-                return Status.CONTINUE;
+                return MoveStatus.CONTINUE;
             }
         }
 
         // The end (dead end or back to start)
-        return Status.END;
+        return MoveStatus.END;
     }
 
     //---------//
@@ -556,7 +556,7 @@ public class ArcRetriever
         cx = xStart;
         cy = yStart;
 
-        while (move(arc, cx, cy, reverse) == Status.CONTINUE) {
+        while (move(arc, cx, cy, reverse) == MoveStatus.CONTINUE) {
             // Check vertical run length at current point
             Run run = verticalRuns.getRunAt(cx, cy);
 

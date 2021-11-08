@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code MyAbstractEntity}
+ * Class <code>MyAbstractEntity</code>
  *
  * @author Hervé Bitteur
  */

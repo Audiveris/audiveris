@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BraceSymbol} displays a BRACE symbol: {
+ * Class <code>BraceSymbol</code> displays a BRACE symbol: {
  *
  * @author Hervé Bitteur
  */

@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code UnitManager} manages all units (AKA classes), for which we have a
+ * Class <code>UnitManager</code> manages all units (AKA classes), for which we have a
  * ConstantSet.
  * <p>
  * To help {@link UnitTreeTable} display the whole tree of UnitNodes, UnitManager can pre-load all

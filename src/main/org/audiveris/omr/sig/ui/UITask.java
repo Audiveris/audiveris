@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
 
 /**
- * Class {@code UITask} is the basis for user interactive task
+ * Class <code>UITask</code> is the basis for user interactive task
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +54,7 @@ public abstract class UITask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code UITask} object.
+     * Creates a new <code>UITask</code> object.
      *
      * @param sig        the underlying sig
      * @param actionName name for action
@@ -68,7 +68,7 @@ public abstract class UITask
     }
 
     /**
-     * Creates a new {@code UITask} object.
+     * Creates a new <code>UITask</code> object.
      *
      * @param page       the underlying page
      * @param actionName name for action

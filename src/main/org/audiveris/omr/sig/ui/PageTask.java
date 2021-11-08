@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.score.Page;
 
 /**
- * Class {@code PageTask} implements the on demand re-processing of a page.
+ * Class <code>PageTask</code> implements the on demand re-processing of a page.
  *
  * @author Hervé Bitteur
  */
@@ -38,7 +38,7 @@ public class PageTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code PageTask} object.
+     * Creates a new <code>PageTask</code> object.
      *
      * @param page the impacted page
      */

@@ -42,7 +42,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
- * Class {@code ViewParameters} handles parameters for various views,
+ * Class <code>ViewParameters</code> handles parameters for various views,
  * using properties referenced through their programmatic name to avoid typos.
  *
  * @author Hervé Bitteur
@@ -109,7 +109,7 @@ public class ViewParameters
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
-     * Enum {@code PaintingLayer} defines layers to be painted.
+     * Enum <code>PaintingLayer</code> defines layers to be painted.
      */
     public static enum PaintingLayer
     {
@@ -144,7 +144,7 @@ public class ViewParameters
     }
 
     /**
-     * Enum {@code SelectionMode} defines type of entities to be selected.
+     * Enum <code>SelectionMode</code> defines type of entities to be selected.
      */
     public static enum SelectionMode
     {

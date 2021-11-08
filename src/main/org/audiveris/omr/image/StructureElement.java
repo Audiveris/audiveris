@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.StringTokenizer;
 
 /**
- * Class {@code StructureElement}
+ * Class <code>StructureElement</code>
  *
  * @author ?
  */

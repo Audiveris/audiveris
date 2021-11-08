@@ -86,7 +86,7 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 
 /**
- * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
+ * Class <code>BeamsBuilder</code> is in charge, at system level, of retrieving the possible
  * beam and beam hook interpretations.
  * <p>
  * The retrieval is performed on the collection of spots produced by closing the blurred initial
@@ -646,7 +646,7 @@ public class BeamsBuilder
 
                         // Exclusion between beam and hook, if any
                         if (hook != null) {
-                            sig.insertExclusion(hook, beam, Exclusion.Cause.OVERLAP);
+                            sig.insertExclusion(hook, beam, Exclusion.ExclusionCause.OVERLAP);
                         }
                     }
                 } catch (Exception ex) {
@@ -2053,7 +2053,7 @@ public class BeamsBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
      */
     private static class Parameters
     {

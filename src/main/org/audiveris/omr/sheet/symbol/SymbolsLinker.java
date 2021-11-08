@@ -64,7 +64,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code SymbolsLinker} defines final relations between certain symbols.
+ * Class <code>SymbolsLinker</code> defines final relations between certain symbols.
  * <p>
  * This process can take place only when chords candidates have survived all reductions.
  *
@@ -85,7 +85,7 @@ public class SymbolsLinker
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SymbolsLinker} object.
+     * Creates a new <code>SymbolsLinker</code> object.
      *
      * @param system the dedicated system
      */

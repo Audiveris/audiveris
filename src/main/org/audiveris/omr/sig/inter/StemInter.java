@@ -77,7 +77,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code StemInter} represents Stem interpretations.
+ * Class <code>StemInter</code> represents Stem interpretations.
  *
  * @author Hervé Bitteur
  */
@@ -102,13 +102,21 @@ public class StemInter
     // Persistent data
     //----------------
     //
-    /** Top point. */
+    /**
+     * <strike>Upper point of stem</strike>
+     * <p>
+     * <b>Deprecated</b>, replaced by median line inherited from super class.
+     */
     @Deprecated
     @XmlElement(name = "top")
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private Point2D oldTop;
 
-    /** Bottom point. */
+    /**
+     * <strike>Lower point of stem</strike>
+     * <p>
+     * <b>Deprecated</b>, replaced by median line inherited from super class.
+     */
     @Deprecated
     @XmlElement(name = "bottom")
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
@@ -347,6 +355,7 @@ public class StemInter
      * Compute the extended line, taking only into account the stem connections from
      * heads compatible with the provided head.
      *
+     * @param head the provided head
      * @return the connection range
      */
     public Line2D computeExtendedLine (HeadInter head)

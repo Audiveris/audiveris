@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code HeadSpotsBuilder} builds spot glyphs meant to guide head retrieval.
+ * Class <code>HeadSpotsBuilder</code> builds spot glyphs meant to guide head retrieval.
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +54,7 @@ public class HeadSpotsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code HeadSpotsBuilder} object.
+     * Creates a new <code>HeadSpotsBuilder</code> object.
      *
      * @param sheet the related sheet
      */

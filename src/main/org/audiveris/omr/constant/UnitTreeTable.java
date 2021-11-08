@@ -49,7 +49,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
 /**
- * Class {@code UnitTreeTable} is a user interface that combines a tree to display the
+ * Class <code>UnitTreeTable</code> is a user interface that combines a tree to display the
  * hierarchy of Units, that contains ConstantSets, and a table to display and edit the
  * various Constants in each ConstantSet.
  *

@@ -33,7 +33,7 @@ import java.awt.Rectangle;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code AbstractNumberInter} is an abstract inter with a integer value.
+ * Class <code>AbstractNumberInter</code> is an abstract inter with a integer value.
  * <p>
  * Concrete subclasses must be defined for Time upper or lower parts, for an ending number, for
  * the number of measures in a multi-measure rest.

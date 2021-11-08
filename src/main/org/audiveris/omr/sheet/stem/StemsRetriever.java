@@ -83,7 +83,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code StemsRetriever} processes a system to retrieve stems that connect to note
+ * Class <code>StemsRetriever</code> processes a system to retrieve stems that connect to note
  * heads and perhaps beams.
  * <p>
  * This class defines the main component in charge of retrieving all stems in a system.
@@ -1167,7 +1167,7 @@ public class StemsRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
      */
     static class Parameters
     {

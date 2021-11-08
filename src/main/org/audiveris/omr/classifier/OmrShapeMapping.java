@@ -31,7 +31,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * Class {@code OmrShapeMapping} handles mappings between Shape and OmrShape.
+ * Class <code>OmrShapeMapping</code> handles mappings between Shape and OmrShape.
  *
  * @author Hervé Bitteur
  */

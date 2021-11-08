@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code XmlUtil} gathers methods about XML data
+ * Class <code>XmlUtil</code> gathers methods about XML data
  *
  * @author Hervé Bitteur
  */

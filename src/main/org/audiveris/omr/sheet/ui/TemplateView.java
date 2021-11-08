@@ -58,7 +58,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code TemplateView} handles a view of Template on top of the image of a
+ * Class <code>TemplateView</code> handles a view of Template on top of the image of a
  * distance table.
  * <p>
  * This view is not meant for the end user but rather for the developer to precisely study how
@@ -96,7 +96,7 @@ public class TemplateView
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TemplateView} object.
+     * Creates a new <code>TemplateView</code> object.
      *
      * @param sheet           related sheet
      * @param image           image of distance table

@@ -33,7 +33,7 @@ import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 
 /**
- * Interface {@code DistanceTable}
+ * Interface <code>DistanceTable</code>
  *
  * @author Hervé Bitteur
  */

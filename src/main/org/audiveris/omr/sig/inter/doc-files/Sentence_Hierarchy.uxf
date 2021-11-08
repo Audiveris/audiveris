@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.2">
+<diagram program="umlet" version="14.3.0">
   <help_text>
         fontsize=14
 
@@ -60,7 +60,7 @@ syllabicType
 bg=#ffffaa
 --
 role
-meanFont
+font
 --</panel_attributes>
     <additional_attributes/>
   </element>
@@ -98,7 +98,7 @@ meanFont
 bg=#ffffaa
 --
 value
-fontInfo
+font
 location
 --</panel_attributes>
     <additional_attributes/>
@@ -126,7 +126,7 @@ location
 bg=#ffaaaa
 --
 root
-kind
+chordKind
 bass
 degrees
 --</panel_attributes>

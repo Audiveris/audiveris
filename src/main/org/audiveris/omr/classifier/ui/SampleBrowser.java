@@ -101,7 +101,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code SampleBrowser} provides a user interface to browse through all samples
+ * Class <code>SampleBrowser</code> provides a user interface to browse through all samples
  * recorded for classifier training, in order to visually check the correctness of their
  * assigned shape, and to remove or reassign spurious samples when necessary.
  * <p>
@@ -167,7 +167,7 @@ public class SampleBrowser
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create an instance of {@code SampleBrowser}.
+     * Create an instance of <code>SampleBrowser</code>.
      *
      * @param repository the repository (global or local) to browse
      */
@@ -981,7 +981,7 @@ public class SampleBrowser
      * A specific waiting task to display a temporary message while the underlying
      * SampleBrowser instance is being built.
      * <p>
-     * Building of the sample browser must be done in method {@code doInBackground} of subclass.
+     * Building of the sample browser must be done in method <code>doInBackground</code> of subclass.
      */
     public abstract static class Waiter
             extends WaitingTask<SampleBrowser, Void>

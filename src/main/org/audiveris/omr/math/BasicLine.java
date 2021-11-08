@@ -31,7 +31,7 @@ import static java.lang.Math.*;
 import java.util.Collection;
 
 /**
- * Class {@code BasicLine} is a basic Line implementation which switches between
+ * Class <code>BasicLine</code> is a basic Line implementation which switches between
  * horizontal and vertical equations when computing the points regression
  *
  * @author Hervé Bitteur
