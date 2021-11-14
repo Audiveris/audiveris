@@ -903,36 +903,6 @@ public class Scale
     {
         return interlineScale.main * val;
     }
-//
-//    //--------------------//
-//    // getHeadSeedContent //
-//    //--------------------//
-//    /**
-//     * Mean for JAXB marshalling only.
-//     */
-//    @SuppressWarnings("unused")
-//    @XmlElement(name = "head-seeds")
-//    private HeadSeedScale.HeadSeedEntries getHeadSeedContent ()
-//    {
-//        if (headSeedScale == null) {
-//            return null;
-//        }
-//
-//        return headSeedScale.getEntries();
-//    }
-//
-//    //--------------------//
-//    // setHeadSeedEntries //
-//    //--------------------//
-//    /**
-//     * Meant for JAXB unmarshalling only.
-//     */
-//    @SuppressWarnings("unused")
-//    private void setHeadSeedEntries (HeadSeedScale.HeadSeedEntries entries)
-//    {
-//        headSeedScale = new HeadSeedScale();
-//        headSeedScale.setEntries(entries);
-//    }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//

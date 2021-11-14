@@ -32,11 +32,12 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Map.Entry;
 
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -46,7 +47,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "head-seeds")
 public class HeadSeedScale
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -54,7 +54,18 @@ public class HeadSeedScale
     private static final Logger logger = LoggerFactory.getLogger(HeadSeedScale.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    final EnumMap<Shape, EnumMap<HorizontalSide, Double>> global = new EnumMap<>(Shape.class);
+    // Persistent data
+    //----------------
+    //
+    /** Flat list of <code>HeadSeed</code> instances. */
+    @XmlElement(name = "head-seed")
+    private ArrayList<HeadSeed> list; // Used during [un]marshalling only
+
+    // Transient data
+    //---------------
+    //
+    private final EnumMap<Shape, EnumMap<HorizontalSide, Double>> globalMap
+            = new EnumMap<>(Shape.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -81,7 +92,7 @@ public class HeadSeedScale
     public Double getDx (Shape shape,
                          HorizontalSide hSide)
     {
-        final EnumMap<HorizontalSide, Double> sideMap = global.get(shape);
+        final EnumMap<HorizontalSide, Double> sideMap = globalMap.get(shape);
 
         if (sideMap != null) {
             return sideMap.get(hSide);
@@ -104,22 +115,25 @@ public class HeadSeedScale
                        HorizontalSide hSide,
                        double dx)
     {
-        EnumMap<HorizontalSide, Double> sideMap = global.get(shape);
+        EnumMap<HorizontalSide, Double> sideMap = globalMap.get(shape);
 
         if (sideMap == null) {
-            global.put(shape, sideMap = new EnumMap<>(HorizontalSide.class));
+            globalMap.put(shape, sideMap = new EnumMap<>(HorizontalSide.class));
         }
 
         sideMap.put(hSide, dx);
     }
 
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
         final StringBuilder sb = new StringBuilder("HeadSeeds{");
         boolean outerStarted = false;
 
-        for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : global.entrySet()) {
+        for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : globalMap.entrySet()) {
             if (outerStarted) {
                 sb.append(' ');
             }
@@ -145,105 +159,103 @@ public class HeadSeedScale
         return sb.append('}').toString();
     }
 
-    //------------//
-    // getEntries //
-    //------------//
+    //---------------//
+    // beforeMarshal //
+    //---------------//
     /**
-     * Extract all entries from this HeadSeedScale.
-     *
-     * @return opaque content
+     * Called immediately before the marshalling of this object begins.
      */
-    public HeadSeedEntries getEntries ()
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
     {
-        final HeadSeedEntries content = new HeadSeedEntries();
+        list = new ArrayList<>();
 
-        for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : global.entrySet()) {
+        for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : globalMap.entrySet()) {
             final Shape shape = entry.getKey();
 
             for (Entry<HorizontalSide, Double> e : entry.getValue().entrySet()) {
                 final HorizontalSide hSide = e.getKey();
                 final Double dx = e.getValue();
-                content.list.add(new HeadSeedEntries.HeadSeed(shape, hSide, dx));
+                list.add(new HeadSeed(shape, hSide, dx));
             }
         }
-
-        return content;
     }
 
-    //------------//
-    // setEntries //
-    //------------//
-    /**
-     * Populate this HeadSeedScale with provided entries.
-     *
-     * @param entries provided content
-     */
-    public void setEntries (HeadSeedEntries entries)
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
     {
-        for (HeadSeedEntries.HeadSeed value : entries.list) {
-            putDx(value.shape, value.side, value.dx);
+        list = null;
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller u,
+                                 Object parent)
+    {
+        if (list != null) {
+            for (HeadSeed value : list) {
+                putDx(value.shape, value.side, value.dx);
+            }
+
+            list = null;
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------------//
-    // HeadSeedEntries //
-    //-----------------//
+    //----------//
+    // HeadSeed //
+    //----------//
     /**
-     * Typical horizontal distances between note heads and stem seeds.
+     * Class <code>HeadSeed</code> describes, for the whole containing sheet,
+     * the typical horizontal distance measured between a specific head shape
+     * and a stem seed on a specific side of the head.
      */
-    public static class HeadSeedEntries
+    private static class HeadSeed
     {
 
-        /** Flat list of <code>HeadSeed</code> instances. */
-        @XmlElement(name = "head-seed")
-        private final ArrayList<HeadSeed> list = new ArrayList<>();
+        /** Shape of note head. */
+        @XmlAttribute(name = "shape")
+        public final Shape shape;
 
-        private HeadSeedEntries ()
-        {
-        }
+        /** Head side where the stem seed is located. */
+        @XmlAttribute(name = "side")
+        public final HorizontalSide side;
 
         /**
-         * Class <code>HeadSeed</code> describes, for the whole containing sheet,
-         * the typical horizontal distance measured between a specific head shape
-         * and a stem seed on a specific side of the head.
+         * The dx attribute represents the typical horizontal distance measured
+         * in pixels between seed center and head side.
+         * <p>
+         * Dx is positive if seed center lies outside head bounds and negative otherwise.
+         * <p>
+         * Dx value is defined with 1 digit maximum after the dot.
          */
-        private static class HeadSeed
+        @XmlAttribute(name = "dx")
+        @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
+        public final Double dx;
+
+        public HeadSeed (Shape shape,
+                         HorizontalSide side,
+                         Double dx)
         {
+            this.shape = shape;
+            this.side = side;
+            this.dx = dx;
+        }
 
-            /** Shape of note head. */
-            @XmlAttribute(name = "shape")
-            public final Shape shape;
-
-            /** Head side where the stem seed is located. */
-            @XmlAttribute(name = "side")
-            public final HorizontalSide side;
-
-            /** Typical measured dx between seed center and head side.
-             * <p>
-             * Dx is positive if seed center lies outside head bounds and negative otherwise.
-             * <p>
-             * Value is defined with 1 digit maximum after the dot.
-             */
-            @XmlAttribute(name = "dx")
-            @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
-            public final Double dx;
-
-            public HeadSeed (Shape shape,
-                             HorizontalSide side,
-                             Double dx)
-            {
-                this.shape = shape;
-                this.side = side;
-                this.dx = dx;
-            }
-
-            // No-arg constructor needed by JAXB
-            @SuppressWarnings("unused")
-            private HeadSeed ()
-            {
-                this(null, null, null);
-            }
+        // No-arg constructor needed by JAXB
+        @SuppressWarnings("unused")
+        private HeadSeed ()
+        {
+            this(null, null, null);
         }
     }
 }
