@@ -442,7 +442,9 @@ public class EndingInter
             leftRel.setOutGaps(leftDist, 0, profile);
         }
 
-        links.add(new Link(leftBar, leftRel, true));
+        if (leftBar != null) {
+            links.add(new Link(leftBar, leftRel, true));
+        }
 
         // Right bar
         StaffBarlineInter rightBar = lookupBar(RIGHT, staff, systemBars, profile);
