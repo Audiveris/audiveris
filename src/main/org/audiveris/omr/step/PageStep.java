@@ -301,19 +301,15 @@ public class PageStep
                 impact.onMeasures = true;
                 impact.onVoices = true;
             } else if (task instanceof RelationTask) {
-                RelationTask relationTask = (RelationTask) task;
-                Relation relation = relationTask.getRelation();
-
-                Inter source = relationTask.getSource();
-                SystemInfo system = sig.getSystem();
-                MeasureStack stack = system.getStackAt(source.getCenter());
-                Page page = stack.getSystem().getPage();
+                Page page = sig.getSystem().getPage();
                 Impact impact = map.get(page);
 
                 if (impact == null) {
                     map.put(page, impact = new Impact());
                 }
 
+                RelationTask relationTask = (RelationTask) task;
+                Relation relation = relationTask.getRelation();
                 Class classe = relation.getClass();
 
                 if (isImpactedBy(classe, forVoices)) {

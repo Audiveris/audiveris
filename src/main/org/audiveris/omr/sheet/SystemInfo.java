@@ -41,7 +41,8 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -1378,6 +1379,23 @@ public class SystemInfo
     public void setIndented (boolean indented)
     {
         this.indented = indented;
+    }
+
+    //-----------------------------//
+    // getSmallestMeasureRestShape //
+    //-----------------------------//
+    /**
+     * Report the smallest measure-long rest shape (WHOLE_REST or BREVE_REST).
+     * This depends on whether the 'partialWholeRests' switch is on or off for this sheet.
+     *
+     * @return WHOLE_REST or BREVE_REST
+     */
+    public Shape getSmallestMeasureRestShape ()
+    {
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+        return switches.getValue(ProcessingSwitch.partialWholeRests)
+                ? Shape.BREVE_REST : Shape.WHOLE_REST;
     }
 
     //--------------------//

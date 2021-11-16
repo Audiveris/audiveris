@@ -38,7 +38,8 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
@@ -387,8 +388,8 @@ public class Part
                     dummyMeasure.addInter(dummyTime);
                 }
 
-                // Create dummy Whole rest (w/ no precise location)
-                dummyMeasure.addDummyWholeRest(dummyStaff);
+                // Create dummy measure rest (w/ no precise location)
+                dummyMeasure.addDummyMeasureRest(dummyStaff);
             }
 
             isFirstMeasure = false;

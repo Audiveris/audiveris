@@ -49,7 +49,8 @@ import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Trimmable;
@@ -244,17 +245,23 @@ public class Measure
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // addDummyWholeRest //
-    //-------------------//
+    //---------------------//
+    // addDummyMeasureRest //
+    //---------------------//
     /**
-     * Insert a whole rest, with related chord, on provided staff in this measure.
+     * Insert a measure-long rest, with related chord, on provided staff in this measure.
      *
      * @param staff specified staff in measure
      */
-    public void addDummyWholeRest (Staff staff)
+    public void addDummyMeasureRest (Staff staff)
     {
-        // We use fakes that mimic a rest chord with its whole rest.
+        // We use fakes that mimic a rest chord with its measure-long rest.
+        //
+        // NOTA: Because the fake entities (chord / rest) are not handled in any SIG and thus can't
+        // be part of containment relations, we have to manually handle this via the use of:
+        // - 'members' item in FakeChord
+        // - 'chord'   item in FakeRest
+        //
         class FakeChord
                 extends RestChordInter
         {
@@ -272,6 +279,12 @@ public class Measure
             {
                 return null;
             }
+
+            @Override
+            public boolean isMeasureRest ()
+            {
+                return true; // By construction
+            }
         }
 
         class FakeRest
@@ -280,9 +293,11 @@ public class Measure
 
             FakeChord chord;
 
-            FakeRest (Staff staff)
+            FakeRest (Staff staff,
+                      Shape restShape,
+                      double restPitch)
             {
-                super(null, Shape.WHOLE_REST, 0.0, staff, -1.5);
+                super(null, restShape, 0.0, staff, restPitch);
             }
 
             @Override
@@ -292,13 +307,19 @@ public class Measure
             }
         }
 
-        FakeRest whole = new FakeRest(staff);
+        // Determine precise shape and pitch for measure-long rest (WHOLE_REST or BREVE_REST)
+        final Shape restShape = staff.getSystem().getSmallestMeasureRestShape();
+        final double restPitch = (restShape == Shape.WHOLE_REST)
+                ? -1.5
+                : (restShape == Shape.BREVE_REST ? -1 : 0);
+
+        FakeRest measureRest = new FakeRest(staff, restShape, restPitch);
         FakeChord chord = new FakeChord();
 
         chord.setStaff(staff);
         chord.setTimeOffset(Rational.ZERO);
-        chord.members = Collections.singletonList(whole);
-        whole.chord = chord;
+        chord.members = Collections.singletonList(measureRest);
+        measureRest.chord = chord;
 
         addInter(chord);
         addVoice(Voice.createMeasureRestVoice(chord, this));

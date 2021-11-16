@@ -158,8 +158,7 @@ public class Voice
      * <ul>
      * <li>If the voice/slot combination is empty, the voice is free for this slot.
      * <li>Otherwise, the active chord is referenced with a status flag to make a difference between
-     * a
-     * slot where the chord starts, and the potential following slots for which the chord is still
+     * a slot where the chord starts, and the potential following slots for which the chord is still
      * active.
      * </ul>
      */
