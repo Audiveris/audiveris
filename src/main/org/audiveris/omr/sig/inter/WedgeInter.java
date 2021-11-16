@@ -374,15 +374,17 @@ public class WedgeInter
             "s2",
             "closedDy",
             "openDy",
-            "openBias"};
+            "openBias",
+            "width"};
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1, 1};
 
         public Impacts (double s1,
                         double s2,
                         double closedDy,
                         double openDy,
-                        double openBias)
+                        double openBias,
+                        double width)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, s1);
@@ -390,6 +392,7 @@ public class WedgeInter
             setImpact(2, closedDy);
             setImpact(3, openDy);
             setImpact(4, openBias);
+            setImpact(5, width);
         }
     }
 

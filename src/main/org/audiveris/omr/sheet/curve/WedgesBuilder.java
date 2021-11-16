@@ -178,7 +178,18 @@ public class WedgesBuilder
 
         double oBias = 1 - (invSlope / params.openMaxBias);
 
-        return new WedgeInter.Impacts(d1, d2, cDy, oDy, oBias);
+        // Min horizontal length
+        final int width1 = s1.getInfo().getBounds().width;
+        final int width2 = s2.getInfo().getBounds().width;
+        final int width = Math.min(width1, width2);
+
+        if (width < params.minLengthLow) {
+            return null;
+        }
+
+        double lg = (width - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow);
+
+        return new WedgeInter.Impacts(d1, d2, cDy, oDy, oBias, lg);
     }
 
     //------------------//
@@ -276,6 +287,14 @@ public class WedgesBuilder
                 1.5,
                 "High minimum ordinate gap between segments ends on open side");
 
+        private final Scale.Fraction minLengthLow = new Scale.Fraction(
+                2.0,
+                "Low minimum horizontal length");
+
+        private final Scale.Fraction minLengthHigh = new Scale.Fraction(
+                3.0,
+                "High minimum horizontal length");
+
         private final Constant.Double openMaxBias = new Constant.Double(
                 "degrees",
                 20,
@@ -299,6 +318,10 @@ public class WedgesBuilder
 
         final int openMinDyHigh;
 
+        final int minLengthLow;
+
+        final int minLengthHigh;
+
         final double openMaxBias;
 
         Parameters (Scale scale)
@@ -307,6 +330,8 @@ public class WedgesBuilder
             closedMaxDy = scale.toPixels(constants.closedMaxDy);
             openMinDyLow = scale.toPixels(constants.openMinDyLow);
             openMinDyHigh = scale.toPixels(constants.openMinDyHigh);
+            minLengthLow = scale.toPixels(constants.minLengthLow);
+            minLengthHigh = scale.toPixels(constants.minLengthHigh);
             openMaxBias = Math.tan(Math.toRadians(constants.openMaxBias.getValue()));
 
             if (logger.isDebugEnabled()) {
