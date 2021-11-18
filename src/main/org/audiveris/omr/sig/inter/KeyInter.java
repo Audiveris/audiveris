@@ -424,10 +424,10 @@ public class KeyInter
     }
 
     //-------------------------//
-    // imposeWithinStaffHeight //
+    // imposeWithinStaffLimits //
     //-------------------------//
     @Override
-    public boolean imposeWithinStaffHeight ()
+    public boolean imposeWithinStaffLimits ()
     {
         return true;
     }

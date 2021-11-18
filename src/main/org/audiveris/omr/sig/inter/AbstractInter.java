@@ -971,10 +971,10 @@ public abstract class AbstractInter
     }
 
     //-------------------------//
-    // imposeWithinStaffHeight //
+    // imposeWithinStaffLimits //
     //-------------------------//
     @Override
-    public boolean imposeWithinStaffHeight ()
+    public boolean imposeWithinStaffLimits ()
     {
         return false; // By default
     }

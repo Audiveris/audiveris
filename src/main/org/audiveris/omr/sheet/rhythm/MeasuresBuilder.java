@@ -183,7 +183,6 @@ public class MeasuresBuilder
      * sequence of each staff within part.
      *
      * @param part the containing part
-     * @return the PartBarline sequence
      */
     private void buildPartMeasures (Part part)
     {
@@ -314,7 +313,7 @@ public class MeasuresBuilder
      */
     private void enforceSystemConsistency ()
     {
-        final int maxShift = system.getSheet().getScale().toPixels(constants.maxShift);
+        final int maxShift = system.getSheet().getScale().toPixels(constants.maxStaffBarlineShift);
 
         // Build list of columns, kept sorted on abscissa
         final List<Column> columns = new ArrayList<>();
@@ -381,6 +380,14 @@ public class MeasuresBuilder
         }
     }
 
+    //-------------------------//
+    // getMaxStaffBarlineShift //
+    //-------------------------//
+    public static Scale.Fraction getMaxStaffBarlineShift ()
+    {
+        return constants.maxStaffBarlineShift;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -389,7 +396,7 @@ public class MeasuresBuilder
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxShift = new Scale.Fraction(
+        private final Scale.Fraction maxStaffBarlineShift = new Scale.Fraction(
                 1.0,
                 "Maximum deskewed abscissa difference within a column");
 

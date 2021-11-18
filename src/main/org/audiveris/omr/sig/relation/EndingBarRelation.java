@@ -100,10 +100,10 @@ public class EndingBarRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        if (endingSide == null) {
-            final EndingInter ending = (EndingInter) e.getEdgeSource();
-            endingSide = (e.getEdgeTarget().getCenter().x < ending.getCenter().x) ? LEFT : RIGHT;
-        }
+        final EndingInter ending = (EndingInter) e.getEdgeSource();
+        endingSide = (e.getEdgeTarget().getCenter().x < ending.getCenter().x) ? LEFT : RIGHT;
+
+        ending.checkAbnormal();
     }
 
     //---------------//
@@ -213,6 +213,19 @@ public class EndingBarRelation
         sb.append(endingSide).append("@(").append(String.format("%.2f", xDistance)).append(")");
 
         return sb.toString();
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final EndingInter ending = (EndingInter) e.getEdgeSource();
+
+        if (!ending.isRemoved()) {
+            ending.checkAbnormal();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

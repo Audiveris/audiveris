@@ -51,6 +51,9 @@ import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -65,20 +68,37 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class <code>EndingInter</code> represents an ending.
+ * Class <code>EndingInter</code> represents an ending sign.
  * <p>
+ * It is a long horizontal segment which defines an ending region:
+ * <ul>
+ * <li>A downward leg on left side to give precise starting point of the region
+ * <li>Optionally a downward leg on the right side to give precise ending point of the region
+ * </ul>
+ * Special cases:
+ * <ul>
+ * <li>An ending may cross systems break, leading to intermediate ending portions perhaps with no
+ * leg:
+ * <br>
+ * <img src="doc-files/EndingAcrossSystems.png">
+ * <li>An ending may have no barline on its starting side, requiring the user to create a barline
+ * to correctly export the ending in MusicXML:
+ * <br>
+ * <img src="doc-files/EndingWithNoBarlineOnStart.png">
+ * </ul>
  * In compliance with MusicXML spec: <ul>
  * <li>
- * The number attribute reflects the numeric values of what is under the ending line.
+ * The <b>number</b> attribute reflects the numeric values of what is under the ending line.
  * Single endings such as "1" or comma-separated multiple endings such as "1,2" may be used.
  * (Audiveris also accepts numbers like "1.")
- * <br>
- * The related number (SentenceInter, EndingNumber role) is linked by an EndingSentenceRelation.
+ * <p>
+ * The related number (SentenceInter with EndingNumber role) is linked by an EndingSentenceRelation.
  * <li>
- * The ending element text is used when the text displayed in the ending is different than what
- * appears in the number attribute.
- * <br>
- * The related text (SentenceInter, EndingText role) is linked by a separate EndingSentenceRelation.
+ * The ending element <b>text</b> is used when the text displayed in the ending is different than
+ * what appears in the number attribute.
+ * <p>
+ * The related text (SentenceInter with EndingText role) is linked by a separate
+ * EndingSentenceRelation.
  * </ul>
  *
  *
@@ -91,6 +111,8 @@ public class EndingInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(EndingInter.class);
 
     /** Default thickness of a wedge line. */
     public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
@@ -165,6 +187,28 @@ public class EndingInter
         visitor.visit(this);
     }
 
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        boolean abnormal = true;
+
+        // Check if ending is connected to a barline on left side
+        for (Relation rel : sig.getRelations(this, EndingBarRelation.class)) {
+            final EndingBarRelation ebRel = (EndingBarRelation) rel;
+
+            if (ebRel.getEndingSide() == LEFT) {
+                abnormal = false;
+            }
+        }
+
+        setAbnormal(abnormal);
+
+        return isAbnormal();
+    }
+
     //----------//
     // contains //
     //----------//
@@ -210,7 +254,8 @@ public class EndingInter
             box = box.union(rightLeg.getBounds());
         }
 
-        box.grow((int) Math.ceil(DEFAULT_THICKNESS / 2.0), (int) Math.ceil(DEFAULT_THICKNESS / 2.0));
+        box.grow((int) Math.ceil(DEFAULT_THICKNESS / 2.0),
+                 (int) Math.ceil(DEFAULT_THICKNESS / 2.0));
 
         return new Rectangle(bounds = box);
     }

@@ -414,11 +414,11 @@ public interface Inter
     boolean hasStaff ();
 
     /**
-     * De we impose the inter to be located within staff height.
+     * Do we impose the inter to be located within staff limits (width and height).
      *
      * @return true if so
      */
-    boolean imposeWithinStaffHeight ();
+    boolean imposeWithinStaffLimits ();
 
     /**
      * Increase the inter grade.

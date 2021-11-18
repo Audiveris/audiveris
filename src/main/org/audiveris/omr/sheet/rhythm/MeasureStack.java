@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -57,6 +59,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +105,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class MeasureStack
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureStack.class);
 
@@ -373,6 +378,68 @@ public class MeasureStack
         for (Measure measure : measures) {
             measure.checkDuration();
         }
+    }
+
+    //-----------------//
+    // checkSystemSide //
+    //-----------------//
+    /**
+     * Report whether the provided column of barlines lies on system side
+     * (or really inside system, separating measures).
+     * <p>
+     * For this we rely on abscissa distance from closest system side
+     *
+     * @param staffBarlines the column of staff barlines
+     * @return the detected system horizontal side, or null if really inside the system
+     */
+    public HorizontalSide checkSystemSide (List<Inter> staffBarlines)
+    {
+        final List<Staff> systemStaves = system.getStaves();
+        final Map<Staff, Integer> diffs = new LinkedHashMap<>();
+        HorizontalSide side = null;
+
+        // Retrieve dx per staff
+        for (int index = 0; index < staffBarlines.size(); index++) {
+            final StaffBarlineInter barline = (StaffBarlineInter) staffBarlines.get(index);
+            final Staff staff = systemStaves.get(index);
+
+            // Staff limits
+            final int staffLeft = staff.getAbscissa(LEFT);
+            final int staffRight = staff.getAbscissa(RIGHT);
+
+            // Barline limits
+            final int barLeft = barline.getLeftX();
+            final int barRight = barline.getRightX();
+
+            // Look for minimum abscissa distance INSIDE staff limits
+            int dx = Integer.MAX_VALUE;
+            dx = Math.min(dx, Math.max(0, barLeft - staffLeft));
+            dx = Math.min(dx, Math.max(0, barRight - staffLeft));
+            dx = Math.min(dx, Math.max(0, staffRight - barLeft));
+            dx = Math.min(dx, Math.max(0, staffRight - barRight));
+            diffs.put(staff, dx);
+
+            // Detected side
+            side = ((barLeft + barRight) <= (staffLeft + staffRight)) ? LEFT : RIGHT;
+        }
+
+        logger.debug("MeasureStack.checkSystemSide dx values: {}", diffs);
+
+        // We use mean dx across all staves
+        int sum = 0;
+        for (Integer dx : diffs.values()) {
+            sum += dx;
+        }
+
+        final int meanDx = sum / diffs.values().size();
+        final int maxDx = system.getSheet().getScale().toPixels(constants.maxBarlineShift);
+        logger.debug("MeasureStack.checkSystemSide meanDx:{} maxDx:{}", meanDx, maxDx);
+
+        if (meanDx > maxDx) {
+            return null; // Barline significantly inside system
+        }
+
+        return side; // Barline on system side
     }
 
     //----------------//
@@ -1609,6 +1676,39 @@ public class MeasureStack
         }
     }
 
+    //--------------------//
+    // removePartBarlines //
+    //--------------------//
+    /**
+     * Remove the PartBarline instances that correspond to the provided StaffBarline
+     * instances on a system side.
+     *
+     * @param staffBarlines provided StaffBarline instances
+     * @param side          the system side involved
+     */
+    public void removePartBarlines (List<Inter> staffBarlines,
+                                    HorizontalSide side)
+    {
+        Part previousPart = null;
+
+        for (Inter inter : staffBarlines) {
+            final StaffBarlineInter staffBarline = (StaffBarlineInter) inter;
+            final Part part = staffBarline.getStaff().getPart();
+
+            if (part != previousPart) {
+                // New part encountered, remove its PartBarline
+                if (side == LEFT) {
+                    part.setLeftPartBarline(null);
+                } else {
+                    final Measure measure = getMeasureAt(part);
+                    measure.setRightPartBarline(null);
+                }
+
+                previousPart = part;
+            }
+        }
+    }
+
     //-------------//
     // removeInter //
     //-------------//
@@ -1826,6 +1926,36 @@ public class MeasureStack
         //        }
     }
 
+    //--------------------//
+    // sideInsertBarlines //
+    //--------------------//
+    /**
+     * Insert the provided column of PartBarline instances on system side.
+     * <p>
+     * This is just insertion on a system side, resulting in no measure split.
+     *
+     * @param partBarlines column of PartBarline instances, one per system part
+     * @param side         the desired system horizontal side
+     */
+    public void sideInsertBarlines (List<PartBarline> partBarlines,
+                                    HorizontalSide side)
+    {
+        final List<Part> systemParts = system.getParts();
+
+        for (int ip = 0; ip < systemParts.size(); ip++) {
+            final Part part = systemParts.get(ip);
+            final PartBarline partBarline = partBarlines.get(ip);
+
+            // Insert the created PartBarline in proper location
+            if (side == LEFT) {
+                part.setLeftPartBarline(partBarline);
+            } else {
+                final Measure measure = getMeasureAt(part);
+                measure.setRightPartBarline(partBarline);
+            }
+        }
+    }
+
     //----------------//
     // splitAtBarline //
     //----------------//
@@ -1835,22 +1965,24 @@ public class MeasureStack
      * We create a new stack on left side of old stack which will become the left stack.
      * We update old (right) stack on its left side.
      *
-     * @param systemBarline column of PartBarline, one per system part
+     * @param partBarlines column of PartBarline instances, one per system part
      * @return the newly created stack on the left
      */
-    public MeasureStack splitAtBarline (List<PartBarline> systemBarline)
+    public MeasureStack splitAtBarline (List<PartBarline> partBarlines)
     {
-        final int stackIndex = system.getStacks().indexOf(this);
+        final List<Part> systemParts = system.getParts();
+
+        logger.info("Splitting {}", this);
         final MeasureStack leftStack = new MeasureStack(system);
         leftStack.left = this.left;
         leftStack.right = 0;
         this.left = Integer.MAX_VALUE;
 
-        final List<Part> systemParts = system.getParts();
+        final int stackIndex = system.getStacks().indexOf(this);
 
         for (int partIndex = 0; partIndex < systemParts.size(); partIndex++) {
             final Part part = systemParts.get(partIndex);
-            final PartBarline partBarline = systemBarline.get(partIndex);
+            final PartBarline partBarline = partBarlines.get(partIndex);
             Map<Staff, Integer> xRefs = new HashMap<>();
 
             for (Staff staff : part.getStaves()) {
@@ -1969,5 +2101,18 @@ public class MeasureStack
         } catch (Exception ex) {
             logger.error("Error beforeMarshal", ex);
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction maxBarlineShift = new Scale.Fraction(
+                1.0,
+                "Maximum abscissa difference between staff side and inserted barline");
     }
 }

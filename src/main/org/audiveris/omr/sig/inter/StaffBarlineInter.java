@@ -992,6 +992,15 @@ public final class StaffBarlineInter
         }
     }
 
+    //-------------------------//
+    // imposeWithinStaffLimits //
+    //-------------------------//
+    @Override
+    public boolean imposeWithinStaffLimits ()
+    {
+        return true;
+    }
+
     //-----------//
     // internals //
     //-----------//

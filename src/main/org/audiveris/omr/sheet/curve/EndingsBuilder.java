@@ -107,9 +107,8 @@ public class EndingsBuilder
     //--------------//
     /**
      * Retrieve the endings among the sheet segment curves.
-     * Endings are long horizontal segments, with a downward leg on the left side and optionally
-     * another leg on the right side.
-     * Each side is related to a distinct bar line.
+     * <p>
+     * Each side is related to a distinct barline.
      */
     public void buildEndings ()
     {
@@ -127,8 +126,8 @@ public class EndingsBuilder
      * Build the underlying glyph for the ending defined by segment and legs.
      *
      * @param segment  ending horizontal segment
-     * @param leftLeg  left vertical filament
-     * @param rightLeg (optional) right vertical filament, perhaps null
+     * @param leftLeg  left vertical filament, perhaps null
+     * @param rightLeg right vertical filament, perhaps null
      * @return the glyph built
      */
     private Glyph buildGlyph (SegmentInter segment,
@@ -137,7 +136,10 @@ public class EndingsBuilder
     {
         final List<Glyph> parts = new ArrayList<>(3);
         parts.add(segment.getGlyph());
-        parts.add(leftLeg.toGlyph(null));
+
+        if (leftLeg != null) {
+            parts.add(leftLeg.toGlyph(null));
+        }
 
         if (rightLeg != null) {
             parts.add(rightLeg.toGlyph(null));
@@ -373,31 +375,31 @@ public class EndingsBuilder
                 1 - (slope / params.maxSlope),
                 (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow));
 
-        if (impacts.getGrade() >= EndingInter.getMinGrade()) {
-            Line2D leftLine = new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
-            Line2D rightLine = (rightLeg == null) ? null
-                    : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
-            EndingInter endingInter = new EndingInter(
-                    line,
-                    leftLine,
-                    rightLine,
-                    segment.getBounds(),
-                    impacts);
-            endingInter.setStaff(staff);
-
-            // Underlying glyph
-            endingInter.setGlyph(buildGlyph(segment, leftLeg, rightLeg));
-
-            SIGraph sig = system.getSig();
-            sig.addVertex(endingInter);
-
-            // Ending text?
-            grabSentences(endingInter);
-
-            return endingInter;
+        if (impacts.getGrade() < EndingInter.getMinGrade()) {
+            return null;
         }
 
-        return null;
+        Line2D leftLine = new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
+        Line2D rightLine = (rightLeg == null) ? null
+                : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
+        EndingInter endingInter = new EndingInter(
+                line,
+                leftLine,
+                rightLine,
+                segment.getBounds(),
+                impacts);
+        endingInter.setStaff(staff);
+
+        // Underlying glyph
+        endingInter.setGlyph(buildGlyph(segment, leftLeg, rightLeg));
+
+        SIGraph sig = system.getSig();
+        sig.addVertex(endingInter);
+
+        // Ending text?
+        grabSentences(endingInter);
+
+        return endingInter;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

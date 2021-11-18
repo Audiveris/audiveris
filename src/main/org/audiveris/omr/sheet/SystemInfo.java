@@ -1066,20 +1066,51 @@ public class SystemInfo
      */
     public MeasureStack getStackAt (Point2D point)
     {
+        return getStackAt(point, null);
+    }
+
+    //------------//
+    // getStackAt //
+    //------------//
+    /**
+     * Report the measure stack that contains the provided point.
+     *
+     * @param point  the provided point
+     * @param margin accepted abscissa margin at beginning or end of system, perhaps null
+     * @return the containing measure stack or null if none
+     */
+    public MeasureStack getStackAt (Point2D point,
+                                    Integer margin)
+    {
         if (point != null) {
+            final MeasureStack firstStack = getFirstStack();
+            final MeasureStack lastStack = getLastStack();
             final List<Staff> stavesAround = getStavesAround(point);
 
             if (!stavesAround.isEmpty()) {
                 final Staff staff = stavesAround.get(0);
                 final double x = point.getX();
 
+                // Stacks are browsed from left to right
                 for (MeasureStack stack : stacks) {
                     final Measure measure = stack.getMeasureAt(staff);
 
-                    if ((measure != null)
-                                && (x >= measure.getAbscissa(LEFT, staff))
-                                && (x <= measure.getAbscissa(RIGHT, staff))) {
-                        return stack;
+                    if (measure != null) {
+                        int x1 = measure.getAbscissa(LEFT, staff);
+                        int x2 = measure.getAbscissa(RIGHT, staff);
+
+                        if (margin != null) {
+                            if (stack == firstStack) {
+                                x1 -= margin;
+                            }
+                            if (stack == lastStack) {
+                                x2 += margin;
+                            }
+                        }
+
+                        if ((x >= x1) && (x <= x2)) {
+                            return stack;
+                        }
                     }
                 }
             }

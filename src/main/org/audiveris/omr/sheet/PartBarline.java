@@ -91,17 +91,17 @@ public class PartBarline
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * <b>Deprecated</b> Underlying {@link OldStaffBarline} instances.
+     * List of underlying {@link OldStaffBarline} instances.
      * <p>
-     * Replaced by staffBarlines element.
+     * <b>Deprecated</b>. This element is replaced by staff-barlines element.
      */
     @Deprecated
     @XmlElement(name = "staff-barline")
     private List<OldStaffBarline> oldStaffBarlines;
 
     /**
-     * Underlying {@link StaffBarlineInter} instances, one per staff in the part,
-     * ordered top down.
+     * Sequence of underlying {@link StaffBarlineInter} instances,
+     * one per staff in the part, ordered top down.
      */
     @XmlList
     @XmlIDREF
@@ -368,23 +368,19 @@ public class PartBarline
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder("{PartBarline");
+        final StringBuilder sb = new StringBuilder("PartBarline{");
 
         if (!staffBarlines.isEmpty()) {
             StaffBarlineInter first = staffBarlines.get(0);
             StaffBarlineInter last = staffBarlines.get(staffBarlines.size() - 1);
-
-            Style style = first.getStyle();
-            sb.append(' ').append(style);
+            sb.append(first.getStyle());
 
             Rectangle box = new Rectangle(first.getCenter());
             box.add(last.getCenter());
-            sb.append(' ').append(PointUtil.toString(GeoUtil.center2D(box)));
+            sb.append(" @").append(PointUtil.toString(GeoUtil.center2D(box)));
         }
 
-        sb.append('}');
-
-        return sb.toString();
+        return sb.append('}').toString();
     }
 
     //-----------------//

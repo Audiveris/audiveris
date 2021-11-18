@@ -25,7 +25,6 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -36,6 +35,7 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,30 +115,62 @@ public class MeasuresStep
 
             final StaffBarlineInter oneBar = (StaffBarlineInter) staffBarlines.get(0);
             final SystemInfo system = oneBar.getStaff().getSystem();
+            final boolean isAddition = isAddition(seq);
 
             // Determine impacted measure stack
-            Point centerLeft = oneBar.getCenterLeft();
-            MeasureStack stack = system.getStackAt(centerLeft);
-            final boolean isAddition = isAddition(seq);
+            final Point centerRight = oneBar.getCenterRight();
+            final int margin = system.getSheet().getScale().toPixels(MeasuresBuilder
+                    .getMaxStaffBarlineShift());
+            final MeasureStack stack = system.getStackAt(centerRight, margin);
 
             if ((!isAddition && (opKind != UITask.OpKind.UNDO))
                         || (isAddition && (opKind == UITask.OpKind.UNDO))) {
-                // Remove barlines
-                MeasureStack rightStack = stack.getNextSibling();
+                if (stack == null) {
+                    // Safeguard on removal
+                    if (opKind != UITask.OpKind.UNDO) {
+                        logger.warn("Barlines located too far outside system.");
+                    }
+                } else {
+                    // Remove barlines
+                    final HorizontalSide side = stack.checkSystemSide(staffBarlines);
 
-                if (rightStack != null) {
-                    logger.info("Merging {} with right", stack);
-                    stack.mergeWithRight(rightStack);
-                    system.removeStack(rightStack);
+                    if (side != null) {
+                        // Simply remove related PartBarlines
+                        logger.info("Removing PartBarlines on {} side", side);
+                        stack.removePartBarlines(staffBarlines, side);
+                    } else {
+                        // Merge with next stack
+                        MeasureStack rightStack = stack.getNextSibling();
+
+                        if (rightStack != null) {
+                            logger.info("Merging {} with right", stack);
+                            stack.mergeWithRight(rightStack);
+                            system.removeStack(rightStack);
+                        }
+                    }
                 }
             } else {
-                // Insert barlines
-                logger.info("Splitting stack at {}", oneBar);
+                if (stack == null) {
+                    // Safeguard on insertion
+                    if (opKind != UITask.OpKind.UNDO) {
+                        logger.warn("Barlines located too far outside system. Please undo!");
+                    }
+                } else {
+                    // Gather StaffBarline instances into PartBarline instances
+                    final List<PartBarline> partBarlines = buildFromStaffBarlines(staffBarlines);
 
-                // Retrieve all involved barlines
-                List<PartBarline> systemBarline = buildFromStaffBarlines(staffBarlines);
-                MeasureStack leftStack = stack.splitAtBarline(systemBarline);
-                leftStack.setExpectedDuration(stack.getExpectedDuration());
+                    // Side insertion or split?
+                    final HorizontalSide side = stack.checkSystemSide(staffBarlines);
+
+                    if (side != null) {
+                        logger.info("{}-Insertion of {}", side, oneBar);
+                        stack.sideInsertBarlines(partBarlines, side);
+                    } else {
+                        logger.info("Insertion of {} inside {}", oneBar, stack);
+                        final MeasureStack leftStack = stack.splitAtBarline(partBarlines);
+                        leftStack.setExpectedDuration(stack.getExpectedDuration());
+                    }
+                }
             }
 
             // Renumber measures
@@ -176,39 +208,36 @@ public class MeasuresStep
     // buildFromStaffBarlines //
     //------------------------//
     /**
-     * Build the proper list of PartBarline that corresponds to the StaffBarlines in seq.
+     * Build the list of PartBarline's that corresponds to the StaffBarline's in seq.
      * <p>
-     * Assumption: all staffBarlines must be present and in proper order!
+     * Assumption: all staffBarlines must be present, one per staff and in proper order!
      *
-     * @param staffBarlines list of staffBarline instances
-     * @return the "system" barline construction
+     * @param staffBarlines list of StaffBarline instances, to be gathered per part
+     * @return the corresponding list of PartBarline instances
      */
     private List<PartBarline> buildFromStaffBarlines (List<Inter> staffBarlines)
     {
-        final List<PartBarline> systemBarline = new ArrayList<>();
+        final List<PartBarline> partBarlineList = new ArrayList<>();
 
-        Part lastPart = null;
+        Part previousPart = null;
         PartBarline partBarline = null;
-        Staff lastStaff = null;
 
         for (Inter inter : staffBarlines) {
-            StaffBarlineInter staffBarline = (StaffBarlineInter) inter;
-            Staff staff = staffBarline.getStaff();
-            Part part = staff.getPart();
+            final StaffBarlineInter staffBarline = (StaffBarlineInter) inter;
+            final Part part = staffBarline.getStaff().getPart();
 
-            if (part != lastPart) {
+            if (part != previousPart) {
+                // New part encountered, create its PartBarline
                 partBarline = new PartBarline();
-                systemBarline.add(partBarline);
-                lastPart = part;
+                partBarlineList.add(partBarline);
+                previousPart = part;
             }
 
-            if (staff != lastStaff) {
-                partBarline.addStaffBarline(staffBarline);
-                lastStaff = staff;
-            }
+            // Group each StaffBarline into its PartBarline
+            partBarline.addStaffBarline(staffBarline);
         }
 
-        return systemBarline;
+        return partBarlineList;
     }
 
     //------------//

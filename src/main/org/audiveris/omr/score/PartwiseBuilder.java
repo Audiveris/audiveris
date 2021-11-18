@@ -923,7 +923,7 @@ public class PartwiseBuilder
                                && (stack.isRepeat(RIGHT)
                                            || (ending != null)
                                            || !fermatas.isEmpty()
-                                           || (style != PartBarline.Style.REGULAR)));
+                                           || (style != null && style != PartBarline.Style.REGULAR)));
 
             if (needed) {
                 try {

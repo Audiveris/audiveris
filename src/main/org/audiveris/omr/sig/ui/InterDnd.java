@@ -138,7 +138,7 @@ public class InterDnd
     {
         if (staff == null) {
             // Some ghosts require being located in a staff, not even a user prompt is relevant!
-            if (ghost.imposeWithinStaffHeight()) {
+            if (ghost.imposeWithinStaffLimits()) {
                 return;
             }
 
@@ -254,7 +254,7 @@ public class InterDnd
                     staff = closestStaff;
                     system = staff.getSystem();
                 }
-            } else if (ghost.imposeWithinStaffHeight()) {
+            } else if (ghost.imposeWithinStaffLimits()) {
                 staff = null;
                 system = null;
             }

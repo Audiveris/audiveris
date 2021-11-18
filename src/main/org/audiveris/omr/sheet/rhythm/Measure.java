@@ -110,20 +110,30 @@ public class Measure
     // Persistent data
     //----------------
     //
-    /** Anomaly detected, if any. */
+    /** If 'true', this attribute indicates an abnormal measure. */
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean abnormal;
 
-    /** Left barline, if any. */
+    /**
+     * Part barline, if any, on the left side of the measure.
+     * <p>
+     * This left barline element exists only when we have a back-to-back repeat sign located between
+     * two measures, in which case it is assigned to the second measure.
+     */
     @XmlElement(name = "left-barline")
     private PartBarline leftBarline;
 
-    /** Mid barline, if any. */
+    /** Mid part barline, if any. */
     @XmlElement(name = "mid-barline")
     private PartBarline midBarline;
 
-    /** Right barline, if any. */
+    /**
+     * Part barline, if any, on the right side of the measure.
+     * <p>
+     * Except the case of a measure located on system right side with no ending barline,
+     * all measures have a right barline.
+     */
     @XmlElement(name = "right-barline")
     private PartBarline rightBarline;
 
@@ -148,8 +158,9 @@ public class Measure
     private final LinkedHashSet<BeamGroupInter> beamGroups = new LinkedHashSet<>();
 
     /**
-     * Possibly several Clefs per staff.
-     * Implemented as a list, kept ordered by clef full abscissa
+     * We can have several Clefs per staff in a single measure.
+     * <p>
+     * These are implemented as a list, kept ordered by clef full abscissa.
      */
     @XmlList
     @XmlIDREF
@@ -157,56 +168,80 @@ public class Measure
     @Trimmable.Collection
     private final ArrayList<ClefInter> clefs = new ArrayList<>();
 
-    /** Possibly one Key signature per staff, since keys may differ between staves. */
+    /**
+     * We can have at most one Key signature per staff in a single measure.
+     * <p>
+     * Keys may differ between staves.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "keys")
     @Trimmable.Collection
     private final LinkedHashSet<KeyInter> keys = new LinkedHashSet<>();
 
-    /** Possibly one Time signature per staff. */
+    /**
+     * We can have at most one Time signature per staff in a single measure.
+     * <p>
+     * All time signatures are expected to be identical in the same measure stack.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "times")
     @Trimmable.Collection
     private final LinkedHashSet<AbstractTimeInter> timeSigs = new LinkedHashSet<>();
 
-    /** Head chords, both standard and small. Populated by CHORDS step. */
+    /**
+     * All head chords, both standard and small, in this measure.
+     * <p>
+     * Populated by CHORDS step.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "head-chords")
     @Trimmable.Collection
     private final LinkedHashSet<HeadChordInter> headChords = new LinkedHashSet<>();
 
-    /** Rest chords. Populated by RHYTHMS step. */
+    /**
+     * All rest chords in this measure.
+     * <p>
+     * Populated by RHYTHMS step.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "rest-chords")
     @Trimmable.Collection
     private final LinkedHashSet<RestChordInter> restChords = new LinkedHashSet<>();
 
-    /** Flags. Populated by SYMBOLS step. */
+    /**
+     * All flags in this measure.
+     * <p>
+     * Populated by SYMBOLS step.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "flags")
     @Trimmable.Collection
     private final LinkedHashSet<FlagInter> flags = new LinkedHashSet<>();
 
-    /** Tuplets. */
+    /** All tuplets in this measure. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "tuplets")
     @Trimmable.Collection
     private final LinkedHashSet<TupletInter> tuplets = new LinkedHashSet<>();
 
-    /** Augmentation dots. */
+    /** All augmentation dots in this measure. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "augmentations-dots")
     @Trimmable.Collection
     private final LinkedHashSet<AugmentationDotInter> augDots = new LinkedHashSet<>();
 
-    /** Voices within this measure, sorted by voice id. Populated by RHYTHMS step. */
+    /**
+     * All voices within this measure, sorted by voice id.
+     * <p>
+     * Populated by RHYTHMS step.
+     */
     @XmlElement(name = "voice")
     @Trimmable.Collection
     private final ArrayList<Voice> voices = new ArrayList<>();
