@@ -94,15 +94,6 @@ import org.audiveris.omr.sheet.Profiles;
 /**
  * Class <code>AbstractInter</code> is the abstract implementation basis for {@link Inter}
  * interface.
- * <p>
- * As a general policy, subclasses can provide convenient creation static methods, which should
- * be consistently named as follows:
- * <ul>
- * <li><code>create</code> for just inter creation.
- * <li><code>createValid</code> for inter creation and validation (if failed, inter is not created).
- * <li><code>createAdded</code> for inter creation and addition to SIG.
- * <li><code>createValidAdded</code> for inter creation, validation and addition to SIG.
- * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -111,8 +102,20 @@ public abstract class AbstractInter
         extends AbstractEntity
         implements Inter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /**
+     * As a general policy, subclasses can provide convenient creation static methods,
+     * which should be consistently named as follows:
+     * <ul>
+     * <li><code>create</code> for just inter creation.
+     * <li><code>createValid</code> for inter creation and validation (if failed, inter is not
+     * created).
+     * <li><code>createAdded</code> for inter creation and addition to SIG.
+     * <li><code>createValidAdded</code> for inter creation, validation and addition to SIG.
+     * </ul>
+     */
+
+    //~ Static fields/initializers -----------------------------------------------------------------
     private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------

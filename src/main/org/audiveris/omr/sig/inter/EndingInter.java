@@ -70,19 +70,25 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class <code>EndingInter</code> represents an ending sign.
  * <p>
- * It is a long horizontal segment which defines an ending region:
+ * It is a long horizontal segment which defines an ending region via:
  * <ul>
- * <li>A downward leg on left side to give precise starting point of the region
- * <li>Optionally a downward leg on the right side to give precise ending point of the region
+ * <li>A downward leg on left side to give precise starting point of the region.
+ * <p>
+ * The related barline is linked by a LEFT-sided EndingBarRelation.
+ * <li>Optionally a downward leg on the right side to give precise ending point of the region.
+ * <p>
+ * The related barline, if any, is linked by a RIGHT-sided EndingBarRelation.
  * </ul>
  * Special cases:
  * <ul>
  * <li>An ending may cross systems break, leading to intermediate ending portions perhaps with no
- * leg:
- * <br>
+ * leg.
+ * <p>
+ * (NOTA: this case is not yet handled by Audiveris):
+ * <p>
  * <img src="doc-files/EndingAcrossSystems.png">
- * <li>An ending may have no barline on its starting side, requiring the user to create a barline
- * to correctly export the ending in MusicXML:
+ * <li>An ending may have no barline on its starting side, requiring the user to manually create
+ * a side-barline in order to correctly export the ending in MusicXML:
  * <br>
  * <img src="doc-files/EndingWithNoBarlineOnStart.png">
  * </ul>
@@ -459,7 +465,7 @@ public class EndingInter
 
         // Left bar (or header)
         StaffBarlineInter leftBar = lookupBar(LEFT, staff, systemBars, profile);
-        final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
+        final EndingBarRelation leftRel = new EndingBarRelation(LEFT);
 
         if (leftBar == null) {
             // Check the special case of a staff start (with header?, with no barline?)
@@ -480,11 +486,11 @@ public class EndingInter
 
             if (partLine != null) {
                 leftBar = partLine.getStaffBarline(staff.getPart(), staff);
-                leftRel.setOutGaps(0, 0, profile);
+                leftRel.setInOutGaps(0, 0, profile);
             }
         } else {
-            double leftDist = scale.pixelsToFrac(Math.abs(leftBar.getCenter().x - line.getX1()));
-            leftRel.setOutGaps(leftDist, 0, profile);
+            double leftDist = scale.pixelsToFrac(line.getX1() - leftBar.getCenter().x);
+            leftRel.setInOutGaps(leftDist, 0, profile);
         }
 
         if (leftBar != null) {
@@ -495,9 +501,9 @@ public class EndingInter
         StaffBarlineInter rightBar = lookupBar(RIGHT, staff, systemBars, profile);
 
         if (rightBar != null) {
-            double rightDist = scale.pixelsToFrac(Math.abs(rightBar.getCenter().x - line.getX2()));
-            final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
-            rightRel.setOutGaps(rightDist, 0, profile);
+            double rightDist = scale.pixelsToFrac(rightBar.getCenter().x - line.getX2());
+            final EndingBarRelation rightRel = new EndingBarRelation(RIGHT);
+            rightRel.setInOutGaps(rightDist, 0, profile);
 
             links.add(new Link(rightBar, rightRel, true));
         }

@@ -53,8 +53,11 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.symbol.Symbols;
 
@@ -68,9 +71,6 @@ import org.audiveris.omr.ui.symbol.Symbols;
  * <p>
  * TODO:
  *
- * getNeededLedgerLines
- * getNeededLedgerAdditions (?)
- *
  * Tracker
  *
  * @author Hervé Bitteur
@@ -83,6 +83,12 @@ public class CompoundNoteInter
     private static final Logger logger = LoggerFactory.getLogger(CompoundNoteInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Included head. */
+    private HeadInter head;
+
+    /** Included stem. */
+    private StemInter stem;
+
     /** Related model, if any. */
     private Model model;
 
@@ -101,6 +107,11 @@ public class CompoundNoteInter
                               Double grade)
     {
         super(glyph, bounds, shape, grade);
+
+        head = (HeadInter) InterFactory.createManual(
+                isQuarter() ? NOTEHEAD_BLACK : NOTEHEAD_VOID, null);
+
+        stem = (StemInter) InterFactory.createManual(STEM, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -210,25 +221,27 @@ public class CompoundNoteInter
             return tasks;
         }
 
-        // We "convert" compound note addition into: head, stem, head-stem relation, headChord?
+        // We "convert" compound note addition into:
+        // head, stem, head-stem relation, beam-stem relations?, headChord?
         final SystemInfo system = staff.getSystem();
         final SIGraph theSig = system.getSig();
+        final int profile = Math.max(getProfile(), system.getProfile());
 
-        // Create and add head and stem inters, with their bounds
+        // Look for beams around, this also updates head and stem data
+        final Collection<Link> stemLinks = stem.lookupBeamLinks(system, profile);
+
         final Rectangle headBounds = model.headBox.getBounds();
-        final HeadInter head = (HeadInter) InterFactory.createManual(
-                isQuarter() ? NOTEHEAD_BLACK : NOTEHEAD_VOID, null);
-        head.setStaff(staff);
-        head.setBounds(model.headBox.getBounds());
         tasks.add(new AdditionTask(theSig, head, headBounds, Collections.emptySet()));
 
         final Rectangle stemBounds = model.stemBox.getBounds();
-        final StemInter stem = (StemInter) InterFactory.createManual(STEM, null);
-        stem.setStaff(staff);
-        stem.setBounds(model.stemBox.getBounds());
         tasks.add(new AdditionTask(theSig, stem, stemBounds, Collections.emptySet()));
 
         tasks.add(new LinkTask(theSig, head, stem, new HeadStemRelation()));
+
+        // Stem to beams
+        for (Link link : stemLinks) {
+            tasks.add(new LinkTask(theSig, link.partner, stem, new BeamStemRelation()));
+        }
 
         if (system.getSheet().getStub().getLatestStep().compareTo(OmrStep.CHORDS) >= 0) {
             // Create the related head chord
@@ -243,6 +256,34 @@ public class CompoundNoteInter
         tasks.addAll(HeadInter.getNeededLedgerAdditions(headCenter, staff));
 
         return tasks;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for beams nearby.
+     *
+     * @return collection of links, perhaps empty
+     */
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+
+        if (model == null) {
+            model = buildModel();
+        }
+
+        head.setStaff(staff);
+        head.setBounds(model.headBox.getBounds());
+
+        stem.setStaff(staff);
+        stem.setBounds(model.stemBox.getBounds());
+
+        return stem.lookupBeamLinks(system, profile);
     }
 
     //-----------//

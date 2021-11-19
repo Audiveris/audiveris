@@ -35,7 +35,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>EndingBarRelation</code> connects an ending side with a bar line.
+ * Class <code>EndingBarRelation</code> connects a horizontal side of an ending sign
+ * with a barline underneath.
  *
  * @author Hervé Bitteur
  */
@@ -51,25 +52,21 @@ public class EndingBarRelation
                                                          constants.yWeight.getValue()};
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Which side of ending is used?. */
+    /**
+     * This attribute indicates which side of the ending sign is used.
+     */
     @XmlAttribute(name = "side")
     private HorizontalSide endingSide;
-
-    /** Horizontal delta (in interline) between bar line and ending side. */
-    private final double xDistance;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new EndingBarRelation object.
      *
      * @param endingSide which side of ending
-     * @param xDistance  horizontal delta
      */
-    public EndingBarRelation (HorizontalSide endingSide,
-                              double xDistance)
+    public EndingBarRelation (HorizontalSide endingSide)
     {
         this.endingSide = endingSide;
-        this.xDistance = xDistance;
     }
 
     /**
@@ -77,7 +74,6 @@ public class EndingBarRelation
      */
     public EndingBarRelation ()
     {
-        this.xDistance = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -210,7 +206,7 @@ public class EndingBarRelation
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        sb.append(endingSide).append("@(").append(String.format("%.2f", xDistance)).append(")");
+        sb.append(endingSide).append("@(").append(String.format("%.2f", dx)).append(")");
 
         return sb.toString();
     }

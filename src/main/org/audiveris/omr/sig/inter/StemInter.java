@@ -811,12 +811,15 @@ public class StemInter
     // lookupBeamLinks //
     //-----------------//
     /**
-     * Look for links to beams nearby that need a stem relation.
+     * Look for links to beams nearby.
+     *
+     * @param system  the containing system
+     * @param profile the profile to use
      *
      * @return collection of links, perhaps empty
      */
-    private Collection<Link> lookupBeamLinks (SystemInfo system,
-                                              int profile)
+    public Collection<Link> lookupBeamLinks (SystemInfo system,
+                                             int profile)
     {
         Collection<Link> links = new LinkedHashSet<>();
 
