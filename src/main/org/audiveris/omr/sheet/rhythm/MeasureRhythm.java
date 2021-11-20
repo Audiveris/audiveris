@@ -274,7 +274,8 @@ public class MeasureRhythm
     // clearInterleavedRests //
     //-----------------------//
     /**
-     * Clear all {@link BeamRestRelation} instances for this measure.
+     * Clear all {@link BeamRestRelation} instances for this measure, except the manual
+     * instances.
      *
      * @since 5.2.3 (before this release, information was (wrongly) detected on-the-fly and not
      * recorded in project file)
@@ -285,7 +286,9 @@ public class MeasureRhythm
             for (Inter member : beamGroup.getMembers()) {
                 final AbstractBeamInter beam = (AbstractBeamInter) member;
                 for (Relation rel : beam.getSig().getRelations(beam, BeamRestRelation.class)) {
-                    beam.getSig().removeEdge(rel);
+                    if (!rel.isManual()) {
+                        beam.getSig().removeEdge(rel);
+                    }
                 }
             }
         }

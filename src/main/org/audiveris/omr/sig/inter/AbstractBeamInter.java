@@ -197,7 +197,7 @@ public abstract class AbstractBeamInter
     // checkAbnormal //
     //---------------//
     /**
-     * Check if this beam is connected to stems on both ends.
+     * Check if this beam is connected to a stem or a rest on each end.
      *
      * @return true if abnormal
      */
@@ -207,9 +207,16 @@ public abstract class AbstractBeamInter
         boolean left = false;
         boolean right = false;
 
-        for (Relation rel : sig.getRelations(this, BeamStemRelation.class)) {
-            BeamStemRelation bsRel = (BeamStemRelation) rel;
-            BeamPortion portion = bsRel.getBeamPortion();
+        for (Relation rel : sig.getRelations(this, BeamStemRelation.class, BeamRestRelation.class)) {
+            final BeamPortion portion;
+
+            if (rel instanceof BeamStemRelation) {
+                final BeamStemRelation bsRel = (BeamStemRelation) rel;
+                portion = bsRel.getBeamPortion();
+            } else {
+                final BeamRestRelation brRel = (BeamRestRelation) rel;
+                portion = brRel.getBeamPortion();
+            }
 
             if (portion == BeamPortion.LEFT) {
                 left = true;

@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
@@ -45,6 +46,7 @@ import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
+import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
@@ -297,6 +299,8 @@ public abstract class Relations
 
         map(AugmentationDotInter.class, AugmentationRelation.class, AbstractNoteInter.class);
         map(AugmentationDotInter.class, DoubleDotRelation.class, AugmentationDotInter.class);
+
+        map(BeamInter.class, BeamRestRelation.class, RestInter.class);
 
         map(EndingInter.class, EndingBarRelation.class, BarlineInter.class); // Old
         map(EndingInter.class, EndingBarRelation.class, StaffBarlineInter.class);

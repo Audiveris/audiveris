@@ -305,8 +305,7 @@ public class BeamGroupInter
                         final NearestBeam nearest = getNearestBeam(restCenter);
 
                         if (nearest != null) {
-                            final int dy = (int) Math.rint(nearest.dist);
-                            sig.addEdge(nearest.beam, rest, new BeamRestRelation(dy));
+                            sig.addEdge(nearest.beam, rest, new BeamRestRelation());
                         }
                     }
                 }
@@ -1322,8 +1321,6 @@ public class BeamGroupInter
                     continue;
                 }
 
-                final int dy = (int) Math.rint(nearest.dist);
-
                 // Check no abscissa overlap with sibling interleaved rests
                 for (Relation rel : sig.getRelations(nearest.beam, BeamRestRelation.class)) {
                     final BeamRestRelation br = (BeamRestRelation) rel;
@@ -1366,7 +1363,7 @@ public class BeamGroupInter
                 }
 
                 // All tests are OK
-                sig.addEdge(nearest.beam, rest, new BeamRestRelation(dy));
+                sig.addEdge(nearest.beam, rest, new BeamRestRelation());
             }
         }
     }
