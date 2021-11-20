@@ -46,7 +46,6 @@ import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Jaxb;
-import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,17 +66,21 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sig.relation.Containment;
 
 /**
  * Class <code>BeamGroupInter</code> represents a group of related beams.
  * <p>
- * Beams within the same group support each other.
+ * It is an <code>InterEnsemble</code> linked via <code>Containment</code> relations to its Beam
+ * members.
  * <p>
- * NOTA: Beams in a BeamGroupInter are in no particular order.
+ * Beams in a BeamGroupInter are in no particular order.
+ * They support each other via BeamBeamRelation.
  * <p>
  * This class replaces the (old)BeamGroup class that was not an inter and had to directly manage its
  * contained beams.
- *
+ * <p>
  * @since 5.2
  *
  * @author Hervé Bitteur
@@ -100,21 +103,11 @@ public class BeamGroupInter
     //----------------
     //
     /**
-     * This boolean indicates a beam group that is linked to more than one staff.
+     * Indicates if this beam group relates to more than one staff.
      */
     @XmlAttribute(name = "multi-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean multiStaff;
-
-    // Transient data
-    //---------------
-    //
-    /** Containing measure. */
-    @Navigable(false)
-    private Measure measure;
-
-    /** Same voice for all chords in this beam group. */
-    private Voice voice;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -154,19 +147,6 @@ public class BeamGroupInter
                 sig.insertSupport(member, beam, BeamBeamRelation.class);
             }
         }
-    }
-
-    //-------------//
-    // afterReload //
-    //-------------//
-    /**
-     * To be called right after unmarshalling.
-     *
-     * @param measure the containing measure
-     */
-    public void afterReload (Measure measure)
-    {
-        setMeasure(measure);
     }
 
     //----------------//
@@ -300,7 +280,10 @@ public class BeamGroupInter
         whiteRests.removeAll(blackRests); // Safer
 
         // Plain candidate rests
-        final Set<RestChordInter> plainRests = new LinkedHashSet<>(measure.getRestChords());
+        final Set<RestChordInter> plainRests = new LinkedHashSet<>();
+        for (Measure measure : getMeasures()) {
+            plainRests.addAll(measure.getRestChords());
+        }
         plainRests.removeAll(blackRests);
         plainRests.removeAll(whiteRests);
 
@@ -559,6 +542,33 @@ public class BeamGroupInter
         return constants.maxYDistance;
     }
 
+    //-------------//
+    // getMeasures //
+    //-------------//
+    /**
+     * Report the sequence of measures this beam group is involved in.
+     *
+     * @return one or several measures
+     */
+    public List<Measure> getMeasures ()
+    {
+        final Set<Measure> measureSet = new LinkedHashSet<>();
+
+        for (Inter member : getMembers()) {
+            final AbstractBeamInter beam = (AbstractBeamInter) member;
+            for (AbstractChordInter chord : beam.getChords()) {
+                measureSet.add(chord.getMeasure());
+            }
+        }
+
+        // Sort measures by abscissa
+        List<Measure> measureList = new ArrayList<>(measureSet);
+        Collections.sort(measureList, (m1, m2) -> Double.compare(m1.getStack().getLeft(),
+                                                                 m2.getStack().getLeft()));
+
+        return measureList;
+    }
+
     //------------//
     // getMembers //
     //------------//
@@ -610,9 +620,32 @@ public class BeamGroupInter
         return new NearestBeam(bestBeam, bestDist);
     }
 
-//----------------//
-// getShapeString //
-//----------------//
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        for (Relation em : sig.getRelations(this, Containment.class)) {
+            final Inter beam = sig.getOppositeInter(this, em);
+
+            for (Relation bs : sig.getRelations(beam, BeamStemRelation.class)) {
+                final Inter stem = sig.getOppositeInter(beam, bs);
+
+                for (Relation hs : sig.getRelations(stem, HeadStemRelation.class)) {
+                    final Inter head = sig.getOppositeInter(stem, hs);
+
+                    return head.getPart();
+                }
+            }
+        }
+
+        return super.getPart();
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
     public String getShapeString ()
     {
@@ -706,22 +739,6 @@ public class BeamGroupInter
         return vip;
     }
 
-    //-----------------//
-    // justAssignVoice //
-    //-----------------//
-    /**
-     * Just assign a voice to this beam group, with no propagation.
-     * Method meant for afterReload only.
-     *
-     * @see #setVoice(Voice)
-     *
-     * @param voice the voice to assign
-     */
-    public void justAssignVoice (Voice voice)
-    {
-        this.voice = voice;
-    }
-
     //---------------//
     // findBeamGroup //
     //---------------//
@@ -775,8 +792,6 @@ public class BeamGroupInter
     public static void populateMeasure (Measure measure,
                                         boolean checkGroupSplit)
     {
-        measure.clearBeamGroups();
-
         // Retrieve beams in this measure
         final Set<AbstractBeamInter> beams = new LinkedHashSet<>();
         for (AbstractChordInter chord : measure.getHeadChords()) {
@@ -792,10 +807,6 @@ public class BeamGroupInter
 
             final BeamGroupInter group = beam.getGroup();
             groups.add(group);
-        }
-
-        for (BeamGroupInter group : groups) {
-            group.setMeasure(measure);
         }
 
         // Detect groups that are linked to more than one staff
@@ -924,23 +935,6 @@ public class BeamGroupInter
         }
     }
 
-    //--------//
-    // remove //
-    //--------//
-    @Override
-    public void remove (boolean extensive)
-    {
-        if (isRemoved()) {
-            return;
-        }
-
-        if (measure != null) {
-            measure.removeInter(this);
-        }
-
-        super.remove(extensive);
-    }
-
     //--------------//
     // removeMember //
     //--------------//
@@ -953,42 +947,6 @@ public class BeamGroupInter
         }
 
         EnsembleHelper.removeMember(this, member);
-
-        if (getMembers().isEmpty()) {
-            // Remove this group from its containing measure
-            if (measure != null) {
-                measure.removeInter(this);
-            }
-        }
-    }
-
-    //-------------//
-    // resetTiming //
-    //-------------//
-    /**
-     *
-     */
-    public void resetTiming ()
-    {
-        voice = null;
-    }
-
-    //------------//
-    // setMeasure //
-    //------------//
-    /**
-     * Assign the containing measure to this beam group.
-     *
-     * @param measure the measure to set
-     */
-    public void setMeasure (Measure measure)
-    {
-        this.measure = measure;
-
-        if (measure != null) {
-            part = measure.getPart();
-            measure.addInter(this);
-        }
     }
 
     //---------------//
@@ -1020,11 +978,9 @@ public class BeamGroupInter
      */
     public void setVoice (Voice voice)
     {
-        if (this.voice != voice) {
-            this.voice = voice;
-
-            // Propagate voice to the beamed chords, including the interleaved rests if any
-            for (AbstractChordInter chord : getAllChords()) {
+        // Propagate voice to the beamed chords, including the interleaved rests if any
+        for (AbstractChordInter chord : getAllChords()) {
+            if (chord.getMeasure() == voice.getMeasure()) {
                 chord.setVoice(voice);
             }
         }
@@ -1089,7 +1045,7 @@ public class BeamGroupInter
      */
     private AbstractChordInter checkForSplit ()
     {
-        final Scale scale = measure.getPart().getSystem().getSheet().getScale();
+        final Scale scale = sig.getSystem().getSheet().getScale();
         final double maxChordDy = constants.maxChordDy.getValue();
 
         // Make sure all chords are part of the same group
@@ -1202,7 +1158,6 @@ public class BeamGroupInter
                                                 Class<?>... classes)
     {
         final Set<RestChordInter> allRests = new LinkedHashSet<>();
-        final SIGraph sig = measure.getStack().getSystem().getSig();
 
         // First, restChords directly linked to headChords
         for (AbstractChordInter ch : headChords) {
@@ -1514,7 +1469,6 @@ public class BeamGroupInter
         private BeamGroupInter createAlienGroup ()
         {
             alienGroup = new BeamGroupInter();
-            alienGroup.setMeasure(measure);
 
             // Check all former beams: any beam linked to the detected alienChord should be
             // moved to the alienGroup.
@@ -1665,7 +1619,7 @@ public class BeamGroupInter
          * The beam group (old or alien) located at tail of pivot chord reuses pivot chord & stem.
          * The other group (the one closer to heads) must use a shorter stem (and chord).
          * <p>
-         * Also we have to void exclusion between any beam and the opposite (mirror) chord/stem
+         * Also, we have to avoid exclusion between any beam and the opposite (mirror) chord/stem.
          */
         private void splitChord ()
         {
@@ -1739,7 +1693,7 @@ public class BeamGroupInter
             shortChord.invalidateCache();
             pivotChord.invalidateCache();
 
-            measure.getStack().addInter(shortChord);
+            pivotChord.getMeasure().getStack().addInter(shortChord);
         }
     }
 

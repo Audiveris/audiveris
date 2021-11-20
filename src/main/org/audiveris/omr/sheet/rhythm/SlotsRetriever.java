@@ -693,12 +693,17 @@ public class SlotsRetriever
             final List<AbstractChordInter> groupChords = new ArrayList<>(chordSet);
             Collections.sort(groupChords, Inters.byAbscissa);
 
+            // We consider only chords within the measure
+            // This is a protection against a beam crossing measure limits
             for (int i = 0; i < groupChords.size(); i++) {
                 AbstractChordInter ch1 = groupChords.get(i);
-
-                for (AbstractChordInter ch2 : groupChords.subList(i + 1, groupChords.size())) {
-                    setRel(ch1, ch2, BEFORE);
-                    setRel(ch2, ch1, AFTER);
+                if (graph.containsVertex(ch1)) {
+                    for (AbstractChordInter ch2 : groupChords.subList(i + 1, groupChords.size())) {
+                        if (graph.containsVertex(ch2)) {
+                            setRel(ch1, ch2, BEFORE);
+                            setRel(ch2, ch1, AFTER);
+                        }
+                    }
                 }
             }
         }
@@ -1064,7 +1069,6 @@ public class SlotsRetriever
             this.rel = rel;
         }
     }
-
 
     //-----------//
     // Constants //

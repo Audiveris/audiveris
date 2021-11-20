@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 
 /**
  * Class <code>Voices</code> connects voices and harmonizes their IDs (and thus colors)
@@ -377,8 +378,8 @@ public abstract class Voices
                 final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
 
                 for (Voice voice : measureVoices) {
+                    // Check voices from same part in previous measure
                     if (prevMeasure != null) {
-                        // Check voices from same part in previous measure
                         // Tie-based voice link
                         final Integer tiedId = getTiedId(voice, measureSlurAdapter);
 
@@ -386,10 +387,27 @@ public abstract class Voices
                             measure.swapVoiceId(voice, tiedId);
                         }
 
-                        // SameVoiceRelation-based or NextInVoiceRelation-based voice links
                         final AbstractChordInter ch2 = voice.getFirstChord();
 
                         if (ch2 != null) {
+                            // BeamGroup-based voice link
+                            final BeamGroupInter beamGroup = ch2.getBeamGroup();
+                            if ((beamGroup != null) && beamGroup.getMeasures().contains(prevMeasure)) {
+                                AbstractChordInter prevCh = null;
+                                for (AbstractChordInter ch : beamGroup.getAllChords()) {
+                                    if (prevCh != null && ch == ch2) {
+                                        if (voice.getId() != prevCh.getVoice().getId()) {
+                                            measure.swapVoiceId(voice, prevCh.getVoice().getId());
+                                        }
+
+                                        break;
+                                    }
+
+                                    prevCh = ch;
+                                }
+                            }
+
+                            // SameVoiceRelation-based or NextInVoiceRelation-based voice links
                             for (Relation rel : sig.getRelations(ch2,
                                                                  SameVoiceRelation.class,
                                                                  NextInVoiceRelation.class)) {

@@ -44,13 +44,7 @@ import org.audiveris.omr.constant.Constant;
  */
 public enum ProcessingSwitch
 {
-    /**
-     * BINGO Doc for enum poorInputMode.
-     */
     poorInputMode(ProcessingSwitches.constants.poorInputMode),
-    /**
-     * BINGO Doc for enum indentqtions.
-     */
     indentations(ProcessingSwitches.constants.indentations),
     bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
     keepGrayImages(ProcessingSwitches.constants.keepGrayImages),

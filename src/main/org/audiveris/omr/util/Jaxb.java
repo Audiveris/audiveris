@@ -296,31 +296,29 @@ public abstract class Jaxb
      * false value is not marshalled.
      */
     public static class BooleanPositiveAdapter
-            extends XmlAdapter<String, Boolean>
+            extends XmlAdapter<Boolean, Boolean>
     {
 
-        private static final String TRUE = Boolean.toString(true);
-
         @Override
-        public String marshal (Boolean b)
+        public Boolean marshal (Boolean b)
                 throws Exception
         {
             if (b == null) {
                 return null;
             }
 
-            return b ? TRUE : null;
+            return b ? true : null;
         }
 
         @Override
-        public Boolean unmarshal (String s)
+        public Boolean unmarshal (Boolean s)
                 throws Exception
         {
             if (s == null) {
                 return false;
             }
 
-            return Boolean.parseBoolean(s);
+            return s;
         }
     }
 

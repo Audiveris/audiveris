@@ -28,11 +28,9 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.beam.OldBeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice.Family;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
@@ -80,7 +78,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -93,6 +90,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * It is contained in a <code>MeasureStack</code> which embraces all the vertically aligned
  * <code>Measure</code> instances in the same <code>System</code>.
+ * <p>
+ * The image below represents one system, decomposed:
+ * <ul>
+ * <li>vertically in parts (and staves within their part)
+ * <li>horizontally in measure stacks (and measures within their stack)
+ * </ul>
+ * <img src="doc-files/Measure-vs-MeasureStack.png" alt="Measure vs MeasureStack">
  *
  * @see MeasureStack
  * @author Hervé Bitteur
@@ -110,7 +114,7 @@ public class Measure
     // Persistent data
     //----------------
     //
-    /** If 'true', this attribute indicates an abnormal measure. */
+    /** Indicates if the measure is in some abnormal rhythm status. */
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean abnormal;
@@ -136,26 +140,6 @@ public class Measure
      */
     @XmlElement(name = "right-barline")
     private PartBarline rightBarline;
-
-    /**
-     * <b>Deprecated</b> Groups of beams in this measure.
-     * <p>
-     * Replaced by beamGroups element.
-     */
-    @Deprecated
-    @XmlElementRef(name = "beam-group")
-    private LinkedHashSet<OldBeamGroup> oldBeamGroups;
-
-    /**
-     * This is the list of <code>BeamGroupInter</code> instances in this measure.
-     * <p>
-     * NOTA: This replaces the now deprecated beam-group hash set.
-     */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "beam-groups")
-    @Trimmable.Collection
-    private final LinkedHashSet<BeamGroupInter> beamGroups = new LinkedHashSet<>();
 
     /**
      * We can have several Clefs per staff in a single measure.
@@ -397,8 +381,6 @@ public class Measure
             } else if (chord instanceof RestChordInter) {
                 restChords.add((RestChordInter) chord);
             }
-        } else if (inter instanceof BeamGroupInter) {
-            beamGroups.add((BeamGroupInter) inter);
         } else if (inter instanceof FlagInter) {
             flags.add((FlagInter) inter);
         } else if (inter instanceof TupletInter) {
@@ -445,22 +427,6 @@ public class Measure
                 addInter(inter);
             }
 
-            // OLD BeamGroups
-            if (oldBeamGroups != null) {
-                for (OldBeamGroup oldBeamGroup : oldBeamGroups) {
-                    oldBeamGroup.afterReload(this, sig);
-                }
-
-                upgraded |= !oldBeamGroups.isEmpty();
-
-                oldBeamGroups = null;
-            }
-
-            // BeamGroups
-            for (BeamGroupInter beamGroup : beamGroups) {
-                beamGroup.afterReload(this);
-            }
-
             // Voices
             for (Voice voice : voices) {
                 upgraded |= voice.afterReload(this);
@@ -496,17 +462,6 @@ public class Measure
         for (Voice voice : voices) {
             voice.checkDuration();
         }
-    }
-
-    //-----------------//
-    // clearBeamGroups //
-    //-----------------//
-    /**
-     * Reset collection of beam groups for this measure.
-     */
-    public void clearBeamGroups ()
-    {
-        beamGroups.clear();
     }
 
     //-------------//
@@ -651,12 +606,24 @@ public class Measure
     // getBeamGroups //
     //---------------//
     /**
-     * Report the collection of beam groups.
+     * Report the collection of beam groups that are involved with this measure.
+     * <p>
+     * NOTA: A beam (and a beam group) may span several measures.
      *
      * @return the set of beam groups
      */
     public Set<BeamGroupInter> getBeamGroups ()
     {
+        final Set<BeamGroupInter> beamGroups = new LinkedHashSet<>();
+
+        for (AbstractChordInter chord : getStandardChords()) {
+            final BeamGroupInter group = chord.getBeamGroup();
+
+            if (group != null) {
+                beamGroups.add(group);
+            }
+        }
+
         return beamGroups;
     }
 
@@ -1373,8 +1340,8 @@ public class Measure
     {
         Set<Inter> set = new LinkedHashSet<>();
 
-        for (BeamGroupInter beamGroup : beamGroups) {
-            set.addAll(beamGroup.getMembers());
+        for (BeamGroupInter beamGroup : getBeamGroups()) {
+            set.addAll(beamGroup.getMembers()); // Beams, what for ????????????????
         }
 
         set.addAll(getHeadChords());
@@ -1702,8 +1669,6 @@ public class Measure
             clefs.remove((ClefInter) inter);
         } else if (inter instanceof KeyInter) {
             keys.remove((KeyInter) inter);
-        } else if (inter instanceof BeamGroupInter) {
-            beamGroups.remove((BeamGroupInter) inter);
         } else if (inter instanceof AbstractTimeInter) {
             timeSigs.remove((AbstractTimeInter) inter);
         } else if (inter instanceof HeadChordInter) {
@@ -1818,11 +1783,6 @@ public class Measure
         setAbnormal(false);
         voices.clear();
 
-        // Reset voice of every beam group
-        for (BeamGroupInter group : beamGroups) {
-            group.resetTiming();
-        }
-
         // Forward reset to every chord in measure (standard and small)
         for (AbstractChordInter chord : getHeadChords()) {
             chord.resetTiming();
@@ -1888,17 +1848,6 @@ public class Measure
         // mid barline ???
         // right barline: assigned by caller
         //
-        // Beam groups
-        for (Iterator<BeamGroupInter> it = beamGroups.iterator(); it.hasNext();) {
-            BeamGroupInter beamGroup = it.next();
-            AbstractChordInter chord = beamGroup.getFirstChord();
-
-            if (chord.getCenter().x <= xRefs.get(chord.getTopStaff())) {
-                leftMeasure.addInter(beamGroup);
-                it.remove();
-            }
-        }
-
         splitCollectionAt(xRefs, leftMeasure, clefs);
 
         // Keys
@@ -1947,29 +1896,6 @@ public class Measure
         if (rightBarline != null) {
             measureBelow.rightBarline = rightBarline.splitBefore(pivotStaff);
         }
-
-        // Beam groups
-        BeamGroupLoop:
-        for (BeamGroupInter bg : beamGroups) {
-            for (Inter inter : bg.getMembers()) {
-                final AbstractBeamInter beam = (AbstractBeamInter) inter;
-
-                // A beam may have no staff, with notes in upper staff and notes in lower staff
-                for (AbstractChordInter chord : beam.getChords()) {
-                    final Staff staff = chord.getBottomStaff();
-
-                    if (stavesBelow.contains(staff)) {
-                        measureBelow.beamGroups.add(bg);
-
-                        continue BeamGroupLoop;
-                    }
-                }
-            }
-
-            bg.setMeasure(measureBelow);
-        }
-
-        beamGroups.removeAll(measureBelow.beamGroups);
 
         splitCollectionBefore(stavesBelow, measureBelow, keys);
         splitCollectionBefore(stavesBelow, measureBelow, clefs);
@@ -2036,7 +1962,6 @@ public class Measure
     public void switchItemsPart (Part newPart)
     {
         //TODO 3 barlines ???
-        // beamGroups: no part field
         //
         switchCollectionPart(newPart, clefs);
         switchCollectionPart(newPart, keys);
@@ -2225,7 +2150,6 @@ public class Measure
     {
         // Keys: addressed by caller
         //
-        addOtherCollection(other.beamGroups);
         addOtherCollection(other.clefs);
         addOtherCollection(other.timeSigs);
         addOtherCollection(other.headChords);

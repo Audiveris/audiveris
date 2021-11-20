@@ -149,12 +149,16 @@ public class MeasureStack
     @XmlAttribute
     private SpecialMeasure special;
 
-    /** Repeat sign on side (left or right) of the measure stack. */
+    /** Set of repeat signs on side (left and/or right) of the measure stack. */
     @XmlList
     @XmlAttribute(name = "repeat")
     private Set<HorizontalSide> repeats;
 
-    /** Theoretical measure stack duration, based on current time signature. */
+    /**
+     * Theoretical measure stack duration, based on current time signature.
+     * <p>
+     * Specified as a rational value.
+     */
     @XmlAttribute(name = "expected")
     @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational expectedDuration;
@@ -168,20 +172,25 @@ public class MeasureStack
      * <li>Otherwise, duration is computed from contained slots and voices.
      * <li>If stack timing fails for whatever reason, actual duration may be left as null.
      * </ul>
+     * Specified as a rational value.
      */
     @XmlAttribute(name = "duration")
     @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational actualDuration;
 
-    /** Excess measure stack duration, if any. */
+    /**
+     * Excess measure stack duration, if any.
+     * <p>
+     * Specified as a rational value.
+     */
     @XmlAttribute(name = "excess")
     @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     private Rational excess;
 
     /**
-     * Anomaly detected, if any.
+     * Indicates a detected anomaly in this stack.
      * <p>
-     * <i>Deprecated</i> since individual measures can now be flagged as abnormal.
+     * <b>Deprecated</b>, now that measures can be flagged individually as abnormal.
      */
     @Deprecated
     @XmlAttribute(name = "abnormal")
@@ -196,7 +205,6 @@ public class MeasureStack
     private final LinkedHashSet<TupletInter> stackTuplets = new LinkedHashSet<>();
 
     /**
-     * BINGO
      * Sequence of time slots within the measure stack, from left to right.
      */
     @XmlElementRef

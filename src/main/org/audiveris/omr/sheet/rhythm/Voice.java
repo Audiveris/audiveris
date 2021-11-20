@@ -27,7 +27,6 @@ import org.audiveris.omr.score.Mark;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import static org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -252,12 +251,6 @@ public class Voice
                     if (info.status == ChordStatus.BEGIN) {
                         info.chord.justAssignVoice(this);
                         addChord(info.chord);
-
-                        for (AbstractBeamInter beam : info.chord.getBeams()) {
-                            if (beam.getGroup() != null) {
-                                beam.getGroup().justAssignVoice(this);
-                            }
-                        }
                     }
                 }
             }

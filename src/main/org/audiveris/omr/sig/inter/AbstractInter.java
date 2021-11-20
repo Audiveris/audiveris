@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -89,11 +90,20 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.sheet.Profiles;
 
 /**
  * Class <code>AbstractInter</code> is the abstract implementation basis for {@link Inter}
  * interface.
+ * <p>
+ * As a general policy, subclasses of <code>AbstractInter</code> can provide convenient creation
+ * static methods, which should be consistently named as follows:
+ * <ul>
+ * <li><code>create</code> for just inter creation.
+ * <li><code>createValid</code> for inter creation and validation (if failed, inter is not
+ * created).
+ * <li><code>createAdded</code> for inter creation and addition to SIG.
+ * <li><code>createValidAdded</code> for inter creation, validation and addition to SIG.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -102,20 +112,8 @@ public abstract class AbstractInter
         extends AbstractEntity
         implements Inter
 {
-
-    /**
-     * As a general policy, subclasses can provide convenient creation static methods,
-     * which should be consistently named as follows:
-     * <ul>
-     * <li><code>create</code> for just inter creation.
-     * <li><code>createValid</code> for inter creation and validation (if failed, inter is not
-     * created).
-     * <li><code>createAdded</code> for inter creation and addition to SIG.
-     * <li><code>createValidAdded</code> for inter creation, validation and addition to SIG.
-     * </ul>
-     */
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -143,22 +141,22 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     protected Double ctxGrade;
 
-    /** If "true", this Inter was detected as abnormal by the engine. */
+    /** Indicates if this Inter was detected as abnormal by the engine. */
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean abnormal;
 
-    /** If "true", this Inter is no longer modifiable by the engine. */
+    /** Indicates if this Inter is no longer modifiable by the engine. */
     @XmlAttribute(name = "frozen")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean frozen;
 
-    /** If "true", this Inter was created implicitly by the engine. */
+    /** Indicates if this Inter was created implicitly by the engine. */
     @XmlAttribute(name = "implicit")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean implicit;
 
-    /** If "true", this Inter was created manually by the end-user. */
+    /** Indicates if this Inter was created manually by the end-user. */
     @XmlAttribute(name = "manual")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean manual;

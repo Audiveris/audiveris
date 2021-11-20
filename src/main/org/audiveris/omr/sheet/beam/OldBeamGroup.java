@@ -103,7 +103,6 @@ public class OldBeamGroup
     {
         try {
             final BeamGroupInter beamGroup = new BeamGroupInter();
-            beamGroup.setMeasure(measure);
             beamGroup.setMultiStaff(multiStaff);
             sig.addVertex(beamGroup);
 

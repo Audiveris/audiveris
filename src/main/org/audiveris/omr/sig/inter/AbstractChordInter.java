@@ -1268,7 +1268,9 @@ public abstract class AbstractChordInter
                     logger.warn("{} Computing beam group times with first chord not set", chord);
                 }
 
-                prevChord = chord;
+                if (measure == chord.getMeasure()) {
+                    prevChord = chord;
+                }
             }
 
             final AbstractChordInter lastChord = group.getLastChord();

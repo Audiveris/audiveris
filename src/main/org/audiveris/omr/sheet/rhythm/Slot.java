@@ -92,7 +92,7 @@ public class Slot
     @XmlJavaTypeAdapter(Rational.JaxbAdapter.class)
     protected Rational timeOffset;
 
-    /** Is this slot suspicious? */
+    /** Indicates a suspicious slot. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean suspicious;

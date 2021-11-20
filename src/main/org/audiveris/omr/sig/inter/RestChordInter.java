@@ -21,7 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.sig.relation.BeamRestRelation;
+import org.audiveris.omr.sig.relation.Relation;
 
 /**
  * Class <code>RestChordInter</code> is a AbstractChordInter composed of (one) rest.
@@ -68,5 +75,47 @@ public class RestChordInter
     public String getShapeString ()
     {
         return "RestChord";
+    }
+
+    //----------//
+    // getBeams //
+    //----------//
+    /**
+     * Report the sequence of beams that are attached to this chord.
+     * <p>
+     * The sequence is generally empty except for an interleaved rest.
+     *
+     * @return the list of attached beams, perhaps empty
+     */
+    @Override
+    public List<AbstractBeamInter> getBeams ()
+    {
+        if (beams == null) {
+            beams = new ArrayList<>();
+
+            final List<Inter> members = getMembers();
+
+            if (members.isEmpty()) {
+                return beams;
+            }
+
+            final Inter rest = getMembers().get(0);
+
+            for (Relation rel : sig.getRelations(rest, BeamRestRelation.class)) {
+                beams.add((AbstractBeamInter) sig.getOppositeInter(rest, rel));
+            }
+
+            final Point restLoc = getCenter();
+            final int x = restLoc.x;
+            final int yRest = restLoc.y;
+
+            // Keep the sequence ordered by distance from chord tail
+            Collections.sort(beams,
+                             (AbstractBeamInter b1, AbstractBeamInter b2) -> Double.compare(
+                                     Math.abs(yRest - LineUtil.yAtX(b2.getMedian(), x)),
+                                     Math.abs(yRest - LineUtil.yAtX(b1.getMedian(), x))));
+        }
+
+        return beams;
     }
 }

@@ -85,16 +85,22 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.sig.relation.BeamRestRelation;
 
 /**
  * Abstract class <code>AbstractBeamInter</code> is the basis for {@link BeamInter},
  * {@link BeamHookInter} and {@link SmallBeamInter} classes.
  * <p>
- * The following image shows two beams - a (full) beam and a beam hook:
+ * The following image shows two beams - a (full) beam and a beam hook,
+ * gathered in the same beam group:
  * <p>
  * <img alt="Beam image"
  * src=
  * "http://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Beamed_notes.svg/220px-Beamed_notes.svg.png">
+ * <p>
+ * NOTA: A beam (and thus a beam group) may span several measures as shown below:
+ * <p>
+ * <img src="doc-files/BeamAcrossMeasureBreak.png" alt="Beam across measure break">
  *
  * @author Hervé Bitteur
  */
@@ -111,12 +117,14 @@ public abstract class AbstractBeamInter
     // Persistent data
     //----------------
     //
-    /** Beam thickness, with maximum 1 digit after the dot. */
+    /**
+     * The beam average thickness, specified in pixels with 1 digit maximum after the dot.
+     */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
     protected double height;
 
-    /** Median line, defined from left to right. */
+    /** The beam median line, defined from left to right. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     protected Line2D median;
@@ -311,23 +319,27 @@ public abstract class AbstractBeamInter
     /**
      * Report the chords that are linked by this beam.
      *
-     * @return the linked chords
+     * @return the linked chords (head-chords and interleaved rest-chords)
      */
     public List<AbstractChordInter> getChords ()
     {
-        List<AbstractChordInter> chords = new ArrayList<>();
+        final Set<AbstractChordInter> chords = new LinkedHashSet<>();
 
+        // Linked head-chords
         for (StemInter stem : getStems()) {
-            for (AbstractChordInter chord : stem.getChords()) {
-                if (!chords.contains(chord)) {
-                    chords.add(chord);
-                }
-            }
+            chords.addAll(stem.getChords());
         }
 
-        Collections.sort(chords, Inters.byCenterAbscissa);
+        // Linked rest-chords
+        for (Relation rel : sig.getRelations(this, BeamRestRelation.class)) {
+            final Inter rest = sig.getOppositeInter(this, rel);
+            chords.add((AbstractChordInter) rest.getEnsemble());
+        }
 
-        return chords;
+        final List<AbstractChordInter> chordList = new ArrayList<>(chords);
+        Collections.sort(chordList, Inters.byCenterAbscissa);
+
+        return chordList;
     }
 
     //------------------//
