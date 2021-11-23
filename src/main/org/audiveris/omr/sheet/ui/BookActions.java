@@ -89,6 +89,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.audiveris.omr.Main;
 
 /**
  * Class <code>BookActions</code> gathers all UI actions related to current book.
@@ -617,7 +618,7 @@ public class BookActions
                 filter(ext),
                 resources.getString("chooseBookExport"));
 
-        if ((bookPath == null) || !confirmed(bookPath)) {
+        if ((bookPath == null) || !isTargetConfirmed(bookPath)) {
             return null;
         }
 
@@ -660,7 +661,7 @@ public class BookActions
                 filter(ext),
                 resources.getString("chooseSheetExport"));
 
-        if ((sheetPath == null) || !confirmed(sheetPath)) {
+        if ((sheetPath == null) || !isTargetConfirmed(sheetPath)) {
             return null;
         }
 
@@ -1026,7 +1027,7 @@ public class BookActions
 
         final Path bookPrintPath = BookManager.getDefaultPrintPath(book);
 
-        if ((bookPrintPath != null) && confirmed(bookPrintPath)) {
+        if ((bookPrintPath != null) && isTargetConfirmed(bookPrintPath)) {
             return new PrintBookTask(book, bookPrintPath);
         }
 
@@ -1054,7 +1055,7 @@ public class BookActions
         // Select target book print path
         final Path bookPrintPath = choosePrintPath(book, "");
 
-        if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
+        if ((bookPrintPath == null) || !isTargetConfirmed(bookPrintPath)) {
             return null;
         }
 
@@ -1082,7 +1083,7 @@ public class BookActions
         // Let the user select a PDF output file
         final Path sheetPrintPath = choosePrintPath(stub, "");
 
-        if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
+        if ((sheetPrintPath == null) || !isTargetConfirmed(sheetPrintPath)) {
             return null;
         }
 
@@ -1206,7 +1207,7 @@ public class BookActions
 
             if ((book.getBookPath() != null)
                         && (bookPath.toAbsolutePath().equals(book.getBookPath().toAbsolutePath())
-                                    || confirmed(bookPath))) {
+                                    || isTargetConfirmed(bookPath))) {
                 return new StoreBookTask(book, bookPath);
             }
 
@@ -1237,7 +1238,7 @@ public class BookActions
             final Path ownPath = book.getBookPath();
 
             if ((targetPath != null) && (((ownPath != null) && ownPath.toAbsolutePath().equals(
-                    targetPath.toAbsolutePath())) || confirmed(targetPath))) {
+                    targetPath.toAbsolutePath())) || isTargetConfirmed(targetPath))) {
                 return new StoreBookTask(book, targetPath);
             }
         } catch (Throwable ex) {
@@ -1454,7 +1455,24 @@ public class BookActions
             return null;
         }
 
-        return new TranscribeBookTask(stub);
+        boolean swap = false;
+
+        if (swapProcessedSheets() || Main.getCli().isSwap()) {
+            // Make sure we will be able to save book incrementally
+            final Book book = stub.getBook();
+            final Path defPath = BookManager.getDefaultSavePath(book);
+            final Path bookPath = book.getBookPath();
+
+            if (((bookPath != null) && (defPath.toAbsolutePath().equals(bookPath.toAbsolutePath()))
+                         || isTargetConfirmed(defPath))) {
+                swap = true;
+                logger.info("Processed sheets will be swapped out");
+            } else {
+                logger.info("No swap out for processed sheets");
+            }
+        }
+
+        return new TranscribeBookTask(stub, swap);
     }
 
     //-----------------//
@@ -1655,11 +1673,11 @@ public class BookActions
                     bookPath = BookManager.getDefaultSavePath(book);
 
                     // Check the target is fine
-                    if (!confirmed(bookPath)) {
+                    if (!isTargetConfirmed(bookPath)) {
                         // Let the user select an alternate output file
                         bookPath = selectBookPath(true, BookManager.getDefaultSavePath(book));
 
-                        if ((bookPath == null) || !confirmed(bookPath)) {
+                        if ((bookPath == null) || !isTargetConfirmed(bookPath)) {
                             return false; // No suitable target found
                         }
                     }
@@ -1699,20 +1717,34 @@ public class BookActions
         return LazySingleton.INSTANCE;
     }
 
-    //-----------//
-    // confirmed //
-    //-----------//
+    //-------------------//
+    // isTargetConfirmed //
+    //-------------------//
     /**
      * Check whether we have user confirmation to overwrite the target path.
+     * <p>
      * This is a no-op if target does not already exist.
      *
      * @param target the path to be checked
-     * @return false if explicitly not confirmed, true otherwise
+     * @return false if explicitly not isTargetConfirmed, true otherwise
      */
-    private static boolean confirmed (Path target)
+    public static boolean isTargetConfirmed (Path target)
     {
         return (!Files.exists(target)) || OMR.gui.displayConfirmation(
                 format(resources.getString("overwriteFile.pattern"), target));
+    }
+
+    //---------------------//
+    // swapProcessedSheets //
+    //---------------------//
+    /**
+     * Report whether we should swap out any processed sheet.
+     *
+     * @return true if so
+     */
+    public static boolean swapProcessedSheets ()
+    {
+        return constants.swapProcessedSheets.isSet();
     }
 
     //--------//
@@ -2115,6 +2147,10 @@ public class BookActions
         private final Constant.Boolean preOpenBookParameters = new Constant.Boolean(
                 false,
                 "Automatically open book parameters dialog at book creation?");
+
+        private final Constant.Boolean swapProcessedSheets = new Constant.Boolean(
+                false,
+                "Automatically swap out sheets once they are processed?");
     }
 
     //---------//
@@ -2370,10 +2406,14 @@ public class BookActions
 
         private final Book book;
 
-        TranscribeBookTask (SheetStub stub)
+        private final boolean swap;
+
+        TranscribeBookTask (SheetStub stub,
+                            boolean swap)
         {
             this.stub = stub;
             this.book = stub.getBook();
+            this.swap = swap;
         }
 
         @Override
@@ -2382,7 +2422,12 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
-                book.transcribe(book.getValidSelectedStubs(), book.getScores());
+
+                if (swap) {
+                    book.store(BookManager.getDefaultSavePath(book), false);
+                }
+
+                book.transcribe(book.getValidSelectedStubs(), book.getScores(), swap);
             } catch (Throwable ex) {
                 logger.warn("Could not transcribe book {}", ex.toString(), ex);
             } finally {

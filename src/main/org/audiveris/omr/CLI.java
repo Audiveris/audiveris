@@ -220,6 +220,19 @@ public class CLI
         return params.save;
     }
 
+    //--------//
+    // isSwap //
+    //--------//
+    /**
+     * Report whether we swap every sheet after processing.
+     *
+     * @return true for swapping every sheet
+     */
+    public boolean isSwap ()
+    {
+        return params.swap;
+    }
+
     //-----------------//
     // parseParameters //
     //-----------------//
@@ -439,13 +452,21 @@ public class CLI
                 }
                 LogUtil.start(book);
 
+                boolean swap = (OMR.gui == null)
+                                       || isSwap()
+                                       || BookActions.swapProcessedSheets();
+
                 // Make sure stubs are available
                 if (book.getStubs().isEmpty()) {
                     book.createStubs();
 
-                    // Save book to disk (global book info)
-                    if (OMR.gui == null) {
-                        book.store(BookManager.getDefaultSavePath(book), false);
+                    // Save book to disk immediately (global book info)
+                    final Path bookPath = BookManager.getDefaultSavePath(book);
+
+                    if (OMR.gui == null || (swap && BookActions.isTargetConfirmed(bookPath))) {
+                        book.store(bookPath, false);
+                    } else {
+                        swap = false;
                     }
                 }
 
@@ -472,7 +493,7 @@ public class CLI
 
                 // Specific step to reach on valid selected sheets in the book?
                 if (params.step != null) {
-                    boolean ok = book.reachBookStep(params.step, params.force, validStubs);
+                    boolean ok = book.reachBookStep(params.step, params.force, validStubs, swap);
 
                     if (!ok) {
                         return;
@@ -481,7 +502,7 @@ public class CLI
 
                 // Score(s)
                 if (params.transcribe) {
-                    book.transcribe(validStubs, scores);
+                    book.transcribe(validStubs, scores, swap);
                 }
 
                 // Specific class to run?
@@ -794,8 +815,12 @@ public class CLI
         boolean upgrade;
 
         /** Should book be saved on every successful batch step?. */
-        @Option(name = "-save", usage = "Save book on every successful batch step")
+        @Option(name = "-save", usage = "In batch, save book on every successful step")
         boolean save;
+
+        /** Should every sheet be swapped after processing?. */
+        @Option(name = "-swap", usage = "Swap out every sheet after its processing")
+        boolean swap;
 
         /** Ability to run a class on each valid sheet. */
         @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets",

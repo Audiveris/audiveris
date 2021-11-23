@@ -210,8 +210,10 @@ public class FileDropHandler
 
                 // Run the early target on first stub only.
                 if (dropStep != null) {
-                    book.reachBookStep(dropStep, false,
-                                       Collections.singletonList(book.getFirstValidStub()));
+                    book.reachBookStep(dropStep,
+                                       false,
+                                       Collections.singletonList(book.getFirstValidStub()),
+                                       false);
                 }
 
                 return null;

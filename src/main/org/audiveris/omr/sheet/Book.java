@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotations;
@@ -616,7 +617,10 @@ public class Book
                         List<Score> theScores)
     {
         // Make sure material is ready
-        transcribe(theStubs, theScores);
+        final boolean swap = (OMR.gui == null)
+                                     || Main.getCli().isSwap()
+                                     || BookActions.swapProcessedSheets();
+        transcribe(theStubs, theScores, swap);
 
         // path/to/scores/Book
         final Path bookPathSansExt = BookManager.getActualPath(
@@ -1739,14 +1743,16 @@ public class Book
      * @param target   the targeted step
      * @param force    if true and step already reached, sheet is reset and processed until step
      * @param theStubs the valid selected stubs
+     * @param swap     if true, swap out processed sheets
      * @return true if OK on all sheet actions
      */
     public boolean reachBookStep (final OmrStep target,
                                   final boolean force,
-                                  final List<SheetStub> theStubs)
+                                  final List<SheetStub> theStubs,
+                                  final boolean swap)
     {
         try {
-            logger.debug("reachStep {} force:{} stubs:{}", target, force, theStubs);
+            logger.debug("reachStep {} force:{} stubs:{} swap:{}", target, force, theStubs, swap);
 
             if (!force) {
                 // Check against the least advanced step performed across all sheets concerned
@@ -1817,9 +1823,6 @@ public class Book
 
                         try {
                             if (stub.reachStep(target, force)) {
-                                if (OMR.gui == null) {
-                                    stub.swapSheet(); // Save sheet & global book info to disk
-                                }
                             } else {
                                 someFailure = true;
                             }
@@ -1829,6 +1832,11 @@ public class Book
                             logger.warn("Error processing stub");
                             someFailure = true;
                         } finally {
+                            if (swap) {
+                                swapAllSheets(); // Save sheet(s) & global book info to disk
+                                logger.info("End of {} memory: {}", stub, Memory.getValue());
+                            }
+
                             LogUtil.stopStub();
                         }
                     }
@@ -2156,12 +2164,14 @@ public class Book
      *
      * @param theStubs  the valid selected stubs
      * @param theScores the collection of scores to populate
+     * @param swap      if true, processed sheets are swapped out
      * @return true if OK
      */
     public boolean transcribe (List<SheetStub> theStubs,
-                               List<Score> theScores)
+                               List<Score> theScores,
+                               boolean swap)
     {
-        boolean ok = reachBookStep(OmrStep.last(), false, theStubs);
+        boolean ok = reachBookStep(OmrStep.last(), false, theStubs, swap);
 
         if (theScores.isEmpty()) {
             createScores(theStubs, theScores);
