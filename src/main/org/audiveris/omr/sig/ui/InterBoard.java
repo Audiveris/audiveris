@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.TextRole;
@@ -129,6 +130,10 @@ public class InterBoard
     private final LCheckBox edit = new LCheckBox(resources.getString("edit.text"),
                                                  resources.getString("edit.toolTipText"));
 
+    /** To set Tie aspect for a slur. */
+    private final LCheckBox tie = new LCheckBox(resources.getString("tie.text"),
+                                                resources.getString("tie.toolTipText"));
+
     /** Numerator/Denominator of custom time signature. */
     private final LTextField custom = new LTextField(true,
                                                      resources.getString("time.text"),
@@ -176,6 +181,7 @@ public class InterBoard
         this.sheet = sheet;
 
         edit.addActionListener(this);
+        tie.addActionListener(this);
 
         paramAction = new ParamAction();
 
@@ -187,6 +193,7 @@ public class InterBoard
         grade.setEnabled(false);
         specific.setEnabled(false);
         edit.setEnabled(false);
+        tie.setEnabled(false);
 
         voice.setVisible(false);
         verse.setVisible(false);
@@ -202,7 +209,7 @@ public class InterBoard
     // actionPerformed //
     //-----------------//
     /**
-     * Triggered by Edit check box (and by VIP check box and by dump button)
+     * Triggered by Edit check box, by VIP check box, by Tie check box, by dump button)
      *
      * @param e the event that triggered this action
      */
@@ -217,6 +224,8 @@ public class InterBoard
             } else {
                 sheet.getSheetEditor().closeEditMode();
             }
+        } else if ((tie.getField() == e.getSource())) {
+            tieActionPerformed(e);
         } else {
             super.actionPerformed(e); // VIP or DUMP
         }
@@ -236,6 +245,19 @@ public class InterBoard
         }
 
         super.dumpActionPerformed(e);
+    }
+
+    //--------------------//
+    // tieActionPerformed //
+    //--------------------//
+    protected void tieActionPerformed (ActionEvent e)
+    {
+        final Inter inter = getSelectedEntity();
+
+        if (!inter.isRemoved()) {
+            final SlurInter slur = (SlurInter) inter;
+            slur.setTie(tie.getField().isSelected());
+        }
     }
 
     //---------------//
@@ -274,6 +296,7 @@ public class InterBoard
         aboveBelow.setVisible(false);
         voice.setVisible(false);
         custom.setVisible(false);
+        tie.setVisible(false);
 
         if (inter != null) {
             Double cp = inter.getContextualGrade();
@@ -341,6 +364,11 @@ public class InterBoard
                 custom.setVisible(true);
 
                 selfUpdatingText = false;
+            } else if (inter instanceof SlurInter) {
+                SlurInter slur = (SlurInter) inter;
+                tie.getField().setSelected(slur.isTie());
+                tie.setEnabled(true);
+                tie.setVisible(true);
             } else {
                 // edit?
                 Inter editedInter = sheet.getSheetEditor().getEditedInter();
@@ -409,11 +437,19 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        // Role
+        // Role (for a SentenceInter only)
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
         builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
+
+        // Tie (for a SlurInter only)
+        JPanel tiePane = new JPanel(new BorderLayout());
+        tie.getLabel().setHorizontalAlignment(SwingConstants.CENTER);
+        tiePane.add(tie.getLabel(), BorderLayout.CENTER);
+        tiePane.add(tie.getField(), BorderLayout.EAST);
+        tie.setVisible(false);
+        builder.add(tiePane, cst.xyw(3, r, 1));
 
         // Shape name
         builder.add(shapeName.getField(), cst.xyw(7, r, 5));

@@ -197,7 +197,7 @@ public class EntityBoard<E extends Entity>
     // actionPerformed //
     //-----------------//
     /**
-     * Triggered by VIP check box and by dump button
+     * Triggered by VIP check box, TIE check box and by dump button
      *
      * @param e the event that triggered this action
      */

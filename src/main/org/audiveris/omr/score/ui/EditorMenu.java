@@ -462,7 +462,7 @@ public class EditorMenu
             setVisible(slot != null);
 
             if (slot != null) {
-                setText("Slot #" + slot.getId());
+                setText("Slot #" + slot.getId() + " @" + slot.getTimeOffset());
             }
         }
 
@@ -704,8 +704,8 @@ public class EditorMenu
                     // Action enabled only if system is not the last in sheet and step >= GRID
                     final List<SystemInfo> systems = sheet.getSystemManager().getSystems();
                     boolean isLast = system == systems.get(systems.size() - 1);
-                    setEnabled(!isLast
-                                       && (sheet.getStub().getLatestStep().compareTo(OmrStep.GRID) >= 0));
+                    boolean gridDone = sheet.getStub().getLatestStep().compareTo(OmrStep.GRID) >= 0;
+                    setEnabled(!isLast && gridDone);
                 }
             }
         }
