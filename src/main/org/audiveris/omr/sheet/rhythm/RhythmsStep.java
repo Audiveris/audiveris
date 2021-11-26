@@ -63,6 +63,7 @@ import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.SystemMergeTask;
+import org.audiveris.omr.sig.ui.TieTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
@@ -237,6 +238,12 @@ public class RhythmsStep
                     impact.add(system.getStackAt(relationTask.getSource().getCenter()));
                     impact.add(system.getStackAt(relationTask.getTarget().getCenter()));
                 }
+            } else if (task instanceof TieTask) {
+                // Reprocess the page
+                final TieTask tieTask = (TieTask) task;
+                final SlurInter slur = tieTask.getInter();
+                impact.onPage = true;
+                page = slur.getSig().getSystem().getPage();
             }
         }
 

@@ -28,7 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class <code>UnlinkTask</code>
+ * Class <code>UnlinkTask</code> implements the removal of a relation between two inters
+ * (of the same SIG).
  *
  * @author Hervé Bitteur
  */

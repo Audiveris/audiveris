@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
@@ -335,7 +336,7 @@ public class HeadStemRelation
     // preLink //
     //---------//
     @Override
-    public List<? extends UITask> preLink (RelationPair pair)
+    public List<? extends UITask> preLink (InterPair pair)
     {
         final HeadInter head = (HeadInter) pair.source;
         final StemInter stem = (StemInter) pair.target;

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     R e l a t i o n P a i r                                    //
+//                                        I n t e r P a i r                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,18 +19,18 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.relation;
+package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.sig.inter.Inter;
 
 /**
- * Class <code>RelationPair</code> is a mutable pair composed of source inter and target inter.
+ * Class <code>InterPair</code> is a mutable pair composed of source inter and target inter.
  * <p>
  * It can be used for method input/output.
  *
  * @author Hervé Bitteur
  */
-public class RelationPair
+public class InterPair
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -40,13 +40,13 @@ public class RelationPair
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>RelationPair</code> object.
+     * Creates a new <code>InterPair</code> object.
      *
      * @param source source inter
      * @param target target inter
      */
-    public RelationPair (Inter source,
-                         Inter target)
+    public InterPair (Inter source,
+                      Inter target)
     {
         this.source = source;
         this.target = target;

@@ -256,7 +256,7 @@ public class InterBoard
 
         if (!inter.isRemoved()) {
             final SlurInter slur = (SlurInter) inter;
-            slur.setTie(tie.getField().isSelected());
+            sheet.getInterController().toggleTie(slur);
         }
     }
 

@@ -54,7 +54,7 @@ public abstract class UITask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>UITask</code> object.
+     * Creates a new <code>UITask</code> object, with a sig.
      *
      * @param sig        the underlying sig
      * @param actionName name for action
@@ -68,7 +68,7 @@ public abstract class UITask
     }
 
     /**
-     * Creates a new <code>UITask</code> object.
+     * Creates a new <code>UITask</code> object, with a page.
      *
      * @param page       the underlying page
      * @param actionName name for action

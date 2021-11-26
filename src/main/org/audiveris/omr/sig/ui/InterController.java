@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
@@ -67,9 +68,10 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.RelationPair;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.Support;
+import org.audiveris.omr.sig.ui.ConnectionTask.ConnectTask;
+import org.audiveris.omr.sig.ui.ConnectionTask.DisconnectTask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
@@ -537,6 +539,72 @@ public class InterController
         }
     }
 
+    //---------//
+    // connect //
+    //---------//
+    /**
+     * Connect two Inters from different systems.
+     * <p>
+     * For the time being, this feature applies only to slur-connection:
+     * <ul>
+     * <li>In first slur, right connection will point to second slur.
+     * <li>In second slur, left connection will point to first slur.
+     * </ul>
+     * NOTA: for the time being there is no "disconnect" method, for lack of triggering user
+     * gesture.
+     * There is however a <code>DisconnectTask</code> to remove the conflicting connections when
+     * a connection is to be set.
+     *
+     * @param one  the first inter, non null
+     * @param two  the second inter, non null
+     * @param kind the kind of connection
+     */
+    @UIThread
+    public void connect (final Inter one,
+                         final Inter two,
+                         final ConnectionTask.Kind kind)
+    {
+        new CtrlTask(DO, "connect")
+        {
+            @Override
+            protected void build ()
+            {
+                switch (kind) {
+                default:
+                case SLUR_CONNECTION: {
+                    final Page page = one.getSig().getSystem().getPage();
+                    final SlurInter s1 = (SlurInter) one;
+                    final SlurInter s2 = (SlurInter) two;
+
+                    // Remove conflicting connections/relations if any
+                    final SlurInter rightSlur = s1.getExtension(RIGHT);
+                    if (rightSlur != null) {
+                        seq.add(new DisconnectTask(s1, rightSlur, kind));
+                    }
+
+                    final SlurHeadRelation rightRel = s1.getHeadRelation(RIGHT);
+                    if (rightRel != null) {
+                        seq.add(new UnlinkTask(s1.getSig(), rightRel));
+                    }
+
+                    final SlurInter leftSlur = s2.getExtension(LEFT);
+                    if (leftSlur != null) {
+                        seq.add(new DisconnectTask(leftSlur, s2, kind));
+                    }
+
+                    final SlurHeadRelation leftRel = s2.getHeadRelation(LEFT);
+                    if (leftRel != null) {
+                        seq.add(new UnlinkTask(s2.getSig(), leftRel));
+                    }
+
+                    // Finally, add connection
+                    seq.add(new ConnectTask(s1, s2, kind));
+                }
+                }
+            }
+        }.execute();
+    }
+
     //-----------//
     // editInter //
     //-----------//
@@ -583,7 +651,7 @@ public class InterController
             protected void build ()
             {
                 // Additional tasks?
-                final RelationPair pair = new RelationPair(source, target);
+                final InterPair pair = new InterPair(source, target);
                 seq.addAll(relation.preLink(pair));
 
                 // Remove conflicting relations if any
@@ -616,7 +684,7 @@ public class InterController
             {
                 for (SourceTargetRelation str : strs) {
                     // Additional tasks?
-                    final RelationPair pair = new RelationPair(str.source, str.target);
+                    final InterPair pair = new InterPair(str.source, str.target);
                     seq.addAll(str.relation.preLink(pair));
 
                     // Remove conflicting relations if any
@@ -1167,6 +1235,25 @@ public class InterController
         return lists;
     }
 
+    //-----------//
+    // toggleTie //
+    //-----------//
+    /**
+     * Toggles the 'tie' aspect of a slur.
+     */
+    @UIThread
+    public void toggleTie (final SlurInter slur)
+    {
+        new CtrlTask(DO, "toggleTie")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new TieTask(slur));
+            }
+        }.execute();
+    }
+
     //------//
     // undo //
     //------//
@@ -1514,18 +1601,26 @@ public class InterController
                                              Inter target,
                                              Relation relation)
     {
-        Set<Relation> toRemove = new LinkedHashSet<>();
+        final Set<Relation> toRemove = new LinkedHashSet<>();
 
         if (relation instanceof SlurHeadRelation) {
             // This relation is declared multi-source & multi-target
             // But is single target (head) for each given side
-            SlurInter slur = (SlurInter) source;
-            HeadInter head = (HeadInter) target;
-            HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT : RIGHT;
-            SlurHeadRelation existingRel = slur.getHeadRelation(side);
+            // And head relation is exclusive with slur extension on the same side
+            final SlurInter slur = (SlurInter) source;
+            final HeadInter head = (HeadInter) target;
+            final HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT : RIGHT;
+            final SlurHeadRelation existingRel = slur.getHeadRelation(side);
+            final SlurInter extension = slur.getExtension(side);
 
             if (existingRel != null) {
                 toRemove.add(existingRel);
+            }
+
+            if (extension != null) {
+                seq.add(new DisconnectTask((side == RIGHT) ? slur : extension,
+                                           (side == RIGHT) ? extension : slur,
+                                           ConnectionTask.Kind.SLUR_CONNECTION));
             }
         }
 
@@ -1550,11 +1645,11 @@ public class InterController
                 // Specific case of (single target) augmentation dot to shared head:
                 // We allow a dot source to augment both mirrored head targets
                 if (relation instanceof AugmentationRelation && target instanceof HeadInter) {
-                    HeadInter mirror = (HeadInter) target.getMirror();
+                    final HeadInter mirror = (HeadInter) target.getMirror();
 
                     if (mirror != null) {
-                        Relation mirrorRel = sig.getRelation(source, mirror, relation.getClass());
-
+                        final Relation mirrorRel = sig.getRelation(source, mirror,
+                                                                   relation.getClass());
                         if (mirrorRel != null) {
                             toRemove.remove(mirrorRel);
                         }
@@ -1666,7 +1761,7 @@ public class InterController
                 sheet.getStub().setModified(true);
             }
 
-            // Re-processKeyboard impacted steps
+            // Re-process impacted steps
             final OmrStep latestStep = sheet.getStub().getLatestStep();
             final OmrStep firstStep = firstImpactedStep();
             logger.debug("firstStep: {}", firstStep);

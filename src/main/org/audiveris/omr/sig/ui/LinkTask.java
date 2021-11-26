@@ -26,7 +26,8 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
 
 /**
- * Class <code>LinkTask</code>
+ * Class <code>LinkTask</code> implements the UI setting of a relation between two inters
+ * (of the same SIG).
  *
  * @author Hervé Bitteur
  */

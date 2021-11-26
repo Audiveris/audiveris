@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.Jaxb;
 
@@ -196,7 +197,7 @@ public abstract class Relation
      * @param pair (input/output) the {source,target} pair of inters
      * @return the sequence of additional UI tasks to perform, perhaps empty but not null.
      */
-    public List<? extends UITask> preLink (RelationPair pair)
+    public List<? extends UITask> preLink (InterPair pair)
     {
         return Collections.emptyList();
     }

@@ -93,6 +93,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>SlurInter</code> represents a slur interpretation.
+ * <p>
+ * It can be linked via a <code>SlurHeadRelation</code> to a head on its LEFT and/or RIGHT side,
+ * provided that such head belongs to the same system as this slur.
+ * <p>
+ * It can instead be connected to a counterpart slur in previous or following system via
+ * a LEFT and/or RIGHT extension.
  *
  * @author Hervé Bitteur
  */
@@ -899,6 +905,7 @@ public class SlurInter
                               SlurInter other)
     {
         Objects.requireNonNull(side, "No side provided for slur setExtension");
+        logger.debug("Slur#{} set {} extension to: {}", getId(), side, other);
 
         if (side == HorizontalSide.LEFT) {
             leftExtension = other;

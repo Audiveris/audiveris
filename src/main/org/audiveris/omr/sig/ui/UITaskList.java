@@ -186,7 +186,11 @@ public class UITaskList
     public SIGraph getSig ()
     {
         for (UITask task : list) {
-            return task.getSig();
+            final SIGraph sig = task.getSig();
+
+            if (sig != null) {
+                return sig;
+            }
         }
 
         return null;

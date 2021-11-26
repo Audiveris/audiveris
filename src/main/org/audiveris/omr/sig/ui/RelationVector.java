@@ -24,8 +24,10 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -37,6 +39,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -117,6 +120,10 @@ public class RelationVector
 
         for (Inter start : starts) {
             for (Inter stop : stops) {
+                if (checkCrossSystemConnection(start, stop)) {
+                    return;
+                }
+
                 for (boolean reverse : new boolean[]{false, true}) {
                     final Inter source = reverse ? stop : start;
                     final Inter target = reverse ? start : stop;
@@ -134,7 +141,7 @@ public class RelationVector
                         Class<? extends Relation> relClass = suggestions.iterator().next();
 
                         // Allocate relation to be added
-                        Relation relation = relClass.newInstance();
+                        Relation relation = relClass.getDeclaredConstructor().newInstance();
                         relation.setManual(true);
 
                         sheet.getInterController().link(sig, source, target, relation);
@@ -146,6 +153,60 @@ public class RelationVector
                 }
             }
         }
+    }
+
+    //----------------------------//
+    // checkCrossSystemConnection //
+    //----------------------------//
+    /**
+     * Check the case of a vector between different systems.
+     * <p>
+     * Slur connection from end of one system to beginning of the next.
+     * Difficult to check if parts are 'compatible'
+     *
+     * @param source provided source inter
+     * @param target provided target inter
+     * @return true if successful
+     */
+    private boolean checkCrossSystemConnection (Inter source,
+                                                Inter target)
+    {
+        // Check configuration
+        final SystemInfo srcSystem = source.getSig().getSystem();
+        final SystemInfo tgtSystem = target.getSig().getSystem();
+
+        if (srcSystem == tgtSystem) {
+            return false;
+        }
+
+        // Special case of slurs connection across system break?
+        if (!(source instanceof SlurInter) || !(target instanceof SlurInter)) {
+            return false;
+        }
+
+        final boolean rev = srcSystem.getId() > tgtSystem.getId();
+
+        // Check it's on last measure of first system
+        final SystemInfo startSyst = rev ? tgtSystem : srcSystem;
+        final SlurInter startSlur = (SlurInter) (rev ? target : source);
+        final Point2D startPt = startSlur.getCurve().getP2();
+        if (startSyst.getStackAt(startPt) != startSyst.getLastStack()) {
+            return false;
+        }
+
+        // Check it's on first measure of second system
+        final SystemInfo stopSyst = rev ? srcSystem : tgtSystem;
+        final SlurInter stopSlur = (SlurInter) (rev ? source : target);
+        final Point2D stopPt = stopSlur.getCurve().getP1();
+        if (stopSyst.getStackAt(stopPt) != stopSyst.getFirstStack()) {
+            return false;
+        }
+
+        sheet.getInterController().connect(startSlur,
+                                           stopSlur,
+                                           ConnectionTask.Kind.SLUR_CONNECTION);
+
+        return true;
     }
 
     //--------//

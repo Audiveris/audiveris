@@ -59,11 +59,13 @@ import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.sig.ui.ConnectionTask;
 import org.audiveris.omr.sig.ui.InterTask;
 import org.audiveris.omr.sig.ui.PageTask;
 import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.SystemMergeTask;
+import org.audiveris.omr.sig.ui.TieTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
@@ -222,24 +224,19 @@ public class PageStep
         final SIGraph sig = seq.getSig();
 
         // First, determine what will be impacted
-        Map<Page, Impact> map = new LinkedHashMap<>();
+        final Map<Page, Impact> map = new LinkedHashMap<>();
 
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
-                Inter inter = interTask.getInter();
-                Page page = inter.getSig().getSystem().getPage();
-                Impact impact = map.get(page);
-
-                if (impact == null) {
-                    map.put(page, impact = new Impact());
-                }
-
-                Class classe = inter.getClass();
+                final InterTask interTask = (InterTask) task;
+                final Inter inter = interTask.getInter();
+                final Page page = inter.getSig().getSystem().getPage();
+                final Impact impact = getImpact(map, page);
+                final Class classe = inter.getClass();
 
                 if (isImpactedBy(classe, forParts)) {
                     if (inter instanceof SentenceInter) {
-                        SentenceInter sentence = (SentenceInter) inter;
+                        final SentenceInter sentence = (SentenceInter) inter;
 
                         if (sentence.getRole() == TextRole.PartName) {
                             impact.onParts = true;
@@ -265,52 +262,33 @@ public class PageStep
                     impact.onMeasures = true;
                 }
             } else if (task instanceof StackTask) {
-                MeasureStack stack = ((StackTask) task).getStack();
-                Class classe = stack.getClass();
-                Page page = stack.getSystem().getPage();
-                Impact impact = map.get(page);
-
-                if (impact == null) {
-                    map.put(page, impact = new Impact());
-                }
+                final MeasureStack stack = ((StackTask) task).getStack();
+                final Class classe = stack.getClass();
+                final Page page = stack.getSystem().getPage();
+                final Impact impact = getImpact(map, page);
 
                 if (isImpactedBy(classe, forVoices)) {
                     impact.onVoices = true;
                 }
             } else if (task instanceof PageTask) {
-                Page page = ((PageTask) task).getPage();
-                Impact impact = map.get(page);
-
-                if (impact == null) {
-                    map.put(page, impact = new Impact());
-                }
-
+                final Page page = ((PageTask) task).getPage();
+                final Impact impact = getImpact(map, page);
                 impact.onParts = true; // Safer
                 impact.onMeasures = true;
                 impact.onSlurs = true;
                 impact.onVoices = true;
             } else if (task instanceof SystemMergeTask) {
-                Page page = ((SystemMergeTask) task).getSystem().getPage();
-                Impact impact = map.get(page);
-
-                if (impact == null) {
-                    map.put(page, impact = new Impact());
-                }
-
+                final Page page = ((SystemMergeTask) task).getSystem().getPage();
+                final Impact impact = getImpact(map, page);
                 impact.onParts = true;
                 impact.onMeasures = true;
                 impact.onVoices = true;
             } else if (task instanceof RelationTask) {
-                Page page = sig.getSystem().getPage();
-                Impact impact = map.get(page);
-
-                if (impact == null) {
-                    map.put(page, impact = new Impact());
-                }
-
-                RelationTask relationTask = (RelationTask) task;
-                Relation relation = relationTask.getRelation();
-                Class classe = relation.getClass();
+                final Page page = sig.getSystem().getPage();
+                final Impact impact = getImpact(map, page);
+                final RelationTask relationTask = (RelationTask) task;
+                final Relation relation = relationTask.getRelation();
+                final Class classe = relation.getClass();
 
                 if (isImpactedBy(classe, forVoices)) {
                     impact.onVoices = true;
@@ -319,6 +297,18 @@ public class PageStep
                 if (isImpactedBy(classe, forSlurs)) {
                     impact.onSlurs = true;
                 }
+            } else if (task instanceof ConnectionTask) {
+                final ConnectionTask connectionTask = (ConnectionTask) task;
+                final Page page = connectionTask.getPage();
+                final Impact impact = getImpact(map, page);
+                impact.onVoices = true;
+                impact.onSlurs = true;
+            } else if (task instanceof TieTask) {
+                final TieTask tieTask = (TieTask) task;
+                final SlurInter slur = tieTask.getInter();
+                final Page page = slur.getSig().getSystem().getPage();
+                final Impact impact = getImpact(map, page);
+                impact.onVoices = true;
             }
         }
 
@@ -330,6 +320,21 @@ public class PageStep
             final Impact impact = entry.getValue();
             doProcessPage(page, impact);
         }
+    }
+
+    //-----------//
+    // getImpact //
+    //-----------//
+    private static Impact getImpact (Map<Page, Impact> map,
+                                     Page page)
+    {
+        Impact impact = map.get(page);
+
+        if (impact == null) {
+            map.put(page, impact = new Impact());
+        }
+
+        return impact;
     }
 
     //--------------//

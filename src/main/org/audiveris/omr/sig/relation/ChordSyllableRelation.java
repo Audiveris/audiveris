@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.ui.LinkTask;
@@ -117,7 +118,7 @@ public class ChordSyllableRelation
     // preLink //
     //---------//
     @Override
-    public List<? extends UITask> preLink (RelationPair pair)
+    public List<? extends UITask> preLink (InterPair pair)
     {
         final List<UITask> tasks = new ArrayList<>();
         final HeadChordInter chord = (HeadChordInter) pair.source;
