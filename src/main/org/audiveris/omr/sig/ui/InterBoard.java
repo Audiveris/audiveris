@@ -313,6 +313,8 @@ public class InterBoard
                                     ? resources.getString("deassign.Action.deleted")
                                     : resources.getString("deassign.Action.text"));
 
+            final Inter editedInter = sheet.getSheetEditor().getEditedInter();
+
             if (inter instanceof WordInter) {
                 selfUpdatingText = true;
 
@@ -369,11 +371,9 @@ public class InterBoard
                 tie.getField().setSelected(slur.isTie());
                 tie.setEnabled(true);
                 tie.setVisible(true);
-            } else {
-                // edit?
-                Inter editedInter = sheet.getSheetEditor().getEditedInter();
-                edit.getField().setSelected(inter == editedInter);
             }
+
+            edit.getField().setSelected(inter == editedInter);
         } else {
             grade.setText("");
             specific.setText("");

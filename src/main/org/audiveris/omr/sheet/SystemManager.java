@@ -418,11 +418,13 @@ public class SystemManager
             found = new ArrayList<>();
         }
 
-        for (SystemInfo system : systems) {
-            Area area = system.getArea();
+        if (point != null) {
+            for (SystemInfo system : systems) {
+                Area area = system.getArea();
 
-            if ((area != null) && area.contains(point)) {
-                found.add(system);
+                if ((area != null) && area.contains(point)) {
+                    found.add(system);
+                }
             }
         }
 
