@@ -570,7 +570,11 @@ public class BeamLinker
         final AbstractBeamInter b1 = siblings.get(0);
         final AbstractBeamInter b2 = siblings.get(siblings.size() - 1);
 
-        if ((beam != b1) && (beam != b2)) {
+        // Beware: we can have beam and beam hook from the same glyph, at end of group
+        // Pure list extrema are not reliable, hence we check underlying glyph
+        final Glyph glyph = beam.getGlyph();
+        if ((beam != b1) && (beam != b2)
+                    && (glyph != b1.getGlyph()) && (glyph != b2.getGlyph())) {
             return null; // beam is located inside beam group
         }
 
@@ -1169,7 +1173,8 @@ public class BeamLinker
             /**
              * Expand current stem from beam as much as possible.
              * <p>
-             * If <code>stemProfile</code> == Profiles.BEAM_SIDE then we are linking a beam side, so:
+             * If <code>stemProfile</code> == Profiles.BEAM_SIDE then we are linking a beam side,
+             * so:
              * <ol>
              * <li>At least one head must be reached from the beam,
              * <li>The stem must end with a head on correct side.

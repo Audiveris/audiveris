@@ -750,7 +750,6 @@ public class StemsRetriever
             if (!ok) {
                 logger.debug("Cannot link both sides of {}", beam);
                 it.remove();
-                continue;
             }
         }
 
