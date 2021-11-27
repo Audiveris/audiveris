@@ -146,6 +146,9 @@ public class BeamsBuilder
     /** Lag of glyph sections. */
     private final Lag spotLag;
 
+    /** Sheet bounding box. */
+    private Rectangle sheetBox;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamsBuilder object.
@@ -162,6 +165,9 @@ public class BeamsBuilder
         sig = system.getSig();
         sheet = system.getSheet();
         params = new Parameters(sheet.getScale());
+
+        final Picture picture = sheet.getPicture();
+        sheetBox = new Rectangle(0, 0, picture.getWidth(), picture.getHeight());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -1416,7 +1422,9 @@ public class BeamsBuilder
      */
     private Glyph retrieveGlyph (AbstractBeamInter beam)
     {
-        final Rectangle box = beam.getBounds();
+        final Rectangle box = beam.getBounds().intersection(sheetBox);
+        beam.setBounds(box); // Safer
+
         final ByteProcessor buf = new ByteProcessor(box.width, box.height);
         final int filterWidth = pixelFilter.getWidth();
         final int filterHeight = pixelFilter.getHeight();

@@ -830,6 +830,7 @@ public abstract class AbstractBeamInter
         setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
 
         // Define precise bounds based on this path
+        // NOTA: these bounds may go slightly beyond the sheet image limits...
         bounds = getArea().getBounds();
     }
 
