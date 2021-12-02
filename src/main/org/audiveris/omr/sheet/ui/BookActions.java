@@ -679,15 +679,17 @@ public class BookActions
      */
     public static void applyUserSettings (final SheetStub stub)
     {
-        final Book book = stub.getBook();
+        final Book book = (stub != null) ? stub.getBook() : null;
 
-        // Dialog already active?
-        final JDialog activeDialog = book.getParameterDialog();
+        if (book != null) {
+            // Dialog already active?
+            final JDialog activeDialog = book.getParameterDialog();
 
-        if (activeDialog != null) {
-            activeDialog.setVisible(true);
+            if (activeDialog != null) {
+                activeDialog.setVisible(true);
 
-            return;
+                return;
+            }
         }
 
         // Create a brand new dialog
@@ -705,12 +707,16 @@ public class BookActions
                 @Override
                 public void windowClosing (WindowEvent we)
                 {
-                    book.setParameterDialog(null);
+                    if (book != null) {
+                        book.setParameterDialog(null);
+                    }
                     dialog.dispose();
                 }
             });
 
-            book.setParameterDialog(dialog);
+            if (book != null) {
+                book.setParameterDialog(dialog);
+            }
 
             // User actions on buttons OK, Apply, Cancel
             final JOptionPane optionPane = new JOptionPane(
@@ -738,7 +744,9 @@ public class BookActions
                     }
 
                     if (exit) {
-                        book.setParameterDialog(null);
+                        if (book != null) {
+                            book.setParameterDialog(null);
+                        }
                         dialog.setVisible(false);
                         dialog.dispose();
                     } else {

@@ -246,7 +246,7 @@ public class BookParameters
     /**
      * Commit the user actions.
      *
-     * @param book the related book
+     * @param book the related book if any, perhaps null
      * @return true if committed, false otherwise
      */
     public boolean commit (Book book)
@@ -276,8 +276,11 @@ public class BookParameters
                     if (tab == 0) {
                         defaultModified = true;
                     } else {
-                        book.setModified(true);
-                        bookModified = true;
+                        // Test on book not really needed (unless tabs order gets changed one day)
+                        if (book != null) {
+                            book.setModified(true);
+                            bookModified = true;
+                        }
                     }
                 }
             }
