@@ -23,13 +23,9 @@ package org.audiveris.omr.ui;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.log.LogUtil;
-import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.ui.BookActions;
-import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.step.OmrStep;
-import org.audiveris.omr.util.VoidTask;
+import org.audiveris.omr.sheet.ui.BookActions.LoadBookTask;
+import org.audiveris.omr.sheet.ui.BookActions.LoadImageTask;
+import org.audiveris.omr.util.PathTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +35,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.nio.file.Path;
 
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -78,14 +74,13 @@ public class FileDropHandler
         boolean copySupported = (COPY & support.getSourceDropActions()) == COPY;
 
         /* If COPY is supported, choose COPY and accept the transfer */
-        if (copySupported) {
-            support.setDropAction(COPY);
-
-            return true;
+        if (!copySupported) {
+            return false;
         }
 
-        /* COPY isn't supported, so reject the transfer */
-        return false;
+        support.setDropAction(COPY);
+
+        return true;
     }
 
     //------------//
@@ -109,14 +104,15 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (File file : fileList) {
+                final Path path = file.toPath();
                 final String fileName = file.getName();
 
                 if (fileName.endsWith(OMR.BOOK_EXTENSION)) {
-                    new DropBookTask(file).execute();
+                    new LoadBookTask(path).execute();
                 } else if (fileName.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
-                    new DropSamplesTask(file).execute();
+                    new DropSamplesTask(path).execute();
                 } else {
-                    new DropInputTask(file, StubsController.getEarlyStep()).execute();
+                    new LoadImageTask(path).execute();
                 }
             }
         } catch (UnsupportedFlavorException ex) {
@@ -133,123 +129,16 @@ public class FileDropHandler
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------//
-    // DropBookTask //
-    //--------------//
-    private static class DropBookTask
-            extends VoidTask
-    {
-
-        private final File file;
-
-        private Book book;
-
-        DropBookTask (File file)
-        {
-            this.file = file;
-        }
-
-        @Override
-        protected Void doInBackground ()
-                throws Exception
-        {
-            book = OMR.engine.loadBook(file.toPath());
-
-            if (book != null) {
-                book.createStubsTabs(null); // Tabs are now accessible
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void finished ()
-        {
-            if (book != null) {
-                // Focus UI on book just dropped
-                SheetStub firstValid = book.getFirstValidStub();
-
-                if (firstValid != null) {
-                    StubsController.getInstance().selectAssembly(firstValid);
-                }
-            }
-        }
-    }
-
-    //---------------//
-    // DropInputTask //
-    //---------------//
-    private static class DropInputTask
-            extends VoidTask
-    {
-
-        private final File file;
-
-        private final OmrStep dropStep;
-
-        private Book book;
-
-        DropInputTask (File file,
-                       OmrStep dropStep)
-        {
-            this.file = file;
-            this.dropStep = dropStep;
-        }
-
-        @Override
-        protected Void doInBackground ()
-                throws Exception
-        {
-            logger.info("Dropping input file {}", file);
-
-            try {
-                book = OMR.engine.loadInput(file.toPath());
-                LogUtil.start(book);
-                book.createStubs();
-                book.createStubsTabs(null); // Tabs are now accessible
-
-                // Run the early target on first stub only.
-                if (dropStep != null) {
-                    book.reachBookStep(dropStep,
-                                       false,
-                                       Collections.singletonList(book.getFirstValidStub()),
-                                       false);
-                }
-
-                return null;
-            } finally {
-                LogUtil.stopBook();
-            }
-        }
-
-        @Override
-        protected void finished ()
-        {
-            // Focus UI on input just dropped
-            SheetStub firstValid = book.getFirstValidStub();
-
-            if (firstValid != null) {
-                StubsController.getInstance().selectAssembly(firstValid);
-
-                if (BookActions.preOpenBookParameters()) {
-                    BookActions.applyUserSettings(firstValid);
-                }
-            }
-        }
-    }
-
     //-----------------//
     // DropSamplesTask //
     //-----------------//
     private static class DropSamplesTask
-            extends VoidTask
+            extends PathTask<Void, Void>
     {
 
-        private final File file;
-
-        DropSamplesTask (File file)
+        DropSamplesTask (Path path)
         {
-            this.file = file;
+            super(path);
         }
 
         @Override
@@ -257,7 +146,7 @@ public class FileDropHandler
                 throws Exception
         {
             SampleRepository global = SampleRepository.getGlobalInstance();
-            global.includeSamplesFile(file.toPath());
+            global.includeSamplesFile(path);
 
             return null;
         }

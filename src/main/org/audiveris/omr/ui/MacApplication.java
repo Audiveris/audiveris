@@ -39,6 +39,7 @@ import java.net.URI;
 import java.nio.file.Paths;
 
 import javax.swing.ImageIcon;
+import org.audiveris.omr.sheet.ui.StubsController;
 
 /**
  * Class <code>MacApplication</code> provides dynamic hooks into the
@@ -115,7 +116,9 @@ public class MacApplication
             // Actually load the book
             Book book = OMR.engine.loadInput(Paths.get(filename));
             book.createStubs();
-            book.createStubsTabs(null); // Tabs are now accessible
+            if (OMR.gui != null) {
+                StubsController.getInstance().displayValidStubs(book, null);
+            }
 
             break;
 

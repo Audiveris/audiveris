@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.ui;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.SampleBrowser;
@@ -89,7 +90,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.audiveris.omr.Main;
 
 /**
  * Class <code>BookActions</code> gathers all UI actions related to current book.
@@ -120,7 +120,7 @@ public class BookActions
     private static final String doYouConfirm = "\n" + resources.getString("doYouConfirm");
 
     /** Default parameter. */
-    public static final Param<Boolean> defaultPrompt = new Default();
+    public static final Param<Boolean> defaultPromptOnClosingUnsaved = new PromptOnClosingUnsaved();
 
     //~ Enumerations -------------------------------------------------------------------------------
     private static enum Opt
@@ -821,14 +821,10 @@ public class BookActions
     @Action
     public LoadBookTask openBook (ActionEvent e)
     {
-        final Path path = selectBookPath(false, BookManager.getBaseFolder());
+        final Path path = selectBookPath(false, Paths.get(BookManager.getDefaultBookFolder()));
 
         if (path != null) {
-            if (Files.exists(path)) {
-                return new LoadBookTask(path);
-            } else {
-                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
-            }
+            return new LoadBookTask(path);
         }
 
         return null;
@@ -878,27 +874,29 @@ public class BookActions
     @Action
     public LoadImageTask openImageFile (ActionEvent e)
     {
-        String suffixes = constants.validImageExtensions.getValue();
-        String allSuffixes = suffixes + " " + suffixes.toUpperCase();
-        Path path = UIUtil.pathChooser(
-                false,
-                OMR.gui.getFrame(),
-                Paths.get(BookManager.getDefaultImageFolder()),
-                new OmrFileFilter(
-                        resources.getString("majorImageFiles") + " (" + suffixes + ")",
-                        allSuffixes.split("\\s")));
+        final Path path = selectImagePath();
 
-        if (path != null) {
-            if (!Files.exists(path)) {
-                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
-            } else if (Files.isDirectory(path)) {
-                logger.warn(format(resources.getString("isDirectory.pattern"), path));
-            } else {
-                return new LoadImageTask(path);
-            }
+        if (path == null) {
+            return null;
         }
 
-        return null;
+        return new LoadImageTask(path);
+    }
+
+    //-----------------//
+    // selectImagePath //
+    //-----------------//
+    public static Path selectImagePath ()
+    {
+        final String suffixes = constants.validImageExtensions.getValue();
+        final String allSuffixes = suffixes + " " + suffixes.toUpperCase();
+        final OmrFileFilter filter = new OmrFileFilter(
+                resources.getString("majorImageFiles") + " (" + suffixes + ")",
+                allSuffixes.split("\\s"));
+
+        return selectPath(false,
+                          Paths.get(BookManager.getDefaultImageFolder()),
+                          filter);
     }
 
     //-----------//
@@ -1315,6 +1313,22 @@ public class BookActions
         }
     }
 
+    //---------------//
+    // splitAndMerge //
+    //---------------//
+    /**
+     * Action that let the user build a new book from various pieces.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action
+    public void splitAndMerge (ActionEvent e)
+    {
+        logger.info("Split & Merge");
+        OmrGui.getApplication().show(new SplitAndMerge().getComponent());
+    }
+
     //------------//
     // swapSheets //
     //------------//
@@ -1668,7 +1682,7 @@ public class BookActions
         final String bookStatus = book.isModified() ? resources.getString("modified")
                 : (book.isUpgraded() ? resources.getString("upgraded") : null);
 
-        if ((bookStatus != null) && defaultPrompt.getValue()) {
+        if ((bookStatus != null) && defaultPromptOnClosingUnsaved.getValue()) {
             final int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
                     format(resources.getString("saveBook.pattern"), bookStatus, book.getRadix()));
@@ -1789,22 +1803,59 @@ public class BookActions
     // selectBookPath //
     //----------------//
     /**
-     * Let the user interactively select a book path
+     * Let the user interactively select a book path.
      *
-     * @param path default path
-     * @param save true for write, false for read
+     * @param save      true for write, false for read
+     * @param startPath starting path
      * @return the selected path or null
      */
-    private static Path selectBookPath (boolean save,
-                                        Path path)
+    public static Path selectBookPath (boolean save,
+                                       Path startPath)
     {
-        Path prjPath = UIUtil.pathChooser(
+        return selectPath(save, startPath, filter(OMR.BOOK_EXTENSION));
+    }
+
+    //------------//
+    // selectPath //
+    //------------//
+    /**
+     * Let the user interactively select a path.
+     *
+     * @param save      true for write, false for read
+     *                  (for read, path will be checked to exist and not be a directory)
+     * @param startPath the starting path
+     * @param filter    filter on file extensions
+     * @return the selected path or null
+     */
+    public static Path selectPath (boolean save,
+                                   Path startPath,
+                                   OmrFileFilter filter)
+    {
+        final Path path = UIUtil.pathChooser(
                 save,
                 OMR.gui.getFrame(),
-                path,
-                filter(OMR.BOOK_EXTENSION));
+                startPath,
+                filter);
 
-        return (prjPath == null) ? null : prjPath;
+        if (path == null) {
+            return null;
+        }
+
+        if (save) {
+            return path;
+        }
+
+        if (!Files.exists(path)) {
+            logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+            return null;
+        }
+
+        if (Files.isDirectory(path)) {
+            logger.warn(format(resources.getString("isDirectory.pattern"), path));
+            return null;
+        }
+
+        return path;
     }
 
     //-----------------//
@@ -1874,32 +1925,49 @@ public class BookActions
     // LoadBookTask //
     //--------------//
     /**
-     * Task that loads a book (.omr project) file.
+     * Task that loads a book (.omr project) file in background.
+     * <p>
+     * If load is successful, GUI allocates all stub tabs and then focuses on:
+     * <ol>
+     * <li>Either the desired stub if its number is provided,
+     * <li>Or the first valid stub encountered.
+     * </ol>
      */
     public static class LoadBookTask
-            extends PathTask
+            extends PathTask<Book, Void>
     {
 
         /** Desired sheet number, if any. */
         protected Integer sheetNumber;
 
+        /**
+         * Creates a new <code>LoadBookTask</code>object, with a desired sheet number.
+         *
+         * @param sheetPath the desired sheet number to focus upon
+         */
         public LoadBookTask (SheetPath sheetPath)
         {
             super(sheetPath.getBookPath());
             sheetNumber = sheetPath.getSheetNumber();
         }
 
+        /**
+         * Creates a new <code>LoadBookTask</code>object, with a plain book path
+         *
+         * @param path plain book path
+         */
         public LoadBookTask (Path path)
         {
             super(path);
         }
 
+        // Constructor needed for creation of HistoryMenu
         public LoadBookTask ()
         {
         }
 
         /**
-         * Set the sheet path value.
+         * Set the sheet path value (path#sheet) .
          *
          * @param sheetPath the sheet path used by the task
          */
@@ -1910,40 +1978,44 @@ public class BookActions
         }
 
         @Override
-        protected Void doInBackground ()
-                throws InterruptedException
+        protected Book doInBackground ()
+                throws Exception
         {
-            if (Files.exists(path)) {
-                try {
-                    // Actually open the book
-                    final Book book = OMR.engine.loadBook(path);
+            Book book = null;
 
-                    if (book != null) {
-                        LogUtil.start(book);
-                        book.createStubsTabs(sheetNumber); // Tabs are now accessible
-
-                        if (sheetNumber != null) {
-                            // Focus on desired stub
-                            StubsController.invokeSelect(book.getStub(sheetNumber));
-                        } else {
-                            // Focus on first valid stub in book, if any
-                            SheetStub firstValid = book.getFirstValidStub();
-
-                            if (firstValid != null) {
-                                StubsController.invokeSelect(firstValid);
-                            }
-                        }
-                    }
-                } catch (Throwable ex) {
-                    logger.warn("Error in LoadBookTask {}", ex.toString(), ex);
-                } finally {
-                    LogUtil.stopBook();
-                }
-            } else {
-                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+            try {
+                // Actually open the book zip system
+                book = OMR.engine.loadBook(path);
+            } catch (Throwable ex) {
+                logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
             }
 
-            return null;
+            return book;
+        }
+
+        @Override
+        protected void succeeded (Book book)
+        {
+            if (book != null)
+            try {
+                // Insert all tabs in GUI stubsPane
+                final StubsController controller = StubsController.getInstance();
+                controller.displayValidStubs(book, sheetNumber);
+
+                if (sheetNumber != null) {
+                    // Focus on desired stub
+                    StubsController.invokeSelect(book.getStub(sheetNumber));
+                } else {
+                    // Focus on first valid stub in book, if any
+                    SheetStub firstValid = book.getFirstValidStub();
+
+                    if (firstValid != null) {
+                        StubsController.invokeSelect(firstValid);
+                    }
+                }
+            } catch (Throwable ex) {
+                logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+            }
         }
     }
 
@@ -1954,39 +2026,30 @@ public class BookActions
      * Task that opens an image file.
      */
     public static class LoadImageTask
-            extends PathTask
+            extends LoadBookTask
     {
 
+        /**
+         * Creates a <code>LoadBookTask</code> object on an input file assumed to exist.
+         *
+         * @param path the path to input file
+         */
         public LoadImageTask (Path path)
         {
             super(path);
         }
 
-        public LoadImageTask ()
-        {
-        }
-
         @Override
-        protected Void doInBackground ()
+        protected Book doInBackground ()
                 throws InterruptedException
         {
             try {
                 // Actually open the image file
                 Book book = OMR.engine.loadInput(path);
                 LogUtil.start(book);
-                book.createStubs();
-                book.createStubsTabs(null); // Tabs are now accessible
+                book.createStubs(); // Read just the count of sheets in input file
 
-                // Focus on first valid stub in book, if any
-                SheetStub firstValid = book.getFirstValidStub();
-
-                if (firstValid != null) {
-                    StubsController.invokeSelect(firstValid);
-
-                    if (preOpenBookParameters()) {
-                        BookActions.applyUserSettings(firstValid);
-                    }
-                }
+                return book;
             } catch (Exception ex) {
                 logger.warn("Error opening path " + path + " " + ex, ex);
             } finally {
@@ -1994,6 +2057,22 @@ public class BookActions
             }
 
             return null;
+        }
+
+        @Override
+        protected void succeeded (Book book)
+        {
+            if (book != null)
+            try {
+                super.succeeded(book);
+
+                // Pre-open Book Parameters dialog on this brand new book?
+                if (preOpenBookParameters()) {
+                    BookActions.applyUserSettings(book.getFirstValidStub());
+                }
+            } catch (Throwable ex) {
+                logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+            }
         }
     }
 
@@ -2161,10 +2240,10 @@ public class BookActions
                 "Automatically swap out sheets once they are processed?");
     }
 
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
+    //------------------------//
+    // PromptOnClosingUnsaved //
+    //------------------------//
+    private static class PromptOnClosingUnsaved
             extends Param<Boolean>
     {
 
@@ -2391,8 +2470,12 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
+                final Path oldBookPath = book.getBookPath();
                 book.store(bookPath, false);
                 BookActions.getInstance().setBookModifiedOrUpgraded(false);
+
+                // Update books map
+                OMR.engine.renameBook(book, oldBookPath);
             } catch (Throwable ex) {
                 logger.warn("Error in StoreBookTask {}", ex.toString(), ex);
             } finally {
@@ -2446,7 +2529,7 @@ public class BookActions
         }
 
         @Override
-        protected void finished ()
+        protected void succeeded (Void result)
         {
             StubsController.getInstance().callAboutStub(stub);
         }

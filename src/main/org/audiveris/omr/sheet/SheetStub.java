@@ -70,6 +70,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBException;
@@ -81,6 +82,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.util.FileUtil;
 
 /**
  * Class <code>SheetStub</code> is a placeholder in a <code>Book</code> to
@@ -99,13 +101,33 @@ public class SheetStub
 
     private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
 
+    /** Predicate that tests stub validity. */
+    public static final Predicate<SheetStub> VALIDITY_CHECK = new Predicate<>()
+    {
+        @Override
+        public boolean test (SheetStub stub)
+        {
+            return stub.isValid();
+        }
+    };
+
+    /** Predicate that does not test stub validity. */
+    public static final Predicate<SheetStub> NO_VALIDITY_CHECK = new Predicate<>()
+    {
+        @Override
+        public boolean test (SheetStub stub)
+        {
+            return true;
+        }
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
     //
     /**
-     * This is the rank of sheet, counted from 1, within the book image(s) file.
+     * This is the rank of sheet, counted from 1, within the book.
      */
     @XmlAttribute(name = "number")
     private final int number;
@@ -117,6 +139,14 @@ public class SheetStub
      */
     @XmlAttribute(name = "version")
     private volatile String versionValue;
+
+    /**
+     * Information about original image input file.
+     * <p>
+     * If this element is not present, the sheet input file is the book input file.
+     */
+    @XmlElement(name = "input")
+    private SheetInput sheetInput;
 
     /**
      * If true, this boolean signals that the sheet contains no valid music
@@ -215,6 +245,28 @@ public class SheetStub
         this.number = number;
 
         initTransients(book);
+    }
+
+    /**
+     * Creates a new <code>SheetStub</code> object by replicating an old stub.
+     *
+     * @param book    the (new) containing book
+     * @param number  the (1-based) stub in the new book
+     * @param oldStub the old stub to copy from
+     */
+    public SheetStub (Book book,
+                      int number,
+                      SheetStub oldStub)
+    {
+        this.number = number;
+        this.book = book;
+
+        // Copy data from oldStub
+        versionValue = oldStub.versionValue;
+        sheetInput = new SheetInput(oldStub.getSheetInput());
+        invalid = oldStub.invalid;
+        doneSteps.addAll(oldStub.doneSteps);
+        pageRefs.addAll(oldStub.pageRefs); /// ???
     }
 
     /**
@@ -442,6 +494,23 @@ public class SheetStub
         }
     }
 
+    //---------------//
+    // getSheetInput //
+    //---------------//
+    /**
+     * Report the precise image input for this sheet.
+     *
+     * @return the sheetInput
+     */
+    public SheetInput getSheetInput ()
+    {
+        if (sheetInput == null) {
+            sheetInput = new SheetInput(book.getInputPath(), number);
+        }
+
+        return sheetInput;
+    }
+
     //----------------//
     // getLastPageRef //
     //----------------//
@@ -594,84 +663,137 @@ public class SheetStub
      */
     public Sheet getSheet ()
     {
-        Sheet sh = this.sheet;
-
-        if (sh == null) {
-            synchronized (this) {
-                sh = this.sheet;
-
-                // We have to recheck sheet, which may have just been allocated
-                if (sh == null) {
-                    // Actually load the sheet
-                    if (!isDone(OmrStep.LOAD)) {
-                        // LOAD not yet performed: load from book image file
-                        try {
-                            this.sheet = sh = new Sheet(this, null, false);
-                        } catch (StepException ignored) {
-                            logger.info("Could not load sheet for stub {}", this);
-                        }
-                    } else {
-                        // LOAD already performed: load from book file
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            logger.warn("XXX Loading .omr file on EDT XXXX");
-                        }
-
-                        StopWatch watch = new StopWatch("Load Sheet " + this);
-
-                        try {
-                            Path sheetFile = null;
-                            watch.start("unmarshal");
-
-                            // Open the book file system
-                            try {
-                                book.getLock().lock();
-                                sheetFile = book.openSheetFolder(number).resolve(
-                                        Sheet.getSheetFileName(number));
-
-                                try (InputStream is = Files.newInputStream(
-                                        sheetFile,
-                                        StandardOpenOption.READ)) {
-                                    this.sheet = sh = Sheet.unmarshal(is);
-                                }
-
-                                sheetFile.getFileSystem().close();
-                            } finally {
-                                book.getLock().unlock();
-                            }
-
-                            // Complete sheet reload
-                            watch.start("afterReload");
-                            sh.afterReload(this);
-                            setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
-
-                            if (OMR.gui != null) {
-                                StubsController.getInstance().markTab(
-                                        this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
-
-                            }
-
-                            logger.info("Loaded {}", sheetFile);
-                        } catch (IOException |
-                                 JAXBException ex) {
-                            logger.warn("Error in loading sheet structure " + ex, ex);
-                            logger.info("Trying to restart from binary");
-                            resetToBinary();
-                        } finally {
-                            if (constants.printWatch.isSet()) {
-                                watch.print();
-                            }
-                        }
-                    }
-                }
-            }
+        if (sheet != null) {
+            return sheet;
         }
 
-        return sh;
-    }
+        synchronized (this) {
+            // We have to recheck sheet, which may have just been allocated
+            if (sheet != null) {
+                return sheet;
+            }
 
+            // Actually load the sheet
+            if (!isDone(OmrStep.LOAD)) {
+                // LOAD not yet performed: load from book image file
+                try {
+                    return sheet = new Sheet(this, null, false);
+                } catch (StepException ignored) {
+                    logger.info("Could not load sheet for stub {}", this);
+                    return null;
+                }
+            }
+
+            // LOAD already performed: unmarshall from book file
+            if (SwingUtilities.isEventDispatchThread()) {
+                logger.warn("XXX Unmarshalling .omr file on EDT XXXX");
+            }
+
+            final StopWatch watch = new StopWatch("Load Sheet " + this);
+
+            try {
+                final Path sheetFile;
+                watch.start("unmarshal");
+
+                // Open the book file system
+                try {
+                    book.getLock().lock();
+                    sheetFile = book.openSheetFolder(number).resolve(Sheet.getSheetFileName(number));
+
+                    try (InputStream is = Files.newInputStream(
+                            sheetFile,
+                            StandardOpenOption.READ)) {
+                        sheet = Sheet.unmarshal(is);
+                    }
+
+                    sheetFile.getFileSystem().close();
+                } finally {
+                    book.getLock().unlock();
+                }
+
+                // Complete sheet reload
+                watch.start("afterReload");
+                sheet.afterReload(this);
+                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
+
+                if (OMR.gui != null) {
+                    StubsController.getInstance().markTab(
+                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
+                }
+
+                logger.info("Loaded {}", sheetFile);
+            } catch (IOException |
+                     JAXBException ex) {
+                logger.warn("Error in loading sheet structure " + ex, ex);
+                logger.info("Trying to restart from binary");
+                resetToBinary();
+            } finally {
+                if (constants.printWatch.isSet()) {
+                    watch.print();
+                }
+            }
+
+            return sheet;
+        }
+    }
+//
+//    public Sheet getSheet (SheetStub oldStub)
+//    {
+//        // Copy BINARY.png
+//        final ImageHolder holder = new ImageHolder(ImageKey.BINARY);
+//        holder.storeData(sheetFolder, oldSheetFolder);
+//
+//        if (!oldStub.isDone(OmrStep.LOAD)) {
+//            // LOAD not yet performed: load from book image file
+//            try {
+//                sheet = new Sheet(this, null, false);
+//            } catch (StepException ignored) {
+//                logger.info("Could not load sheet for stub {}", this);
+//            }
+//        } else {
+//            // Load from old sheet
+//            try {
+//                final Path sheetFile;
+//                // Copy from the old book file system
+//                final Book oldBook = oldStub.getBook();
+//                try {
+//                    oldBook.getLock().lock();
+//                    sheetFile = oldBook.openSheetFolder(oldStub.number).resolve(
+//                            Sheet.getSheetFileName(oldStub.number));
+//
+//                    try (InputStream is = Files.newInputStream(
+//                            sheetFile,
+//                            StandardOpenOption.READ)) {
+//                        sheet = Sheet.unmarshal(is);
+//                    }
+//
+//                    sheetFile.getFileSystem().close();
+//                } finally {
+//                    oldBook.getLock().unlock();
+//                }
+//
+//                // Complete sheet reload
+//                sheet.afterReload(this);
+//                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
+////
+////                if (OMR.gui != null) {
+////                    StubsController.getInstance().markTab(
+////                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
+////                }
+//                logger.info("Loaded {}", sheetFile);
+//            } catch (IOException |
+//                     JAXBException ex) {
+//                logger.warn("Error in loading sheet structure " + ex, ex);
+//            }
+//        }
+//
+//        return sheet;
+//    }
+//
     //----------//
     // hasSheet //
     //----------//
+
     /**
      * Report whether the stub has a sheet in memory
      *
@@ -779,6 +901,19 @@ public class SheetStub
     public boolean isUpgraded ()
     {
         return upgraded;
+    }
+
+    //---------------//
+    // setSheetInput //
+    //---------------//
+    /**
+     * Assigns the precise image input for this sheet.
+     *
+     * @param sheetInput the sheetInput to set
+     */
+    public void setSheetInput (SheetInput sheetInput)
+    {
+        this.sheetInput = new SheetInput(sheetInput);
     }
 
     //-------------//
@@ -1375,6 +1510,55 @@ public class SheetStub
             }
 
             return super.setSpecific(specific);
+        }
+    }
+
+    //------------//
+    // SheetInput //
+    //------------//
+    /**
+     * Class <code>SheetInput</code> records reference of input image file for a sheet.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class SheetInput
+    {
+
+        /**
+         * This is the path to the image file this sheet was created from.
+         */
+        @XmlElement(name = "path")
+        @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
+        public final Path path;
+
+        /**
+         * This is the rank, counted from 1, of the sheet image within the input file.
+         */
+        @XmlElement(name = "number")
+        public final int number;
+
+        public SheetInput (Path path,
+                           int number)
+        {
+            this.path = path;
+            this.number = number;
+        }
+
+        public SheetInput (SheetInput input)
+        {
+            this(input.path, input.number);
+        }
+
+        /** No-arg constructor needed for JAXB. */
+        private SheetInput ()
+        {
+            path = null;
+            number = 0;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return FileUtil.getNameSansExtension(path) + "#" + number;
         }
     }
 }

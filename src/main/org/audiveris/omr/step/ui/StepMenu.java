@@ -198,7 +198,7 @@ public class StepMenu
                 }
 
                 @Override
-                protected void finished ()
+                protected void succeeded (Void result)
                 {
                     if (stub != null) {
                         final OmrStep latestStep = stub.getLatestStep();

@@ -90,9 +90,6 @@ public class Source
     /** Path to source image file, if any. */
     private String file;
 
-    /** Sheet offset with respect to full work. */
-    private int offset;
-
     /** Source image URI, if any. */
     private URI uri;
 
@@ -177,12 +174,6 @@ public class Source
             field.setName(SOURCE_PREFIX + "uri");
             field.setValue(uri.toString());
         }
-
-        if (offset != 0) {
-            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-            field.setName(SOURCE_PREFIX + "offset");
-            field.setValue("" + offset);
-        }
     }
 
     /**
@@ -199,22 +190,6 @@ public class Source
     public void setFile (String file)
     {
         this.file = file;
-    }
-
-    /**
-     * @return the offset
-     */
-    public int getOffset ()
-    {
-        return offset;
-    }
-
-    /**
-     * @param offset the offset to set
-     */
-    public void setOffset (int offset)
-    {
-        this.offset = offset;
     }
 
     /**
@@ -251,10 +226,6 @@ public class Source
             sb.append("file='").append(file).append("'");
         } else if (uri != null) {
             sb.append("uri=").append(uri);
-        }
-
-        if (offset != 0) {
-            sb.append(" offset=").append(offset);
         }
 
         for (SheetSystems sheet : sheets) {
@@ -303,8 +274,6 @@ public class Source
                     source.file = value;
                 } else if (tail.equals("uri")) {
                     source.uri = URI.create(value);
-                } else if (tail.equals("offset")) {
-                    source.offset = Integer.decode(value);
                 } else if (tail.startsWith(SHEET_PREFIX)) {
                     String numStr = tail.substring(SHEET_PREFIX.length());
                     int num = Integer.decode(numStr);

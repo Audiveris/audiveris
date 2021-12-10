@@ -42,7 +42,8 @@ import javax.swing.JProgressBar;
  * <p>
  * Method <code>doInBackground</code> must be provided in subclass.
  * <p>
- * Method <code>finished</code> can be provided in subclass to trigger some other action when the task
+ * Method <code>finished</code> can be provided in subclass to trigger some other action when the
+ * task
  * is completed.
  *
  * @param <T> the result type returned by <code>doInBackground</code> and <code>get</code> methods

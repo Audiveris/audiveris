@@ -199,10 +199,6 @@ public class Sheet
      */
     private GlyphIndex glyphIndex;
 
-    /**
-     * Number attribute.
-     * See annotated get/set methods: {@link #getNumber()}
-     */
     // Transient data
     //---------------
     //
@@ -1312,18 +1308,6 @@ public class Sheet
     private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
     {
         getGlyphIndex().setEntities(glyphs);
-    }
-
-    //-----------//
-    // getNumber // Needed for JAXB
-    //-----------//
-    /**
-     * This is the rank of sheet, counted from 1, within the book image(s) file.
-     */
-    @XmlAttribute(name = "number")
-    private int getNumber ()
-    {
-        return stub.getNumber();
     }
 
     //----------------//

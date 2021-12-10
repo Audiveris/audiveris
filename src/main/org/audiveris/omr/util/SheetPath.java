@@ -53,7 +53,7 @@ public class SheetPath
     /**
      * Creates a new <code>SheetPath</code> object.
      *
-     * @param bookPath DOCUMENT ME!
+     * @param bookPath Path to the book file
      */
     public SheetPath (Path bookPath)
     {
@@ -61,10 +61,10 @@ public class SheetPath
     }
 
     /**
-     * Creates a new <code>SheetPath</code> object.
+     * Creates a new <code>SheetPath</code> object, with a desired sheet number.
      *
-     * @param bookPath    DOCUMENT ME!
-     * @param sheetNumber DOCUMENT ME!
+     * @param bookPath    Path to the book file
+     * @param sheetNumber Desired sheet number to focus upon
      */
     public SheetPath (Path bookPath,
                       Integer sheetNumber)
@@ -101,7 +101,7 @@ public class SheetPath
     public String toString ()
     {
         final StringBuilder sb = new StringBuilder();
-        sb.append(bookPath.toAbsolutePath().toString());
+        sb.append(bookPath.toAbsolutePath());
 
         if (sheetNumber != null) {
             sb.append(SHEET_SEPARATOR).append(sheetNumber);

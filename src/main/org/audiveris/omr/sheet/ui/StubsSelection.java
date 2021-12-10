@@ -154,11 +154,11 @@ public class StubsSelection
 
             try {
                 // Check if spec is valid
+                final int maxId = book.size();
                 final String spec = specField.getText().trim();
-                final List<Integer> ids = NaturalSpec.decode(spec, true);
+                final List<Integer> ids = NaturalSpec.decode(spec, true, maxId);
 
                 // Check if all sheet IDs are in our book
-                final int maxId = book.getStubs().size();
                 final List<Integer> discarded = new ArrayList<>();
 
                 for (int id : ids) {
@@ -169,6 +169,7 @@ public class StubsSelection
 
                 if (!discarded.isEmpty()) {
                     logger.warn("{} does not contain sheet(s) {}", book, discarded);
+                    ids.removeAll(discarded);
                 } else {
                     final String normalizedSpec = NaturalSpec.encode(ids);
                     logger.info("Sheets selection:\"{}\" IDs:{}", normalizedSpec, ids);

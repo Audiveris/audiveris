@@ -50,7 +50,8 @@ public class PathHistory
                         Constant.String folderConstant,
                         int maxSize)
     {
-        super(name, constant, folderConstant, maxSize, (s1, s2) -> areEquivalent(s1, s2));
+        super(name, constant, folderConstant, maxSize,
+              (s1, s2) -> Paths.get(s1).equals(Paths.get(s2)));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -70,17 +71,5 @@ public class PathHistory
     protected Path decode (String str)
     {
         return Paths.get(str);
-    }
-
-    //---------------//
-    // areEquivalent //
-    //---------------//
-    private static boolean areEquivalent (String s1,
-                                          String s2)
-    {
-        final Path p1 = Paths.get(s1);
-        final Path p2 = Paths.get(s2);
-
-        return p1.compareTo(p2) == 0;
     }
 }

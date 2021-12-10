@@ -65,6 +65,7 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import org.audiveris.omr.sheet.ui.StubsController;
 
 /**
  * Class <code>CLI</code> parses and holds the parameters of the command line interface.
@@ -477,7 +478,7 @@ public class CLI
 
                 if (OMR.gui != null) {
                     Integer focus = (sheetIds != null) ? sheetIds.first() : null;
-                    book.createStubsTabs(focus); // Tabs are now accessible
+                    StubsController.getInstance().displayValidStubs(book, focus);
                     openBookDialog((focus != null) ? book.getStub(focus) : book.getFirstValidStub());
                 } else {
                     // Batch: Perform sheets upgrade?

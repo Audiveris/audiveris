@@ -68,10 +68,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -95,7 +93,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.zip.ZipOutputStream;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -173,31 +170,10 @@ public class Book
     @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
     private final Path path;
 
-    /**
-     * Sheet offset of image file with respect to full work, if any.
-     * <p>
-     * This feature of "<i>book of books</i>" is not yet implemented.
-     * <p>
-     * This element is meant to represent the number of the first sheet of this book within
-     * the containing super-book.
-     */
-    @XmlAttribute(name = "offset")
-    private Integer offset;
-
     /** This boolean indicates if the book score(s) must be updated. */
     @XmlAttribute(name = "dirty")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean dirty = false;
-
-    /**
-     * List of sub-books, if any.
-     * <p>
-     * This feature of "<i>book of books</i>" is not yet implemented.
-     * <p>
-     * This element is meant to refer to an external book included in this one.
-     */
-    @XmlElement(name = "sub-book")
-    private final List<Book> subBooks;
 
     /**
      * This element defines for the whole book a specific binarization filter to
@@ -311,33 +287,15 @@ public class Book
     /**
      * Create a Book with a path to an input images file.
      *
-     * @param path the input image path (which may contain several images)
+     * @param inputPath the input image path (which may contain several images)
      */
-    public Book (Path path)
+    public Book (Path inputPath)
     {
-        Objects.requireNonNull(path, "Trying to create a Book with null path");
+        Objects.requireNonNull(inputPath, "Trying to create a Book with null path");
 
-        this.path = path;
-        subBooks = null;
+        this.path = inputPath;
 
-        initTransients(FileUtil.getNameSansExtension(path).trim(), null);
-    }
-
-    /**
-     * Create a meta Book, to be later populated with sub-books.
-     * <p>
-     * NOTA: This meta-book feature is not yet in use.
-     *
-     * @param nameSansExt a name (sans extension) for this book
-     */
-    public Book (String nameSansExt)
-    {
-        Objects.requireNonNull(nameSansExt, "Trying to create a meta Book with null name");
-
-        path = null;
-        subBooks = new ArrayList<>();
-
-        initTransients(nameSansExt, null);
+        initTransients(FileUtil.getNameSansExtension(inputPath).trim(), null);
     }
 
     /**
@@ -346,7 +304,6 @@ public class Book
     private Book ()
     {
         path = null;
-        subBooks = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -493,6 +450,23 @@ public class Book
         }
     }
 
+    //------------//
+    // createBook //
+    //------------//
+    /**
+     * Creates a book, to be stored at bookPath.
+     *
+     * @param bookPath the target path for the book
+     * @return the created book
+     */
+    public static Book createBook (Path bookPath)
+    {
+        final Book book = new Book();
+        book.setBookPath(bookPath);
+
+        return book;
+    }
+
     //-------------//
     // createStubs //
     //-------------//
@@ -515,83 +489,12 @@ public class Book
         }
     }
 
-    //-----------------//
-    // createStubsTabs //
-    //-----------------//
-    /**
-     * Insert stubs assemblies in UI tabbed pane.
-     * <p>
-     * GUI will focus on first valid stub, unless a stub number is provided.
-     *
-     * @param focus the stub number to focus upon, or null
-     */
-    public void createStubsTabs (final Integer focus)
+    //---------//
+    // addStub //
+    //---------//
+    public void addStub (SheetStub stub)
     {
-        try {
-            SwingUtilities.invokeAndWait(() -> {
-                LogUtil.start(Book.this);
-
-                final StubsController controller = StubsController.getInstance();
-
-                // Determine which stub should get the focus
-                SheetStub focusStub = null;
-
-                if (focus != null) {
-                    for (SheetStub stub : stubs) {
-                        if (stub.getNumber() == focus) {
-                            focusStub = stub;
-                            break;
-                        }
-                    }
-
-                    if (focusStub == null) {
-                        logger.warn("Could not find sheet id: {}", focus);
-                    }
-                }
-
-                if (focusStub == null) {
-                    focusStub = getFirstValidStub(); // Focus on first valid stub, if any
-
-                    if (focusStub == null) {
-                        logger.info("No valid sheet in {}", this);
-                    }
-                }
-
-                // Allocate one tab per stub, beginning by focusStub if any
-                Integer focusIndex = null;
-
-                if (focusStub != null) {
-                    // This triggers the display of focusStub sheet...
-                    controller.addAssembly(focusStub.getAssembly(), null);
-                    focusIndex = controller.getIndex(focusStub);
-
-                    if (focusIndex == -1) {
-                        focusIndex = null; // Safer
-                    }
-                }
-
-                for (SheetStub stub : stubs) {
-                    if (focusIndex == null) {
-                        controller.addAssembly(stub.getAssembly(), null);
-                    } else if (stub != focusStub) {
-                        if (stub.getNumber() < focusStub.getNumber()) {
-                            controller.addAssembly(
-                                    stub.getAssembly(),
-                                    controller.getLastIndex());
-                        } else {
-                            controller.addAssembly(stub.getAssembly(), null);
-                        }
-                    }
-                }
-
-                controller.adjustStubTabs(Book.this);
-            });
-        } catch (InterruptedException |
-                 InvocationTargetException ex) {
-            logger.warn("Error in createStubsTabs, {}", ex, ex);
-        } finally {
-            LogUtil.stopBook();
-        }
+        stubs.add(stub);
     }
 
     //--------//
@@ -812,6 +715,19 @@ public class Book
         return bookPath;
     }
 
+    //-------------//
+    // setBookPath //
+    //-------------//
+    /**
+     * Assign bookPath to the book.
+     *
+     * @param bookPath the path to book file on disk
+     */
+    public void setBookPath (Path bookPath)
+    {
+        this.bookPath = bookPath;
+    }
+
     //-----------------//
     // getBrowserFrame //
     //-----------------//
@@ -917,32 +833,6 @@ public class Book
         }
 
         return ocrLanguages;
-    }
-
-    //-----------//
-    // getOffset //
-    //-----------//
-    /**
-     * Report the offset of this book, with respect to a containing super-book.
-     *
-     * @return the offset (in terms of number of sheets)
-     */
-    public Integer getOffset ()
-    {
-        return offset;
-    }
-
-    //-----------//
-    // setOffset //
-    //-----------//
-    /**
-     * Assign this book offset (WRT containing super-book)
-     *
-     * @param offset the offset to set
-     */
-    public void setOffset (Integer offset)
-    {
-        this.offset = offset;
     }
 
     //--------------------//
@@ -1376,19 +1266,6 @@ public class Book
         return sb.toString();
     }
 
-    //-------------//
-    // includeBook //
-    //-------------//
-    /**
-     * Include a (sub) book into this (super) book.
-     *
-     * @param book the sub book to include
-     */
-    public void includeBook (Book book)
-    {
-        subBooks.add(book);
-    }
-
     //-----------//
     // isClosing //
     //-----------//
@@ -1567,7 +1444,7 @@ public class Book
                 book = (Book) um.unmarshal(is);
                 LogUtil.start(book);
                 book.getLock().lock();
-                rootPath.getFileSystem().close(); // Close book file
+                rootPath.getFileSystem().close();
 
                 boolean ok = book.initTransients(null, bookPath);
 
@@ -1964,6 +1841,20 @@ public class Book
         }
     }
 
+    //------//
+    // size //
+    //------//
+    /**
+     * Report the total number of sheet stubs in this book, regardless of their
+     * selection or validity.
+     *
+     * @return the stubs count
+     */
+    public int size ()
+    {
+        return stubs.size();
+    }
+
     //-------//
     // store //
     //-------//
@@ -2025,7 +1916,8 @@ public class Book
                 }
             } else {
                 // Switch from old to new book file
-                root = createBookFile(bookPath);
+                root = ZipFileSystem.create(bookPath);
+
                 diskWritten = true;
 
                 storeBookInfo(root); // Book info (book.xml)
@@ -2097,7 +1989,7 @@ public class Book
     public void storeBookInfo (Path root)
             throws Exception
     {
-        // Book version should always be the oldest of all sheets versions
+        // Book version should always be the oldest (i.e. lowest) of all sheets versions
         Version oldest = getOldestSheetVersion();
 
         if (oldest != null) {
@@ -2143,16 +2035,7 @@ public class Book
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("Book{");
-        sb.append(radix);
-
-        if ((offset != null) && (offset > 0)) {
-            sb.append(" offset:").append(offset);
-        }
-
-        sb.append("}");
-
-        return sb.toString();
+        return new StringBuilder("Book{").append(radix).append("}").toString();
     }
 
     //------------//
@@ -2582,7 +2465,7 @@ public class Book
     // getOldestSheetVersion //
     //-----------------------//
     /**
-     * Report the oldest version among all (valid) sheet stubs.
+     * Report the oldest (aka: lowest) version among all (valid) sheet stubs.
      *
      * @return the oldest version found or null if none found
      */
@@ -2659,10 +2542,15 @@ public class Book
         }
 
         if (alias == null) {
-            alias = checkAlias(getInputPath());
+            final Path inputPath = getInputPath();
 
-            if (alias != null) {
-                nameSansExt = alias;
+            // NOTA: inputPath can be null for a compound .omr file
+            if (inputPath != null) {
+                alias = checkAlias(inputPath);
+
+                if (alias != null) {
+                    nameSansExt = alias;
+                }
             }
         }
 
@@ -2830,43 +2718,6 @@ public class Book
         }
 
         return null;
-    }
-
-    //----------------//
-    // createBookFile //
-    //----------------//
-    /**
-     * Create a new book file system dedicated to this book at the location provided
-     * by '<code>bookpath</code>' member.
-     * If such file already exists, it is deleted beforehand.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @return the root path of the (zipped) book file system
-     */
-    private static Path createBookFile (Path bookPath)
-            throws IOException
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            Files.deleteIfExists(bookPath);
-        } catch (IOException ex) {
-            logger.warn("Error deleting book: " + bookPath, ex);
-        }
-
-        // Make sure the containing folder exists
-        Files.createDirectories(bookPath.getParent());
-
-        // Make it a zip file
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
-        zos.close();
-
-        // Finally open the book file just created
-        return ZipFileSystem.open(bookPath);
     }
 
     //----------------//

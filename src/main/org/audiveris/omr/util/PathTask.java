@@ -24,12 +24,17 @@ package org.audiveris.omr.util;
 import java.nio.file.Path;
 
 /**
- * Class <code>PathTask</code> is a VoidTask that operates on a path.
+ * Class <code>PathTask</code> is a BasicTask that operates on a path.
+ *
+ * @param <T> the result type returned by this <code>SwingWorker's</code>
+ *            <code>doInBackground</code> and <code>get</code> methods
+ * @param <V> the type used for carrying out intermediate results by this
+ *            <code>SwingWorker's</code> <code>publish</code> and <code>process</code> methods
  *
  * @author Hervé Bitteur
  */
-public abstract class PathTask
-        extends VoidTask
+public abstract class PathTask<T, V>
+        extends BasicTask<T, V>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 

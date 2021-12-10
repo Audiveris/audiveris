@@ -2347,7 +2347,6 @@ public class PartwiseBuilder
 
                 final Book book = score.getBook();
                 source.setFile(book.getInputPath().toString());
-                source.setOffset((book.getOffset() != null) ? book.getOffset() : 0);
                 source.encodeScore(scorePartwise);
             }
 

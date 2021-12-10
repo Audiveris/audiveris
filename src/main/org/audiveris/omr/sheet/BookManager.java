@@ -40,9 +40,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class <code>BookManager</code> is a singleton which provides administrative features
@@ -121,16 +123,25 @@ public class BookManager
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** All book instances. */
-    private final List<Book> books = new ArrayList<>();
+    /**
+     * Map of all book instances.
+     * Keyed by file path (book path or input path).
+     */
+    private final Map<Path, Book> books = new LinkedHashMap<>();
 
     /** Alias patterns. */
     private final AliasPatterns aliasPatterns = new AliasPatterns();
 
-    /** Image file history. (filled only when images are successfully loaded) */
+    /**
+     * Image file history.
+     * (filled only when images are successfully loaded)
+     */
     private PathHistory imageHistory;
 
-    /** Book file history. (filled only when books are successfully loaded or saved) */
+    /**
+     * Book file history.
+     * (filled only when books are successfully loaded or saved)
+     */
     private SheetPathHistory bookHistory;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -142,171 +153,21 @@ public class BookManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getAlias //
-    //----------//
-    /**
-     * Try to retrieve an alias for the provided name, by applying registered patterns.
-     *
-     * @param name the full name provided
-     * @return the first alias found, or null if none
-     */
-    public String getAlias (String name)
-    {
-        return aliasPatterns.getAlias(name);
-    }
-
-    //-------------//
-    // getAllBooks //
-    //-------------//
-    @Override
-    public List<Book> getAllBooks ()
-    {
-        return Collections.unmodifiableList(books);
-    }
-
-    //----------//
-    // loadBook //
-    //----------//
-    @Override
-    public Book loadBook (Path bookPath)
-    {
-        Book book = Book.loadBook(bookPath);
-
-        if (book != null) {
-            addBook(book);
-
-            getBookHistory().remove(new SheetPath(bookPath));
-        }
-
-        return book;
-    }
-
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
-    {
-        final Book book = new Book(path);
-
-        // Alias?
-        if (AliasPatterns.useAliasPatterns()) {
-            final String nameSansExt = FileUtil.getNameSansExtension(path).trim();
-            String alias = getAlias(nameSansExt);
-
-            if (alias != null) {
-                book.setAlias(alias);
-                logger.info("Found alias: {} for {}", alias, nameSansExt);
-            }
-        }
-
-        book.setModified(true);
-        book.setDirty(true);
-        addBook(book);
-
-        getImageHistory().add(path); // Insert in input history
-
-        return book;
-    }
-
-    //------------//
-    // removeBook //
-    //------------//
-    /**
-     * Remove the provided book from the collection of Book instances.
-     *
-     * @param book        the book to remove
-     * @param sheetNumber the current sheet number in book, if any, null otherwise
-     * @return true if actually removed
-     */
-    @Override
-    public synchronized boolean removeBook (Book book,
-                                            Integer sheetNumber)
-    {
-        logger.debug("removeBook {}", book);
-
-        final Path bookPath = book.getBookPath();
-
-        if (bookPath != null) {
-            getBookHistory().add(new SheetPath(bookPath, sheetNumber)); // Insert in history
-        }
-
-        return books.remove(book);
-    }
-
-    //----------------//
-    // getBookHistory //
-    //----------------//
-    /**
-     * Get access to the list of previous books.
-     *
-     * @return the history set of book files
-     */
-    public SheetPathHistory getBookHistory ()
-    {
-        if (bookHistory == null) {
-            bookHistory = new SheetPathHistory(
-                    "Book History",
-                    constants.bookHistory,
-                    null,
-                    constants.historySize.getValue());
-        }
-
-        return bookHistory;
-    }
-
-    //-----------------//
-    // getInputHistory //
-    //-----------------//
-    /**
-     * Get access to the list of previous inputs.
-     *
-     * @return the history set of input files
-     */
-    public PathHistory getImageHistory ()
-    {
-        if (imageHistory == null) {
-            imageHistory = new PathHistory(
-                    "Input History",
-                    constants.imageHistory,
-                    constants.defaultImageFolder,
-                    constants.historySize.getValue());
-        }
-
-        return imageHistory;
-    }
-
     //---------//
     // addBook //
     //---------//
-    /**
-     * Insert this new book in the set of book instances.
-     *
-     * @param book the book to insert
-     */
-    private void addBook (Book book)
+    @Override
+    public void addBook (Book book)
     {
         logger.debug("addBook {}", book);
 
-        //
-        //        // Remove duplicate if any
-        //        for (Iterator<Book> it = books.iterator(); it.hasNext();) {
-        //            Book b = it.next();
-        //            Path path = b.getInputPath();
-        //
-        //            if (path.equals(book.getInputPath())) {
-        //                logger.debug("Removing duplicate {}", b);
-        //                it.remove();
-        //                b.close();
-        //
-        //                break;
-        //            }
-        //        }
-        //
-        // Insert new book instance
         synchronized (books) {
-            books.add(book);
+            // Choose suitable path
+            final Path path = (book.getBookPath() != null)
+                    ? book.getBookPath()
+                    : book.getInputPath();
+
+            books.put(path.toAbsolutePath(), book);
         }
     }
 
@@ -314,7 +175,7 @@ public class BookManager
     // deletePaths //
     //-------------//
     /**
-     * Delete the provided files &amp; dirs.
+     * Delete the provided files and dirs.
      * If interactive mode, prompt user for confirmation beforehand.
      *
      * @param title scope indication for deletion
@@ -394,6 +255,29 @@ public class BookManager
         }
     }
 
+    //----------//
+    // getAlias //
+    //----------//
+    /**
+     * Try to retrieve an alias for the provided name, by applying registered patterns.
+     *
+     * @param name the full name provided
+     * @return the first alias found, or null if none
+     */
+    public String getAlias (String name)
+    {
+        return aliasPatterns.getAlias(name);
+    }
+
+    //-------------//
+    // getAllBooks //
+    //-------------//
+    @Override
+    public Collection<Book> getAllBooks ()
+    {
+        return Collections.unmodifiableCollection(books.values());
+    }
+
     //---------------//
     // getBaseFolder //
     //---------------//
@@ -428,76 +312,34 @@ public class BookManager
         return constants.baseFolder.getValue().trim();
     }
 
-    //---------------------//
-    // getDefaultPrintPath //
-    //---------------------//
+    //----------------//
+    // getBookHistory //
+    //----------------//
     /**
-     * Report the file path to which the book should be printed.
+     * Get access to the list of previous books.
      *
-     * @param book the book to export
-     * @return the default book path for print
+     * @return the history set of book files
      */
-    public static Path getDefaultPrintPath (Book book)
+    public SheetPathHistory getBookHistory ()
     {
-        if (book.getPrintPath() != null) {
-            return book.getPrintPath();
+        if (bookHistory == null) {
+            bookHistory = new SheetPathHistory(
+                    "Book History",
+                    constants.bookHistory,
+                    constants.defaultBookFolder,
+                    constants.historySize.getValue());
         }
 
-        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PRINT_EXTENSION);
+        return bookHistory;
     }
 
-    //--------------------//
-    // getExportExtension //
-    //--------------------//
-    /**
-     * Report the extension to use for book export, depending on the use (or not)
-     * of opus and of compression.
-     *
-     * @return the file extension to use.
-     */
-    public static String getExportExtension ()
+    //------------//
+    // getBookMap //
+    //------------//
+    @Override
+    public Map<Path, Book> getBookMap ()
     {
-        return useOpus() ? OMR.OPUS_EXTENSION
-                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of BookManager in the application.
-     *
-     * @return the instance
-     */
-    public static BookManager getInstance ()
-    {
-        return LazySingleton.INSTANCE;
-    }
-
-    //--------------//
-    // useSignature //
-    //--------------//
-    /**
-     * Tell whether we should inject ProxyMusic signature.
-     *
-     * @return true if so
-     */
-    public static boolean useSignature ()
-    {
-        return constants.defaultSigned.isSet();
-    }
-
-    //----------------//
-    // useCompression //
-    //----------------//
-    /**
-     * Report whether we should use compression (to .MXL files) or not (to .XML files).
-     *
-     * @return true for compression
-     */
-    public static boolean useCompression ()
-    {
-        return constants.useCompression.getValue();
+        return books;
     }
 
     //----------------------//
@@ -556,6 +398,19 @@ public class BookManager
         return getDefaultBookFolder(book).resolve(book.getRadix());
     }
 
+    //----------------------//
+    // getDefaultBookFolder //
+    //----------------------//
+    /**
+     * Report the folder where books should be found.
+     *
+     * @return the latest book folder
+     */
+    public static String getDefaultBookFolder ()
+    {
+        return constants.defaultBookFolder.getValue();
+    }
+
     //-----------------------//
     // getDefaultImageFolder //
     //-----------------------//
@@ -567,6 +422,24 @@ public class BookManager
     public static String getDefaultImageFolder ()
     {
         return constants.defaultImageFolder.getValue();
+    }
+
+    //---------------------//
+    // getDefaultPrintPath //
+    //---------------------//
+    /**
+     * Report the file path to which the book should be printed.
+     *
+     * @param book the book to export
+     * @return the default book path for print
+     */
+    public static Path getDefaultPrintPath (Book book)
+    {
+        if (book.getPrintPath() != null) {
+            return book.getPrintPath();
+        }
+
+        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PRINT_EXTENSION);
     }
 
     //--------------------//
@@ -587,6 +460,55 @@ public class BookManager
         return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.BOOK_EXTENSION);
     }
 
+    //--------------------//
+    // getExportExtension //
+    //--------------------//
+    /**
+     * Report the extension to use for book export, depending on the use (or not)
+     * of opus and of compression.
+     *
+     * @return the file extension to use.
+     */
+    public static String getExportExtension ()
+    {
+        return useOpus() ? OMR.OPUS_EXTENSION
+                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
+    }
+
+    //-----------------//
+    // getImageHistory //
+    //-----------------//
+    /**
+     * Get access to the list of previous image inputs.
+     *
+     * @return the history set of image input files
+     */
+    public PathHistory getImageHistory ()
+    {
+        if (imageHistory == null) {
+            imageHistory = new PathHistory(
+                    "Input History",
+                    constants.imageHistory,
+                    constants.defaultImageFolder,
+                    constants.historySize.getValue());
+        }
+
+        return imageHistory;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of BookManager in the application.
+     *
+     * @return the instance
+     */
+    public static BookManager getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
     //-------------//
     // isMultiBook //
     //-------------//
@@ -598,6 +520,116 @@ public class BookManager
     public static boolean isMultiBook ()
     {
         return getInstance().books.size() > 1;
+    }
+
+    //----------//
+    // loadBook //
+    //----------//
+    @Override
+    public Book loadBook (Path bookPath)
+    {
+        Book book = Book.loadBook(bookPath);
+
+        if (book != null) {
+            book.setBookPath(bookPath);
+            addBook(book);
+
+            getBookHistory().remove(new SheetPath(bookPath));
+        }
+
+        return book;
+    }
+
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path inputPath)
+    {
+        final Book book = new Book(inputPath);
+
+        // Alias?
+        if (AliasPatterns.useAliasPatterns()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(inputPath).trim();
+            String alias = getAlias(nameSansExt);
+
+            if (alias != null) {
+                book.setAlias(alias);
+                logger.info("Found alias: {} for {}", alias, nameSansExt);
+            }
+        }
+
+        book.setModified(true);
+        book.setDirty(true);
+
+        addBook(book);
+
+        getImageHistory().add(inputPath); // Insert in input history
+
+        return book;
+    }
+
+    //------------//
+    // removeBook //
+    //------------//
+    /**
+     * Remove the provided book from the collection of Book instances.
+     *
+     * @param book        the book to remove
+     * @param sheetNumber the current sheet number in book, if any, null otherwise
+     * @return true if actually removed
+     */
+    @Override
+    public synchronized boolean removeBook (Book book,
+                                            Integer sheetNumber)
+    {
+        logger.debug("removeBook {}", book);
+
+        final Path bookPath = book.getBookPath();
+
+        if (bookPath != null) {
+            getBookHistory().add(new SheetPath(bookPath, sheetNumber)); // Insert in history
+            return books.remove(bookPath.toAbsolutePath(), book);
+        }
+
+        final Path inputPath = book.getInputPath();
+
+        if (inputPath != null) {
+            return books.remove(inputPath.toAbsolutePath(), book);
+        }
+
+        return false;
+    }
+
+    //------------//
+    // renameBook //
+    //------------//
+    @Override
+    public synchronized void renameBook (Book book,
+                                         Path oldBookPath)
+    {
+        final Path oldPath = (oldBookPath != null)
+                ? oldBookPath.toAbsolutePath()
+                : book.getInputPath().toAbsolutePath();
+        final Path newPath = book.getBookPath().toAbsolutePath();
+
+        if (!oldPath.equals(newPath)) {
+            books.put(newPath, book);
+            books.remove(oldPath, book);
+        }
+    }
+
+    //----------------//
+    // useCompression //
+    //----------------//
+    /**
+     * Report whether we should use compression (to .MXL files) or not (to .XML files).
+     *
+     * @return true for compression
+     */
+    public static boolean useCompression ()
+    {
+        return constants.useCompression.getValue();
     }
 
     //---------//
@@ -627,6 +659,19 @@ public class BookManager
         return constants.useSeparateBookFolders.isSet();
     }
 
+    //--------------//
+    // useSignature //
+    //--------------//
+    /**
+     * Tell whether we should inject ProxyMusic signature.
+     *
+     * @return true if so
+     */
+    public static boolean useSignature ()
+    {
+        return constants.defaultSigned.isSet();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -654,6 +699,10 @@ public class BookManager
         private final Constant.String baseFolder = new Constant.String(
                 WellKnowns.DEFAULT_BASE_FOLDER.toString(),
                 "Base for output folders");
+
+        private final Constant.String defaultBookFolder = new Constant.String(
+                WellKnowns.DEFAULT_BASE_FOLDER.toString(),
+                "Default folder for selection of book files");
 
         private final Constant.String defaultImageFolder = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),

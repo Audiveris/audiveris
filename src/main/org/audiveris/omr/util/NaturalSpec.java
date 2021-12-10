@@ -22,6 +22,7 @@
 package org.audiveris.omr.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,19 +47,22 @@ public abstract class NaturalSpec
     /**
      * Decode a specification into a list of naturals.
      * <p>
-     * Format example: 3-5, 8, 10-15
+     * Format example: 3-5, 8, 10-
      * <br>
-     * Gives values from 3 to 5, then value 8, then values from 10 to 15.
+     * Gives values from 3 to 5, then value 8, then values from 10 to maxValue
      *
      * @param spec            the specification string to decode
      * @param checkIncreasing true to verify if values are strictly increasing
+     * @param maxValue        maximum value if any
      * @return the list of naturals, perhaps empty but not null
      * @throws NullPointerException     if spec is null
      * @throws NumberFormatException    if some number is wrongly formatted
-     * @throws IllegalArgumentException if the list values are not strictly increasing
+     * @throws IllegalArgumentException if the list values are not strictly increasing or
+     *                                  if a range ends with '-' while no maxValue was provided
      */
     public static List<Integer> decode (String spec,
-                                        boolean checkIncreasing)
+                                        boolean checkIncreasing,
+                                        Integer maxValue)
     {
         Objects.requireNonNull(spec, "Null natural specification");
 
@@ -70,10 +74,23 @@ public abstract class NaturalSpec
             final int minusPos = token.indexOf('-');
 
             if (minusPos != -1) {
-                String str1 = token.substring(0, minusPos).trim();
-                String str2 = token.substring(minusPos + 1).trim();
-                int i1 = Integer.parseInt(str1);
-                int i2 = Integer.parseInt(str2);
+                final String str1 = token.substring(0, minusPos).trim();
+                final int i1 = Integer.parseInt(str1);
+
+                final String str2 = token.substring(minusPos + 1).trim();
+                final int i2;
+                if (str2.isEmpty()) {
+                    if (maxValue != null) {
+                        i2 = maxValue;
+                    } else {
+                        throw new IllegalArgumentException("No maximum value provided");
+                    }
+                } else {
+                    i2 = Integer.parseInt(str2);
+                    if (i2 < i1) {
+                        throw new IllegalArgumentException("Illegal range provided");
+                    }
+                }
 
                 for (int i = i1; i <= i2; i++) {
                     values.add(i);
@@ -88,20 +105,46 @@ public abstract class NaturalSpec
         }
 
         if (checkIncreasing && !isIncreasing(values)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Non increasing values");
+        }
+
+        if (maxValue != null) {
+            for (Iterator<Integer> it = values.iterator(); it.hasNext();) {
+                final Integer v = it.next();
+
+                if (v < 0 || v > maxValue) {
+                    it.remove();
+                }
+            }
         }
 
         return values;
     }
 
     //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode a specification into a list of naturals, with no maxValue provided.
+     *
+     * @param spec            the specification string to decode
+     * @param checkIncreasing true to verify if values are strictly increasing
+     * @return
+     */
+    public static List<Integer> decode (String spec,
+                                        boolean checkIncreasing)
+    {
+        return decode(spec, checkIncreasing, null);
+    }
+
+    //--------//
     // encode //
     //--------//
     /**
-     * Build the spec that corresponds to the provided sequence of natural values.
+     * Build the specification that corresponds to the provided sequence of natural values.
      *
      * @param values provided sequence of values
-     * @return resulting spec
+     * @return the resulting specification, perhaps empty but not null
      */
     public static String encode (List<Integer> values)
     {

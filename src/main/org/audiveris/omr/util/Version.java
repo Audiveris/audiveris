@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import java.util.Objects;
 import org.audiveris.omr.sheet.SheetStub;
 
 /**
@@ -228,6 +229,30 @@ public class Version
         hash = (83 * hash) + patch;
 
         return hash;
+    }
+
+    //-----//
+    // min //
+    //-----//
+    public static Version min (Version v1,
+                               Version v2)
+    {
+        Objects.requireNonNull(v1, "Version v1 is null");
+        Objects.requireNonNull(v2, "Version v2 is null");
+
+        return v1.compareTo(v2) <= 0 ? v1 : v2;
+    }
+
+    //--------------//
+    // minWithLabel //
+    //--------------//
+    public static Version minWithLabel (Version v1,
+                                        Version v2)
+    {
+        Objects.requireNonNull(v1, "Version v1 is null");
+        Objects.requireNonNull(v2, "Version v2 is null");
+
+        return v1.compareWithLabelTo(v2) <= 0 ? v1 : v2;
     }
 
     //--------------//

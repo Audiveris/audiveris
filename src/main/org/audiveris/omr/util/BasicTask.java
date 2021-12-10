@@ -32,6 +32,7 @@ import org.jdesktop.application.Task;
  *            <code>doInBackground</code> and <code>get</code> methods
  * @param <V> the type used for carrying out intermediate results by this
  *            <code>SwingWorker's</code> <code>publish</code> and <code>process</code> methods
+ *
  * @author Hervé Bitteur
  */
 public abstract class BasicTask<T, V>

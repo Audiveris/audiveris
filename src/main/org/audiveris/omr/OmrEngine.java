@@ -24,7 +24,8 @@ package org.audiveris.omr;
 import org.audiveris.omr.sheet.Book;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Interface <code>OmrEngine</code> defines the API of an OMR engine.
@@ -46,35 +47,59 @@ public interface OmrEngine
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Report the list of all books handled.
+     * Insert the provided book in the collection of book instances.
      *
-     * @return the non-mutable list of all books handled by the OMR service
+     * @param book the book to insert
      */
-    List<Book> getAllBooks ();
+    void addBook (Book book);
+
+    /**
+     * Report all books handled.
+     *
+     * @return the non-mutable collection of all books handled by the OMR service
+     */
+    Collection<Book> getAllBooks ();
+
+    /**
+     * Report the live map of books, indexed by their path.
+     *
+     * @return the map path->book
+     */
+    Map<Path, Book> getBookMap ();
 
     /**
      * Build a book out of a book file, which has previously been saved.
      *
-     * @param path path to the book file
+     * @param bookPath path to the book file
      * @return the allocated book
      */
-    Book loadBook (Path path);
+    Book loadBook (Path bookPath);
 
     /**
      * Build a book out of an input file.
      *
-     * @param path path to the input file, which may contain several images
+     * @param inputPath path to the input file, which may contain several images
      * @return the allocated book
      */
-    Book loadInput (Path path);
+    Book loadInput (Path inputPath);
 
     /**
      * Remove the provided book from OMR service.
      *
      * @param book        the book to remove
-     * @param sheetNumber the current sheet number in book, if any, null otherwise
+     * @param sheetNumber the current sheet number in book, if any.
+     *                    sheet number is inserted in history, to enable reopening on same sheet
      * @return true if book is actually removed
      */
     boolean removeBook (Book book,
                         Integer sheetNumber);
+
+    /**
+     * Update book key in engine if needed.
+     *
+     * @param book        the book to rename
+     * @param oldBookPath the previous book path or null
+     */
+    public void renameBook (Book book,
+                            Path oldBookPath);
 }

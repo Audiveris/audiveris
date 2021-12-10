@@ -21,27 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import org.audiveris.omr.OMR;
+import java.awt.Color;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.lag.Lag;
-import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.StubEvent;
-import org.audiveris.omr.util.OmrExecutors;
-
-import org.bushe.swing.event.EventSubscriber;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -50,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -61,6 +55,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.audiveris.omr.OMR;
+import org.audiveris.omr.lag.Lag;
+import org.audiveris.omr.log.LogUtil;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.util.OmrExecutors;
+import org.bushe.swing.event.EventSubscriber;
 
 /**
  * Class <code>StubsController</code> is the UI Controller in charge of user interactions
@@ -222,38 +222,105 @@ public class StubsController
     /**
      * Display all the stubs (valid or not) of the provided book
      *
-     * @param book the provided book
+     * @param book  the provided book
+     * @param focus the stub number to focus upon, if any
      */
-    public void displayAllStubs (Book book)
+    public void displayAllStubs (Book book,
+                                 Integer focus)
     {
+        displayStubs(book, SheetStub.NO_VALIDITY_CHECK, null);
+    }
+
+    //-------------------//
+    // displayValidStubs //
+    //-------------------//
+    /**
+     * Display the valid stubs of the provided book.
+     *
+     * @param book  the provided book
+     * @param focus the stub number to focus upon, if any
+     */
+    public void displayValidStubs (Book book,
+                                   Integer focus)
+    {
+        displayStubs(book, SheetStub.VALIDITY_CHECK, focus);
+    }
+
+    //--------------//
+    // displayStubs //
+    //--------------//
+    /**
+     * Display the stubs of the provided book, respecting the provided 'validityCheck',
+     * and focusing on a certain stub if 'focus' is provided.
+     *
+     * @param book          the book to display
+     * @param validityCheck the check to apply on each stub
+     * @param focus         the stub number to focus upon, if any
+     */
+    public void displayStubs (Book book,
+                              Predicate<SheetStub> validityCheck,
+                              Integer focus)
+    {
+        // Make sure we are on EDT
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(() -> displayStubs(book, validityCheck, focus));
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+
+            return;
+        }
+
         final List<SheetStub> stubs = book.getStubs();
 
-        // Do we have a pivot?
+        // First, look for target location in stubsPane: tabPivot
         int tabPivot = getFirstDisplayedStubIndex(book);
+
+        // Corresponding index in book stubs (of either tabPivot of focusStub)
+        Integer stubPivot = null;
+
+        // Potential stub focus
+        final SheetStub focusStub;
 
         if (tabPivot == -1) {
             // Nothing displayed for this book yet, hence append all stubs at the end
-            for (SheetStub stub : stubs) {
-                addAssembly(stub.getAssembly(), null);
-            }
+            // We begin by the focus stub if any, to avoid unnecessary sheet loading
+            tabPivot = stubsPane.getTabCount();
+            focusStub = ((focus != null)
+                                 && validityCheck.test(book.getStub(focus)))
+                    ? book.getStub(focus) : null;
         } else {
-            int stubPivot = getStubAt(tabPivot).getNumber() - 1;
+            focusStub = null;
+            stubPivot = getStubAt(tabPivot).getNumber() - 1;
+        }
 
-            // Position WRT pivot
-            for (int stubIndex = 0; stubIndex < stubs.size(); stubIndex++) {
-                SheetStub stub = stubs.get(stubIndex);
-                JComponent component = stub.getAssembly().getComponent();
-                int tabIndex = stubsPane.indexOfComponent(component);
+        if (focusStub != null) {
+            insertAssembly(focusStub, tabPivot);
+            stubPivot = focusStub.getNumber() - 1;
+        }
 
+        // Position each stub tab WRT pivot
+        for (int stubIndex = 0; stubIndex < stubs.size(); stubIndex++) {
+            final SheetStub stub = stubs.get(stubIndex);
+            final JComponent component = stub.getAssembly().getComponent();
+            final int tabIndex = stubsPane.indexOfComponent(component);
+
+            if (validityCheck.test(stub)) {
                 if (tabIndex != -1) {
                     tabPivot = tabIndex; // Already displayed
-                } else if (stubIndex < stubPivot) {
-                    insertAssembly(stub, tabPivot); // Display just before pivot
+                } else if ((stubPivot == null) || (stubIndex < stubPivot)) {
+                    insertAssembly(stub, tabPivot++); // Display just before pivot
                 } else {
                     insertAssembly(stub, ++tabPivot); // Display just after pivot
                 }
-
-                stubPivot = stubIndex;
+            } else {
+                // Remove unwanted displayed stub
+                if (tabIndex != -1) {
+                    deleteAssembly(stub);
+                    tabPivot--;
+                }
             }
         }
 
@@ -261,9 +328,9 @@ public class StubsController
         adjustStubTabs(book);
     }
 
-    //--------------------------//
-    // dumpCurrentSheetServices //
-    //--------------------------//
+//--------------------------//
+// dumpCurrentSheetServices //
+//--------------------------//
     /**
      * Debug action to dump the current status of all event services related to
      * the selected sheet if any.
@@ -416,19 +483,17 @@ public class StubsController
     @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
-        StubsController controller = StubsController.getInstance();
-
         if (ViewParameters.getInstance().isInvalidSheetDisplay()) {
             // Display all sheets for all books, including invalid ones
             for (Book book : OMR.engine.getAllBooks()) {
-                controller.displayAllStubs(book);
+                displayAllStubs(book, null);
             }
         } else {
             // Hide invalid sheets for all books
             for (Book book : OMR.engine.getAllBooks()) {
                 for (SheetStub stub : book.getStubs()) {
                     if (!stub.isValid()) {
-                        controller.removeAssembly(stub);
+                        removeAssembly(stub);
                     }
                 }
             }
@@ -632,13 +697,14 @@ public class StubsController
         }
 
         final SheetStub stub = stubsMap.get(component);
+        logger.debug("stateChanged {}", stub);
 
         if (stub == getSelectedStub()) {
             return;
         }
 
         if (!stub.getBook().isClosing()) {
-            logger.debug("stateChanged for {}", stub);
+            logger.debug("stateChanged for non-selected {}", stub);
 
             // This is the new current stub
             callAboutStub(stub);
@@ -657,7 +723,8 @@ public class StubsController
      */
     public void subscribe (EventSubscriber<StubEvent> subscriber)
     {
-        stubService.subscribeStrongly(StubEvent.class, subscriber);
+        stubService.subscribeStrongly(StubEvent.class,
+                                      subscriber);
     }
 
     //----------//
@@ -679,7 +746,8 @@ public class StubsController
      */
     public void unsubscribe (EventSubscriber<StubEvent> subscriber)
     {
-        stubService.unsubscribe(StubEvent.class, subscriber);
+        stubService.unsubscribe(StubEvent.class,
+                                subscriber);
     }
 
     //----------------------//
@@ -910,11 +978,13 @@ public class StubsController
     private void insertAssembly (SheetStub stub,
                                  int index)
     {
+        final JComponent component = stub.getAssembly().getComponent();
+        stubsMap.put(component, stub);
         stubsPane.insertTab(
                 defineTitleFor(stub, null),
                 null,
-                stub.getAssembly().getComponent(),
-                stub.getBook().getInputPath().toString(),
+                component,
+                stub.getSheetInput().toString(),
                 index);
     }
 
@@ -1011,6 +1081,7 @@ public class StubsController
             }
         } else {
             StubsController.getInstance().selectAssembly(stub);
+
         }
     }
 
@@ -1032,9 +1103,9 @@ public class StubsController
                 "Initial zoom ratio for displayed sheet pictures");
     }
 
-    //---------------//
-    // CtrlEndAction //
-    //---------------//
+//---------------//
+// CtrlEndAction //
+//---------------//
     private class CtrlEndAction
             extends AbstractAction
     {
@@ -1050,9 +1121,9 @@ public class StubsController
         }
     }
 
-    //----------------//
-    // CtrlHomeAction //
-    //----------------//
+//----------------//
+// CtrlHomeAction //
+//----------------//
     private class CtrlHomeAction
             extends AbstractAction
     {
@@ -1066,9 +1137,9 @@ public class StubsController
         }
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
+//---------------//
+// LazySingleton //
+//---------------//
     private static class LazySingleton
     {
 
@@ -1079,9 +1150,9 @@ public class StubsController
         }
     }
 
-    //----------------//
-    // PageDownAction //
-    //----------------//
+//----------------//
+// PageDownAction //
+//----------------//
     private class PageDownAction
             extends AbstractAction
     {
@@ -1097,9 +1168,9 @@ public class StubsController
         }
     }
 
-    //--------------//
-    // PageUpAction //
-    //--------------//
+//--------------//
+// PageUpAction //
+//--------------//
     private class PageUpAction
             extends AbstractAction
     {

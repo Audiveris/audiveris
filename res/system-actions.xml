@@ -15,20 +15,21 @@
      
 <actions>
     
-    <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" menu="inputHistory"         button="javax.swing.JButton"/>
-    <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="openImageFile"      button="javax.swing.JButton"/>
+    <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" menu="inputHistory"           button="javax.swing.JButton"/>
+    <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="openImageFile"        button="javax.swing.JButton"/>
     <action domain="FILE" section="70" class="org.audiveris.omr.ui.GuiActions"        method="exit"/>
 
-    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" menu="bookHistory"                                button="javax.swing.JButton"/>
+    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" menu="bookHistory"            button="javax.swing.JButton"/>
     <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openRecentBook"/>
-    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openBook"/>
+    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openBook"             button="javax.swing.JButton"/>
+    <action domain="BOOK" section="07" class="org.audiveris.omr.sheet.ui.BookActions" method="splitAndMerge"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToGray"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToBinary"/>
-    <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeBook"                           button="javax.swing.JButton"/>
-    <action domain="BOOK" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="defineParameters"                         button="javax.swing.JButton"/>
+    <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeBook"       button="javax.swing.JButton"/>
+    <action domain="BOOK" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="defineParameters"     button="javax.swing.JButton"/>
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="swapSheets"/>
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="selectSheets"/>
-    <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBook"                                button="javax.swing.JButton"/>
+    <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBook"            button="javax.swing.JButton"/>
     <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBookAs"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBook"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBookAs"/>
@@ -37,12 +38,12 @@
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository" topic="SAMPLES"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateBook"       topic="ANNOTATIONS"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="upgradeBook"/>
-    <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"                                 button="javax.swing.JButton"/>
+    <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"             button="javax.swing.JButton"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookAs"/>
     <action domain="BOOK" section="60" class="org.audiveris.omr.sheet.ui.BookActions" method="closeBook"/>
     
-    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="undo"                                            button="javax.swing.JButton"/>
-    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="redo"                                            button="javax.swing.JButton"/>
+    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="undo"                button="javax.swing.JButton"/>
+    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="redo"                button="javax.swing.JButton"/>
     <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="toggleRepetitiveInput"     item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
     <action domain="SHEET" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeSheet"/>
     <action domain="SHEET" section="18" class="org.audiveris.omr.sheet.ui.BookActions" method="toggleSheetValidity"/>

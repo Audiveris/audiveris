@@ -1778,7 +1778,7 @@ public class InterController
 
         @Override
         @UIThread
-        protected void finished ()
+        protected void succeeded (Void result)
         {
             // This method runs on EDT
 
