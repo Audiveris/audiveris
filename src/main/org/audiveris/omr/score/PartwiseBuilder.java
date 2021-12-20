@@ -385,7 +385,7 @@ public class PartwiseBuilder
              * 4 for the F sign (bass clef),
              * 3 for the C sign (alto clef) and
              * 5 for TAB (on a 6-line staff).
-             *
+             * <p>
              * We could add:
              * 4 for the C sign (tenor clef)
              */
@@ -2261,8 +2261,12 @@ public class PartwiseBuilder
                 Identification identification = factory.createIdentification();
 
                 // Source
-                Book book = score.getFirstPage().getSheet().getStub().getBook();
-                identification.setSource(book.getInputPath().toString());
+                final Book book = score.getFirstPage().getSheet().getStub().getBook();
+                try {
+                    identification.setSource(book.getSomeInputPath().toAbsolutePath().toString());
+                } catch (Exception ex) {
+                    logger.warn("No input information for {}", book);
+                }
 
                 // Encoding
                 Encoding encoding = factory.createEncoding();
@@ -2346,7 +2350,7 @@ public class PartwiseBuilder
                 source = new Source();
 
                 final Book book = score.getBook();
-                source.setFile(book.getInputPath().toString());
+                source.setFile(book.getSomeInputPath().toAbsolutePath().toString());
                 source.encodeScore(scorePartwise);
             }
 

@@ -26,8 +26,10 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.PlayList;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.RunClass;
@@ -65,7 +67,6 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import org.audiveris.omr.sheet.ui.StubsController;
 
 /**
  * Class <code>CLI</code> parses and holds the parameters of the command line interface.
@@ -132,6 +133,11 @@ public class CLI
     {
         List<CliTask> tasks = new ArrayList<>();
 
+        // PlayList?
+        if (params.playListPath != null) {
+            tasks.add(new PlayListTask(params.playListPath));
+        }
+
         // Task kind is fully determined by argument extension
         params.arguments.stream()
                 .map(argument -> argument.toString().trim().replace('\\', '/'))
@@ -180,6 +186,19 @@ public class CLI
     public Path getOutputFolder ()
     {
         return params.outputFolder;
+    }
+
+    //-----------------//
+    // getPlayListPath //
+    //-----------------//
+    /**
+     * Report the path to playlist if present on CLI
+     *
+     * @return the PlayList path, or null
+     */
+    public Path getPlayListPath ()
+    {
+        return params.playListPath;
     }
 
     //-------------//
@@ -478,7 +497,7 @@ public class CLI
 
                 if (OMR.gui != null) {
                     Integer focus = (sheetIds != null) ? sheetIds.first() : null;
-                    StubsController.getInstance().displayValidStubs(book, focus);
+                    StubsController.getInstance().displayStubs(book, focus);
                     openBookDialog((focus != null) ? book.getStub(focus) : book.getFirstValidStub());
                 } else {
                     // Batch: Perform sheets upgrade?
@@ -769,11 +788,6 @@ public class CLI
     public static class Parameters
     {
 
-        /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)",
-                handler = IntArrayOptionHandler.class)
-        private ArrayList<Integer> sheets;
-
         /** Help mode. */
         @Option(name = "-help", help = true, usage = "Display general help then stop")
         boolean helpMode;
@@ -781,6 +795,11 @@ public class CLI
         /** Batch mode. */
         @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
+
+        /** The set of sheet IDs to load. */
+        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)",
+                handler = IntArrayOptionHandler.class)
+        private ArrayList<Integer> sheets;
 
         /** Should book be transcribed?. */
         @Option(name = "-transcribe", usage = "Transcribe whole book")
@@ -797,6 +816,11 @@ public class CLI
         /** Output directory. */
         @Option(name = "-output", usage = "Define base output folder", metaVar = "<output-folder>")
         Path outputFolder;
+
+        /** PlayList path. */
+        @Option(name = "-playlist", usage = "Build a compound book from playlist",
+                metaVar = "<file.xml>")
+        Path playListPath;
 
         /** Should MusicXML data be produced?. */
         @Option(name = "-export", usage = "Export MusicXML")
@@ -951,6 +975,61 @@ public class CLI
             SampleRepository global = SampleRepository.getGlobalInstance();
             global.includeSamplesFile(path);
 
+            return null;
+        }
+    }
+
+    //--------------//
+    // PlayListTask //
+    //--------------//
+    /**
+     * Processing a playlist file.
+     */
+    private static class PlayListTask
+            extends CliTask
+    {
+
+        public PlayListTask (Path path)
+        {
+            super(path);
+        }
+
+        @Override
+        public Void call ()
+                throws Exception
+        {
+            // To check that playlist file does exist
+            super.call();
+
+            if (OMR.gui != null) {
+                // Just display S&M dialog populated by the playlist
+                BookActions.getInstance().splitAndMerge(path);
+            } else {
+                // Build the compound book according to the playlist
+                final PlayList playList = PlayList.load(path);
+
+                if (playList != null) {
+                    playList.injectBooks(); // Ensure books are loaded
+
+                    final String compoundName = FileUtil.getNameSansExtension(path)
+                                                        + OMR.BOOK_EXTENSION;
+                    final Path targetPath = path.getParent().resolve(compoundName);
+                    playList.buildCompound(targetPath);
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "PlayList \"" + path + "\"";
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
             return null;
         }
     }

@@ -1,0 +1,42 @@
+    <xs:annotation>
+      <xs:documentation>
+        <![CDATA[This is the documentation for the schema rooted at <b><code>PlayList</code></b> class.
+<ul>
+<li>It describes the format of any playlist <b><code>.xml</code></b> file,
+which can be saved/loaded by Audiveris Split &amp; Merge feature or even
+created/edited via a text editor.
+<li><a href="PlayList.xsd"><b>PlayList.xsd</b></a> file contains the annotated schema verbatim.
+<li>This documentation describes all schema elements in alphabetical order.
+<li>For your convenience, you can start directly by the root <b><a href="#type_playList">PlayList</a></b> complex type.
+</ul>
+<p>
+Here is an example of a playlist .xml file:
+<pre>
+&lt;?xml version="1.0" ?&gt;
+&lt;play-list&gt;
+  &lt;excerpt&gt;
+    &lt;path&gt;D:\soft\audiveris-github\development\data\examples\Dichterliebe01.pdf&lt;/path&gt;
+    &lt;sheets-selection&gt;2&lt;/sheets-selection&gt;
+  &lt;/excerpt&gt;
+  &lt;excerpt&gt;
+    &lt;path&gt;D:\soft\audiveris-github\development\data\examples\chula.png&lt;/path&gt;
+    &lt;sheets-selection&gt;1&lt;/sheets-selection&gt;
+  &lt;/excerpt&gt;
+  &lt;excerpt&gt;
+    &lt;path&gt;D:\soft\audiveris-github\development\data\examples\carmen.png&lt;/path&gt;
+    &lt;sheets-selection&gt;1&lt;/sheets-selection&gt;
+  &lt;/excerpt&gt;
+&lt;/play-list&gt;
+</pre>
+<p>
+The diagram below presents <code>PlayList</code> and <code>Excerpt</code> 
+entities and their role in the Split &amp; Merge feature:
+<ol>
+<li>Interactive definition or edition of a playlist
+<li>Use of the playlist to build the resulting compound .omr book file.
+</ol>
+<p>
+<img src="doc-files/PlayList.png" alt="PlayList UML">]]>
+      </xs:documentation>
+    </xs:annotation>
+

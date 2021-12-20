@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
+
+        //Welcome to UMLet!
+
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+  <zoom_level>9</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>18</x>
+      <y>414</y>
+      <w>99</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>*anImage.pdf*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>369</x>
+      <y>468</y>
+      <w>171</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>PlayList processing
+fontsize=20</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>18</x>
+      <y>315</y>
+      <w>99</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>*aBook.omr*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>81</x>
+      <y>18</y>
+      <w>54</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>Actor</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>207</x>
+      <y>36</y>
+      <w>72</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;User&gt;&gt;
+bg=#aaaaff
+Interface</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>54</x>
+      <y>108</y>
+      <w>72</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;batch&gt;&gt;
+bg=#ffcccc
+CLI</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>126</x>
+      <y>36</y>
+      <w>81</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;20.0;70.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>36</x>
+      <y>162</y>
+      <w>81</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>*playlist.xml*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>117</x>
+      <y>180</y>
+      <w>108</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=[&gt;]-&gt;
+load</panel_attributes>
+    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>207</x>
+      <y>171</y>
+      <w>126</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>*PlayList*
+bg=#aaff66
+--
+excerpts</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>207</x>
+      <y>297</y>
+      <w>90</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>*BookExcerpt*
+bg=#aaff66
+--
+path
+specification</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>207</x>
+      <y>405</y>
+      <w>117</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>*ImageExcerpt*
+bg=#aaff66
+--
+path
+specification</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>423</x>
+      <y>189</y>
+      <w>126</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>*compound.omr*
+bg=#ff6666</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>225</x>
+      <y>81</y>
+      <w>27</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>117</x>
+      <y>162</y>
+      <w>108</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=-[&lt;]
+save</panel_attributes>
+    <additional_attributes>100.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>324</x>
+      <y>198</y>
+      <w>108</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=-[&gt;]
+build</panel_attributes>
+    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>108</x>
+      <y>324</y>
+      <w>117</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>108</x>
+      <y>423</y>
+      <w>117</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>279</x>
+      <y>216</y>
+      <w>27</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>306</x>
+      <y>216</y>
+      <w>27</w>
+      <h>207</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;210.0</additional_attributes>
+  </element>
+</diagram>

@@ -35,6 +35,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>staccatissimo</word>
         <word>tuplet</word>
         <word>uncomment</word>
+        <word>unmarshal</word>
         <word>unmarshalled</word>
         <word>unmarshalling</word>
     </spellchecker-wordlist>

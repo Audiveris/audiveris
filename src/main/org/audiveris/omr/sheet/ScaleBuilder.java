@@ -429,7 +429,7 @@ public class ScaleBuilder
                 "Minimum ratio between beam height and interline");
 
         private final Constant.Ratio beamMaxFraction = new Constant.Ratio(
-                0.9,
+                1.0,
                 "Maximum ratio between beam height and interline");
 
         private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(

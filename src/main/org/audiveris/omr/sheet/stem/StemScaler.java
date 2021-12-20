@@ -132,7 +132,7 @@ public class StemScaler
         StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
 
         try {
-            // Use a buffer focused on staf areas with barlines and connectors removed
+            // Use a buffer focused on staff areas with barlines and connectors removed
             watch.start("getBuffer");
 
             ByteProcessor buffer = getBuffer();

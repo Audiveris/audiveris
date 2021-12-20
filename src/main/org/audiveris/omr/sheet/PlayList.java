@@ -21,11 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.OMR;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
-import org.audiveris.omr.sheet.ui.SplitAndMerge.BookExcerpt;
+import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.NaturalSpec;
+import static org.audiveris.omr.util.NaturalSpec.getCounts;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
 
@@ -67,8 +69,12 @@ public class PlayList
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /**
+     * The <code>excerpts</code> element is the sequence of (book or image) excerpts
+     * as chosen by the user.
+     */
     @XmlElement(name = "excerpt")
-    public final List<Excerpt> excerpts = new ArrayList<>();
+    public final ArrayList<Excerpt> excerpts = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     public PlayList ()
@@ -76,38 +82,136 @@ public class PlayList
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // load //
-    //------//
-    public static PlayList load (Path sourcePath)
+    //---------------//
+    // buildCompound //
+    //---------------//
+    /**
+     * Build a compound .omr file from this playlist.
+     * <ul>
+     * <li>A Book excerpt is directly copied from disk to disk.
+     * <li>An Image excerpt is marshalled from the temporary book created on-the-fly to retrieve
+     * the GRAY and BINARY data from the image.
+     * </ul>
+     * <p>
+     * If the compound book is needed, it can be unmarshalled from the created .omr file.
+     *
+     * @param tgtPath path to the target book file
+     */
+    public void buildCompound (Path tgtPath)
     {
+        Book tgtBook = null;
+        Path tgtRoot = null;
 
         try {
-            logger.debug("Loading playlist {}", sourcePath);
+            tgtBook = Book.createBook(tgtPath);
+            tgtBook.getLock().lock();
+            tgtRoot = ZipFileSystem.create(tgtPath);
+            Version oldestVersion = Versions.CURRENT_SOFTWARE; // Lowest version found so far
+            int tgtId = 0; // Stub # in target book
 
-            try (InputStream is = Files.newInputStream(sourcePath, StandardOpenOption.READ)) {
-                final JAXBContext ctx = getJaxbContext();
-                final Unmarshaller um = ctx.createUnmarshaller();
-                final PlayList playlist = (PlayList) um.unmarshal(is);
+            for (Excerpt excerpt : excerpts) {
+                logger.info("{}", excerpt);
+                final Book srcBook = ((BookExcerpt) excerpt).book;
+                oldestVersion = Version.minWithLabel(oldestVersion, srcBook.getVersion());
 
-                return playlist;
+                final int maxId = srcBook.size();
+                final List<Integer> ids = NaturalSpec
+                        .decode(excerpt.specification, false, maxId);
+
+                // Two possibilities:
+                // - Image (non-saved) book: we marshal from memory to target zip
+                // - Standard  (saved) book: we copy directly from srcRoot zip system
+                final Path srcRoot = (srcBook.getBookPath() == null) ? null
+                        : ZipFileSystem.open(srcBook.getBookPath());
+
+                for (int srcId : ids) {
+                    final SheetStub srcStub = srcBook.getStub(srcId);
+                    logger.info("   Processing {}", srcStub);
+                    srcStub.reachStep(OmrStep.BINARY, false);
+
+                    final SheetStub tgtStub = new SheetStub(tgtBook, ++tgtId, srcStub);
+                    tgtBook.addStub(tgtStub);
+
+                    if (srcRoot == null) {
+                        // Marshal
+                        final Sheet srcSheet = srcStub.getSheet();
+                        final Path tgtSheetPath = tgtRoot.resolve(INTERNALS_RADIX + tgtId);
+                        logger.info("   Marshalling {} as {}", srcSheet, tgtSheetPath);
+                        srcSheet.store(tgtSheetPath, null);
+                    } else {
+                        // Copy all sheet items that exist (images, sheet)
+                        final Path srcSheetPath = srcRoot.resolve(INTERNALS_RADIX + srcId);
+
+                        if (Files.exists(srcSheetPath)) {
+                            final Path tgtSheetPath = tgtRoot.resolve(INTERNALS_RADIX + tgtId);
+                            logger.info("Copying tree from {}{} to {}{}",
+                                        srcBook.getBookPath(), srcSheetPath,
+                                        tgtPath, tgtSheetPath);
+                            FileUtil.copyTree(srcSheetPath, tgtSheetPath);
+
+                            // File sheet#srcId.xml, if any, must be renamed as sheet#tgtId.xml
+                            final Path tgtSheetXmlPath = tgtSheetPath.resolve(
+                                    srcSheetPath.getFileName() + ".xml");
+                            if (Files.exists(tgtSheetXmlPath)) {
+                                final Path newPath = tgtSheetPath.resolve(
+                                        tgtSheetPath.getFileName() + ".xml");
+                                Files.move(tgtSheetXmlPath, newPath);
+                            }
+                        } else {
+                            logger.warn("No {} in {}", srcSheetPath, srcBook.getBookPath());
+                        }
+                    }
+                }
+
+                if (srcRoot == null) {
+                    // Check if the (image) source book can be discarded
+                    boolean srcBookModified = false;
+                    for (SheetStub stub : srcBook.getStubs()) {
+                        srcBookModified |= stub.isModified();
+                    }
+                    if (!srcBookModified) {
+                        srcBook.setModified(false);
+                    }
+                } else {
+                    srcRoot.getFileSystem().close();
+                }
             }
-        } catch (IOException |
-                 JAXBException ex) {
-            logger.warn("Error loading playlist " + sourcePath + " " + ex, ex);
 
-            return null;
+            tgtBook.setVersionValue(oldestVersion.value);
+            tgtBook.storeBookInfo(tgtRoot);
+            logger.info("Compound book created as {}", tgtPath);
+        } catch (Exception ex) {
+            logger.warn("Error building " + this + " as " + tgtPath + " ex:" + ex, ex);
+        } finally {
+            if (tgtRoot != null) {
+                try {
+                    tgtRoot.getFileSystem().close();
+                } catch (IOException ignored) {
+                }
+            }
+
+            if (tgtBook != null) {
+                tgtBook.getLock().unlock();
+            }
         }
     }
 
     //-------//
     // store //
     //-------//
+    /**
+     * Marshal this playlist to a file.
+     *
+     * @param targetPath path to the target file
+     */
     public void store (Path targetPath)
-            throws Exception
     {
-        logger.debug("Storing playlist {}", targetPath);
-        Jaxb.marshal(this, targetPath, getJaxbContext());
+        try {
+            Jaxb.marshal(this, targetPath, getJaxbContext());
+            logger.info("Playlist stored as {}", targetPath);
+        } catch (Exception ex) {
+            logger.warn("Error storing playlist to {} {}", targetPath, ex.toString(), ex);
+        }
     }
 
     //----------//
@@ -146,105 +250,91 @@ public class PlayList
         return jaxbContext;
     }
 
-    //-------------------//
-    // buildCompoundBook //
-    //-------------------//
+    //-------------//
+    // injectBooks //
+    //-------------//
     /**
-     * Build a compound book from a collection of book excerpts.
-     *
-     * @param tgtPath path to the target book file
-     * @return the created compound book
-     * @throws Exception if something goes wrong
+     * Make sure any Excerpt in this playlist is a duly populated BookExcerpt.
      */
-    public Book buildCompoundBook (Path tgtPath)
-            throws Exception
+    public void injectBooks ()
+    {
+        for (int i = 0; i < excerpts.size(); i++) {
+            final Excerpt excerpt = excerpts.get(i);
+
+            if (excerpt instanceof BookExcerpt) {
+                continue;
+            }
+
+            // Replace excerpt with a populated BookExcerpt
+            Book book = OMR.engine.getBook(excerpt.path);
+
+            if (book == null) {
+                final String ext = FileUtil.getExtension(excerpt.path);
+
+                if (ext.equalsIgnoreCase(OMR.BOOK_EXTENSION)) {
+                    // Book, to be unmarshalled from disk
+                    book = OMR.engine.loadBook(excerpt.path);
+                } else {
+                    // Image file assumed, to be read and wrapped in a book
+                    book = OMR.engine.loadInput(excerpt.path);
+                    book.createStubs();
+                }
+            }
+
+            final BookExcerpt bookExcerpt = BookExcerpt.create(book, excerpt.specification);
+            excerpts.set(i, bookExcerpt);
+        }
+    }
+
+    //------//
+    // load //
+    //------//
+    /**
+     * Unmarshal a playlist out of the provided source file path.
+     *
+     * @param sourcePath path to the source file
+     * @return the unmarshalled playlist
+     */
+    public static PlayList load (Path sourcePath)
     {
 
-        Book tgtBook = null;
-        Path tgtRoot = null;
-
         try {
-            tgtBook = Book.createBook(tgtPath);
-            tgtBook.getLock().lock();
-            tgtRoot = ZipFileSystem.create(tgtPath);
-            Version oldestVersion = Versions.CURRENT_SOFTWARE; // Lowest version found so far
-            int tgtId = 0; // Stub # in target book
+            logger.info("Loading playlist {}", sourcePath);
 
-            for (Excerpt excerpt : excerpts) {
-                logger.info("{}", excerpt);
-                final Book srcBook = ((BookExcerpt) excerpt).book;
-                oldestVersion = Version.minWithLabel(oldestVersion, srcBook.getVersion());
-                final Path srcRoot = ZipFileSystem.open(srcBook.getBookPath());
+            try (InputStream is = Files.newInputStream(sourcePath, StandardOpenOption.READ)) {
+                final JAXBContext ctx = getJaxbContext();
+                final Unmarshaller um = ctx.createUnmarshaller();
+                final PlayList playlist = (PlayList) um.unmarshal(is);
 
-                // Process each selected sheet of book
-                final int maxId = srcBook.size();
-                final List<Integer> ids = NaturalSpec.decode(excerpt.specification, false, maxId);
-                for (int srcId : ids) {
-                    logger.info("   Process sheet #{}", srcId);
-                    final SheetStub srcStub = srcBook.getStub(srcId);
-                    final SheetStub tgtStub = new SheetStub(tgtBook, ++tgtId, srcStub);
-                    tgtBook.addStub(tgtStub);
-
-                    // Copy sheet items if they exist (images, sheet)
-                    final Path srcSheetPath = srcRoot.resolve(INTERNALS_RADIX + srcId);
-
-                    if (Files.exists(srcSheetPath)) {
-                        final Path tgtSheetPath = tgtRoot.resolve(INTERNALS_RADIX + tgtId);
-                        logger.debug("Copying tree from {}{} to {}{}",
-                                     srcBook.getBookPath(), srcSheetPath,
-                                     tgtPath, tgtSheetPath);
-                        FileUtil.copyTree(srcSheetPath, tgtSheetPath);
-
-                        // Trick: file sheet#srcId.xml if any must be renamed as sheet#tgtId.xml
-                        final Path tgtSheetXmlPath = tgtSheetPath.resolve(
-                                srcSheetPath.getFileName() + ".xml");
-                        if (Files.exists(tgtSheetXmlPath)) {
-                            final Path newPath = tgtSheetPath.resolve(
-                                    tgtSheetPath.getFileName() + ".xml");
-                            Files.move(tgtSheetXmlPath, newPath);
-                        }
-
-                        logger.debug("Copy done");
-                    } else {
-                        logger.info("No {} in {}", srcSheetPath, srcBook.getBookPath());
-                    }
-                }
-
-                srcRoot.getFileSystem().close();
+                return playlist;
             }
+        } catch (IOException |
+                 JAXBException ex) {
+            logger.warn("Error loading playlist " + sourcePath + " " + ex, ex);
 
-            tgtBook.setVersionValue(oldestVersion.value);
-            tgtBook.storeBookInfo(tgtRoot);
-        } catch (Exception ex) {
-            logger.warn("Error storing " + this + " to " + tgtPath + " ex:" + ex, ex);
-        } finally {
-            if (tgtRoot != null) {
-                try {
-                    tgtRoot.getFileSystem().close();
-                } catch (IOException ignored) {
-                }
-            }
-
-            tgtBook.getLock().unlock();
+            return null;
         }
-
-        return null;
     }
-    //~ Inner Classes ------------------------------------------------------------------------------
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Excerpt //
     //---------//
     /**
-     * Class <code>Excerpt</code> defines a sheets selection within a container which
-     * can be a Book or an Image file.
+     * Class <code>Excerpt</code> defines a precise selection of sheets within a container
+     * file which can be either a Book file or an Image file.
      */
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Excerpt
     {
 
         /**
-         * Mandatory path to the container (book or image file).
+         * This mandatory element is the path to the container file (book or image).
+         * <ul>
+         * <li>A path ending with <code>.omr</code> extension represents a book file.
+         * <li>A path ending with a different extension, like <code>.pdf</code>,
+         * <code>.tif</code>, <code>.png</code>, etc, represents an image file.
+         * </ul>
          */
         @XmlElement(name = "path")
         @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
@@ -253,7 +343,20 @@ public class PlayList
         /**
          * This string, if any, is a specification of sheets selection.
          * <p>
-         * If there is no selection specification, all sheets are selected.
+         * For example, "1-3,5,10-12,30-" will limit the processing of this book to those sheets:
+         * <ul>
+         * <li>#1 through #3
+         * <li>#5
+         * <li>#10 through #12
+         * <li>#30 through last sheet in book
+         * </ul>
+         * NOTA: The playlist accepts <b>valid</b> as well as <b>invalid</b> sheets.
+         * <br>
+         * Doing so, the resulting compound book can still contain some sheets like illustration
+         * sheets that are generally considered as invalid by the OMR engine.
+         * <p>
+         * If this specification is null or empty, all sheets (valid or not) are selected by
+         * default.
          */
         @XmlElement(name = "sheets-selection")
         public String specification;
@@ -276,6 +379,92 @@ public class PlayList
                     .append('{')
                     .append(path)
                     .append(" spec:").append(specification)
+                    .append('}').toString();
+        }
+    }
+
+    //-------------//
+    // BookExcerpt //
+    //-------------//
+    /**
+     * Class <code>BookExcerpt</code> is an Excerpt with its related Book instance,
+     * and augmented of bookId and counts to ease its display.
+     */
+    public static class BookExcerpt
+            extends PlayList.Excerpt
+    {
+
+        /** Containing book. */
+        public final Book book;
+
+        /** Flag to indicate a book created on-the-fly to represent an image file. */
+        public boolean isImage;
+
+        /** Displayed book id. */
+        public final String bookId;
+
+        /** Resulting counts. */
+        public String counts;
+
+        /**
+         * Creates a <code>BookExcerpt</code> initialized with provided sheets
+         * specification.
+         *
+         * @param book          the containing book
+         * @param isImage       true for a book just created upon an image
+         * @param path          book related path
+         * @param specification the sheets specification
+         */
+        public BookExcerpt (Book book,
+                            boolean isImage,
+                            Path path,
+                            String specification)
+        {
+            super(path, specification);
+            this.book = book;
+
+            bookId = path.getFileName().toString();
+            counts = getCounts(specification, book.size());
+        }
+
+        /**
+         * Creates a <code>BookExcerpt</code> based on the provided book,
+         * using its defined sheets specification.
+         *
+         * @param book the provided book
+         * @return the book-based excerpt
+         */
+        public static BookExcerpt create (Book book)
+        {
+            return create(book, book.getSheetsSelection());
+        }
+
+        /**
+         * Creates a <code>BookExcerpt</code> based on the provided book,
+         * and the provided sheets specification.
+         *
+         * @param book          the provided book
+         * @param specification the provided sheets specification
+         *                      (which can be different for book own spec)
+         * @return the created book excerpt
+         */
+        public static BookExcerpt create (Book book,
+                                          String specification)
+        {
+            final boolean isImage = book.getBookPath() == null;
+
+            return new BookExcerpt(book,
+                                   isImage,
+                                   book.getPath(),
+                                   NaturalSpec.normalized(specification, book.size()));
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder(getClass().getSimpleName())
+                    .append('{')
+                    .append(book.getRadix()).append(" spec:").append(specification)
                     .append('}').toString();
         }
     }

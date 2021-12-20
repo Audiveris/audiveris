@@ -117,7 +117,7 @@ public class MacApplication
             Book book = OMR.engine.loadInput(Paths.get(filename));
             book.createStubs();
             if (OMR.gui != null) {
-                StubsController.getInstance().displayValidStubs(book, null);
+                StubsController.getInstance().displayStubs(book, null);
             }
 
             break;

@@ -24,18 +24,18 @@ package org.audiveris.omr.util;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Class <code>NaturalSpec</code> handles a specification of one or several natural numbers,
+ * Class <code>NaturalSpec</code> handles a specification of natural numbers,
  * assumed to be non negative and increasing.
  *
  * @author Hervé Bitteur
  */
 public abstract class NaturalSpec
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
+    /** This class is not meant to be instantiated. */
     private NaturalSpec ()
     {
     }
@@ -51,11 +51,10 @@ public abstract class NaturalSpec
      * <br>
      * Gives values from 3 to 5, then value 8, then values from 10 to maxValue
      *
-     * @param spec            the specification string to decode
+     * @param spec            the specification string to decode, perhaps null
      * @param checkIncreasing true to verify if values are strictly increasing
      * @param maxValue        maximum value if any
      * @return the list of naturals, perhaps empty but not null
-     * @throws NullPointerException     if spec is null
      * @throws NumberFormatException    if some number is wrongly formatted
      * @throws IllegalArgumentException if the list values are not strictly increasing or
      *                                  if a range ends with '-' while no maxValue was provided
@@ -64,9 +63,12 @@ public abstract class NaturalSpec
                                         boolean checkIncreasing,
                                         Integer maxValue)
     {
-        Objects.requireNonNull(spec, "Null natural specification");
-
         final List<Integer> values = new ArrayList<>();
+
+        if (spec == null) {
+            return values;
+        }
+
         final String[] rawTokens = spec.split("\\s*,\\s*");
 
         for (String rawToken : rawTokens) {
@@ -129,7 +131,7 @@ public abstract class NaturalSpec
      *
      * @param spec            the specification string to decode
      * @param checkIncreasing true to verify if values are strictly increasing
-     * @return
+     * @return the sequence of naturals
      */
     public static List<Integer> decode (String spec,
                                         boolean checkIncreasing)
@@ -141,7 +143,7 @@ public abstract class NaturalSpec
     // encode //
     //--------//
     /**
-     * Build the specification that corresponds to the provided sequence of natural values.
+     * Build the specification from the provided sequence of natural values.
      *
      * @param values provided sequence of values
      * @return the resulting specification, perhaps empty but not null
@@ -200,5 +202,51 @@ public abstract class NaturalSpec
         }
 
         return true;
+    }
+
+    //------------//
+    // normalized //
+    //------------//
+    /**
+     * Report a normalized specification of the provided raw specification,
+     * perhaps invalid, null, etc...
+     *
+     * @param spec     the raw specification
+     * @param maxValue the maximum value, greater or equal to 1
+     * @return the normalized specification
+     */
+    public static String normalized (String spec,
+                                     int maxValue)
+    {
+        if (spec == null) {
+            spec = "";
+        }
+
+        // This may throw an exception...
+        final List<Integer> ids = NaturalSpec.decode(spec, true, maxValue);
+        final String normalized = NaturalSpec.encode(ids);
+
+        // Here, new specification is valid
+        if (normalized.isBlank()) {
+            if (maxValue > 1) {
+                return "1-" + maxValue;
+            } else {
+                return "1";
+            }
+        }
+
+        return normalized;
+    }
+
+    //-----------//
+    // getCounts //
+    //-----------//
+    public static String getCounts (String spec,
+                                    int maxValue)
+    {
+        return new StringBuilder()
+                .append((spec != null) ? decode(spec, false, maxValue).size() : maxValue)
+                .append(" of ")
+                .append(maxValue).toString();
     }
 }

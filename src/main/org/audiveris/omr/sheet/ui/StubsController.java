@@ -216,55 +216,44 @@ public class StubsController
         stubsMap.remove(stub.getAssembly().getComponent()); // Removed from stubsMap
     }
 
-    //-----------------//
-    // displayAllStubs //
-    //-----------------//
+    //--------------//
+    // displayStubs //
+    //--------------//
     /**
-     * Display all the stubs (valid or not) of the provided book
+     * Display the stubs of the provided book, perhaps focusing on a certain stub,
+     * and using current validity policy as defined by ViewParameters.
      *
-     * @param book  the provided book
+     * @param book  the book to display
      * @param focus the stub number to focus upon, if any
      */
-    public void displayAllStubs (Book book,
-                                 Integer focus)
+    public void displayStubs (Book book,
+                              Integer focus)
     {
-        displayStubs(book, SheetStub.NO_VALIDITY_CHECK, null);
-    }
-
-    //-------------------//
-    // displayValidStubs //
-    //-------------------//
-    /**
-     * Display the valid stubs of the provided book.
-     *
-     * @param book  the provided book
-     * @param focus the stub number to focus upon, if any
-     */
-    public void displayValidStubs (Book book,
-                                   Integer focus)
-    {
-        displayStubs(book, SheetStub.VALIDITY_CHECK, focus);
+        displayStubs(book, focus,
+                     ViewParameters.getInstance().isInvalidSheetDisplay()
+                     ? null
+                     : SheetStub.VALIDITY_CHECK);
     }
 
     //--------------//
     // displayStubs //
     //--------------//
     /**
-     * Display the stubs of the provided book, respecting the provided 'validityCheck',
-     * and focusing on a certain stub if 'focus' is provided.
+     * Display the stubs of a book, focusing on a stub number if provided,
+     * and respecting the provided validity check if any.
      *
      * @param book          the book to display
-     * @param validityCheck the check to apply on each stub
      * @param focus         the stub number to focus upon, if any
+     * @param validityCheck the check, if any, to apply on each stub
      */
     public void displayStubs (Book book,
-                              Predicate<SheetStub> validityCheck,
-                              Integer focus)
+                              Integer focus,
+                              Predicate<SheetStub> validityCheck)
     {
         // Make sure we are on EDT
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> displayStubs(book, validityCheck, focus));
+                SwingUtilities.invokeAndWait(() -> displayStubs(book, focus, validityCheck));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -289,7 +278,8 @@ public class StubsController
             // We begin by the focus stub if any, to avoid unnecessary sheet loading
             tabPivot = stubsPane.getTabCount();
             focusStub = ((focus != null)
-                                 && validityCheck.test(book.getStub(focus)))
+                                 && ((validityCheck == null)
+                                             || validityCheck.test(book.getStub(focus))))
                     ? book.getStub(focus) : null;
         } else {
             focusStub = null;
@@ -307,7 +297,7 @@ public class StubsController
             final JComponent component = stub.getAssembly().getComponent();
             final int tabIndex = stubsPane.indexOfComponent(component);
 
-            if (validityCheck.test(stub)) {
+            if ((validityCheck == null) || validityCheck.test(stub)) {
                 if (tabIndex != -1) {
                     tabPivot = tabIndex; // Already displayed
                 } else if ((stubPivot == null) || (stubIndex < stubPivot)) {
@@ -442,6 +432,26 @@ public class StubsController
         return (stubEvent != null) ? stubEvent.getData() : null;
     }
 
+    //-------------//
+    // isDisplayed //
+    //-------------//
+    /**
+     * Report whether the provided book is currently displayed.
+     *
+     * @param book the provided book to check
+     * @return true if so
+     */
+    public boolean isDisplayed (Book book)
+    {
+        for (SheetStub stub : stubsMap.values()) {
+            if (stub.getBook() == book) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //---------//
     // markTab //
     //---------//
@@ -486,7 +496,7 @@ public class StubsController
         if (ViewParameters.getInstance().isInvalidSheetDisplay()) {
             // Display all sheets for all books, including invalid ones
             for (Book book : OMR.engine.getAllBooks()) {
-                displayAllStubs(book, null);
+                displayStubs(book, null, null);
             }
         } else {
             // Hide invalid sheets for all books
@@ -549,27 +559,29 @@ public class StubsController
     /**
      * Select the assembly that relates to the specified stub.
      *
-     * @param stub the stub to be displayed (cannot be null).
+     * @param stub the stub to be displayed, perhaps null
      */
     public void selectAssembly (SheetStub stub)
     {
         logger.debug("selectAssembly for {}", stub);
 
-        if (stub == getSelectedStub()) {
-            logger.debug("{} already selected", stub);
+        if (stub != null) {
+            if (stub == getSelectedStub()) {
+                logger.debug("{} already selected", stub);
 
-            return;
-        } else {
-            logger.debug("current selection: {}", getSelectedStub());
-        }
+                return;
+            } else {
+                logger.debug("current selection: {}", getSelectedStub());
+            }
 
-        // Make sure the assembly is part of the tabbed pane
-        final int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
+            // Make sure the assembly is part of the tabbed pane
+            final int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
 
-        if (tabIndex != -1) {
-            stubsPane.setSelectedIndex(tabIndex);
-        } else {
-            logger.warn("No tab found for {}", stub);
+            if (tabIndex != -1) {
+                stubsPane.setSelectedIndex(tabIndex);
+            } else {
+                logger.warn("No tab found for {}", stub);
+            }
         }
     }
 
@@ -628,7 +640,8 @@ public class StubsController
     //-----------------//
     /**
      * Select suitable stub of another book than the provided one (which is about to be
-     * closed). This is meant to avoid the automatic selection of a not-yet loaded sheet.
+     * closed).
+     * This is meant to avoid the automatic selection of a not-yet loaded sheet.
      *
      * @param currentBook the book about to close
      */
@@ -1081,7 +1094,6 @@ public class StubsController
             }
         } else {
             StubsController.getInstance().selectAssembly(stub);
-
         }
     }
 
@@ -1103,9 +1115,9 @@ public class StubsController
                 "Initial zoom ratio for displayed sheet pictures");
     }
 
-//---------------//
-// CtrlEndAction //
-//---------------//
+    //---------------//
+    // CtrlEndAction //
+    //---------------//
     private class CtrlEndAction
             extends AbstractAction
     {
@@ -1121,9 +1133,9 @@ public class StubsController
         }
     }
 
-//----------------//
-// CtrlHomeAction //
-//----------------//
+    //----------------//
+    // CtrlHomeAction //
+    //----------------//
     private class CtrlHomeAction
             extends AbstractAction
     {
@@ -1137,9 +1149,9 @@ public class StubsController
         }
     }
 
-//---------------//
-// LazySingleton //
-//---------------//
+    //---------------//
+    // LazySingleton //
+    //---------------//
     private static class LazySingleton
     {
 
@@ -1150,9 +1162,9 @@ public class StubsController
         }
     }
 
-//----------------//
-// PageDownAction //
-//----------------//
+    //----------------//
+    // PageDownAction //
+    //----------------//
     private class PageDownAction
             extends AbstractAction
     {
@@ -1168,9 +1180,9 @@ public class StubsController
         }
     }
 
-//--------------//
-// PageUpAction //
-//--------------//
+    //--------------//
+    // PageUpAction //
+    //--------------//
     private class PageUpAction
             extends AbstractAction
     {

@@ -42,6 +42,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import org.audiveris.omr.sheet.Versions.CheckResult;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
+import org.audiveris.omr.sheet.SheetStub.SheetInput;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
@@ -220,7 +221,7 @@ public class Book
      * </ul>
      * NOTA: Among this selection, only the <b>valid</b> sheets will be processed.
      * <p>
-     * If there is no selection specification, all (valid) sheets will be processed.
+     * If this specification is null or empty, all (valid) sheets will be processed.
      */
     @XmlElement(name = "sheets-selection")
     private String sheetsSelection;
@@ -791,6 +792,35 @@ public class Book
         return null; // No valid stub found!
     }
 
+    //------------------//
+    // getSomeInputPath //
+    //------------------//
+    /**
+     * Report the path to some book image(s) input.
+     *
+     * @return some input path
+     */
+    public Path getSomeInputPath ()
+    {
+        if (path != null) {
+            return path;
+        }
+
+        if (bookPath != null) {
+            return bookPath;
+        }
+
+        for (SheetStub stub : stubs) {
+            final SheetInput input = stub.getSheetInput();
+
+            if (input != null) {
+                return input.path;
+            }
+        }
+
+        return null;
+    }
+
     //--------------//
     // getInputPath //
     //--------------//
@@ -859,6 +889,29 @@ public class Book
     public void setParameterDialog (JDialog dialog)
     {
         parameterDialog = dialog;
+    }
+
+    //---------//
+    // getPath //
+    //---------//
+    /**
+     * Report the path which best identifies the book.
+     *
+     * @return the best path or null if none
+     */
+    public Path getPath ()
+    {
+        // Book path?
+        if (bookPath != null) {
+            return bookPath;
+        }
+
+        // Input path?
+        if (path != null) {
+            return path;
+        }
+
+        return null;
     }
 
     //--------------//
@@ -2001,6 +2054,14 @@ public class Book
         Jaxb.marshal(this, bookInternals, getJaxbContext());
         setModified(false);
         logger.info("Stored {}", bookInternals);
+    }
+
+    //------------//
+    // storeSheet //
+    //------------//
+    public void storeSheet ()
+    {
+
     }
 
     //---------------//

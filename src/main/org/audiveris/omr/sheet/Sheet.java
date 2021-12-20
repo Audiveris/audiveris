@@ -1214,7 +1214,7 @@ public class Sheet
 
         // Sheet structure (sheet#n.xml)
         try {
-            Path structurePath = sheetFolder.resolve(getSheetFileName(stub.getNumber()));
+            Path structurePath = sheetFolder.resolve(sheetFolder.getFileName() + ".xml");
             Files.deleteIfExists(structurePath);
             Files.createDirectories(sheetFolder);
 

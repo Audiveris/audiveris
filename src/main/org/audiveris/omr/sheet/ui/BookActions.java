@@ -1320,13 +1320,24 @@ public class BookActions
      * Action that let the user build a new book from various pieces.
      *
      * @param e the event that triggered this action
-     * @return the task to launch in background
      */
     @Action
     public void splitAndMerge (ActionEvent e)
     {
-        logger.info("Split & Merge");
-        OmrGui.getApplication().show(new SplitAndMerge().getComponent());
+        OmrGui.getApplication().show(new SplitAndMerge(null).getComponent());
+    }
+
+    //---------------//
+    // splitAndMerge //
+    //---------------//
+    /**
+     * Action that let the user build a new book from various pieces.
+     *
+     * @param playListPath path to the provided playList to start with
+     */
+    public void splitAndMerge (Path playListPath)
+    {
+        OmrGui.getApplication().show(new SplitAndMerge(playListPath).getComponent());
     }
 
     //------------//
@@ -1772,7 +1783,7 @@ public class BookActions
     //--------//
     // filter //
     //--------//
-    private static OmrFileFilter filter (String ext)
+    public static OmrFileFilter filter (String ext)
     {
         return new OmrFileFilter(ext, new String[]{ext});
     }
@@ -1996,25 +2007,17 @@ public class BookActions
         @Override
         protected void succeeded (Book book)
         {
-            if (book != null)
-            try {
-                // Insert all tabs in GUI stubsPane
+            if (book != null) {
                 final StubsController controller = StubsController.getInstance();
-                controller.displayValidStubs(book, sheetNumber);
 
-                if (sheetNumber != null) {
-                    // Focus on desired stub
-                    StubsController.invokeSelect(book.getStub(sheetNumber));
-                } else {
-                    // Focus on first valid stub in book, if any
-                    SheetStub firstValid = book.getFirstValidStub();
+                // Insert all tabs in GUI stubsPane
+                controller.displayStubs(book, sheetNumber);
 
-                    if (firstValid != null) {
-                        StubsController.invokeSelect(firstValid);
-                    }
-                }
-            } catch (Throwable ex) {
-                logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                // Select stub
+                final SheetStub stub = (sheetNumber != null)
+                        ? book.getStub(sheetNumber)
+                        : book.getFirstValidStub();
+                controller.selectAssembly(stub);
             }
         }
     }
@@ -2037,6 +2040,11 @@ public class BookActions
         public LoadImageTask (Path path)
         {
             super(path);
+        }
+
+        // Constructor needed for creation of HistoryMenu
+        public LoadImageTask ()
+        {
         }
 
         @Override

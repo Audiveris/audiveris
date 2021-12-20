@@ -15,12 +15,16 @@
  */
 package org.audiveris.omr.util;
 
+import static org.audiveris.omr.util.BaseTestCase.checkException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+
+import static junit.framework.Assert.fail;
 
 /**
  *
@@ -31,6 +35,18 @@ public class NaturalSpecTest
 
     public NaturalSpecTest ()
     {
+    }
+
+    @Test
+    public void testDecode0 ()
+    {
+        System.out.println("decode0");
+        String spec = null;
+        System.out.println("spec:" + spec);
+        List<Integer> expResult = Arrays.asList();
+        List<Integer> result = NaturalSpec.decode(spec, true);
+        System.out.println("result:" + result);
+        assertEquals(expResult, result);
     }
 
     @Test
@@ -94,13 +110,18 @@ public class NaturalSpecTest
     @Test
     public void testDecode6 ()
     {
-        System.out.println("decode6");
-        String spec = "3-2";
-        System.out.println("spec:" + spec);
-        List<Integer> expResult = Collections.emptyList();
-        List<Integer> result = NaturalSpec.decode(spec, false);
-        System.out.println("result:" + result);
-        assertEquals(expResult, result);
+        try {
+            System.out.println("decode6");
+            String spec = "3-2";
+            System.out.println("spec:" + spec);
+            List<Integer> expResult = Collections.emptyList();
+            List<Integer> result = NaturalSpec.decode(spec, false);
+            System.out.println("result:" + result);
+
+            fail("Exception should be raised when range is invalid");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
     }
 
     @Test

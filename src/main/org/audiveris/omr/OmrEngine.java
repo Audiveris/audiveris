@@ -25,7 +25,6 @@ import org.audiveris.omr.sheet.Book;
 
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Interface <code>OmrEngine</code> defines the API of an OMR engine.
@@ -61,11 +60,13 @@ public interface OmrEngine
     Collection<Book> getAllBooks ();
 
     /**
-     * Report the live map of books, indexed by their path.
+     * Report the book, if any, for the provided path.
      *
-     * @return the map path->book
+     * @param bookPath key book path
+     *
+     * @return the corresponding book, if any
      */
-    Map<Path, Book> getBookMap ();
+    Book getBook (Path bookPath);
 
     /**
      * Build a book out of a book file, which has previously been saved.

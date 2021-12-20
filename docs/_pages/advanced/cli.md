@@ -24,7 +24,7 @@ CLI syntax is displayed as follows when the `-help` argument is present:
 
 ```
 Audiveris Version:
-   5.1.0
+   5.3-alpha
 
 Syntax:
     audiveris [OPTIONS] [--] [INPUT_FILES]
@@ -33,45 +33,47 @@ Syntax:
     Content of file to be extended in line
 
 Options:
--annotate                              : (advanced) Annotate book symbols
--batch                                 : Run with no graphic user interface
--export                                : Export MusicXML
--force                                 : Force step/transcribe re-processing
--help                                  : Display general help then stop
--option key=value                      : Define an application constant
--output <output-folder>                : Define base output folder
--print                                 : Print out book
--run <qualified-class-name>            : (advanced) Run provided class on valid sheets
--sample                                : (advanced) Sample all book symbols
--save                                  : Save book on every successful batch step
--sheets int[]                          : Select specific sheets numbers and ranges (like 2-5)
--step [LOAD | BINARY | SCALE | GRID |  : Define a specific target step
-HEADERS | STEM_SEEDS | BEAMS |            
-LEDGERS | HEADS | STEMS | REDUCTION |     
-CUE_BEAMS | TEXTS | MEASURES | CHORDS     
-| CURVES | SYMBOLS | LINKS | RHYTHMS      
-| PAGE]                                   
--transcribe                            : Transcribe whole book
+ -help                                            : Display general help then stop
+ -batch                                           : Run with no graphic user interface
+ -sheets int[]                                    : Select sheet numbers and ranges (1 4-5)
+ -transcribe                                      : Transcribe whole book
+ -step [LOAD | BINARY | SCALE | GRID | HEADERS |  : Define a specific target step
+ STEM_SEEDS | BEAMS | LEDGERS | HEADS | STEMS |      
+ REDUCTION | CUE_BEAMS | TEXTS | MEASURES |          
+ CHORDS | CURVES | SYMBOLS | LINKS | RHYTHMS |       
+ PAGE]                                               
+ -force                                           : Force step/transcribe re-processing
+ -output <output-folder>                          : Define base output folder
+ -playlist <file.xml>                             : Build a compound book from playlist
+ -export                                          : Export MusicXML
+ -print                                           : Print out book
+ -option key=value                                : Define an application constant
+ -upgrade                                         : Upgrade whole book file
+ -save                                            : In batch, save book on every successful step
+ -swap                                            : Swap out every sheet after its processing
+ -run <qualified-class-name>                      : (advanced) Run provided class on valid sheets
+ -sample                                          : (advanced) Sample all book symbols
+ -annotate                                        : (advanced) Annotate book symbols
 
 Input file extensions:
     .omr        : book file  (input/output)
     [any other] : image file (input)
 
 Sheet steps are in order:
-    LOAD       : Load the sheet (gray) picture
-    BINARY     : Binarize the sheet picture
+    LOAD       : Get the sheet gray picture
+    BINARY     : Binarize the sheet gray picture
     SCALE      : Compute sheet line thickness, interline, beam thickness
     GRID       : Retrieve staff lines, barlines, systems & parts
     HEADERS    : Retrieve Clef-Key-Time systems headers
     STEM_SEEDS : Retrieve stem thickness & seeds for stems
     BEAMS      : Retrieve beams
     LEDGERS    : Retrieve ledgers
-    HEADS      : Retrieve note heads & whole notes
-    STEMS      : Build stems connected to heads & beams
+    HEADS      : Retrieve note heads
+    STEMS      : Retrieve stems connected to heads & beams
     REDUCTION  : Reduce conflicts in heads, stems & beams
     CUE_BEAMS  : Retrieve cue beams
     TEXTS      : Call OCR on textual items
-    MEASURES   : Retrieve raw measures from groups of bar lines
+    MEASURES   : Retrieve raw measures from groups of barlines
     CHORDS     : Gather notes heads into chords
     CURVES     : Retrieve slurs, wedges & endings
     SYMBOLS    : Retrieve fixed-shape symbols
@@ -115,6 +117,18 @@ This is the CLI equivalent of the GUI pulldown menu `Tools | Options`.
 Defines the path to the default base output folder.
 
 This output folder will be the parent of any subfolder created according to an input file name.
+
+#### -playlist FILE.XML
+
+Loads the provided `.xml` file as a playlist.
+
+If in batch mode, the loaded playlist is used to build a compound book according to the playlist
+content.
+
+If in interactive mode, the loaded playlist is used only to populated and display a
+`Split and Merge` dialog.
+The user can then review and/or edit the playlist and potentially launch the building of
+the compound book at a desired location.
 
 #### -print
 

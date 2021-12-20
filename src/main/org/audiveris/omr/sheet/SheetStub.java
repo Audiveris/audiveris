@@ -102,24 +102,7 @@ public class SheetStub
     private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
 
     /** Predicate that tests stub validity. */
-    public static final Predicate<SheetStub> VALIDITY_CHECK = new Predicate<>()
-    {
-        @Override
-        public boolean test (SheetStub stub)
-        {
-            return stub.isValid();
-        }
-    };
-
-    /** Predicate that does not test stub validity. */
-    public static final Predicate<SheetStub> NO_VALIDITY_CHECK = new Predicate<>()
-    {
-        @Override
-        public boolean test (SheetStub stub)
-        {
-            return true;
-        }
-    };
+    public static final Predicate<SheetStub> VALIDITY_CHECK = (SheetStub stub) -> stub.isValid();
 
     //~ Instance fields ----------------------------------------------------------------------------
     //

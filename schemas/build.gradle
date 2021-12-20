@@ -177,7 +177,8 @@ task checkXsltProc {
 
 // Definition of tasks for root-classes Book and Sheet
 [["cls" : "Book",  "src" : "org.audiveris.omr.sheet.Book",  "sch" : "schema1.xsd"],
- ["cls" : "Sheet", "src" : "org.audiveris.omr.sheet.Sheet", "sch" : "schema2.xsd"]].each { map ->
+ ["cls" : "Sheet", "src" : "org.audiveris.omr.sheet.Sheet", "sch" : "schema2.xsd"],
+ ["cls" : "PlayList", "src" : "org.audiveris.omr.sheet.PlayList", "sch" : "schema3.xsd"]].each { map ->
     def cls = "${map["cls"]}"
     def src = "${map["src"]}"
     def sch = "${map["sch"]}"   

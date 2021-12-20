@@ -202,6 +202,16 @@ public class ViewParameters
     /** Staff peak painting is chosen to be not persistent. */
     private boolean staffPeakPainting = false;
 
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * This class is used as a singleton.
+     *
+     * @see LazySingleton
+     */
+    private ViewParameters ()
+    {
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getPaintingLayer //
