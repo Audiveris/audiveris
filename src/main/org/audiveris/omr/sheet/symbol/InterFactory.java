@@ -427,8 +427,9 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter.createValidAdded(
-                    glyph, shape, grade, system, systemHeadChords)
+            return switches.getValue(ProcessingSwitch.articulations)
+                    ? ArticulationInter.createValidAdded(glyph, shape, grade, system,
+                                                         systemHeadChords)
                     : null;
 
         // Markers
@@ -500,7 +501,8 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(ProcessingSwitch.fingerings) ? new FingeringInter(glyph, shape, grade)
+            return switches.getValue(ProcessingSwitch.fingerings)
+                    ? new FingeringInter(glyph, shape, grade)
                     : null;
 
         // Plucking
@@ -508,7 +510,8 @@ public class InterFactory
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(ProcessingSwitch.pluckings) ? new PluckingInter(glyph, shape, grade)
+            return switches.getValue(ProcessingSwitch.pluckings)
+                    ? new PluckingInter(glyph, shape, grade)
                     : null;
 
         // Romans
@@ -524,11 +527,13 @@ public class InterFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return switches.getValue(ProcessingSwitch.frets) ? new FretInter(glyph, shape, grade) : null;
+            return switches.getValue(ProcessingSwitch.frets)
+                    ? new FretInter(glyph, shape, grade)
+                    : null;
 
         // Others
         default:
-            logger.info("No support yet for {} glyph#{}", shape, glyph.getId());
+            logger.debug("No support yet for {} glyph#{}", shape, glyph.getId());
 
             return null;
         }
