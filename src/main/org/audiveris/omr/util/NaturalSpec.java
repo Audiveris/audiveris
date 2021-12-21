@@ -181,6 +181,25 @@ public abstract class NaturalSpec
         return sb.toString();
     }
 
+    //-----------//
+    // getCounts //
+    //-----------//
+    /**
+     * Report a string telling the count of sheets selected among the total available.
+     *
+     * @param spec     the sheets specification
+     * @param maxValue the maximum value
+     * @return the counts string
+     */
+    public static String getCounts (String spec,
+                                    int maxValue)
+    {
+        return new StringBuilder()
+                .append((spec != null) ? decode(spec, false, maxValue).size() : maxValue)
+                .append(" of ")
+                .append(maxValue).toString();
+    }
+
     //--------------//
     // isIncreasing //
     //--------------//
@@ -236,17 +255,5 @@ public abstract class NaturalSpec
         }
 
         return normalized;
-    }
-
-    //-----------//
-    // getCounts //
-    //-----------//
-    public static String getCounts (String spec,
-                                    int maxValue)
-    {
-        return new StringBuilder()
-                .append((spec != null) ? decode(spec, false, maxValue).size() : maxValue)
-                .append(" of ")
-                .append(maxValue).toString();
     }
 }

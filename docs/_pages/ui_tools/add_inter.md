@@ -143,6 +143,24 @@ it may get snapped according to staff lines, etc.
 You can drop the shape only when a staff target has been selected.
 If not, the drag n' drop action is abandoned.
 
+#### Case of compound shapes
+
+Note the HeadsAndDot family now contains four new shapes located at the end.
+
+![](../assets/images/compound_notes.png)
+
+These are quarter notes and half notes, with stem either up or down.
+There are called "compound" because they combine two shapes: head shape and stem shape.
+
+They are generally more convenient to insert as a whole, the head can still be snapped on staff line
+or ledger and the stem can still be automatically linked to beams nearby.
+
+Note however that, once dropped, such a compound shape is replaced by two separate Inters
+(head Inter and stem Inter) linked by a HeadStemRelation.
+You can then later edit each "part" separately, for example to modify the stem length.
+And you can add flags to the stem.
+{: .nota-bg}
+
 #### Exiting shape family
 To leave the specific family palette and go back to the catalog view, you can:
 

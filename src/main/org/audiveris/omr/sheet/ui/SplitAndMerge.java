@@ -38,7 +38,6 @@ import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.NaturalSpec;
-import static org.audiveris.omr.util.NaturalSpec.getCounts;
 import org.audiveris.omr.util.PathTask;
 
 import org.jdesktop.application.AbstractBean;
@@ -47,6 +46,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,9 +160,6 @@ public class SplitAndMerge
     /** Illegal excerpts. */
     private final Set<BookExcerpt> illegals = new HashSet<>();
 
-    /** Path to the latest PlayList file, if any. */
-    private Path playListPath;
-
     // Properties that govern actions enabled/disabled
     //
     private boolean empty = true;
@@ -235,7 +232,7 @@ public class SplitAndMerge
      * @return the asynchronous task, or null
      */
     @Action(enabledProperty = BUILDABLE)
-    public BuildCompoundTask build (ActionEvent e)
+    public Task build (ActionEvent e)
     {
         // First, make sure all books don't need to be saved
         final Set<Book> books = model.getAllBooks();
@@ -368,7 +365,7 @@ public class SplitAndMerge
      * @return the asynchronous task, or null
      */
     @Action
-    public LoadBookTask loadBook (ActionEvent e)
+    public Task loadBook (ActionEvent e)
     {
         final Path path = BookActions.selectBookPath(false,
                                                      Paths.get(BookManager.getDefaultBookFolder()));
@@ -390,7 +387,7 @@ public class SplitAndMerge
      * @return the asynchronous task, or null
      */
     @Action
-    public LoadImageTask loadImage (ActionEvent e)
+    public Task loadImage (ActionEvent e)
     {
         final Path path = BookActions.selectImagePath();
 
@@ -408,7 +405,6 @@ public class SplitAndMerge
      * Move the selected excerpt one row down.
      *
      * @param e the event that triggered this action
-     * @return the asynchronous task, or null
      */
     @Action(enabledProperty = DOWN_ENABLED)
     public void moveDown (ActionEvent e)
@@ -433,7 +429,6 @@ public class SplitAndMerge
      * Move the selected excerpt one row up.
      *
      * @param e the event that triggered this action
-     * @return the asynchronous task, or null
      */
     @Action(enabledProperty = UP_ENABLED)
     public void moveUp (ActionEvent e)
@@ -479,7 +474,7 @@ public class SplitAndMerge
      * @return the asynchronous task, or null
      */
     @Action
-    public OpenPlayListTask open (ActionEvent e)
+    public Task open (ActionEvent e)
     {
         try {
             // Let the user select a playlist input file
@@ -507,7 +502,7 @@ public class SplitAndMerge
      * @return the asynchronous task, or null
      */
     @Action(enabledProperty = BUILDABLE)
-    public SavePlayListTask save (ActionEvent e)
+    public Task save (ActionEvent e)
     {
         try {
             // Let the user select a playlist output file
@@ -742,39 +737,6 @@ public class SplitAndMerge
         return true;
     }
 
-    //----------------//
-    // normalized //
-    //----------------//
-    /**
-     * Normalize the provided specification, perhaps invalid, null, etc...
-     *
-     * @param spec  the candidate specification
-     * @param maxId the maximum sheet ID in book
-     * @return the normalized specification
-     */
-    private static String normalizedSpec (String spec,
-                                          int maxId)
-    {
-        if (spec == null) {
-            spec = "";
-        }
-
-        // This may throw an exception...
-        final List<Integer> ids = NaturalSpec.decode(spec, true, maxId);
-        final String normalizedSpec = NaturalSpec.encode(ids);
-
-        // Here, new specification is valid
-        if (normalizedSpec.isBlank()) {
-            if (maxId > 1) {
-                return "1-" + maxId;
-            } else {
-                return "1";
-            }
-        }
-
-        return normalizedSpec;
-    }
-
     //-----------------//
     // setPlayListPath //
     //-----------------//
@@ -785,7 +747,6 @@ public class SplitAndMerge
      */
     private void setPlayListPath (Path path)
     {
-        playListPath = path;
         dialog.setTitle(resources.getString("dialog.title") + " - " + path);
         constants.lastFolder.setStringValue(path.getParent().toAbsolutePath().toString());
     }
@@ -920,11 +881,11 @@ public class SplitAndMerge
 
                 try {
                     final int maxId = excerpt.book.size();
-                    excerpt.specification = normalizedSpec(newSpec, maxId); // This may fail!
+                    excerpt.specification = NaturalSpec.normalized(newSpec, maxId); // This may fail
                     illegals.remove(excerpt);
 
                     // Update counts accordingly
-                    excerpt.counts = getCounts(excerpt.specification, maxId);
+                    excerpt.counts = NaturalSpec.getCounts(excerpt.specification, maxId);
                 } catch (Exception ex) {
                     logger.warn("Illegal specification: " + newSpec);
                     excerpt.specification = newSpec; // So that user can see and modify field data
@@ -962,7 +923,7 @@ public class SplitAndMerge
             final String spec = (String) value;
             try {
                 // Let's throw an exception if spec is invalid...
-                normalizedSpec(spec, model.get(row).book.size());
+                NaturalSpec.normalized(spec, model.get(row).book.size());
 
                 // Spec is OK
                 comp.setForeground(table.getForeground());
