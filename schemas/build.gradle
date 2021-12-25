@@ -48,7 +48,7 @@
 apply plugin: 'java'
 
 repositories { 
-  jcenter() 
+    mavenCentral() 
     maven {
         name = 'mvnrepository' 
         url = 'https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE'
@@ -56,7 +56,7 @@ repositories {
 }
 
 dependencies { 
-    compile(
+    implementation(
         [group: 'org.codehaus.mojo', name: 'jaxb2-maven-plugin', version: '2.5.0'],
         [group: 'org.apache.maven.plugin-tools', name: 'maven-plugin-annotations', version: '3.5.1'],
         [group: 'net.sf.saxon', name: 'Saxon-HE', version: '10.6']
@@ -134,7 +134,7 @@ task injectJavadoc(type: JavaExec) {
     dependsOn(genPlainSchemas)
     dependsOn(compileJava)
     
-    main = 'org.audiveris.schema.SchemaAnnotator'
+    mainClass = 'org.audiveris.schema.SchemaAnnotator'
     classpath sourceSets.main.runtimeClasspath
     args=["build/work", "build/output", "../src/main/org/audiveris/omr"]
 }
@@ -145,7 +145,7 @@ task debug(type: JavaExec) {
     dependsOn(genPlainSchemas)
     dependsOn('classes')
     
-    main = 'org.audiveris.schema.SchemaAnnotator'
+    mainClass = 'org.audiveris.schema.SchemaAnnotator'
     classpath = sourceSets.main.runtimeClasspath
     args=["build/work", "build/output", "../src/main/org/audiveris/omr"]
     debug true
@@ -188,7 +188,7 @@ task checkXsltProc {
         description "Generate plain XSD schema for $cls class"
         dependsOn(createFolders)
   
-        main = 'org.audiveris.omr.SchemaGeneration'
+        mainClass = 'org.audiveris.omr.SchemaGeneration'
         classpath = rootProject.sourceSets.main.runtimeClasspath
         args=["$src", "build/work/$sch"]
         
@@ -311,7 +311,7 @@ task checkXsltProc {
         ///opts.add("debug=true")
 
         args opts
-        main 'net.sf.saxon.Transform'
+        mainClass = 'net.sf.saxon.Transform'
         classpath sourceSets.main.runtimeClasspath
         
         ///genHtmls.dependsOn("newGenHtml$cls")    
