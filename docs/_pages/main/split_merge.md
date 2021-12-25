@@ -120,17 +120,11 @@ The dialog large table, meant for the underlying playlists, is initially empty.
   select and include a few of them into the playlist.   
 
   ![](../assets/images/include_loaded.png)
-- We can create a Book excerpt, either via the `Load Book` button or via a Drag n' Drop
-  from a file explorer.
-- We can create an Image(s) file excerpt, either via the `Load Image` button or via a Drag n' Drop
-  from a file explorer.
-
-While `Load Book`, `Load Image` and `Include` buttons always append excerpts at the bottom,
-a drag n' drop gesture allows to insert the excerpt(s) at a precise location in the playlist.
-
-Note that if a list of several files is inserted in one drop, the internal order of this list may
-not be preserved at the insertion location.
-But we can easily move excerpts up and down later if so needed.
+- Via a Drag n' Drop from a file explorer, we can drop one or several Book or Image files onto
+  the dialog, each will lead to the addition of a corresponding excerpt at a precise location
+  in the playlist.
+- Similarly, via the `Load files` button, we can load one or several Book or Image files and
+  their corresponding excerpts will be appended at the bottom of the playlist.
 
 #### Legend
 - There is one row per excerpt, composed of the container name, the sheets specification string
@@ -143,7 +137,8 @@ But we can easily move excerpts up and down later if so needed.
   defined, this definition would be copied over to the excerpt field.
   -- see the previous section on [Sheets Selection](sheets_selection.md) in a book --
 - Note that the same container can appear on several rows of the playlist,
-  with different sheets specifications.
+  with different sheets specifications
+  -- see the example of [Sheet replacement](#sheet-replacement) above --
 
 #### Editing the playlist
 
