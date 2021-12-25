@@ -1319,6 +1319,19 @@ public class Book
         return sb.toString();
     }
 
+    //---------//
+    // isImage //
+    //---------//
+    /**
+     * Report whether this book has just been created on-the-fly to represent an image file.
+     *
+     * @return true if so
+     */
+    public boolean isImage ()
+    {
+        return bookPath == null;
+    }
+
     //-----------//
     // isClosing //
     //-----------//

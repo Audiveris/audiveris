@@ -1056,6 +1056,9 @@ public abstract class AbstractBeamInter
     //---------//
     // Impacts //
     //---------//
+    /**
+     * Impacts definition for a beam.
+     */
     public static class Impacts
             extends GradeImpacts
     {

@@ -126,6 +126,11 @@ public class AboutAction
     //-----------------//
     // actionPerformed //
     //-----------------//
+    /**
+     * Implement the About action.
+     *
+     * @param e the triggering event
+     */
     public void actionPerformed (ActionEvent e)
     {
         if (aboutBox == null) {

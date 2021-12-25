@@ -41,7 +41,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a sheet, starting by the
  * distance between two staff lines (center to center).
- * <p>
  * <ol>
  * <li>Primary informations: This data is always detected, otherwise the current page is detected as
  * not being a music page and thus flagged as <i>invalid</i>.
@@ -51,7 +50,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li><b>Staff line thickness</b>:
  * Typical vertical run length, the number of contiguous black pixels in staff line height.
  * </ul>
- * <p>
  * <li>Secondary informations: This data is always made available, either based on detected value or
  * derived from other information.
  * <ul>
@@ -60,7 +58,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Otherwise a guess value is computed as a ratio of main white length between staff lines.
  * <li><b>Stem thickness</b>: Computed during STEM_SEEDS step.
  * </ul>
- * <p>
  * <li>Optional informations: This data may exist or not, according to the sheet at hand.
  * <ul>
  * <li><b>Black head</b>: Typical width and height measured for black heads.
@@ -78,34 +75,37 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * This class also provides methods for converting values based on what the interline and the line
  * thickness are actually worth.
  * <br>There are two different measurements: pixels and fractions.
- * <table border="thin">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
+ * <caption>Measurements table</caption>
  * <tr>
- * <th style="padding: 10px; text-align:center">Measurement</th>
- * <th style="padding: 10px; text-align:center">Value</th>
+ * <th style="padding: 10px; text-align:center; border: 1px solid black;">Measurement</th>
+ * <th style="padding: 10px; text-align:center; border: 1px solid black;">Value</th>
  * </tr>
  * <tr>
- * <td style="padding: 10px">Pixel</td>
- * <td style="padding: 10px">This is simply an absolute number (or fraction) of pixels.</td>
+ * <td style="padding: 10px; border: 1px solid black;">Pixel</td>
+ * <td style="padding: 10px; border: 1px solid black;">This is simply an absolute number (or
+ * fraction) of pixels.</td>
  * </tr>
  * <tr>
- * <td style="padding: 10px">(interline) Fraction</td>
- * <td style="padding: 10px">This is a number (or fraction) of interlines.
+ * <td style="padding: 10px; border: 1px solid black;">(interline) Fraction</td>
+ * <td style="padding: 10px; border: 1px solid black;">This is a number (or fraction) of interlines.
  * <br>Typical unit value for interline is around 20 pixels.</td>
  * </tr>
  * <tr>
- * <td style="padding: 10px">(interline) AreaFraction</td>
- * <td style="padding: 10px">This is a number (or fraction) of square interlines,
+ * <td style="padding: 10px; border: 1px solid black;">(interline) AreaFraction</td>
+ * <td style="padding: 10px; border: 1px solid black;">This is a number (or fraction) of square
+ * interlines,
  * meant to measure glyph area or weight.
  * <br>Typical unit value for interline area is around 400 pixels.</td>
  * </tr>
  * <tr>
- * <td style="padding: 10px">LineFraction</td>
- * <td style="padding: 10px">This is a number (or fraction) of line thickness.
+ * <td style="padding: 10px; border: 1px solid black;">LineFraction</td>
+ * <td style="padding: 10px; border: 1px solid black;">This is a number (or fraction) of line
+ * thickness.
  * <br>Typical unit value for line is around 4 pixels.</td>
  * </tr>
  * </table>
- *
- * <h4>Example of marshalled Scale element</h4>
+ * <h2>Example of marshalled Scale element</h2>
  * <pre>
  * &lt;scale&gt;
  *      &lt;interline min="18" main="19" max="19"/&gt;

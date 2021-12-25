@@ -411,16 +411,6 @@ public abstract class UIUtil
             }
         } else {
             final JFileChooser fc = new JFileChooser();
-            // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
-            //            final JFileChooser fc = new JFileChooser()
-            //            {
-            //                @Override
-            //                public void updateUI ()
-            //                {
-            //                    putClientProperty("FileChooser.useShellFolder", false);
-            //                    super.updateUI();
-            //                }
-            //            };
             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
             // Pre-select the directory, and potentially the file to save to
@@ -449,6 +439,98 @@ public abstract class UIUtil
         }
 
         return file;
+    }
+
+    //--------------//
+    // filesChooser //
+    //--------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startFile default file, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @param title     a specific dialog title or null
+     * @return the array of selected files, perhaps empty but not null
+     */
+    public static File[] filesChooser (boolean save,
+                                       Component parent,
+                                       File startFile,
+                                       OmrFileFilter filter,
+                                       String title)
+    {
+        File[] files = new File[0];
+
+        if (WellKnowns.MAC_OS_X) {
+            if ((parent == null) && (org.audiveris.omr.OMR.gui != null)) {
+                parent = org.audiveris.omr.OMR.gui.getFrame();
+            }
+
+            Component parentFrame = parent;
+
+            if (parentFrame != null) {
+                while (parentFrame.getParent() != null) {
+                    parentFrame = parentFrame.getParent();
+                }
+            }
+
+            try {
+                final FileDialog fd = new FileDialog((Frame) parentFrame);
+                fd.setMultipleMode(true); // MULTI-SELECTION!
+
+                if (startFile != null) {
+                    fd.setDirectory(
+                            startFile.isDirectory() ? startFile.getPath() : startFile.getParent());
+                }
+
+                fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
+                fd.setFilenameFilter(filter);
+
+                if (title == null) {
+                    title = save ? "Saving: " : "Loading: ";
+                    title += filter.getDescription();
+                }
+
+                fd.setTitle(title);
+                fd.setVisible(true);
+
+                files = fd.getFiles();
+            } catch (ClassCastException e) {
+                logger.warn("no ancestor is Frame");
+            }
+        } else {
+            final JFileChooser fc = new JFileChooser();
+            fc.setMultiSelectionEnabled(true); // MULTI-SELECTION!
+            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+            // Pre-select the directory, and potentially the file to save to
+            if (startFile != null) {
+                if (startFile.isDirectory()) {
+                    fc.setCurrentDirectory(startFile);
+                } else {
+                    File parentFile = startFile.getParentFile();
+                    fc.setCurrentDirectory(parentFile);
+                    fc.setSelectedFile(startFile);
+                }
+            }
+
+            fc.addChoosableFileFilter(filter);
+            fc.setFileFilter(filter);
+
+            if (title != null) {
+                fc.setDialogTitle(title);
+            }
+
+            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                files = fc.getSelectedFiles();
+            }
+        }
+
+        return files;
     }
 
     //---------------//
@@ -574,6 +656,58 @@ public abstract class UIUtil
         }
 
         return null;
+    }
+
+    //--------------//
+    // pathsChooser //
+    //--------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] pathsChooser (boolean save,
+                                       Component parent,
+                                       Path startPath,
+                                       OmrFileFilter filter)
+    {
+        return pathsChooser(save, parent, startPath, filter, null);
+    }
+
+    //--------------//
+    // pathsChooser //
+    //--------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @param title     a specific dialog title or null
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] pathsChooser (boolean save,
+                                       Component parent,
+                                       Path startPath,
+                                       OmrFileFilter filter,
+                                       String title)
+    {
+        final File[] files = filesChooser(save, parent, startPath.toFile(), filter, null);
+        final Path[] paths = new Path[files.length];
+
+        for (int i = 0; i < files.length; i++) {
+            final File file = files[i];
+            paths[i] = (file != null) ? file.toPath() : null;
+        }
+
+        return paths;
     }
 
     //-------------------------//

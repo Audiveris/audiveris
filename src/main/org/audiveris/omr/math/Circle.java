@@ -47,7 +47,6 @@ import java.util.List;
  * <p>
  * If arc shape is /--\ it is said "above".
  * If arc shape is \--/ it is said "below".
- * <p>
  *
  * @author Hervé Bitteur
  */

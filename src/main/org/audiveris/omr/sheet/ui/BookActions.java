@@ -55,6 +55,7 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
+import org.audiveris.omr.util.PathListTask;
 import org.audiveris.omr.util.PathTask;
 import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
@@ -81,6 +82,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.text.MessageFormat.format;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.JDialog;
@@ -809,22 +813,22 @@ public class BookActions
         }
     }
 
-    //----------//
-    // openBook //
-    //----------//
+    //-----------//
+    // openBooks //
+    //-----------//
     /**
-     * Action that let the user select a book.
+     * Action that let the user select one or several books.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public LoadBookTask openBook (ActionEvent e)
+    public LoadFilesTask openBooks (ActionEvent e)
     {
-        final Path path = selectBookPath(false, Paths.get(BookManager.getDefaultBookFolder()));
+        final Path[] paths = selectBookPaths(false, Paths.get(BookManager.getDefaultBookFolder()));
 
-        if (path != null) {
-            return new LoadBookTask(path);
+        if (paths.length > 0) {
+            return new LoadFilesTask(Arrays.asList(paths));
         }
 
         return null;
@@ -862,25 +866,25 @@ public class BookActions
         return null;
     }
 
-    //---------------//
-    // openImageFile //
-    //---------------//
+    //----------------//
+    // openImageFiles //
+    //----------------//
     /**
-     * Action that let the user select an image file interactively.
+     * Action that let the user select one or several image files interactively.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public LoadImageTask openImageFile (ActionEvent e)
+    public LoadFilesTask openImageFiles (ActionEvent e)
     {
-        final Path path = selectImagePath();
+        final Path[] paths = selectImagePaths();
 
-        if (path == null) {
-            return null;
+        if (paths.length > 0) {
+            return new LoadFilesTask(Arrays.asList(paths));
         }
 
-        return new LoadImageTask(path);
+        return null;
     }
 
     //-----------------//
@@ -897,6 +901,22 @@ public class BookActions
         return selectPath(false,
                           Paths.get(BookManager.getDefaultImageFolder()),
                           filter);
+    }
+
+    //------------------//
+    // selectImagePaths //
+    //------------------//
+    public static Path[] selectImagePaths ()
+    {
+        final String suffixes = constants.validImageExtensions.getValue();
+        final String allSuffixes = suffixes + " " + suffixes.toUpperCase();
+        final OmrFileFilter filter = new OmrFileFilter(
+                resources.getString("majorImageFiles") + " (" + suffixes + ")",
+                allSuffixes.split("\\s"));
+
+        return selectPaths(false,
+                           Paths.get(BookManager.getDefaultImageFolder()),
+                           filter);
     }
 
     //-----------//
@@ -1826,6 +1846,45 @@ public class BookActions
         return selectPath(save, startPath, filter(OMR.BOOK_EXTENSION));
     }
 
+    //-----------------//
+    // selectBookPaths //
+    //-----------------//
+    /**
+     * Let the user interactively select book paths.
+     *
+     * @param save      true for write, false for read
+     * @param startPath starting path
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] selectBookPaths (boolean save,
+                                          Path startPath)
+    {
+        return selectPaths(save, startPath, filter(OMR.BOOK_EXTENSION));
+    }
+
+    //------------------------//
+    // selectBookOrImagePaths //
+    //------------------------//
+    /**
+     * Let the user interactively select book/image paths for reading.
+     *
+     * @param startPath starting path
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] selectBookOrImagePaths (Path startPath)
+    {
+        final String suffixes = constants.validImageExtensions.getValue();
+        final String allSuffixes = OMR.BOOK_EXTENSION + " " + suffixes
+                                           + " " + suffixes.toUpperCase();
+        final OmrFileFilter filter = new OmrFileFilter(
+                resources.getString("bookAnd") + " "
+                        + resources.getString("majorImageFiles")
+                        + " (" + OMR.BOOK_EXTENSION + " " + suffixes + ")",
+                allSuffixes.split("\\s"));
+
+        return selectPaths(false, startPath, filter);
+    }
+
     //------------//
     // selectPath //
     //------------//
@@ -1867,6 +1926,51 @@ public class BookActions
         }
 
         return path;
+    }
+
+    //-------------//
+    // selectPaths //
+    //-------------//
+    /**
+     * Let the user interactively select an array of paths.
+     *
+     * @param save      true for write, false for read
+     *                  (for read, path will be checked to exist and not be a directory)
+     * @param startPath the starting path
+     * @param filter    filter on file extensions
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] selectPaths (boolean save,
+                                      Path startPath,
+                                      OmrFileFilter filter)
+    {
+        final Path[] paths = UIUtil.pathsChooser(
+                save,
+                OMR.gui.getFrame(),
+                startPath,
+                filter);
+
+        if (paths.length == 0) {
+            return paths;
+        }
+
+        if (save) {
+            return paths;
+        }
+
+        for (Path path : paths) {
+            if (!Files.exists(path)) {
+                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+                return new Path[0];
+            }
+
+            if (Files.isDirectory(path)) {
+                logger.warn(format(resources.getString("isDirectory.pattern"), path));
+                return new Path[0];
+            }
+        }
+
+        return paths;
     }
 
     //-----------------//
@@ -2023,6 +2127,79 @@ public class BookActions
     }
 
     //---------------//
+    // LoadFilesTask //
+    //---------------//
+    /**
+     * Task that loads a list of files (possibly a mix of book files and input files).
+     */
+    public static class LoadFilesTask
+            extends PathListTask<List<Book>, Void>
+    {
+
+        public LoadFilesTask (Collection<? extends Path> paths)
+        {
+            super(paths);
+        }
+
+        @Override
+        protected List<Book> doInBackground ()
+                throws Exception
+        {
+            final List<Book> bookList = new ArrayList<>();
+
+            for (Path path : pathList) {
+                Book book = null;
+
+                try {
+                    final String ext = FileUtil.getExtension(path.getFileName());
+
+                    if (ext.equalsIgnoreCase(OMR.BOOK_EXTENSION)) {
+                        // Book file
+                        book = OMR.engine.loadBook(path);
+                    } else {
+                        // Assumed image file
+                        book = OMR.engine.loadInput(path);
+                        book.createStubs(); // Read just the count of sheets in input file
+                    }
+                } catch (Throwable ex) {
+                    logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                }
+
+                bookList.add(book); // book can be null
+            }
+
+            return bookList;
+        }
+
+        @Override
+        protected void succeeded (List<Book> bookList)
+        {
+            final StubsController controller = StubsController.getInstance();
+
+            for (Book book : bookList) {
+                if (book != null) {
+                    try {
+                        // Insert all tabs in GUI stubsPane
+                        controller.displayStubs(book, null);
+
+                        // Select stub
+                        controller.selectAssembly(book.getFirstValidStub());
+
+                        if (book.isImage()) {
+                            // Pre-open Book Parameters dialog on this brand new book?
+                            if (preOpenBookParameters()) {
+                                BookActions.applyUserSettings(book.getFirstValidStub());
+                            }
+                        }
+                    } catch (Throwable ex) {
+                        logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                    }
+                }
+            }
+        }
+    }
+
+    //---------------//
     // LoadImageTask //
     //---------------//
     /**
@@ -2070,16 +2247,17 @@ public class BookActions
         @Override
         protected void succeeded (Book book)
         {
-            if (book != null)
-            try {
-                super.succeeded(book);
+            if (book != null) {
+                try {
+                    super.succeeded(book);
 
-                // Pre-open Book Parameters dialog on this brand new book?
-                if (preOpenBookParameters()) {
-                    BookActions.applyUserSettings(book.getFirstValidStub());
+                    // Pre-open Book Parameters dialog on this brand new book?
+                    if (preOpenBookParameters()) {
+                        BookActions.applyUserSettings(book.getFirstValidStub());
+                    }
+                } catch (Throwable ex) {
+                    logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
                 }
-            } catch (Throwable ex) {
-                logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
             }
         }
     }

@@ -110,8 +110,7 @@ import java.util.TreeMap;
  * and no internal vertical gap.
  * <li>We got a measurement for main and max stem thickness in the sheet (in STEM_SEEDS step).
  * </ul>
- *
- * <h3>Phase #1: one system at a time</h3>
+ * <h2>Phase #1: one system at a time</h2>
  * <ul>
  * <li>{@link #inspectStems()}
  * <ul>
@@ -142,7 +141,6 @@ import java.util.TreeMap;
  * <li>Check needed stems: heads with no stem link at all are discarded.
  * </ul>
  * </ul>
- *
  * <h3>Possible evolutions</h3>
  * <ul>
  * <li>For rather long stems, full stem expansion driven only from the initial head or beam may be

@@ -16,12 +16,12 @@
 <actions>
     
     <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" menu="inputHistory"           button="javax.swing.JButton"/>
-    <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="openImageFile"        button="javax.swing.JButton"/>
+    <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="openImageFiles"        button="javax.swing.JButton"/>
     <action domain="FILE" section="70" class="org.audiveris.omr.ui.GuiActions"        method="exit"/>
 
     <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" menu="bookHistory"            button="javax.swing.JButton"/>
     <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openRecentBook"/>
-    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openBook"             button="javax.swing.JButton"/>
+    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openBooks"            button="javax.swing.JButton"/>
     <action domain="BOOK" section="07" class="org.audiveris.omr.sheet.ui.BookActions" method="splitAndMerge"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToGray"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToBinary"/>

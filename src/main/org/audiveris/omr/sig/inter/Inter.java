@@ -517,7 +517,7 @@ public interface Inter
      * <b>NOTA</b>, this method is not always commutative, meaning <code>one.overlaps(two)</code>
      * and <code>two.overlaps(one)</code> are not assumed to always give the same result.
      * For reliable results, test both:
-     * <code>if (one.overlaps(two) && two.overlaps(one)) {...</code>}
+     * <code>if (one.overlaps(two) &amp;&amp; two.overlaps(one)) {...</code>}
      * <p>
      * <b>NOTA</b>, precise meaning is: <i>"Does this inter step on the toes of that other one in
      * some incompatible way?"</i>.

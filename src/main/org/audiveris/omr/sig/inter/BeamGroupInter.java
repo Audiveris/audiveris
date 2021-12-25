@@ -80,7 +80,7 @@ import org.audiveris.omr.sig.relation.Containment;
  * <p>
  * This class replaces the (old)BeamGroup class that was not an inter and had to directly manage its
  * contained beams.
- * <p>
+ *
  * @since 5.2
  *
  * @author Hervé Bitteur
@@ -253,7 +253,7 @@ public class BeamGroupInter
     //------------------------//
     /**
      * Detect all the interleaved rests for this beam group.
-     *
+     * <p>
      * Rests lookup depends on the potential existence of an explicit voice relation
      * between the rest and one of the stemmed chords of the beam group:
      * <ul>
@@ -971,8 +971,6 @@ public class BeamGroupInter
     /**
      * Set a voice to this beam group, and to the related entities.
      *
-     * @see #justAssignVoice(Voice)
-     *
      * @param voice the voice to set
      */
     public void setVoice (Voice voice)
@@ -1206,7 +1204,7 @@ public class BeamGroupInter
      * The area is then defined by the up stem and the main beam median line,
      * vertically extended if needed to the middle line of the upper staff
      * </ul>
-     *
+     * <p>
      * Additional checks:
      * <ul>
      * <li>An interleaved rest is expected to lie horizontally BETWEEN the beam chords, hence

@@ -86,21 +86,16 @@ import java.util.Map;
  * </ol>
  * Assuming Opus is supported, the final result would be a single opus file:
  * <p>
- * <
- * pre>
  * Mozart_S40.opus.mxl (with each of the 4 movements included in this opus file)
- * </pre>
  * <p>
  * Assuming Opus is NOT supported, the final result would be something like:
- * <p>
- * <
- * pre>
- * Mozart_S40/
- * Mozart_S40/mvt1.mxl
- * Mozart_S40/mvt2.mxl
- * Mozart_S40/mvt3.mxl
- * Mozart_S40/mvt4.mxl
- * </pre>
+ * <ol>
+ * <li>Mozart_S40/
+ * <li>Mozart_S40/mvt1.mxl
+ * <li>Mozart_S40/mvt2.mxl
+ * <li>Mozart_S40/mvt3.mxl
+ * <li>Mozart_S40/mvt4.mxl
+ * </ol>
  * <p>
  * We could process all the 49 sheets in memory (although this is not practically feasible) with a
  * single book, discovering the 4 movements one after the other, and finally creating one MusicXML

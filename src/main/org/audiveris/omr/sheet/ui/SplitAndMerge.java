@@ -72,6 +72,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -117,8 +119,8 @@ public class SplitAndMerge
 
     private static final Logger logger = LoggerFactory.getLogger(SplitAndMerge.class);
 
-    private static final ApplicationContext applicationContext
-            = Application.getInstance().getContext();
+    private static final ApplicationContext applicationContext = Application.getInstance()
+            .getContext();
 
     private static final ResourceMap resources = applicationContext.getResourceMap(
             SplitAndMerge.class);
@@ -245,33 +247,31 @@ public class SplitAndMerge
         }
 
         if (!unsaved.isEmpty()) {
-            OMR.gui.displayWarning(new JList<>(unsaved.toArray(String[]::new)),
-                                   resources.getString("unsavedBooks"));
+            OMR.gui.displayWarning(
+                    new JList<>(unsaved.toArray(String[]::new)),
+                    resources.getString("unsavedBooks"));
             return null;
         }
 
         try {
             // Second, let the user select a book output file
             final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
-            final Path targetPath = selectBookPath(true, defaultFolder);
+            Path targetPath = selectBookPath(true, defaultFolder);
 
-            if ((targetPath != null) && isTargetConfirmed(targetPath)) {
-                // Finally, launch building of the compound book
-                return new BuildCompoundTask(targetPath);
+            if (targetPath != null) {
+                if (!targetPath.toString().endsWith(OMR.BOOK_EXTENSION)) {
+                    targetPath = Paths.get(targetPath + OMR.BOOK_EXTENSION);
+                }
+
+                if (isTargetConfirmed(targetPath)) {
+                    return new BuildCompoundTask(targetPath);
+                }
             }
         } catch (Throwable ex) {
             logger.warn("Error in SplitAndMerge.build {}", ex.toString(), ex);
         }
 
         return null;
-    }
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    public JDialog getComponent ()
-    {
-        return dialog;
     }
 
     //-----------//
@@ -294,6 +294,14 @@ public class SplitAndMerge
         model.fireTableRowsUpdated(row + 1, model.size());
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    public JDialog getComponent ()
+    {
+        return dialog;
+    }
+
     //---------//
     // include //
     //---------//
@@ -313,15 +321,18 @@ public class SplitAndMerge
         list.setCellRenderer(new DefaultListCellRenderer()
         {
             @Override
-            public Component getListCellRendererComponent (
-                    JList<?> list,
-                    Object value,
-                    int index,
-                    boolean isSelected,
-                    boolean cellHasFocus)
+            public Component getListCellRendererComponent (JList<?> list,
+                                                           Object value,
+                                                           int index,
+                                                           boolean isSelected,
+                                                           boolean cellHasFocus)
             {
                 final JLabel label = (JLabel) super.getListCellRendererComponent(
-                        list, value, index, isSelected, cellHasFocus);
+                        list,
+                        value,
+                        index,
+                        isSelected,
+                        cellHasFocus);
                 final Book book = (Book) value;
                 final Path path = book.getPath();
                 label.setText(path.toString());
@@ -355,47 +366,26 @@ public class SplitAndMerge
         OmrGui.getApplication().show(includeDialog);
     }
 
-    //----------//
-    // loadBook //
-    //----------//
+    //-----------//
+    // loadFiles //
+    //-----------//
     /**
-     * Load an external book file .
+     * Load external book or image files and include them.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public Task loadBook (ActionEvent e)
+    public Task loadFiles (ActionEvent e)
     {
-        final Path path = BookActions.selectBookPath(false,
-                                                     Paths.get(BookManager.getDefaultBookFolder()));
+        final Path[] paths = BookActions.selectBookOrImagePaths(
+                Paths.get(BookManager.getDefaultBookFolder()));
 
-        if (path == null) {
+        if (paths.length == 0) {
             return null;
         }
 
-        return new LoadBookTask(path);
-    }
-
-    //-----------//
-    // loadImage //
-    //-----------//
-    /**
-     * Load an external image file and include its related book.
-     *
-     * @param e the event that triggered this action
-     * @return the asynchronous task, or null
-     */
-    @Action
-    public Task loadImage (ActionEvent e)
-    {
-        final Path path = BookActions.selectImagePath();
-
-        if (path == null) {
-            return null;
-        }
-
-        return new LoadImageTask(path);
+        return new LoadFilesTask(Arrays.asList(paths));
     }
 
     //----------//
@@ -478,9 +468,9 @@ public class SplitAndMerge
     {
         try {
             // Let the user select a playlist input file
-            final OmrFileFilter filter = BookActions.filter(".xml");
+            final OmrFileFilter filter = BookActions.filter(OMR.PLAYLIST_EXTENSION);
             final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
-            final Path targetPath = BookActions.selectPath(false, defaultFolder, filter);
+            Path targetPath = BookActions.selectPath(false, defaultFolder, filter);
 
             if (targetPath != null) {
                 return new OpenPlayListTask(targetPath);
@@ -508,10 +498,16 @@ public class SplitAndMerge
             // Let the user select a playlist output file
             final OmrFileFilter filter = BookActions.filter(".xml");
             final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
-            final Path targetPath = BookActions.selectPath(true, defaultFolder, filter);
+            Path targetPath = BookActions.selectPath(true, defaultFolder, filter);
 
-            if ((targetPath != null) && isTargetConfirmed(targetPath)) {
-                return new SavePlayListTask(targetPath);
+            if (targetPath != null) {
+                if (!targetPath.toString().endsWith(OMR.PLAYLIST_EXTENSION)) {
+                    targetPath = Paths.get(targetPath + OMR.PLAYLIST_EXTENSION);
+                }
+
+                if (isTargetConfirmed(targetPath)) {
+                    return new SavePlayListTask(targetPath);
+                }
             }
         } catch (Throwable ex) {
             logger.warn("Error in SavePlayListTask {}", ex.toString(), ex);
@@ -667,9 +663,16 @@ public class SplitAndMerge
         final Panel buttonPane = new Panel();
         buttonPane.setInsets(10, 10, 10, 10);
 
-        final String[] actions = new String[]{"open", "loadBook", "loadImage", "include",
-                                              "duplicate", "remove", "moveUp", "moveDown",
-                                              "save", "build"};
+        final String[] actions = new String[]{
+            "open",
+            "loadFiles",
+            "include",
+            "duplicate",
+            "remove",
+            "moveUp",
+            "moveDown",
+            "save",
+            "build"};
 
         final StringBuilder rowSpec = new StringBuilder();
         for (int i = 0; i < actions.length; i++) {
@@ -692,21 +695,6 @@ public class SplitAndMerge
         return buttonPane;
     }
 
-    //---------//
-    // isImage //
-    //---------//
-    /**
-     * Report whether the provided book is just a book created on-the-fly to represent
-     * an image file.
-     *
-     * @param book the book to check
-     * @return true if so
-     */
-    public static boolean isImage (Book book)
-    {
-        return book.getBookPath() == null;
-    }
-
     //--------//
     // isSafe //
     //--------//
@@ -722,7 +710,7 @@ public class SplitAndMerge
             return true;
         }
 
-        if (!isImage(book)) {
+        if (!book.isImage()) {
             return false;
         }
 
@@ -767,13 +755,17 @@ public class SplitAndMerge
     //--------------//
     // MyTableModel //
     //--------------//
+    /**
+     * Underlying model for the dialog table.
+     */
     private class MyTableModel
             extends AbstractTableModel
     {
 
-        private final String[] columnNames = {resources.getString("headerBook"),
-                                              resources.getString("headerSpec"),
-                                              resources.getString("headerCounts")};
+        private final String[] columnNames = {
+            resources.getString("headerBook"),
+            resources.getString("headerSpec"),
+            resources.getString("headerCounts")};
 
         // Underlying data
         private final PlayList pl = new PlayList();
@@ -871,7 +863,7 @@ public class SplitAndMerge
                                 int row,
                                 int col)
         {
-            logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);;;;;;;;;;;;
+            logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);
 
             if (col == COL_SPEC) {
                 // Specification modified
@@ -918,7 +910,12 @@ public class SplitAndMerge
                                                         int column)
         {
             final JLabel comp = (JLabel) super.getTableCellRendererComponent(
-                    table, value, isSelected, hasFocus, row, column);
+                    table,
+                    value,
+                    isSelected,
+                    hasFocus,
+                    row,
+                    column);
 
             final String spec = (String) value;
             try {
@@ -943,7 +940,7 @@ public class SplitAndMerge
     //-------------------//
     /**
      * For the SplitAndMerge dialog, we support transfer from a list of files
-     * (book.omr or image input file).
+     * (book.omr or image input files).
      */
     private class MyTransferHandler
             extends FileDropHandler
@@ -958,21 +955,13 @@ public class SplitAndMerge
                     final Transferable trsf = support.getTransferable();
                     final Object data = trsf.getTransferData(DataFlavor.javaFileListFlavor);
 
+                    final List<Path> pathList = new ArrayList<>();
                     @SuppressWarnings("unchecked")
                     final List<File> fileList = (List<File>) data;
+                    fileList.forEach(file -> pathList.add(file.toPath()));
+
                     final int row = ((JTable.DropLocation) support.getDropLocation()).getRow();
-
-                    // Process every file
-                    for (File file : fileList) {
-                        final Path path = file.toPath();
-                        final String fileName = file.getName();
-
-                        if (fileName.endsWith(OMR.BOOK_EXTENSION)) {
-                            new DropBookTask(row, path).execute();
-                        } else {
-                            new DropImageTask(row, path).execute();
-                        }
-                    }
+                    new DropFilesTask(row, pathList).execute();
 
                     return true;
                 } catch (UnsupportedFlavorException ex) {
@@ -1021,104 +1010,64 @@ public class SplitAndMerge
         }
     }
 
-    //--------------//
-    // LoadBookTask //
-    //--------------//
-    private class LoadBookTask
-            extends BookActions.LoadBookTask
+    //---------------//
+    // LoadFilesTask //
+    //---------------//
+    /**
+     * Task to load files (book / image) from disk into playlist.
+     */
+    private class LoadFilesTask
+            extends BookActions.LoadFilesTask
     {
 
-        public LoadBookTask (Path path)
+        public LoadFilesTask (Collection<? extends Path> paths)
         {
-            super(path);
+            super(paths);
         }
 
         @Override
-        protected void succeeded (Book book)
+        protected void succeeded (List<Book> bookList)
         {
-            if (book != null) {
-                addExcerpt(book);
-                super.succeeded(book);
+            super.succeeded(bookList);
+
+            for (Book book : bookList) {
+                if (book != null) {
+                    addExcerpt(book);
+                }
             }
         }
 
         protected void addExcerpt (Book book)
         {
+            // We add excerpts at the end of the playlist
             model.add(BookExcerpt.create(book));
         }
     }
 
     //---------------//
-    // LoadImageTask //
+    // DropFilesTask //
     //---------------//
-    private class LoadImageTask
-            extends BookActions.LoadImageTask
-    {
-
-        public LoadImageTask (Path path)
-        {
-            super(path);
-        }
-
-        @Override
-        protected void succeeded (Book book)
-        {
-            if (book != null) {
-                addExcerpt(book);
-                super.succeeded(book);
-            }
-        }
-
-        protected void addExcerpt (Book book)
-        {
-            model.add(BookExcerpt.create(book));
-        }
-    }
-
-    //--------------//
-    // DropBookTask //
-    //--------------//
-    private class DropBookTask
-            extends LoadBookTask
+    /**
+     * Task to drop files (book / image) into playlist.
+     */
+    private class DropFilesTask
+            extends LoadFilesTask
     {
 
         /** Target row in table. */
         private final int row;
 
-        public DropBookTask (int row,
-                             Path path)
+        public DropFilesTask (int row,
+                              Collection<? extends Path> paths)
         {
-            super(path);
+            super(paths);
             this.row = row;
         }
 
         @Override
         protected void addExcerpt (Book book)
         {
-            model.add(row, BookExcerpt.create(book));
-        }
-    }
-
-    //---------------//
-    // DropImageTask //
-    //---------------//
-    private class DropImageTask
-            extends LoadImageTask
-    {
-
-        /** Target row in table. */
-        private final int row;
-
-        public DropImageTask (int row,
-                              Path path)
-        {
-            super(path);
-            this.row = row;
-        }
-
-        @Override
-        protected void addExcerpt (Book book)
-        {
+            // We add excerpts at the selected row of the playlist
             model.add(row, BookExcerpt.create(book));
         }
     }

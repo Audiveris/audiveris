@@ -59,7 +59,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * A fermata may also refer to a single or double barline, to indicate the end of a phrase.
  * <p>
  * Such reference is implemented via a Relation instance.
- * <p>
  *
  * @author Hervé Bitteur
  */
