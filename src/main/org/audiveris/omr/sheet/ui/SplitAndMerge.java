@@ -1055,20 +1055,22 @@ public class SplitAndMerge
     {
 
         /** Target row in table. */
-        private final int row;
+        private int row;
 
         public DropFilesTask (int row,
                               Collection<? extends Path> paths)
         {
             super(paths);
+            paths.forEach(path -> logger.info("Drop {}", path)); // BINGO to be removed
             this.row = row;
         }
 
         @Override
         protected void addExcerpt (Book book)
         {
-            // We add excerpts at the selected row of the playlist
-            model.add(row, BookExcerpt.create(book));
+            // We add excerpts at the current row in the playlist
+            // And increment row for next excerpt insertion
+            model.add(row++, BookExcerpt.create(book));
         }
     }
 
