@@ -100,7 +100,7 @@ public class BeamStructure
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new BeamItems object.
+     * Creates a new <code>BeamStructure</code> object.
      *
      * @param glyph   the candidate glyph
      * @param spotLag lag for sections, perhaps null
@@ -369,6 +369,19 @@ public class BeamStructure
     public List<BeamLine> getLines ()
     {
         return lines;
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    /**
+     * Report the ItemParameters used.
+     *
+     * @return the item params
+     */
+    public ItemParameters getParams ()
+    {
+        return params;
     }
 
     //----------//

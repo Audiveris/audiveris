@@ -65,6 +65,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li><b>Small staff</b>: If a second peak is detected in the histogram of staff interlines,
  * it signals the presence of staves with a different interline value.
  * For small staves, a specific small Scale structure is then included.
+ * <li><b>Second beam thickness</b>: If a third peak is detected in the histogram of vertical black
+ * runs, it provides the thickness of a second population of beams (either larger or smaller than
+ * the main beam thickness).
  * <li><b>Head-Seed</b>: Typical horizontal distance between note head bounds and stem seed,
  * per head shape and head side.
  * This info is retrieved in HEADS step and used in STEMS step to precisely detect stem
@@ -74,7 +77,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * This class also provides methods for converting values based on what the interline and the line
  * thickness are actually worth.
- * <br>There are two different measurements: pixels and fractions.
+ * <br>There are three different measurements: pixels, lines and interlines.
  * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Measurements table</caption>
  * <tr>
@@ -96,7 +99,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <td style="padding: 10px; border: 1px solid black;">This is a number (or fraction) of square
  * interlines,
  * meant to measure glyph area or weight.
- * <br>Typical unit value for interline area is around 400 pixels.</td>
+ * <br>Typical unit value for interline area is around 400 square pixels.</td>
  * </tr>
  * <tr>
  * <td style="padding: 10px; border: 1px solid black;">LineFraction</td>
@@ -141,7 +144,8 @@ public class Scale
         interline("Interline"),
         smallInterline("Small interline"),
         beam("Beam thickness"),
-        stem("Stem thickness");
+        stem("Stem thickness"),
+        secondBeam("Second beam thickness");
 
         private final String description;
 
@@ -208,24 +212,31 @@ public class Scale
     @XmlElement(name = "small-staff")
     private Scale smallScale;
 
+    /** Second typical thickness for beams and beam hooks, if any. */
+    @XmlElement(name = "second-beam")
+    private BeamScale secondBeamScale;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Scale object, meant for a whole sheet.
      *
-     * @param interlineScale scale of (large) interline
-     * @param lineScale      scale of line thickness
-     * @param beamScale      scale of beam
-     * @param smallScale     scale for small staves, perhaps null
+     * @param interlineScale  scale of (large) interline
+     * @param lineScale       scale of line thickness
+     * @param beamScale       scale of beam
+     * @param smallScale      scale for small staves, perhaps null
+     * @param secondBeamScale second scale for beams, perhaps null
      */
     public Scale (InterlineScale interlineScale,
                   LineScale lineScale,
                   BeamScale beamScale,
-                  Scale smallScale)
+                  Scale smallScale,
+                  BeamScale secondBeamScale)
     {
         this.interlineScale = interlineScale;
         this.lineScale = lineScale;
         this.beamScale = beamScale;
         this.smallScale = smallScale;
+        this.secondBeamScale = secondBeamScale;
     }
 
     /**
@@ -401,6 +412,9 @@ public class Scale
         case beam:
             return getBeamThickness();
 
+        case secondBeam:
+            return (secondBeamScale != null) ? secondBeamScale.getMain() : null;
+
         case stem:
             return getStemThickness();
 
@@ -560,6 +574,19 @@ public class Scale
         this.musicFontScale = musicFontScale;
     }
 
+    //--------------------//
+    // getSecondBeamScale //
+    //--------------------//
+    /**
+     * Report the scond beam scale, if any
+     *
+     * @return the secondBeamScale, perhaps null
+     */
+    public BeamScale getSecondBeamScale ()
+    {
+        return secondBeamScale;
+    }
+
     //-------------------//
     // getSmallInterline //
     //-------------------//
@@ -605,6 +632,9 @@ public class Scale
         return smallScale;
     }
 
+    //---------------//
+    // setSmallScale //
+    //---------------//
     /**
      * Set small scale information.
      *
@@ -739,10 +769,13 @@ public class Scale
             return interlineScale = new InterlineScale(v, v, v);
 
         case smallInterline:
-            return smallScale = new Scale(new InterlineScale(v, v, v), null, null, null);
+            return smallScale = new Scale(new InterlineScale(v, v, v), null, null, null, null);
 
         case beam:
             return beamScale = new BeamScale(v, false);
+
+        case secondBeam:
+            return secondBeamScale = new BeamScale(v, false);
 
         case stem:
             return stemScale = new StemScale(v, v);
@@ -883,6 +916,10 @@ public class Scale
 
         if (smallScale != null) {
             sb.append(" small").append(smallScale);
+        }
+
+        if (secondBeamScale != null) {
+            sb.append(" second").append(secondBeamScale);
         }
 
         sb.append("}");

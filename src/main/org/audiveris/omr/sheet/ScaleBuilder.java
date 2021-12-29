@@ -48,24 +48,34 @@ import java.util.List;
  * Class <code>ScaleBuilder</code> computes the global scale of a given sheet by processing
  * the image vertical runs.
  * <p>
- * Adding the most frequent black run length to the most frequent white run length,
- * would give the average interline value.
- * Instead of a posteriori addition, we analyze the total length of two combo runs in sequence.
- * <p>
- * A second black peak usually gives the average beam thickness.
- * And similarly, a second combo peak may indicate a series of staves with a different interline
- * than the main series.
+ * We build two histograms, one named 'black' for the length of black runs and
+ * one named 'combo' for the combined length of a black run with its following white run
+ * (or the combined length of a white run with its following black run).
+ * <dl>
+ * <dt>Use of <b>black</b> histogram:</dt>
+ * <ol>
+ * <li>The very high peak corresponds to staff line thickness.
+ * <li>If any, the first next in height corresponds to the thickness of beams.
+ * <li>And if any, the second next in height corresponds to the thickness of a second population of
+ * beams.
+ * </ol>
+ * <dt>Use of <b>combo</b> histogram:</dt>
+ * <ol>
+ * <li>The highest peak corresponds to staff interline value.
+ * <li>If any, the next in height corresponds to the interline value of a second population of
+ * staves.
+ * </ol>
+ * </dl>
  * <p>
  * Internally, additional validity checks are performed:
  * <ol>
  * <li>If we cannot retrieve black peak, we decide that the sheet does not contain significant
- * lines.</li>
+ * lines.
  * <li>If we cannot retrieve combo peak, we decide that the sheet does not contain regularly spaced
- * staff lines.</li>
+ * staff lines.
  * <li>Method {@link #checkResolution} looks at combo peak.
  * If the main interline value is below a certain threshold (see constants.minInterline), then we
  * suspect that the picture is not a music sheet (it may rather be an image, a page of text, etc).
- * </li>
  * </ol>
  * <p>
  * If we have doubts about the page at hand and if this page is part of a multi-page score, we
@@ -105,6 +115,9 @@ public class ScaleBuilder
 
     /** Main beam thickness found, if any. */
     private Integer beamKey;
+
+    /** Second beam thickness found, if any. */
+    private Integer beamKey2;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -266,6 +279,10 @@ public class ScaleBuilder
                     logger.info("Beam height: {}", beamKey);
                 }
             }
+
+            if (peaks.size() > 1) {
+                beamKey2 = peaks.get(1);
+            }
         }
 
         if (beamKey != null) {
@@ -342,9 +359,11 @@ public class ScaleBuilder
         checkResolution();
 
         // Here, we keep going on with scale data
-        InterlineScale smallInterlineScale = computeSmallInterline();
-        Scale smallScale = (smallInterlineScale == null) ? null
-                : new Scale(smallInterlineScale, null, null, null);
+        final InterlineScale smallInterlineScale = computeSmallInterline();
+        final BeamScale beamScale = computeBeam(true);
+        final BeamScale secondBeamScale = (beamKey2 != null) ? new BeamScale(beamKey2, false) : null;
+        final Scale smallScale = (smallInterlineScale == null) ? null
+                : new Scale(smallInterlineScale, null, null, null, null);
 
         // Respect user-assigned scale info, if any
         final Scale scl = sheet.getScale();
@@ -354,8 +373,9 @@ public class ScaleBuilder
             scale = new Scale(
                     (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
                     (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
-                    (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(true),
-                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
+                    (scl.getBeamScale() != null) ? scl.getBeamScale() : beamScale,
+                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale,
+                    (scl.getSecondBeamScale() != null) ? scl.getSecondBeamScale() : secondBeamScale);
 
             if (scl.getStemScale() != null) {
                 scale.setStemScale(scl.getStemScale());
@@ -364,8 +384,9 @@ public class ScaleBuilder
             scale = new Scale(
                     computeInterline(),
                     new LineScale(blackPeak),
-                    computeBeam(true),
-                    smallScale);
+                    beamScale,
+                    smallScale,
+                    secondBeamScale);
         }
 
         return scale;
