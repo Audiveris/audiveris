@@ -172,8 +172,7 @@ public class SheetParameters
     private void populateScalings ()
     {
         for (Item key : Item.values()) {
-            ScalingParam ip = new ScalingParam(key);
-            scalings.put(key, ip);
+            scalings.put(key, new ScalingParam(key));
         }
     }
 
@@ -188,6 +187,7 @@ public class SheetParameters
             extends IntegerPane
     {
 
+        /** The scale item handled by this ScaledPane. */
         final Scale.Item key;
 
         ScaledPane (Scale.Item key,

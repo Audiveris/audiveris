@@ -188,7 +188,7 @@ public class BeamsBuilder
         // Select parameters for standard items
         itemParams = new ItemParameters(scale, scale.getBeamThickness());
 
-        final BeamScale secondBeamScale = scale.getSecondBeamScale();
+        final BeamScale secondBeamScale = scale.getSmallBeamScale();
         if (secondBeamScale != null) {
             secondItemParams = new ItemParameters(scale, secondBeamScale.getMain());
         }

@@ -39,6 +39,7 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -112,18 +113,25 @@ public class SpotsBuilder
             watch.start("getBuffer");
 
             // We need a copy of image that we can overwrite.
-            ByteProcessor buffer = getBuffer();
+            final ByteProcessor buffer = getBuffer();
 
             // Retrieve major spots
             watch.start("buildSpots");
 
-            Integer beam = sheet.getScale().getBeamThickness();
+            // Select smaller between main beam thickness and second beam thickness
+            final Scale scale = sheet.getScale();
+            Integer beam = scale.getItemValue(Scale.Item.beam);
 
             if (beam == null) {
                 throw new RuntimeException("No scale information on beam thickness");
             }
 
-            List<Glyph> spots = buildSpots(buffer, null, beam, null);
+            final Integer beam2 = scale.getItemValue(Scale.Item.smallBeam);
+            if (beam2 != null) {
+                beam = Math.min(beam, beam2);
+            }
+
+            final List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
             watch.start("dispatchSheetSpots");
@@ -153,7 +161,7 @@ public class SpotsBuilder
      *
      * @param buffer provided buffer (it will be modified)
      * @param offset buffer offset WRT sheet coordinates, or null
-     * @param beam   typical beam height
+     * @param beam   minimum beam height
      * @param cueId  cue id for cue buffer, null for whole sheet buffer
      * @return the collection of spots retrieved
      */
@@ -169,17 +177,8 @@ public class SpotsBuilder
             eraseHeaderAreas(buffer);
         }
 
-        final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
-        final float radius = (float) (diameter - 1) / 2;
-        logger.debug(
-                "Spots retrieval beam: {}, diameter: {} ...",
-                String.format("%.1f", beam),
-                String.format("%.1f", diameter));
-
-        final int[] seOffset = {0, 0};
-        StructureElement se = new StructureElement(0, 1, radius, seOffset);
         watch.start("close");
-        new MorphoProcessor(se).close(buffer);
+        close(buffer, beam);
 
         // For visual check
         watch.start("visualCheck");
@@ -236,6 +235,30 @@ public class SpotsBuilder
         }
 
         return glyphs;
+    }
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Perform the closing operation.
+     *
+     * @param buffer buffer to be modified
+     * @param beam   beam height for structure element
+     */
+    private void close (ByteProcessor buffer,
+                        double beam)
+    {
+        final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
+        final float radius = (float) (diameter - 1) / 2;
+        logger.debug(
+                "Spots retrieval beam: {}, diameter: {} ...",
+                String.format("%.1f", beam),
+                String.format("%.1f", diameter));
+
+        final int[] seOffset = {0, 0};
+        final StructureElement se = new StructureElement(0, 1, radius, seOffset);
+        new MorphoProcessor(se).close(buffer);
     }
 
     //--------------------//

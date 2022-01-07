@@ -31,6 +31,7 @@ import org.audiveris.omr.math.Range;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Scale.BeamScale;
+import org.audiveris.omr.sheet.Scale.Info;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Scale.LineScale;
 import org.audiveris.omr.step.StepException;
@@ -51,21 +52,29 @@ import java.util.List;
  * We build two histograms, one named 'black' for the length of black runs and
  * one named 'combo' for the combined length of a black run with its following white run
  * (or the combined length of a white run with its following black run).
+ * <p>
+ * For each histogram, black or combo, we look only at the highest peaks found (the peak height is
+ * the number of occurrences for a given run length) and a threshold is applied to filter out peaks
+ * that are not significant enough.
  * <dl>
- * <dt>Use of <b>black</b> histogram:</dt>
+ * <dt>Use of <b>BLACK</b> histogram:</dt>
  * <ol>
  * <li>The very high peak corresponds to staff line thickness.
  * <li>If any, the first next in height corresponds to the thickness of beams.
  * <li>And if any, the second next in height corresponds to the thickness of a second population of
  * beams.
  * </ol>
- * <dt>Use of <b>combo</b> histogram:</dt>
+ * <dt>Use of <b>COMBO</b> histogram:</dt>
  * <ol>
  * <li>The highest peak corresponds to staff interline value.
  * <li>If any, the next in height corresponds to the interline value of a second population of
  * staves.
  * </ol>
  * </dl>
+ * NOTA: The notion of 'first' vs 'second' peak (for staff interline, for beam height) simply means
+ * that we have found two distinct peaks and that 'first' key appears more <b>frequently</b> than
+ * 'second' key.
+ * But more frequent does not mean larger or smaller, which is given by the key itself.
  * <p>
  * Internally, additional validity checks are performed:
  * <ol>
@@ -101,7 +110,7 @@ public class ScaleBuilder
     /** Whole vertical run table. */
     private RunTable binary;
 
-    /** Keeper of vertical run length histograms, for foreground & background. */
+    /** Keeper of vertical run length histograms, for foreground and background. */
     private HistoKeeper histoKeeper;
 
     /** Most frequent length of vertical black runs found. */
@@ -118,6 +127,9 @@ public class ScaleBuilder
 
     /** Second beam thickness found, if any. */
     private Integer beamKey2;
+
+    /** Guessed beam thickness if ever, for lack of 'beamKey'. */
+    private Integer beamGuess;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -211,29 +223,31 @@ public class ScaleBuilder
         }
     }
 
-    //-------------//
-    // computeBeam //
-    //-------------//
+    //-----------------//
+    // computeBeamKeys //
+    //-----------------//
     /**
-     * Report the beam scale information for the sheet.
+     * Compute the beam scale information for the sheet, assigning values to
+     * <code>beamKey</code> and <code>beamKey2</code> if possible,
+     * or <code>beamGuess</code> if nothing else works.
      * <p>
-     * We try to retrieve a beam key in black histogram, otherwise we extrapolate a probable beam
+     * We try to retrieve beam keys in black histogram, otherwise we extrapolate a probable beam
      * height based on minimum and maximum height values.
      *
      * @param verbose true for printing out computation details
-     * @return the beam scale
      */
-    private BeamScale computeBeam (boolean verbose)
+    private void computeBeamKeys (boolean verbose)
     {
         // Scale data?
         if (comboPeak == null) {
             logger.warn("No global scale information available");
 
-            return null;
+            return;
         }
 
         // Beam guess
-        final int largerInterline = getLargerInterline();
+        final int largerInterline = (comboPeak2 == null) ? comboPeak.main
+                : Math.max(comboPeak.main, comboPeak2.main);
         final int minHeight = Math.max(
                 blackPeak.max,
                 (int) Math.rint(constants.beamMinFraction.getValue() * largerInterline));
@@ -255,9 +269,9 @@ public class ScaleBuilder
         // Setting quorum for blackFinder here is just for the potential plot
         histoKeeper.blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
 
-        List<Integer> peaks = histoKeeper.blackFunction.getLocalMaxima(minHeight, maxHeight);
+        final List<Integer> peaks = histoKeeper.blackFunction.getLocalMaxima(minHeight, maxHeight);
 
-        if (!peaks.isEmpty()) {
+        if (peaks.size() > 0) {
             final int peak = peaks.get(0);
             final double quorumRatio = (double) histoKeeper.blackFunction.getValue(peak) / quorum;
             final double rangeRatio = (double) (peak - minHeight) / (maxHeight - minHeight);
@@ -274,54 +288,24 @@ public class ScaleBuilder
 
             if ((quorumRatio >= 1.0) || (diff <= constants.beamMaxDiff.getValue())) {
                 beamKey = peak;
+            } else {
+                // Beam extrapolation from height possible range
+                beamGuess = guess;
 
                 if (verbose) {
-                    logger.info("Beam height: {}", beamKey);
+                    logger.warn("No reliable beam height found, guessed value: {}", beamGuess);
                 }
             }
 
             if (peaks.size() > 1) {
-                beamKey2 = peaks.get(1);
+                final int peak2 = peaks.get(1);
+                final double qRatio = (double) histoKeeper.blackFunction.getValue(peak2)
+                                              / quorum;
+
+                if (qRatio >= 1.0) {
+                    beamKey2 = peak2;
+                }
             }
-        }
-
-        if (beamKey != null) {
-            return new BeamScale(beamKey, false);
-        } else {
-            // Beam extrapolation from height possible range
-            if (verbose) {
-                logger.warn("No reliable beam height found, guessed value: {}", guess);
-            }
-
-            return new BeamScale(guess, true);
-        }
-    }
-
-    //------------------//
-    // computeInterline //
-    //------------------//
-    private InterlineScale computeInterline ()
-    {
-        if ((comboPeak2 == null) || (comboPeak2.main < comboPeak.main)) {
-            return new InterlineScale(comboPeak);
-        } else {
-            return new InterlineScale(comboPeak2);
-        }
-    }
-
-    //-----------------------//
-    // computeSmallInterline //
-    //-----------------------//
-    private InterlineScale computeSmallInterline ()
-    {
-        if (comboPeak2 == null) {
-            return null;
-        }
-
-        if (comboPeak2.main < comboPeak.main) {
-            return new InterlineScale(comboPeak2);
-        } else {
-            return new InterlineScale(comboPeak);
         }
     }
 
@@ -350,7 +334,7 @@ public class ScaleBuilder
         histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
 
         if (dummy) {
-            computeBeam(false); // Just for the chart
+            computeBeamKeys(false); // Just for the chart
 
             return null;
         }
@@ -359,11 +343,23 @@ public class ScaleBuilder
         checkResolution();
 
         // Here, we keep going on with scale data
-        final InterlineScale smallInterlineScale = computeSmallInterline();
-        final BeamScale beamScale = computeBeam(true);
-        final BeamScale secondBeamScale = (beamKey2 != null) ? new BeamScale(beamKey2, false) : null;
-        final Scale smallScale = (smallInterlineScale == null) ? null
-                : new Scale(smallInterlineScale, null, null, null, null);
+        final LineScale lineScale = new LineScale(blackPeak);
+
+        final InterlineScale interlineScale = getInterlineScale();
+        final Scale smallScale = getSmallScale();
+
+        computeBeamKeys(true); // -> beamGuess, beamKey, beamKey2
+        BeamScale beamScale = null;
+        BeamScale smallBeamScale = null;
+
+        if (beamKey2 != null) {
+            beamScale = new BeamScale(Math.max(beamKey, beamKey2), false);
+            smallBeamScale = new BeamScale(Math.min(beamKey, beamKey2), false);
+        } else if (beamKey != null) {
+            beamScale = new BeamScale(beamKey, false);
+        } else if (beamGuess != null) {
+            beamScale = new BeamScale(beamGuess, true);
+        }
 
         // Respect user-assigned scale info, if any
         final Scale scl = sheet.getScale();
@@ -371,44 +367,51 @@ public class ScaleBuilder
 
         if (scl != null) {
             scale = new Scale(
-                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
-                    (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
+                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : interlineScale,
+                    (scl.getLineScale() != null) ? scl.getLineScale() : lineScale,
                     (scl.getBeamScale() != null) ? scl.getBeamScale() : beamScale,
                     (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale,
-                    (scl.getSecondBeamScale() != null) ? scl.getSecondBeamScale() : secondBeamScale);
+                    (scl.getSmallBeamScale() != null) ? scl.getSmallBeamScale() : smallBeamScale);
 
             if (scl.getStemScale() != null) {
                 scale.setStemScale(scl.getStemScale());
             }
         } else {
             scale = new Scale(
-                    computeInterline(),
-                    new LineScale(blackPeak),
+                    interlineScale,
+                    lineScale,
                     beamScale,
                     smallScale,
-                    secondBeamScale);
+                    smallBeamScale);
         }
 
         return scale;
     }
 
-    //--------------------//
-    // getLargerInterline //
-    //--------------------//
-    /**
-     * Report the larger of comboPeak.main (and comboPeak2.main if any)
-     *
-     * @return (larger) main interline
-     */
-    private int getLargerInterline ()
+    //-------------------//
+    // getInterlineScale //
+    //-------------------//
+    private InterlineScale getInterlineScale ()
     {
-        int mainCombo = comboPeak.main;
+        if ((comboPeak2 == null) || (comboPeak2.main < comboPeak.main)) {
+            return new InterlineScale(comboPeak);
+        } else {
+            return new InterlineScale(comboPeak2);
+        }
+    }
 
-        if (comboPeak2 != null) {
-            mainCombo = Math.max(mainCombo, comboPeak2.main);
+    //---------------//
+    // getSmallScale //
+    //---------------//
+    private Scale getSmallScale ()
+    {
+        if (comboPeak2 == null) {
+            return null;
         }
 
-        return mainCombo;
+        final Range peak = (comboPeak2.main < comboPeak.main) ? comboPeak2 : comboPeak;
+
+        return new Scale(new InterlineScale(peak), null, null, null, null);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -554,7 +557,7 @@ public class ScaleBuilder
                 int lastBlack = 0; // Length of last valid black run
 
                 for (Iterator<Run> it = binary.iterator(x); it.hasNext();) {
-                    Run run = it.next();
+                    final Run run = it.next();
                     final int y = run.getStart();
                     final int black = run.getLength();
 
@@ -563,7 +566,7 @@ public class ScaleBuilder
                     } else {
                         if (y > yLast) {
                             // Process the white run before this black run
-                            int white = y - yLast;
+                            final int white = y - yLast;
 
                             // A white run between valid black runs?: B1, W, B2
                             // Combo 1 is defined as B1 + W, that is [-----]
@@ -759,11 +762,11 @@ public class ScaleBuilder
             xMax = Math.min(sheet.getWidth() - 1, (xMax * 5) / 2); // Add some margin
 
             Scale scale = sheet.getScale();
-            String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(false)
-                    : "NO_SCALE");
 
             try {
                 final String title = sheet.getId() + " " + blackFinder.name;
+                final String xLabel = "Runs lengths - " + ((scale != null)
+                        ? scale.toString(Info.BLACK) : "NO_SCALE");
                 final String yLabel = "Runs counts - total:" + blackFunction.getArea()
                                               + " - Beam quorum:" + getBeamQuorum();
                 ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
@@ -774,6 +777,8 @@ public class ScaleBuilder
 
             try {
                 final String title = sheet.getId() + " " + comboFinder.name;
+                final String xLabel = "Runs lengths - " + ((scale != null)
+                        ? scale.toString(Info.COMBO) : "NO_SCALE");
                 final String yLabel = "Runs counts";
                 ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
                 comboFinder.plot(plotter, true, 0, xMax).display(new Point(80, 80));

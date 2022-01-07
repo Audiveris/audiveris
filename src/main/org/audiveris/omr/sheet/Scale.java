@@ -144,8 +144,8 @@ public class Scale
         interline("Interline"),
         smallInterline("Small interline"),
         beam("Beam thickness"),
-        stem("Stem thickness"),
-        secondBeam("Second beam thickness");
+        smallBeam("Small beam thickness"),
+        stem("Stem thickness");
 
         private final String description;
 
@@ -176,7 +176,23 @@ public class Scale
         SMALL;
     }
 
+    /**
+     * Parts of scale to display.
+     */
+    public enum Info
+    {
+        BLACK,
+        COMBO,
+        ALL;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
+    /**
+     * Typical thickness of staff lines.
+     */
+    @XmlElement(name = "line")
+    private LineScale lineScale;
+
     /**
      * Typical vertical distance between a staff line center and the next line center
      * within the same staff.
@@ -184,13 +200,17 @@ public class Scale
     @XmlElement(name = "interline")
     private InterlineScale interlineScale;
 
-    /** Typical thickness of staff lines. */
-    @XmlElement(name = "line")
-    private LineScale lineScale;
+    /** Typical vertical distance for small staves, if any. */
+    @XmlElement(name = "small-staff")
+    private Scale smallScale;
 
     /** Typical thickness of beams and beam hooks. */
     @XmlElement(name = "beam")
     private BeamScale beamScale;
+
+    /** Small typical thickness for beams and beam hooks, if any. */
+    @XmlElement(name = "small-beam")
+    private BeamScale smallBeamScale;
 
     /** Typical thickness of stems. */
     @XmlElement(name = "stem")
@@ -208,35 +228,27 @@ public class Scale
     @XmlElement(name = "head-seeds")
     private HeadSeedScale headSeedScale;
 
-    /** Scale for small staves, if any. */
-    @XmlElement(name = "small-staff")
-    private Scale smallScale;
-
-    /** Second typical thickness for beams and beam hooks, if any. */
-    @XmlElement(name = "second-beam")
-    private BeamScale secondBeamScale;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Scale object, meant for a whole sheet.
      *
-     * @param interlineScale  scale of (large) interline
-     * @param lineScale       scale of line thickness
-     * @param beamScale       scale of beam
-     * @param smallScale      scale for small staves, perhaps null
-     * @param secondBeamScale second scale for beams, perhaps null
+     * @param interlineScale scale of (large) interline
+     * @param lineScale      scale of line thickness
+     * @param beamScale      scale of beam
+     * @param smallScale     scale for small staves, perhaps null
+     * @param smallBeamScale scale for small beams, perhaps null
      */
     public Scale (InterlineScale interlineScale,
                   LineScale lineScale,
                   BeamScale beamScale,
                   Scale smallScale,
-                  BeamScale secondBeamScale)
+                  BeamScale smallBeamScale)
     {
         this.interlineScale = interlineScale;
         this.lineScale = lineScale;
         this.beamScale = beamScale;
         this.smallScale = smallScale;
-        this.secondBeamScale = secondBeamScale;
+        this.smallBeamScale = smallBeamScale;
     }
 
     /**
@@ -412,8 +424,8 @@ public class Scale
         case beam:
             return getBeamThickness();
 
-        case secondBeam:
-            return (secondBeamScale != null) ? secondBeamScale.getMain() : null;
+        case smallBeam:
+            return (smallBeamScale != null) ? smallBeamScale.getMain() : null;
 
         case stem:
             return getStemThickness();
@@ -574,17 +586,17 @@ public class Scale
         this.musicFontScale = musicFontScale;
     }
 
-    //--------------------//
-    // getSecondBeamScale //
-    //--------------------//
+    //-------------------//
+    // getSmallBeamScale //
+    //-------------------//
     /**
-     * Report the scond beam scale, if any
+     * Report the small beam scale, if any
      *
-     * @return the secondBeamScale, perhaps null
+     * @return the smallBeamScale, perhaps null
      */
-    public BeamScale getSecondBeamScale ()
+    public BeamScale getSmallBeamScale ()
     {
-        return secondBeamScale;
+        return smallBeamScale;
     }
 
     //-------------------//
@@ -774,8 +786,8 @@ public class Scale
         case beam:
             return beamScale = new BeamScale(v, false);
 
-        case secondBeam:
-            return secondBeamScale = new BeamScale(v, false);
+        case smallBeam:
+            return smallBeamScale = new BeamScale(v, false);
 
         case stem:
             return stemScale = new StemScale(v, v);
@@ -868,7 +880,7 @@ public class Scale
     @Override
     public String toString ()
     {
-        return toString(true);
+        return toString(Info.ALL);
     }
 
     //----------//
@@ -877,30 +889,46 @@ public class Scale
     /**
      * An extensible description of scale.
      *
-     * @param full true for full description
+     * @param info which info to display
      * @return scale description
      */
-    public String toString (boolean full)
+    public String toString (Info info)
     {
-        StringBuilder sb = new StringBuilder("Scale{");
+        final StringBuilder sb = new StringBuilder();
 
-        if (lineScale != null) {
-            sb.append(lineScale);
+        if (info == Info.ALL) {
+            sb.append("Scale{");
         }
 
-        if (interlineScale != null) {
-            sb.append(" ").append(interlineScale);
+        if (info == Info.COMBO || info == Info.ALL) {
+            if (smallScale != null) {
+                sb.append(" small").append(smallScale.interlineScale);
+            }
+
+            if (interlineScale != null) {
+                sb.append(" ").append(interlineScale);
+            }
         }
 
-        if (beamScale != null) {
-            sb.append(" ").append(beamScale);
+        if (info == Info.BLACK || info == Info.ALL) {
+            if (lineScale != null) {
+                sb.append(" ").append(lineScale);
+            }
+
+            if (smallBeamScale != null) {
+                sb.append(" small").append(smallBeamScale);
+            }
+
+            if (beamScale != null) {
+                sb.append(" ").append(beamScale);
+            }
         }
 
-        if (stemScale != null) {
-            sb.append(" ").append(stemScale);
-        }
+        if (info == Info.ALL) {
+            if (stemScale != null) {
+                sb.append(" ").append(stemScale);
+            }
 
-        if (full) {
             if (blackHeadScale != null) {
                 sb.append(" ").append(blackHeadScale);
             }
@@ -914,15 +942,9 @@ public class Scale
             }
         }
 
-        if (smallScale != null) {
-            sb.append(" small").append(smallScale);
+        if (info == Info.ALL) {
+            sb.append("}");
         }
-
-        if (secondBeamScale != null) {
-            sb.append(" second").append(secondBeamScale);
-        }
-
-        sb.append("}");
 
         return sb.toString();
     }
