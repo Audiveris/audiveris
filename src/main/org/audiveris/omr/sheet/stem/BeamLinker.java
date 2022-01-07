@@ -1280,7 +1280,7 @@ public class BeamLinker
                     // CLinker: Compatible head encountered
                     // VLinker: (Starting) Beam encountered
                     // BLinker: Beam encountered
-                    updateStemLine(ev.glyph, glyphs, stemLine);
+                    updateStemLine(ev.glyph, glyphs, stemLine, null);
                 }
 
                 return maxIndex;
@@ -1436,7 +1436,6 @@ public class BeamLinker
             /**
              * Look for reachable heads (and other beams in same beam group) in linker area,
              * ordered by vertical distance.
-             *
              * <p>
              * A head is considered as reachable if it has a head stump and the center of this stump
              * is located in lookup area.
@@ -1600,7 +1599,7 @@ public class BeamLinker
                                                                       b.getMedian());
                         r.setExtensionPoint(new Point2D.Double(
                                 crossPt.getX(),
-                                crossPt.getY() + (yDir * (b.getHeight() / 2.0))));
+                                crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
 
                         // Portion depends on x location of stem WRT beam
                         r.setBeamPortion(BeamStemRelation.computeBeamPortion(

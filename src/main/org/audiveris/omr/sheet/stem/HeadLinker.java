@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
-import java.awt.Point;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
@@ -58,13 +57,14 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
-import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
@@ -230,7 +230,7 @@ public class HeadLinker
      * <li>Heads <b>not related to beam</b>.
      * For these heads, we'll try to reach the typical stem length as a soft target.
      * </ul>
-     *
+     * <p>
      * This method is called on each and every head not yet linked from a beam.
      * Using higher and higher profiles, on left and right head sides, we check both top and bottom
      * CLinker's:
@@ -246,7 +246,7 @@ public class HeadLinker
      * This head horizontal side is recorded in the 'undefs' collection of undefined heads, to be
      * later checked when all other attempts have been made.
      * </ol>
-     *
+     * <p>
      * Policies:
      * <ul>
      * <li>A <b>rather good</b> head should have at least one corner connection.
@@ -1400,8 +1400,9 @@ public class HeadLinker
             /**
              * Expand current stem from head as much as possible.
              * <p>
-             * This means until reachable beam if any, otherwise until the stem free portion since
-             * last head reaches at least yHard (min length) and at best ySoft (target length).
+             * This means until reachable beam group if any, otherwise until the stem free portion
+             * since last head reaches at least yHard (min length) and at best ySoft (target
+             * length).
              *
              * @param yHard       hard target ordinate
              * @param ySoft       soft target ordinate
@@ -1421,6 +1422,8 @@ public class HeadLinker
                 if (head.isVip()) {
                     logger.info("VIP {} expand {}", this, sb);
                 }
+
+                final double maxDx = params.maxLineGlyphDx; // Max dx to include a new glyph
 
                 double lastY = theoLine.getY1(); // Last ordinate reached so far
 
@@ -1466,8 +1469,9 @@ public class HeadLinker
                                 if (i < maxIndex) {
                                     final StemItem nextEv = sb.get(i + 1);
                                     if (nextEv instanceof GlyphItem) {
-                                        updateStemLine(nextEv.glyph, glyphs, stemLine);
-                                        return i + 1;
+                                        if (updateStemLine(nextEv.glyph, glyphs, stemLine, maxDx)) {
+                                            return i + 1;
+                                        }
                                     }
                                 }
 
@@ -1509,7 +1513,7 @@ public class HeadLinker
                         }
 
                         relations.put(cl, hsRel);
-                        updateStemLine(ev.glyph, glyphs, stemLine);
+                        updateStemLine(ev.glyph, glyphs, stemLine, null);
 
                         // Check that resulting contextual head grade is sufficient
                         // to reset stem free soft portion at this head ordinate
@@ -1534,15 +1538,37 @@ public class HeadLinker
                         // Beam encountered
                         final BLinker bl = (BLinker) ((LinkerItem) ev).linker;
                         final AbstractBeamInter beam = bl.getSource();
-                        updateStemLine(ev.glyph, glyphs, stemLine);
+                        updateStemLine(ev.glyph, glyphs, stemLine, null);
                         final BeamStemRelation bsRel = BeamStemRelation.checkRelation(
                                 beam, stemLine, vSide, scale, stemProfile);
                         relations.put(bl, bsRel);
 
-                        return i;
+                        // If there are other reachable beams in the same beam group,
+                        // then let's keep on going to link them too
+                        boolean stop = true;
+                        final BeamGroupInter group = beam.getGroup();
+                        for (int j = i + 1; j <= maxIndex; j++) {
+                            final StemItem ev2 = sb.get(i);
+                            if (ev2 instanceof LinkerItem
+                                        && ((LinkerItem) ev2).linker instanceof BLinker) {
+                                final BLinker bl2 = (BLinker) ((LinkerItem) ev2).linker;
+                                final AbstractBeamInter beam2 = bl2.getSource();
+                                if (beam2.getGroup() == group) {
+                                    stop = false;
+                                }
+                                break;
+                            }
+                        }
+
+                        if (stop) {
+                            return i;
+                        }
                     } else if (ev instanceof GlyphItem) {
                         // Plain glyph encountered
-                        updateStemLine(ev.glyph, glyphs, stemLine);
+                        // Check compatibility with existing stem line
+                        if (!updateStemLine(ev.glyph, glyphs, stemLine, maxDx)) {
+                            return i - 1;
+                        }
                     }
 
                     if (!(ev instanceof GapItem) && (ev != null) && (ev.line != null)) {

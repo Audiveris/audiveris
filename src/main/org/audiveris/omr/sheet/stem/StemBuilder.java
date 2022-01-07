@@ -1065,16 +1065,14 @@ public class StemBuilder
     private void sortItems (List<? extends StemItem> list)
     {
         Collections.sort(list, (se1, se2) -> {
-                     if (se1.glyph != null && se1.glyph == se2.glyph) {
-                         // Linkers based on same glyph cannot be sorted on glyph bounds
-                         // but on their refPt ordinate
-                         if ((se1 instanceof LinkerItem) && (se2 instanceof LinkerItem)) {
-                             return yDir * Double.compare(
-                                     ((LinkerItem) se1).linker.getReferencePoint().getY(),
-                                     ((LinkerItem) se2).linker.getReferencePoint().getY());
-                         }
+                     // Linker pairs are sorted on their refPt ordinate
+                     if ((se1 instanceof LinkerItem) && (se2 instanceof LinkerItem)) {
+                         return yDir * Double.compare(
+                                 ((LinkerItem) se1).linker.getReferencePoint().getY(),
+                                 ((LinkerItem) se2).linker.getReferencePoint().getY());
                      }
 
+                     // Others are sorted on their line starting ordinate
                      return (yDir > 0)
                              ? Double.compare(se1.line.getY1(), se2.line.getY1())
                              : Double.compare(se2.line.getY2(), se1.line.getY2());

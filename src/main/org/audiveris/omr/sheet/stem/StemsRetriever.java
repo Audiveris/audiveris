@@ -1122,6 +1122,10 @@ public class StemsRetriever
                 0.3,
                 "Maximum distance from section center to target line");
 
+        private final Scale.Fraction maxLineGlyphDx = new Scale.Fraction(
+                0.2,
+                "Maximum distance from glyph centroid to current stem line");
+
         private final Scale.Fraction maxStemAlignmentDx = new Scale.Fraction(
                 0.15,
                 "Maximum dx between aligned stem seeds");
@@ -1217,6 +1221,8 @@ public class StemsRetriever
 
         final double maxLineSectionDx;
 
+        final double maxLineGlyphDx;
+
         final int minChunkWeight;
 
         final int minStemTailLg;
@@ -1273,6 +1279,7 @@ public class StemsRetriever
             maxStemThickness = scale.getMaxStem();
             maxLineSeedDx = scale.toPixelsDouble(constants.maxLineSeedDx);
             maxLineSectionDx = scale.toPixelsDouble(constants.maxLineSectionDx);
+            maxLineGlyphDx = scale.toPixelsDouble(constants.maxLineGlyphDx);
             maxStemAlignmentDx = scale.toPixelsDouble(constants.maxStemAlignmentDx);
             maxStemAlignmentDy = scale.toPixelsDouble(constants.maxStemAlignmentDy);
 
