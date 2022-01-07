@@ -39,6 +39,7 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
+import static org.audiveris.omr.sheet.Scale.InterlineScale.toPixels;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
@@ -113,20 +114,21 @@ public class LedgersFilter
      */
     public Map<SystemInfo, List<Section>> process ()
     {
-        final Scale scale = sheet.getScale();
-        final int minDistanceFromStaff = scale.toPixels(constants.minDistanceFromStaff);
         final StaffManager staffManager = sheet.getStaffManager();
 
         // Filter to keep only the runs which stand outside of staves cores.
         final RunTableFactory.Filter filter = (int x, int y, int length) -> {
-            Point center = new Point(x + (length / 2), y);
-            Staff staff = staffManager.getClosestStaff(center);
+            final Point center = new Point(x + (length / 2), y);
+            final Staff staff = staffManager.getClosestStaff(center);
 
             if (staff == null) {
                 return false;
             }
 
-            return staff.distanceTo(center) >= minDistanceFromStaff;
+            // Check distance from staff, using staff specific interline value
+            final int interline = staff.getSpecificInterline();
+            final int minDist = toPixels(interline, constants.minDistanceFromStaff);
+            return staff.distanceTo(center) >= minDist;
         };
 
         final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL, filter);
@@ -215,7 +217,7 @@ public class LedgersFilter
                 "Should we display the view on ledgers?");
 
         private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
-                0.25,
+                0.5,
                 "Minimum vertical distance from nearest staff");
 
         private final Constant.String ledgerVipSections = new Constant.String(

@@ -79,6 +79,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Class <code>LedgersBuilder</code> retrieves ledgers for a system.
@@ -142,6 +143,12 @@ public class LedgersBuilder
 
     /** The system-wide collection of ledger candidates. */
     private List<StraightFilament> ledgerCandidates;
+
+    /** From stick to ledger. */
+    private Map<StraightFilament, LedgerInter> stick2ledger = new HashMap<>();
+
+    /** From ledger to stick. */
+    private Map<LedgerInter, StraightFilament> ledger2stick = new HashMap<>();
 
     /** The (good) system-wide beams and hooks, sorted by left abscissa. */
     private List<Inter> sortedSystemBeams;
@@ -211,7 +218,7 @@ public class LedgersBuilder
 
             // Filter candidates accurately, line by line
             watch.start("filterLedgers");
-            filterLedgers();
+            system.getStaves().forEach(staff -> filterLedgers(staff));
 
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -219,6 +226,40 @@ public class LedgersBuilder
         } catch (Throwable ex) {
             logger.warn("Error retrieving ledgers. " + ex, ex);
         }
+    }
+
+    //----------------//
+    // rebuildLedgers //
+    //----------------//
+    /**
+     * Remove the provided ledgers to discard and rebuild ledgers for the impacted staves.
+     *
+     * @param discarded the discarded ledgers
+     */
+    public void rebuildLedgers (List<LedgerInter> discarded)
+    {
+        logger.debug("{} Discarded ledgers:   {}", system, Inters.ids(discarded));
+        final List<LedgerInter> systemLedgers = new ArrayList<>(stick2ledger.values());
+
+        final Set<Staff> impactedStaves = new LinkedHashSet<>();
+        discarded.forEach((LedgerInter ledger) -> {
+            impactedStaves.add(ledger.getStaff());
+            ledgerCandidates.remove(ledger2stick.get(ledger));
+            ledger.remove();
+        });
+
+        impactedStaves.forEach(staff -> {
+            staff.clearLedgers();
+            filterLedgers(staff);
+        });
+
+        // Remove the system ledgers left unassigned
+        system.getStaves().forEach(
+                staff -> staff.getLedgerMap().values().forEach(
+                        list -> list.forEach(
+                                ledger -> systemLedgers.remove(ledger))));
+        systemLedgers.forEach(ledger -> ledger.remove());
+        logger.debug("{} All removed ledgers: {}", system, Inters.ids(systemLedgers));
     }
 
     //-------------//
@@ -256,39 +297,41 @@ public class LedgersBuilder
     //---------------//
     /**
      * Use smart tests on ledger candidates.
-     * Starting from each staff, check one interline higher (and lower) for candidates, etc.
+     * <p>
+     * Starting from staff top and bottom lines, check incrementally one interline higher
+     * (and one interline lower) for candidates.
      * <p>
      * For merged grand staff, there is only one middle ledger (C4), related to the upper staff.
      * Therefore, upper staff is limited downward to +1, and lower staff limited upward to 0.
+     *
+     * @param staff the staff to process
      */
-    private void filterLedgers ()
+    private void filterLedgers (Staff staff)
     {
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                continue;
+        if (staff.isTablature()) {
+            return;
+        }
+
+        final Part part = staff.getPart();
+        logger.debug("Staff#{}", staff.getId());
+
+        // Above staff (-1,-2,-3, ...)
+        final int minIndex = (part.isMerged() && (staff == part.getLastStaff())) ? 0
+                : Integer.MIN_VALUE;
+
+        for (int index = -1; index >= minIndex; index--) {
+            if (0 == lookupLine(staff, index)) {
+                break;
             }
+        }
 
-            final Part part = staff.getPart();
-            logger.debug("Staff#{}", staff.getId());
+        // Below staff (+1,+2,+3, ...)
+        final int maxIndex = (part.isMerged() && (staff == part.getFirstStaff())) ? 1
+                : Integer.MAX_VALUE;
 
-            // Above staff (-1,-2,-3, ...)
-            final int minIndex = (part.isMerged() && (staff == part.getLastStaff())) ? 0
-                    : Integer.MIN_VALUE;
-
-            for (int index = -1; index >= minIndex; index--) {
-                if (0 == lookupLine(staff, index)) {
-                    break;
-                }
-            }
-
-            // Below staff (+1,+2,+3, ...)
-            final int maxIndex = (part.isMerged() && (staff == part.getFirstStaff())) ? 1
-                    : Integer.MAX_VALUE;
-
-            for (int index = 1; index <= maxIndex; index++) {
-                if (0 == lookupLine(staff, index)) {
-                    break;
-                }
+        for (int index = 1; index <= maxIndex; index++) {
+            if (0 == lookupLine(staff, index)) {
+                break;
             }
         }
     }
@@ -322,6 +365,9 @@ public class LedgersBuilder
         // Purge candidates that overlap good beams
         purgeBeamOverlaps(filaments);
 
+        // Purge too long candidates
+        purgeTooLong(filaments);
+
         return filaments;
     }
 
@@ -352,7 +398,7 @@ public class LedgersBuilder
      * This may be a ledger on the previous line or the staff line itself
      *
      * @param staff           the staff being processed
-     * @param index           the position WRT to staff
+     * @param index           the position WRT staff
      * @param stick           the candidate stick to check
      * @param previousWrapper (output) wrapper around a previous ledger
      * @return the ordinate reference found, or null if not found
@@ -413,32 +459,6 @@ public class LedgersBuilder
         }
     }
 
-    //---------------------//
-    // intersectHorizontal //
-    //---------------------//
-    /**
-     * Check whether the provided section intersects at least one horizontal section of
-     * the system.
-     *
-     * @param section the provided (ledger) section
-     * @return true if intersects a horizontal section
-     */
-    private boolean intersectHorizontal (Section section)
-    {
-        Rectangle sectionBox = section.getBounds();
-
-        // Check this section intersects a horizontal section
-        for (Section hs : system.getHorizontalSections()) {
-            if (hs.getBounds().intersects(sectionBox)) {
-                if (hs.intersects(section)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     //------------//
     // lookupLine //
     //------------//
@@ -446,8 +466,8 @@ public class LedgersBuilder
      * This is the heart of ledger retrieval, which looks for ledgers on a specific
      * "virtual line".
      * <p>
-     * We use a very rough height for the region of interest, relying on pitch check WRT yTarget to
-     * discard the too distant candidates.
+     * We use a very rough height for the region of interest, relying on pitch check with respect to
+     * yTarget to discard the too distant candidates.
      * However there is a risk that a ledger be found "acceptable" on two line indices.
      * Moreover, a conflict on line #2 could remove the ledger from SIG while it is still accepted
      * on line #1.
@@ -515,21 +535,31 @@ public class LedgersBuilder
                 minLengthHigh.setValue(constants.minLedgerLengthHigh.getValue());
             }
 
-            GradeImpacts impacts = suite.getImpacts(new StickContext(stick, yTarget));
+            final GradeImpacts impacts = suite.getImpacts(new StickContext(stick, yTarget));
 
             if (impacts != null) {
-                double grade = impacts.getGrade();
+                final double grade = impacts.getGrade();
 
                 if (stick.isVip()) {
                     logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts);
                 }
 
                 if (grade >= suite.getMinThreshold()) {
-                    Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
-                    LedgerInter ledger = new LedgerInter(glyph, impacts);
-                    ledger.setIndex(index);
-                    sig.addVertex(ledger);
-                    ledgers.add(ledger);
+                    LedgerInter ledger = stick2ledger.get(stick);
+
+                    if (ledger == null) {
+                        Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
+                        ledger = new LedgerInter(glyph, impacts);
+                        ledger.setIndex(index);
+                        sig.addVertex(ledger);
+
+                        ledger2stick.put(ledger, stick);
+                        stick2ledger.put(stick, ledger);
+                    }
+
+                    if (!ledger.isRemoved()) {
+                        ledgers.add(ledger);
+                    }
                 }
             }
         }
@@ -580,6 +610,30 @@ public class LedgersBuilder
         }
     }
 
+    //--------------//
+    // purgeTooLong //
+    //--------------//
+    /**
+     * Purge the filaments that are obviously too long for a ledger.
+     *
+     * @param filaments (updated) the collection of filaments to purge
+     */
+    private void purgeTooLong (List<StraightFilament> filaments)
+    {
+        final int maxLength = sheet.getScale().toPixels(constants.maxLedgerLength);
+        final List<Filament> toRemove = new ArrayList<>();
+
+        for (Filament fil : filaments) {
+            if (fil.getBounds().width > maxLength) {
+                toRemove.add(fil);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            filaments.removeAll(toRemove);
+        }
+    }
+
     //---------------//
     // reduceLedgers //
     //---------------//
@@ -610,7 +664,8 @@ public class LedgersBuilder
             for (LedgerInter other : ledgers.subList(i + 1, ledgers.size())) {
                 if (GeoUtil.xOverlap(ledgerBox, other.getBounds()) > 0) {
                     // Abscissa overlap
-                    exclusions.add(sig.insertExclusion(ledger, other, Exclusion.ExclusionCause.OVERLAP));
+                    exclusions.add(sig.insertExclusion(ledger, other,
+                                                       Exclusion.ExclusionCause.OVERLAP));
                 } else {
                     break; // End of reachable neighbors
                 }
@@ -721,6 +776,10 @@ public class LedgersBuilder
         private final Scale.Fraction minLedgerLengthLow2 = new Scale.Fraction(
                 1.4,
                 "Low Minimum long length for a ledger");
+
+        private final Scale.Fraction maxLedgerLength = new Scale.Fraction(
+                20,
+                "Maximum ledger length");
 
         private final Scale.Fraction minThicknessHigh = new Scale.Fraction(
                 0.25,
