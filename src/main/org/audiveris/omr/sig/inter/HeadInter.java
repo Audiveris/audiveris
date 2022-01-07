@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -40,10 +38,8 @@ import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.Staff.IndexedLedger;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.note.HeadSeedScale;
-import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.stem.HeadLinker;
 import org.audiveris.omr.sig.GradeImpacts;
@@ -73,6 +69,8 @@ import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -503,7 +501,7 @@ public class HeadInter
         final List<UITask> tasks = new ArrayList<>();
         final SIGraph theSig = staff.getSystem().getSig();
 
-        for (Line2D line : getNeededLedgerLines(headCenter, staff)) {
+        for (Line2D line : getNeededLedgerSegments(headCenter, staff)) {
             LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1.0);
             ledger.setManual(true);
             ledger.setStaff(staff);
@@ -513,48 +511,51 @@ public class HeadInter
         return tasks;
     }
 
-    //----------------------//
-    // getNeededLedgerLines //
-    //----------------------//
+    //-------------------------//
+    // getNeededLedgerSegments //
+    //-------------------------//
     /**
-     * Report the ledger lines that should be added to support this head.
+     * Report the ledger segments that should be added to support a head at provided center.
      *
      * @param headCenter location of head center
      * @param staff      related staff
-     * @return the sequence of needed ledger lines
+     * @return the sequence of needed ledger segments, departing from staff
      */
-    public static List<Line2D> getNeededLedgerLines (Point2D headCenter,
-                                                     Staff staff)
+    public static List<Line2D> getNeededLedgerSegments (Point2D headCenter,
+                                                        Staff staff)
     {
         if (staff == null) {
             return Collections.emptyList();
         }
 
-        final NotePosition np = staff.getNotePosition(headCenter);
-        final int thePitch = (int) Math.rint(np.getPitchPosition());
-        List<Line2D> lines = null;
+        final int lineCount = staff.getLineCount();
+        final List<Line2D> segments = new ArrayList<>();
+        final int thePitch = (int) Math.rint(staff.pitchPositionOf(headCenter));
+        final int linePitch = 2 * (int) Math.rint(thePitch / 2);
 
-        if (Math.abs(thePitch) >= 6) {
-            final IndexedLedger iLedger = np.getLedger();
-            final int closestIndex = (iLedger != null) ? iLedger.index : 0;
+        if (Math.abs(linePitch) > lineCount) {
+            final int dir = Integer.signum(thePitch);
+            final double x = headCenter.getX();
+
             final Scale scale = staff.getSystem().getSheet().getScale();
             final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
-            final double x1 = headCenter.getX() - (ledgerLength / 2.0);
-            final double x2 = headCenter.getX() + (ledgerLength / 2.0);
-            final int dir = Integer.signum(thePitch);
+            final double x1 = x - (ledgerLength / 2.0);
+            final double x2 = x + (ledgerLength / 2.0);
 
-            for (int p = 6 * dir + 2 * closestIndex; p * dir <= thePitch * dir; p += 2 * dir) {
-                int y = (int) Math.rint(staff.pitchToOrdinate(headCenter.getX(), p));
+            for (int p = (lineCount + 1) * dir;
+                    p * dir <= linePitch * dir;
+                    p += 2 * dir) {
+                final int y = (int) Math.rint(staff.pitchToOrdinate(x, p));
 
-                if (lines == null) {
-                    lines = new ArrayList<>();
+                // Check if we already have a suitable ledger available, otherwise create a segment
+                final int ledgerIndex = (p - dir * (lineCount - 1)) / 2;
+                if (staff.getLedgerAt(ledgerIndex, x) == null) {
+                    segments.add(new Line2D.Double(x1, y, x2, y));
                 }
-
-                lines.add(new Line2D.Double(x1, y, x2, y));
             }
         }
 
-        return (lines != null) ? lines : Collections.emptyList();
+        return segments;
     }
 
     //-------------//
@@ -705,8 +706,8 @@ public class HeadInter
             return null;
         }
 
-        final NotePosition notePosition = staff.getNotePosition(headCenter);
-        final double roundedPitch = Math.rint(notePosition.getPitchPosition());
+        final double pitch = staff.pitchPositionOf(headCenter);
+        final double roundedPitch = Math.rint(pitch);
 
         return staff.pitchToOrdinate(headCenter.getX(), roundedPitch);
     }
@@ -1424,7 +1425,7 @@ public class HeadInter
             super.render(g);
 
             // Add needed ledgers
-            for (Line2D line : getNeededLedgerLines(inter.getRelationCenter(), inter.getStaff())) {
+            for (Line2D line : getNeededLedgerSegments(inter.getRelationCenter(), inter.getStaff())) {
                 g.setColor(Color.RED);
                 g.draw(line);
             }
@@ -1436,7 +1437,7 @@ public class HeadInter
             Rectangle box = super.getSceneBounds();
 
             // Include needed ledgers if any
-            for (Line2D line : getNeededLedgerLines(inter.getRelationCenter(), inter.getStaff())) {
+            for (Line2D line : getNeededLedgerSegments(inter.getRelationCenter(), inter.getStaff())) {
                 box.add(line.getBounds());
             }
 

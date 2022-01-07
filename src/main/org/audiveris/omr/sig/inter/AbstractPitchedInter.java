@@ -40,26 +40,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class <code>AbstractPitchedInter</code> is an abstract Inter class to carry pitch
  * information.
  * <p>
- * Pitch is counted from 0 on staff mid line and increases in top down direction:
- * <pre>
- *
- *     etc
- *     -6  -- first ledger above
- *     -5
- * +-- -4 ----------------------
- * |   -3
- * +-- -2 ----------------------
- * |   -1
- * +--  0 ----------------------
- * |    1
- * +--  2 ----------------------
- * |    3
- * +--  4 ----------------------
- *      5
- *      6  -- first ledger below
- *     etc
- *
- * </pre>
+ * Pitch position is counted from 0 on staff mid line and increases in top down direction,
+ * at line, inter-line, line, inter-line, etc.
  *
  * @author Hervé Bitteur
  */

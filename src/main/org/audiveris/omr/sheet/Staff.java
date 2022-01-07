@@ -25,13 +25,14 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.StaffFilament;
 import org.audiveris.omr.sheet.header.StaffHeader;
-import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -57,10 +58,12 @@ import org.jgrapht.Graphs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -93,9 +96,46 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>Staff</code> handles physical information of a staff with its lines.
+ * <ul>
+ * <li><b>Pitch position</b> applies to any item (such a head), is counted from 0 on staff mid line
+ * and increases in top down direction.
+ * <li><b>Ledger index</b> applies to ledger and ledgerLine, is counted from +/-1 for first ledger
+ * and increases in top down direction.
+ * </ul>
+ * Example of pitch position values and ledger index values in a 5-line staff:
+ * <pre>
+ *       pitch                                     ledger
+ *     position:                                   index:
+ *
+ *         etc
+ *         -8  -- second ledger above               (-2)
+ *         -7
+ *         -6  -- first ledger above                (-1)
+ *         -5
+ *     +-- -4 -------------  first staff line  -------------------------------+
+ *     |   -3                                                                 |
+ *     +-- -2 -------------                    -------------------------------+
+ *     |   -1                                                                 |
+ *     +--  0 -------------  mid staff line    -------------------------------+
+ *     |    1                                                                 |
+ *     +--  2 -------------                    -------------------------------+
+ *     |    3                                                                 |
+ *     +--  4 -------------  last staff line   -------------------------------+
+ *          5
+ *          6  -- first ledger below               ( 1)
+ *          7
+ *          8  -- second ledger below              ( 2)
+ *         etc
+ * </pre>
  * <p>
- * Note: All methods are meant to provide correct results, regardless of the actual number of lines
- * in the staff instance.
+ * The interline value, which is defined as the vertical distance between two consecutive lines,
+ * measured from center to center, is rather constant within first and last lines of a staff,
+ * but may be different for ledgers, especially between the staff and the first ledger.
+ * This must be taken into account when converting between absolute ordinates on one hand and
+ * pitch position or ledger index in the other hand.
+ * <p>
+ * Note: All methods in Staff class are meant to provide correct results, regardless of the actual
+ * number of lines in the staff instance.
  *
  * @author Hervé Bitteur
  */
@@ -123,32 +163,55 @@ public class Staff
     //----------------
     //
     /**
-     * Staff id. (counted globally from 1 within the sheet)
-     * The StringIntegerAdapter allows to use this id as an XML ID.
+     * Staff id.
+     * <p>
+     * Counted top down, globally from 1 within the sheet.
+     * <p>
+     * The StringIntegerAdapter converts int type to String and allows to use this id as an XML ID.
      */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
     protected final int id;
 
-    /** Left extrema. (abscissa at beginning of lines) */
+    /**
+     * Left extrema.
+     * <p>
+     * Absolute abscissa at beginning of lines
+     */
     @XmlAttribute
     protected int left;
 
-    /** Right extrema. (abscissa at end of lines) */
+    /**
+     * Right extrema.
+     * <p>
+     * Absolute abscissa at end of lines.
+     */
     @XmlAttribute
     protected int right;
 
-    /** Flag for short staff. (With a neighbor staff on left or right side) */
+    /**
+     * Flag for short staff.
+     * <p>
+     * With a neighboring staff on left or right side.
+     */
     @XmlAttribute(name = "short")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean isShort;
 
-    /** Flag for small staff. (height lower than others) */
+    /**
+     * Flag for small staff.
+     * <p>
+     * Height of this staff is lower than others.
+     */
     @XmlAttribute(name = "small")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean isSmall;
 
-    /** Sequence of staff lines. (from top to bottom) */
+    /**
+     * Vertical sequence of staff lines.
+     * <p>
+     * Ordered from top to bottom.
+     */
     @XmlElementWrapper(name = "lines")
     @XmlElement(name = "line")
     protected final List<LineInfo> lines;
@@ -157,13 +220,17 @@ public class Staff
     @XmlElement
     protected StaffHeader header;
 
-    /** Sequence of bar lines. */
+    /** Horizontal sequence of bar lines. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "barlines")
     protected List<BarlineInter> barlines = new ArrayList<>();
 
-    /** Ledgers nearby, organized by position index WRT staff. Temporary for persistency */
+    /**
+     * Ledgers nearby, organized by ledger index with respect to the staff.
+     * <p>
+     * Temporary field used for persistency of transient <code>ledgerMap</code>.
+     */
     @XmlElementWrapper(name = "ledgers")
     @XmlElement(name = "ledgers-entry")
     protected List<LedgersEntry> ledgersValue;
@@ -177,13 +244,20 @@ public class Staff
     // Transient data
     //---------------
     //
-    /** Ledgers nearby, organized in a map. */
+    /**
+     * Ledgers around the staff, organized in a map.
+     * Key: Ledger index value
+     * Value: Horizontal sequence of ledgers at the same ledger index
+     */
     protected final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<>();
 
-    /** To flag a dummy staff. */
+    /**
+     * To flag a dummy staff.
+     * Used when exporting staff for a dummy part to MusicXML
+     */
     protected boolean dummy;
 
-    /** Side barlines, if any. */
+    /** Side barlines, if any, on left and/or right sides. */
     protected final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<>(
             HorizontalSide.class);
 
@@ -195,8 +269,8 @@ public class Staff
      * gutter.
      * There is no need to be very precise, but a staff line cannot belong to several staff areas.
      * <ul>
-     * <li>Horizontally, the area is extended half way to the side staff if any, otherwise to the
-     * limit of the page.
+     * <li>Horizontally, the area is extended half way to the neighboring side staff if any,
+     * otherwise to the limit of the page.
      * <li>Vertically, the area is extended to the first encountered line (exclusive) of the next
      * staff if any, otherwise to the limit of the page.
      * </ul>
@@ -204,10 +278,23 @@ public class Staff
     protected Area area;
 
     /**
-     * Interline specific to this staff.
-     * (since different staves in a page may exhibit different interline values)
+     * Interline value specific to this staff.
+     * (Different staves in a page may exhibit different interline values)
      */
     protected int specificInterline;
+
+    /**
+     * Map of ledger lines.
+     * <p>
+     * As opposed to a real staffLine (a standard staff contains 5 staffLines), we define a
+     * 'ledgerLine' as a virtual line, going through 1 or several ledgers at a specified index,
+     * and thus external to the staff but rather parallel to the staff lines.
+     * <ul>
+     * <li>Map key is the ledger index
+     * <li>Map value is the virtual ledgerLine
+     * </ul>
+     */
+    protected final TreeMap<Integer, GeoPath> ledgerLineMap = new TreeMap<>();
 
     /** Containing system. */
     @Navigable(false)
@@ -305,14 +392,13 @@ public class Staff
     {
         Objects.requireNonNull(ledger, "Cannot add a null ledger");
 
-        List<LedgerInter> ledgerSet = ledgerMap.get(index);
+        List<LedgerInter> ledgerList = ledgerMap.get(index);
 
-        if (ledgerSet == null) {
-            ledgerSet = new ArrayList<>();
-            ledgerMap.put(index, ledgerSet);
+        if (ledgerList == null) {
+            ledgerMap.put(index, ledgerList = new ArrayList<>());
         }
 
-        ledgerSet.add(ledger);
+        ledgerList.add(ledger);
     }
 
     //-----------//
@@ -366,7 +452,7 @@ public class Staff
             retrieveSideBars();
 
             // Populate ledgerMap from ledgersValue if any
-            ledgerMap.clear();
+            clearLedgers();
 
             if (ledgersValue != null) {
                 for (LedgersEntry entry : ledgersValue) {
@@ -375,9 +461,73 @@ public class Staff
 
                 ledgersValue = null;
             }
+
+            buildAllLedgerLines();
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
+    }
+
+    //---------------------//
+    // buildAllLedgerLines //
+    //---------------------//
+    /**
+     * Use staff ledgerMap to compute virtual external staff lines based on these ledgers.
+     */
+    public void buildAllLedgerLines ()
+    {
+        ledgerLineMap.clear();
+
+        // Above
+        buildLedgerLines(getFirstLine().getSpline(), -1);
+
+        // Below
+        buildLedgerLines(getLastLine().getSpline(), 1);
+    }
+
+    //------------------//
+    // buildLedgerLines //
+    //------------------//
+    /**
+     * Populate ledgerLineMap with the ledgers on one vertical side of the staff.
+     *
+     * @param line      first or last staff line, according to the vertical side of the staff
+     * @param increment -1 when processing ledgers above the staff, +1 below the staff
+     */
+    private void buildLedgerLines (GeoPath line,
+                                   int increment)
+    {
+        for (int i = increment;; i += increment) {
+            final List<LedgerInter> ledgers = ledgerMap.get(i);
+            if (ledgers == null) {
+                return;
+            }
+
+            // Compute vertical distance of ledgers from previous line
+            final Population pop = new Population();
+            for (LedgerInter ledger : ledgers) {
+                final Point2D middle = PointUtil.middle(ledger.getMedian());
+                final double yLine = line.yAtX(middle.getX());
+                pop.includeValue(middle.getY() - yLine);
+            }
+
+            final double dy = pop.getMeanValue();
+            final AffineTransform at = AffineTransform.getTranslateInstance(0, dy);
+            final GeoPath newLine = new GeoPath(line, at);
+            ledgerLineMap.put(i, newLine);
+            line = newLine;
+        }
+    }
+
+    //--------------//
+    // clearLedgers //
+    //--------------//
+    /**
+     * Clear staff from its ledgers.
+     */
+    public void clearLedgers ()
+    {
+        ledgerMap.clear();
     }
 
     //----------//
@@ -410,10 +560,25 @@ public class Staff
      */
     public int distanceTo (Point2D point)
     {
+        return (int) doubleDistanceTo(point);
+    }
+
+    //------------------//
+    // doubleDistanceTo //
+    //------------------//
+    /**
+     * Report the vertical (algebraic) distance between staff and the provided point.
+     * Distance is negative if the point is within the staff height and positive if outside.
+     *
+     * @param point the provided point
+     * @return algebraic distance between staff and point, specified in pixels
+     */
+    public double doubleDistanceTo (Point2D point)
+    {
         final double top = getFirstLine().yAt(point.getX());
         final double bottom = getLastLine().yAt(point.getX());
 
-        return (int) Math.max(top - point.getY(), point.getY() - bottom);
+        return Math.max(top - point.getY(), point.getY() - bottom);
     }
 
     //------//
@@ -675,67 +840,50 @@ public class Staff
         header.clefRange.valid = true;
     }
 
-    //------------------//
-    // getClosestLedger //
-    //------------------//
+    //-------------------------//
+    // getConcreteLedgerNearby //
+    //-------------------------//
     /**
-     * Report the closest ledger (if any) to provided point, located between the point
-     * and this staff.
+     * Report the concrete ledger (if any) near the provided point.
      *
      * @param point the provided point
      * @return the closest ledger found, or null
      */
-    public IndexedLedger getClosestLedger (Point2D point)
+    public LedgerInter getConcreteLedgerNearby (Point2D point)
     {
-        IndexedLedger bestLedger = null;
-        final double top = getFirstLine().yAt(point.getX());
-        final double bottom = getLastLine().yAt(point.getX());
-        final double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
+        final double rawPitch = pitchPositionOf(point);
+        final int linePitch = 2 * (int) Math.rint(rawPitch / 2);
 
-        if (Math.abs(rawPitch) <= 5) {
-            return null;
+        if (Math.abs(linePitch) <= lines.size()) {
+            return null; // Within staff height, hence no ledger
         }
 
-        Rectangle2D searchBox;
+        final int dir = Integer.signum(linePitch);
+        final int ledgerIndex = (linePitch - dir * (lines.size() - 1)) / 2;
+        final List<LedgerInter> ledgers = ledgerMap.get(ledgerIndex);
 
-        if (rawPitch < 0) {
-            searchBox = new Rectangle2D.Double(
-                    point.getX(),
-                    point.getY(),
-                    0,
-                    top - point.getY() + 1);
-        } else {
-            searchBox = new Rectangle2D.Double(point.getX(), bottom, 0, point.getY() - bottom + 1);
+        if (ledgers == null) {
+            return null; // Not close to a ledger line
         }
 
-        searchBox.setRect(
-                searchBox.getX() - specificInterline,
-                searchBox.getY() - specificInterline,
-                searchBox.getWidth() + (2 * specificInterline),
-                searchBox.getHeight() + (2 * specificInterline));
+        final double x = point.getX();
+        final double y = point.getY();
+        final Rectangle2D searchBox = new Rectangle2D.Double(x - specificInterline,
+                                                             y - specificInterline,
+                                                             2 * specificInterline,
+                                                             2 * specificInterline);
+        LedgerInter bestLedger = null;
+        double bestDist = Double.MAX_VALUE;
 
-        // Browse all staff ledgers
-        Set<IndexedLedger> foundLedgers = new LinkedHashSet<>();
-
-        for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
-            for (LedgerInter ledger : entry.getValue()) {
-                if (ledger.getBounds().intersects(searchBox)) {
-                    foundLedgers.add(new IndexedLedger(ledger, entry.getKey()));
-                }
-            }
-        }
-
-        if (!foundLedgers.isEmpty()) {
-            // Use the closest ledger
-            double bestDist = Double.MAX_VALUE;
-
-            for (IndexedLedger iLedger : foundLedgers) {
-                final Point2D center = iLedger.ledger.getCenter();
-                final double dist = Math.abs(center.getY() - point.getY());
+        // Browse the sequence of concrete ledgers
+        for (LedgerInter ledger : ledgers) {
+            if (ledger.getBounds().intersects(searchBox)) {
+                final Point2D center = ledger.getCenter();
+                final double dist = Math.abs(center.getY() - y);
 
                 if (dist < bestDist) {
                     bestDist = dist;
-                    bestLedger = iLedger;
+                    bestLedger = ledger;
                 }
             }
         }
@@ -743,19 +891,19 @@ public class Staff
         return bestLedger;
     }
 
-    //----------------//
-    // getClosestLine //
-    //----------------//
+    //---------------------//
+    // getClosestStaffLine //
+    //---------------------//
     /**
      * Report the staff line which is closest to the provided point.
      *
      * @param point the provided point
-     * @return the closest line found
+     * @return the closest staff line found
      */
-    public LineInfo getClosestLine (Point2D point)
+    public LineInfo getClosestStaffLine (Point2D point)
     {
-        double pos = pitchPositionOf(point);
-        int idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
+        final double pitch = pitchPositionOf(point);
+        int idx = (int) Math.rint((pitch + (lines.size() - 1)) / 2);
 
         if (idx < 0) {
             idx = 0;
@@ -1050,6 +1198,34 @@ public class Staff
         return lines.get(lines.size() - 1);
     }
 
+    //-------------//
+    // getLedgerAt //
+    //-------------//
+    /**
+     * Report the ledger, if any, at provided line index and embracing provided abscissa.
+     *
+     * @param ledgerIndex index of ledger line
+     * @param x           absolute abscissa
+     * @return the ledger found or null
+     */
+    public LedgerInter getLedgerAt (int ledgerIndex,
+                                    double x)
+    {
+        final List<LedgerInter> ledgerList = ledgerMap.get(ledgerIndex);
+
+        if (ledgerList == null) {
+            return null;
+        }
+
+        for (LedgerInter ledger : ledgerList) {
+            if (GeoUtil.xEmbraces(ledger.getBounds(), x)) {
+                return ledger;
+            }
+        }
+
+        return null;
+    }
+
     //----------------//
     // getLedgerIndex //
     //----------------//
@@ -1210,36 +1386,6 @@ public class Staff
     public LineInfo getMidLine ()
     {
         return lines.get((lines.size() - 1) / 2);
-    }
-
-    //-----------------//
-    // getNotePosition //
-    //-----------------//
-    /**
-     * Report the precise position for a note-like entity with respect
-     * to this staff, taking ledgers (if any) into account.
-     *
-     * @param point the absolute location of the provided note
-     * @return the detailed note position
-     */
-    public NotePosition getNotePosition (Point2D point)
-    {
-        double pitch = pitchPositionOf(point);
-        IndexedLedger bestLedger = null;
-
-        // If we are rather far from the staff, try getting help from ledgers
-        if (Math.abs(pitch) > lines.size()) {
-            bestLedger = getClosestLedger(point);
-
-            if (bestLedger != null) {
-                Point2D center = bestLedger.ledger.getCenter();
-                int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
-                double deltaPitch = (2.0 * (point.getY() - center.getY())) / specificInterline;
-                pitch = ledgerPitch + deltaPitch;
-            }
-        }
-
-        return new NotePosition(this, pitch, bestLedger);
     }
 
     //---------//
@@ -1486,18 +1632,54 @@ public class Staff
     // pitchPositionOf //
     //-----------------//
     /**
-     * Compute an approximation of the pitch position of a pixel point, since it is
-     * based only on distance to staff, with no consideration for ledgers.
+     * Compute the pitch position of a pixel point, taking ledger lines if any into account,
+     * otherwise extrapolating from vertical distance to staff lines.
      *
      * @param pt the pixel point
-     * @return the pitch position
+     * @return the pitch position (a double value)
      */
     public double pitchPositionOf (Point2D pt)
     {
-        double top = getFirstLine().yAt(pt.getX());
-        double bottom = getLastLine().yAt(pt.getX());
+        final double x = pt.getX();
+        final double y = pt.getY();
 
-        return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
+        // Location with respect to staff
+        final double top = getFirstLine().yAt(x);
+        final double bottom = getLastLine().yAt(x);
+
+        if (y >= top && y <= bottom) {
+            // Inside staff:
+            // Interpolate between staff lines
+            return ((lines.size() - 1) * ((2 * y) - bottom - top)) / (bottom - top);
+        }
+
+        // Outside staff:
+        // Check ledger lines
+        final int dir = (y < top) ? -1 : 1;
+        double prevY = (dir == -1) ? top : bottom;
+        int prevPP = dir * (lines.size() - 1);
+
+        for (int li = dir;; li += dir) {
+            final GeoPath ledgerLine = ledgerLineMap.get(li);
+
+            if (ledgerLine == null) {
+                break;
+            }
+
+            final double ledgerY = ledgerLine.yAtXExt(x);
+
+            if (Double.compare(ledgerY, y) * dir >= 0) {
+                // Interpolate between ordinates of prev line and ledger line
+                return prevPP + 2 * dir * (y - prevY) / (ledgerY - prevY);
+            }
+
+            prevY = ledgerY;
+            prevPP = prevPP + 2 * dir;
+        }
+
+        // Beyond ledger lines:
+        // Extrapolate from last known line (staff or ledger), using staff interline value
+        return prevPP + 2 * (y - prevY) / specificInterline;
     }
 
     //-----------------//
@@ -1507,16 +1689,53 @@ public class Staff
      * Report the absolute ordinate for a staff-related pitch at a given abscissa.
      *
      * @param x     provided absolute abscissa
-     * @param pitch pitch value WRT this staff
+     * @param pitch pitch position with respect to this staff
      * @return the corresponding absolute ordinate
      */
     public double pitchToOrdinate (double x,
                                    double pitch)
     {
-        double top = getFirstLine().yAt(x);
-        double bottom = getLastLine().yAt(x);
+        // Location with respect to staff
+        final double top = getFirstLine().yAt(x);
+        final double bottom = getLastLine().yAt(x);
 
-        return 0.5 * (top + bottom + ((pitch * (bottom - top)) / (lines.size() - 1)));
+        if (Math.abs(pitch) <= lines.size() - 1) {
+            // Inside staff:
+            // Interpolate between staff lines
+            if (lines.size() - 1 == 0) {
+                return top;
+            }
+            return 0.5 * (top + bottom + ((pitch * (bottom - top)) / (lines.size() - 1)));
+        }
+
+        // Outside staff:
+        // Check ledger lines
+        final int dir = (pitch >= 0) ? 1 : -1;
+        double prevY = (dir == -1) ? top : bottom;
+        int prevPP = dir * (lines.size() - 1);
+
+        for (int li = dir;; li += dir) {
+            final GeoPath ledgerLine = ledgerLineMap.get(li);
+
+            if (ledgerLine == null) {
+                break;
+            }
+
+            final int ledgerPP = prevPP + 2 * dir;
+            final double ledgerY = ledgerLine.yAtXExt(x);
+
+            if (Double.compare(ledgerPP, pitch) * dir >= 0) {
+                // Interpolate between ordinates of prev line and ledger line
+                return prevY + (ledgerY - prevY) * (pitch - prevPP) / (ledgerPP - prevPP);
+            }
+
+            prevY = ledgerY;
+            prevPP = ledgerPP;
+        }
+
+        // Beyond ledger lines:
+        // Extrapolate from last known line (staff or ledger), using staff interline value
+        return prevY + 0.5 * (pitch - prevPP) * specificInterline;
     }
 
     //-------------------//
@@ -1651,6 +1870,14 @@ public class Staff
             line.renderLine(g, showPoints, pointWidth);
         }
 
+//        // Draw ledger lines
+//        final Color oldColor = g.getColor();
+//        g.setColor(Color.CYAN);
+//        for (GeoPath line : ledgerLineMap.values()) {
+//            g.draw(line);
+//        }
+//        g.setColor(oldColor);
+//
         return true;
     }
 
@@ -1891,8 +2118,8 @@ public class Staff
     /**
      * Compute staff-based line index, based on provided pitch position
      *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
+     * @param pitchPosition the provided pitch position with respect to the staff
+     * @return the computed ledger line index
      */
     public static int getLedgerLineIndex (double pitchPosition)
     {
@@ -1923,11 +2150,7 @@ public class Staff
         //                .size() != 5) {
         //            throw new RuntimeException("Only 5-line staves are supported");
         //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
+        return Integer.signum(lineIndex) * 4 + (2 * lineIndex);
     }
 
     //--------------------//
@@ -1944,33 +2167,73 @@ public class Staff
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------------//
-    // IndexedLedger //
-    //---------------//
-    /**
-     * This combines the ledger with the index relative to the
-     * hosting staff.
-     */
-    public static class IndexedLedger
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
     {
 
-        /** The ledger. */
-        public final LedgerInter ledger;
+        private final Constant.Boolean showDefiningPoints = new Constant.Boolean(
+                false,
+                "Should we show defining points?");
 
-        /** Staff-based line index. (-1, -2, ... above, +1, +2, ... below) */
-        public final int index;
+        private final Scale.Fraction definingPointSize = new Scale.Fraction(
+                0.05,
+                "Display width of a defining point");
+    }
+
+    //--------------//
+    // LedgersEntry //
+    //--------------//
+    /**
+     * This temporary structure is needed to marshal / unmarshal the ledgerMap,
+     * because of its use of IDREF's.
+     */
+    protected static class LedgersEntry
+    {
 
         /**
-         * Create an IndexedLedger object
-         *
-         * @param ledger the ledger
-         * @param index  relative ledger position in staff
+         * Index of the ledger line, with respect to the staff.
          */
-        public IndexedLedger (LedgerInter ledger,
-                              int index)
+        @XmlAttribute
+        private final int index;
+
+        /**
+         * Horizontal sequence of concrete ledgers in the ledger line.
+         */
+        @XmlList
+        @XmlIDREF
+        @XmlValue
+        private final List<LedgerInter> ledgers;
+
+        // Needed for JAXB
+        LedgersEntry ()
         {
-            this.ledger = ledger;
+            this.index = 0;
+            this.ledgers = null;
+        }
+
+        LedgersEntry (int index,
+                      List<LedgerInter> ledgers)
+        {
             this.index = index;
+            this.ledgers = ledgers;
+        }
+
+        @Override
+        public String toString ()
+        {
+            final StringBuilder sb = new StringBuilder("LedgersEntry{");
+            sb.append("index:").append(index);
+
+            if (ledgers != null) {
+                sb.append(" ledgers:").append(ledgers.size());
+            }
+
+            sb.append('}');
+
+            return sb.toString();
         }
     }
 
@@ -2037,70 +2300,6 @@ public class Staff
             }
 
             return holder;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean showDefiningPoints = new Constant.Boolean(
-                false,
-                "Should we show defining points?");
-
-        private final Scale.Fraction definingPointSize = new Scale.Fraction(
-                0.05,
-                "Display width of a defining point");
-    }
-
-    //--------------//
-    // LedgersEntry //
-    //--------------//
-    /**
-     * This temporary structure is needed to marshal / unmarshal the ledgerMap,
-     * because of its use of IDREF's.
-     */
-    private static class LedgersEntry
-    {
-
-        @XmlAttribute
-        private final int index;
-
-        @XmlList
-        @XmlIDREF
-        @XmlValue
-        private final List<LedgerInter> ledgers;
-
-        // Needed for JAXB
-        LedgersEntry ()
-        {
-            this.index = 0;
-            this.ledgers = null;
-        }
-
-        LedgersEntry (int index,
-                      List<LedgerInter> ledgers)
-        {
-            this.index = index;
-            this.ledgers = ledgers;
-        }
-
-        @Override
-        public String toString ()
-        {
-            final StringBuilder sb = new StringBuilder("LedgersEntry{");
-            sb.append("index:").append(index);
-
-            if (ledgers != null) {
-                sb.append(" ledgers:").append(ledgers.size());
-            }
-
-            sb.append('}');
-
-            return sb.toString();
         }
     }
 }

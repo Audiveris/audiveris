@@ -32,7 +32,6 @@ import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.PartGroup;
-import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -792,64 +791,6 @@ public class SystemInfo
     public Collection<Section> getMutableVerticalSections ()
     {
         return vSections;
-    }
-
-    //----------------//
-    // getNoteStaffAt //
-    //----------------//
-    /**
-     * Given a note, retrieve the proper related staff within the system, using ledgers
-     * if any.
-     *
-     * @param point the center of the provided note entity
-     * @return the proper note position (staff and pitch) or null
-     */
-    public NotePosition getNoteStaffAt (Point point)
-    {
-        Staff staff = getClosestStaff(point);
-
-        if (staff == null) {
-            return null;
-        }
-
-        NotePosition pos = staff.getNotePosition(point);
-
-        logger.debug("{} -> {}", point, pos);
-
-        double pitch = pos.getPitchPosition();
-
-        if ((Math.abs(pitch) > 5) && (pos.getLedger() == null)) {
-            // Delta pitch from reference line
-            double dp = Math.abs(pitch) - 4;
-
-            // Check with the other staff, if any
-            int index = staves.indexOf(staff);
-            Staff otherStaff = null;
-
-            if ((pitch < 0) && (index > 0)) {
-                otherStaff = staves.get(index - 1);
-            } else if ((pitch > 0) && (index < (staves.size() - 1))) {
-                otherStaff = staves.get(index + 1);
-            }
-
-            if (otherStaff != null) {
-                NotePosition otherPos = otherStaff.getNotePosition(point);
-
-                if (otherPos.getLedger() != null) {
-                    // Delta pitch from closest reference ledger
-                    double otherDp = Math.abs(
-                            otherPos.getPitchPosition() - Staff.getLedgerPitchPosition(
-                            otherPos.getLedger().index));
-
-                    if (otherDp < dp) {
-                        logger.debug("   otherPos: {}", pos);
-                        pos = otherPos;
-                    }
-                }
-            }
-        }
-
-        return pos;
     }
 
     //---------//

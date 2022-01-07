@@ -319,7 +319,7 @@ public class ArcRetriever
 
         Point p0 = points.get(0);
         Staff staff = sheet.getStaffManager().getClosestStaff(p0);
-        LineInfo line = staff.getClosestLine(p0);
+        LineInfo line = staff.getClosestStaffLine(p0);
         double maxDist = 0;
         double maxDy = Double.MIN_VALUE;
         double minDy = Double.MAX_VALUE;

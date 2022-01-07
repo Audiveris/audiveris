@@ -578,7 +578,7 @@ public class AnnotationsBuilder
         }
 
         /**
-         * Check whether there is a note centered on provided ledger.
+         * Check whether there is a note head centered on provided ledger.
          *
          * @param ledger provided ledger
          * @return true if there is a note head centered on ledger
@@ -587,8 +587,7 @@ public class AnnotationsBuilder
         {
             final Rectangle ledgerBox = ledger.getBounds();
             final Staff staff = ledger.getStaff();
-            final Integer index = staff.getLedgerIndex(ledger);
-            final int ledgerPitch = Staff.getLedgerPitchPosition(index);
+            final int ledgerPitch = (int) Math.rint(staff.pitchPositionOf(ledger.getCenter()));
             final List<Inter> heads = Inters.intersectedInters(
                     allHeads,
                     GeoOrder.BY_ABSCISSA,
@@ -596,9 +595,9 @@ public class AnnotationsBuilder
 
             for (Inter inter : heads) {
                 final HeadInter head = (HeadInter) inter;
-                final int notePitch = head.getIntegerPitch();
+                final int headPitch = head.getIntegerPitch();
 
-                if (notePitch == ledgerPitch) {
+                if (headPitch == ledgerPitch) {
                     return true;
                 }
             }

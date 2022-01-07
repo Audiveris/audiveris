@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.sheet.note.NotePosition;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -108,15 +107,6 @@ public class OneLineStaff
     }
 
     //-----------------//
-    // getNotePosition //
-    //-----------------//
-    @Override
-    public NotePosition getNotePosition (Point2D point)
-    {
-        return null; // No notion of pitch for a one-line staff
-    }
-
-    //-----------------//
     // pitchPositionOf //
     //-----------------//
     @Override
@@ -124,8 +114,20 @@ public class OneLineStaff
     {
         // We compute with respect to the one line
         // (Used to disambiguate whole vs half rests)
-        double middle = getMidLine().yAt(pt.getX());
+        final double middle = getMidLine().yAt(pt.getX());
 
         return (2 * (pt.getY() - middle)) / getSpecificInterline();
+    }
+
+    //-----------------//
+    // pitchToOrdinate //
+    //-----------------//
+    @Override
+    public double pitchToOrdinate (double x,
+                                   double pitch)
+    {
+        final double middle = getMidLine().yAt(x);
+
+        return middle + 0.5 * pitch * getSpecificInterline();
     }
 }

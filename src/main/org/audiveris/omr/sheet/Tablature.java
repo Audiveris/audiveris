@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.sheet.note.NotePosition;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -78,11 +77,21 @@ public class Tablature
     }
 
     //-----------------//
-    // getNotePosition //
+    // pitchPositionOf //
     //-----------------//
     @Override
-    public NotePosition getNotePosition (Point2D point)
+    public double pitchPositionOf (Point2D pt)
     {
-        return null; // No notion of pitch for a tablature
+        throw new IllegalStateException("A tablature has no notion of pitch");
+    }
+
+    //-----------------//
+    // pitchToOrdinate //
+    //-----------------//
+    @Override
+    public double pitchToOrdinate (double x,
+                                   double pitch)
+    {
+        throw new IllegalStateException("A tablature has no notion of pitch");
     }
 }

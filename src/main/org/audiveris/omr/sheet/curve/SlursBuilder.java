@@ -973,7 +973,7 @@ public class SlursBuilder
 
             // Vertical distance from slur end to closest staff line
             Staff staff = sheet.getStaffManager().getClosestStaff(end);
-            LineInfo line = staff.getClosestLine(end);
+            LineInfo line = staff.getClosestStaffLine(end);
             double toLine = line.yAt(end.x) - end.y;
 
             if (abs(toLine) > params.maxStaffLineDy) {

@@ -32,9 +32,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.Staff.IndexedLedger;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -46,6 +44,7 @@ import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
@@ -151,7 +150,7 @@ public class DotFactory
                                   Staff closestStaff)
     {
         // Discard glyph too close to staff line or ledger
-        if (!checkDistanceToLine(glyph, closestStaff)) {
+        if (!checkDistanceToConcreteLine(glyph, closestStaff)) {
             return;
         }
 
@@ -215,23 +214,23 @@ public class DotFactory
         }
     }
 
-    //---------------------//
-    // checkDistanceToLine //
-    //---------------------//
+    //-----------------------------//
+    // checkDistanceToConcreteLine //
+    //-----------------------------//
     /**
-     * Check that dot glyph is vertically distant from staff line or ledger.
+     * Check that dot glyph is vertically distant from a staff line or a concrete ledger.
      * <p>
      * For a tablature, check is always OK.
      * <p>
-     * For a standard staff (5) or for a OneLineStaff (1), distance to closest line or ledger
-     * is checked.
+     * For a standard staff (5) or for a OneLineStaff (1), distance to closest line or concrete
+     * ledger is checked.
      *
      * @param glyph the dot glyph to check
      * @param staff the closest staff
      * @return true if OK
      */
-    private boolean checkDistanceToLine (Glyph glyph,
-                                         Staff staff)
+    private boolean checkDistanceToConcreteLine (Glyph glyph,
+                                                 Staff staff)
     {
         if (staff.isTablature()) {
             return true;
@@ -244,38 +243,42 @@ public class DotFactory
             final double dy = Math.abs(center.getY() - staff.getMidLine().yAt(center.getX()));
             distance = dy / staff.getSpecificInterline();
         } else {
-            final NotePosition notePosition = staff.getNotePosition(center);
-            final IndexedLedger ledger = notePosition.getLedger();
-            final double pitch = notePosition.getPitchPosition();
+            final double pitch = staff.pitchPositionOf(center);
+            final double closestLinePitch = 2 * Math.rint(pitch / 2);
 
-            if ((Math.abs(pitch) > staff.getLineCount()) && (ledger == null)) {
-                if (glyph.isVip()) {
-                    logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+            if (Math.abs(pitch) <= staff.getLineCount()) {
+                // Within staff height, check distance to staff lines
+                distance = Math.abs(pitch - closestLinePitch) / 2;
+            } else {
+                // Outside staff height, look for concrete ledgers
+                final LedgerInter ledger = staff.getConcreteLedgerNearby(center);
+
+                if (ledger == null) {
+                    if (glyph.isVip()) {
+                        logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+                    }
+
+                    return true;
                 }
 
-                return true;
+                final double dy = Math.abs(center.getY() - ledger.getCenter2D().getY());
+                distance = dy / staff.getSpecificInterline();
             }
-
-            // Distance to line/ledger specified in interline fraction (5-line staff)
-            double linePitch = 2 * ((ledger != null) ? (2 + ledger.index) : Math.rint(pitch / 2));
-            distance = Math.abs(pitch - linePitch) / 2;
         }
 
         if (distance >= constants.minDyFromLine.getValue()) {
             if (glyph.isVip()) {
-                logger.info(
-                        "VIP glyph#{} dot distance:{} OK",
-                        glyph.getId(),
-                        String.format("%.2f", distance));
+                logger.info("VIP glyph#{} dot distance:{} OK",
+                            glyph.getId(),
+                            String.format("%.2f", distance));
             }
 
             return true;
         } else {
             if (glyph.isVip()) {
-                logger.info(
-                        "VIP glyph#{} dot distance:{} too close",
-                        glyph.getId(),
-                        String.format("%.2f", distance));
+                logger.info("VIP glyph#{} dot distance:{} too close",
+                            glyph.getId(),
+                            String.format("%.2f", distance));
             }
 
             return false;
