@@ -315,7 +315,8 @@ public class SigReducer
                                 HeadInter head2 = (HeadInter) h2;
 
                                 if (head2.getStems().size() == 1) {
-                                    sig.insertExclusion(h1, h2, Exclusion.ExclusionCause.INCOMPATIBLE);
+                                    sig.insertExclusion(h1, h2,
+                                                        Exclusion.ExclusionCause.INCOMPATIBLE);
                                 }
                             }
                         }
@@ -1492,8 +1493,8 @@ public class SigReducer
         ledgerBox.grow(0, scale.getInterline()); // Very high box, but that's OK
 
         // Check for another ledger on next line
-        int nextIndex = index + Integer.signum(index);
-        List<LedgerInter> nextLedgers = staff.getLedgers(nextIndex);
+        final int nextIndex = index + Integer.signum(index);
+        final List<LedgerInter> nextLedgers = staff.getLedgers(nextIndex);
 
         if (nextLedgers != null) {
             for (LedgerInter nextLedger : nextLedgers) {
@@ -1504,10 +1505,9 @@ public class SigReducer
             }
         }
 
-        // Else, check for a note centered on ledger, or just on next pitch
+        // Else, check for a note head centered on ledger, or just on next pitch
         final int ledgerPitch = Staff.getLedgerPitchPosition(index);
         final int nextPitch = ledgerPitch + Integer.signum(index);
-
         final List<Inter> heads = Inters.intersectedInters(
                 allHeads,
                 GeoOrder.BY_ABSCISSA,

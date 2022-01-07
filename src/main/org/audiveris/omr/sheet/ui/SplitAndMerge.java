@@ -1061,7 +1061,6 @@ public class SplitAndMerge
                               Collection<? extends Path> paths)
         {
             super(paths);
-            paths.forEach(path -> logger.info("Drop {}", path)); // BINGO to be removed
             this.row = row;
         }
 

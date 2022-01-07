@@ -969,11 +969,11 @@ public class NoteHeadsBuilder
         }
 
         if (!purgedBeams.isEmpty()) {
-            logger.info("S#{} {} beams purged", system.getId(), purgedBeams.size());
+            logger.debug("{} {} beams purged", system, purgedBeams.size());
         }
 
         if (!purgedHeads.isEmpty()) {
-            logger.info("S#{} {} heads purged", system.getId(), purgedHeads.size());
+            logger.debug("{} {} heads purged", system, purgedHeads.size());
         }
     }
 

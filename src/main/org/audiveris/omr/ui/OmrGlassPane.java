@@ -37,7 +37,7 @@ import java.awt.geom.AffineTransform;
 /**
  * Class <code>OmrGlassPane</code> is a GhostGlassPane to draw draggable shape.
  * <p>
- * Whenever possible over the sheet target, we draws the ghost inter, plus staff reference plus
+ * Whenever possible over the sheet target, we draw the ghost inter, plus staff reference plus
  * related decoration (such as links to some neighboring entities, or ledgers for heads).
  *
  * @author Hervé Bitteur

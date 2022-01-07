@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class <code>IntegerFunction</code> represents a function y = f(x), where x &amp; y are
+ * Class <code>IntegerFunction</code> represents a function y = f(x), where x and y are
  * integers.
  * <p>
  * For any x value between xMin and xMax, y is defined as value(x).

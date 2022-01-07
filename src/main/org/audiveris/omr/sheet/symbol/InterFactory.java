@@ -26,8 +26,8 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -282,6 +282,7 @@ public class InterFactory
      * @param eval         evaluation result
      * @param glyph        evaluated glyph
      * @param closestStaff only the closest staff, ordinate-wise
+     * @return the created inter or null
      */
     private Inter doCreate (Evaluation eval,
                             Glyph glyph,
