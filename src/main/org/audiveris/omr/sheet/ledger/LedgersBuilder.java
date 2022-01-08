@@ -53,6 +53,7 @@ import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
@@ -79,7 +80,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Class <code>LedgersBuilder</code> retrieves ledgers for a system.
@@ -207,10 +207,12 @@ public class LedgersBuilder
     public void buildLedgers (List<Section> sections)
     {
         try {
-            // Put apart the (good) system beams, they can't intersect ledgers.
             StopWatch watch = new StopWatch("buildLedgers S#" + system.getId());
-            watch.start("getGoodBeams");
-            sortedSystemBeams = getGoodBeams();
+
+            // Put apart the (good) system beams, not hooks, they can't intersect ledgers.
+            watch.start("getGoodFullBeams");
+            sortedSystemBeams = sig.inters(inter -> (inter instanceof BeamInter) && inter.isGood());
+            Collections.sort(sortedSystemBeams, Inters.byAbscissa);
 
             // Retrieve system candidate glyphs out of candidate sections
             watch.start("getCandidateFilaments among " + sections.size());
@@ -369,25 +371,6 @@ public class LedgersBuilder
         purgeTooLong(filaments);
 
         return filaments;
-    }
-
-    //--------------//
-    // getGoodBeams //
-    //--------------//
-    /**
-     * Retrieve the list of beam / hook interpretations in the system, ordered by
-     * abscissa.
-     *
-     * @return the sequence of system beams (full beams and hooks)
-     */
-    private List<Inter> getGoodBeams ()
-    {
-        final List<Inter> beams = sig.inters(inter
-                -> (inter instanceof AbstractBeamInter) && inter.isGood());
-
-        Collections.sort(beams, Inters.byAbscissa);
-
-        return beams;
     }
 
     //---------------//

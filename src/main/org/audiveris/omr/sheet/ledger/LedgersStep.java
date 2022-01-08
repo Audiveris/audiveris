@@ -22,12 +22,8 @@
 package org.audiveris.omr.sheet.ledger;
 
 import org.audiveris.omr.lag.Section;
-import org.audiveris.omr.math.PointUtil;
-import org.audiveris.omr.math.Population;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.StepException;
@@ -36,17 +32,9 @@ import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Class <code>LedgersStep</code> implements <b>LEDGERS</b> step, which retrieves all
