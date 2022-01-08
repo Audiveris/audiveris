@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -62,12 +63,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <ul>
  * <li><b>Black head</b>: Typical width and height measured for black heads.
  * <li><b>Music font</b>: Precise point size determined for music font rendering of heads.
- * <li><b>Small staff</b>: If a second peak is detected in the histogram of staff interlines,
+ * <li><b>Small interline</b>: If a second peak is detected in the histogram of staff interlines,
  * it signals the presence of staves with a different interline value.
- * For small staves, a specific small Scale structure is then included.
+ * <br>In that case, interline is assigned the larger value and small-interline the smaller value.
  * <li><b>Second beam thickness</b>: If a third peak is detected in the histogram of vertical black
- * runs, it provides the thickness of a second population of beams (either larger or smaller than
- * the main beam thickness).
+ * runs, it provides the thickness of a second population of beams.
+ * <br>In that case, beam is assigned the larger value and small-beam the smaller value.
  * <li><b>Head-Seed</b>: Typical horizontal distance between note head bounds and stem seed,
  * per head shape and head side.
  * This info is retrieved in HEADS step and used in STEMS step to precisely detect stem
@@ -111,17 +112,21 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <h2>Example of marshalled Scale element</h2>
  * <pre>
  * &lt;scale&gt;
- *      &lt;interline min="18" main="19" max="19"/&gt;
- *      &lt;line min="2" main="3" max="4"/&gt;
- *      &lt;beam main-thickness="10"/&gt;
- *      &lt;stem main-thickness="2" max-thickness="3"/&gt;
- *      &lt;black-head mean-width="22.9" sigma-width="0.3" mean-height="20" sigma-height="1.5"/&gt;
- *      &lt;music-font name="MusicalSymbols" point-size="76"/&gt;
+ *      &lt;line min="3" main="4" max="6"/&gt;
+ *      &lt;interline min="17" main="19" max="20"/&gt;
+ *      &lt;small-interline min="13" main="14" max="15"/&gt;
+ *      &lt;beam main-thickness="17"/&gt;
+ *      &lt;small-beam main-thickness="12"/&gt;
+ *      &lt;stem main-thickness="3" max-thickness="4"/&gt;
+ *      &lt;black-head mean-width="23.8" sigma-width="0.4" mean-height="25" sigma-height="1.3"/&gt;
+ *      &lt;music-font name="MusicalSymbols" point-size="80"/&gt;
  *      &lt;head-seeds&gt;
- *          &lt;head-seed shape="NOTEHEAD_BLACK" side="LEFT" dx="1.5"/&gt;
- *          &lt;head-seed shape="NOTEHEAD_BLACK" side="RIGHT" dx="1.5"/&gt;
+ *          &lt;head-seed shape="NOTEHEAD_BLACK" side="LEFT" dx="0.3"/&gt;
+ *          &lt;head-seed shape="NOTEHEAD_BLACK" side="RIGHT" dx="0.5"/&gt;
+ *          &lt;head-seed shape="NOTEHEAD_VOID" side="LEFT" dx="0"/&gt;
  *      &lt;/head-seeds&gt;
  * &lt;/scale&gt;
+ *
  * </pre>
  *
  * @author Hervé Bitteur
@@ -200,9 +205,15 @@ public class Scale
     @XmlElement(name = "interline")
     private InterlineScale interlineScale;
 
-    /** Typical vertical distance for small staves, if any. */
+    /**
+     * @Deprecated, replaced by <code>smallInterlineScale</code>
+     */
     @XmlElement(name = "small-staff")
-    private Scale smallScale;
+    private Scale oldSmallScale;
+
+    /** Typical vertical distance for small staves, if any. */
+    @XmlElement(name = "small-interline")
+    private InterlineScale smallInterlineScale;
 
     /** Typical thickness of beams and beam hooks. */
     @XmlElement(name = "beam")
@@ -232,22 +243,22 @@ public class Scale
     /**
      * Create a Scale object, meant for a whole sheet.
      *
-     * @param interlineScale scale of (large) interline
-     * @param lineScale      scale of line thickness
-     * @param beamScale      scale of beam
-     * @param smallScale     scale for small staves, perhaps null
-     * @param smallBeamScale scale for small beams, perhaps null
+     * @param interlineScale      scale for (large) interline
+     * @param lineScale           scale for line thickness
+     * @param beamScale           scale for beams
+     * @param smallInterlineScale scale for small interlines, perhaps null
+     * @param smallBeamScale      scale for small beams, perhaps null
      */
     public Scale (InterlineScale interlineScale,
                   LineScale lineScale,
                   BeamScale beamScale,
-                  Scale smallScale,
+                  InterlineScale smallInterlineScale,
                   BeamScale smallBeamScale)
     {
         this.interlineScale = interlineScale;
         this.lineScale = lineScale;
         this.beamScale = beamScale;
-        this.smallScale = smallScale;
+        this.smallInterlineScale = smallInterlineScale;
         this.smallBeamScale = smallBeamScale;
     }
 
@@ -393,8 +404,8 @@ public class Scale
             return interlineScale;
         }
 
-        if ((smallScale != null) && (smallScale.getInterline() == interline)) {
-            return smallScale.interlineScale;
+        if ((smallInterlineScale != null) && (smallInterlineScale.main == interline)) {
+            return smallInterlineScale;
         }
 
         throw new IllegalArgumentException("No interline scale for provided value " + interline);
@@ -497,8 +508,8 @@ public class Scale
      */
     public Integer getMaxSmallInterline ()
     {
-        if (smallScale != null) {
-            return smallScale.interlineScale.max;
+        if (smallInterlineScale != null) {
+            return smallInterlineScale.max;
         } else {
             return null;
         }
@@ -528,36 +539,6 @@ public class Scale
     public int getMinFore ()
     {
         return lineScale.min;
-    }
-
-    //-----------------//
-    // getMinInterline //
-    //-----------------//
-    /**
-     * Report the minimum (large) interline (using standard percentile).
-     *
-     * @return the minInterline
-     */
-    public int getMinInterline ()
-    {
-        return interlineScale.min;
-    }
-
-    //----------------------//
-    // getMinSmallInterline //
-    //----------------------//
-    /**
-     * Report the minimum value of small interline (using standard percentile).
-     *
-     * @return the min of smallInterline if any, otherwise null
-     */
-    public Integer getMinSmallInterline ()
-    {
-        if (smallScale != null) {
-            return smallScale.interlineScale.min;
-        } else {
-            return null;
-        }
     }
 
     //-------------------//
@@ -609,8 +590,8 @@ public class Scale
      */
     public Integer getSmallInterline ()
     {
-        if (smallScale != null) {
-            return smallScale.interlineScale.main;
+        if (smallInterlineScale != null) {
+            return smallInterlineScale.main;
         } else {
             return null;
         }
@@ -626,35 +607,7 @@ public class Scale
      */
     public InterlineScale getSmallInterlineScale ()
     {
-        if (smallScale != null) {
-            return smallScale.interlineScale;
-        } else {
-            return null;
-        }
-    }
-
-    //---------------//
-    // getSmallScale //
-    //---------------//
-    /**
-     * @return the smallScale
-     */
-    public Scale getSmallScale ()
-    {
-        return smallScale;
-    }
-
-    //---------------//
-    // setSmallScale //
-    //---------------//
-    /**
-     * Set small scale information.
-     *
-     * @param smallScale the smallScale to set
-     */
-    public void setSmallScale (Scale smallScale)
-    {
-        this.smallScale = smallScale;
+        return smallInterlineScale;
     }
 
     //--------------//
@@ -781,7 +734,7 @@ public class Scale
             return interlineScale = new InterlineScale(v, v, v);
 
         case smallInterline:
-            return smallScale = new Scale(new InterlineScale(v, v, v), null, null, null, null);
+            return smallInterlineScale = new InterlineScale(v, v, v);
 
         case beam:
             return beamScale = new BeamScale(v, false);
@@ -901,8 +854,8 @@ public class Scale
         }
 
         if (info == Info.COMBO || info == Info.ALL) {
-            if (smallScale != null) {
-                sb.append(" small").append(smallScale.interlineScale);
+            if (smallInterlineScale != null) {
+                sb.append(" small").append(smallInterlineScale);
             }
 
             if (interlineScale != null) {
@@ -947,6 +900,23 @@ public class Scale
         }
 
         return sb.toString();
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called immediately after unmarshalling of this object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller m,
+                                 Object parent)
+    {
+        // Replace deprecated oldSmallScale by smallInterlineScale
+        if (oldSmallScale != null) {
+            smallInterlineScale = oldSmallScale.interlineScale;
+            oldSmallScale = null;
+        }
     }
 
     //--------------//

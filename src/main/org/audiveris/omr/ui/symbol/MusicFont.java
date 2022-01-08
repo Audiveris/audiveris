@@ -441,23 +441,15 @@ public class MusicFont
                                         int staffInterline)
     {
         final Scale.MusicFontScale musicFontScale = scale.getMusicFontScale();
-        final Scale smallScale = scale.getSmallScale();
-        final boolean isSmallStaff = (smallScale != null)
-                                             && (smallScale.getInterline() == staffInterline);
+        final Integer smallInterline = scale.getSmallInterline();
+        final boolean isSmallStaff = (smallInterline != null) && (smallInterline == staffInterline);
 
         if (musicFontScale != null) {
             if (isSmallStaff) {
-                MusicFontScale smallFontScale = smallScale.getMusicFontScale();
+                // Interpolate from large staff information
+                final double smallRatio = (double) staffInterline / scale.getInterline();
 
-                if (smallFontScale != null) {
-                    // Precise small information
-                    return smallFontScale.getPointSize();
-                } else {
-                    // No precise small information, interpolate from large information
-                    final double smallRatio = (double) staffInterline / scale.getInterline();
-
-                    return (int) Math.rint(smallRatio * musicFontScale.getPointSize());
-                }
+                return (int) Math.rint(smallRatio * musicFontScale.getPointSize());
             } else {
                 // Precise large information
                 return musicFontScale.getPointSize();

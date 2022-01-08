@@ -346,7 +346,7 @@ public class ScaleBuilder
         final LineScale lineScale = new LineScale(blackPeak);
 
         final InterlineScale interlineScale = getInterlineScale();
-        final Scale smallScale = getSmallScale();
+        final InterlineScale smallInterlineScale = getSmallInterlineScale();
 
         computeBeamKeys(true); // -> beamGuess, beamKey, beamKey2
         BeamScale beamScale = null;
@@ -370,7 +370,8 @@ public class ScaleBuilder
                     (scl.getInterlineScale() != null) ? scl.getInterlineScale() : interlineScale,
                     (scl.getLineScale() != null) ? scl.getLineScale() : lineScale,
                     (scl.getBeamScale() != null) ? scl.getBeamScale() : beamScale,
-                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale,
+                    (scl.getSmallInterlineScale() != null)
+                    ? scl.getSmallInterlineScale() : smallInterlineScale,
                     (scl.getSmallBeamScale() != null) ? scl.getSmallBeamScale() : smallBeamScale);
 
             if (scl.getStemScale() != null) {
@@ -381,7 +382,7 @@ public class ScaleBuilder
                     interlineScale,
                     lineScale,
                     beamScale,
-                    smallScale,
+                    smallInterlineScale,
                     smallBeamScale);
         }
 
@@ -400,10 +401,10 @@ public class ScaleBuilder
         }
     }
 
-    //---------------//
-    // getSmallScale //
-    //---------------//
-    private Scale getSmallScale ()
+    //------------------------//
+    // getSmallInterlineScale //
+    //------------------------//
+    private InterlineScale getSmallInterlineScale ()
     {
         if (comboPeak2 == null) {
             return null;
@@ -411,7 +412,7 @@ public class ScaleBuilder
 
         final Range peak = (comboPeak2.main < comboPeak.main) ? comboPeak2 : comboPeak;
 
-        return new Scale(new InterlineScale(peak), null, null, null, null);
+        return new InterlineScale(peak);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -457,7 +458,7 @@ public class ScaleBuilder
                 "Maximum ratio between beam height and interline");
 
         private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
-                0.01,
+                0.007,
                 "Minimum ratio of runs for beam height measurement (quorum)");
 
         private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
