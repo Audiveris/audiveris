@@ -247,13 +247,24 @@ public class StemBuilder
     /**
      * Report the first occurrence of a CLinker in items after provided index.
      *
-     * @param index the provided index
+     * @param index       the provided index
+     * @param stemProfile current profile for stem
      * @return the first head CLinker found or null
      */
-    public CLinker getFirstCLinkerAfter (int index)
+    public CLinker getFirstCLinkerAfter (int index,
+                                         int stemProfile)
     {
+        final Scale scale = system.getSheet().getScale();
+        final int maxYGap = scale.toPixels(StemChecker.getMaxYGap(stemProfile));
+
         for (int i = index + 1; i < items.size(); i++) {
             final StemItem ev = items.get(i);
+
+            // Too wide gap?
+            if ((ev instanceof StemItem.GapItem)
+                        && ((StemItem.GapItem) ev).contrib > maxYGap) {
+                return null;
+            }
 
             if ((ev instanceof StemItem.LinkerItem)
                         && (((StemItem.LinkerItem) ev).linker instanceof CLinker)) {

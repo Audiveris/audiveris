@@ -71,7 +71,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <li>STEM_TOP on head LEFT side
  * <li>STEM_BOTTOM on head RIGHT side
  * </ul>
- *
  * <pre>
  *    |
  *    |
@@ -186,6 +185,9 @@ public class HeadStemRelation
         return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
+    //-------------//
+    // getHeadSide //
+    //-------------//
     /**
      * @return the headSide
      */

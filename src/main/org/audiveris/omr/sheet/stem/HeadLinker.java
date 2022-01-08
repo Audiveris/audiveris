@@ -313,6 +313,8 @@ public class HeadLinker
                     }
 
                     hSides.add(hSide);
+
+                    return false;
                 }
             } else if (botOk) {
                 if (clBot.link(stemProfile, linkProfile, append)) {
@@ -935,7 +937,7 @@ public class HeadLinker
 
                 // If we hit a close head, check if we can link with it or not
                 final int myIndex = sb.indexOf(this);
-                final CLinker cl = sb.getFirstCLinkerAfter(myIndex);
+                final CLinker cl = sb.getFirstCLinkerAfter(myIndex, stemProfile);
 
                 if (cl == null) {
                     return true;
@@ -1219,7 +1221,7 @@ public class HeadLinker
                 // Sequence of items still to be processed?
                 if (lastIndex < sb.maxIndex()) {
                     // Pickup first remaining CLinker if any
-                    final CLinker first = sb.getFirstCLinkerAfter(lastIndex);
+                    final CLinker first = sb.getFirstCLinkerAfter(lastIndex, stemProfile);
 
                     if ((first != null) && !first.isClosed()) {
                         final HeadInter h = first.getHead();
