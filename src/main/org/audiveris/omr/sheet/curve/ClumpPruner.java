@@ -258,7 +258,7 @@ public class ClumpPruner
         /**
          * Compute the mean euclidian-distance of this entry
          *
-         * @return means euclidian distance
+         * @return mean euclidean distance
          */
         public double meanEuclidianDist ()
         {
@@ -460,7 +460,7 @@ public class ClumpPruner
                 return entries.get(0);
             }
 
-            // Sort by mean euclidian distance
+            // Sort by mean euclidean distance
             // TODO: this may be too rigid!
             Collections.sort(entries, SlurEntry.byWeightedDist);
 
@@ -492,7 +492,7 @@ public class ClumpPruner
                         break;
                     }
 
-                    // We do have the same embraced chords as slurs above, so use Euclidian distance
+                    // We do have the same embraced chords as slurs above, so use Euclidean distance
                     double dist = entry.weightedDist();
                     logger.debug("   {} euclide:{}", entry, dist);
 

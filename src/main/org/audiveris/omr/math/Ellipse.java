@@ -397,7 +397,7 @@ public final class Ellipse
         }
 
         /**
-         * Contraint matrix C is decomposed in
+         * Constraint matrix C is decomposed in
          * (C1 | 0 )
          * (---+---)
          * ( 0 | 0 )

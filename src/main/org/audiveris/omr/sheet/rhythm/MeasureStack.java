@@ -644,12 +644,12 @@ public class MeasureStack
     // getClosestChord //
     //-----------------//
     /**
-     * Among a provided Chord collection, report the chord at smallest euclidian
+     * Among a provided Chord collection, report the chord at smallest euclidean
      * distance from the provided point.
      *
      * @param chords the collection of chords to browse
      * @param point  the reference point
-     * @return the euclidian-wise closest chord
+     * @return the euclidean-wise closest chord
      */
     public AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
                                                Point2D point)

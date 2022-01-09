@@ -15,7 +15,7 @@ When one or several Inter instances have been selected, you can remove them as f
   This applies only for THE displayed inter.  
   ![](../assets/images/deassign_button.png)
 
-*   The popup menu, trigerred by a right click, in its `Inters...` sub-menu, provides an item to
+*   The popup menu, triggered by a right click, in its `Inters...` sub-menu, provides an item to
     remove the selected Inter entities according to their containing system.
   ![](../assets/images/remove_inters.png)
 

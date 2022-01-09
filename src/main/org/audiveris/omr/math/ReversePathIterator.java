@@ -56,16 +56,16 @@ import java.awt.geom.PathIterator;
  * <li>{@link #getReversePathIterator(java.awt.Shape, java.awt.geom.AffineTransform, double)}
  * for reversing a transformed flattened path iterator</li>
  * <li>{@link #getReversePathIterator(java.awt.Shape, int)}
- * for reversing the standard path iterator while explicitely defining a winding
+ * for reversing the standard path iterator while explicitly defining a winding
  * rule</li>
  * <li>{@link #getReversePathIterator(java.awt.Shape, double, int)}
- * for reversing a flattened path iterator while explicitely defining a winding
+ * for reversing a flattened path iterator while explicitly defining a winding
  * rule</li>
  * <li>{@link #getReversePathIterator(java.awt.Shape, java.awt.geom.AffineTransform, int)}
- * for reversing a transformed path iterator while explicitely defining a
+ * for reversing a transformed path iterator while explicitly defining a
  * winding rule</li>
  * <li>{@link #getReversePathIterator(java.awt.Shape, java.awt.geom.AffineTransform, double, int)}
- * for reversing a transformed flattened path iterator while explicitely
+ * for reversing a transformed flattened path iterator while explicitly
  * defining a winding rule</li>
  * </ul>
  *

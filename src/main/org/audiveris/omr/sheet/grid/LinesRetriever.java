@@ -1114,7 +1114,7 @@ public class LinesRetriever
                                     staff.getId(), lineId, Sections.ids(toAdd));
                     }
 
-                    // Include sticker sections, while perserving line ending points
+                    // Include sticker sections, while preserving line ending points
                     final Point2D startPoint = fil.getEndPoint(LEFT);
                     final Point2D stopPoint = fil.getEndPoint(RIGHT);
 

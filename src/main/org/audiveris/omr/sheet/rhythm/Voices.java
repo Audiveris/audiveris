@@ -173,7 +173,7 @@ public abstract class Voices
      */
     public static Color colorOf (int id)
     {
-        // Use table of colors, circularly.
+        // Use table of colors, circular.
         int index = (id - 1) % voiceColors.length;
 
         return voiceColors[index];

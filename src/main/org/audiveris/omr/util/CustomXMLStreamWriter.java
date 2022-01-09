@@ -330,7 +330,7 @@ public class CustomXMLStreamWriter
         if (!items.isEmpty()) {
             try {
                 // Here, element has no content (attributes don't count as content),
-                // therfore we write empty element, instead of start + end
+                // therefore we write empty element, instead of start + end
                 items.get(0).call(); // At index 0 was saved the empty processing
 
                 // Process the saved items

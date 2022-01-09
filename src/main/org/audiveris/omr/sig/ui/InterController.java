@@ -240,7 +240,7 @@ public class InterController
         final Staff staff = determineStaff(glyph, ghost, links);
 
         if (staff == null) {
-            logger.info("No staff, abandonned.");
+            logger.info("No staff, abandoned.");
 
             return;
         }

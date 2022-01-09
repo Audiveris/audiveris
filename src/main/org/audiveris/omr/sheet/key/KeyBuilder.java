@@ -2118,7 +2118,7 @@ public class KeyBuilder
             }
 
             if (Math.abs(signature) > 2) {
-                // Regulary spaced items?
+                // Regularly spaced items?
                 signature = checkPeakDeltas(signature);
             }
 
