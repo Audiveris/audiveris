@@ -959,7 +959,7 @@ public abstract class AbstractBeamInter
         Link bestLink = null;
         double bestGrade = Double.MAX_VALUE;
 
-        final Rectangle luBox = new Rectangle(-1, -1); // "Non-existant" rectangle
+        final Rectangle luBox = new Rectangle(-1, -1); // "Non-existent" rectangle
 
         if (side == HorizontalSide.LEFT) {
             Point iTop = PointUtil.rounded(top.getP1());

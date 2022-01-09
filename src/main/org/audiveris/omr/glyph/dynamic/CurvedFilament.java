@@ -282,7 +282,7 @@ public class CurvedFilament
      */
     public void polishCurvature (int minimumRadius)
     {
-        // Perserve ending points
+        // Preserve ending points
         final Point2D oldStartPoint = getStartPoint();
         final Point2D oldStopPoint = getStopPoint();
 

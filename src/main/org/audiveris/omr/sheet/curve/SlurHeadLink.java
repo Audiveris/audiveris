@@ -47,7 +47,7 @@ public class SlurHeadLink
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
-     * To sort by increasing euclidian distance.
+     * To sort by increasing euclidean distance.
      */
     public static final Comparator<SlurHeadLink> byEuclidean = (SlurHeadLink o1, SlurHeadLink o2)
             -> Double.compare(((SlurHeadRelation) o1.relation).getEuclidean(),

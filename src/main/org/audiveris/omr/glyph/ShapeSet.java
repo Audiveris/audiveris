@@ -691,7 +691,7 @@ public class ShapeSet
      * Populate the given menu with a list of all shapes that belong
      * to the given ShapeSet.
      *
-     * @param set      the set for which shape menu items must be buit
+     * @param set      the set for which shape menu items must be built
      * @param top      the JComponent to populate (typically a JMenu or a
      *                 JPopupMenu)
      * @param listener the listener for notification of user selection

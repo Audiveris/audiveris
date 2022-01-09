@@ -876,7 +876,7 @@ public class StemBuilder
                 continue;
             }
 
-            // Contraint section width
+            // Constraint section width
             if (sectBox.width > 1) {
                 continue;
             }
@@ -927,7 +927,7 @@ public class StemBuilder
                 continue;
             }
 
-            // Contraint section width
+            // Constraint section width
             if (sectBox.width > params.maxStemThickness) {
                 continue;
             }

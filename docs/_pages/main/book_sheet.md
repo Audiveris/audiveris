@@ -11,7 +11,7 @@ An image file fed into OMR software contains one or several images.
 Typically PDF and TIFF formats support the notion of multi-image files while, for example,
 JPEG or PNG formats can deal only with single-image files.
 
-For Audiveris, using the metaphore of a physical book made of several sheets of paper,
+For Audiveris, using the metaphor of a physical book made of several sheets of paper,
 this physical containment is modeled as one **Book** instance (corresponding to the input file)
 and a sequence of one or several **Sheet** instances (one sheet corresponding to one image).
 

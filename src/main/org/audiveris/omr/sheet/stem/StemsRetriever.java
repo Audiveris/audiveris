@@ -93,7 +93,7 @@ import java.util.TreeMap;
  * It is composed of one {@link BLinker} for each relevant location of the beam:
  * One on each beam side and one on each detected stump.
  * Depending on the configuration, a BLinker can have several {@link VLinker} dedicated to
- * vertical directions (0 for an ANCHORD with no stump, 1 for a stump pointing out of beam, 2 for
+ * vertical directions (0 for an ANCHORED with no stump, 1 for a stump pointing out of beam, 2 for
  * beam horizontal side with no stump).
  * <li>{@link HeadLinker} handles all links from one head.<br>
  * It is composed of one {@link SLinker} for each head horizontal side, each SLinker being composed

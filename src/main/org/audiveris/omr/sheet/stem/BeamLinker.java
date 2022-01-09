@@ -289,7 +289,7 @@ public class BeamLinker
             return bestLinker;
         }
 
-        // We have to build a brand new (anchord) linker at xp
+        // We have to build a brand new (anchored) linker at xp
         return new BLinker(null, /* hSide? */ null, refPt, true);
     }
 

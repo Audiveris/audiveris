@@ -478,7 +478,7 @@ public class LyricItemInter
 
         // A word can start in a measure and finish in the next measure
         // Look for head-chords in proper staff that are compatible abscissawise with syllable
-        // Then select the closest one, using euclidian distance.
+        // Then select the closest one, using euclidean distance.
         double bestD2 = Double.MAX_VALUE;
         HeadChordInter bestChord = null;
 

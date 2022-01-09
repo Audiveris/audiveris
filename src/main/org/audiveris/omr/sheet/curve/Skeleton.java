@@ -256,7 +256,7 @@ public class Skeleton
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
         //
-        // Erase regions too far froms staves
+        // Erase regions too far from staves
         cleaner.eraseDistantRegions();
 
         // Build buffer
