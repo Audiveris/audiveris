@@ -833,7 +833,7 @@ public class ChordListMenu
                 "Maximum abscissa shift between chords stems for a merge");
 
         private final Scale.Fraction maxChordDxForMerge = new Scale.Fraction(
-                1.6,
+                2.0,
                 "Maximum abscissa shift between chords centers for a merge");
 
         private final Scale.Fraction maxAbscissaGapForTimeItems = new Scale.Fraction(
