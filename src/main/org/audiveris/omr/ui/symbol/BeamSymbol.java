@@ -27,6 +27,7 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
@@ -129,6 +130,34 @@ public class BeamSymbol
 
         if (!beamScale.isExtrapolated()) {
             thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
+        }
+    }
+
+    //-------------//
+    // updateModel //
+    //-------------//
+    @Override
+    public void updateModel (Staff staff)
+    {
+        // We use this call to precisely adapt beam thickness using staff scale info on beams
+        final Scale scale = staff.getSystem().getSheet().getScale();
+
+        // Special case for small beam (in small staff)
+        if (staff.isSmall()) {
+            final BeamScale smallBeamScale = scale.getSmallBeamScale();
+            if (smallBeamScale != null) {
+                thicknessFraction = (double) smallBeamScale.getMain() / scale.getInterline();
+                logger.debug("small thicknessFraction: {}", thicknessFraction);
+                return;
+            }
+        }
+
+        // Default beam
+        final BeamScale beamScale = scale.getBeamScale();
+
+        if (!beamScale.isExtrapolated()) {
+            thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
+            logger.debug("thicknessFraction: {}", thicknessFraction);
         }
     }
 

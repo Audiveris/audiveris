@@ -249,6 +249,7 @@ public class InterDnd
                     if ((staff == null) || (staff.getSpecificInterline() != closestStaff
                             .getSpecificInterline())) {
                         updateImage(closestStaff.getSpecificInterline());
+                        symbol.updateModel(closestStaff);
                     }
 
                     staff = closestStaff;

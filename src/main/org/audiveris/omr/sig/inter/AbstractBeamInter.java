@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
@@ -30,6 +31,7 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
@@ -38,6 +40,7 @@ import org.audiveris.omr.sheet.stem.BeamLinker;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
+import org.audiveris.omr.sig.relation.BeamRestRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
@@ -85,7 +88,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.sig.relation.BeamRestRelation;
 
 /**
  * Abstract class <code>AbstractBeamInter</code> is the basis for {@link BeamInter},
@@ -109,6 +111,8 @@ public abstract class AbstractBeamInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
@@ -526,13 +530,22 @@ public abstract class AbstractBeamInter
                                Point dropLocation,
                                Alignment alignment)
     {
-        BeamSymbol beamSymbol = (BeamSymbol) symbol;
-        Model model = beamSymbol.getModel(font, dropLocation, alignment);
+        /*
+         * A beam (or a beam hook) can have its left and/or right sides snapped to existing stems,
+         * which results in beam width which can increase/decrease according to the stems nearby.
+         * <p>
+         * Short beams (like beam hooks) can have their width decrease so much, that both their
+         * left side and their right side may get snapped to the SAME stem, resulting in a width
+         * equal to zero.
+         * Such a zero-wide beam gets invisible, and if the end-user releases the mouse at this
+         * moment, a very weird beam gets created.
+         * To cope with this possibility, we have to make sure that the beam width never gets
+         * lower than a minimum.
+         */
+        final BeamSymbol beamSymbol = (BeamSymbol) symbol;
+        final Model model = beamSymbol.getModel(font, dropLocation, alignment);
         median = new Line2D.Double(model.p1, model.p2);
-
-        // Beam height adjusted according to sheet scale?
-        final Integer beamThickness = sheet.getScale().getBeamThickness();
-        height = (beamThickness != null) ? beamThickness : model.thickness;
+        height = model.thickness;
 
         computeArea();
 
@@ -541,27 +554,33 @@ public abstract class AbstractBeamInter
             Collections.sort(systemStems, Inters.byAbscissa);
 
             // Snap sides?
-            boolean modified = false;
+            Double left = getSnapAbscissa(LEFT, systemStems);
+            Double right = getSnapAbscissa(RIGHT, systemStems);
 
-            final Double x1 = getSnapAbscissa(LEFT, systemStems);
+            if (left != null && right != null) {
+                // Both sides get snapped, let's avoid beam collapse
+                final double width = right - left;
+                final int minWidth = sheet.getScale().toPixels(constants.minBeamWidth);
 
-            if (x1 != null) {
-                model.p1.setLocation(x1, model.p1.getY());
-                modified = true;
+                if (width < minWidth) {
+                    // Choose stem side
+                    if (dropLocation.x > 0.5 * (left + right)) {
+                        right = left + minWidth;
+                    } else {
+                        left = right - minWidth;
+                    }
+                }
             }
 
-            final Double x2 = getSnapAbscissa(RIGHT, systemStems);
-
-            if (x2 != null) {
-                model.p2.setLocation(x2, model.p2.getY());
-                modified = true;
+            if (left != null) {
+                model.p1.setLocation(left, model.p1.getY());
             }
 
-            if (model.p1.getX() >= model.p2.getX()) {
-                return false; // Unusable beam
+            if (right != null) {
+                model.p2.setLocation(right, model.p2.getY());
             }
 
-            if (modified) {
+            if (left != null || right != null) {
                 median.setLine(model.p1, model.p2);
                 computeArea();
                 dropLocation.setLocation(PointUtil.middle(median));
@@ -1053,6 +1072,18 @@ public abstract class AbstractBeamInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Fraction minBeamWidth = new Fraction(
+                0.5,
+                "Minimum width for a beam or beam hook");
+    }
+
     //---------//
     // Impacts //
     //---------//
@@ -1175,8 +1206,21 @@ public abstract class AbstractBeamInter
                     // Data
                     beam.median.setLine(p1, p2);
 
-                    final Double x1 = beam.getSnapAbscissa(LEFT, getSystemStems());
+                    Double x1 = beam.getSnapAbscissa(LEFT, getSystemStems());
+
+                    if (x1 != null) {
+                        // Avoid beam collapse
+                        final Scale scale = sig.getSystem().getSheet().getScale();
+                        final int minWidth = scale.toPixels(constants.minBeamWidth);
+                        final double width = p2.getX() - x1;
+
+                        if (width < minWidth) {
+                            x1 = null; // No snap
+                        }
+                    }
+
                     model.p1.setLocation((x1 != null) ? x1 : p1.getX(), p1.getY());
+                    beam.median.setLine(p1, p2);
 
                     return true;
                 }
@@ -1196,11 +1240,28 @@ public abstract class AbstractBeamInter
                     // Data
                     beam.median.setLine(p1, p2);
 
-                    final Double x1 = beam.getSnapAbscissa(LEFT, getSystemStems());
-                    model.p1.setLocation((x1 != null) ? x1 : p1.getX(), p1.getY());
+                    Double left = beam.getSnapAbscissa(LEFT, getSystemStems());
+                    Double right = beam.getSnapAbscissa(RIGHT, getSystemStems());
 
-                    final Double x2 = beam.getSnapAbscissa(RIGHT, getSystemStems());
-                    model.p2.setLocation((x2 != null) ? x2 : p2.getX(), p2.getY());
+                    if (left != null && right != null) {
+                        // Both sides get snapped, let's avoid beam collapse
+                        final double width = right - left;
+                        final Scale scale = sig.getSystem().getSheet().getScale();
+                        final int minWidth = scale.toPixels(constants.minBeamWidth);
+
+                        if (width < minWidth) {
+                            // Choose stem side
+                            if (middle.getX() > 0.5 * (left + right)) {
+                                right = left + minWidth;
+                            } else {
+                                left = right - minWidth;
+                            }
+                        }
+                    }
+
+                    model.p1.setLocation((left != null) ? left : p1.getX(), p1.getY());
+                    model.p2.setLocation((right != null) ? right : p2.getX(), p2.getY());
+                    beam.median.setLine(p1, p2);
 
                     return true;
                 }
@@ -1219,8 +1280,21 @@ public abstract class AbstractBeamInter
                     // Data
                     beam.median.setLine(p1, p2);
 
-                    final Double x2 = beam.getSnapAbscissa(RIGHT, getSystemStems());
+                    Double x2 = beam.getSnapAbscissa(RIGHT, getSystemStems());
+
+                    if (x2 != null) {
+                        // Avoid beam collapse
+                        final Scale scale = sig.getSystem().getSheet().getScale();
+                        final int minWidth = scale.toPixels(constants.minBeamWidth);
+                        final double width = x2 - p1.getX();
+
+                        if (width < minWidth) {
+                            x2 = null; // No snap
+                        }
+                    }
+
                     model.p2.setLocation((x2 != null) ? x2 : p2.getX(), p2.getY());
+                    beam.median.setLine(p1, p2);
 
                     return true;
                 }

@@ -24,6 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.ui.InterUIModel;
 
 import java.awt.AlphaComposite;
@@ -157,6 +158,22 @@ public class ShapeSymbol
      * @param sheet underlying sheet
      */
     public void updateModel (Sheet sheet)
+    {
+        // Void, by default
+    }
+
+    //-------------//
+    // updateModel //
+    //-------------//
+    /**
+     * Tell the symbol that it can update its model with staff informations.
+     * <p>
+     * This is useful when the dragged item enters a staff, since it can adapt itself to
+     * staff informations (such as the typical beam thickness for small staff).
+     *
+     * @param staff underlying staff
+     */
+    public void updateModel (Staff staff)
     {
         // Void, by default
     }
