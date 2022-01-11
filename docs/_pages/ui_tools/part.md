@@ -40,7 +40,7 @@ The drop will commit the merge of the two embraced staves into a single part.
 
 You can undo this operation (or remove the manual brace, which is equivalent)
 
-NOTA: this is an _adhoc_ feature, meant fo fix a brace cropped out.
+NOTA: this is an _adhoc_ feature, meant to fix a brace cropped out.
 It works only by inserting a **manual** brace.
 {: .nota-bg}
 

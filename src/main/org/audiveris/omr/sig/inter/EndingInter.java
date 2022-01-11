@@ -86,7 +86,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * (NOTA: this case is not yet handled by Audiveris):
  * <p>
- * <img src="doc-files/EndingAcrossSystems.png" alt="Ending accross systems">
+ * <img src="doc-files/EndingAcrossSystems.png" alt="Ending across systems">
  * <li>An ending may have no barline on its starting side, requiring the user to manually create
  * a side-barline in order to correctly export the ending in MusicXML:
  * <br>

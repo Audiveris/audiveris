@@ -350,18 +350,3 @@ public class WatershedGrayLevel
         }
     }
 }
-/*
- * int[][] image; // le tableau contenant les valeurs (entre 0 et 255) de
- * l'image
- * int width, height; // les dimension du tableau ci-avant
- * boolean isBrightOnDark; // "true" si on cherche des objets clairs sur un fond
- * foncé, sinon "false"
- * // création de l'instance
- * WatershedGrayLevel ws = new
- * WatershedGrayLevel(image,width,height,isBrightOnDark);
- * // appel de l'algorithme
- * int step; // nombre des niveaux voisins a explorer à chaque remplissage
- * boolean shed[][] = ws.process(step);
- * // le tableau shed[][] contient "true" si le pixel correspondant est sur une
- * ligne de partage des eaux
- */

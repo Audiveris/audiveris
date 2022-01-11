@@ -35,7 +35,7 @@ import java.util.List;
  * <ul>
  * <li>A parent (which may be null) to which the TreeNode
  * belongs
- * <li>A list (which may be empty) of contained chidren, for which the
+ * <li>A list (which may be empty) of contained children, for which the
  * TreeNode is the parent.
  * </ul>
  *
