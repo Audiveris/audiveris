@@ -1,6 +1,6 @@
 apply plugin: 'application'
 
-version  = '5.3-alpha'
+version  = '5.2.5'
 sourceCompatibility = '1.11'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
