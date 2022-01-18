@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.curve.Curves;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.symbol.Alignment;
@@ -131,12 +132,15 @@ public class InterDnd
      * Drop the ghost inter at provided location.
      * <p>
      * Finalize ghost info (staff and bounds), insert into proper SIG and link to partners if any.
+     * <p>
+     * NOTA: For a Brace drop, we don't rely on previous user hovering to determine target staff,
+     * it's safer to always check with respect to brace drop location.
      *
      * @param dropPoint provided drop location
      */
     public void drop (Point dropPoint)
     {
-        if (staff == null) {
+        if ((staff == null) || (ghost instanceof BraceInter)) {
             // Some ghosts require being located in a staff, not even a user prompt is relevant!
             if (ghost.imposeWithinStaffLimits()) {
                 return;
@@ -150,7 +154,8 @@ public class InterDnd
                 return;
             }
 
-            if (staves.size() == 1) {
+            if ((staves.size() == 1)
+                        || (ghost instanceof BraceInter)) {
                 staff = staves.get(0);
             } else {
                 // Prompt user...

@@ -93,13 +93,17 @@ public class RestChordInter
         if (beams == null) {
             beams = new ArrayList<>();
 
+            if (sig == null) {
+                return beams;
+            }
+
             final List<Inter> members = getMembers();
 
             if (members.isEmpty()) {
                 return beams;
             }
 
-            final Inter rest = getMembers().get(0);
+            final Inter rest = members.get(0);
 
             for (Relation rel : sig.getRelations(rest, BeamRestRelation.class)) {
                 beams.add((AbstractBeamInter) sig.getOppositeInter(rest, rel));

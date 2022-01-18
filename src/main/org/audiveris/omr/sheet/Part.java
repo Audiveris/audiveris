@@ -1246,7 +1246,7 @@ public class Part
         sb.append("]");
 
         if (name != null) {
-            sb.append(" name:").append(name);
+            sb.append(" name:").append(name.getValue());
         }
 
         sb.append("}");

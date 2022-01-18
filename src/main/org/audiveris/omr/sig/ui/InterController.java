@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -1466,6 +1467,7 @@ public class InterController
         }
 
         if ((staves.size() == 1)
+                    || ghost instanceof BraceInter
                     || ghost instanceof BarlineInter
                     || ghost instanceof StaffBarlineInter) {
             // Staff is uniquely defined
