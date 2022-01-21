@@ -3,7 +3,7 @@ layout: default
 title: Tips and Tricks
 grand_parent: User Edition
 parent: UI Tools
-nav_order: 14
+nav_order: 15
 ---
 ## Tips and Tricks
 {: .no_toc }

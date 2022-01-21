@@ -73,6 +73,10 @@ thickness value.
 So, measure actual beam thickness by yourself (using the Pixel Board) and modify beam scale
 if needed (see [Sheet scale](../main/sheet_scale.md) section).
 
+* **GRID** step is where staff lines, then staves and systems are detected.
+Hence, this is the most convenient point to interact if you need to manually modify lines
+and staves (see [Staff edition](staff_editor.md) section).
+
 * **REDUCTION** step is where all candidate note heads are combined with candidate stems and
 beams and then reduced to come up with reliable notes (this does not include any flag or rest,
 which are addressed in later SYMBOLS step).  

@@ -3,7 +3,7 @@ layout: default
 title: Time signature
 grand_parent: User Edition
 parent: UI Tools
-nav_order: 10
+nav_order: 11
 ---
 ## Time signature
 {: .no_toc }

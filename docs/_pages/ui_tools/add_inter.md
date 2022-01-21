@@ -109,7 +109,7 @@ The starting aspect of the shape palette is a catalog of all shape families.
 It exhibits a dark-gray background, with one representative button for each shape family.
 Nothing can be dragged from this catalog, you must first select a shape family:
 
-![](../assets/images/shape_palette.png)
+![](../assets/images/shape_board.png)
 
 #### Entering shape family
 Pressing a shape family button replaces the catalog view by a specific palette dedicated to

@@ -3,7 +3,7 @@ layout: default
 title: Key signature
 grand_parent: User Edition
 parent: UI Tools
-nav_order: 9
+nav_order: 10
 ---
 ## Key signature
 {: .no_toc }
