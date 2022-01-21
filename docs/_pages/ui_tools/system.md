@@ -3,7 +3,7 @@ layout: default
 title: System merge
 grand_parent: User Edition
 parent: UI Tools
-nav_order: 6
+nav_order: 7
 ---
 ## System merge
 {: .no_toc }

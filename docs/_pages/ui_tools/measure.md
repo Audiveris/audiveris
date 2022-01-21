@@ -3,7 +3,7 @@ layout: default
 title: Measure merge
 grand_parent: User Edition
 parent: UI Tools
-nav_order: 8
+nav_order: 9
 ---
 ## Measure merge
 {: .no_toc }

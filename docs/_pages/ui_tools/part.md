@@ -3,7 +3,7 @@ layout: default
 title: Part merge
 grand_parent: User Edition
 parent: UI Tools
-nav_order: 7
+nav_order: 8
 ---
 ## Part merge
 {: .no_toc }
