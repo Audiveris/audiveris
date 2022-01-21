@@ -48,7 +48,7 @@ public class HorizontalEditor
     /**
      * Creates a new <code>HorizontalEditor</code> object.
      *
-     * @param inter DOCUMENT ME!
+     * @param inter the inter being edited
      */
     public HorizontalEditor (final Inter inter)
     {
@@ -87,7 +87,7 @@ public class HorizontalEditor
     @Override
     protected void doit ()
     {
-        inter.setBounds(latestBounds);
+        getInter().setBounds(latestBounds);
 
         super.doit(); // No more glyph
     }
@@ -95,7 +95,7 @@ public class HorizontalEditor
     @Override
     public void undo ()
     {
-        inter.setBounds(originalBounds);
+        getInter().setBounds(originalBounds);
 
         super.undo();
     }

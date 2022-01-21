@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.rhythm;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
@@ -119,8 +120,8 @@ public class MeasuresStep
 
             // Determine impacted measure stack
             final Point centerRight = oneBar.getCenterRight();
-            final int margin = system.getSheet().getScale().toPixels(MeasuresBuilder
-                    .getMaxStaffBarlineShift());
+            final Scale scale = system.getSheet().getScale();
+            final int margin = scale.toPixels(StaffBarlineInter.getMaxStaffBarlineShift());
             final MeasureStack stack = system.getStackAt(centerRight, margin);
 
             if ((!isAddition && (opKind != UITask.OpKind.UNDO))

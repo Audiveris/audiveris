@@ -1391,14 +1391,14 @@ public class HeadInter
         @Override
         protected void doit ()
         {
-            inter.setBounds(latestBounds);
+            getInter().setBounds(latestBounds);
             super.doit(); // No more glyph
         }
 
         @Override
         public void undo ()
         {
-            inter.setBounds(originalBounds);
+            getInter().setBounds(originalBounds);
             super.undo();
         }
     }

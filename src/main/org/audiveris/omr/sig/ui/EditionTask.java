@@ -48,9 +48,9 @@ public class EditionTask
     /**
      * Creates a new <code>EditionTask</code> object.
      *
-     * @param editor  DOCUMENT ME!
-     * @param links   DOCUMENT ME!
-     * @param unlinks DOCUMENT ME!
+     * @param editor  the editor used on inter
+     * @param links   relations to set
+     * @param unlinks relations to unset
      */
     public EditionTask (InterEditor editor,
                         Collection<Link> links,
@@ -106,6 +106,7 @@ public class EditionTask
     @Override
     public String toString ()
     {
-        return new StringBuilder("EditionTask{").append(editor).append('}').toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append('{').append(editor).append('}').toString();
     }
 }

@@ -256,10 +256,12 @@ public class BasicIndex<E extends Entity>
     //--------//
     /**
      * Insert an entity with its ID already defined.
-     * This method is meant for re-loading an index.
+     * <p>
+     * For example, this method can be used to re-load an index.
      *
      * @param entity the entity to insert
      */
+    @Override
     public void insert (E entity)
     {
         int id = entity.getId();

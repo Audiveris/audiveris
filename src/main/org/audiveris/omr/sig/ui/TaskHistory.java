@@ -121,14 +121,10 @@ class TaskHistory
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("TaskHistory{");
-        sb.append("c:").append(cursor);
-
-        sb.append(" ").append(sequences);
-
-        sb.append("}");
-
-        return sb.toString();
+        return new StringBuilder("TaskHistory{")
+                .append("c:").append(cursor)
+                .append(" ").append(sequences)
+                .append("}").toString();
     }
 
     /**

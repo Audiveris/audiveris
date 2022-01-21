@@ -33,8 +33,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterEditor.Handle;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.LedgerSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -53,6 +51,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>LedgerInter</code> represents a Ledger interpretation.
@@ -475,7 +475,7 @@ public class LedgerInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         // Left point of median line
@@ -617,7 +617,7 @@ public class LedgerInter
         @Override
         protected void doit ()
         {
-            final LedgerInter ledger = (LedgerInter) inter;
+            final LedgerInter ledger = (LedgerInter) object;
             ledger.median.setLine(model.p1, model.p2);
             ledger.computeArea(); // Set bounds also
 
@@ -627,7 +627,7 @@ public class LedgerInter
         @Override
         public void undo ()
         {
-            final LedgerInter ledger = (LedgerInter) inter;
+            final LedgerInter ledger = (LedgerInter) object;
             ledger.median.setLine(originalModel.p1, originalModel.p2);
             ledger.computeArea(); // Set bounds also
 

@@ -21,39 +21,56 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.OMR;
+import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.dynamic.Compounds;
+import org.audiveris.omr.glyph.dynamic.CurvedFilament;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.lag.JunctionRatioPolicy;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
+import org.audiveris.omr.lag.SectionTally;
+import org.audiveris.omr.lag.Sections;
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.NaturalSpline;
+import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.sheet.OneLineStaff;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Tablature;
 import org.audiveris.omr.sheet.ui.RunsViewer;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -70,22 +87,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
-import org.audiveris.omr.glyph.dynamic.Compounds;
-import org.audiveris.omr.glyph.dynamic.CurvedFilament;
-import org.audiveris.omr.lag.SectionTally;
-import org.audiveris.omr.lag.Sections;
-import org.audiveris.omr.math.LineUtil;
-import org.audiveris.omr.math.NaturalSpline;
-import org.audiveris.omr.math.Population;
-import org.audiveris.omr.sheet.OneLineStaff;
-import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.Tablature;
-import org.audiveris.omr.util.Dumping;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.TOP;
 
 /**
  * Class <code>LinesRetriever</code> retrieves the staff lines of a sheet.
@@ -356,7 +357,7 @@ public class LinesRetriever
                 allFils.addAll(secondFilaments);
             }
 
-            final boolean showPoints = Staff.showDefiningPoints();
+            final boolean showPoints = ViewParameters.getInstance().isStaffPointsPainting();
             final double pointWidth = scale.toPixelsDouble(Staff.getDefiningPointSize());
             g.setColor(Colors.ENTITY_MINOR);
 

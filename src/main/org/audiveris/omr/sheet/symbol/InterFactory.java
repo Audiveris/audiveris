@@ -753,11 +753,11 @@ public class InterFactory
         case THIN_BARLINE:
         case THICK_BARLINE:
 
-            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-                return new BarlineInter(null, shape, GRADE, null, null);
-            } else {
-                return new StaffBarlineInter(shape, GRADE);
-            }
+//            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
+//                return new BarlineInter(null, shape, GRADE, null, null);
+//            } else {
+            return new StaffBarlineInter(shape, GRADE);
+//            }
 
         case DOUBLE_BARLINE:
         case FINAL_BARLINE:

@@ -46,7 +46,6 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -90,6 +89,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>SlurInter</code> represents a slur interpretation.
@@ -1114,11 +1115,11 @@ public class SlurInter
         }
     }
 
-//-------//
-// Model //
-//-------//
+    //-------//
+    // Model //
+    //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         public final Point2D p1;
@@ -1151,9 +1152,9 @@ public class SlurInter
         }
     }
 
-//-----------//
-// Constants //
-//-----------//
+    //-----------//
+    // Constants //
+    //-----------//
     private static class Constants
             extends ConstantSet
     {
@@ -1177,9 +1178,9 @@ public class SlurInter
                 "Maximum ordinate distance for pointing a slur");
     }
 
-//--------//
-// Editor //
-//--------//
+    //--------//
+    // Editor //
+    //--------//
     /**
      * User editor for a slur.
      * <p>
@@ -1326,7 +1327,7 @@ public class SlurInter
         {
             StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append('{');
-            sb.append(inter);
+            sb.append(getInter());
             sb.append(" org:").append(PointUtil.toString(originalModel.p1)).append('-')
                     .append(PointUtil.toString(originalModel.p2));
             sb.append(" new:").append(PointUtil.toString(model.p1)).append('-')
@@ -1339,20 +1340,20 @@ public class SlurInter
         @Override
         protected void doit ()
         {
-            final SlurInter slur = (SlurInter) inter;
+            final SlurInter slur = (SlurInter) getInter();
             slur.getCurve().setCurve(model.points, 0);
 
-            inter.setBounds(null);
+            slur.setBounds(null);
             super.doit(); // No more glyph
         }
 
         @Override
         public void undo ()
         {
-            final SlurInter slur = (SlurInter) inter;
+            final SlurInter slur = (SlurInter) getInter();
             slur.getCurve().setCurve(originalModel.points, 0);
 
-            inter.setBounds(null);
+            slur.setBounds(null);
             super.undo();
         }
     }

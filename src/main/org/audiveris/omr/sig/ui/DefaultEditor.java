@@ -78,7 +78,7 @@ public class DefaultEditor
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("DefaultEditor{");
-        sb.append(inter);
+        sb.append(getInter());
 
         Rectangle b = latestBounds;
         sb.append(String.format(" latestBounds(x:%d,y:%d,w:%d,h:%d)", b.x, b.y, b.width, b.height));
@@ -91,14 +91,14 @@ public class DefaultEditor
     @Override
     protected void doit ()
     {
-        inter.setBounds(latestBounds);
+        getInter().setBounds(latestBounds);
         super.doit(); // No more glyph
     }
 
     @Override
     public void undo ()
     {
-        inter.setBounds(originalBounds);
+        getInter().setBounds(originalBounds);
         super.undo();
     }
 }

@@ -1027,7 +1027,7 @@ public class StemInter
         @Override
         protected void updateChords ()
         {
-            final StemInter stem = (StemInter) inter;
+            final StemInter stem = (StemInter) object;
 
             for (AbstractChordInter chord : stem.getChords()) {
                 chord.invalidateCache();

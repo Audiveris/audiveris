@@ -89,6 +89,9 @@ public class ViewParameters
     /** Should the staff lines be painted. */
     public static final String STAFF_LINE_PAINTING = "staffLinePainting";
 
+    /** Should the staff points be painted. */
+    public static final String STAFF_POINTS_PAINTING = "staffPointsPainting";
+
     /** Should the staff peaks be painted. */
     public static final String STAFF_PEAK_PAINTING = "staffPeakPainting";
 
@@ -198,6 +201,9 @@ public class ViewParameters
 
     /** Staff line painting is chosen to be not persistent. */
     private boolean staffLinePainting = true;
+
+    /** Staff points painting is chosen to be not persistent. */
+    private boolean staffPointsPainting = false;
 
     /** Staff peak painting is chosen to be not persistent. */
     private boolean staffPeakPainting = false;
@@ -461,6 +467,24 @@ public class ViewParameters
         boolean oldValue = staffPeakPainting;
         staffPeakPainting = value;
         firePropertyChange(STAFF_PEAK_PAINTING, oldValue, value);
+    }
+
+    //----------------------//
+    // isStaffPointsPainting //
+    //----------------------//
+    public boolean isStaffPointsPainting ()
+    {
+        return staffPointsPainting;
+    }
+
+    //-----------------------//
+    // setStaffPointsPainting //
+    //-----------------------//
+    public void setStaffPointsPainting (boolean value)
+    {
+        boolean oldValue = staffPointsPainting;
+        staffPointsPainting = value;
+        firePropertyChange(STAFF_POINTS_PAINTING, oldValue, value);
     }
 
     //-----------------------//
@@ -748,6 +772,19 @@ public class ViewParameters
      */
     @Action(selectedProperty = STAFF_PEAK_PAINTING)
     public void toggleStaffPeaks (ActionEvent e)
+    {
+    }
+
+    //-------------------//
+    // toggleStaffPoints //
+    //-------------------//
+    /**
+     * Action that toggles the display of staff defining points
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = STAFF_POINTS_PAINTING)
+    public void toggleStaffPoints (ActionEvent e)
     {
     }
 

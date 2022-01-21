@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  S y s t e m M e r g e T a s k                                 //
+//                                 S t a f f E d i t i o n T a s k                                //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2018. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -19,63 +19,53 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.ui;
+package org.audiveris.omr.sheet.ui;
 
-import org.audiveris.omr.score.PageRef;
-import org.audiveris.omr.sheet.SystemInfo;
-
-import java.util.List;
+import org.audiveris.omr.sig.ui.UITask;
 
 /**
- * Class <code>SystemMergeTask</code> implements the merge of two systems.
+ * Class <code>StaffEditionTask</code> handles the user edition of a staff, regardless
+ * of its mode (global or lines).
  *
  * @author Hervé Bitteur
  */
-public class SystemMergeTask
+public class StaffEditionTask
         extends UITask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Top system. */
-    private final SystemInfo system;
-
-    /** Bottom system. */
-    private final SystemInfo systemBelow;
-
-    /** PageRef removed, if any. */
-    private PageRef pageRef;
+    /** The editor used on staff. */
+    private final StaffEditor editor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>SystemMergeTask</code> object.
+     * Creates a <code>StaffEditionTask</code> instance.
      *
-     * @param system the upper system
+     * @param editor the underlying staff editor
      */
-    public SystemMergeTask (SystemInfo system)
+    public StaffEditionTask (StaffEditor editor)
     {
-        super(system.getSig(), "merge-system");
-
-        this.system = system;
-
-        List<SystemInfo> systems = sheet.getSystems();
-        systemBelow = systems.get(1 + systems.indexOf(system));
+        super(editor.getSystem().getSheet(), "staff-edition");
+        this.editor = editor;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    public SystemInfo getSystem ()
-    {
-        return system;
-    }
-
     @Override
     public void performDo ()
     {
-        pageRef = system.mergeWithBelow();
+        editor.doit();
     }
 
     @Override
     public void performUndo ()
     {
-        system.unmergeWith(systemBelow, pageRef);
+        editor.undo();
+    }
+
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder(getClass().getSimpleName())
+                .append('{').append(editor).append('}').toString();
     }
 }

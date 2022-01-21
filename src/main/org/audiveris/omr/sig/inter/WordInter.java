@@ -30,7 +30,6 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
@@ -60,6 +59,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>WordInter</code> represents a text word.
@@ -402,7 +403,7 @@ public class WordInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         public final String value;
@@ -497,7 +498,7 @@ public class WordInter
                     box.width += dx;
 
                     if (box.width > 0) {
-                        WordInter word = (WordInter) inter;
+                        WordInter word = (WordInter) getInter();
                         String value = word.getValue();
                         int fontSize = (int) Math.rint(
                                 TextFont.computeFontSize(value, FontInfo.DEFAULT, box.width));
@@ -520,7 +521,8 @@ public class WordInter
         @Override
         protected void doit ()
         {
-            WordInter word = (WordInter) inter;
+            final Inter inter = getInter();
+            final WordInter word = (WordInter) inter;
             word.location.setLocation(model.baseLoc);
             word.fontInfo = model.fontInfo;
 
@@ -531,7 +533,8 @@ public class WordInter
         @Override
         public void undo ()
         {
-            WordInter word = (WordInter) inter;
+            final Inter inter = getInter();
+            final WordInter word = (WordInter) inter;
             word.location.setLocation(originalModel.baseLoc);
             word.fontInfo = originalModel.fontInfo;
 

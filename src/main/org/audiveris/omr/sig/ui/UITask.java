@@ -49,7 +49,7 @@ public abstract class UITask
     /** Underlying sheet. */
     protected Sheet sheet;
 
-    /** Underlying SIG. */
+    /** Underlying SIG, if any. */
     protected final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -78,6 +78,20 @@ public abstract class UITask
     {
         sig = null;
         sheet = page.getSheet();
+        this.actionName = actionName;
+    }
+
+    /**
+     * Creates a new <code>UITask</code> object, with a sheet.
+     *
+     * @param sheet      the underlying sheet
+     * @param actionName name for action
+     */
+    public UITask (Sheet sheet,
+                   String actionName)
+    {
+        sig = null;
+        this.sheet = sheet;
         this.actionName = actionName;
     }
 

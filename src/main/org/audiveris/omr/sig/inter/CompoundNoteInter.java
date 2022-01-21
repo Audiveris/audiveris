@@ -35,7 +35,6 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTracker;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
@@ -56,10 +55,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.symbol.Symbols;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>CompoundNoteInter</code> represents a head combined with a stem.
@@ -307,7 +308,7 @@ public class CompoundNoteInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         public Rectangle2D box; // CompoundNote bounds

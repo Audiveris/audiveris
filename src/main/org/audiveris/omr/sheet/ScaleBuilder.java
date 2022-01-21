@@ -63,6 +63,9 @@ import java.util.List;
  * <li>If any, the first next in height corresponds to the thickness of beams.
  * <li>And if any, the second next in height corresponds to the thickness of a second population of
  * beams.
+ * <p>
+ * NOTA: This second population of beams can exist only when there is a second population of
+ * stave heights.
  * </ol>
  * <dt>Use of <b>COMBO</b> histogram:</dt>
  * <ol>
@@ -271,7 +274,7 @@ public class ScaleBuilder
 
         final List<Integer> peaks = histoKeeper.blackFunction.getLocalMaxima(minHeight, maxHeight);
 
-        if (peaks.size() > 0) {
+        if (!peaks.isEmpty()) {
             final int peak = peaks.get(0);
             final double quorumRatio = (double) histoKeeper.blackFunction.getValue(peak) / quorum;
             final double rangeRatio = (double) (peak - minHeight) / (maxHeight - minHeight);
@@ -297,7 +300,7 @@ public class ScaleBuilder
                 }
             }
 
-            if (peaks.size() > 1) {
+            if ((comboPeak2 != null) && (peaks.size() > 1)) {
                 final int peak2 = peaks.get(1);
                 final double qRatio = (double) histoKeeper.blackFunction.getValue(peak2)
                                               / quorum;

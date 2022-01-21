@@ -106,8 +106,6 @@ public class MeasureStack
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(MeasureStack.class);
 
     /** String prefix for a second half id: {@value}. */
@@ -440,7 +438,8 @@ public class MeasureStack
         }
 
         final int meanDx = sum / diffs.values().size();
-        final int maxDx = system.getSheet().getScale().toPixels(constants.maxBarlineShift);
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(StaffBarlineInter.getMaxStaffBarlineShift());
         logger.debug("MeasureStack.checkSystemSide meanDx:{} maxDx:{}", meanDx, maxDx);
 
         if (meanDx > maxDx) {
@@ -2109,18 +2108,5 @@ public class MeasureStack
         } catch (Exception ex) {
             logger.error("Error beforeMarshal", ex);
         }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction maxBarlineShift = new Scale.Fraction(
-                1.0,
-                "Maximum abscissa difference between staff side and inserted barline");
     }
 }

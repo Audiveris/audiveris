@@ -22,9 +22,16 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.lag.Lag;
+import org.audiveris.omr.lag.Lags;
+import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.ui.ObjectEditor;
+import org.audiveris.omr.sheet.ui.ObjectEditor.Handle;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
+import org.audiveris.omr.util.BasicIndex;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
@@ -33,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -112,19 +120,80 @@ public class StaffLine
     /**
      * No-arg constructor meant for JAXB.
      */
+    @SuppressWarnings("unused")
     private StaffLine ()
     {
         this.thickness = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // cleanup //
+    //---------//
+    /**
+     * Clean up this staff line from horizontal sections still stuck on it.
+     * <p>
+     * NOTA: This is meant for lines of a user-adjusted staff.
+     * <p>
+     * Strategy:
+     * <ol>
+     * <li>Detect hSections (of limited thickness) that are intersected by staff theoretical line.
+     * <li>Include 1-pixel high hSections stuck above or below
+     * </ol>
+     *
+     * @param staff the containing staff
+     * @return the sections to remove
+     */
+    public List<Section> cleanup (SystemInfo system)
+    {
+//        final int id = 1 + staff.getLines().indexOf(this);
+//        logger.info("cleanup line: {}", id);
+//
+        getSpline();
+        final Sheet sheet = system.getSheet();
+        final Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
+
+        // Retrieve core sections
+        final List<Section> coreSections = new ArrayList<>();
+        for (Section section : hLag.getEntities()) {
+            final Rectangle box = section.getBounds();
+
+            if (spline.intersects(box)) {
+                // Refine intersection check
+                final double yLeft = spline.yAtX((double) box.x);
+                final double yRight = spline.yAtX((double) (box.x + box.width));
+                if ((yLeft < box.y || yLeft > box.y + box.height)
+                            && (yRight < box.y || yRight > box.y + box.height)) {
+                    continue;
+                }
+
+                // Minimum ratio width / height
+                final double wh = (double) box.width / (double) box.height;
+                if (wh < 2) {
+                    continue;
+                }
+
+//                logger.info(" {} w:{} h:{} w/h: {}",
+//                            section, box.width, box.height, String.format("%.1f", wh));
+                coreSections.add(section);
+            }
+        }
+
+//        // Add thin sections stuck on core sections
+//        for (Section core : coreSections) {
+//            hLag.remove(core);
+//        }
+//
+        return coreSections;
+    }
+
     //-------------//
     // yTranslated //
     //-------------//
     @Override
     public StaffLine yTranslated (double dy)
     {
-        StaffLine virtual = new StaffLine(Collections.emptyList(), thickness);
+        final StaffLine virtual = new StaffLine(Collections.emptyList(), thickness);
 
         for (Point2D p : points) {
             virtual.points.add(new Point2D.Double(p.getX(), p.getY() + dy));
@@ -161,6 +230,25 @@ public class StaffLine
         return new Rectangle(bounds);
     }
 
+    //-----------//
+    // getPoints //
+    //-----------//
+    public List<Point2D> getPoints ()
+    {
+        return points;
+    }
+
+    //-------------------//
+    // getPointsDeepCopy //
+    //-------------------//
+    public List<Point2D> getPointsDeepCopy ()
+    {
+        final List<Point2D> copy = new ArrayList<>(points.size());
+        points.forEach(p -> copy.add(new Point2D.Double(p.getX(), p.getY())));
+
+        return copy;
+    }
+
     //-------------//
     // getEndPoint //
     //-------------//
@@ -192,6 +280,25 @@ public class StaffLine
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
+    }
+
+    //-----------//
+    // setPoints //
+    //-----------//
+    /**
+     * Replace the whole list of points by a new one.
+     *
+     * @param points the new list of points
+     */
+    public void setPoints (List<Point2D> points)
+    {
+        if (this.points != points) {
+            this.points.clear();
+            this.points.addAll(points);
+        }
+
+        spline = null;
+        bounds = null;
     }
 
     //-----------//

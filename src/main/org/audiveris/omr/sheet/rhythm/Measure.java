@@ -358,8 +358,8 @@ public class Measure
             logger.info("VIP addInter {} into {}", inter, this);
         }
 
-        if (inter instanceof ClefInter) {
-            final ClefInter clef = (ClefInter) inter;
+        if (inter instanceof ClefInter clefInter) {
+            final ClefInter clef = clefInter;
 
             if (!clefs.contains(clef)) {
                 clefs.add(clef);
@@ -368,25 +368,24 @@ public class Measure
                     Collections.sort(clefs, Inters.byFullCenterAbscissa);
                 }
             }
-        } else if (inter instanceof KeyInter) {
-            keys.add((KeyInter) inter);
-        } else if (inter instanceof AbstractTimeInter) {
-            timeSigs.add((AbstractTimeInter) inter);
-        } else if (inter instanceof AbstractChordInter) {
-            AbstractChordInter chord = (AbstractChordInter) inter;
+        } else if (inter instanceof KeyInter keyInter) {
+            keys.add(keyInter);
+        } else if (inter instanceof AbstractTimeInter abstractTimeInter) {
+            timeSigs.add(abstractTimeInter);
+        } else if (inter instanceof AbstractChordInter chord) {
             chord.setMeasure(this);
 
-            if (chord instanceof HeadChordInter) {
-                headChords.add((HeadChordInter) chord);
-            } else if (chord instanceof RestChordInter) {
-                restChords.add((RestChordInter) chord);
+            if (chord instanceof HeadChordInter headChordInter) {
+                headChords.add(headChordInter);
+            } else if (chord instanceof RestChordInter restChordInter) {
+                restChords.add(restChordInter);
             }
-        } else if (inter instanceof FlagInter) {
-            flags.add((FlagInter) inter);
-        } else if (inter instanceof TupletInter) {
-            tuplets.add((TupletInter) inter);
-        } else if (inter instanceof AugmentationDotInter) {
-            augDots.add((AugmentationDotInter) inter);
+        } else if (inter instanceof FlagInter flagInter) {
+            flags.add(flagInter);
+        } else if (inter instanceof TupletInter tupletInter) {
+            tuplets.add(tupletInter);
+        } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
+            augDots.add(augmentationDotInter);
         } else {
             logger.error("Attempt to use addInter() with {}", inter);
         }

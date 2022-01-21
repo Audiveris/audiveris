@@ -41,7 +41,10 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sheet.ui.ObjectEditor;
 import org.audiveris.omr.sheet.ui.SheetEditor;
+import org.audiveris.omr.sheet.ui.StaffEditionTask;
+import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
@@ -625,6 +628,32 @@ public class InterController
             {
                 final Inter inter = editor.getInter();
                 seq.addAll(inter.preEdit(editor));
+            }
+        }.execute();
+    }
+
+    //-----------//
+    // editInter //
+    //-----------//
+    /**
+     * Modify position or geometry of an object.
+     *
+     * @param editor the editor used on object
+     */
+    @UIThread
+    public void editObject (final ObjectEditor editor)
+    {
+
+        new CtrlTask(DO, "editObject")
+        {
+            @Override
+            protected void build ()
+            {
+                if (editor instanceof StaffEditor staffEditor) {
+                    seq.add(new StaffEditionTask(staffEditor));
+                } else {
+                    throw new IllegalArgumentException("Unexpected editor " + editor);
+                }
             }
         }.execute();
     }
@@ -1264,14 +1293,18 @@ public class InterController
     @UIThread
     public void undo ()
     {
-        // If an inter is being edited, "undo" simply cancels the ongoing edition
-        InterEditor interEditor = sheet.getSheetEditor().getInterEditor();
+        // If an object is being edited, "undo" simply cancels the ongoing edition
+        ObjectEditor objectEditor = sheet.getSheetEditor().getObjectEditor();
 
-        if (interEditor != null) {
-            interEditor.undo();
+        if (objectEditor != null) {
+            objectEditor.undo();
             sheet.getSheetEditor().closeEditMode();
-            Inter inter = interEditor.getInter();
-            inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+
+            if (objectEditor instanceof InterEditor interEditor) {
+                Inter inter = interEditor.getInter();
+                inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+            }
+
             BookActions.getInstance().setUndoable(canUndo());
 
             return;
@@ -1804,14 +1837,14 @@ public class InterController
             final Set<Class> classes = new HashSet<>();
 
             for (UITask task : seq.getTasks()) {
-                if (task instanceof InterTask) {
-                    InterTask interTask = (InterTask) task;
+                if (task instanceof InterTask interTask) {
                     classes.add(interTask.getInter().getClass());
                 } else if (task instanceof SystemMergeTask) {
                     classes.add(task.getClass());
-                } else if (task instanceof RelationTask) {
-                    RelationTask relationTask = (RelationTask) task;
+                } else if (task instanceof RelationTask relationTask) {
                     classes.add(relationTask.getRelation().getClass());
+                } else {
+                    ///logger.info("firstImpactedStep. Non handled task {}", task);
                 }
             }
 

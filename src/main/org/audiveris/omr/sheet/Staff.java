@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -33,6 +32,8 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.StaffFilament;
 import org.audiveris.omr.sheet.header.StaffHeader;
+import org.audiveris.omr.sheet.ui.ObjectEditor;
+import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -43,6 +44,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -53,12 +55,11 @@ import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
-import org.jgrapht.Graphs;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
+import org.jgrapht.Graphs;
+
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -520,6 +521,19 @@ public class Staff
     }
 
     //--------------//
+    // cleanupLines //
+    //--------------//
+    /**
+     * Clean up the staff lines from horizontal sections still stuck on the defined lines.
+     * <p>
+     * This is meant to be used once staff lines have been manually adjusted by the end user.
+     */
+    public void cleanupLines ()
+    {
+        lines.forEach(line -> ((StaffLine) line).cleanup(system));
+    }
+
+    //--------------//
     // clearLedgers //
     //--------------//
     /**
@@ -680,6 +694,8 @@ public class Staff
     public void setArea (Area area)
     {
         this.area = area;
+
+        getArea(); // Force recomputation if area has been set to null
 
         addAttachment("staff-area-" + id, area);
     }
@@ -952,9 +968,7 @@ public class Staff
         for (Relation rel : excs) {
             Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
 
-            if (inter instanceof ClefInter) {
-                ClefInter clef = (ClefInter) inter;
-
+            if (inter instanceof ClefInter clef) {
                 if ((clef.getStaff() == this) && !clefs.contains(clef)) {
                     clefs.add(clef);
                 }
@@ -962,6 +976,24 @@ public class Staff
         }
 
         return clefs;
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    /**
+     * Provide an editor on this staff.
+     *
+     * @param global true for a global mode editor, false for a lines mode editor
+     * @return the chosen editor
+     */
+    public ObjectEditor getEditor (boolean global)
+    {
+        if (global) {
+            return new StaffEditor.Global(this);
+        } else {
+            return new StaffEditor.Lines(this);
+        }
     }
 
     //----------------//
@@ -1861,7 +1893,7 @@ public class Staff
         //            }
         //        }
         //
-        final boolean showPoints = constants.showDefiningPoints.isSet();
+        final boolean showPoints = ViewParameters.getInstance().isStaffPointsPainting();
         final Scale scale = system.getSheet().getScale();
         final double pointWidth = scale.toPixelsDouble(constants.definingPointSize);
 
@@ -2153,19 +2185,6 @@ public class Staff
         return Integer.signum(lineIndex) * 4 + (2 * lineIndex);
     }
 
-    //--------------------//
-    // showDefiningPoints //
-    //--------------------//
-    /**
-     * Tell whether the defining points should be drawn.
-     *
-     * @return true if so
-     */
-    public static Boolean showDefiningPoints ()
-    {
-        return constants.showDefiningPoints.isSet();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -2173,10 +2192,6 @@ public class Staff
     private static class Constants
             extends ConstantSet
     {
-
-        private final Constant.Boolean showDefiningPoints = new Constant.Boolean(
-                false,
-                "Should we show defining points?");
 
         private final Scale.Fraction definingPointSize = new Scale.Fraction(
                 0.05,
@@ -2249,7 +2264,8 @@ public class Staff
     {
 
         /** Predefined place holders. */
-        private static ConcurrentHashMap<Integer, StaffHolder> holders = new ConcurrentHashMap<>();
+        private static ConcurrentHashMap<Integer, StaffHolder> holders
+                = new ConcurrentHashMap<>();
 
         /**
          * Create a place holder

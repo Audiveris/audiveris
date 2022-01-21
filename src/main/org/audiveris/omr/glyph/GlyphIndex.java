@@ -74,7 +74,7 @@ public class GlyphIndex
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
-    /**
+    /*
      * See {@link #getEntities()} and {@link #setEntities(java.util.ArrayList)} methods
      * which are called by private methods
      * Sheet#getGlyphIndexContent() and Sheet#setGlyphIndexContent()
@@ -308,6 +308,15 @@ public class GlyphIndex
             SelectionService locationService = sheet.getLocationService();
             setEntityService(new GlyphService(this, locationService));
         }
+    }
+
+    //--------//
+    // insert //
+    //--------//
+    @Override
+    public void insert (Glyph glyph)
+    {
+        throw new RuntimeException("Method 'insert' is not yet implemented");
     }
 
     //---------//

@@ -47,8 +47,6 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterEditor.Handle;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.UITask;
@@ -88,6 +86,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Abstract class <code>AbstractBeamInter</code> is the basis for {@link BeamInter},
@@ -1127,7 +1127,7 @@ public abstract class AbstractBeamInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         // Left point of median line
@@ -1303,7 +1303,7 @@ public abstract class AbstractBeamInter
 
         private List<Inter> getSystemStems ()
         {
-            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            final AbstractBeamInter beam = (AbstractBeamInter) object;
 
             if (sig != beam.getSig()) {
                 sig = beam.getSig();
@@ -1317,7 +1317,7 @@ public abstract class AbstractBeamInter
         @Override
         protected void doit ()
         {
-            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            final AbstractBeamInter beam = (AbstractBeamInter) object;
             beam.median.setLine(model.p1, model.p2);
             beam.computeArea(); // Set bounds also
 
@@ -1327,7 +1327,7 @@ public abstract class AbstractBeamInter
         @Override
         public void undo ()
         {
-            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            final AbstractBeamInter beam = (AbstractBeamInter) object;
             beam.median.setLine(originalModel.p1, originalModel.p2);
             beam.computeArea(); // Set bounds also
 

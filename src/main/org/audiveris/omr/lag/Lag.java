@@ -84,6 +84,13 @@ public interface Lag
     RunTable getRunTable ();
 
     /**
+     * Insert the provided sections into the lag.
+     *
+     * @param sections the collection of sections to insert
+     */
+    void insertSections (Collection<Section> sections);
+
+    /**
      * Lookup for lag sections that are <b>intersected</b> by the
      * provided rectangle.
      * Specific sections are not considered.

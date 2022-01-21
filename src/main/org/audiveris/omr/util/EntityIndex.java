@@ -142,6 +142,8 @@ public interface EntityIndex<E extends Entity>
      */
     int register (E entity);
 
+    void insert (E entity);
+
     /**
      * Remove the provided entity
      *

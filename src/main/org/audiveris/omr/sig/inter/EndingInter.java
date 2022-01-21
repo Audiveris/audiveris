@@ -39,7 +39,6 @@ import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.EndingSymbol;
@@ -66,6 +65,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>EndingInter</code> represents an ending sign.
@@ -628,7 +629,7 @@ public class EndingInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         public Point2D topLeft;
@@ -828,6 +829,7 @@ public class EndingInter
         @Override
         protected void doit ()
         {
+            final Inter inter = getInter();
             final EndingInter ending = (EndingInter) inter;
             ending.line.setLine(model.topLeft, model.topRight);
             ending.leftLeg.setLine(model.topLeft, model.bottomLeft);
@@ -843,6 +845,7 @@ public class EndingInter
         @Override
         public void undo ()
         {
+            final Inter inter = getInter();
             final EndingInter ending = (EndingInter) inter;
 
             ending.line.setLine(originalModel.topLeft, originalModel.topRight);

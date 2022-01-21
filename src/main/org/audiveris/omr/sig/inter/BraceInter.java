@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -43,6 +42,8 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>BraceInter</code> represents a brace.
@@ -294,7 +295,7 @@ public class BraceInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         // Upper middle point
@@ -409,7 +410,8 @@ public class BraceInter
         @Override
         protected void doit ()
         {
-            Rectangle box = inter.getBounds();
+            final Inter inter = getInter();
+            final Rectangle box = inter.getBounds();
             inter.setBounds(new Rectangle(
                     (int) Math.rint(model.p1.getX() - (box.width / 2.0)),
                     (int) Math.rint(model.p1.getY()),
@@ -421,7 +423,8 @@ public class BraceInter
         @Override
         public void undo ()
         {
-            Rectangle box = inter.getBounds();
+            final Inter inter = getInter();
+            final Rectangle box = inter.getBounds();
             inter.setBounds(new Rectangle(
                     (int) Math.rint(originalModel.p1.getX() - box.width / 2.0),
                     (int) Math.rint(originalModel.p1.getY()),

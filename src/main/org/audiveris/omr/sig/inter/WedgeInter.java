@@ -34,7 +34,6 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -58,6 +57,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>WedgeInter</code> represents a wedge (crescendo or diminuendo).
@@ -400,7 +401,7 @@ public class WedgeInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         public final Point2D top1;
@@ -610,6 +611,7 @@ public class WedgeInter
         @Override
         protected void doit ()
         {
+            final Inter inter = getInter();
             final WedgeInter wedge = (WedgeInter) inter;
             wedge.l1.setLine(model.top1, model.top2);
             wedge.l2.setLine(model.bot1, model.bot2);
@@ -621,7 +623,8 @@ public class WedgeInter
         @Override
         public void undo ()
         {
-            final WedgeInter wedge = (WedgeInter) inter;
+            final Inter inter = getInter();
+            final WedgeInter wedge = (WedgeInter) object;
 
             wedge.l1.setLine(originalModel.top1, originalModel.top2);
             wedge.l2.setLine(originalModel.bot1, originalModel.bot2);

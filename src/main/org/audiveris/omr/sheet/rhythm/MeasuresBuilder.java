@@ -313,7 +313,8 @@ public class MeasuresBuilder
      */
     private void enforceSystemConsistency ()
     {
-        final int maxShift = system.getSheet().getScale().toPixels(constants.maxStaffBarlineShift);
+        final Scale scale = system.getSheet().getScale();
+        final int maxShift = scale.toPixels(StaffBarlineInter.getMaxStaffBarlineShift());
 
         // Build list of columns, kept sorted on abscissa
         final List<Column> columns = new ArrayList<>();
@@ -380,14 +381,6 @@ public class MeasuresBuilder
         }
     }
 
-    //-------------------------//
-    // getMaxStaffBarlineShift //
-    //-------------------------//
-    public static Scale.Fraction getMaxStaffBarlineShift ()
-    {
-        return constants.maxStaffBarlineShift;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -395,10 +388,6 @@ public class MeasuresBuilder
     private static class Constants
             extends ConstantSet
     {
-
-        private final Scale.Fraction maxStaffBarlineShift = new Scale.Fraction(
-                1.0,
-                "Maximum deskewed abscissa difference within a column");
 
         private final Scale.Fraction minStandardWidth = new Scale.Fraction(
                 4.0,

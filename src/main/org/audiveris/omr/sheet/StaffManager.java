@@ -61,7 +61,7 @@ import java.util.List;
  * <p>
  * It must be able to correctly handle the sequence of staves even in complex
  * configurations like the following one (referred to as "layout order"):
- *
+ * <p>
  * <pre>
  * +-------+
  * |   1   |
@@ -368,7 +368,7 @@ public class StaffManager
     // getStrictStaffAt //
     //------------------//
     /**
-     * Report the staff which strictly contains the provided point.
+     * Report the staff which vertically contains the provided point.
      *
      * @param point the provided point
      * @return the containing staff, or null if none containing found
@@ -398,7 +398,7 @@ public class StaffManager
      * horizontal side of the current one.
      * <p>
      * On the layout example:
-     *
+     * <p>
      * <pre>
      * +-------+
      * |   1   |
@@ -498,7 +498,7 @@ public class StaffManager
      * side of the current staff.
      * <p>
      * On the layout example:
-     *
+     * <p>
      * <pre>
      * +-------+
      * |   1   |

@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.BACK_TO_BACK_REPEAT_SIGN;
 import static org.audiveris.omr.glyph.Shape.LEFT_REPEAT_SIGN;
@@ -31,6 +32,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.PartBarline.Style;
 import static org.audiveris.omr.sheet.PartBarline.Style.*;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
@@ -77,11 +79,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class <code>StaffBarlineInter</code> represents a logical barline for one staff only.
  * <p>
+ * A <code>StaffBarlineInter</code> is a horizontal sequence of one or several {@link BarlineInter}
+ * instances, for example a final StaffBarlineInter is composed on a thin BarlineInter followed by a
+ * thick BarlineInter.
+ * <p>
  * A {@link PartBarline} is a logical barline for one part, a vertical sequence composed of one
  * <code>StaffBarlineInter</code> for each staff in the part.
- * <p>
- * A <code>StaffBarlineInter</code> is a horizontal sequence of one or several {@link BarlineInter}
- * instances.
  * <p>
  * Barline-related entities such as repeat dot(s), ending(s), fermata(s), segno or coda are
  * implemented as separate inters, linked to a barline by proper relation.
@@ -100,6 +103,8 @@ public final class StaffBarlineInter
         implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
 
@@ -362,6 +367,14 @@ public final class StaffBarlineInter
         }
 
         throw new IllegalStateException("No abscissa computable for " + this);
+    }
+
+    //-------------------------//
+    // getMaxStaffBarlineShift //
+    //-------------------------//
+    public static Scale.Fraction getMaxStaffBarlineShift ()
+    {
+        return constants.maxStaffBarlineShift;
     }
 
     //------------//
@@ -843,40 +856,54 @@ public final class StaffBarlineInter
         final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
         final SystemInfo system = staff.getSystem();
         final Sheet sheet = system.getSheet();
-
-        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-            return tasks;
-        }
-
+//
+//        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
+//            return tasks;
+//        }
+//
         // Include a staffBarline per system staff, properly positioned in abscissa
-        final SIGraph sig = system.getSig();
-        final List<Inter> bars = new ArrayList<>();
+        final Scale scale = sheet.getScale();
+        final int lineThickness = scale.getFore();
+        final SIGraph theSig = system.getSig();
         final Skew skew = sheet.getSkew();
         final Point center = getCenter();
         final double slope = skew.getSlope();
 
+        final List<Inter> bars = new ArrayList<>(); // Bars to insert
+        final List<Staff> extStaves = new ArrayList<>(); // Staves that would need a side extension
+        final int maxDx = scale.toPixels(getMaxStaffBarlineShift());
+
         for (Staff st : system.getStaves()) {
+            final double x; // Abscissa for the to-be-inserted StaffBarlineInter
+
             if (st == staff) {
+                x = center.getX();
                 bars.add(this);
             } else {
-                double y1 = st.getFirstLine().yAt(center.getX());
-                double y2 = st.getLastLine().yAt(center.getX());
-                double y = (y1 + y2) / 2;
-                double x = center.x - ((y - center.y) * slope);
-                Rectangle box = new Rectangle((int) Math.rint(x), (int) Math.rint(y), 0, 0);
-                box.grow(bounds.width / 2, bounds.height / 2);
+                final double y1 = st.getFirstLine().yAt(center.getX());
+                final double y2 = st.getLastLine().yAt(center.getX());
+                final double y = (y1 + y2) / 2;
+                x = center.x - ((y - center.y) * slope);
+                final Rectangle box = new Rectangle((int) Math.rint(x), (int) Math.rint(y), 0, 0);
+                box.grow(bounds.width / 2, (int) Math.rint((lineThickness + y2 - y1) / 2));
 
-                StaffBarlineInter b = new StaffBarlineInter(shape, 1.0);
+                final StaffBarlineInter b = new StaffBarlineInter(shape, 1.0);
                 b.setManual(true);
                 b.setStaff(st);
                 b.setBounds(box);
                 bars.add(b);
-                tasks.add(new AdditionTask(sig, b, box, b.searchLinks(system)));
+                tasks.add(new AdditionTask(theSig, b, box, b.searchLinks(system)));
+            }
+
+            // Staff extension?
+            if ((x > st.getAbscissa(HorizontalSide.RIGHT) + maxDx)
+                        || (x < st.getAbscissa(HorizontalSide.LEFT) - maxDx)) {
+                extStaves.add(st);
             }
         }
 
+        // Display closure staff barlines to user
         if (bars.size() > 1) {
-            // Display closure staff barlines to user
             sheet.getInterIndex().getEntityService().publish(
                     new EntityListEvent<>(
                             this, SelectionHint.ENTITY_INIT, MouseMovement.PRESSING, bars));
@@ -884,20 +911,50 @@ public final class StaffBarlineInter
             if (!OMR.gui.displayConfirmation(
                     "Do you confirm whole system-height addition?",
                     "Insertion of " + bars.size() + " barlines")) {
-                cancel.set(true);
-
-                sheet.getInterIndex().publish(null);
-                sheet.getLocationService().publish(
-                        new LocationEvent(this,
-                                          SelectionHint.LOCATION_INIT,
-                                          MouseMovement.PRESSING,
-                                          null));
-
-                return Collections.emptyList();
+                return cancelAdd(cancel, sheet);
             }
         }
 
+        // Check for staff lines extension
+        if (!extStaves.isEmpty()) {
+            final StringBuilder ids = new StringBuilder();
+            extStaves.forEach(st -> ids.append(" #").append(st.getId()));
+
+            if (!OMR.gui.displayConfirmation(
+                    "Do you confirm extension of staff lines?",
+                    "Extension of staves" + ids)) {
+                return cancelAdd(cancel, sheet);
+            }
+
+            // Extend staff lines BEFORE inserting barlines
+        }
+
         return tasks;
+    }
+
+    //-----------//
+    // cancelAdd //
+    //-----------//
+    /**
+     * Cancel the proposed StaffBarlineInter addition.
+     *
+     * @param cancel the boolean to set
+     * @param sheet  the containing sheet
+     * @return an empty task list
+     */
+    private List<? extends UITask> cancelAdd (WrappedBoolean cancel,
+                                              Sheet sheet)
+    {
+        cancel.set(true);
+
+        sheet.getInterIndex().publish(null);
+        sheet.getLocationService().publish(
+                new LocationEvent(this,
+                                  SelectionHint.LOCATION_INIT,
+                                  MouseMovement.PRESSING,
+                                  null));
+
+        return Collections.emptyList();
     }
 
     //-----------//
@@ -1115,5 +1172,18 @@ public final class StaffBarlineInter
         }
 
         return bestBar;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction maxStaffBarlineShift = new Scale.Fraction(
+                1.0,
+                "Maximum deskewed abscissa difference within a column");
     }
 }

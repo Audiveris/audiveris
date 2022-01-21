@@ -42,6 +42,7 @@ import org.audiveris.omr.score.ui.EditorMenu;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -237,7 +238,7 @@ public class SheetEditor
      */
     public void closeEditMode ()
     {
-        view.interEditor = null;
+        view.objectEditor = null;
         refresh();
     }
 
@@ -259,19 +260,19 @@ public class SheetEditor
     //----------------//
     public Inter getEditedInter ()
     {
-        if (view.interEditor == null) {
-            return null;
+        if (view.objectEditor instanceof InterEditor interEditor) {
+            return interEditor.getInter();
         }
 
-        return view.interEditor.getInter();
+        return null;
     }
 
-    //----------------//
-    // getInterEditor //
-    //----------------//
-    public InterEditor getInterEditor ()
+    //-----------------//
+    // getObjectEditor //
+    //-----------------//
+    public ObjectEditor getObjectEditor ()
     {
-        return view.interEditor;
+        return view.objectEditor;
     }
 
     //---------------//
@@ -404,7 +405,25 @@ public class SheetEditor
      */
     public void openEditMode (Inter inter)
     {
-        view.interEditor = inter.getEditor();
+        view.objectEditor = inter.getEditor();
+        BookActions.getInstance().setUndoable(true);
+        refresh();
+    }
+
+    //--------------//
+    // openEditMode //
+    //--------------//
+    /**
+     * Set the provided Staff into edit mode.
+     *
+     * @param staff  the staff to edit
+     * @param global true for global staff edition, false for lines edition
+     * @param system the containing system
+     */
+    public void openEditMode (Staff staff,
+                              boolean global)
+    {
+        view.objectEditor = staff.getEditor(global);
         BookActions.getInstance().setUndoable(true);
         refresh();
     }
@@ -527,8 +546,8 @@ public class SheetEditor
     // EditorView //
     //------------//
     /**
-     * This is the main view, displaying the sheet image with sections, glyphs and inters
-     * for edition.
+     * This is the main view, displaying the sheet image with sections, glyphs
+     * and inters/staffLines for edition.
      */
     private final class EditorView
             extends NestView
@@ -540,8 +559,8 @@ public class SheetEditor
         /** Current relation vector. */
         private RelationVector relationVector;
 
-        /** Inter being edited, if any. */
-        private InterEditor interEditor;
+        /** Object being edited, if any. */
+        private ObjectEditor objectEditor;
 
         /** Repetitive input mode. */
         private boolean repetitiveInputMode = false;
@@ -579,7 +598,7 @@ public class SheetEditor
                                   MouseMovement movement)
         {
             relationVector = null;
-            interEditor = null;
+            objectEditor = null;
 
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter modes
@@ -600,7 +619,7 @@ public class SheetEditor
                                      MouseMovement movement)
         {
             relationVector = null;
-            interEditor = null;
+            objectEditor = null;
 
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter mode
@@ -678,11 +697,14 @@ public class SheetEditor
             highLight(null);
 
             // Try to select an inter and put it into edit mode
-            interEditor = selectEditor(pt);
+            objectEditor = selectEditor(pt);
 
-            if (interEditor != null) {
-                Inter inter = interEditor.getInter();
-                inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+            if (objectEditor != null) {
+                if (objectEditor instanceof InterEditor interEditor) {
+                    Inter inter = interEditor.getInter();
+                    inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+                }
+
                 BookActions.getInstance().setUndoable(true);
             }
         }
@@ -695,7 +717,7 @@ public class SheetEditor
                                 MouseMovement movement)
         {
             relationVector = null;
-            interEditor = null;
+            objectEditor = null;
 
             // Cancel slot highlighting
             highLight(null);
@@ -718,11 +740,11 @@ public class SheetEditor
 
             // Specific repetitive input mode?
             if (repetitiveInputMode && (movement == MouseMovement.PRESSING)) {
-                interEditor = createEditor(pt);
+                objectEditor = createEditor(pt);
             }
 
             // On-going inter edition?
-            if (interEditor != null) {
+            if (objectEditor != null) {
                 // Publish (transient) location to allow shifting when getting close to view borders
                 locationService.publish(
                         new LocationEvent(this,
@@ -730,11 +752,11 @@ public class SheetEditor
                                           MouseMovement.DRAGGING,
                                           new Rectangle(pt)));
 
-                if (interEditor.processMouse(pt, movement)) {
+                if (objectEditor.processMouse(pt, movement)) {
                     return;
                 }
 
-                interEditor = null;
+                objectEditor = null;
             }
 
             // Handle relation vector
@@ -895,8 +917,9 @@ public class SheetEditor
                     SelectionPainter painter = new SelectionPainter(sheet, g);
 
                     for (Inter inter : inters) {
-                        if ((inter != null) && !inter.isRemoved()
-                                    && (interEditor == null || inter != interEditor.getInter())) {
+                        if ((inter != null)
+                                    && !inter.isRemoved()
+                                    && inter != getEditedInter()) {
                             // Highlight selected inter
                             painter.render(inter);
 
@@ -940,8 +963,8 @@ public class SheetEditor
             }
 
             // Inter editor?
-            if (interEditor != null) {
-                interEditor.render(g);
+            if (objectEditor != null) {
+                objectEditor.render(g);
             }
         }
 
@@ -1112,8 +1135,8 @@ public class SheetEditor
             {
                 super.actionPerformed(e);
 
-                if (interEditor != null) {
-                    interEditor.processKeyboard(new Point(dx, dy));
+                if (objectEditor != null) {
+                    objectEditor.processKeyboard(new Point(dx, dy));
                     refresh();
                 }
             }
@@ -1129,8 +1152,8 @@ public class SheetEditor
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                if (interEditor != null) {
-                    interEditor.endProcess();
+                if (objectEditor != null) {
+                    objectEditor.endProcess();
                     refresh();
                 }
             }

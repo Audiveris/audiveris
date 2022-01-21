@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     I n t e r U I M o d e l                                    //
+//                                    O b j e c t U I M o d e l                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,15 +19,15 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.ui;
+package org.audiveris.omr.sheet.ui;
 
 /**
- * Class <code>InterUIModel</code> gathers the data to be modified or transferred when UI
- * works on an Inter.
+ * Class <code>ObjectUIModel</code> gathers the data to be modified or transferred when UI
+ * works on an Object (an Inter, a Staff or a StaffLine).
  *
  * @author Hervé Bitteur
  */
-public interface InterUIModel
+public interface ObjectUIModel
 {
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -37,6 +37,8 @@ public interface InterUIModel
      * @param dx translation in abscissa
      * @param dy translation in ordinate
      */
-    void translate (double dx,
-                    double dy);
+    default void translate (double dx,
+                            double dy)
+    {
+    }
 }

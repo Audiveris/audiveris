@@ -28,8 +28,6 @@ import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterEditor.Handle;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.util.Jaxb;
 
 import java.awt.Point;
@@ -44,6 +42,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>AbstractVerticalInter</code> is the basis for rather vertical inter classes.
@@ -361,7 +361,7 @@ public abstract class AbstractVerticalInter
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         // Upper point of median line
@@ -508,7 +508,7 @@ public abstract class AbstractVerticalInter
         @Override
         protected void doit ()
         {
-            final AbstractVerticalInter vert = (AbstractVerticalInter) inter;
+            final AbstractVerticalInter vert = (AbstractVerticalInter) object;
             vert.setMedian(model.p1, model.p2); // Set bounds also
 
             super.doit(); // No more glyph
@@ -519,7 +519,7 @@ public abstract class AbstractVerticalInter
         @Override
         public void undo ()
         {
-            final AbstractVerticalInter vert = (AbstractVerticalInter) inter;
+            final AbstractVerticalInter vert = (AbstractVerticalInter) object;
             vert.setMedian(originalModel.p1, originalModel.p2); // Set bounds also
 
             super.undo();

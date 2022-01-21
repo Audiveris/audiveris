@@ -33,8 +33,10 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.header.HeaderBuilder;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -62,6 +64,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 
 /**
  * Class <code>EditorMenu</code> defines the pop-up menu which is linked to the current
@@ -109,11 +112,7 @@ public class EditorMenu
 
         addMenu(new SlotMenu());
         addMenu(new MeasureMenu());
-
-        if (AdvancedTopics.Topic.PLOTS.isSet()) {
-            addMenu(new StaffMenu());
-        }
-
+        addMenu(new StaffMenu());
         addMenu(new PageMenu());
         addMenu(new SystemMenu());
         addMenu(new ExtractionMenu(sheet));
@@ -201,6 +200,10 @@ public class EditorMenu
         private final Scale.Fraction maxEndShift = new Scale.Fraction(
                 1.0,
                 "Maximum deskewed abscissa difference between measure end");
+
+        private final Scale.Fraction maxStaffDx = new Scale.Fraction(
+                1.0,
+                "Abscissa margin around staff sides");
     }
 
     //-------------//
@@ -516,25 +519,47 @@ public class EditorMenu
 
         private Staff staff;
 
+        private StaffEditionAction edition = new StaffEditionAction();
+
+        private LineEditionAction lineEdition = new LineEditionAction();
+
+        private Point2D center; // Current user location
+
         /**
          * Create the staff menu
          */
         StaffMenu ()
         {
             super("Staff");
-            add(new JMenuItem(new PlotAction()));
-            add(new JMenuItem(new PlotHeaderAction()));
+
+            add(new JMenuItem(edition));
+            add(new JMenuItem(lineEdition));
+
+            if (AdvancedTopics.Topic.PLOTS.isSet()) {
+                addSeparator();
+                add(new JMenuItem(new PlotAction()));
+                add(new JMenuItem(new PlotHeaderAction()));
+            }
         }
 
         @Override
         public void updateUserLocation (Rectangle rect)
         {
-            StaffManager staffManager = sheet.getStaffManager();
-            staff = staffManager.getStrictStaffAt(GeoUtil.center2D(rect));
+            final StaffManager staffManager = sheet.getStaffManager();
+            center = GeoUtil.center2D(rect);
+            staff = staffManager.getStrictStaffAt(center);
             setVisible(staff != null);
 
             if (staff != null) {
                 setText("Staff #" + staff.getId());
+
+                final int margin = sheet.getScale().toPixels(constants.maxStaffDx);
+                final double x = center.getX();
+                final int left = staff.getAbscissa(HorizontalSide.LEFT);
+                final int right = staff.getAbscissa(HorizontalSide.RIGHT);
+
+                edition.setEnabled(true);
+                lineEdition.setEnabled((x >= (left - margin)) && (x <= (right + margin)));
             }
         }
 
@@ -578,6 +603,11 @@ public class EditorMenu
             @Override
             public void actionPerformed (ActionEvent e)
             {
+                if (sheet.getStub().getLatestStep().compareTo(OmrStep.HEADERS) < 0) {
+                    logger.info("HEADERS not yet available");
+                    return;
+                }
+
                 for (SystemInfo system : sheet.getSystems()) {
                     if (system.getStaves().contains(staff) && !staff.isTablature()) {
                         // Allocate a HeaderBuilder instance on demand, and ask for plot
@@ -586,6 +616,46 @@ public class EditorMenu
                         return;
                     }
                 }
+            }
+        }
+
+        /**
+         * Launch user edition on current staff.
+         */
+        private class StaffEditionAction
+                extends AbstractAction
+        {
+
+            StaffEditionAction ()
+            {
+                putValue(NAME, "Edit staff");
+                putValue(SHORT_DESCRIPTION, "Edit the staff as a whole");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                sheet.getSheetEditor().openEditMode(staff, true);
+            }
+        }
+
+        /**
+         * Launch user edition on current staff line.
+         */
+        private class LineEditionAction
+                extends AbstractAction
+        {
+
+            LineEditionAction ()
+            {
+                putValue(NAME, "Edit lines");
+                putValue(SHORT_DESCRIPTION, "Edit the staff lines individually");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                sheet.getSheetEditor().openEditMode(staff, false);
             }
         }
     }
