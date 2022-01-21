@@ -461,9 +461,9 @@ public class WedgeInter
      * <p>
      * For a wedge, there are 4 handles:
      * <ul>
-     * <li>Left handle, moving only horizontally (extending both wedge lines)
+     * <li>Left handle, moving in any direction (extending both wedge lines)
      * <li>Middle handle, moving the whole inter in any direction
-     * <li>Right handle, moving only horizontally (extending both wedge lines)
+     * <li>Right handle, moving in any direction (extending both wedge lines)
      * <li>Below handle, moving only vertically (opening both wedge lines)
      * </ul>
      */
@@ -514,51 +514,39 @@ public class WedgeInter
                 }
             });
 
-            // Left handle: move horizontally only
+            // Left handle: move in any direction
             handles.add(new InterEditor.Handle(mid1)
             {
                 @Override
                 public boolean move (Point vector)
                 {
-                    final int dx = vector.x;
-
-                    if (dx == 0) {
-                        return false;
-                    }
-
                     // Data
-                    PointUtil.add(model.top1, dx, 0);
-                    PointUtil.add(model.bot1, dx, 0);
+                    PointUtil.add(model.top1, vector);
+                    PointUtil.add(model.bot1, vector);
 
                     // Handles
-                    PointUtil.add(mid1, dx, 0);
-                    PointUtil.add(middle, dx / 2.0, 0);
+                    PointUtil.add(mid1, vector);
+                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
                     below.setLocation(getBelow(wedge.shape));
 
                     return true;
                 }
             });
 
-            // Right handle: move horizontally only
+            // Right handle: move in any direction
             handles.add(
                     new InterEditor.Handle(mid2)
             {
                 @Override
                 public boolean move (Point vector)
                 {
-                    final int dx = vector.x;
-
-                    if (dx == 0) {
-                        return false;
-                    }
-
                     // Data
-                    PointUtil.add(model.top2, dx, 0);
-                    PointUtil.add(model.bot2, dx, 0);
+                    PointUtil.add(model.top2, vector);
+                    PointUtil.add(model.bot2, vector);
 
                     // Handles
-                    PointUtil.add(mid2, dx, 0);
-                    PointUtil.add(middle, dx / 2.0, 0);
+                    PointUtil.add(mid2, vector);
+                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
                     below.setLocation(getBelow(wedge.shape));
 
                     return true;
