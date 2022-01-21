@@ -4,16 +4,16 @@
 -- Audiveris development is performed on "development" branch, while default "master" branch
 -- is reserved for releases.
 --
--- On "development" branch, you will need jdk-17.0.1
+-- On "development" branch, you will need JDK 17
 --
--- Due to recent closing of jcenter, a needed component (JPodRenderer v5.6) is no longer available,
+-- Due to recent closing of JCenter, a needed component (JPodRenderer v5.6) is no longer available,
 -- it has been temporarily replaced by JPodRenderer v5.5.1
 -- -------------------------------------------------------------------------------------------------
 ```
 
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
 
-# Audiveris - Open-source Optical Music Recognition (v5.2.x)
+# Audiveris - Open-source Optical Music Recognition
 
 The goal of an OMR application is to allow the end-user to transcribe a score image into
 its symbolic counterpart.
@@ -47,16 +47,17 @@ In the future, other exporters are expected to build upon OMR data to support ot
 
 ## Installing binaries (Windows)
 
-On GitHub [Releases][releases] page, an Audiveris 5.2 installer is available for Windows.
+On GitHub [Releases][releases] page, an Audiveris installer is available for Windows.
 
 It takes care of the whole installation, including needed libraries like Tesseract OCR,
-but assumes that you already have a suitable Java Runtime Environment installed.   
-At least Java version 11 is required.
-You can download it from Oracle at [https://www.oracle.com/fr/java/technologies/javase/jdk11-archive-downloads.html](https://www.oracle.com/fr/java/technologies/javase/jdk11-archive-downloads.html).   
-Java versions above 11 *may* work, but have not been tested yet.
+but assumes that you already have a suitable Java installed.
+* Audiveris 5.2 requires Java version 11
+* Audiveris 5.3 requires Java version 17
+
+You can download them from [Oracle JDKs download site][jdk-downloads].
 
 And since Oracle provides Java 11 and above only for 64-bit architectures, the same restriction
-applies to Audiveris 5.2 as well.
+applies to Audiveris as well.
 Should you really need a 32-bit Audiveris version, you can still use old Audiveris 5.1 version
 from the [Releases][releases] page.
 
@@ -70,7 +71,7 @@ For further installation details, please refer to HandBook [Binaries][binaries] 
 this *development* branch to get and build the latest version.
 - See workflow details in this dedicated [Wiki article][workflow].
 
-You will need the typical tools: git, gradle and Java Development Kit (JDK) 11.
+You will need the typical tools: git, gradle and Java Development Kit (JDK).
 
 All libraries, including Tesseract OCR libraries, will get pulled as Gradle dependencies
 but you will have to download Tesseract language data files.  
@@ -87,7 +88,7 @@ For further building details, please refer to HandBook [Sources][sources] sectio
 
 ## Further Information
 
-Users and Developers are advised to read the specific [User Handbook for 5.2 release][handbook],
+Users and Developers are advised to read the specific [User Handbook][handbook],
 and the more general [Wiki][audiveris-wiki] set of articles.
 
 ## Releases
@@ -103,4 +104,4 @@ All releases are available on [Audiveris Releases][releases] page.
 [binaries]:       https://audiveris.github.io/audiveris/_pages/install/binaries/
 [sources]:        https://audiveris.github.io/audiveris/_pages/install/sources/
 [releases]:       https://github.com/Audiveris/audiveris/releases
-[win-installer]:  https://github.com/Audiveris/audiveris/releases/download/5.2.1/Audiveris_Setup-5.2.1-windows-x86_64.exe
+[jdk-downloads]:  https://www.oracle.com/java/technologies/downloads/
