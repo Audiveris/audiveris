@@ -226,7 +226,7 @@ public abstract class SheetPainter
     /**
      * Build a panel which displays all defined voice ID colors.
      * <p>
-     * Separate numbers for first staff and second staff as: 1234 - 5678
+     * Separate numbers for first staff and second staff as: 1234 / 5678
      *
      * @return the populated voice panel
      */

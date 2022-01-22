@@ -42,15 +42,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
  * Class <code>InterMenu</code> builds a menu around a given inter.
+ * <p>
+ * TODO: I18N of this class
  *
  * @author Hervé Bitteur
  */
@@ -62,8 +66,6 @@ public class InterMenu
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final SeparableMenu menu;
-
-    private final Inter inter;
 
     private final RelationListener relationListener = new RelationListener();
 
@@ -79,8 +81,6 @@ public class InterMenu
     public InterMenu (final Inter inter,
                       final Set<Relation> relations)
     {
-        this.inter = inter;
-
         final Sheet sheet = inter.getSig().getSystem().getSheet();
         interController = sheet.getInterController();
 
@@ -96,6 +96,11 @@ public class InterMenu
         // Edit mode
         if (inter.isEditable()) {
             menu.add(new JMenuItem(new EditAction(inter)));
+        }
+
+        // Deassign
+        if (!inter.isRemoved()) {
+            menu.add(new JMenuItem(new DeassignAction(inter)));
         }
 
         // Shape-based selection
@@ -154,6 +159,33 @@ public class InterMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // DeassignAction //
+    //----------------//
+    private static class DeassignAction
+            extends AbstractAction
+    {
+
+        /** Originating inter. */
+        private final Inter inter;
+
+        public DeassignAction (Inter inter)
+        {
+            this.inter = inter;
+
+            putValue(NAME, "Deassign");
+            putValue(SHORT_DESCRIPTION, "Deassign inter");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Delete the inter
+            final Sheet sheet = inter.getSig().getSystem().getSheet();
+            sheet.getInterController().removeInters(Arrays.asList(inter));
+        }
+    }
+
     //------------//
     // EditAction //
     //------------//

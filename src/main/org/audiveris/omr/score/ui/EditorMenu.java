@@ -33,10 +33,8 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.header.HeaderBuilder;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -64,7 +62,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
 
 /**
  * Class <code>EditorMenu</code> defines the pop-up menu which is linked to the current

@@ -542,8 +542,6 @@ public class InterBoard
         {
             // Delete the inter
             final Inter inter = InterBoard.this.getSelectedEntity();
-            logger.debug("Deleting {}", inter);
-
             sheet.getInterController().removeInters(Arrays.asList(inter));
         }
     }
