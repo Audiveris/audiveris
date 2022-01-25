@@ -122,9 +122,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * "Score" in MusicXML.
  * Such indented system may appear in the middle of a sheet, thus (logical) score frontiers do
  * not always match (physical) sheet frontiers.
- * <p>
- * A (super-) book may also contain (sub-) books to recursively gather a sequence of input files.
- * But this feature is not yet implemented.
  *
  * @author Hervé Bitteur
  */

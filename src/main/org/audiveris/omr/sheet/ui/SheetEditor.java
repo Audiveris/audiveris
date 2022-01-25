@@ -418,7 +418,6 @@ public class SheetEditor
      *
      * @param staff  the staff to edit
      * @param global true for global staff edition, false for lines edition
-     * @param system the containing system
      */
     public void openEditMode (Staff staff,
                               boolean global)

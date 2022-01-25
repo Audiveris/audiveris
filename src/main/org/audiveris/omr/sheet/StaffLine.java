@@ -127,66 +127,6 @@ public class StaffLine
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // cleanup //
-    //---------//
-    /**
-     * Clean up this staff line from horizontal sections still stuck on it.
-     * <p>
-     * NOTA: This is meant for lines of a user-adjusted staff.
-     * <p>
-     * Strategy:
-     * <ol>
-     * <li>Detect hSections (of limited thickness) that are intersected by staff theoretical line.
-     * <li>Include 1-pixel high hSections stuck above or below
-     * </ol>
-     *
-     * @param staff the containing staff
-     * @return the sections to remove
-     */
-    public List<Section> cleanup (SystemInfo system)
-    {
-//        final int id = 1 + staff.getLines().indexOf(this);
-//        logger.info("cleanup line: {}", id);
-//
-        getSpline();
-        final Sheet sheet = system.getSheet();
-        final Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
-
-        // Retrieve core sections
-        final List<Section> coreSections = new ArrayList<>();
-        for (Section section : hLag.getEntities()) {
-            final Rectangle box = section.getBounds();
-
-            if (spline.intersects(box)) {
-                // Refine intersection check
-                final double yLeft = spline.yAtX((double) box.x);
-                final double yRight = spline.yAtX((double) (box.x + box.width));
-                if ((yLeft < box.y || yLeft > box.y + box.height)
-                            && (yRight < box.y || yRight > box.y + box.height)) {
-                    continue;
-                }
-
-                // Minimum ratio width / height
-                final double wh = (double) box.width / (double) box.height;
-                if (wh < 2) {
-                    continue;
-                }
-
-//                logger.info(" {} w:{} h:{} w/h: {}",
-//                            section, box.width, box.height, String.format("%.1f", wh));
-                coreSections.add(section);
-            }
-        }
-
-//        // Add thin sections stuck on core sections
-//        for (Section core : coreSections) {
-//            hLag.remove(core);
-//        }
-//
-        return coreSections;
-    }
-
     //-------------//
     // yTranslated //
     //-------------//

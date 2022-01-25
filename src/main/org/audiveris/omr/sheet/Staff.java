@@ -521,19 +521,6 @@ public class Staff
     }
 
     //--------------//
-    // cleanupLines //
-    //--------------//
-    /**
-     * Clean up the staff lines from horizontal sections still stuck on the defined lines.
-     * <p>
-     * This is meant to be used once staff lines have been manually adjusted by the end user.
-     */
-    public void cleanupLines ()
-    {
-        lines.forEach(line -> ((StaffLine) line).cleanup(system));
-    }
-
-    //--------------//
     // clearLedgers //
     //--------------//
     /**
