@@ -43,9 +43,15 @@
 //
 // 5b.Try to replace xsltproc by Saxon HE, in order to avoid installation of xsltproc software.
 //    As of today, the HTML output is not OK yet (no correct handling of javadoc html tags)
+//
+// 6. Include an index.html file and wrap all files as a ZIP archive.
+//    Tasks: deleteTempSchemas, genArchive
 //--------------------------------------------------------------------------------------------------
 
 apply plugin: 'java'
+
+// Pattern to detect a link to some doc-files folder
+def String docFilesPattern = "src=\"doc-files/([^\"]*)\""
 
 repositories { 
     mavenCentral() 
@@ -73,6 +79,7 @@ task genSchemaDoc {
     dependsOn('completeSchemas')    
     dependsOn('copyImages')    
     dependsOn('genHtmls')    
+    dependsOn('genArchive')    
 }
 
 task createFolders {
@@ -100,14 +107,38 @@ task genHtmls {
 
 ext.toCopy = [] // Names of image files to copy
 
+task checkIndexFile {
+    description "Check index.html for doc-files links"
+
+    doLast {
+        file('dev/index.html').eachLine { srcLine ->
+            srcLine.eachMatch(docFilesPattern) { group ->  
+                println "Got image " + group[1]
+                project.ext.toCopy.add(group[1])
+            }
+        }
+    }
+}
+
+task copyIndexFile (type: Copy) {
+    description "Copy index.html to output"
+    dependsOn('createFolders')
+
+    from file('dev/index.html')
+    into "build/output"
+}
+
 task copyImages(type: Copy) {
     description "Copy all image files into a single doc-files directory"
     dependsOn('createFolders')
+    dependsOn('checkIndexFile')
+    dependsOn('copyIndexFile')
     
     int copied = 0
-    def images = fileTree(dir: '../src/main', includes: ['**/*.png']) 
     includeEmptyDirs = false    
-    from images
+
+    from file("../src/main"), file("dev")
+    include "**/*.png"
     into "build/output/doc-files"
     
     eachFile {  fileCopyDetails ->
@@ -175,7 +206,7 @@ task checkXsltProc {
     }
 }
 
-// Definition of tasks for root-classes Book and Sheet
+// Definition of tasks for root-classes Book and Sheet (and PlayList)
 [["cls" : "Book",  "src" : "org.audiveris.omr.sheet.Book",  "sch" : "schema1.xsd"],
  ["cls" : "Sheet", "src" : "org.audiveris.omr.sheet.Sheet", "sch" : "schema2.xsd"],
  ["cls" : "PlayList", "src" : "org.audiveris.omr.sheet.PlayList", "sch" : "schema3.xsd"]].each { map ->
@@ -216,17 +247,16 @@ task checkXsltProc {
             // We'll check each xsd line for image link to doc-files, something like:
             // <img src="doc-files/Book-vs-Sheet.png" alt="Book-vs-Sheet UML">
             // to retrieve file name: Book-vs-Sheet.png
-            String pattern = "src=\"doc-files/([^\"]*)\""
             
             file("build/output/$sch").eachLine() { srcLine ->
                 // Insert external header text at beginning of schema
                 if (!done && (srcLine.indexOf("element") != -1)) {
                     done = true;
 
-                    File header = file("schemaHeaderFor${cls}.xsd")
+                    File header = file("dev/headers/schemaHeaderFor${cls}.xsd")
                     if (header.exists()) {
                         header.eachLine() { hdrLine ->                    
-                            hdrLine.eachMatch(pattern) { group ->  
+                            hdrLine.eachMatch(docFilesPattern) { group ->  
                                 println "Got image " + group[1]
                                 project.ext.toCopy.add(group[1])
                             }
@@ -238,7 +268,7 @@ task checkXsltProc {
                     }
                 }
                 
-                srcLine.eachMatch(pattern) { group ->  
+                srcLine.eachMatch(docFilesPattern) { group ->  
                     println "Got image " + group[1]
                     project.ext.toCopy.add(group[1])
                 }
@@ -259,10 +289,6 @@ task checkXsltProc {
 
         doFirst {
             def args = (rootProject.ext.targetOSName == "windows") ? ["cmd", "/c"] : []
-            //def styleSheet = "d:/soft/xs3p/xs3p-1.1.5/xs3p.xsl"
-            //def styleSheet = "d:/soft/xs3p/bitfehler/xs3p.xsl"
-            //def styleSheet = "d:/soft/xs3p/mapudo/xs3p.xsl"
-            //def styleSheet = "d:/soft/xs3p/infojunkie/xs3p.xsl"
             def styleSheet = "xs3p.xsl"
             
             if (project.ext.xsltprocFound == 'yes') {
@@ -286,6 +312,7 @@ task checkXsltProc {
             commandLine args
         }
         
+        // Comment out the following line when using Saxon HE instead of xsltproc
         genHtmls.dependsOn("genHtml$cls")
     }
     
@@ -314,6 +341,31 @@ task checkXsltProc {
         mainClass = 'net.sf.saxon.Transform'
         classpath sourceSets.main.runtimeClasspath
         
+        // Uncomment the following line to effectively use Saxon HE instead of xsltproc
         ///genHtmls.dependsOn("newGenHtml$cls")    
     }
+}
+
+// Remove the now useless temporary schemaN.xsd
+task deleteTempSchemas (type: Delete) {
+    description "Delete temporary schemas"
+
+    delete fileTree("build/output") {
+        include "schema*.xsd"
+    }   
+}
+
+// Build a ZIP archive with relevant .xsd and .html files (plus doc-files folder)
+task genArchive(type: Zip) {
+    description "Generate the schemas doc ZIP archive"
+    dependsOn("copyImages")
+    dependsOn("genHtmls")
+    dependsOn("deleteTempSchemas")
+
+    archiveBaseName = "Audiveris_Schemas_Doc"
+    archiveVersion = rootProject.version
+
+    from "build/output"
+
+    eachFile { fileCopyDetails ->  println "Zipping " + fileCopyDetails.getName() }
 }
