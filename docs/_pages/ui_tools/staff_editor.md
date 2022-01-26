@@ -8,8 +8,8 @@ nav_order: 6
 ## Staff edition
 {: .no_toc }
 
-During `GRID` step, the OMR engine detects sequences of equally spaced, long and thin horizontal
-filaments.
+During `GRID` step, the OMR engine strives to detect sequences of equally spaced,
+long and thin horizontal filaments.
 These filaments are then converted to staff lines and their underlying pixels are erased.
 
 For this to work correctly, the score image must exhibit enough "long and thin" filaments.  
@@ -19,11 +19,11 @@ Generally, the engine can interpolate -- or even extrapolate -- the holes found 
 with such broken filaments.
 
 If the engine result is not satisfactory, you can manually correct these staves via staff
-edition, which can operate in two different modes: `Global` mode and `Lines` mode.
+edition, which is provided in two different modes: `Global` mode and `Lines` mode.
 The former operates on the staff as a whole, the latter on any line separately.
 
 To enter staff edition, you make a right-click within a staff area, in the popup menu select the
-`Staff#n` sub-menu and then either `Edit staff` or `Edit lines` item.
+`Staff#n...` sub-menu and then either `Edit staff` or `Edit lines` item.
 
 ---
 Table of contents
@@ -42,7 +42,7 @@ In this mode, we can modify the different lines of the staff individually.
 | ![](../assets/images/staff_lines_wrong.png) | ![](../assets/images/staff_lines_uneven.png)  |
 
 In the example above, on the left-side picture, we can see that pixels at the beginning of the staff
-(horizontal sections displayed in pink color) have been left over.
+have been left over (these are the horizontal sections displayed in pink color).
 These non-erased pixels may impede further detection and recognition of symbols, because they will
 be considered as parts of the symbol to recognize, here a C clef.
 
@@ -52,7 +52,7 @@ right-side picture. The staff lines, as detected, are not evenly spaced near the
 To fix this, preferably right after `GRID` step, we enter the staff edition in `lines` mode.
 ![](../assets/images/staff_lines_handles.png)
 
-Each line of the staff exhibits its own sequence of handles, which we can press and drag to modify
+Each line of the staff now exhibits its own sequence of handles, which we can press and drag to modify
 the staff line locally.
 
 In this `Lines` mode, the handles can move only vertically.
@@ -80,8 +80,8 @@ all staff lines as a whole.
 | :---: | :---: |
 | ![](../assets/images/staff_wrong.png) | ![](../assets/images/staff_too_short.png)  |
 
-In this example, the upper staff is so crowded with heads, stems and beams that the engine could not
-detect enough line portions.
+In this example above, the upper staff is so crowded with heads, stems and beams that the engine
+could not detect enough line portions.
 
 So much that many pink sections are still visible where staff lines should be, and that the staff
 got even truncated on its right side.
@@ -102,7 +102,7 @@ We then release the mouse.
 ![](../assets/images/staff_handles_ok.png)
 
 We still have a couple of pink sections to fix on lines 2 and 3. This is a job for the `lines` mode.
-We simply right-click in the staff area, and select the lines mode.
+We simply right-click in the staff area, and select the `lines` mode.
 
 ![](../assets/images/staff_handles_nearly.png)
 
