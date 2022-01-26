@@ -4,8 +4,14 @@ title: Inter editors
 parent: References
 nav_order: 0
 ---
+
 ## Inter editors
 {: .no_toc }
+
+This reference chapter gathers the description of all Inter editors variants,
+especially regarding the role and potential move of its handles.  
+It also presents the two variants (Lines and Global) of Staff editor,
+even though -- strictly speaking -- a Staff is not an Inter.
 
 ---
 Table of contents
@@ -60,6 +66,7 @@ IMPORTANT NOTICE: Shifting or resizing a brace is meant for small adjustments on
 If you want to extend or reduce the number of staves embraced by a Brace instance
 (which is a rather heavy operation that impacts the definition of parts within a system),
 this must be done **explicitly** by adding or removing a manual Brace.
+Please refer to [Part merge](part.md) section for such Brace usage.
 
 ### Beam editor
 
@@ -132,6 +139,27 @@ This is the most complex editor:
   (together with the related control point),
 * Control handles move their underlying control point,
 * Middle of control segment moves both control points in any direction.
+
+### Staff lines editor
+
+![](../assets/images/staff_lines_edited.png)
+
+All the various lines handles in staff are available for individual vertical dragging.
+
+See Staff Edition [Lines mode](staff_editor.md#lines-mode).
+
+### Staff global editor
+
+![](../assets/images/staff_edited.png)
+
+Handles are located on the staff middle line but they work for all lines as a whole
+(all lines are kept parallel when a handle is moved):
+* Side handles (left and right) can be dragged both vertically and horizontally, thus allowing
+ to stretch or shrink the staff.
+* Non-side handles can be dragged only vertically.
+
+
+See Staff Edition [Global mode](staff_editor.md#global-mode).
 
 ### Stem/Arpeggiato/Connector editor
 
