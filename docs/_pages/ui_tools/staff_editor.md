@@ -80,7 +80,7 @@ all staff lines as a whole.
 | :---: | :---: |
 | ![](../assets/images/staff_wrong.png) | ![](../assets/images/staff_too_short.png)  |
 
-In this example above, the upper staff is so crowded with heads, stems and beams that the engine
+In the example above, the upper staff is so crowded with heads, stems and beams that the engine
 could not detect enough line portions.
 
 So much that many pink sections are still visible where staff lines should be, and that the staff
