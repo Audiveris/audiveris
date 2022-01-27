@@ -43,7 +43,7 @@ import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
-import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
@@ -123,19 +123,20 @@ public class SymbolsBuilder
      * Find all possible interpretations of symbols composed from available system glyphs.
      * <p>
      * <b>Synopsis:</b>
-     *
-     * <pre>
-     * - retrieveFineBoxes()                            // Retrieve areas around small chords
-     * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
-     * - buildLinks()                                   // Build graph with distances
-     * - processClusters():                             // Group connected glyphs into clusters
-     *    + FOREACH cluster of connected glyphs:
-     *       + cluster.decompose()                      // Decompose cluster into all subsets
-     *       + FOREACH subset process(subset):
-     *          - build compound glyph                  // Build one compound glyph per subset
-     *          - evaluateGlyph(compound)               // Run shape classifier on compound
-     *          - FOREACH acceptable evaluation
-     *             + interFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     * <p>
+     * <
+     * pre>
+     * - retrieveFineBoxes() // Retrieve areas around small chords
+     * - getSymbolsGlyphs() // Retrieve all glyphs usable for symbols
+     * - buildLinks() // Build graph with distances
+     * - processClusters(): // Group connected glyphs into clusters
+     * + FOREACH cluster of connected glyphs:
+     * + cluster.decompose() // Decompose cluster into all subsets
+     * + FOREACH subset process(subset):
+     * - build compound glyph // Build one compound glyph per subset
+     * - evaluateGlyph(compound) // Run shape classifier on compound
+     * - FOREACH acceptable evaluation
+     * + interFactory.create(eval, glyph) // Create inter(s) related to evaluation
      * </pre>
      *
      * @param optionalsMap the optional (weak) glyphs per system

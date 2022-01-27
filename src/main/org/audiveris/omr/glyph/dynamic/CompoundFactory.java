@@ -23,7 +23,7 @@ package org.audiveris.omr.glyph.dynamic;
 
 import org.audiveris.omr.lag.Section;
 
-import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;

@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.clef;
 
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
@@ -61,11 +58,14 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
-import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;

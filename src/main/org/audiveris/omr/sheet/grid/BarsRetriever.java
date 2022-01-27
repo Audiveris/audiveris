@@ -77,7 +77,7 @@ import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
-import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

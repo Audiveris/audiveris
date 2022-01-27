@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
@@ -42,6 +38,7 @@ import org.audiveris.omr.util.Version.UpgradeVersion;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
+import org.kohsuke.github.GHAsset;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
@@ -49,6 +46,10 @@ import org.kohsuke.github.GitHub;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
 import java.awt.Insets;
@@ -71,7 +72,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
-import org.kohsuke.github.GHAsset;
 
 /**
  * Class <code>Versions</code> gathers key versions for upgrade checks.

@@ -43,7 +43,6 @@ import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Version;
 
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.DirectedMultigraph;
@@ -79,7 +78,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlJavaTypeAdapter(SigValue.JaxbAdapter.class)
 public class SIGraph
         extends DefaultListenableGraph<Inter, Relation>
-        implements DirectedGraph<Inter, Relation>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
