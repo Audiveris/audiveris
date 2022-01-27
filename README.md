@@ -1,16 +1,3 @@
-```diff
--- -------------------------------------------------------------------------------------------------
--- WARNING
--- Audiveris development is performed on "development" branch, while default "master" branch
--- is reserved for releases.
---
--- On "development" branch, you will need JDK 17
---
--- Due to recent closing of JCenter, a needed component (JPodRenderer v5.6) is no longer available,
--- it has been temporarily replaced by JPodRenderer v5.5.1
--- -------------------------------------------------------------------------------------------------
-```
-
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
 
 # Audiveris - Open-source Optical Music Recognition
