@@ -318,8 +318,10 @@ public class KeyInter
     //-----------------//
     /**
      * Report the KeySymbol to draw.
+     * <p>
+     * Constraint: we cannot insert a new key if there is already a key in the target measure.
      * <ul>
-     * <li> For a standard key inter, that's its fifths value.
+     * <li> For a standard key inter, the KeySymbol is its fifths value.
      * <li>But for a KEY_CANCEL, it's the fifths of the preceding key signature in staff
      * </ul>
      *
@@ -327,10 +329,6 @@ public class KeyInter
      */
     public ShapeSymbol getSymbolToDraw ()
     {
-        if (!isCancel()) {
-            return Symbols.getSymbol(shape);
-        }
-
         if (staff == null) {
             logger.debug("null staff");
 
@@ -359,6 +357,10 @@ public class KeyInter
             logger.debug("measure already has {}", key);
 
             return null;
+        }
+
+        if (!isCancel()) {
+            return Symbols.getSymbol(shape);
         }
 
         KeyInter keyBefore = null;
