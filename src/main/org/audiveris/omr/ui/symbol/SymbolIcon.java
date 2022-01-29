@@ -113,13 +113,4 @@ public interface SymbolIcon
      * @return the image meant for icon display
      */
     BufferedImage getIconImage ();
-
-    /**
-     * Report the symbol reference point, which is usually the area center, but somewhat
-     * different for some symbols (such as flats).
-     *
-     * @param area the contour box of the entity (symbol or glyph)
-     * @return the reference point
-     */
-    Point getRefPoint (Rectangle area);
 }

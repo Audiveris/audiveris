@@ -34,7 +34,6 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -222,11 +221,10 @@ public class WordInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         TextSymbol textSymbol = (TextSymbol) symbol;
-        Model model = textSymbol.getModel(font, dropLocation, alignment);
+        Model model = textSymbol.getModel(font, dropLocation);
         setValue(model.value);
         fontInfo = model.fontInfo;
         location = new Point2D.Double(model.baseLoc.getX(), model.baseLoc.getY());

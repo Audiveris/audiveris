@@ -42,7 +42,6 @@ import org.audiveris.omr.score.ui.EditorMenu;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -979,7 +978,7 @@ public class SheetEditor
          */
         private InterEditor createEditor (Point location)
         {
-            // Inter is determined my latest history information
+            // Inter is determined by latest history information
             final List<Shape> history = shapeBoard.getHistory();
 
             if (history.isEmpty()) {
@@ -1005,7 +1004,7 @@ public class SheetEditor
             final MusicFont font = (ShapeSet.Heads.contains(inter.getShape()))
                     ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
                     : MusicFont.getBaseFont(staffInterline);
-            inter.deriveFrom(shape.getSymbol(), sheet, font, location, Alignment.AREA_CENTER);
+            inter.deriveFrom(shape.getSymbol(), sheet, font, location);
 
             staff.getSystem().getSig().addVertex(inter); // To set inter sig
             sheet.getInterController().addInter(inter); // NOTA: this runs in a background task...

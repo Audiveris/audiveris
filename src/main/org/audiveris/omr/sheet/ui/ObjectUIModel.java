@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import java.awt.geom.Point2D;
+
 /**
  * Class <code>ObjectUIModel</code> gathers the data to be modified or transferred when UI
  * works on an Object (an Inter, a Staff or a StaffLine).
@@ -32,7 +34,7 @@ public interface ObjectUIModel
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Translate the model along the provided vector.
+     * Translate the model along the provided vector components.
      *
      * @param dx translation in abscissa
      * @param dy translation in ordinate
@@ -40,5 +42,15 @@ public interface ObjectUIModel
     default void translate (double dx,
                             double dy)
     {
+    }
+
+    /**
+     * Translate the model along the provided vector.
+     *
+     * @param vector translation in abscissa and ordinate
+     */
+    default void translate (Point2D vector)
+    {
+        translate(vector.getX(), vector.getY());
     }
 }

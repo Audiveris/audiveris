@@ -29,19 +29,22 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.symbol.InterFactory;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.CompoundNoteSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -56,12 +59,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.Link;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import org.audiveris.omr.ui.symbol.Symbols;
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
-
 /**
  * Class <code>CompoundNoteInter</code> represents a head combined with a stem.
  * <p>
@@ -69,10 +66,6 @@ import org.audiveris.omr.sheet.ui.ObjectUIModel;
  * of quarter and half notes.
  * <p>
  * When such compound is dropped, it gets replaced by head + stem + head-stem relation.
- * <p>
- * TODO:
- *
- * Tracker
  *
  * @author Hervé Bitteur
  */
@@ -85,10 +78,10 @@ public class CompoundNoteInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Included head. */
-    private HeadInter head;
+    private final HeadInter head;
 
     /** Included stem. */
-    private StemInter stem;
+    private final StemInter stem;
 
     /** Related model, if any. */
     private Model model;
@@ -123,11 +116,10 @@ public class CompoundNoteInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         final CompoundNoteSymbol noteSymbol = (CompoundNoteSymbol) symbol;
-        model = noteSymbol.getModel(font, dropLocation, alignment);
+        model = noteSymbol.getModel(font, dropLocation);
 
         // We snap head to lines/ledgers for y
         final Double y = HeadInter.getSnapOrdinate(model.headCenter, staff);
@@ -199,7 +191,7 @@ public class CompoundNoteInter
                 isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
         final CompoundNoteSymbol symbol = (CompoundNoteSymbol) Symbols.getSymbol(shape);
         final MusicFont font = MusicFont.getBaseFont(staffInterline);
-        deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter, AREA_CENTER);
+        deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter);
         logger.debug("{}", model);
 
         return model;

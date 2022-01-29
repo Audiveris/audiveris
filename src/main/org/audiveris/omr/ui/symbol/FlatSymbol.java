@@ -22,9 +22,13 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.inter.AlterInter;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
+import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 /**
  * Class <code>FlatSymbol</code> handles a flat or double-flat symbol with a refPoint.
@@ -63,19 +67,19 @@ public class FlatSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getRefPoint //
-    //-------------//
-    /**
-     * {@inheritDoc}
-     * <p>
-     * For a flat symbol, the reference point is significantly lower than area center.
-     */
+    //----------//
+    // getModel //
+    //----------//
     @Override
-    public Point getRefPoint (Rectangle box)
+    public AlterInter.Model getModel (MusicFont font,
+                                      Point location)
     {
-        return new Point(box.x + (box.width / 2),
-                         box.y + (int) Math.rint(box.height * 0.67));
+        final Params p = getParams(font);
+        final AlterInter.Model model = new AlterInter.Model();
+        model.box = p.rect;
+        model.translate(p.vectorTo(location));
+
+        return model;
     }
 
     //------------//
@@ -85,5 +89,33 @@ public class FlatSymbol
     protected ShapeSymbol createIcon ()
     {
         return new FlatSymbol(true, shape, codes);
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    @Override
+    protected Params getParams (MusicFont font)
+    {
+        final Params p = new Params();
+        p.layout = font.layout(getString());
+        p.rect = p.layout.getBounds();
+        p.offset = new Point2D.Double(0, -p.rect.getY() - p.rect.getHeight() / 2);
+
+        return p;
+    }
+
+    //-------//
+    // paint //
+    //-------//
+    @Override
+    protected void paint (Graphics2D g,
+                          Params p,
+                          Point2D location,
+                          Alignment alignment)
+    {
+        final Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        PointUtil.subtraction(loc, p.offset);
+        OmrFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 }

@@ -33,7 +33,6 @@ import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -381,7 +380,7 @@ public class InterDnd
                 ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
                 : MusicFont.getBaseFont(staffInterline);
 
-        return ghost.deriveFrom(symbol, sheet, font, location, Alignment.AREA_CENTER);
+        return ghost.deriveFrom(symbol, sheet, font, location);
     }
 
     //-------------//

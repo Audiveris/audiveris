@@ -51,7 +51,6 @@ import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UnlinkTask;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.BeamSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -527,8 +526,7 @@ public abstract class AbstractBeamInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         /*
          * A beam (or a beam hook) can have its left and/or right sides snapped to existing stems,
@@ -543,7 +541,7 @@ public abstract class AbstractBeamInter
          * lower than a minimum.
          */
         final BeamSymbol beamSymbol = (BeamSymbol) symbol;
-        final Model model = beamSymbol.getModel(font, dropLocation, alignment);
+        final Model model = beamSymbol.getModel(font, dropLocation);
         median = new Line2D.Double(model.p1, model.p2);
         height = model.thickness;
 

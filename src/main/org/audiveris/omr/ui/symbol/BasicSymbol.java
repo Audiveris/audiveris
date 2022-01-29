@@ -252,15 +252,6 @@ public class BasicSymbol
         return getIcon().getWidth();
     }
 
-    //-------------//
-    // getRefPoint //
-    //-------------//
-    @Override
-    public Point getRefPoint (Rectangle box)
-    {
-        return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
-    }
-
     //-----------//
     // getString //
     //-----------//
@@ -579,7 +570,7 @@ public class BasicSymbol
     {
 
         /**
-         * Specific offset, if any, for user pointer off of area center.
+         * Specific offset, if any, for focus center off of area center.
          * Since user pointing location is by default taken as center of 'rect' bounds.
          */
         public Point2D offset;
@@ -589,5 +580,26 @@ public class BasicSymbol
 
         /** By convention, <b>FULL</b> symbol bounds, including decorations if any. */
         public Rectangle2D rect;
+
+        /**
+         * Report the vector to translate symbol to the provided focusLocation.
+         *
+         * @param focusLocation mouse location
+         * @return the translation vector to apply
+         */
+        public Point2D vectorTo (Point2D focusLocation)
+        {
+            final Point2D topLeft = AREA_CENTER.translatedPoint(TOP_LEFT, rect, focusLocation);
+
+            if (offset != null) {
+                topLeft.setLocation(topLeft.getX() - offset.getX(),
+                                    topLeft.getY() - offset.getY());
+            }
+
+            topLeft.setLocation(topLeft.getX() - rect.getX(),
+                                topLeft.getY() - rect.getY());
+
+            return topLeft;
+        }
     }
 }

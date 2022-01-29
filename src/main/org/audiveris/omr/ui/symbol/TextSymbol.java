@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -76,12 +75,10 @@ public class TextSymbol
     //----------//
     @Override
     public WordInter.Model getModel (MusicFont font,
-                                     Point location,
-                                     Alignment alignment)
+                                     Point location)
     {
-        MyParams p = getParams(font);
-        Point2D topLeft = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        p.model.translate(topLeft.getX() - p.rect.getX(), topLeft.getY() - p.rect.getY());
+        final MyParams p = getParams(font);
+        p.model.translate(p.vectorTo(location));
 
         return p.model;
     }

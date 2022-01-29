@@ -78,12 +78,11 @@ public class BracketSymbol
     //----------//
     @Override
     public AbstractVerticalInter.Model getModel (MusicFont font,
-                                                 Point location,
-                                                 Alignment alignment)
+                                                 Point location)
     {
         MyParams p = getParams(font);
 
-        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D loc = AREA_CENTER.translatedPoint(AREA_CENTER, p.rect, location);
 
         // Location pointed by the mouse is in fact the center of trunk (not the area center)
         // So, let's retrieve the top left corner manually

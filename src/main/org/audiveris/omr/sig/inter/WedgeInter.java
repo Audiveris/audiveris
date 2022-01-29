@@ -34,7 +34,6 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.WedgeSymbol;
@@ -188,11 +187,10 @@ public class WedgeInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         WedgeSymbol wedgeSymbol = (WedgeSymbol) symbol;
-        Model model = wedgeSymbol.getModel(font, dropLocation, alignment);
+        Model model = wedgeSymbol.getModel(font, dropLocation);
         l1 = new Line2D.Double(model.top1, model.top2);
         l2 = new Line2D.Double(model.bot1, model.bot2);
         setBounds(null);

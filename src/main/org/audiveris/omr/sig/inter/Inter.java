@@ -35,7 +35,6 @@ import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
@@ -106,21 +105,21 @@ public interface Inter
     void decrease (double ratio);
 
     /**
-     * Derive inter geometry from the provided symbol, font and current location
-     * (when symbol is dragged, dropped or when created with repetitive input).
+     * Derive (ghost) inter geometry from the provided symbol, font and current mouse location
+     * (when ghost is dragged, dropped or when created with repetitive input).
      *
      * @param symbol       the dropped symbol
      * @param sheet        containing sheet
      * @param font         properly sized font
-     * @param dropLocation (input/output) current drag/drop location
-     * @param alignment    relative position of provided location WRT symbol
+     * @param dropLocation (input/output) current drag/drop location.
+     *                     Input: location is assumed to be the symbol focus center
+     *                     Output: location may get modified when some snapping occurs
      * @return true if OK
      */
     boolean deriveFrom (ShapeSymbol symbol,
                         Sheet sheet,
                         MusicFont font,
-                        Point dropLocation,
-                        Alignment alignment);
+                        Point dropLocation);
 
     /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting

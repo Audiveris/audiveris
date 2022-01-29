@@ -56,7 +56,6 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
@@ -245,13 +244,12 @@ public class HeadInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
-        // Needed to get head bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        // First call needed to get head bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
-        // For a note head, we snap to stems for x & lines/ledgers for y
+        // For a note head, we snap abscissa to stems and ordinate to lines/ledgers
         if (staff != null) {
             boolean modified = false;
 
@@ -270,7 +268,8 @@ public class HeadInter
             }
 
             if (modified) {
-                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+                // Final call with refined dropLocation
+                super.deriveFrom(symbol, sheet, font, dropLocation);
             }
         }
 

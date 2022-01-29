@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
@@ -40,7 +41,6 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.text.TextRole;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.EndingSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -65,8 +65,6 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>EndingInter</code> represents an ending sign.
@@ -403,11 +401,10 @@ public class EndingInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         final EndingSymbol endingSymbol = (EndingSymbol) symbol;
-        final Model model = endingSymbol.getModel(font, dropLocation, alignment);
+        final Model model = endingSymbol.getModel(font, dropLocation);
 
         line = new Line2D.Double(model.topLeft, model.topRight);
         leftLeg = new Line2D.Double(model.topLeft, model.bottomLeft);
@@ -416,7 +413,7 @@ public class EndingInter
             rightLeg = new Line2D.Double(model.topRight, model.bottomRight);
         }
 
-        setBounds(null);
+        setBounds(null); // To reset cached value
 
         return true;
     }

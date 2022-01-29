@@ -28,8 +28,8 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -42,8 +42,6 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>BraceInter</code> represents a brace.
@@ -147,17 +145,16 @@ public class BraceInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         // Needed to get brace bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
         // Make sure brace staff is the upper staff
         if (staff != null) {
-            Rectangle box = getBounds();
-            Point topRight = new Point(box.x + box.width, box.y);
-            SystemInfo system = sheet.getSystemManager().getClosestSystem(topRight);
+            final Rectangle box = getBounds();
+            final Point topRight = new Point(box.x + box.width, box.y);
+            final SystemInfo system = sheet.getSystemManager().getClosestSystem(topRight);
 
             if (system == null) {
                 return false;

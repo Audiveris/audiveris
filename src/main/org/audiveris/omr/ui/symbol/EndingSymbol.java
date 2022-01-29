@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.EndingInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
@@ -74,13 +73,10 @@ public class EndingSymbol
     //----------//
     @Override
     public EndingInter.Model getModel (MusicFont font,
-                                       Point location,
-                                       Alignment alignment)
+                                       Point location)
     {
-        MyParams p = getParams(font);
-        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        loc = PointUtil.subtraction(loc, p.offset);
-        p.model.translate(loc.getX(), loc.getY());
+        final MyParams p = getParams(font);
+        p.model.translate(p.vectorTo(location));
 
         return p.model;
     }
@@ -109,19 +105,20 @@ public class EndingSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
-        double width = font.getStaffInterline() * 4.0;
-        double height = font.getStaffInterline() * 1.0;
+        final MyParams p = new MyParams();
+        final double width = font.getStaffInterline() * 4.0;
+        final double height = font.getStaffInterline() * 1.0;
         p.rect = new Rectangle2D.Double(0, 0, width, height);
 
         p.model.topLeft = new Point2D.Double(0, 0);
         p.model.topRight = new Point2D.Double(width - 1, 0);
-        p.model.bottomLeft = new Point2D.Double(0, height);
+        p.model.bottomLeft = new Point2D.Double(0, height - 1);
 
         if (withRightLeg) {
-            p.model.bottomRight = new Point2D.Double(width - 1, height);
+            p.model.bottomRight = new Point2D.Double(width - 1, height - 1);
         }
 
+        /** For an Ending symbol, focus center is middle of upper horizontal segment. */
         p.offset = new Point2D.Double(0, -height / 2);
 
         return p;

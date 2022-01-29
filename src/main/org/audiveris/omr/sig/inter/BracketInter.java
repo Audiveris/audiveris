@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.BracketSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -193,11 +192,10 @@ public class BracketInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         BracketSymbol bracketSymbol = (BracketSymbol) symbol;
-        Model model = bracketSymbol.getModel(font, dropLocation, alignment);
+        Model model = bracketSymbol.getModel(font, dropLocation);
         median = new Line2D.Double(model.p1, model.p2);
         width = model.width;
         computeArea(font);

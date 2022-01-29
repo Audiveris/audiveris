@@ -52,7 +52,6 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
@@ -219,17 +218,16 @@ public final class StaffBarlineInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         // Needed to get bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
         if (staff != null) {
-            // Snap ordinate
+            // Snap ordinate on staff middle line
             final double y = staff.pitchToOrdinate(getCenter().x, 0);
             dropLocation.y = (int) Math.rint(y);
-            super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+            super.deriveFrom(symbol, sheet, font, dropLocation);
         }
 
         return true;

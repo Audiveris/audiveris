@@ -49,7 +49,6 @@ import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
@@ -350,9 +349,9 @@ public abstract class AbstractInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
+        // For a basic ghost, focus center is area center, and we just need to set inter bounds.
         final Dimension dim = symbol.getDimension(font);
         final Rectangle box = new Rectangle(
                 dropLocation.x - (dim.width / 2),

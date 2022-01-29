@@ -44,7 +44,7 @@ public class DefaultEditor
     /**
      * Creates a new <code>DefaultEditor</code> object.
      *
-     * @param inter DOCUMENT ME!
+     * @param inter the inter being edited
      */
     public DefaultEditor (final Inter inter)
     {

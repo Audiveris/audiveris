@@ -31,9 +31,9 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Versions;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.LedgerSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -51,8 +51,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>LedgerInter</code> represents a Ledger interpretation.
@@ -325,11 +323,10 @@ public class LedgerInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
-        LedgerSymbol ledgerSymbol = (LedgerSymbol) symbol;
-        Model model = ledgerSymbol.getModel(font, dropLocation, alignment);
+        final LedgerSymbol ledgerSymbol = (LedgerSymbol) symbol;
+        final Model model = ledgerSymbol.getModel(font, dropLocation);
         median = new Line2D.Double(model.p1, model.p2);
         thickness = DEFAULT_THICKNESS;
         computeArea();

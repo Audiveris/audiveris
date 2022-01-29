@@ -75,12 +75,10 @@ public class LedgerSymbol
     //----------//
     @Override
     public LedgerInter.Model getModel (MusicFont font,
-                                       Point location,
-                                       Alignment alignment)
+                                       Point location)
     {
-        MyParams p = getParams(font);
-        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        p.model.translate(loc.getX(), loc.getY());
+        final MyParams p = getParams(font);
+        p.model.translate(p.vectorTo(location));
 
         return p.model;
     }
@@ -109,7 +107,7 @@ public class LedgerSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
+        final MyParams p = new MyParams();
 
         // Typical ledger length
         final int width = (int) Math.ceil(

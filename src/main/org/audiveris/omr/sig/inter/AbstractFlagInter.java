@@ -36,7 +36,6 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -109,19 +108,19 @@ public abstract class AbstractFlagInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
-        // Needed to get flag  bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        // First call needed to get flag  bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
-        // For a flag we snap to stem on x
         if (staff != null) {
+            // We try to snap abscissa on a suitable stem
             final Double x = getSnapAbscissa();
 
             if (x != null) {
+                // Final call, now with refined dropLocation
                 dropLocation.x = (int) Math.rint(x);
-                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+                super.deriveFrom(symbol, sheet, font, dropLocation);
             }
         }
 

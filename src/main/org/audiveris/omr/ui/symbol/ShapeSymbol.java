@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 import java.awt.AlphaComposite;
 import java.awt.Point;
@@ -32,8 +33,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>ShapeSymbol</code> extends the {@link BasicSymbol} with the handling of a
@@ -134,15 +133,13 @@ public class ShapeSymbol
     /**
      * Get inter geometry from this (dropped) symbol.
      *
-     * @param font      properly scaled font
-     * @param location  dropping location
-     * @param alignment location alignment with respect to symbol
+     * @param font     properly scaled font
+     * @param location dropping location
      * @return the data model for inter being shaped
      * @throws UnsupportedOperationException if operation is not explicitly supported by the symbol
      */
     public ObjectUIModel getModel (MusicFont font,
-                                  Point location,
-                                  Alignment alignment)
+                                   Point location)
     {
         throw new UnsupportedOperationException();
     }

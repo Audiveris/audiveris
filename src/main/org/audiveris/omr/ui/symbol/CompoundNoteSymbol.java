@@ -25,15 +25,14 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.HALF_NOTE_UP;
 import static org.audiveris.omr.glyph.Shape.QUARTER_NOTE_UP;
 import org.audiveris.omr.glyph.ShapeSet;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.inter.CompoundNoteInter;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omr.math.PointUtil;
-import org.audiveris.omr.sig.inter.CompoundNoteInter;
 
 /**
  * Class <code>CompoundNoteSymbol</code> implements a head + stem symbol.
@@ -84,14 +83,10 @@ public class CompoundNoteSymbol
     //----------//
     @Override
     public CompoundNoteInter.Model getModel (MusicFont font,
-                                             Point location,
-                                             Alignment alignment)
+                                             Point location)
     {
         final MyParams p = getParams(font);
-
-        // Location is assumed to be the head center
-        final Point2D topLeft = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        p.model.translate(topLeft.getX() - p.offset.getX(), topLeft.getY() - p.offset.getY());
+        p.model.translate(p.vectorTo(location));
 
         return p.model;
     }

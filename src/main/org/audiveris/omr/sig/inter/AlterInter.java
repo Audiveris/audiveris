@@ -28,13 +28,18 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.symbol.FlatSymbol;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -43,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -207,6 +213,32 @@ public class AlterInter
         setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
 
         return isAbnormal();
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
+    {
+        switch (shape) {
+        case FLAT:
+        case DOUBLE_FLAT: {
+            // Alters for FLAT/DOUBLE_FLAT have a focus center different from area center
+            final FlatSymbol flatSymbol = (FlatSymbol) symbol;
+            final Model model = flatSymbol.getModel(font, dropLocation);
+            setBounds(model.box.getBounds());
+
+            return true;
+        }
+
+        default:
+            // The other alters have their area center as focus center
+            return super.deriveFrom(symbol, sheet, font, dropLocation);
+        }
     }
 
     //------------//
@@ -468,7 +500,6 @@ public class AlterInter
             massPitch += constants.flatMassPitchOffset.getValue();
 
             // Heuristic pitch offset WRT pitch of area center
-            Rectangle box = glyph.getBounds();
             Point2D center = glyph.getCenter2D();
             double geoPitch = staff.pitchPositionOf(center);
             geoPitch += getAreaPitchOffset(Shape.FLAT);
@@ -508,6 +539,23 @@ public class AlterInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public Rectangle2D box; // Alter box
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            GeoUtil.translate2D(box, dx, dy);
+        }
+    }
+
     //---------//
     // Pitches //
     //---------//

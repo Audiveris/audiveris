@@ -34,7 +34,6 @@ import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
 import org.audiveris.omr.sig.ui.HorizontalEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
 import org.audiveris.omr.ui.symbol.KeySymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -189,10 +188,10 @@ public class KeyInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        // Initial call, needed to get current key bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
         // Adapt key (count/location of naturals) to current effective key in staff
         KeySymbol keySymbol = (KeySymbol) getSymbolToDraw();
@@ -204,16 +203,16 @@ public class KeyInter
         final ClefInter effectiveClef = getEffectiveClef();
 
         if (effectiveClef != null) {
-            // First call, needed to get key bounds
-            super.deriveFrom(keySymbol, sheet, font, dropLocation, alignment);
+            // First call, needed to get bounds of new key symbol
+            super.deriveFrom(keySymbol, sheet, font, dropLocation);
 
             // Modify dropLocation to snap vertically on staff lines
             Double y = getSnapOrdinate(keySymbol.fifths, effectiveClef.getKind());
 
             if (y != null) {
                 dropLocation.y = (int) Math.rint(y);
-                // Second call, to update KeyInter using adjusted location
-                super.deriveFrom(keySymbol, sheet, font, dropLocation, alignment);
+                // Second call, to update KeyInter ghost using refined location
+                super.deriveFrom(keySymbol, sheet, font, dropLocation);
             }
         }
 
@@ -319,9 +318,10 @@ public class KeyInter
     //-----------------//
     /**
      * Report the KeySymbol to draw.
-     * <p>
-     * For a standard key inter, that's its fifths value.
-     * But for a KEY_CANCEL, it's the fifths of the preceding key signature in staff
+     * <ul>
+     * <li> For a standard key inter, that's its fifths value.
+     * <li>But for a KEY_CANCEL, it's the fifths of the preceding key signature in staff
+     * </ul>
      *
      * @return the fifths to actually draw, or null if could not be determined
      */

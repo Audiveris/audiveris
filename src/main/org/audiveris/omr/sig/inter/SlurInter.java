@@ -41,13 +41,13 @@ import org.audiveris.omr.sheet.curve.SlurLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.SlurSymbol;
@@ -89,8 +89,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>SlurInter</code> represents a slur interpretation.
@@ -474,12 +472,11 @@ public class SlurInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
-        SlurSymbol slurSymbol = (SlurSymbol) symbol;
+        final SlurSymbol slurSymbol = (SlurSymbol) symbol;
         curve = new CubicCurve2D.Double();
-        curve.setCurve(slurSymbol.getModel(font, dropLocation, alignment).points, 0);
+        curve.setCurve(slurSymbol.getModel(font, dropLocation).points, 0);
         above = CubicUtil.above(curve) > 0;
         setBounds(null);
 

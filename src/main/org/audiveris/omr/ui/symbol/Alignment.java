@@ -44,7 +44,7 @@ public class Alignment
     /** Pre-defined alignment on top center of symbol */
     public static final Alignment TOP_CENTER = new Alignment(Vertical.TOP, Horizontal.CENTER);
 
-    /** Pre-defined alignment on top left of symbol */
+    /** Pre-defined alignment on top right of symbol */
     public static final Alignment TOP_RIGHT = new Alignment(Vertical.TOP, Horizontal.RIGHT);
 
     /** Pre-defined alignment on middle left of symbol */
@@ -59,11 +59,11 @@ public class Alignment
     /** Pre-defined alignment on baseline left of symbol (for text) */
     public static final Alignment BASELINE_LEFT = new Alignment(Vertical.BASELINE, Horizontal.LEFT);
 
-    /** Pre-defined alignment on baseline center of symbol */
+    /** Pre-defined alignment on baseline center of symbol (for text) */
     public static final Alignment BASELINE_CENTER = new Alignment(Vertical.BASELINE,
                                                                   Horizontal.CENTER);
 
-    /** Pre-defined alignment on baseline right of symbol */
+    /** Pre-defined alignment on baseline right of symbol (for text) */
     public static final Alignment BASELINE_RIGHT
             = new Alignment(Vertical.BASELINE, Horizontal.RIGHT);
 
