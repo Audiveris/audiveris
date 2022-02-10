@@ -33,7 +33,9 @@ on-going...
   - Edition of staff geometry, at line and global levels
 - Engine
   - Better ledgers handling
+  - Support for two populations of beam height
 - Project
+  - Support of MusicXML 4.0
   - Generation of Schemas documentation
 - Java
   - Support of Java 17
