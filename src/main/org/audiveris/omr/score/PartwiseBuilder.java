@@ -105,12 +105,12 @@ import org.audiveris.proxymusic.BackwardForward;
 import org.audiveris.proxymusic.BarStyleColor;
 import org.audiveris.proxymusic.Barline;
 import org.audiveris.proxymusic.Bass;
-import org.audiveris.proxymusic.BassAlter;
 import org.audiveris.proxymusic.BassStep;
 import org.audiveris.proxymusic.Beam;
 import org.audiveris.proxymusic.BeamValue;
 import org.audiveris.proxymusic.Clef;
 import org.audiveris.proxymusic.ClefSign;
+import org.audiveris.proxymusic.Coda;
 import org.audiveris.proxymusic.Credit;
 import org.audiveris.proxymusic.Defaults;
 import org.audiveris.proxymusic.Degree;
@@ -121,7 +121,6 @@ import org.audiveris.proxymusic.Direction;
 import org.audiveris.proxymusic.DirectionType;
 import org.audiveris.proxymusic.Dynamics;
 import org.audiveris.proxymusic.Empty;
-import org.audiveris.proxymusic.EmptyPrintStyleAlign;
 import org.audiveris.proxymusic.Encoding;
 import org.audiveris.proxymusic.Ending;
 import org.audiveris.proxymusic.Fermata;
@@ -131,6 +130,7 @@ import org.audiveris.proxymusic.FormattedText;
 import org.audiveris.proxymusic.Forward;
 import org.audiveris.proxymusic.Grace;
 import org.audiveris.proxymusic.Harmony;
+import org.audiveris.proxymusic.HarmonyAlter;
 import org.audiveris.proxymusic.Identification;
 import org.audiveris.proxymusic.Key;
 import org.audiveris.proxymusic.Kind;
@@ -154,24 +154,24 @@ import org.audiveris.proxymusic.PageMargins;
 import org.audiveris.proxymusic.PartList;
 import org.audiveris.proxymusic.PartName;
 import org.audiveris.proxymusic.Pedal;
+import org.audiveris.proxymusic.PedalType;
 import org.audiveris.proxymusic.Pitch;
 import org.audiveris.proxymusic.Print;
 import org.audiveris.proxymusic.Repeat;
 import org.audiveris.proxymusic.Rest;
 import org.audiveris.proxymusic.RightLeftMiddle;
 import org.audiveris.proxymusic.Root;
-import org.audiveris.proxymusic.RootAlter;
 import org.audiveris.proxymusic.RootStep;
 import org.audiveris.proxymusic.Scaling;
 import org.audiveris.proxymusic.ScoreInstrument;
 import org.audiveris.proxymusic.ScorePart;
 import org.audiveris.proxymusic.ScorePartwise;
+import org.audiveris.proxymusic.Segno;
 import org.audiveris.proxymusic.Slur;
 import org.audiveris.proxymusic.Sound;
 import org.audiveris.proxymusic.StaffDetails;
 import org.audiveris.proxymusic.StaffLayout;
 import org.audiveris.proxymusic.StartStop;
-import org.audiveris.proxymusic.StartStopChangeContinue;
 import org.audiveris.proxymusic.StartStopContinue;
 import org.audiveris.proxymusic.StartStopDiscontinue;
 import org.audiveris.proxymusic.Stem;
@@ -183,6 +183,7 @@ import org.audiveris.proxymusic.SystemMargins;
 import org.audiveris.proxymusic.TextElementData;
 import org.audiveris.proxymusic.Tie;
 import org.audiveris.proxymusic.Tied;
+import org.audiveris.proxymusic.TiedType;
 import org.audiveris.proxymusic.Time;
 import org.audiveris.proxymusic.TimeModification;
 import org.audiveris.proxymusic.TimeSymbol;
@@ -1111,7 +1112,7 @@ public class PartwiseBuilder
             root.setRootStep(rootStep);
 
             if (chordName.getRoot().alter != 0) {
-                RootAlter alter = factory.createRootAlter();
+                HarmonyAlter alter = factory.createHarmonyAlter();
                 alter.setValue(new BigDecimal(chordName.getRoot().alter));
                 root.setRootAlter(alter);
             }
@@ -1141,7 +1142,7 @@ public class PartwiseBuilder
                 bass.setBassStep(bassStep);
 
                 if (chordName.getBass().alter != 0) {
-                    BassAlter bassAlter = factory.createBassAlter();
+                    HarmonyAlter bassAlter = factory.createHarmonyAlter();
                     bassAlter.setValue(new BigDecimal(chordName.getBass().alter));
                     bass.setBassAlter(bassAlter);
                 }
@@ -1231,7 +1232,7 @@ public class PartwiseBuilder
             pmWords.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
 
             // Everything is now OK
-            directionType.getWords().add(pmWords);
+            directionType.getWordsOrSymbol().add(pmWords);
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
@@ -1512,7 +1513,6 @@ public class PartwiseBuilder
 
             String measureId = current.measure.getStack().getScoreId(current.pageMeasureIdOffset);
             Direction direction = factory.createDirection();
-            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
             DirectionType directionType = factory.createDirectionType();
             direction.getDirectionType().add(directionType);
 
@@ -1534,20 +1534,22 @@ public class PartwiseBuilder
             switch (marker.getShape()) {
             case CODA:
                 sound.setCoda(measureId);
-                directionType.getCoda().add(empty);
+                Coda coda = factory.createCoda();
+                directionType.getCoda().add(coda);
 
                 break;
 
             case SEGNO:
                 sound.setSegno(measureId);
-                directionType.getSegno().add(empty);
+                Segno segno = factory.createSegno();
+                directionType.getSegno().add(segno);
 
                 break;
 
             case DA_CAPO: {
                 FormattedText text = new FormattedText();
                 text.setValue("D.C.");
-                directionType.getWords().add(text);
+                directionType.getWordsOrSymbol().add(text);
                 sound.setDacapo(YesNo.YES);
             }
 
@@ -1563,7 +1565,7 @@ public class PartwiseBuilder
                 //  </direction>
                 FormattedText text = new FormattedText();
                 text.setValue("D.S.");
-                directionType.getWords().add(text);
+                directionType.getWordsOrSymbol().add(text);
 
                 //TODO: we need to point back to id of measure where segno is located
                 ///sound.setDalsegno(measureId); // NO, not this measure, but the target measure!
@@ -1659,7 +1661,7 @@ public class PartwiseBuilder
 
                 // Use a dummy words element
                 FormattedText pmWords = factory.createFormattedText();
-                directionType.getWords().add(pmWords);
+                directionType.getWordsOrSymbol().add(pmWords);
                 pmWords.setValue("");
 
                 Sound sound = factory.createSound();
@@ -2197,10 +2199,10 @@ public class PartwiseBuilder
 
             // Start / Stop type
             if (pedal.getShape() == Shape.PEDAL_MARK) {
-                pmPedal.setType(StartStopChangeContinue.START);
+                pmPedal.setType(PedalType.START);
                 sound.setDamperPedal("yes");
             } else {
-                pmPedal.setType(StartStopChangeContinue.STOP);
+                pmPedal.setType(PedalType.STOP);
                 sound.setDamperPedal("no");
             }
 
@@ -2441,7 +2443,9 @@ public class PartwiseBuilder
             pmCredit.setPage(new BigInteger("" + (1 + score.getPageIndex(current.page))));
 
             if (typedText != null) {
-                pmCredit.getCreditTypeOrLinkOrBookmark().add(typedText.getType());
+                final String type = typedText.getType();
+                final JAXBElement jeType = factory.createCreditCreditType(type);
+                pmCredit.getCreditTypeOrLinkOrBookmark().add(jeType);
             }
 
             FormattedText creditWords = factory.createFormattedText();
@@ -2455,7 +2459,8 @@ public class PartwiseBuilder
             creditWords.setDefaultX(toTenths(pt.getX()));
             creditWords.setDefaultY(toTenths(current.page.getDimension().height - pt.getY()));
 
-            pmCredit.getCreditTypeOrLinkOrBookmark().add(creditWords);
+            final JAXBElement jeCreditWords = factory.createCreditCreditWords(creditWords);
+            pmCredit.getCreditTypeOrLinkOrBookmark().add(jeCreditWords);
             scorePartwise.getCredit().add(pmCredit);
         } catch (Exception ex) {
             logger.warn("Error visiting {} in {}", sentence, current.page, ex);
@@ -2493,7 +2498,7 @@ public class PartwiseBuilder
                 Tied tied = factory.createTied();
 
                 // Tied type
-                tied.setType(isStart ? StartStopContinue.START : StartStopContinue.STOP);
+                tied.setType(isStart ? TiedType.START : TiedType.STOP);
 
                 // Tied orientation
                 if (isStart) {

@@ -33,6 +33,7 @@ import org.audiveris.proxymusic.AccidentalText;
 import org.audiveris.proxymusic.AccidentalValue;
 import org.audiveris.proxymusic.BarStyle;
 import org.audiveris.proxymusic.BreathMark;
+import org.audiveris.proxymusic.Caesura;
 import org.audiveris.proxymusic.DegreeTypeValue;
 import org.audiveris.proxymusic.Empty;
 import org.audiveris.proxymusic.EmptyPlacement;
@@ -183,7 +184,8 @@ public abstract class MusicXML
             return factory.createArticulationsBreathMark(breathMark);
 
         case CAESURA:
-            return factory.createArticulationsCaesura(ep);
+            final Caesura caesura = factory.createCaesura();
+            return factory.createArticulationsCaesura(caesura);
         }
 
         logger.error("Unsupported ornament shape:{}", shape);
