@@ -160,19 +160,25 @@ public class MeasureRhythm
 
             // Retrieve slots
             slots.clear();
-            narrowSlotsRetriever = new SlotsRetriever(measure, false); // Wide is false
+            narrowSlotsRetriever = new SlotsRetriever(measure, false); // Narrow
 
-            List<MeasureSlot> narrowSlots = narrowSlotsRetriever.buildSlots();
+            final List<MeasureSlot> narrowSlots = narrowSlotsRetriever.buildSlots();
+            if (logger.isDebugEnabled()) {
+                dumpSlots("narrowSlots", narrowSlots);
+            }
 
-            ///dumpSlots("narrowSlots", narrowSlots);
-            SlotsRetriever wideSlotsRetriever = new SlotsRetriever(measure, true); // Wide is true
-            List<MeasureSlot> wideSlots = wideSlotsRetriever.buildSlots();
-            ///dumpSlots("wideSlots", wideSlots);
+            final SlotsRetriever wideSlotsRetriever = new SlotsRetriever(measure, true); // Wide
+            final List<MeasureSlot> wideSlots = wideSlotsRetriever.buildSlots();
+            if (logger.isDebugEnabled()) {
+                dumpSlots("wideSlots", wideSlots);
+            }
 
             // Merge narrow into wide compounds
             slots.addAll(buildCompoundSlots(narrowSlots, wideSlots));
+            if (logger.isDebugEnabled()) {
+                dumpSlots("compoundSlots", slots);
+            }
 
-            ///dumpSlots("compoundSlots", slots);
             if (slots.isEmpty()) {
                 return ok;
             }
@@ -1198,6 +1204,8 @@ public class MeasureRhythm
          */
         private void mapRookies ()
         {
+            final Rational measureDuration = measure.getStack().getExpectedDuration();
+
             // Still active chords
             final List<AbstractChordInter> extinctExplicits = new ArrayList<>();
             final List<AbstractChordInter> actives = retrieveActives(extinctExplicits);
@@ -1237,6 +1245,17 @@ public class MeasureRhythm
 
                             if (end == null) {
                                 return; // Computing cannot continue
+                            }
+
+                            if (measureDuration != null) {
+                                final Rational chEnd = end.plus(ch.getDuration());
+                                if (chEnd.compareTo(measureDuration) > 0) {
+                                    logger.debug("Too late ending for {} plus {}", act, ch);
+                                    blackList.add(pair);
+                                    done = false;
+
+                                    continue Iteration;
+                                }
                             }
 
                             if (!end.equals(slotTime)) {
@@ -1356,14 +1375,24 @@ public class MeasureRhythm
          */
         private List<AbstractChordInter> retrieveActives (List<AbstractChordInter> extinctExplicits)
         {
-            List<AbstractChordInter> actives = new ArrayList<>();
+            final Rational measureDuration = measure.getStack().getExpectedDuration();
+            final List<AbstractChordInter> actives = new ArrayList<>();
 
             for (Voice voice : measure.getVoices()) {
                 if (voice.isMeasureRest()) {
                     continue;
                 }
 
-                AbstractChordInter lastChord = voice.getLastChord();
+                final AbstractChordInter lastChord = voice.getLastChord();
+
+                // Make sure there is some time left after lastChord end
+                if (measureDuration != null) {
+                    final Rational lastChordEnd = lastChord.getEndTime();
+
+                    if ((lastChordEnd != null) && lastChordEnd.compareTo(measureDuration) >= 0) {
+                        continue;
+                    }
+                }
 
                 // Make sure voice lastChord slot precedes this slot
                 if (lastChord.getSlot().compareTo(slot) > 0) {
