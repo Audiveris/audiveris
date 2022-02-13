@@ -127,6 +127,7 @@ import org.audiveris.proxymusic.Fermata;
 import org.audiveris.proxymusic.FontStyle;
 import org.audiveris.proxymusic.FontWeight;
 import org.audiveris.proxymusic.FormattedText;
+import org.audiveris.proxymusic.FormattedTextId;
 import org.audiveris.proxymusic.Forward;
 import org.audiveris.proxymusic.Grace;
 import org.audiveris.proxymusic.Harmony;
@@ -1208,7 +1209,7 @@ public class PartwiseBuilder
 
             Direction direction = factory.createDirection();
             DirectionType directionType = factory.createDirectionType();
-            FormattedText pmWords = factory.createFormattedText();
+            FormattedTextId pmWords = factory.createFormattedTextId();
             Point2D location = sentence.getLocation();
 
             pmWords.setValue(content);
@@ -1660,7 +1661,7 @@ public class PartwiseBuilder
                 direction.getDirectionType().add(directionType);
 
                 // Use a dummy words element
-                FormattedText pmWords = factory.createFormattedText();
+                FormattedTextId pmWords = factory.createFormattedTextId();
                 directionType.getWordsOrSymbol().add(pmWords);
                 pmWords.setValue("");
 
@@ -2444,8 +2445,11 @@ public class PartwiseBuilder
 
             if (typedText != null) {
                 final String type = typedText.getType();
-                final JAXBElement jeType = factory.createCreditCreditType(type);
-                pmCredit.getCreditTypeOrLinkOrBookmark().add(jeType);
+
+                if (type != null) {
+                    final JAXBElement jeType = factory.createCreditCreditType(type);
+                    pmCredit.getCreditTypeOrLinkOrBookmark().add(jeType);
+                }
             }
 
             FormattedText creditWords = factory.createFormattedText();
@@ -2822,6 +2826,35 @@ public class PartwiseBuilder
         // Bold?
         if (fontInfo.isBold) {
             formattedText.setFontWeight(FontWeight.BOLD);
+        }
+    }
+
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    private void setFontInfo (FormattedTextId formattedTextId,
+                              SentenceInter sentence)
+    {
+        FontInfo fontInfo = sentence.getMeanFont();
+        formattedTextId.setFontSize("" + sentence.getExportedFontSize());
+
+        // Family
+        if (fontInfo.isSerif) {
+            formattedTextId.setFontFamily("serif");
+        } else if (fontInfo.isMonospace) {
+            formattedTextId.setFontFamily("monospace");
+        } else {
+            formattedTextId.setFontFamily("sans-serif");
+        }
+
+        // Italic?
+        if (fontInfo.isItalic) {
+            formattedTextId.setFontStyle(FontStyle.ITALIC);
+        }
+
+        // Bold?
+        if (fontInfo.isBold) {
+            formattedTextId.setFontWeight(FontWeight.BOLD);
         }
     }
 
