@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.text.TextRole;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class <code>SentenceRoleTask</code> changes the role of a sentence.
  *
@@ -32,8 +35,11 @@ import org.audiveris.omr.text.TextRole;
 public class SentenceRoleTask
         extends InterTask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(SentenceRoleTask.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Old sentence role. */
     final TextRole oldRole;
 

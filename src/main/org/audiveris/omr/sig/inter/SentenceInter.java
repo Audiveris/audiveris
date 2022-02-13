@@ -200,7 +200,7 @@ public class SentenceInter
             bounds = Entities.getBounds(getMembers());
         }
 
-        return new Rectangle(bounds);
+        return (bounds != null) ? new Rectangle(bounds) : null;
     }
 
     //---------------------//

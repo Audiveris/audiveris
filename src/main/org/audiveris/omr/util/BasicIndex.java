@@ -22,6 +22,7 @@
 package org.audiveris.omr.util;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -321,6 +322,10 @@ public class BasicIndex<E extends Entity>
     public void publish (E entity,
                          SelectionHint hint)
     {
+        if ((entity instanceof Inter inter) && inter.isRemoved()) {
+            return; // We don't publish a removed inter that would lead to invalid ID
+        }
+
         if (entityService != null) {
             final EntityListEvent<E> event = new EntityListEvent<>(
                     this,

@@ -105,6 +105,7 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -113,12 +114,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 /**
  * Class <code>InterController</code> is the UI in charge of dealing with Inter and
@@ -308,6 +311,10 @@ public class InterController
     public void changeSentence (final SentenceInter sentence,
                                 final TextRole newRole)
     {
+        // If sentence/words are to be replaced by other instances,
+        // then we must first complete any on-going edition on a to-be-replaced word.
+        completePotentialWordEdition(sentence, newRole);
+
         new CtrlTask(DO, "changeSentence")
         {
             @Override
@@ -318,7 +325,7 @@ public class InterController
                 final SIGraph sig = system.getSig();
 
                 switch (newRole) {
-                case Lyrics: {
+                case Lyrics -> {
                     // Convert to LyricItem words, all within a single LyricLine sentence
                     final WrappedBoolean cancel = new WrappedBoolean(false);
                     final LyricLineInter line = new LyricLineInter(
@@ -357,11 +364,9 @@ public class InterController
                         // Remove the now useless original sentence (and its original relations)
                         seq.add(new RemovalTask(sentence));
                     }
-
-                    break;
                 }
 
-                case ChordName: {
+                case ChordName -> {
                     // Convert to ChordName words, each within its own sentence
                     final WrappedBoolean cancel = new WrappedBoolean(false);
 
@@ -372,7 +377,9 @@ public class InterController
                             ChordNameInter cn = new ChordNameInter(orgWord);
                             cn.setManual(true);
                             cn.setStaff(staff);
-                            seq.addAll(cn.preAdd(cancel));
+                            seq.add(new AdditionTask(
+                                    sig, cn, cn.getBounds(),
+                                    Arrays.asList(new Link(sentence, new Containment(), false))));
 
                             if (cancel.isSet()) {
                                 seq.setCancelled(true);
@@ -388,11 +395,9 @@ public class InterController
                         // Remove the now useless original sentence (and its original relations)
                         seq.add(new RemovalTask(sentence));
                     }
-
-                    break;
                 }
 
-                default: {
+                default -> {
                     // Convert to SentenceInter if so needed
                     final SentenceInter finalSentence;
 
@@ -432,8 +437,6 @@ public class InterController
                         // Remove original sentence (and its original relations)
                         seq.add(new RemovalTask(sentence));
                     }
-
-                    break;
                 }
                 }
             }
@@ -444,6 +447,48 @@ public class InterController
                 sheet.getInterIndex().publish(!sentence.isRemoved() ? sentence : null);
             }
         }.execute();
+    }
+
+    //------------------------------//
+    // completePotentialWordEdition //
+    //------------------------------//
+    /**
+     * If sentence/words are to be replaced by other sentence/words,
+     * make sure we first complete the on-going edition on any to-be-replaced word.
+     * <p>
+     * We must detect the following replacements:
+     * <ul>
+     * <li> Plain sentence to Lyric or ChordName
+     * <li> Lyric or ChordName to Plain sentence
+     * </ul>
+     *
+     * @param sentence the sentence whose role is about to be changed
+     * @param newRole  the new role to be assigned to the sentence
+     */
+    private void completePotentialWordEdition (final SentenceInter sentence,
+                                               final TextRole newRole)
+    {
+        final ObjectEditor objectEditor = sheet.getSheetEditor().getObjectEditor();
+        if (objectEditor == null) {
+            return;
+        }
+
+        final Inter editedInter = sheet.getSheetEditor().getEditedInter();
+        if (editedInter == null) {
+            return;
+        }
+
+        final Inter ensemble = editedInter.getEnsemble();
+        if (ensemble != sentence) {
+            return;
+        }
+
+        if (sentence instanceof LyricLineInter
+                    || newRole == TextRole.Lyrics
+                    || newRole == TextRole.ChordName) {
+            logger.debug("Completing edition of {}", editedInter);
+            objectEditor.endProcess();
+        }
     }
 
     //------------//

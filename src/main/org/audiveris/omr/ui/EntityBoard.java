@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
+import org.audiveris.omr.sig.inter.Inter;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -355,7 +357,9 @@ public class EntityBoard<E extends Entity>
 
             // Id
             if (idSpinner != null) {
-                idSpinner.setValue(entity.getId());
+                if (!(entity instanceof Inter inter) || !inter.isRemoved()) {
+                    idSpinner.setValue(entity.getId());
+                }
             } else if (idLabel != null) {
                 idLabel.setText(Integer.toString(entity.getId()));
             }
@@ -436,7 +440,7 @@ public class EntityBoard<E extends Entity>
      */
     private JSpinner makeIdSpinner (EntityIndex<E> index)
     {
-        JSpinner spinner = new JSpinner(new SpinnerIdModel<>(index));
+        JSpinner spinner = new JSpinner(new SpinnerIdModel<>(getName(), index));
         spinner.setValue(0); // Initial value before listener is set!
         spinner.addChangeListener(this);
         spinner.setLocale(Locale.ENGLISH);

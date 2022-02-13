@@ -696,6 +696,10 @@ public abstract class AbstractInter
     @Override
     public InterEnsemble getEnsemble ()
     {
+        if (isRemoved()) {
+            return null;
+        }
+
         for (Relation rel : sig.incomingEdgesOf(this)) {
             if (rel instanceof Containment) {
                 return (InterEnsemble) sig.getEdgeSource(rel);
@@ -1399,6 +1403,10 @@ public abstract class AbstractInter
     protected final Collection<Link> searchObsoletelinks (Collection<Link> links,
                                                           Class<? extends Support>... classes)
     {
+        if (isRemoved()) {
+            return Collections.emptySet();
+        }
+
         Collection<Link> unlinks = null;
 
         ExistingLoop:

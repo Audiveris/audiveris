@@ -95,7 +95,10 @@ public abstract class InterEditor
         }
 
         final Inter inter = getInter();
-        inter.getSig().publish(inter); // To update the edit checkbox on interboard
+
+        // To update the edit checkbox on interboard
+        inter.getSig().publish(inter.isRemoved() ? null : inter);
+
         system.getSheet().getSheetEditor().closeEditMode();
     }
 
@@ -119,7 +122,10 @@ public abstract class InterEditor
     public void publish ()
     {
         final Inter inter = getInter();
-        inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+
+        if (!inter.isRemoved()) {
+            inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+        }
     }
 
     //--------//
