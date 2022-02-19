@@ -973,11 +973,11 @@ public abstract class SheetPainter
         @Override
         public void visit (SentenceInter sentence)
         {
-            ///FontInfo lineMeanFont = sentence.getMeanFont();
+            FontInfo lineMeanFont = sentence.getMeanFont();
             for (Inter member : sentence.getMembers()) {
                 WordInter word = (WordInter) member;
-                ///paintWord(word, lineMeanFont);
-                paintWord(word, word.getFontInfo());
+                paintWord(word, lineMeanFont);
+                ///paintWord(word, word.getFontInfo());
             }
         }
 

@@ -89,8 +89,7 @@ public interface OCR
      *                     This is meant for keeping track of the temporary image files.
      * @return a list of TextLine instances, or null.
      *         The coordinates of any returned TextLine are absolute coordinates thanks to the
-     *         topLeft
-     *         parameter.
+     *         topLeft parameter.
      */
     List<TextLine> recognize (int interline,
                               BufferedImage image,

@@ -100,13 +100,13 @@ public class TesseractOCR
     {
         if (isAvailable()) {
             final Path ocrFolder = getOcrFolder();
-            TreeSet<String> set = new TreeSet<>();
+            final TreeSet<String> set = new TreeSet<>();
 
             try {
-                TessBaseAPI api = new TessBaseAPI();
+                final TessBaseAPI api = new TessBaseAPI();
 
                 if (api.Init(ocrFolder.toString(), "eng") == 0) {
-                    StringGenericVector languages = new StringGenericVector();
+                    final StringGenericVector languages = new StringGenericVector();
                     api.GetAvailableLanguagesAsVector(languages);
 
                     while (!languages.empty()) {

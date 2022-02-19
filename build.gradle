@@ -9,9 +9,10 @@ ext.programId       = 'audiveris'
 ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
-ext.jcppVersion     = '1.3'
-ext.leptVersion     = '1.73'
-ext.tessVersion     = '3.04.01'
+
+ext.jcppVersion     = '1.4.4'
+ext.leptVersion     = '1.77.0'
+ext.tessVersion     = '4.0.0'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies

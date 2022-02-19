@@ -40,6 +40,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -162,11 +163,22 @@ public class TesseractOrder
         }
 
         try {
-            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
             api = new TessBaseAPI();
 
             // Init API with proper language
-            if (api.Init(ocrFolder.toString(), lang) != 0) {
+            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
+
+            if (logger.isDebugEnabled()) {
+                logger.info("ocrFolder: {}", ocrFolder);
+                final File langsDir = ocrFolder.toFile();
+                for (File file : langsDir.listFiles()) {
+                    if (file.toString().endsWith(".traineddata")) {
+                        logger.info("Lang file: {}", file);
+                    }
+                }
+            }
+
+            if (api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY) != 0) {
                 logger.warn("Could not initialize Tesseract with lang {}", lang);
 
                 return finish(null);
