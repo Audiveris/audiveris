@@ -329,18 +329,6 @@ public class AnnotationsBuilder
                     if (ledgerHasHead((LedgerInter) inter)) {
                         return;
                     }
-                } else if (inter instanceof BarlineInter) {
-                    // Substitute a barlineDouble when relevant
-                    BarlineInter sibling = ((BarlineInter) inter).getSibling();
-
-                    if (sibling != null) {
-                        if (inter.getCenter().x < sibling.getCenter().x) {
-                            omrShape = OmrShape.barlineDouble;
-                            interBounds = interBounds.union(sibling.getBounds());
-                        } else {
-                            return;
-                        }
-                    }
                 }
             }
 
