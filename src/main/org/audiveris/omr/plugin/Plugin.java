@@ -135,7 +135,7 @@ public class Plugin
             }
         }
 
-        logger.warn("Missing special '{}' arg in plugin {}", getId());
+        logger.warn("Missing special '\\{}' arg in plugin {}", getId());
 
         return false;
     }
