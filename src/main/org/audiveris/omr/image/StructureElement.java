@@ -405,7 +405,7 @@ public class StructureElement
 
     public int getMaskAt (int index)
     {
-        if (index <= mask.length) {
+        if (index < mask.length) {
             return mask[index];
         } else {
             return -1;
