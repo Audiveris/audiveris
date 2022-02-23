@@ -1089,8 +1089,11 @@ public class InterController
         NestView sheetView = sheetEditor.getSheetView();
         InputMap inputMap = sheetView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        // Support for delete key
+        // Support for delete & backspace keys
         inputMap.put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
+        // Line added by jbw/thescdoc to fix issue #549 "Can't delete with delete key"
+        inputMap.put(KeyStroke.getKeyStroke("BACK_SPACE"), "RemoveAction");
+
         sheetView.getActionMap().put("RemoveAction", new RemoveAction());
     }
 
