@@ -1267,11 +1267,13 @@ public class SystemInfo
         List<Staff> tablatures = null;
 
         for (Staff staff : staves) {
-            if (tablatures == null) {
-                tablatures = new ArrayList<>();
-            }
+            if (staff.isTablature()) {
+                if (tablatures == null) {
+                    tablatures = new ArrayList<>();
+                }
 
-            tablatures.add(staff);
+                tablatures.add(staff);
+            }
         }
 
         return (tablatures != null) ? tablatures : Collections.emptyList();
