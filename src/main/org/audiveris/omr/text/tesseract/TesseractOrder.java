@@ -22,6 +22,7 @@
 package org.audiveris.omr.text.tesseract;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextChar;
@@ -65,6 +66,8 @@ import javax.imageio.stream.ImageOutputStream;
 public class TesseractOrder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
@@ -186,6 +189,11 @@ public class TesseractOrder
 
             // Set API image
             api.SetImage(image);
+
+            // Specify image resolution (experimental)
+            if (constants.typicalImageResolution.getValue() != -1) {
+                api.SetSourceResolution(constants.typicalImageResolution.getValue());
+            }
 
             // Perform layout analysis according to segmentation mode
             api.SetPageSegMode(segMode);
@@ -425,7 +433,7 @@ public class TesseractOrder
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+        try ( ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
             ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
             writer.setOutput(ios);
             writer.write(image);
@@ -447,7 +455,7 @@ public class TesseractOrder
                 Files.createDirectories(WellKnowns.TEMP_FOLDER);
             }
 
-            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+            try ( FileOutputStream fos = new FileOutputStream(path.toFile())) {
                 fos.write(bytes);
             } catch (IOException ex) {
                 logger.warn("Could not write to {}", path, ex);
@@ -486,5 +494,19 @@ public class TesseractOrder
                 word.addChar(new TextChar(cb, value.substring(i, i + 1)));
             }
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer typicalImageResolution = new Constant.Integer(
+                "dpi",
+                70,
+                "Typical image resolution in DPI (a -1 value disables this feature)");
     }
 }
