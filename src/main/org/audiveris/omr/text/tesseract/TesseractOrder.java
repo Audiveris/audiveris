@@ -22,6 +22,7 @@
 package org.audiveris.omr.text.tesseract;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.OcrUtil;
