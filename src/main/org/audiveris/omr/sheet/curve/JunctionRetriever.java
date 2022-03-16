@@ -133,10 +133,15 @@ public class JunctionRetriever
         int n = 0;
 
         for (int dir : dirs) {
-            int pix = buf.get(x + dxs[dir], y + dys[dir]);
+            final int nx = x + dxs[dir];
+            final int ny = y + dys[dir];
 
-            if (pix != BACKGROUND) {
-                n++;
+            if (nx >= 0 && nx < buf.getWidth() && ny >= 0 && ny < buf.getHeight()) {
+                final int pix = buf.get(nx, ny);
+
+                if (pix != BACKGROUND) {
+                    n++;
+                }
             }
         }
 
@@ -159,22 +164,25 @@ public class JunctionRetriever
         int bestGrade = 0;
 
         for (int dir : sideDirs) {
-            int nx = x + dxs[dir];
-            int ny = y + dys[dir];
-            int pix = buf.get(nx, ny);
+            final int nx = x + dxs[dir];
+            final int ny = y + dys[dir];
 
-            if (isJunction(pix)) {
-                // Point already evaluated
-                bestGrade = Math.max(bestGrade, pix - JUNCTION);
-            } else if (pix == FOREGROUND) {
-                int n = vicinityOf(nx, ny);
+            if (nx >= 0 && nx < buf.getWidth() && ny >= 0 && ny < buf.getHeight()) {
+                int pix = buf.get(nx, ny);
 
-                if (n > 2) {
-                    int grade = vicinity.getGrade();
-                    buf.set(nx, ny, JUNCTION + grade);
-                    bestGrade = Math.max(bestGrade, grade);
-                } else {
-                    buf.set(nx, ny, ARC);
+                if (isJunction(pix)) {
+                    // Point already evaluated
+                    bestGrade = Math.max(bestGrade, pix - JUNCTION);
+                } else if (pix == FOREGROUND) {
+                    int n = vicinityOf(nx, ny);
+
+                    if (n > 2) {
+                        int grade = vicinity.getGrade();
+                        buf.set(nx, ny, JUNCTION + grade);
+                        bestGrade = Math.max(bestGrade, grade);
+                    } else {
+                        buf.set(nx, ny, ARC);
+                    }
                 }
             }
         }

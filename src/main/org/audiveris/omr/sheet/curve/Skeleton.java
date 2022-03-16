@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.ImageUtil;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.sheet.PageCleaner;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
@@ -308,6 +309,10 @@ public class Skeleton
     public int getPixel (int x,
                          int y)
     {
+        if (x < 0 || x >= buf.getWidth() || y < 0 || y >= buf.getHeight()) {
+            return BACKGROUND;
+        }
+
         return buf.get(x, y);
     }
 
