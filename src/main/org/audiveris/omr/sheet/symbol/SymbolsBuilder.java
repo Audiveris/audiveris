@@ -123,21 +123,27 @@ public class SymbolsBuilder
      * Find all possible interpretations of symbols composed from available system glyphs.
      * <p>
      * <b>Synopsis:</b>
-     * <p>
-     * <
-     * pre>
-     * - retrieveFineBoxes() // Retrieve areas around small chords
-     * - getSymbolsGlyphs() // Retrieve all glyphs usable for symbols
-     * - buildLinks() // Build graph with distances
-     * - processClusters(): // Group connected glyphs into clusters
-     * + FOREACH cluster of connected glyphs:
-     * + cluster.decompose() // Decompose cluster into all subsets
-     * + FOREACH subset process(subset):
-     * - build compound glyph // Build one compound glyph per subset
-     * - evaluateGlyph(compound) // Run shape classifier on compound
-     * - FOREACH acceptable evaluation
-     * + interFactory.create(eval, glyph) // Create inter(s) related to evaluation
-     * </pre>
+     * <ol>
+     * <li> retrieveFineBoxes() // Retrieve areas around small chords
+     * <li> getSymbolsGlyphs() // Retrieve all glyphs usable for symbols
+     * <li> buildLinks() // Build graph with distances
+     * <li> processClusters(): // Group connected glyphs into clusters
+     * <ol>
+     * <li> FOREACH cluster of connected glyphs:
+     * <ol>
+     * <li> cluster.decompose() // Decompose cluster into all subsets
+     * <li> FOREACH subset process(subset):
+     * <ol>
+     * <li> build compound glyph // Build one compound glyph per subset
+     * <li> evaluateGlyph(compound) // Run shape classifier on compound
+     * <li> FOREACH acceptable evaluation:
+     * <ol>
+     * <li> interFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     * </ol>
+     * </ol>
+     * </ol>
+     * </ol>
+     * </ol>
      *
      * @param optionalsMap the optional (weak) glyphs per system
      */

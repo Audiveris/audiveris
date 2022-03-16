@@ -26,9 +26,12 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.Shape.*;
 import static org.audiveris.omr.glyph.ShapeSet.*;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StemInter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,9 +282,18 @@ public class ShapeChecker
                  * on different pitch values, as they see fit. See Telemann example.
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
                  * This can be translated as 2*p = 4*k +1 for wholes and 4*k -1 for halves
+                 * <p>
+                 * We also check that such measure rest candidate is not stuck to a stem,
+                 * which can appear when conflicting with a beam hook.
                  */
                 final double pp = system.estimatedPitch(glyph.getCenter2D());
                 final int p2 = (int) Math.rint(2 * pp); // Pitch * 2
+
+                if (!checkNoStem(system, glyph)) {
+                    eval.failure = new Evaluation.Failure("stem");
+
+                    return false;
+                }
 
                 switch (p2) {
                 case -13:
@@ -313,6 +325,31 @@ public class ShapeChecker
 
                     return false;
                 }
+            }
+
+            /**
+             * Check that the measure-rest candidate stays away from any stem.
+             */
+            private boolean checkNoStem (SystemInfo system,
+                                         Glyph glyph)
+            {
+                final int minDx = system.getSheet().getScale().toPixels(constants.measureRestDx);
+                final Rectangle box = glyph.getBounds();
+                box.grow(minDx, 0);
+                final Point center = glyph.getCenter();
+
+                final List<Inter> stems = system.getSig().inters(Shape.STEM);
+                for (Inter inter : stems) {
+                    final StemInter stem = (StemInter) inter;
+                    if (stem.getBounds().intersects(box)) {
+                        final Point2D cross = LineUtil.intersectionAtY(stem.getMedian(), center.y);
+                        if (box.contains(cross)) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
             }
         };
 
@@ -793,6 +830,10 @@ public class ShapeChecker
         private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
                 8.0,
                 "Maximum vertical gap between a note-like glyph and closest staff");
+
+        private final Scale.Fraction measureRestDx = new Scale.Fraction(
+                0.2,
+                "Minimum horizontal margin around a measure-rest candidate");
     }
 
     //---------//
