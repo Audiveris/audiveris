@@ -1672,8 +1672,10 @@ public class Measure
             timeSigs.remove((AbstractTimeInter) inter);
         } else if (inter instanceof HeadChordInter) {
             headChords.remove((HeadChordInter) inter);
+            removeVoiceChord((HeadChordInter) inter);
         } else if (inter instanceof RestChordInter) {
             restChords.remove((RestChordInter) inter);
+            removeVoiceChord((RestChordInter) inter);
         } else if (inter instanceof FlagInter) {
             flags.remove((FlagInter) inter);
         } else if (inter instanceof TupletInter) {
@@ -2158,6 +2160,26 @@ public class Measure
         addOtherCollection(other.augDots);
 
         // Voices: addressed by caller
+    }
+
+    //------------------//
+    // removeVoiceChord //
+    //------------------//
+    /**
+     * Remove the provided chord from a containing voice if any.
+     *
+     * @param chord head or rest chord to be removed
+     */
+    private void removeVoiceChord (AbstractChordInter chord)
+    {
+        for (Voice voice : voices) {
+            if (voice.removeChord(chord)) {
+                if (voice.getChords().isEmpty()) {
+                    voices.remove(voice);
+                    break;
+                }
+            }
+        }
     }
 
     //-------------------//

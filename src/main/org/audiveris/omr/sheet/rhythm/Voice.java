@@ -1039,6 +1039,24 @@ public class Voice
     }
 
     //-------------//
+    // removeChord //
+    //-------------//
+    /**
+     * Try to remove the provided chord from the chord list of this voice.
+     *
+     * @param chord the chord to remove from voice
+     * @return true if chord was actually removed
+     */
+    public boolean removeChord (AbstractChordInter chord)
+    {
+        if (chords == null) {
+            return false;
+        }
+
+        return chords.remove(chord);
+    }
+
+    //-------------//
     // resetChords //
     //-------------//
     public void resetChords ()
