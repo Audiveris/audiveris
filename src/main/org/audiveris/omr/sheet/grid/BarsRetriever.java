@@ -2488,7 +2488,19 @@ public class BarsRetriever
     private void replacePeak (StaffPeak oldPeak,
                               StaffPeak newPeak)
     {
-        // PeakGraph
+        // Column
+        BarColumn column = oldPeak.getColumn();
+
+        if (column != null) {
+            column.addPeak(newPeak);
+        }
+
+        // Projector & PeakGraph
+        final Staff staff = oldPeak.getStaff();
+        final StaffProjector projector = projectorOf(staff);
+
+        projector.insertPeak(newPeak, oldPeak); // newPeak is added to peakGraph
+
         for (BarAlignment edge : new ArrayList<>(peakGraph.incomingEdgesOf(oldPeak))) {
             StaffPeak source = peakGraph.getEdgeSource(edge);
             peakGraph.addEdge(source, newPeak, edge);
@@ -2499,18 +2511,7 @@ public class BarsRetriever
             peakGraph.addEdge(newPeak, target, edge);
         }
 
-        // Column
-        BarColumn column = oldPeak.getColumn();
-
-        if (column != null) {
-            column.addPeak(newPeak);
-        }
-
-        // Projector
-        final Staff staff = oldPeak.getStaff();
-        final StaffProjector projector = projectorOf(staff);
-        projector.insertPeak(newPeak, oldPeak);
-        projector.removePeak(oldPeak);
+        projector.removePeak(oldPeak); // oldPeak is removed from peakGraph
     }
 
     //-----------------//
