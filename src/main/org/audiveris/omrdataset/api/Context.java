@@ -21,10 +21,13 @@
 // </editor-fold>
 package org.audiveris.omrdataset.api;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code Context} gathers the needed definitions to deal with the features
@@ -133,44 +136,151 @@ public abstract class Context<S extends Enum>
     }
 
     //~ Abstract methods ---------------------------------------------------------------------------
+    /**
+     * Report the patch height used by this context.
+     *
+     * @return patch height
+     */
     public abstract int getContextHeight ();
 
+    /**
+     * Report the patch width used by this context.
+     *
+     * @return patch width
+     */
     public abstract int getContextWidth ();
 
+    /**
+     * Report the number of classes handled in this context.
+     *
+     * @return count of handled shapes
+     */
     public abstract int getNumClasses ();
 
+    /**
+     * Report the number of pixels in context patch.
+     *
+     * @return height * width
+     */
     public abstract int getNumPixels ();
 
+    /**
+     * Report the underlying enum shape class.
+     *
+     * @return the precise shape class
+     */
     public abstract Class<S> getLabelClass ();
 
+    /**
+     * Report the enum value for provided ordinal number.
+     *
+     * @param ordinal provided ordinal number
+     * @return the corresponding label value
+     */
     public abstract S getLabel (int ordinal);
 
+    /**
+     * Report the label, if any, that correspond to the global true OmrShape.
+     * <p>
+     * For a given context, like HeadContext, we are interested only in head shapes, thus all other
+     * OmrShape values are mapped to null.
+     *
+     * @param omrShape the provided true OmrShape
+     * @return the label corresponding to the true OmrShape, or null
+     */
     public abstract S getLabel (OmrShape omrShape);
 
+    /**
+     * Report the array of all enum label values.
+     *
+     * @return all label values
+     */
     public abstract S[] getLabels ();
 
+    /**
+     * Report the list of all enum label values.
+     *
+     * @return all label values
+     */
     public abstract List<String> getLabelList ();
 
+    /**
+     * Report the label value for none.
+     *
+     * @return none label
+     */
     public abstract S getNone ();
 
-    public abstract int getMeanPatchCompressedSize ();
+    /**
+     * Depending on patch size, report an over-estimate of the size for one sample features
+     * in a zip-compressed file.
+     *
+     * @return maximum estimated size of one compressed line
+     */
+    public abstract int getMaxPatchCompressedSize ();
+
+    /**
+     * Report the symbols of some shapes ignored by this context that should be injected
+     * as none symbols.
+     *
+     * @param annotations (input) the sheet symbols
+     * @return the symbols to inject as nones
+     */
+    public List<SymbolInfo> getNoneShapes (SheetAnnotations annotations)
+    {
+        return Collections.EMPTY_LIST; // By default
+    }
+
+    /**
+     * Report the locations where none symbols should be injected for this context.
+     *
+     * @param sheetNones (input) path to the potential file of none locations (provided by some
+     *                   external tool like Audiveris OMR)
+     * @return the collection of none locations
+     */
+    public List<Point> getNoneLocations (Path sheetNones)
+    {
+        return Collections.EMPTY_LIST; // By default
+    }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Report the index in CSV list of the provided metadata item.
+     *
+     * @param item provided metadata item
+     * @return corresponding index in CSV list
+     */
     public int getCsv (Metadata item)
     {
         return getCsvMeta() + item.ordinal();
     }
 
+    /**
+     * Report the index in CSV list of the label field.
+     *
+     * @return index of label field (right after the pixel fields)
+     */
     public int getCsvLabel ()
     {
         return getNumPixels();
     }
 
+    /**
+     * Report the index in CSV list where metadata fields start.
+     *
+     * @return beginning of metadata fields in CSV list
+     */
     public int getCsvMeta ()
     {
         return getNumPixels() + 1;
     }
 
+    /**
+     * Report whether the provided true OmrShape value is ignored in this context.
+     *
+     * @param omrShape the provided true OmrShape value
+     * @return true if ignored
+     */
     public boolean ignores (OmrShape omrShape)
     {
         return getLabel(omrShape) == null;
@@ -185,5 +295,4 @@ public abstract class Context<S extends Enum>
             System.out.printf("%3d %s%n", label.ordinal(), label.toString());
         }
     }
-
 }

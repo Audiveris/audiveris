@@ -44,6 +44,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Wrapper;
 import org.audiveris.omrdataset.api.HeadEvaluation;
+import org.audiveris.omrdataset.api.HeadShape;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -289,7 +290,7 @@ public class HeadClassifierBoard
         private final JPanel panel = new JPanel();
 
         /** The sequence of buttons. */
-        final List<EvalButton> buttons = new ArrayList<EvalButton>();
+        final List<EvalButton> buttons = new ArrayList<>();
 
         /** Minimum grade for a button to be displayed. */
         final double minGrade;
@@ -328,7 +329,7 @@ public class HeadClassifierBoard
             // Special case to empty the selector
             if (evals == null) {
                 for (EvalButton evalButton : buttons) {
-                    evalButton.setEval(null, false);
+                    evalButton.setEval(null, false, false);
                 }
 
                 return;
@@ -348,13 +349,16 @@ public class HeadClassifierBoard
                     break;
                 }
 
+                // Highlight first button when set to none shape
+                boolean highLight = (i == 0) && (eval.shape == HeadShape.none);
+
                 // Active buttons
-                buttons.get(i).setEval(eval, false);
+                buttons.get(i).setEval(eval, false, highLight);
             }
 
             // Zero the remaining buttons
             for (; i < buttons.size(); i++) {
-                buttons.get(i).setEval(null, false);
+                buttons.get(i).setEval(null, false, false);
             }
         }
 
@@ -435,17 +439,18 @@ public class HeadClassifierBoard
             }
 
             public void setEval (HeadEvaluation eval,
-                                 boolean enabled)
+                                 boolean enabled,
+                                 boolean highLight)
             {
                 if (eval != null) {
                     String text = eval.shape.toString();
                     button.setVisible(true);
                     button.setEnabled(enabled);
                     button.setText(text);
+                    button.setBackground(highLight ? Color.YELLOW : Color.WHITE);
 
                     // Display a shape icon if possible
                     OmrShape omrShape = eval.shape.toOmrShape();
-                    ///if (omrShape != null)
                     Shape shape = OmrShapeMapping.shapeOf(omrShape);
                     ShapeSymbol symbol = (shape != null) ? shape.getDecoratedSymbol() : null;
                     button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);

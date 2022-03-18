@@ -403,7 +403,8 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n"
+                    "Environment:\n"
+                            + "- Audiveris:    {}\n"
                             + "- OS:           {}\n"
                             + "- Architecture: {}\n"
                             + "- Java VM:      {}\n"
@@ -416,7 +417,8 @@ public class Main
                             + ", "
                             + System.getProperty("java.vm.info")
                             + ")",
-                    TesseractOCR.getInstance().identify());
+                    "TBD" ///TesseractOCR.getInstance().identify()
+            );
         }
     }
 

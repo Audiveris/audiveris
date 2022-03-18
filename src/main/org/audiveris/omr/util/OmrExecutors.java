@@ -384,8 +384,9 @@ public class OmrExecutors
                  int threadPriority,
                  long stackSize)
         {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+//            SecurityManager s = System.getSecurityManager();
+//            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            group = Thread.currentThread().getThreadGroup();
             this.threadPrefix = threadPrefix;
             this.threadPriority = threadPriority;
             this.stackSize = stackSize;

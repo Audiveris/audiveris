@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-
 import org.audiveris.omr.classifier.HeadClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -35,7 +32,6 @@ import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.MedianGrayFilter;
 import org.audiveris.omr.image.PixelFilter;
 import org.audiveris.omr.image.PixelSource;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale.Size;
@@ -46,10 +42,15 @@ import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -138,6 +139,10 @@ public class Picture
 
     /** Map of all handled sources. */
     private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
+            = new ConcurrentSkipListMap<>();
+
+    /** Map of all handled INDArrays. */
+    private final ConcurrentSkipListMap<SourceKey, INDArray> arrays
             = new ConcurrentSkipListMap<>();
 
     /** Related sheet. */
@@ -606,6 +611,31 @@ public class Picture
         }
 
         return src;
+    }
+
+    public INDArray getINDArray (SourceKey key)
+    {
+        INDArray a = arrays.get(key);
+
+        if (a == null) {
+            ByteProcessor src;
+            switch (key) {
+            case SMALL_TARGET:
+            case LARGE_TARGET:
+                src = getSource(key);
+                a = bp2array(src);
+                a.negi().addi(255);// Inversion
+                a.divi(255.0); // Normalization
+                break;
+            default:
+                logger.error("Array " + key + " is not yet supported");
+            }
+            if (a != null) {
+                arrays.put(key, a);
+            }
+        }
+
+        return a;
     }
 
     //----------//
@@ -1168,6 +1198,31 @@ public class Picture
 
         // Convert oldTables to images
         convertOldTables();
+    }
+
+    //----------//
+    // bp2array //
+    //----------//
+    /**
+     * Convert a ByteProcessor source into an INDArray.
+     *
+     * @param bp input byte processor
+     * @return the populated INDArray
+     */
+    private INDArray bp2array (ByteProcessor bp)
+    {
+        final int h = bp.getHeight();
+        final int w = bp.getWidth();
+        final int len = h * w;
+        final float[] flat = new float[len];
+
+        for (int index = 0; index < len; index++) {
+            flat[index] = bp.get(index);
+        }
+
+        INDArray arr = Nd4j.create(flat, new int[]{h, w}); // rows, columns
+
+        return arr;
     }
 
     /**

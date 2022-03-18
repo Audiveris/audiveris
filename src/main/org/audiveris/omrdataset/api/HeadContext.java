@@ -21,10 +21,20 @@
 // </editor-fold>
 package org.audiveris.omrdataset.api;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Class {@code HeadContext} defines a context specifically meant for the processing of
@@ -43,7 +53,7 @@ public class HeadContext
     private static final int CONTEXT_HEIGHT = 21;
 
     /** Width for symbol context, in pixels: {@value}. */
-    private static final int CONTEXT_WIDTH = 21;
+    private static final int CONTEXT_WIDTH = 27;
 
     /** Number of pixels in a patch: {@value}. */
     private static final int NUM_PIXELS = CONTEXT_HEIGHT * CONTEXT_WIDTH;
@@ -51,13 +61,21 @@ public class HeadContext
     /** Number of classes handled: {@value}. */
     private static final int NUM_CLASSES = HeadShape.values().length;
 
-    /** Average <b>Compressed</b> size of a patch (in its .csv.zip file). */
-    private static final int MEAN_PATCH_COMPRESSED_SIZE = 100;
+    /** Maximum <b>Compressed</b> size of a patch (in its .csv.zip file). */
+    private static final int MAX_PATCH_COMPRESSED_SIZE = 300;
 
     private static final HeadShape[] LABELS = HeadShape.values();
 
     // Singleton
     public static final HeadContext INSTANCE = new HeadContext();
+
+    private static final EnumSet<OmrShape> HEAD_SPECIALS = EnumSet.of(
+            OmrShape.accidentalNatural,
+            OmrShape.accidentalNaturalSmall,
+            OmrShape.accidentalSharp,
+            OmrShape.accidentalSharpSmall,
+            OmrShape.keyNatural,
+            OmrShape.keySharp);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //~ Constructors -------------------------------------------------------------------------------
@@ -116,9 +134,9 @@ public class HeadContext
     }
 
     @Override
-    public int getMeanPatchCompressedSize ()
+    public int getMaxPatchCompressedSize ()
     {
-        return MEAN_PATCH_COMPRESSED_SIZE;
+        return MAX_PATCH_COMPRESSED_SIZE;
     }
 
     @Override
@@ -143,6 +161,49 @@ public class HeadContext
     public String toString ()
     {
         return "HEAD";
+    }
+
+    @Override
+    public List<SymbolInfo> getNoneShapes (SheetAnnotations annotations)
+    {
+        // For HEAD context, consider all naturals & sharps as nones
+        List<SymbolInfo> specials = new ArrayList<>();
+
+        for (SymbolInfo symbol : annotations.getOuterSymbolsLiveList()) {
+            if (HEAD_SPECIALS.contains(symbol.getOmrShape())) {
+                specials.add(symbol);
+            }
+        }
+
+        return specials;
+    }
+
+    @Override
+    public List<Point> getNoneLocations (Path sheetNones)
+    {
+        try {
+            if (Files.exists(sheetNones)) {
+                final List<Point> locations = new ArrayList<>();
+                final InputStream is = Files.newInputStream(sheetNones);
+
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(is, UTF_8))) {
+                    String line;
+
+                    while ((line = br.readLine()) != null) {
+                        final String[] cols = line.split(",");
+                        final int x = Integer.parseInt(cols[0]);
+                        final int y = Integer.parseInt(cols[1]);
+                        locations.add(new Point(x, y));
+                    }
+                }
+
+                return locations;
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in getSpecialLocations {}", sheetNones, ex);
+        }
+
+        return Collections.EMPTY_LIST;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
