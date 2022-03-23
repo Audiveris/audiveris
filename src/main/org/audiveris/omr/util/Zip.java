@@ -138,15 +138,15 @@ public abstract class Zip
     public static Reader createReader (File file)
     {
         try {
-            String path = file.getCanonicalPath();
+            final String path = file.getCanonicalPath();
 
-            ZipFile zf = new ZipFile(path + ".zip");
+            try (ZipFile zf = new ZipFile(path + ".zip")) {
+                for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
+                    ZipEntry entry = (ZipEntry) entries.nextElement();
+                    InputStream is = zf.getInputStream(entry);
 
-            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
-                InputStream is = zf.getInputStream(entry);
-
-                return new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+                    return new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+                }
             }
         } catch (FileNotFoundException ex) {
             System.err.println(ex.toString());

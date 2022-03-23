@@ -277,19 +277,10 @@ public class SigValue
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder("SigValue{");
-
-        if (inters != null) {
-            sb.append("inters:").append(inters.size());
-        }
-
-        if (relations != null) {
-            sb.append(" relations:").append(relations.size());
-        }
-
-        sb.append('}');
-
-        return sb.toString();
+        return new StringBuilder("SigValue{")
+                .append("inters:").append(inters.size())
+                .append(" relations:").append(relations.size())
+                .append('}').toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -105,9 +105,6 @@ public class StemBuilder
     /** Ordinate of last head when going away from a beam. */
     private Double lastHeadY;
 
-    /** Set of all glyphs. */
-    private final Set<Glyph> allGlyphs = new LinkedHashSet<>();
-
     /** Scale-dependent parameters. */
     private final StemsRetriever.Parameters params;
 
@@ -631,13 +628,6 @@ public class StemBuilder
 
             if (contrib > 0) {
                 list.add(new GlyphItem(seed, contrib));
-                allGlyphs.add(seed);
-            }
-        }
-
-        for (StemItem se : list) {
-            if (se.glyph != null) {
-                allGlyphs.add(se.glyph);
             }
         }
 
@@ -989,7 +979,6 @@ public class StemBuilder
         Rectangle startBox = null;
 
         if (startGlyph != null) {
-            allGlyphs.add(startGlyph);
             startBox = startGlyph.getBounds();
         }
 
@@ -1003,7 +992,6 @@ public class StemBuilder
         final List<Glyph> chunks = lookupChunks(seeds);
 
         for (Glyph chunk : chunks) {
-            allGlyphs.add(chunk); // Just for the sake of completion
             items.add(new GlyphItem(chunk, getContrib(chunk.getBounds())));
         }
 

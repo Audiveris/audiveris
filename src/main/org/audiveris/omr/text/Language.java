@@ -273,7 +273,7 @@ public class Language
         /**
          * Report a string built as: "code (full name)".
          *
-         * @param code provided code, such as "fra"
+         * @param index index in codesList
          * @return the related string, such as "fra (French)"
          */
         public String getElementAt (int index)

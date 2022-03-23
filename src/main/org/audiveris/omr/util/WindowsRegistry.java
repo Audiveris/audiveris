@@ -73,8 +73,6 @@ public class WindowsRegistry
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmdArgs: {}", cmdArgs);
 
-        BufferedReader br = null;
-
         try {
             // Spawn cmd process
             ProcessBuilder pb = new ProcessBuilder(cmdArgs);
@@ -84,31 +82,24 @@ public class WindowsRegistry
 
             // Read output
             InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
-            br = new BufferedReader(isr);
 
-            String line;
+            try (InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+                 BufferedReader br = new BufferedReader(isr)) {
+                String line;
 
-            while ((line = br.readLine()) != null) {
-                output.add(line);
+                while ((line = br.readLine()) != null) {
+                    output.add(line);
+                }
+
+                // Wait for process completion
+                int exitValue = process.waitFor();
+                logger.debug("Exit value is: {}", exitValue);
             }
-
-            // Wait for process completion
-            int exitValue = process.waitFor();
-            logger.debug("Exit value is: {}", exitValue);
         } catch (RuntimeException rex) {
             throw rex;
         } catch (IOException |
                  InterruptedException ex) {
             logger.warn("Error running " + cmdArgs, ex);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException ex) {
-                    logger.warn("Error closing cmd reader {}", ex.toString(), ex);
-                }
-            }
         }
 
         return output;

@@ -280,15 +280,9 @@ public class StaffLine
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder("StaffLine{");
-
-        if (points != null) {
-            sb.append("points:").append(points.size());
-        }
-
-        sb.append('}');
-
-        return sb.toString();
+        return new StringBuilder("StaffLine{")
+                .append("points:").append(points.size())
+                .append('}').toString();
     }
 
     //-----//

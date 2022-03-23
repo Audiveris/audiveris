@@ -151,7 +151,7 @@ public class MeasureRhythm
         boolean ok = true;
 
         // Second pass can be used only when implicit tuplets option is enabled
-        for (int pass = 1; pass <= 2; pass++) {
+        for (int pass = 1;; pass++) {
             measure.resetRhythm();
             ok = true;
 

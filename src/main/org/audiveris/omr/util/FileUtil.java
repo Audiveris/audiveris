@@ -145,23 +145,10 @@ public abstract class FileUtil
                              File target)
             throws IOException
     {
-        FileChannel input = null;
-        FileChannel output = null;
-
-        try {
-            input = new FileInputStream(source).getChannel();
-            output = new FileOutputStream(target).getChannel();
-
+        try (FileChannel input = new FileInputStream(source).getChannel();
+             FileChannel output = new FileOutputStream(target).getChannel()) {
             MappedByteBuffer buffer = input.map(FileChannel.MapMode.READ_ONLY, 0, input.size());
             output.write(buffer);
-        } finally {
-            if (input != null) {
-                input.close();
-            }
-
-            if (output != null) {
-                output.close();
-            }
         }
     }
 
@@ -403,8 +390,8 @@ public abstract class FileUtil
         // create a matcher and return a filter that uses it.
         final FileSystem fs = dir.getFileSystem();
         final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-        final DirectoryStream.Filter<Path> filter = (Path entry) ->
-                matcher.matches(entry.getFileName());
+        final DirectoryStream.Filter<Path> filter = (Path entry) -> matcher.matches(entry
+                .getFileName());
 
         return fs.provider().newDirectoryStream(dir, filter);
     }

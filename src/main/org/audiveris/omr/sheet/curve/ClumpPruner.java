@@ -417,7 +417,7 @@ public class ClumpPruner
         /**
          * Select the slurs that are not orphan.
          *
-         * @param map the connection map to browse
+         * @param entries the connection map to browse
          * @return the slurs which have links on both sides
          */
         private List<SlurEntry> getNonOrphans (List<SlurEntry> entries)

@@ -125,7 +125,7 @@ public class SlantedSymbol
                 Rectangle2D.union(rect, layout.getPixelBounds(null, x, 0), rect);
             }
 
-            x += (r.getWidth() - dx);
+            x += ((float) r.getWidth() - dx);
         }
 
         p.rect = rect;

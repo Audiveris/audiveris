@@ -267,7 +267,7 @@ public class ActionManager
      * Allocate and dress an instance of the provided class, then register the action in
      * the UI structure (menus and buttons) according to the action descriptor parameters.
      *
-     * @param action the provided action class
+     * @param desc the provided action descriptor
      * @return the registered and decorated instance of the action class
      */
     @SuppressWarnings("unchecked")

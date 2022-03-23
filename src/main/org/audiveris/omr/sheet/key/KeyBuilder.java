@@ -802,7 +802,9 @@ public class KeyBuilder
 
             final KeyInter sourceKey = sourceBuilder.keyInter;
 
-            if ((keyInter != null) && (keyInter.getFifths() == sourceKey.getFifths())) {
+            if ((keyInter != null)
+                        && (keyInter.getFifths() != null)
+                        && (keyInter.getFifths().equals(sourceKey.getFifths()))) {
                 return PartStatus.OK; // It's OK
             }
 

@@ -103,7 +103,6 @@ public class OldBeamGroup
     {
         try {
             final BeamGroupInter beamGroup = new BeamGroupInter();
-            beamGroup.setMultiStaff(multiStaff);
             sig.addVertex(beamGroup);
 
             for (AbstractBeamInter beam : beams) {
@@ -162,10 +161,8 @@ public class OldBeamGroup
         StringBuilder sb = new StringBuilder();
         sb.append("{BeamGroup#").append(id).append(" beams[");
 
-        if (beams != null) {
-            for (AbstractBeamInter beam : beams) {
-                sb.append(beam).append(" ");
-            }
+        for (AbstractBeamInter beam : beams) {
+            sb.append(beam).append(" ");
         }
 
         sb.append("]").append("}");

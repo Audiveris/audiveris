@@ -252,7 +252,7 @@ public class TextBuilder
         final List<LyricLineInter> lines = system.getLyricLines();
 
         // Find closest line, ordinatewise
-        Double bestDy = Double.MAX_VALUE;
+        double bestDy = Double.MAX_VALUE;
         LyricLineInter bestLine = null;
 
         for (LyricLineInter line : lines) {

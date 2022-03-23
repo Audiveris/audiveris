@@ -195,6 +195,7 @@ public class RhythmsStep
                 if (isImpactedBy(classe, forPage)) {
                     // Reprocess the whole page
                     impact.onPage = true;
+                    page = inter.getSig().getSystem().getPage();
                 } else if (isImpactedBy(classe, forStack)) {
                     // Reprocess just the stack
                     Point center = inter.getCenter();
@@ -238,12 +239,6 @@ public class RhythmsStep
                     impact.add(system.getStackAt(relationTask.getSource().getCenter()));
                     impact.add(system.getStackAt(relationTask.getTarget().getCenter()));
                 }
-            } else if (task instanceof TieTask) {
-                // Reprocess the page
-                final TieTask tieTask = (TieTask) task;
-                final SlurInter slur = tieTask.getInter();
-                impact.onPage = true;
-                page = slur.getSig().getSystem().getPage();
             }
         }
 

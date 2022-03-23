@@ -143,9 +143,6 @@ public class ClefBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClefBuilder object.
@@ -749,8 +746,6 @@ public class ClefBuilder
             if (glyph.getId() == 0) {
                 glyph = system.registerGlyph(glyph, null);
             }
-
-            glyphCandidates.add(glyph);
 
             logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
 
