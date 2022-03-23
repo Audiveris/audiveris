@@ -1431,7 +1431,7 @@ public class LinesRetriever
         // Constants specified WRT mean interline
         // --------------------------------------
         private final Scale.Fraction minRunLength = new Scale.Fraction(
-                1.0,
+                0.25, // was 1.0
                 "Minimum length for a horizontal run to be considered");
 
         private final Scale.Fraction maxEndingDx = new Scale.Fraction(
