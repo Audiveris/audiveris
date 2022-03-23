@@ -22,6 +22,7 @@
 package org.audiveris.omr;
 
 import org.audiveris.omr.CLI.CliTask;
+import org.audiveris.omr.classifier.HeadClassifier;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
@@ -123,7 +124,8 @@ public class Main
         // Locale to be used in the whole application?
         checkLocale();
 
-        // Environment
+        // Environment (among other pieces, this calls Tesseract)
+        // NOTA: this must be done AFTER using deeplearning4j/nd4j
         showEnvironment();
 
         // Process CLI parameters
@@ -136,6 +138,9 @@ public class Main
             return;
         }
 
+        // Load the head classifier (which uses deeplearning4j/nd4j)
+        // NOTA: this must be done BEFORE using Tesseract
+        ///HeadClassifier.getInstance();
         // Initialize tool parameters
         initialize();
 
@@ -399,7 +404,8 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n"
+                    "Environment:\n"
+                            + "- Audiveris:    {}\n"
                             + "- OS:           {}\n"
                             + "- Architecture: {}\n"
                             + "- Java VM:      {}\n"
@@ -412,7 +418,8 @@ public class Main
                             + ", "
                             + System.getProperty("java.vm.info")
                             + ")",
-                    TesseractOCR.getInstance().identify());
+                    "TBD" ///TesseractOCR.getInstance().identify()
+            );
         }
     }
 

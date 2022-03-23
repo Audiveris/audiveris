@@ -22,6 +22,8 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.classifier.BasicClassifier;
+import org.audiveris.omr.classifier.HeadClassifier;
+import org.audiveris.omr.classifier.ui.HeadClassifierBoard;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -70,7 +72,6 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -203,6 +204,14 @@ public class SheetEditor
         boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet()));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
+
+        if (HeadClassifier.getInstance().isAvailable()) {
+            boards.add(new HeadClassifierBoard(
+                    sheet,
+                    sheet.getLocationService(),
+                    constants.selectPatchClassifierBoard.isSet()));
+        }
+
         boards.add(evaluationBoard = new EvaluationBoard(
                 true,
                 sheet,
@@ -1192,5 +1201,9 @@ public class SheetEditor
         private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
                 true,
                 "Should we select Basic Classifier board by default?");
+
+        private final Constant.Boolean selectPatchClassifierBoard = new Constant.Boolean(
+                true,
+                "Should we select Patch Classifier board by default?");
     }
 }

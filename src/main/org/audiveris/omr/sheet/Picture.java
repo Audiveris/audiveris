@@ -21,9 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-
+import org.audiveris.omr.classifier.HeadClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -37,6 +35,7 @@ import org.audiveris.omr.image.PixelSource;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.Scale.Size;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -44,10 +43,15 @@ import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -144,7 +148,11 @@ public class Picture
         /** The Median-filtered source. */
         MEDIAN,
         /** The source with staff lines removed. */
-        NO_STAFF;
+        NO_STAFF,
+        /** The source for classifier on small staves, if any. */
+        SMALL_TARGET,
+        /** The source for classifier on large staves. */
+        LARGE_TARGET;
     }
 
     /**
@@ -196,6 +204,10 @@ public class Picture
 
     /** Map of all handled sources. */
     private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
+            = new ConcurrentSkipListMap<>();
+
+    /** Map of all handled INDArrays. */
+    private final ConcurrentSkipListMap<SourceKey, INDArray> arrays
             = new ConcurrentSkipListMap<>();
 
     /** Related sheet. */
@@ -673,6 +685,18 @@ public class Picture
 
                 break;
 
+            case SMALL_TARGET:
+                // Scale small staves to expected patch classifier interline
+                src = buildTarget(Size.SMALL);
+
+                break;
+
+            case LARGE_TARGET:
+                // Scale large staves to expected patch classifier interline
+                src = buildTarget(Size.LARGE);
+
+                break;
+
             default:
                 logger.error("Source " + key + " is not yet supported");
             }
@@ -685,6 +709,31 @@ public class Picture
         }
 
         return src;
+    }
+
+    public INDArray getINDArray (SourceKey key)
+    {
+        INDArray a = arrays.get(key);
+
+        if (a == null) {
+            ByteProcessor src;
+            switch (key) {
+            case SMALL_TARGET:
+            case LARGE_TARGET:
+                src = getSource(key);
+                a = bp2array(src);
+                a.negi().addi(255);// Inversion
+                a.divi(255.0); // Normalization
+                break;
+            default:
+                logger.error("Array " + key + " is not yet supported");
+            }
+            if (a != null) {
+                arrays.put(key, a);
+            }
+        }
+
+        return a;
     }
 
     //----------//
@@ -1084,6 +1133,71 @@ public class Picture
         return new ByteProcessor(img);
     }
 
+    //-------------//
+    // buildTarget //
+    //-------------//
+    /**
+     * Build a scaled buffer meant for page / patch classifier.
+     * <p>
+     * We use the binary image.
+     *
+     * @param size the target staff size, either LARGE or SMALL
+     * @return the properly scaled buffer
+     */
+    private ByteProcessor buildTarget (Size size)
+    {
+        final Scale scale = sheet.getScale();
+
+        if (scale == null) {
+            logger.error("No scale defined yet for sheet");
+
+            return null;
+        }
+
+        // Which source to use: INITIAL or BINARY?
+        ByteProcessor source = null;
+
+        if (constants.classifiersUseGray.isSet()) {
+            source = getSource(SourceKey.GRAY);
+            if (source == null) {
+                logger.info("No gray image for classifiers, using binary image");
+            } else {
+                logger.info("Using gray image for classifiers");
+            }
+        }
+
+        if (source == null) {
+            logger.debug("Using binary image for classifiers");
+            source = getSource(SourceKey.BINARY);
+        }
+
+        final int target = HeadClassifier.getPatchInterline();
+
+        switch (size) {
+        case SMALL: {
+            final Integer smallInterline = scale.getSmallInterline();
+
+            if (smallInterline == null) {
+                logger.warn("No small interline in this sheet");
+
+                return null;
+            }
+
+            final double ratio = (double) target / smallInterline;
+
+            return (ratio != 1.0) ? scaledBuffer(source, ratio) : source;
+        }
+
+        default:
+        case LARGE: {
+            final int interline = scale.getInterline();
+            final double ratio = (double) target / interline;
+
+            return (ratio != 1.0) ? scaledBuffer(source, ratio) : source;
+        }
+        }
+    }
+
     //--------------//
     // getStrongRef //
     //--------------//
@@ -1148,6 +1262,29 @@ public class Picture
         }
     }
 
+    //--------------//
+    // scaledBuffer //
+    //--------------//
+    /**
+     * Report a scaled version of the provided buffer, according to the desired ratio.
+     *
+     * @param binBuffer initial (binary) buffer
+     * @param ratio     desired ratio
+     * @return the scaled buffer (no longer binary)
+     */
+    private ByteProcessor scaledBuffer (ByteProcessor binBuffer,
+                                        double ratio)
+    {
+        final int scaledWidth = (int) Math.ceil(binBuffer.getWidth() * ratio);
+        final int scaledHeight = (int) Math.ceil(binBuffer.getHeight() * ratio);
+        final ByteProcessor scaledBuffer = (ByteProcessor) binBuffer.resize(
+                scaledWidth,
+                scaledHeight,
+                true); // True => use averaging when down-scaling
+
+        return scaledBuffer;
+    }
+
     //----------------//
     // initTransients //
     //----------------//
@@ -1163,6 +1300,31 @@ public class Picture
 
         // Convert oldTables to images
         convertOldTables();
+    }
+
+    //----------//
+    // bp2array //
+    //----------//
+    /**
+     * Convert a ByteProcessor source into an INDArray.
+     *
+     * @param bp input byte processor
+     * @return the populated INDArray
+     */
+    private INDArray bp2array (ByteProcessor bp)
+    {
+        final int h = bp.getHeight();
+        final int w = bp.getWidth();
+        final int len = h * w;
+        final float[] flat = new float[len];
+
+        for (int index = 0; index < len; index++) {
+            flat[index] = bp.get(index);
+        }
+
+        INDArray arr = Nd4j.create(flat, new int[]{h, w}); // rows, columns
+
+        return arr;
     }
 
     //---------//
@@ -1196,6 +1358,10 @@ public class Picture
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Boolean classifiersUseGray = new Constant.Boolean(
+                false,
+                "Should classifiers operate on GRAY (vs BINARY) image?");
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

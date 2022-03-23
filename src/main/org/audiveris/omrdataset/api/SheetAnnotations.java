@@ -118,11 +118,19 @@ public class SheetAnnotations
     }
 
     /**
-     * Report the (live) list of symbols in sheet.
-     *
-     * @return symbols list
+     * @param source the source to set
      */
-    public List<SymbolInfo> getSymbols ()
+    public void setSource (String source)
+    {
+        this.source = source;
+    }
+
+    /**
+     * Report the (live) list of all outer symbols in sheet.
+     *
+     * @return complete symbols list
+     */
+    public List<SymbolInfo> getOuterSymbolsLiveList ()
     {
         return symbols;
     }
@@ -192,14 +200,6 @@ public class SheetAnnotations
     }
 
     /**
-     * @param source the source to set
-     */
-    public void setSource (String source)
-    {
-        this.source = source;
-    }
-
-    /**
      * @param version the version to set
      */
     public void setVersion (String version)
@@ -211,7 +211,10 @@ public class SheetAnnotations
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("Annotations{");
-        sb.append("version:").append(version);
+
+        if (version != null) {
+            sb.append("version:").append(version);
+        }
 
         if (source != null) {
             sb.append(" source:").append(source);

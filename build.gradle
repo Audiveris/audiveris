@@ -1,6 +1,6 @@
 apply plugin: 'application'
 
-project.version  = '5.3-alpha'
+project.version  = '6.1-alpha'
 sourceCompatibility = '1.17'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -13,6 +13,9 @@ ext.companyId       = "${programName}Ltd"
 ext.jcppVersion     = '1.4.4'
 ext.leptVersion     = '1.77.0'
 ext.tessVersion     = '4.0.0'
+
+ext.dl4jVersion     = '1.0.0-beta6'
+ext.nd4jVersion     = '1.0.0-beta6'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
@@ -61,6 +64,20 @@ run {
     }
 }
 
+// Workaround for "CreateProcess error=206, The filename or extension is too long" under Windows
+// See https://github.com/viswaramamoorthy/gradle-util-plugins/
+buildscript {
+repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.com.github.viswaramamoorthy:gradle-util-plugins:0.1.0-RELEASE"
+  }
+}
+apply plugin: "com.github.ManifestClasspath"
+
 repositories {
     maven {
         name = 'JBoss repository' // required to obtain non-free JAI
@@ -94,6 +111,12 @@ sourceSets {
 }
 
 dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+}
+
+dependencies {
     implementation(
         [group: 'org.kohsuke', name: 'github-api', version: '1.301'],
         [group: 'args4j', name: 'args4j', version: '2.33'],
@@ -117,6 +140,9 @@ dependencies {
         [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
         [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-ui', version: "${project.ext.dl4jVersion}"],
+        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
         [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
@@ -125,7 +151,8 @@ dependencies {
 
     runtimeOnly(
         [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testImplementation(

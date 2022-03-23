@@ -24,6 +24,7 @@ package org.audiveris.omr.ui;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.classifier.HeadClassifier;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
@@ -365,6 +366,7 @@ public class MainGui
             ShapeClassifier.preload();
             JaiLoader.preload();
             PartwiseBuilder.preload();
+            HeadClassifier.preload();
         }
     }
 

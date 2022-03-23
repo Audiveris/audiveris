@@ -25,6 +25,14 @@ import java.util.EnumSet;
 
 /**
  * Class <code>OmrShape</code> is the OMR-Dataset definition of symbol shapes.
+ * <h3>Enum organization</h3>
+ * <ol>
+ * <li>the none shape.
+ * <li>the shapes used in head processing: note heads, beam hook.
+ * <li>the shapes used in general purpose processing: all DeepScores shapes except head ones.
+ * <li>the shapes potentially used by MuseScore but not by DeepScores.
+ * </ol>
+ * <h3>Genesis of this list</h3>
  * <p>
  * This is a small subset of the list of symbol names described by SMuFL specification available at
  * <a href="http://www.smufl.org/">http://www.smufl.org/</a>.
@@ -34,7 +42,7 @@ import java.util.EnumSet;
  * (hair-pins, slurs, beams, etc) have been left out, their recognition is not based on a symbol
  * classifier.
  * The only exception is the <b>brace</b> symbol, which can vary in size, but we hope that a
- * classifier could recognize the brace central part.
+ * classifier could recognize the brace center part.
  * <p>
  * We added a few names:
  * <ul>
@@ -55,7 +63,9 @@ import java.util.EnumSet;
  */
 public enum OmrShape
 {
-    none("No valid shape"),
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    none("No valid shape for current processing"),
 
     //
     // 4.1 Staff brackets and dividers
@@ -84,9 +94,6 @@ public enum OmrShape
     //
     // 4.4 Repeats
     //
-    repeatLeft("Left (start) repeat sign"),
-    repeatRight("Right (end) repeat sign"),
-    repeatRightLeft("Right and left repeat sign"),
     repeatDots("Repeat dots"),
     repeatDot("Repeat dot"),
     dalSegno("Dal segno (D.S.)"),
@@ -359,6 +366,14 @@ public enum OmrShape
     // NOT YET HANDLED symbols (though found in MuseScore input)
     //
     unknown("abnormal symbol in MuseScore input"),
+    // =============================================================================================
+    //
+    cClef("C Clef with no precise position"), // Hack for MuseScore cClef samples
+    cClefChange("C Clef change with no precise position"), // Hack for MuseScore cClef samples
+    //
+    repeatLeft("Left (start) repeat sign"), // Collision with middle barlineSingle
+    repeatRight("Right (end) repeat sign"), // Collision with middle barlineSingle
+    repeatRightLeft("Right and left repeat sign"), // Collision with middle barlineHeavy
     //
     bracketedTuplet2("bracketed tuplet 2"),
     bracketedTuplet3("bracketed tuplet 3"),
@@ -437,7 +452,7 @@ public enum OmrShape
      *
      * @param description textual symbol description
      */
-    OmrShape (String description)
+    private OmrShape (String description)
     {
         this.description = description;
     }
@@ -473,10 +488,8 @@ public enum OmrShape
             barlineDashed,
             barlineDotted);
 
+    // NOTA: cClef is not ignored per se, but converted on-the-fly to cClefAlto or cClefTenor
     private static final EnumSet<OmrShape> IGNORED_SHAPES = EnumSet.of(
-            legerLine,
-            stem,
-            ///
             bracketedTuplet2,
             bracketedTuplet3,
             bracketedTuplet4,
@@ -502,6 +515,7 @@ public enum OmrShape
             guitarFadeIn,
             guitarFadeOut,
             guitarVolumeSwell,
+            legerLine,
             luteFingeringRHFirst,
             noteheadCircleX,
             noteheadDiamondBlack,
@@ -516,6 +530,10 @@ public enum OmrShape
             noteShapeTriangleUpWhite,
             ornamentLinePrall,
             ornamentTremblement,
+            repeatLeft,
+            repeatRight,
+            repeatRightLeft,
+            stem,
             toCoda,
             timeSig11,
             timeSig13,
