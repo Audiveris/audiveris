@@ -2655,9 +2655,9 @@ public class Book
 
                     // Reset book sheets to binary?
                     if (((OMR.gui == null) && constants.resetOldBooks.isSet())
-                                || OMR.gui.displayConfirmation(
+                                || ((OMR.gui != null) && OMR.gui.displayConfirmation(
                                     msg + "\nConfirm reset to binary?",
-                                    "Too old book version")) {
+                                    "Too old book version"))) {
                         resetTo(OmrStep.BINARY);
                         logger.info("Book {} reset to binary.", radix);
                         version = WellKnowns.TOOL_REF;

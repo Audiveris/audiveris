@@ -101,9 +101,6 @@ public class KeyExtractor
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new <code>KeyExtractor</code> object.
@@ -784,8 +781,6 @@ public class KeyExtractor
             if (glyph.isVip()) {
                 logger.info("VIP evaluateSliceGlyph for {}", glyph);
             }
-
-            glyphCandidates.add(glyph);
 
             Evaluation[] evals = classifier.evaluate(
                     glyph,

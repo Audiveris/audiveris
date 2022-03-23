@@ -434,7 +434,7 @@ public class TesseractOrder
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try ( ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
             ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
             writer.setOutput(ios);
             writer.write(image);
@@ -456,7 +456,7 @@ public class TesseractOrder
                 Files.createDirectories(WellKnowns.TEMP_FOLDER);
             }
 
-            try ( FileOutputStream fos = new FileOutputStream(path.toFile())) {
+            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
                 fos.write(bytes);
             } catch (IOException ex) {
                 logger.warn("Could not write to {}", path, ex);
@@ -473,7 +473,7 @@ public class TesseractOrder
      *
      * @param word   the word to populate
      * @param bounds the char/symbol bounds
-     * @param str    the char/symbol value
+     * @param value  the char/symbol value
      */
     private void wordAddChars (TextWord word,
                                Rectangle bounds,

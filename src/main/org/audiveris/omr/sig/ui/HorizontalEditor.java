@@ -71,7 +71,7 @@ public class HorizontalEditor
                 }
 
                 // Data
-                latestBounds.x += dx;
+                latestBounds.x += (int) Math.rint(dx);
 
                 // Handle
                 for (Handle handle : handles) {

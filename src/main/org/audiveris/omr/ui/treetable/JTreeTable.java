@@ -309,7 +309,7 @@ public class JTreeTable
             if (rowHeight > 0) {
                 super.setRowHeight(rowHeight);
 
-                if ((JTreeTable.this != null) && (JTreeTable.this.getRowHeight() != rowHeight)) {
+                if (JTreeTable.this.getRowHeight() != rowHeight) {
                     JTreeTable.this.setRowHeight(getRowHeight());
                 }
             }

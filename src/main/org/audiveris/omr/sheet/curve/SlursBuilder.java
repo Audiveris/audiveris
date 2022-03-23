@@ -516,7 +516,7 @@ public class SlursBuilder
                 return new CircleModel(circle);
             }
         } catch (Exception ex) {
-            logger.debug("Could not compute circle {} at {}", p0);
+            logger.debug("Could not compute circle at {}", p0);
 
             return null;
         }

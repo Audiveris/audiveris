@@ -168,10 +168,6 @@ public class CLI
      */
     public Properties getOptions ()
     {
-        if (params == null) {
-            return null;
-        }
-
         return params.options;
     }
 

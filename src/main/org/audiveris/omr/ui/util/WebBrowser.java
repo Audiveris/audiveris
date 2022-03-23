@@ -148,7 +148,9 @@ public class WebBrowser
                 Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]{String.class});
                 openURL.invoke(null, new Object[]{url});
             } else if (WellKnowns.WINDOWS) {
-                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+                Runtime.getRuntime().exec(new String[]{"rundll32",
+                                                       "url.dll,FileProtocolHandler",
+                                                       url});
             } else { //assume Unix or Linux
 
                 for (String browser : browsers) {

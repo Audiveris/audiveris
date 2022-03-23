@@ -813,7 +813,7 @@ public class PartwiseBuilder
     /**
      * Try to process an arpeggiato item.
      *
-     * @param arpeggiate, perhaps null
+     * @param arpeggiate perhaps null
      */
     private void processArpeggiato (ArpeggiatoInter arpeggiate)
     {

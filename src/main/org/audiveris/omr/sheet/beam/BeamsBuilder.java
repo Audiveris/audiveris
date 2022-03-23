@@ -1521,12 +1521,12 @@ public class BeamsBuilder
     /**
      * Define an area on desired horizontal side of the beam.
      *
-     * @param kind   kind of area (meant for attachment debug)
-     * @param beam   the beam inter
-     * @param side   desired side
-     * @param double extDy ordinate extension
-     * @param double extDx abscissa extension
-     * @param double intDx abscissa offset towards beam interior
+     * @param kind  kind of area (meant for attachment debug)
+     * @param beam  the beam inter
+     * @param side  desired side
+     * @param extDy ordinate extension
+     * @param extDx abscissa extension
+     * @param intDx abscissa offset towards beam interior
      * @return the area
      */
     private Area sideAreaOf (String kind,

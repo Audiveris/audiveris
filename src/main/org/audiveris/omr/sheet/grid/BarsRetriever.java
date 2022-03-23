@@ -2152,7 +2152,7 @@ public class BarsRetriever
                                             } else {
                                                 if (logger.isDebugEnabled() || tp.isVip()) {
                                                     logger.info(
-                                                            "VIP perhaps tail of C-Clef {}",
+                                                            "VIP perhaps tail of C-Clef T:{} {}",
                                                             staff.getId(),
                                                             tp);
                                                 }

@@ -960,9 +960,7 @@ public class BeamLinker
              * Create a linker in the provided vertical direction if so desired,
              * with a starting stump or a beam horizontal side or just a refPt (an anchor).
              *
-             * @param yDir  vertical direction, if any, when going away from beam
-             * @param stump starting glyph, if any
-             * @param rePt  reference point, if any
+             * @param yDir vertical direction, if any, when going away from beam
              */
             public VLinker (int yDir)
             {

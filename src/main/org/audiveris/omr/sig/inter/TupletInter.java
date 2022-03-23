@@ -339,7 +339,7 @@ public class TupletInter
     /**
      * Report the tuplet factor that corresponds to the tuplet sign
      *
-     * @param glyph the tuplet sign
+     * @param shape the tuplet shape
      * @return the related factor
      */
     private static DurationFactor getFactor (Shape shape)

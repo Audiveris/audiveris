@@ -453,7 +453,7 @@ public abstract class AbstractFlagInter
                     }
 
                     // Data
-                    latestBounds.y += dy;
+                    latestBounds.y += (int) Math.rint(dy);
 
                     // Handle
                     for (Handle handle : handles) {

@@ -405,25 +405,6 @@ public class BeamGroupInter
         return EnsembleHelper.computeMeanContextualGrade(this);
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        if (multiStaff) {
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-
-            sb.append("multi-staff");
-        }
-
-        return sb.toString();
-    }
-
     //-------------//
     // getDuration //
     //-------------//
@@ -694,14 +675,9 @@ public class BeamGroupInter
     @Override
     public String internals ()
     {
-        final StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(Entities.ids(" beams", getMembers()));
-
-        if (multiStaff) {
-            sb.append(" multiStaff");
-        }
-
-        return sb.toString();
+        return new StringBuilder(super.internals())
+                .append(Entities.ids(" beams", getMembers()))
+                .toString();
     }
 
     //-----------------//
@@ -714,19 +690,6 @@ public class BeamGroupInter
     public void invalidateCache ()
     {
         bounds = null;
-    }
-
-    //--------------//
-    // isMultiStaff //
-    //--------------//
-    /**
-     * Tell whether this beam group is linked to more than one staff.
-     *
-     * @return the multiStaff
-     */
-    public boolean isMultiStaff ()
-    {
-        return multiStaff;
     }
 
     //-------//
@@ -777,41 +740,6 @@ public class BeamGroupInter
         }
 
         return null;
-    }
-
-    //-----------------//
-    // populateMeasure //
-    //-----------------//
-    /**
-     * Populate all the BeamGroupInter instances for a given measure.
-     *
-     * @param measure         the containing measure
-     * @param checkGroupSplit true for check on group split
-     */
-    public static void populateMeasure (Measure measure,
-                                        boolean checkGroupSplit)
-    {
-        // Retrieve beams in this measure
-        final Set<AbstractBeamInter> beams = new LinkedHashSet<>();
-        for (AbstractChordInter chord : measure.getHeadChords()) {
-            beams.addAll(chord.getBeams());
-        }
-
-        // Retrieve beam groups for this measure
-        final Set<BeamGroupInter> groups = new LinkedHashSet<>();
-        for (AbstractBeamInter beam : beams) {
-            if (beam.isRemoved()) {
-                continue;
-            }
-
-            final BeamGroupInter group = beam.getGroup();
-            groups.add(group);
-        }
-
-        // Detect groups that are linked to more than one staff
-        for (BeamGroupInter group : measure.getBeamGroups()) {
-            group.countStaves();
-        }
     }
 
     //----------------------//
@@ -948,14 +876,6 @@ public class BeamGroupInter
         EnsembleHelper.removeMember(this, member);
     }
 
-    //---------------//
-    // setMultiStaff //
-    //---------------//
-    public void setMultiStaff (boolean multiStaff)
-    {
-        this.multiStaff = multiStaff;
-    }
-
     //--------//
     // setVip //
     //--------//
@@ -990,8 +910,8 @@ public class BeamGroupInter
      * Recursively determine BeamGroupInter for the provided beam, as well as all other
      * beams connected within the same group.
      *
-     * @param beam    the beam seed
-     * @param measure the containing measure
+     * @param group the beam group
+     * @param beam  the beam seed
      */
     private static void assignGroup (BeamGroupInter group,
                                      AbstractBeamInter beam)
@@ -1112,33 +1032,6 @@ public class BeamGroupInter
         return null; // everything is OK
     }
 
-    //-------------//
-    // countStaves //
-    //-------------//
-    /**
-     * Check whether this group is linked to more than one staff.
-     * If so, it is flagged as such.
-     */
-    private void countStaves ()
-    {
-        Set<Staff> staves = new LinkedHashSet<>();
-
-        for (Inter beam : getMembers()) {
-            for (Relation rel : sig.getRelations(beam, BeamStemRelation.class)) {
-                Inter stem = sig.getOppositeInter(beam, rel);
-                Staff staff = stem.getStaff();
-
-                if (staff != null) {
-                    staves.add(staff);
-                }
-            }
-        }
-
-        if (staves.size() > 1) {
-            multiStaff = true;
-        }
-    }
-
     //----------------//
     // getLinkedRests //
     //----------------//
@@ -1161,8 +1054,8 @@ public class BeamGroupInter
             for (Relation sameRel : sig.getRelations(ch, classes)) {
                 final Inter other = sig.getOppositeInter(ch, sameRel);
 
-                if (other instanceof RestChordInter) {
-                    allRests.add((RestChordInter) other);
+                if (other instanceof RestChordInter restChordInter) {
+                    allRests.add(restChordInter);
                 }
             }
         }

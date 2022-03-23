@@ -220,7 +220,7 @@ public class SpinnerGlyphModel
             }
         }
 
-        if (ok) {
+        if (ok && (id != null)) {
             currentId = id;
             fireStateChanged();
         } else {

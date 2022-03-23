@@ -135,7 +135,7 @@ public class Plugin
             }
         }
 
-        logger.warn("Missing special '{}' arg in plugin {}", getId());
+        logger.warn("Missing special '{}' arg in plugin {}", "{}", getId());
 
         return false;
     }
@@ -208,20 +208,21 @@ public class Plugin
 
         try {
             final Process process = pb.start(); // Start process
+            final InputStream is = process.getInputStream();
 
             // Consume process output (process output is an input stream for us)
-            final InputStream is = process.getInputStream();
-            final InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
-            final BufferedReader br = new BufferedReader(isr);
-            String line;
+            try (InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+                 BufferedReader br = new BufferedReader(isr)) {
+                String line;
 
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
+                while ((line = br.readLine()) != null) {
+                    System.out.println(line);
+                }
+
+                // Wait to get exit value
+                final int exitValue = process.waitFor();
+                logger.info("{} exit value: {}", getId(), exitValue);
             }
-
-            // Wait to get exit value
-            final int exitValue = process.waitFor();
-            logger.info("{} exit value: {}", getId(), exitValue);
         } catch (IOException |
                  InterruptedException ex) {
             logger.warn("Error launching {} {}" + this, ex.toString(), ex);

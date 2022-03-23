@@ -306,7 +306,7 @@ public class CurvedFilament
             }
 
             // Check smallest radius
-            Integer idx = null;
+            int idx = 0;
             double minRadius = Integer.MAX_VALUE;
 
             for (int i = 1, iBreak = points.size() - 1; i < iBreak; i++) {
