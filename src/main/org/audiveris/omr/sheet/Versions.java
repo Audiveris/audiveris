@@ -194,18 +194,11 @@ public abstract class Versions
      */
     public static CheckResult check (Version version)
     {
-        if (version.major < CURRENT_SOFTWARE.major) {
-            // Non compatible, reprocess from binary?
-            return CheckResult.BOOK_TOO_OLD;
-        }
-
         if (version.major > CURRENT_SOFTWARE.major) {
-            // Non compatible, use more recent program
             return CheckResult.PROGRAM_TOO_OLD;
         }
 
-        if (version.minor > CURRENT_SOFTWARE.minor) {
-            // Non compatible, use more recent program
+        if (version.major == CURRENT_SOFTWARE.major && version.minor > CURRENT_SOFTWARE.minor) {
             return CheckResult.PROGRAM_TOO_OLD;
         }
 
