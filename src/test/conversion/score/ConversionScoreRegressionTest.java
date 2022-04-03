@@ -66,6 +66,7 @@ public class ConversionScoreRegressionTest
      * List of test cases. Each of these will be tested separately
      */
     private final static List<ConversionScoreTestCase> TEST_CASES = List.of(
+            ConversionScoreTestCase.ofSubDirectory("01-klavier").withExpectedConversionScore(15)
     );
 
     /**
