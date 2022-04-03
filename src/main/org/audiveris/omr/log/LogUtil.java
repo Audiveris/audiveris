@@ -299,10 +299,11 @@ public abstract class LogUtil
      *
      * @param name appender name (typically the book radix)
      */
-    public static void removeAppender (String name)
+    public static void stopAndRemoveAppender (String name)
     {
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
                 Logger.ROOT_LOGGER_NAME);
+        root.getAppender(name).stop();
         root.detachAppender(name);
     }
 
