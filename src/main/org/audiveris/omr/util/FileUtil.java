@@ -43,6 +43,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Class <code>FileUtil</code> gathers convenient utility methods for files (and paths).
@@ -489,5 +491,39 @@ public abstract class FileUtil
         }
 
         return pathsFound;
+    }
+
+    //---------------------//
+    // findFileInDirectory //
+    //---------------------//
+    /**
+     * Finds a file in the given directory (non-recursive) matching the given predicate.
+     *
+     * @param directory   the directory in which to look for the file
+     * @param fileMatches the condition for inclusion, evaluated for each file
+     * @return the first matching file
+     */
+    public static Optional<Path> findFileInDirectory (Path directory, Predicate<Path> fileMatches)
+            throws IOException
+    {
+        return Files.walk(directory, 1)
+                .filter(Files::isRegularFile)
+                .filter(fileMatches)
+                .findFirst();
+    }
+
+    //---------------------------------//
+    // fileNameWithoutExtensionMatches //
+    //---------------------------------//
+    /**
+     * Creates a predicate on Path that evaluates to true if the path's name matches the given file name.
+     * To be used e.g. as parameter to {@link #findFileInDirectory(Path, Predicate)}.
+     *
+     * @param fileName the file name to match
+     * @return the predicate
+     */
+    public static Predicate<Path> fileNameWithoutExtensionMatches (String fileName)
+    {
+        return path -> FileUtil.sansExtension(path.getFileName().toString()).equals(fileName);
     }
 }
