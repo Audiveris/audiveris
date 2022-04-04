@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
@@ -65,7 +66,6 @@ import org.audiveris.omr.sig.ui.PageTask;
 import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.SystemMergeTask;
-import org.audiveris.omr.sig.ui.TieTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
@@ -168,6 +168,7 @@ public class PageStep
         forParts = new HashSet<>();
         forParts.add(BraceInter.class);
         forParts.add(SentenceInter.class);
+        forParts.add(WordInter.class);
     }
 
     static {
@@ -236,6 +237,11 @@ public class PageStep
                 if (isImpactedBy(classe, forParts)) {
                     if (inter instanceof SentenceInter sentenceInter) {
                         if (sentenceInter.getRole() == TextRole.PartName) {
+                            impact.onParts = true;
+                        }
+                    } else if (inter instanceof WordInter wordInter) {
+                        final SentenceInter sentence = (SentenceInter) wordInter.getEnsemble();
+                        if (sentence != null && sentence.getRole() == TextRole.PartName) {
                             impact.onParts = true;
                         }
                     } else {
