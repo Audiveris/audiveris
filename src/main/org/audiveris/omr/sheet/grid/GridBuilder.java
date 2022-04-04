@@ -152,7 +152,7 @@ public class GridBuilder
             watch.start("retrieveBarlines");
             barsRetriever.process();
 
-            // Complete the staff lines w/ short sections & filaments left over
+            // Complete the staff lines w/ sections & filaments left over
             watch.start("completeLines");
             linesRetriever.completeLines();
 
