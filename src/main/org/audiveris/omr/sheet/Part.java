@@ -1287,6 +1287,7 @@ public class Part
                 if (otherPage != null) {
                     currentPage = otherPage;
                     otherSystem = otherPage.getFirstSystem();
+                    continue;
                 } else {
                     break; // Reached end of score
                 }
@@ -1313,6 +1314,7 @@ public class Part
                 if (otherPage != null) {
                     currentPage = otherPage;
                     otherSystem = otherPage.getLastSystem();
+                    continue;
                 } else {
                     break; // Reached start of score
                 }
