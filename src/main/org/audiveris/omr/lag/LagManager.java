@@ -64,9 +64,6 @@ public class LagManager
     /** Map of all public lags. */
     private final Map<String, Lag> lagMap = new TreeMap<>();
 
-    /** Id of last long horizontal section. */
-    private int lastLongHSectionId;
-
     /** (Debug)Predefined IDs for VIP sections. */
     private final EnumMap<Orientation, List<Integer>> vipMap;
 
@@ -214,32 +211,6 @@ public class LagManager
         }
 
         return lag;
-    }
-
-    //---------------------//
-    // getLongSectionMaxId //
-    //---------------------//
-    /**
-     * Report the id of the last long horizontal section
-     *
-     * @return the id of the last long horizontal section
-     */
-    public int getLongSectionMaxId ()
-    {
-        return lastLongHSectionId;
-    }
-
-    //---------------------//
-    // setLongSectionMaxId //
-    //---------------------//
-    /**
-     * Remember the id of the last long horizontal section
-     *
-     * @param id the id of the last long horizontal section
-     */
-    public void setLongSectionMaxId (int id)
-    {
-        lastLongHSectionId = id;
     }
 
     //-------------//

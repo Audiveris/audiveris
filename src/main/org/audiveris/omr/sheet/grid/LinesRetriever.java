@@ -265,11 +265,11 @@ public class LinesRetriever
             watch.start("fillHoles");
             fillHoles();
 
-            // Dispatch short sections into thick & thin ones
+            // Dispatch horizontal sections into thick & thin ones
             final List<Section> thickSections = new ArrayList<>();
             final List<Section> thinSections = new ArrayList<>();
-            watch.start("dispatchShortSections");
-            dispatchShortSections(thickSections, thinSections);
+            watch.start("dispatchHorizontalSections");
+            dispatchHorizontalSections(thickSections, thinSections);
 
             // First, consider thick sections
             watch.start("include " + thickSections.size() + " thick stickers");
@@ -311,9 +311,6 @@ public class LinesRetriever
      */
     public List<Section> createShortSections ()
     {
-        // Note the current section id
-        sheet.getLagManager().setLongSectionMaxId(hLag.getLastId());
-
         // Complete the horizontal hLag with the short sections
         // (it already contains all the other (long) horizontal sections)
         SectionFactory sectionsFactory = new SectionFactory(hLag, JunctionRatioPolicy.DEFAULT);
@@ -752,26 +749,19 @@ public class LinesRetriever
         }
     }
 
-    //-----------------------//
-    // dispatchShortSections //
-    //-----------------------//
+    //----------------------------//
+    // dispatchHorizontalSections //
+    //----------------------------//
     /**
-     * Dispatch short horizontal sections into thick and thin collections.
+     * Dispatch the horizontal sections into thick and thin collections.
      *
      * @param thickSections (output) thick sections
      * @param thinSections  (output) thin sections
      */
-    private void dispatchShortSections (List<Section> thickSections,
-                                        List<Section> thinSections)
+    private void dispatchHorizontalSections (List<Section> thickSections,
+                                             List<Section> thinSections)
     {
-        final int maxLongId = sheet.getLagManager().getLongSectionMaxId();
-
         for (Section section : hLag.getEntities()) {
-            // Skip long sections
-            if (section.getId() <= maxLongId) {
-                continue;
-            }
-
             if (section.getWeight() > params.maxThinStickerWeight) {
                 thickSections.add(section);
             } else {
