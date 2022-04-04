@@ -302,6 +302,13 @@ public class SigReducer
 
             for (int ic = 0; ic < (headShapes.size() - 1); ic++) {
                 Shape c1 = headShapes.get(ic);
+
+                // NOTEHEAD_CROSS shape appears before the oval-shape heads in Shape enum
+                // There is no exclusion with oval-shape heads on the same stem
+                if (c1 == Shape.NOTEHEAD_CROSS) {
+                    continue;
+                }
+
                 Set<Inter> set1 = heads.get(c1);
 
                 for (Inter h1 : set1) {
