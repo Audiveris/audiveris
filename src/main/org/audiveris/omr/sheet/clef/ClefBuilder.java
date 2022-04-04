@@ -617,7 +617,7 @@ public class ClefBuilder
                 "White margin within raw rectangle");
 
         private final Scale.Fraction xCoreMargin = new Scale.Fraction(
-                0.4,
+                0.2,
                 "Horizontal margin around core rectangle");
 
         private final Scale.Fraction yCoreMargin = new Scale.Fraction(
