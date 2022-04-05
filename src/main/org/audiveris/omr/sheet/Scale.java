@@ -720,7 +720,7 @@ public class Scale
      * Assign a value to a specific item.
      *
      * @param item desired item
-     * @param v    new value
+     * @param v    new value. If the new value is 0 or less, the scale object is set to null
      * @return the modified scale object
      */
     public Object setItemValue (Item item,
@@ -728,22 +728,22 @@ public class Scale
     {
         switch (item) {
         case line:
-            return lineScale = new LineScale(v, v, v);
+            return lineScale = (v <= 0) ? null : new LineScale(v, v, v);
 
         case interline:
-            return interlineScale = new InterlineScale(v, v, v);
+            return interlineScale = (v <= 0) ? null : new InterlineScale(v, v, v);
 
         case smallInterline:
-            return smallInterlineScale = new InterlineScale(v, v, v);
+            return smallInterlineScale = (v <= 0) ? null : new InterlineScale(v, v, v);
 
         case beam:
-            return beamScale = new BeamScale(v, false);
+            return beamScale = (v <= 0) ? null : new BeamScale(v, false);
 
         case smallBeam:
-            return smallBeamScale = new BeamScale(v, false);
+            return smallBeamScale = (v <= 0) ? null : new BeamScale(v, false);
 
         case stem:
-            return stemScale = new StemScale(v, v);
+            return stemScale = (v <= 0) ? null : new StemScale(v, v);
 
         default:
             throw new IllegalArgumentException("No value defined for scaling item " + item);
