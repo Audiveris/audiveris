@@ -163,24 +163,20 @@ public class LedgersFilter
      */
     private Map<SystemInfo, List<Section>> dispatchLedgerSections (Collection<Section> sections)
     {
-        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<>();
-        List<SystemInfo> relevants = new ArrayList<>();
-        SystemManager systemManager = sheet.getSystemManager();
+        final SystemManager systemManager = sheet.getSystemManager();
+        final Map<SystemInfo, List<Section>> sectionMap = new TreeMap<>();
+        for (SystemInfo system : systemManager.getSystems()) {
+            sectionMap.put(system, new ArrayList<>());
+        }
 
         for (Section section : sections) {
-            Point center = section.getCentroid();
-            systemManager.getSystemsOf(center, relevants);
+            final Point center = section.getCentroid();
+            final List<SystemInfo> relevants = systemManager.getSystemsOf(center);
 
             for (SystemInfo system : relevants) {
                 // Check section is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
-                    List<Section> list = sectionMap.get(system);
-
-                    if (list == null) {
-                        sectionMap.put(system, list = new ArrayList<>());
-                    }
-
-                    list.add(section);
+                    sectionMap.get(system).add(section);
                 }
             }
         }

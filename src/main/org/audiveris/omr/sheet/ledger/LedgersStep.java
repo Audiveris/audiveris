@@ -100,11 +100,9 @@ public class LedgersStep
                           Context context)
             throws StepException
     {
-        final LedgersBuilder builder;
-        context.builders.put(system, builder = new LedgersBuilder(system));
-
-        final List<Section> sections = context.sectionMap.get(system);
-        builder.buildLedgers(sections);
+        final LedgersBuilder builder = new LedgersBuilder(system);
+        context.builders.put(system, builder);
+        builder.buildLedgers(context.sectionMap.get(system));
     }
 
     //----------//

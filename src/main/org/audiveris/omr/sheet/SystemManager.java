@@ -131,7 +131,7 @@ public class SystemManager
         // Look at left indentation of (deskewed) systems
         checkIndentations();
 
-        // Allocate systems per page
+        // Allocate systems and pages
         for (SystemInfo system : systems) {
             if (system.isIndented() && useIndentation) {
                 final int systId = system.getId();

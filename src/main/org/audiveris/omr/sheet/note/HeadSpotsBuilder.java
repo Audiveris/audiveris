@@ -95,26 +95,21 @@ public class HeadSpotsBuilder
      */
     private Map<SystemInfo, List<Glyph>> dispatchSheetSpots (List<Glyph> spots)
     {
-        Map<SystemInfo, List<Glyph>> spotMap = new TreeMap<>();
-
-        List<SystemInfo> relevants = new ArrayList<>();
-        SystemManager systemManager = sheet.getSystemManager();
+        final SystemManager systemManager = sheet.getSystemManager();
+        final Map<SystemInfo, List<Glyph>> spotMap = new TreeMap<>();
+        for (SystemInfo system : systemManager.getSystems()) {
+            spotMap.put(system, new ArrayList<>());
+        }
 
         for (Glyph spot : spots) {
-            Point center = spot.getCentroid();
-            systemManager.getSystemsOf(center, relevants);
+            final Point center = spot.getCentroid();
+            final List<SystemInfo> relevants = systemManager.getSystemsOf(center);
 
             for (SystemInfo system : relevants) {
                 // Check glyph is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
-                    List<Glyph> list = spotMap.get(system);
-
-                    if (list == null) {
-                        spotMap.put(system, list = new ArrayList<>());
-                    }
-
                     spot.addGroup(GlyphGroup.HEAD_SPOT); // Needed
-                    list.add(spot);
+                    spotMap.get(system).add(spot);
                 }
             }
         }
