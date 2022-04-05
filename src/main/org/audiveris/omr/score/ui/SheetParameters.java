@@ -293,7 +293,7 @@ public class SheetParameters
                 }
 
                 scale.setItemValue(key, specific);
-                logger.info(key.getDescription() + " set to {}", specific);
+                logger.info(key.getDescription() + " set to {}", scale.getItemValue(key));
 
                 return true;
             }
