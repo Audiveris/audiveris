@@ -327,19 +327,29 @@ public class ScaleBuilder
     private Scale doRetrieveScale (boolean dummy)
             throws StepException
     {
-        binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-        histoKeeper = new HistoKeeper();
+        final Scale scl = sheet.getScale();
 
-        histoKeeper.buildBlacks();
-        histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
+        if (dummy || scl == null) {
+            binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+            histoKeeper = new HistoKeeper();
 
-        histoKeeper.buildCombos();
-        histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
+            histoKeeper.buildBlacks();
+            histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
 
-        if (dummy) {
-            computeBeamKeys(false); // Just for the chart
+            histoKeeper.buildCombos();
+            histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
 
-            return null;
+            if (dummy) {
+                computeBeamKeys(false); // Just for the chart
+
+                return null;
+            }
+        }
+
+        // Respect user-assigned scale info, if any
+        if (scl != null) {
+            logger.info("Sheet scale data already set.");
+            return scl;
         }
 
         // Check we have acceptable resolution.  If not, throw StepException
@@ -364,32 +374,12 @@ public class ScaleBuilder
             beamScale = new BeamScale(beamGuess, true);
         }
 
-        // Respect user-assigned scale info, if any
-        final Scale scl = sheet.getScale();
-        final Scale scale;
-
-        if (scl != null) {
-            scale = new Scale(
-                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : interlineScale,
-                    (scl.getLineScale() != null) ? scl.getLineScale() : lineScale,
-                    (scl.getBeamScale() != null) ? scl.getBeamScale() : beamScale,
-                    (scl.getSmallInterlineScale() != null)
-                    ? scl.getSmallInterlineScale() : smallInterlineScale,
-                    (scl.getSmallBeamScale() != null) ? scl.getSmallBeamScale() : smallBeamScale);
-
-            if (scl.getStemScale() != null) {
-                scale.setStemScale(scl.getStemScale());
-            }
-        } else {
-            scale = new Scale(
-                    interlineScale,
-                    lineScale,
-                    beamScale,
-                    smallInterlineScale,
-                    smallBeamScale);
-        }
-
-        return scale;
+        return new Scale(
+                interlineScale,
+                lineScale,
+                beamScale,
+                smallInterlineScale,
+                smallBeamScale);
     }
 
     //-------------------//
@@ -594,45 +584,6 @@ public class ScaleBuilder
             }
         }
 
-        //
-        //        //-----------------//
-        //        // retrieveBeamKey //
-        //        //-----------------//
-        //        /**
-        //         * Try to retrieve a suitable beam thickness value.
-        //         * <p>
-        //         * Take most frequent black local max for which key (beam thickness) is larger than a
-        //         * minimum fraction of interline and smaller than main white gap between (large) staff
-        //         * lines.
-        //         *
-        //         * @param minHeight start value for height range
-        //         * @param maxHeight stop value for height range
-        //         */
-        //        public Integer retrieveBeamKey (int minHeight,
-        //                                        int maxHeight)
-        //        {
-        //            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
-        //
-        //            // Quorum on height histo
-        //            final int totalArea = blackFunction.getArea();
-        //            final double ratio = constants.minBeamCountRatio.getValue();
-        //            final int quorum = (int) Math.rint(totalArea * ratio);
-        //            logger.info("Beam minHeight:{} maxHeight:{} quorum:{}", minHeight, maxHeight, quorum);
-        //            blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
-        //
-        //            for (int local : localMaxima) {
-        //                if ((local >= minHeight) && (local <= maxHeight)) {
-        //                    if (blackFunction.getValue(local) >= quorum) {
-        //                        return local;
-        //                    }
-        //
-        //                    break;
-        //                }
-        //            }
-        //
-        //            return null;
-        //        }
-        //
         //---------------//
         // getBeamQuorum //
         //---------------//
