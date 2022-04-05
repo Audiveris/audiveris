@@ -88,6 +88,7 @@ import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -825,13 +826,13 @@ public class Sheet
     // getPages //
     //----------//
     /**
-     * Report the sequence of pages found in this sheet (generally just one).
+     * Report the unmodifiable sequence of pages found in this sheet (generally just one).
      *
      * @return the list of page(s)
      */
     public List<Page> getPages ()
     {
-        return pages;
+        return Collections.unmodifiableList(pages);
     }
 
     //--------------------------//
