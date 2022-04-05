@@ -233,6 +233,7 @@ public class Skeleton
                 Arrays.asList(
                         Shape.WHOLE_NOTE,
                         Shape.WHOLE_NOTE_SMALL,
+                        Shape.NOTEHEAD_CROSS,
                         Shape.NOTEHEAD_BLACK,
                         Shape.NOTEHEAD_BLACK_SMALL,
                         Shape.NOTEHEAD_VOID,
