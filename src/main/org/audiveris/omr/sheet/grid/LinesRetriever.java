@@ -519,6 +519,14 @@ public class LinesRetriever
                 right = Math.max(right, line.getStopPoint().getX());
             }
 
+            // Check for a minimum staff horizontal length
+            final int staffLength = (int) Math.rint(right - left + 1);
+            if (staffLength < params.minStaffLength) {
+                logger.info("Too short {} length:{}px {}",
+                            cluster, staffLength, cluster.getBounds());
+                continue;
+            }
+
             // Allocate Staff (or Tablature) instance
             List<LineInfo> infos = new ArrayList<>(lines.size());
 
@@ -1448,6 +1456,10 @@ public class LinesRetriever
                 0.05,
                 "Maximum connected pixels for a line sticker");
 
+        private final Scale.Fraction minStaffLength = new Scale.Fraction(
+                30,
+                "Minimum staff length");
+
         private final Constant.Boolean showHorizontalLines = new Constant.Boolean(
                 true,
                 "Should we show the horizontal grid lines?");
@@ -1528,6 +1540,9 @@ public class LinesRetriever
 
         final int maxStickerConnectionLength;
 
+        /** Minimum staff horizontal length. */
+        final int minStaffLength;
+
         /**
          * Creates a new Parameters object.
          *
@@ -1552,6 +1567,7 @@ public class LinesRetriever
             minRadius = scale.toPixels(constants.minRadius);
             minLengthForSlopeCheck = scale.toPixels(constants.minLengthForSlopeCheck);
             maxStickerConnectionLength = scale.toPixels(constants.maxStickerConnectionLength);
+            minStaffLength = scale.toPixels(constants.minStaffLength);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();
