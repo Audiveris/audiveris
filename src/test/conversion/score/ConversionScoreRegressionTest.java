@@ -131,7 +131,7 @@ public class ConversionScoreRegressionTest
      * Converts the input file using Audiveris, then compares the produced result with the expected
      * result.
      * For comparison,
-     * {@link ScoreSimilarity#conversionScore(ScorePartwise.Part,ScorePartwise.Part)} is used.
+     * {@link ScoreSimilarity#conversionScore(ScorePartwise.Part, ScorePartwise.Part)} is used.
      * This test will fail if the conversion score changed in any direction.
      */
     @Test
@@ -142,12 +142,14 @@ public class ConversionScoreRegressionTest
                    Marshalling.UnmarshallingException
     {
         ScorePartwise expectedScore = loadXmlScore(underTest.findExpectedOutputFile());
-        assertFalse("Could not load expected output: Contains no Part",
+        assertFalse(String.format("Could not load expected output at '%s': Contains no Part",
+                                  underTest.findExpectedOutputFile()),
                     expectedScore.getPart().isEmpty());
 
         Path outputMxl = audiverisBatchExport(outputDirectory, underTest.findInputFile());
         ScorePartwise actualScore = loadMxlScore(outputMxl);
-        assertFalse("Could not load actual output: Contains no Part",
+        assertFalse(String.format("Could not load actual output in '%s': Contains no Part",
+                                  outputDirectory),
                     actualScore.getPart().isEmpty());
 
         int actualConversionScore = ScoreSimilarity.conversionScore(expectedScore, actualScore);
@@ -161,7 +163,9 @@ public class ConversionScoreRegressionTest
     {
         try (InputStream inputStream = new FileInputStream(xmlFile.toFile())) {
             Object score = Marshalling.unmarshal(inputStream);
-            assertTrue(score instanceof ScorePartwise);
+            assertTrue(String.format("The parsed xml in '%s' is not of type ScorePartwise",
+                                     xmlFile),
+                       score instanceof ScorePartwise);
             return (ScorePartwise) score;
         }
     }
@@ -177,7 +181,9 @@ public class ConversionScoreRegressionTest
         Path outputMxlFile = outputDirectory
                 .resolve(INPUT_FILE_NAME) // folder named equal to input file name
                 .resolve(INPUT_FILE_NAME + COMPRESSED_SCORE_EXTENSION);
-        assertTrue(Files.exists(outputMxlFile));
+        assertTrue(String.format("Audiveris batch export seems to have failed. Cannot find " +
+                                         "output file '%s'", outputMxlFile),
+                   Files.exists(outputMxlFile));
         return outputMxlFile;
     }
 
@@ -190,7 +196,9 @@ public class ConversionScoreRegressionTest
         try (Mxl.Input outputMxlFileReader = new Mxl.Input(mxlFile.toFile())) {
             ZipEntry xmlEntry = outputMxlFileReader.getEntry(INPUT_FILE_NAME + SCORE_EXTENSION);
             Object score = Marshalling.unmarshal(outputMxlFileReader.getInputStream(xmlEntry));
-            assertTrue(score instanceof ScorePartwise);
+            assertTrue(String.format("The parsed mxl in '%s' is not of type ScorePartwise",
+                                     mxlFile),
+                       score instanceof ScorePartwise);
             return (ScorePartwise) score;
         }
     }
