@@ -516,8 +516,8 @@ public abstract class FileUtil
     // fileNameWithoutExtensionMatches //
     //---------------------------------//
     /**
-     * Creates a predicate on Path that evaluates to true if the path's name matches the given file name.
-     * To be used e.g. as parameter to {@link #findFileInDirectory(Path, Predicate)}.
+     * Creates a predicate on Path that evaluates to true if the path's name matches the given file
+     * name. To be used e.g. as parameter to {@link #findFileInDirectory(Path, Predicate)}.
      *
      * @param fileName the file name to match
      * @return the predicate

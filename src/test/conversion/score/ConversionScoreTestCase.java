@@ -64,11 +64,13 @@ public class ConversionScoreTestCase
         Path testCaseDirectory = getTestCaseDirectory();
         try {
             return FileUtil
-                    .findFileInDirectory(testCaseDirectory, fileNameWithoutExtensionMatches(INPUT_FILE_NAME))
+                    .findFileInDirectory(testCaseDirectory,
+                                         fileNameWithoutExtensionMatches(INPUT_FILE_NAME))
                     .orElseThrow()
                     .toAbsolutePath();
         } catch (IOException | NoSuchElementException e) {
-            String message = String.format("Could not find file with name '%s.*' in directory %s", INPUT_FILE_NAME,
+            String message = String.format("Could not find file with name '%s.*' in directory %s",
+                                           INPUT_FILE_NAME,
                                            testCaseDirectory);
             throw new IllegalStateException(message, e);
         }
@@ -91,8 +93,9 @@ public class ConversionScoreTestCase
     private URL getTestCaseDirectoryUrl ()
     {
         URL resource = getClass().getResource(subDirectoryName);
-        String message = String.format("Could not find directory with name '%s' in test resources for package %s",
-                                       subDirectoryName, getClass().getPackageName());
+        String message = String.format("Could not find directory with name '%s' in test " +
+                                               "resources for package %s", subDirectoryName,
+                                       getClass().getPackageName());
         Objects.requireNonNull(resource, message);
         return resource;
     }

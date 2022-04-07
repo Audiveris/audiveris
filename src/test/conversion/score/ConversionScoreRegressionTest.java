@@ -53,9 +53,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Regression test that checks Audiveris' accuracy according to samples located in src/test/resources/conversion/score.
- * Similarity of converted input and expected output is measured using class {@link ScoreSimilarity}.
- * To add a new sample, please include its directory name and the resulting conversion score in {@link #TEST_CASES}.
+ * Regression test that checks Audiveris' accuracy according to samples located in
+ * src/test/resources/conversion/score.
+ * Similarity of converted input and expected output is measured using class
+ * {@link ScoreSimilarity}.
+ * To add a new sample, please include its directory name and the resulting conversion score in
+ * {@link #TEST_CASES}.
  *
  * @author Peter Greth
  */
@@ -88,7 +91,8 @@ public class ConversionScoreRegressionTest
     /**
      * @return a list of test cases that are executed each
      */
-    @Parameters(name = "{0}") // "{0}" provides a readable test name using conversion.score.TestCase::toString
+    // "{0}" provides a readable test name using conversion.score.TestCase::toString
+    @Parameters(name = "{0}")
     public static Collection<ConversionScoreTestCase> testCaseProvider ()
     {
         return TEST_CASES;
@@ -100,7 +104,8 @@ public class ConversionScoreRegressionTest
     @BeforeClass
     public static void reduceLoggingVerbosity ()
     {
-        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Logger root = (ch.qos.logback.classic.Logger)
+                LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.WARN);
     }
 
@@ -108,7 +113,8 @@ public class ConversionScoreRegressionTest
     public void createOutputDirectory ()
             throws IOException
     {
-        outputDirectory = Files.createTempDirectory(String.format("audiveris-test-%s", underTest.subDirectoryName));
+        String tempDirectoryName = String.format("audiveris-test-%s", underTest.subDirectoryName);
+        outputDirectory = Files.createTempDirectory(tempDirectoryName);
     }
 
     @After
@@ -122,8 +128,10 @@ public class ConversionScoreRegressionTest
 
     /**
      * The actual regression test, executed for each test case defined in {@link #TEST_CASES}.
-     * Converts the input file using Audiveris, then compares the produced result with the expected result.
-     * For comparison {@link ScoreSimilarity#conversionScore(ScorePartwise.Part, ScorePartwise.Part)} is used.
+     * Converts the input file using Audiveris, then compares the produced result with the expected
+     * result.
+     * For comparison,
+     * {@link ScoreSimilarity#conversionScore(ScorePartwise.Part,ScorePartwise.Part)} is used.
      * This test will fail if the conversion score changed in any direction.
      */
     @Test
@@ -134,11 +142,13 @@ public class ConversionScoreRegressionTest
                    Marshalling.UnmarshallingException
     {
         ScorePartwise expectedScore = loadXmlScore(underTest.findExpectedOutputFile());
-        assertFalse("Could not load expected output: Contains no Part", expectedScore.getPart().isEmpty());
+        assertFalse("Could not load expected output: Contains no Part",
+                    expectedScore.getPart().isEmpty());
 
         Path outputMxl = audiverisBatchExport(outputDirectory, underTest.findInputFile());
         ScorePartwise actualScore = loadMxlScore(outputMxl);
-        assertFalse("Could not load actual output: Contains no Part", actualScore.getPart().isEmpty());
+        assertFalse("Could not load actual output: Contains no Part",
+                    actualScore.getPart().isEmpty());
 
         int actualConversionScore = ScoreSimilarity.conversionScore(expectedScore, actualScore);
         failIfConversionScoreDecreased(underTest.expectedConversionScore, actualConversionScore);
@@ -185,7 +195,8 @@ public class ConversionScoreRegressionTest
         }
     }
 
-    private static void failIfConversionScoreDecreased (int expectedConversionScore, int actualConversionScore)
+    private static void failIfConversionScoreDecreased (int expectedConversionScore,
+                                                        int actualConversionScore)
     {
         String message = String.format("The conversion score decreased from %d to %d (diff: %d).",
                                        expectedConversionScore,
@@ -194,10 +205,12 @@ public class ConversionScoreRegressionTest
         assertFalse(message, actualConversionScore < expectedConversionScore);
     }
 
-    private static void failIfConversionScoreIncreased (int expectedConversionScore, int actualConversionScore)
+    private static void failIfConversionScoreIncreased (int expectedConversionScore,
+                                                        int actualConversionScore)
     {
-        String message = String.format("Well done, the conversion score increased from %d to %d (diff: %d). " +
-                                               "Please adapt conversion.score.TestCase::TEST_CASES accordingly.",
+        String message = String.format("Well done, the conversion score increased from %d to %d " +
+                                               "(diff: %d). Please adapt " +
+                                               "conversion.score.TestCase::TEST_CASES accordingly.",
                                        expectedConversionScore,
                                        actualConversionScore,
                                        actualConversionScore - expectedConversionScore);

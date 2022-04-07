@@ -46,7 +46,8 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Utility class that calculates the similarity of two Scores.
- * Currently the similarity calculation is quite simplistic, just checking pitch and duration for the notes and rests.
+ * Currently the similarity calculation is quite simplistic, just checking pitch and duration for
+ * the notes and rests.
  *
  * @author Peter Greth
  */
@@ -69,14 +70,16 @@ public abstract class ScoreSimilarity
     }
 
     /**
-     * The conversion score of two lists of measures is the sum of corresponding measures' conversion scores.
+     * The conversion score of two lists of measures is the sum of corresponding measures'
+     * conversion scores.
      * Two measures correspond if they have the same measure number.
      */
     public static int conversionScore (List<Measure> expected, List<Measure> actual)
     {
         final Map<String, Measure> expectedMeasuresByNumber = groupBy(expected, Measure::getNumber);
         final Map<String, Measure> actualMeasuresByNumber = groupBy(actual, Measure::getNumber);
-        final Set<String> allMeasureNumbers = union(expectedMeasuresByNumber.keySet(), actualMeasuresByNumber.keySet());
+        final Set<String> allMeasureNumbers = union(expectedMeasuresByNumber.keySet(),
+                                                    actualMeasuresByNumber.keySet());
 
         return allMeasureNumbers
                 .stream()
@@ -88,7 +91,8 @@ public abstract class ScoreSimilarity
     }
 
     /**
-     * The conversion score of two Measures is calculated by taking several "samples" and then taking their score.
+     * The conversion score of two Measures is calculated by taking several "samples" and then
+     * taking their score.
      * The measure is sampled using {@link #sampleMeasure(Measure)}.
      */
     public static int conversionScore (Measure expected, Measure actual)
@@ -97,8 +101,8 @@ public abstract class ScoreSimilarity
     }
 
     /**
-     * Conversion score of two Sets of samples is calculated by counting the common Samples and then subtracting the
-     * amount of samples that just occur in one of the two Sets.
+     * Conversion score of two Sets of samples is calculated by counting the common Samples and then
+     * subtracting the amount of samples that just occur in one of the two Sets.
      */
     public static int conversionScore (Set<NoteSample> expected, Set<NoteSample> actual)
     {
@@ -174,7 +178,11 @@ public abstract class ScoreSimilarity
     /**
      * A sample of a note according to several sample points such as pitch, offset and duration.
      */
-    private static record NoteSample(boolean isRest, Step step, BigDecimal alter, int octave, BigDecimal offset,
+    private static record NoteSample(boolean isRest,
+                                     Step step,
+                                     BigDecimal alter,
+                                     int octave,
+                                     BigDecimal offset,
                                      BigDecimal duration)
     {
         private static NoteSample ofRest (BigDecimal offset, BigDecimal duration)
@@ -182,7 +190,10 @@ public abstract class ScoreSimilarity
             return new NoteSample(true, null, null, 0, offset, duration);
         }
 
-        private static NoteSample ofNote (Step step, BigDecimal alter, int octave, BigDecimal offset,
+        private static NoteSample ofNote (Step step,
+                                          BigDecimal alter,
+                                          int octave,
+                                          BigDecimal offset,
                                           BigDecimal duration)
         {
             return new NoteSample(false, step, alter, octave, offset, duration);
