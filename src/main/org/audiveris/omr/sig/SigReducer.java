@@ -407,25 +407,27 @@ public class SigReducer
                     }
 
                     // Standard beams support black heads (not void)
-                    Set<Inter> blackHeadSet = heads.get(Shape.NOTEHEAD_BLACK);
+                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_DIAMOND_FILLED}) {
+                        Set<Inter> blackHeadSet = heads.get(shape);
 
-                    if (blackHeadSet != null) {
-                        for (Inter beam : beamSet) {
-                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
+                        if (blackHeadSet != null) {
+                            for (Inter beam : beamSet) {
+                                BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
                                     beam,
                                     stem,
                                     BeamStemRelation.class);
 
-                            for (Inter head : blackHeadSet) {
-                                if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
-                                    // Use average of beam-stem and head-stem relation grades
-                                    HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
+                                for (Inter head : blackHeadSet) {
+                                    if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
+                                        // Use average of beam-stem and head-stem relation grades
+                                        HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
                                             head,
                                             stem,
                                             HeadStemRelation.class);
-                                    double grade = (bs.getGrade() + hs.getGrade()) / 2;
+                                        double grade = (bs.getGrade() + hs.getGrade()) / 2;
 
-                                    ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
+                                        ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
+                                    }
                                 }
                             }
                         }

@@ -172,11 +172,13 @@ public class ShapeSet
 
     /** All black note heads. */
     public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
+            NOTEHEAD_DIAMOND_FILLED,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL);
 
     /** All void note heads. */
     public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
+            NOTEHEAD_DIAMOND_VOID,
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL);
 
@@ -195,6 +197,8 @@ public class ShapeSet
     /** All heads with a stem. */
     public static final EnumSet<Shape> StemHeads = EnumSet.of(
             NOTEHEAD_CROSS,
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_DIAMOND_VOID,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
@@ -206,6 +210,8 @@ public class ShapeSet
             WHOLE_NOTE,
             WHOLE_NOTE_SMALL,
             NOTEHEAD_CROSS,
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_DIAMOND_VOID,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
@@ -765,6 +771,8 @@ public class ShapeSet
     public static EnumSet<Shape> getTemplateNotes (Sheet sheet)
     {
         final EnumSet<Shape> set = EnumSet.of(
+                NOTEHEAD_DIAMOND_FILLED,
+                NOTEHEAD_DIAMOND_VOID,
                 NOTEHEAD_CROSS,
                 NOTEHEAD_BLACK,
                 NOTEHEAD_VOID,
@@ -791,8 +799,11 @@ public class ShapeSet
             set.remove(WHOLE_NOTE_SMALL);
         }
 
+        /** For now, use ProcessingSwitch.crossHeads for all unpitched percussion note heads */
         if (!switches.getValue(ProcessingSwitch.crossHeads)) {
             set.remove(NOTEHEAD_CROSS);
+            set.remove(NOTEHEAD_DIAMOND_FILLED);
+            set.remove(NOTEHEAD_DIAMOND_VOID);
         }
 
         return set;

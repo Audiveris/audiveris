@@ -234,6 +234,8 @@ public class Skeleton
                         Shape.WHOLE_NOTE,
                         Shape.WHOLE_NOTE_SMALL,
                         Shape.NOTEHEAD_CROSS,
+                        Shape.NOTEHEAD_DIAMOND_FILLED,
+                        Shape.NOTEHEAD_DIAMOND_VOID,
                         Shape.NOTEHEAD_BLACK,
                         Shape.NOTEHEAD_BLACK_SMALL,
                         Shape.NOTEHEAD_VOID,

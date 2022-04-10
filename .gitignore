@@ -43,6 +43,7 @@ data/www/docs/guides
 private/*
 schemas/build
 schemas/build/*
+schemas/bin
 target/*
 \.orig\..*$
 \.orig$
