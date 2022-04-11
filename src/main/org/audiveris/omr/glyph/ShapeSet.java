@@ -849,6 +849,8 @@ public class ShapeSet
     {
         final EnumSet<Shape> set = EnumSet.of(
                 NOTEHEAD_CROSS,
+                NOTEHEAD_DIAMOND_FILLED,
+                NOTEHEAD_DIAMOND_VOID,
                 NOTEHEAD_BLACK,
                 NOTEHEAD_VOID,
                 NOTEHEAD_BLACK_SMALL,
@@ -870,6 +872,8 @@ public class ShapeSet
 
         if (!switches.getValue(ProcessingSwitch.crossHeads)) {
             set.remove(NOTEHEAD_CROSS);
+            set.remove(NOTEHEAD_DIAMOND_FILLED);
+            set.remove(NOTEHEAD_DIAMOND_VOID);
         }
 
         return set;
@@ -886,7 +890,7 @@ public class ShapeSet
      */
     public static EnumSet<Shape> getVoidTemplateNotes (Sheet sheet)
     {
-        final EnumSet<Shape> set = EnumSet.of(NOTEHEAD_VOID, WHOLE_NOTE, NOTEHEAD_VOID_SMALL);
+        final EnumSet<Shape> set = EnumSet.of(NOTEHEAD_VOID, WHOLE_NOTE, NOTEHEAD_VOID_SMALL, NOTEHEAD_DIAMOND_VOID);
 
         if (sheet == null) {
             return set;
