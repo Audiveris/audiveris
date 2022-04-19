@@ -291,6 +291,8 @@ public abstract class Symbols
         sym.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
         small(NOTEHEAD_BLACK_SMALL, 207);
         mapShape(NOTEHEAD_CROSS, 192);
+        mapShape(NOTEHEAD_DIAMOND_FILLED, 226);
+        mapShape(NOTEHEAD_DIAMOND_VOID, 225);
         mapShape(NOTEHEAD_VOID, 250);
         small(NOTEHEAD_VOID_SMALL, 250);
         //        mapShape(NO_LEGAL_TIME);
