@@ -24,6 +24,7 @@ package org.audiveris.omr.image;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_DIAMOND_VOID;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID_SMALL;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
@@ -100,7 +101,8 @@ public class TemplateFactory
     private static final TemplateFactory INSTANCE = new TemplateFactory();
 
     /** All shapes with hole(s). */
-    private static final EnumSet shapesWithHoles = EnumSet.of(NOTEHEAD_VOID,
+    private static final EnumSet shapesWithHoles = EnumSet.of(NOTEHEAD_DIAMOND_VOID,
+                                                              NOTEHEAD_VOID,
                                                               NOTEHEAD_VOID_SMALL,
                                                               WHOLE_NOTE,
                                                               WHOLE_NOTE_SMALL);
@@ -720,6 +722,12 @@ public class TemplateFactory
     private static int getCode (Shape shape)
     {
         switch (shape) {
+        case NOTEHEAD_DIAMOND_FILLED:
+            return 226;
+
+        case NOTEHEAD_DIAMOND_VOID:
+            return 225;
+        
         case NOTEHEAD_CROSS:
             return Symbols.CODE_NOTEHEAD_CROSS;
 

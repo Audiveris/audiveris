@@ -336,6 +336,8 @@ public abstract class AbstractNoteInter
 
         map.put(Shape.QUARTER_REST, QUARTER_DURATION);
         map.put(Shape.NOTEHEAD_CROSS, QUARTER_DURATION);
+        map.put(Shape.NOTEHEAD_DIAMOND_FILLED, QUARTER_DURATION);
+        map.put(Shape.NOTEHEAD_DIAMOND_VOID, QUARTER_DURATION);
         map.put(Shape.NOTEHEAD_BLACK, QUARTER_DURATION);
         map.put(Shape.NOTEHEAD_BLACK_SMALL, QUARTER_DURATION);
 
