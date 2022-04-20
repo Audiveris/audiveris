@@ -122,6 +122,8 @@ public class TesseractOCR
                     logger.warn("Error in loading Tesseract languages");
                 }
 
+                api.End();
+
                 return set;
             } catch (Throwable ex) {
                 final String msg = "Error in loading Tesseract languages";
