@@ -186,6 +186,9 @@ public class TesseractOrder
                 }
             }
 
+            // prevent JVM crashes on non-english systems
+            setlocale(LC_ALL(), "C");
+
             if (api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY) != 0) {
                 logger.warn("Could not initialize Tesseract with lang {}", lang);
 
