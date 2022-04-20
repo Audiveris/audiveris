@@ -28,9 +28,10 @@ import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.bytedeco.javacpp.tesseract;
-import org.bytedeco.javacpp.tesseract.StringGenericVector;
-import org.bytedeco.javacpp.tesseract.TessBaseAPI;
+import org.bytedeco.tesseract.global.tesseract;
+import org.bytedeco.tesseract.StringGenericVector;
+import org.bytedeco.tesseract.TessBaseAPI;
+import static org.bytedeco.tesseract.global.tesseract.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,11 @@ public class TesseractOCR
         if (isAvailable()) {
             final Path ocrFolder = getOcrFolder();
             final TreeSet<String> set = new TreeSet<>();
+
+            // we need to call this to avoid crash
+            // in native code on non-english systems
+            // https://github.com/bytedeco/javacpp-presets/issues/694
+            setlocale(LC_ALL(), "C");
 
             try {
                 final TessBaseAPI api = new TessBaseAPI();
@@ -305,9 +311,9 @@ public class TesseractOCR
     private Path scanOcrLocations (String[] locations)
     {
         for (String loc : locations) {
-            final Path path = Paths.get(loc);
+            final Path path = Paths.get(loc).resolve("tessdata");
 
-            if (Files.exists(path.resolve("tessdata"))) {
+            if (Files.exists(path)) {
                 return path;
             }
         }
