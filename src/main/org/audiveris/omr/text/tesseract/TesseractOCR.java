@@ -103,6 +103,11 @@ public class TesseractOCR
             final Path ocrFolder = getOcrFolder();
             final TreeSet<String> set = new TreeSet<>();
 
+            // we need to call this to avoid crash
+            // in native code on non-english systems
+            // https://github.com/bytedeco/javacpp-presets/issues/694
+            setlocale(LC_ALL(), "C");
+
             try {
                 final TessBaseAPI api = new TessBaseAPI();
 
