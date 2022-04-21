@@ -64,7 +64,9 @@ public enum ProcessingSwitch
     fourStringTablatures(ProcessingSwitches.constants.fourStringTablatures),
     oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
     partialWholeRests(ProcessingSwitches.constants.partialWholeRests),
-    multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords);
+    multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords),
+    drumNotation(ProcessingSwitches.constants.drumNotation);
+    
 
     /** Underlying boolean constant. */
     private final Constant.Boolean constant;

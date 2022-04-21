@@ -799,9 +799,12 @@ public class ShapeSet
             set.remove(WHOLE_NOTE_SMALL);
         }
 
-        /** For now, use ProcessingSwitch.crossHeads for all unpitched percussion note heads */
-        if (!switches.getValue(ProcessingSwitch.crossHeads)) {
+        /** Only remove cross noteheads from search if _both_ switches crossHeads and drumNotation are off */
+        if (!switches.getValue(ProcessingSwitch.crossHeads) && !switches.getValue(ProcessingSwitch.drumNotation)) {
             set.remove(NOTEHEAD_CROSS);
+        }
+
+        if (!switches.getValue(ProcessingSwitch.drumNotation)) {
             set.remove(NOTEHEAD_DIAMOND_FILLED);
             set.remove(NOTEHEAD_DIAMOND_VOID);
         }
@@ -870,8 +873,12 @@ public class ShapeSet
             set.remove(NOTEHEAD_VOID_SMALL);
         }
 
-        if (!switches.getValue(ProcessingSwitch.crossHeads)) {
+        /** Only remove cross noteheads from search if _both_ switches crossHeads and drumNotation are off */
+        if (!switches.getValue(ProcessingSwitch.crossHeads) && !switches.getValue(ProcessingSwitch.drumNotation)) {
             set.remove(NOTEHEAD_CROSS);
+        }
+
+        if (!switches.getValue(ProcessingSwitch.drumNotation)) {
             set.remove(NOTEHEAD_DIAMOND_FILLED);
             set.remove(NOTEHEAD_DIAMOND_VOID);
         }
@@ -900,6 +907,10 @@ public class ShapeSet
 
         if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
             set.remove(NOTEHEAD_VOID_SMALL);
+        }
+
+        if (!switches.getValue(ProcessingSwitch.drumNotation)) {
+            set.remove(NOTEHEAD_DIAMOND_VOID);
         }
 
         return set;

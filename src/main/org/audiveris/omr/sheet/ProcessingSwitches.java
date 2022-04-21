@@ -338,7 +338,11 @@ public class ProcessingSwitches
         final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
                 false,
                 "Support for multi-whole head chords");
-    }
+ 
+        final Constant.Boolean drumNotation = new Constant.Boolean(
+                false,
+                "Support for unpitched percussion (5-line) notation");
+       }
 
     //-----------------//
     // DefaultSwitches //
