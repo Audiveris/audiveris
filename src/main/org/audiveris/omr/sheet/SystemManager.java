@@ -712,12 +712,12 @@ public class SystemManager
     // checkIndentations //
     //-------------------//
     /**
-     * Check all (de-skewed) systems for indentation that would signal a new movement.
+     * Check all (de-skewed) systems for left-indentation that would signal a new movement.
      */
     private void checkIndentations ()
     {
-        Skew skew = sheet.getSkew();
-        double minShift = sheet.getScale().toPixels(constants.minShift);
+        final Skew skew = sheet.getSkew();
+        final double minIndentation = sheet.getScale().toPixels(constants.minIndentation);
 
         for (SystemInfo system : systems) {
             // For side by side systems, only the leftmost one is concerned
@@ -725,16 +725,16 @@ public class SystemManager
                 continue;
             }
 
-            Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
+            final Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
 
             for (VerticalSide side : VerticalSide.values()) {
-                List<SystemInfo> others = verticalNeighbors(system, side);
+                final List<SystemInfo> others = verticalNeighbors(system, side);
 
                 if (!others.isEmpty()) {
                     SystemInfo other = others.get(0);
                     Point2D ulOther = skew.deskewed(new Point(other.getLeft(), other.getTop()));
 
-                    if ((ul.getX() - ulOther.getX()) >= minShift) {
+                    if ((ul.getX() - ulOther.getX()) >= minIndentation) {
                         system.setIndented(true);
                         logger.info("Indentation detected for system#{}", system.getId());
 
@@ -857,8 +857,8 @@ public class SystemManager
             extends ConstantSet
     {
 
-        private final Scale.Fraction minShift = new Scale.Fraction(
-                3.0,
+        private final Scale.Fraction minIndentation = new Scale.Fraction(
+                2.0,
                 "Minimum shift to detect a system indentation");
     }
 }

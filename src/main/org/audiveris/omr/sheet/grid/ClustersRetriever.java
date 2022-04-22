@@ -269,6 +269,37 @@ public class ClustersRetriever
         return discardedFilaments;
     }
 
+    //-----------------//
+    // getClusterBelow //
+    //-----------------//
+    /**
+     * Report the cluster physically below the provided one within the provided list,
+     * ordered by layout.
+     *
+     * @param cluster the cluster at hand
+     * @param list    clusters ordered by layout
+     * @return the first cluster physically below, or null if none
+     */
+    public static LineCluster getClusterBelow (LineCluster cluster,
+                                               List<LineCluster> list)
+    {
+        final int idx = list.indexOf(cluster);
+        if (idx < 0) {
+            return null;
+        }
+
+        final Rectangle box = cluster.getBounds();
+        for (LineCluster other : list.subList(idx + 1, list.size())) {
+            // Check abscissa ranges
+            if (GeoUtil.xOverlap(box, other.getBounds()) > 0) {
+                return other;
+            }
+
+        }
+
+        return null;
+    }
+
     //-------------//
     // getClusters //
     //-------------//
@@ -281,6 +312,43 @@ public class ClustersRetriever
     public List<LineCluster> getClusters ()
     {
         return allClusters;
+    }
+
+    //-----------------//
+    // getHalfClusters //
+    //-----------------//
+    /**
+     * Report the list of half-width clusters within the provided list,
+     * ordered by layout.
+     *
+     * @param list clusters ordered by layout
+     * @return the first cluster physically below, or null if none
+     */
+    public static List<LineCluster> getHalfClusters (List<LineCluster> list)
+    {
+        final List<LineCluster> halves = new ArrayList<>();
+
+        for (int i = 0; i < list.size(); i++) {
+            final LineCluster cluster = list.get(i);
+            final Rectangle box = cluster.getBounds();
+
+            if (i > 0) {
+                final LineCluster prev = list.get(i - 1);
+                if (GeoUtil.xOverlap(box, prev.getBounds()) < 0) {
+                    halves.add(cluster);
+                    continue;
+                }
+            }
+
+            if (i < list.size() - 1) {
+                final LineCluster next = list.get(i + 1);
+                if (GeoUtil.xOverlap(box, next.getBounds()) < 0) {
+                    halves.add(cluster);
+                }
+            }
+        }
+
+        return halves;
     }
 
     //--------------//
@@ -347,6 +415,28 @@ public class ClustersRetriever
         }
 
         return bestDist;
+    }
+
+    //---------------------//
+    // getWidthMedianValue //
+    //---------------------//
+    /**
+     * Report the median width value within the provided collection of clusters.
+     *
+     * @param collection the collection of clusters
+     * @return median value of all widths, null if none
+     */
+    public static Integer getWidthMedianValue (Collection<LineCluster> collection)
+    {
+        if (collection.isEmpty()) {
+            return null;
+        }
+
+        final List<LineCluster> list = new ArrayList<>(collection);
+        Collections.sort(list, (c1, c2) -> Integer.compare(c1.getBounds().width,
+                                                           c2.getBounds().width));
+
+        return list.get(list.size() / 2).getBounds().width;
     }
 
     //----------//

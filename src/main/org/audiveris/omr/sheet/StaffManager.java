@@ -62,16 +62,17 @@ import java.util.List;
  * It must be able to correctly handle the sequence of staves even in complex
  * configurations like the following one (referred to as "layout order"):
  * <p>
- * <pre>
+ * <
+ * pre>
  * +-------+
- * |   1   |
- * |   2   |
+ * | . 1 . |
+ * | . 2 . |
  * +---+---+
  * | 3 | 5 |
  * | 4 | 6 |
  * +---+---+
- * |   7   |
- * |   8   |
+ * | . 7 . |
+ * | . 8 . |
  * +-------+
  * </pre>
  *
@@ -399,16 +400,17 @@ public class StaffManager
      * <p>
      * On the layout example:
      * <p>
-     * <pre>
+     * <
+     * pre>
      * +-------+
-     * |   1   |
-     * |   2   |
+     * | 1 |
+     * | 2 |
      * +---+---+
      * | 3 | 5 |
      * | 4 | 6 |
      * +---+---+
-     * |   7   |
-     * |   8   |
+     * | 7 |
+     * | 8 |
      * +-------+
      * - horiNeighbor(1, RIGHT) == null
      * - horiNeighbor(3, RIGHT) == 5
@@ -437,6 +439,33 @@ public class StaffManager
         }
 
         return null;
+    }
+
+    //-------------//
+    // removeStaff //
+    //-------------//
+    /**
+     * Remove the provided staff (and update the following staves);
+     *
+     * @param staff the staff to remove
+     */
+    public void removeStaff (Staff staff)
+    {
+        final int idx = staves.indexOf(staff);
+
+        if (idx == -1) {
+            throw new IllegalArgumentException("Unknown staff in sheet " + staff);
+        }
+
+        staves.remove(idx);
+
+        for (int i = idx; i < staves.size(); i++) {
+            staves.get(i).setId(i + 1);
+        }
+
+//        for (Staff s : staves) {
+//            s.setArea(null);
+//        }
     }
 
     //--------//
@@ -499,16 +528,17 @@ public class StaffManager
      * <p>
      * On the layout example:
      * <p>
-     * <pre>
+     * <
+     * pre>
      * +-------+
-     * |   1   |
-     * |   2   |
+     * | 1 |
+     * | 2 |
      * +---+---+
      * | 3 | 5 |
      * | 4 | 6 |
      * +---+---+
-     * |   7   |
-     * |   8   |
+     * | 7 |
+     * | 8 |
      * +-------+
      * - vertNeighbors(1, TOP) == []
      * - vertNeighbors(1, BOTTOM) == [2]

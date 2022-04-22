@@ -806,11 +806,20 @@ public class PeakGraph
     private void findBarPeaks ()
     {
         // Analysis staff per staff
-        for (Staff staff : staffManager.getStaves()) {
-            StaffProjector projector = new StaffProjector(sheet, staff, this);
-            projectors.add(projector);
+        final List<Staff> staves = new ArrayList<>(staffManager.getStaves());
+        for (int idx = 0; idx < staves.size(); idx++) {
+            final Staff staff = staves.get(idx);
+            final StaffProjector projector = new StaffProjector(sheet, staff, this);
             projector.process();
-            Graphs.addAllVertices(this, projector.getPeaks());
+
+            if (staff.isOneLineStaff() && projector.getPeaks().size() <= 1) {
+                logger.info("Discarding 1-line staff for unsufficient barline peaks {} {}",
+                            staff, staff.getMidLine().getBounds());
+                staffManager.removeStaff(staff);
+            } else {
+                projectors.add(projector);
+                Graphs.addAllVertices(this, projector.getPeaks());
+            }
         }
     }
 

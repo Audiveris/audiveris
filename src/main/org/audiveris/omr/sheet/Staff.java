@@ -172,7 +172,7 @@ public class Staff
      */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
-    protected final int id;
+    protected int id;
 
     /**
      * Left extrema.
@@ -1132,6 +1132,19 @@ public class Staff
     public int getId ()
     {
         return id;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Modify staff ID.
+     *
+     * @param id thee new ID
+     */
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------------//
