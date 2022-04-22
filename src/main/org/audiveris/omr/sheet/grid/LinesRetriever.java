@@ -35,6 +35,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.lag.SectionTally;
 import org.audiveris.omr.lag.Sections;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.Population;
@@ -83,6 +84,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -478,14 +480,18 @@ public class LinesRetriever
      * <p>
      * At this point, all clusters have been constructed and trimmed to the right number of lines
      * per cluster.
-     * Each cluster can now give birth to a staff, with preliminary values, since we don't know yet
-     * precisely the starting and ending abscissa values of each staff.
+     * <p>
+     * We first have to filter out the false 1-line clusters that may have been created from long
+     * isolated filaments like the ending horizontal lines.
+     * <p>
+     * Then each valid cluster can give birth to a staff, with preliminary values, since we don't
+     * know yet precisely the starting and ending abscissa values of each staff.
      * This will be refined later, using staff projection to retrieve major bar lines as well as
      * staff side limits.
      */
     private void buildStaves ()
     {
-        // Accumulate all clusters, and sort them by layout
+        // Accumulate all clusters, standard and small ones, and sort them by layout
         List<LineCluster> allClusters = new ArrayList<>();
         allClusters.addAll(clustersRetriever.getClusters());
 
@@ -499,6 +505,9 @@ public class LinesRetriever
         }
 
         Collections.sort(allClusters, clustersRetriever.byLayout);
+
+        // Discard false clusters
+        purgeClusters(allClusters);
 
         // Populate the staff manager
         int staffId = 0;
@@ -517,14 +526,6 @@ public class LinesRetriever
             for (StaffFilament line : lines) {
                 left = Math.min(left, line.getStartPoint().getX());
                 right = Math.max(right, line.getStopPoint().getX());
-            }
-
-            // Check for a minimum staff horizontal length
-            final int staffLength = (int) Math.rint(right - left + 1);
-            if (staffLength < params.minStaffLength) {
-                logger.info("Too short {} length:{}px {}",
-                            cluster, staffLength, cluster.getBounds());
-                continue;
             }
 
             // Allocate Staff (or Tablature) instance
@@ -1139,6 +1140,115 @@ public class LinesRetriever
         }
     }
 
+    //---------------//
+    // purgeClusters //
+    //---------------//
+    /**
+     * Detect and remove the false clusters from the provided collection.
+     * <p>
+     * We focus on 1-line clusters only and try to detect those which derive from long filaments
+     * such as ending signs.
+     * <p>
+     * All following conditions must apply to candidates:
+     * <ul>
+     * <li>Being a single-line cluster
+     * <li>Being a full-width cluster (no other cluster on its side as for a half-width cluster)
+     * </ul>
+     * Test for discarding candidates (any condition may apply)
+     * <ul>
+     * <li>Being way too short (shorter than minStaffLength, applies to ANY cluster)
+     * <li>Being right-indented
+     * <li>Being significantly shorter than other full-width clusters (not just left-indented)
+     * <li>Being vertically too close to the cluster below (?)
+     * <li>No significant barline peak found.
+     * NOTA: this condition is not tested here, but later in {@link PeakGraph.findBarPeaks()}.
+     * </ul>
+     *
+     * @param allClusters (input/output) the collection to be purged, already ordered by layout
+     */
+    private void purgeClusters (List<LineCluster> allClusters)
+    {
+        final Skew skew = sheet.getSkew();
+        final List<LineCluster> oneLines = new ArrayList<>();
+        for (Iterator<LineCluster> it = allClusters.listIterator(); it.hasNext();) {
+            final LineCluster cluster = it.next();
+
+            if (cluster.getSize() == 1) {
+                // Check for a minimum horizontal length
+                final Rectangle box = cluster.getBounds();
+
+                if (box.width < params.minStaffLength) {
+                    logger.info("Too short {} at {}", cluster, box);
+                    it.remove();
+                    continue;
+                }
+
+                oneLines.add(cluster);
+            }
+        }
+
+        if (oneLines.isEmpty()) {
+            return;
+        }
+
+        // Separate full-width clusters from  half-width clusters if any
+        final List<LineCluster> halfClusters = ClustersRetriever.getHalfClusters(allClusters);
+        final List<LineCluster> fullClusters = new ArrayList<>(allClusters);
+        fullClusters.removeAll(halfClusters);
+//        Integer fullMedian = ClustersRetriever.getWidthMedianValue(fullClusters);
+//        Integer halfMedian = ClustersRetriever.getWidthMedianValue(halfClusters);
+//        logger.info("Median clusters widths full:{}, half:{}", fullMedian, halfMedian);
+//
+        // A full cluster cannot be indented on right side
+        for (Iterator<LineCluster> it = fullClusters.listIterator(); it.hasNext();) {
+            final LineCluster fc = it.next();
+            if (!fc.isOneLine()) {
+                continue;
+            }
+
+            final LineCluster below = ClustersRetriever.getClusterBelow(fc, allClusters);
+            if (below == null) {
+                continue;
+            }
+
+            final Point2D endPt = fc.getLastLine().getEndPoint(RIGHT);
+            final Point2D endDsk = skew.deskewed(endPt);
+            final Point2D belowEnd = below.getFirstLine().getEndPoint(RIGHT);
+            final Point2D belowDsk = skew.deskewed(belowEnd);
+
+            if (belowDsk.getX() - endDsk.getX() > params.maxRightIndentation) {
+                logger.info("Discarding right-indented {} at {}", fc, fc.getBounds());
+                it.remove();
+                allClusters.remove(fc);
+            }
+        }
+
+//        // Let's consider the available vertical gap below every cluster
+//        int id = 0;
+//        for (LineCluster ol : fullClusters) {
+//            // Make sure there is a staff below the staff and measure the vertical gap
+//            final LineCluster below = ClustersRetriever.getClusterBelow(ol, allClusters);
+//
+//            if (below != null) {
+//                final StaffFilament lastLine = ol.getLastLine();
+//                final StaffFilament firstLine = below.getFirstLine();
+//
+//                // Take vertical distance measured at middle of common abscissa range
+//                final Rectangle b1 = lastLine.getBounds();
+//                final Rectangle b2 = firstLine.getBounds();
+//                final int xLeft = Math.max(b1.x, b2.x);
+//                final int xRight = Math.min(b1.x + b1.width, b2.x + b2.width);
+//                final int xMid = (xLeft + xRight) / 2;
+//                final double y1 = lastLine.yAt(xMid);
+//                final double y2 = firstLine.yAt(xMid);
+//                final double dist = y2 - y1;
+//
+//                logger.info("{} {}",
+//                            String.format("%2d dist:%5.1f", ++id, dist / scale.getInterline()), ol);
+//            }
+//        }
+    }
+
     //----------------------//
     // purgeCurvedFilaments //
     //----------------------//
@@ -1429,7 +1539,7 @@ public class LinesRetriever
         // Constants specified WRT mean interline
         // --------------------------------------
         private final Scale.Fraction minRunLength = new Scale.Fraction(
-                0.25, // was 1.0
+                0.25,
                 "Minimum length for a horizontal run to be considered");
 
         private final Scale.Fraction maxEndingDx = new Scale.Fraction(
@@ -1460,6 +1570,12 @@ public class LinesRetriever
                 30,
                 "Minimum staff length");
 
+        private final Scale.Fraction maxRightIndentation = new Scale.Fraction(
+                5,
+                "Maximum staff right indentation");
+
+        // Constants for display
+        // ---------------------
         private final Constant.Boolean showHorizontalLines = new Constant.Boolean(
                 true,
                 "Should we show the horizontal grid lines?");
@@ -1480,9 +1596,7 @@ public class LinesRetriever
                 false,
                 "Should we show staff lines combs?");
 
-        // Constants for display
-        // ---------------------
-        Constant.Boolean displayRuns = new Constant.Boolean(
+        private final Constant.Boolean displayRuns = new Constant.Boolean(
                 false,
                 "Should we display all images on runs?");
     }
@@ -1543,6 +1657,9 @@ public class LinesRetriever
         /** Minimum staff horizontal length. */
         final int minStaffLength;
 
+        /** Maximum right indentation. */
+        final int maxRightIndentation;
+
         /**
          * Creates a new Parameters object.
          *
@@ -1568,6 +1685,7 @@ public class LinesRetriever
             minLengthForSlopeCheck = scale.toPixels(constants.minLengthForSlopeCheck);
             maxStickerConnectionLength = scale.toPixels(constants.maxStickerConnectionLength);
             minStaffLength = scale.toPixels(constants.minStaffLength);
+            maxRightIndentation = scale.toPixels(constants.maxRightIndentation);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();
