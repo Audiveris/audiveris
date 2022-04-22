@@ -1145,7 +1145,10 @@ public class StaffProjector
 
         for (int x = xMin; x <= xMax; x++) {
             final int value = projection.getValue(x);
-            halfMode = oneLine && peaks.isEmpty();
+
+            if (params.useOneLineHalfMode) {
+                halfMode = oneLine && peaks.isEmpty();
+            }
 
             final int minBar = halfMode ? (params.barThreshold / 2) : params.barThreshold;
 
@@ -1158,7 +1161,6 @@ public class StaffProjector
             } else if (start != -1) {
                 for (StaffPeak peak : browseRange(start, stop, halfMode)) {
                     peaks.add(peak);
-                    peakGraph.addVertex(peak);
 
                     // Make sure peaks do not overlap
                     x = Math.max(x, peak.getStop());
@@ -1174,7 +1176,6 @@ public class StaffProjector
 
             if (peak != null) {
                 peaks.add(peak);
-                peakGraph.addVertex(peak);
             }
         }
 
@@ -1527,6 +1528,10 @@ public class StaffProjector
         private final Scale.Fraction chunkWidth = new Scale.Fraction(
                 0.15,
                 "Abscissa with (>=1) on bar peak side where chunk is measured");
+
+        private final Constant.Boolean useOneLineHalfMode = new Constant.Boolean(
+                true,
+                "Should we use a 'halfMode' for 1-line staves");
     }
 
     //------------//
@@ -1554,6 +1559,8 @@ public class StaffProjector
         final int maxLeftExtremum;
 
         final int maxRightExtremum;
+
+        final boolean useOneLineHalfMode;
 
         // Following thresholds depend of staff (specific?) interline scale
         final int barThreshold;
@@ -1597,6 +1604,8 @@ public class StaffProjector
                 braceThreshold = specific.toPixels(constants.braceThreshold);
                 gapThreshold = specific.toPixels(constants.gapThreshold);
             }
+
+            useOneLineHalfMode = constants.useOneLineHalfMode.isSet();
         }
     }
 
