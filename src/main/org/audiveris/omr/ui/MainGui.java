@@ -29,7 +29,6 @@ import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.image.jai.JaiLoader;
 import org.audiveris.omr.log.LogPane;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.PluginsManager;
@@ -364,7 +363,6 @@ public class MainGui
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.isSet()) {
             ShapeClassifier.preload();
-            JaiLoader.preload();
             PartwiseBuilder.preload();
             HeadClassifier.preload();
         }
