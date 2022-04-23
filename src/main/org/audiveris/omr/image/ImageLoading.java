@@ -53,7 +53,6 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.JAI;
 
 /**
  * Class <code>ImageLoading</code> handles the loading of one or several images out of an
@@ -74,7 +73,6 @@ import javax.media.jai.JAI;
  * <ul>
  * <li><b>JPod</b> for PDF files. This replaces former use of GhostScript sub-process.</li>
  * <li><b>ImageIO</b> for all files except PDF.</li>
- * <li><b>JAI</b> if ImageIO failed. Note that JAI can find only one image per file.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -131,11 +129,6 @@ public abstract class ImageLoading
         } else {
             // Try ImageIO
             loader = getImageIOLoader(imgPath);
-
-            if (loader == null) {
-                // Use JAI
-                loader = getJaiLoader(imgPath);
-            }
         }
 
         if (loader == null) {
@@ -226,34 +219,6 @@ public abstract class ImageLoading
         int imageCount = doc.getPageTree().getCount();
 
         return new JPodLoader(doc, imageCount);
-    }
-
-    //--------------//
-    // getJaiLoader //
-    //--------------//
-    /**
-     * Try to use JAI.
-     *
-     * @param imgPath the provided input file
-     * @return proper (JAI) loader or null if failed
-     */
-    private static Loader getJaiLoader (Path imgPath)
-    {
-        logger.debug("getJaiLoader {}", imgPath);
-
-        try {
-            BufferedImage image = JAI.create("fileload", imgPath.toString()).getAsBufferedImage();
-
-            if ((image != null) && (image.getWidth() > 0) && (image.getHeight() > 0)) {
-                return new JaiLoader(image);
-            }
-
-            logger.debug("No image read by JAI for {}", imgPath);
-        } catch (Exception ex) {
-            logger.warn("JAI failed opening {}, {} ", imgPath, ex.toString(), ex);
-        }
-
-        return null;
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
@@ -467,34 +432,6 @@ public abstract class ImageLoading
                         RenderingHints.VALUE_ANTIALIAS_OFF);
                 renderer.process(content, page.getResources());
             }
-
-            return image;
-        }
-    }
-
-    //-----------//
-    // JaiLoader //
-    //-----------//
-    /**
-     * A (degenerated) loader, since the only available image has already been cached.
-     */
-    private static class JaiLoader
-            extends AbstractLoader
-    {
-
-        private final BufferedImage image; // The single image
-
-        JaiLoader (BufferedImage image)
-        {
-            super(1); // JAI can return just one image
-            this.image = image;
-        }
-
-        @Override
-        public BufferedImage getImage (int id)
-                throws IOException
-        {
-            checkId(id);
 
             return image;
         }
