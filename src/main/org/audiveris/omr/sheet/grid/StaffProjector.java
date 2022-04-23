@@ -519,7 +519,7 @@ public class StaffProjector
             XYSeries minSeries = new XYSeries("MinBar", false); // No autosort
             minSeries.add(xMin, params.barThreshold);
             minSeries.add(xMax, params.barThreshold);
-            plotter.add(minSeries, Color.GREEN, true);
+            plotter.add(minSeries, Colors.CHART_VALUE, true);
         }
 
         {
@@ -1531,7 +1531,7 @@ public class StaffProjector
 
         private final Constant.Boolean useOneLineHalfMode = new Constant.Boolean(
                 true,
-                "Should we use a 'halfMode' for 1-line staves");
+                "Should we use a 'halfMode' for first peak of 1-line staves");
     }
 
     //------------//

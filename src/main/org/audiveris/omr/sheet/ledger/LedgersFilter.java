@@ -34,6 +34,7 @@ import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.lag.SectionService;
+import org.audiveris.omr.lag.Sections;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -47,12 +48,15 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.ui.LagController;
 import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -152,7 +156,11 @@ public class LedgersFilter
                     new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
         }
 
-        return dispatchLedgerSections(lag.getEntities());
+        final Map<SystemInfo, List<Section>> sectionMap = dispatchLedgerSections(lag.getEntities());
+
+        filterLedgerSections(sectionMap);
+
+        return sectionMap;
     }
 
     //------------------------//
@@ -182,6 +190,48 @@ public class LedgersFilter
         }
 
         return sectionMap;
+    }
+
+    //----------------------//
+    // filterLedgerSections //
+    //----------------------//
+    /**
+     * Additional filtering on ledger candidate sections, run at system level.
+     * <p>
+     * Candidate sections that intersect a beam are discarded.
+     *
+     * @param sectionMap (input/output) map system -> sections
+     */
+    private void filterLedgerSections (Map<SystemInfo, List<Section>> sectionMap)
+    {
+        final SystemManager systemManager = sheet.getSystemManager();
+
+        for (SystemInfo system : systemManager.getSystems()) {
+            final List<Inter> beams = system.getSig().inters(AbstractBeamInter.class);
+            final List<Section> discarded = new ArrayList<>();
+            final List<Section> candidates = sectionMap.get(system);
+
+            for (Section s : candidates) {
+                final Rectangle sBox = s.getBounds();
+
+                for (Inter bi : beams) {
+                    final Rectangle bBox = bi.getBounds();
+
+                    if (sBox.intersects(bBox)) {
+                        AbstractBeamInter beam = (AbstractBeamInter) bi;
+
+                        if (beam.getArea().intersects(sBox)) {
+                            discarded.add(s);
+                        }
+                    }
+                }
+            }
+
+            if (!discarded.isEmpty()) {
+                logger.debug("{} discarded ledger sections: {}", system, Sections.ids(discarded));
+                candidates.removeAll(discarded);
+            }
+        }
     }
 
     //----------------//
