@@ -329,15 +329,17 @@ public abstract class AbstractNoteInter
 
         map.put(Shape.WHOLE_REST, Rational.ONE); // 1 measure, unless partialWholeRests is on
         map.put(Shape.WHOLE_NOTE, Rational.ONE);
+        map.put(Shape.WHOLE_NOTE_DIAMOND, Rational.ONE);
 
         map.put(Shape.HALF_REST, new Rational(1, 2));
         map.put(Shape.NOTEHEAD_VOID, new Rational(1, 2));
         map.put(Shape.NOTEHEAD_VOID_SMALL, new Rational(1, 2));
+        map.put(Shape.NOTEHEAD_DIAMOND_VOID, new Rational(1, 2));
 
         map.put(Shape.QUARTER_REST, QUARTER_DURATION);
         map.put(Shape.NOTEHEAD_CROSS, QUARTER_DURATION);
         map.put(Shape.NOTEHEAD_DIAMOND_FILLED, QUARTER_DURATION);
-        map.put(Shape.NOTEHEAD_DIAMOND_VOID, QUARTER_DURATION);
+
         map.put(Shape.NOTEHEAD_BLACK, QUARTER_DURATION);
         map.put(Shape.NOTEHEAD_BLACK_SMALL, QUARTER_DURATION);
 

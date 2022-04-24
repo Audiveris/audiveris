@@ -292,7 +292,7 @@ public abstract class Symbols
         small(NOTEHEAD_BLACK_SMALL, 207);
         mapShape(NOTEHEAD_CROSS, 192);
         mapShape(NOTEHEAD_DIAMOND_FILLED, 226);
-        mapShape(NOTEHEAD_DIAMOND_VOID, 225);
+        mapShape(NOTEHEAD_DIAMOND_VOID, 79);  /* was 225 */
         mapShape(NOTEHEAD_VOID, 250);
         small(NOTEHEAD_VOID_SMALL, 250);
         //        mapShape(NO_LEGAL_TIME);
@@ -378,6 +378,7 @@ public abstract class Symbols
         sym.put(TURN_UP, new TransformedSymbol(TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
 
         mapShape(WHOLE_NOTE, 119);
+        mapShape(WHOLE_NOTE_DIAMOND, 79);
         small(WHOLE_NOTE_SMALL, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
     }

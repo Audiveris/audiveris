@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_DIAMOND_VOID;
+import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_DIAMOND;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID_SMALL;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
@@ -103,6 +104,7 @@ public class TemplateFactory
 
     /** All shapes with hole(s). */
     private static final EnumSet shapesWithHoles = EnumSet.of(NOTEHEAD_DIAMOND_VOID,
+                                                              WHOLE_NOTE_DIAMOND,
                                                               NOTEHEAD_VOID,
                                                               NOTEHEAD_VOID_SMALL,
                                                               WHOLE_NOTE,
@@ -223,7 +225,7 @@ public class TemplateFactory
         template.putOffset(Anchor.MIDDLE_LEFT, slimBox.x, center.getY());
         template.putOffset(Anchor.MIDDLE_RIGHT, slimBox.x + slimBox.width, center.getY());
 
-        // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
+        // WHOLE_NOTE & WHOLE_NOTE_SMALL & WHOLE_NOTE_DIAMOND are not concerned further
         if (ShapeSet.StemLessHeads.contains(template.getShape())) {
             return;
         }
@@ -727,7 +729,8 @@ public class TemplateFactory
             return 226;
 
         case NOTEHEAD_DIAMOND_VOID:
-            return 225;
+        case WHOLE_NOTE_DIAMOND:
+            return 79;  /* was 225 */
         
         case NOTEHEAD_CROSS:
             return 192;
