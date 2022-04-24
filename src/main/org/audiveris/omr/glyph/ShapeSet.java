@@ -192,7 +192,8 @@ public class ShapeSet
     public static final EnumSet<Shape> StemLessHeads = EnumSet.of(
             BREVE,
             WHOLE_NOTE,
-            WHOLE_NOTE_SMALL);
+            WHOLE_NOTE_SMALL,
+            WHOLE_NOTE_DIAMOND);
 
     /** All heads with a stem. */
     public static final EnumSet<Shape> StemHeads = EnumSet.of(
@@ -212,6 +213,7 @@ public class ShapeSet
             NOTEHEAD_CROSS,
             NOTEHEAD_DIAMOND_FILLED,
             NOTEHEAD_DIAMOND_VOID,
+            WHOLE_NOTE_DIAMOND,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
@@ -773,6 +775,7 @@ public class ShapeSet
         final EnumSet<Shape> set = EnumSet.of(
                 NOTEHEAD_DIAMOND_FILLED,
                 NOTEHEAD_DIAMOND_VOID,
+                WHOLE_NOTE_DIAMOND,
                 NOTEHEAD_CROSS,
                 NOTEHEAD_BLACK,
                 NOTEHEAD_VOID,
@@ -807,6 +810,7 @@ public class ShapeSet
         if (!switches.getValue(ProcessingSwitch.drumNotation)) {
             set.remove(NOTEHEAD_DIAMOND_FILLED);
             set.remove(NOTEHEAD_DIAMOND_VOID);
+            set.remove(WHOLE_NOTE_DIAMOND);
         }
 
         return set;
@@ -897,7 +901,11 @@ public class ShapeSet
      */
     public static EnumSet<Shape> getVoidTemplateNotes (Sheet sheet)
     {
-        final EnumSet<Shape> set = EnumSet.of(NOTEHEAD_VOID, WHOLE_NOTE, NOTEHEAD_VOID_SMALL, NOTEHEAD_DIAMOND_VOID);
+        final EnumSet<Shape> set = EnumSet.of(NOTEHEAD_VOID, 
+                                            WHOLE_NOTE, 
+                                            NOTEHEAD_VOID_SMALL, 
+                                            NOTEHEAD_DIAMOND_VOID,
+                                            WHOLE_NOTE_DIAMOND);
 
         if (sheet == null) {
             return set;
@@ -911,6 +919,7 @@ public class ShapeSet
 
         if (!switches.getValue(ProcessingSwitch.drumNotation)) {
             set.remove(NOTEHEAD_DIAMOND_VOID);
+            set.remove(WHOLE_NOTE_DIAMOND);
         }
 
         return set;

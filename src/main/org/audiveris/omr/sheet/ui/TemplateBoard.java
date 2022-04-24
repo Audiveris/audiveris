@@ -261,6 +261,7 @@ public class TemplateBoard
         switch (shape) {
         case WHOLE_NOTE:
         case WHOLE_NOTE_SMALL:
+        case WHOLE_NOTE_DIAMOND:
             return anchor == Anchor.MIDDLE_LEFT;
 
         default:

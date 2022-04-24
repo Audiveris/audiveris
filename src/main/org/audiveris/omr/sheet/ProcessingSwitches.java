@@ -330,7 +330,11 @@ public class ProcessingSwitches
         final Constant.Boolean oneLineStaves = new Constant.Boolean(
                 false,
                 "Support for percussion staves (1 line)");
-
+ 
+        final Constant.Boolean drumNotation = new Constant.Boolean(
+                false,
+                "Support for unpitched percussion (5-line) notation");
+    
         final Constant.Boolean partialWholeRests = new Constant.Boolean(
                 false,
                 "Support for partial whole rests");
@@ -338,10 +342,6 @@ public class ProcessingSwitches
         final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
                 false,
                 "Support for multi-whole head chords");
- 
-        final Constant.Boolean drumNotation = new Constant.Boolean(
-                false,
-                "Support for unpitched percussion (5-line) notation");
        }
 
     //-----------------//
