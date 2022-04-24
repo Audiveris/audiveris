@@ -305,7 +305,8 @@ public class SigReducer
 
                 // NOTEHEAD_CROSS shape appears before the oval-shape heads in Shape enum
                 // There is no exclusion with oval-shape heads on the same stem
-                if (c1 == Shape.NOTEHEAD_CROSS) {
+                // Likewise for NOTEHEAD_DIAMOND_FILLED and NOTEHEAD_DIAMOND_VOID
+                if (c1 == Shape.NOTEHEAD_CROSS || c1 == Shape.NOTEHEAD_DIAMOND_FILLED || c1 == Shape.NOTEHEAD_DIAMOND_VOID) {
                     continue;
                 }
 
