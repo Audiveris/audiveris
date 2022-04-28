@@ -201,26 +201,39 @@ public class LedgersPostAnalysis
      */
     private void filter ()
     {
-        final double minDeltaAboveRatio = popDeltaAbove.getMeanValue()
-                                                  + constants.minDeltaSigmaCoeff.getValue()
-                                                            * popDeltaAbove.getStandardDeviation();
-        final double maxDeltaAboveRatio = popDeltaAbove.getMeanValue()
-                                                  + constants.maxDeltaSigmaCoeff.getValue()
-                                                            * popDeltaAbove.getStandardDeviation();
+        Double minDeltaAboveRatio = null;
+        Double maxDeltaAboveRatio = null;
+        Double minDeltaBelowRatio = null;
+        Double maxDeltaBelowRatio = null;
+        Double minHeightRatio = null;
+        Double maxHeightRatio = null;
 
-        final double minDeltaBelowRatio = popDeltaBelow.getMeanValue()
-                                                  + constants.minDeltaSigmaCoeff.getValue()
-                                                            * popDeltaBelow.getStandardDeviation();
-        final double maxDeltaBelowRatio = popDeltaBelow.getMeanValue()
-                                                  + constants.maxDeltaSigmaCoeff.getValue()
-                                                            * popDeltaBelow.getStandardDeviation();
+        if (popDeltaAbove.getCardinality() > 0) {
+            minDeltaAboveRatio = popDeltaAbove.getMeanValue()
+                                         + constants.minDeltaSigmaCoeff.getValue()
+                                                   * popDeltaAbove.getStandardDeviation();
+            maxDeltaAboveRatio = popDeltaAbove.getMeanValue()
+                                         + constants.maxDeltaSigmaCoeff.getValue()
+                                                   * popDeltaAbove.getStandardDeviation();
+        }
 
-        final double minHeightRatio = popHeight.getMeanValue()
-                                              + constants.minHeightSigmaCoeff.getValue()
-                                                        * popHeight.getStandardDeviation();
-        final double maxHeightRatio = popHeight.getMeanValue()
-                                              + constants.maxHeightSigmaCoeff.getValue()
-                                                        * popHeight.getStandardDeviation();
+        if (popDeltaBelow.getCardinality() > 0) {
+            minDeltaBelowRatio = popDeltaBelow.getMeanValue()
+                                         + constants.minDeltaSigmaCoeff.getValue()
+                                                   * popDeltaBelow.getStandardDeviation();
+            maxDeltaBelowRatio = popDeltaBelow.getMeanValue()
+                                         + constants.maxDeltaSigmaCoeff.getValue()
+                                                   * popDeltaBelow.getStandardDeviation();
+        }
+
+        if (popHeight.getCardinality() > 0) {
+            minHeightRatio = popHeight.getMeanValue()
+                                     + constants.minHeightSigmaCoeff.getValue()
+                                               * popHeight.getStandardDeviation();
+            maxHeightRatio = popHeight.getMeanValue()
+                                     + constants.maxHeightSigmaCoeff.getValue()
+                                               * popHeight.getStandardDeviation();
+        }
 
         logger.debug("{}", String.format(
                      "Filter minDeltaAboveRatio:%.2f maxDeltaAboveRatio:%.2f"
