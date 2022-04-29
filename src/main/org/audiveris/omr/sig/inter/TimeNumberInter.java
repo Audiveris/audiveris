@@ -84,7 +84,7 @@ public class TimeNumberInter
      */
     private TimeNumberInter ()
     {
-        super((Glyph) null, null, 0.0);
+        super((Glyph) null, (Shape) null, 0.0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

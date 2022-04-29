@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -54,6 +52,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
@@ -64,6 +63,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterPairPredicate;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -72,6 +72,8 @@ import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -86,8 +88,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.relation.Exclusion;
 
 /**
  * Class <code>NoteHeadsBuilder</code> retrieves the void note heads, the black note heads,
@@ -129,7 +129,9 @@ public class NoteHeadsBuilder
                     Shape.BEAM,
                     Shape.BEAM_HOOK,
                     Shape.BEAM_SMALL,
-                    Shape.BEAM_HOOK_SMALL));
+                    Shape.BEAM_HOOK_SMALL,
+                    Shape.MULTIPLE_REST,
+                    Shape.VERTICAL_SERIF));
 
     /** Specific value for no offsets. */
     private static final int[] NO_OFFSETS = new int[]{0};

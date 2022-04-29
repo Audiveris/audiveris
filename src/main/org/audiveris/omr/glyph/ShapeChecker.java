@@ -480,29 +480,31 @@ public class ShapeChecker
                 return true;
             }
         };
-
-        new Checker("PartialTimeSig", PartialTimes)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph)
-            {
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
-                double absPos = Math.abs(pp);
-                double maxDy = constants.maxTimePitchPositionMargin.getValue();
-
-                // A partial time shape must be on -2 or +2 positions
-                if (Math.abs(absPos - 2) > maxDy) {
-                    eval.failure = new Evaluation.Failure("pitch");
-
-                    return false;
-                }
-
-                return true;
-            }
-        };
-
+//
+//        new Checker("PartialTimeSig", PartialTimes)
+//        {
+//            // It can be a num or den of a larger time sig
+//            // It can also be the measure number above a multiple rest
+//            @Override
+//            public boolean check (SystemInfo system,
+//                                  Evaluation eval,
+//                                  Glyph glyph)
+//            {
+//                final double pp = system.estimatedPitch(glyph.getCenter2D());
+//                double absPos = Math.abs(pp);
+//                double maxDy = constants.maxTimePitchPositionMargin.getValue();
+//
+//                // A partial time shape must be on -2 or +2 positions
+//                if (Math.abs(absPos - 2) > maxDy) {
+//                    eval.failure = new Evaluation.Failure("pitch");
+//
+//                    return false;
+//                }
+//
+//                return true;
+//            }
+//        };
+//
         new Checker(
                 "StaffGap",
                 shapesOf(Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes()))

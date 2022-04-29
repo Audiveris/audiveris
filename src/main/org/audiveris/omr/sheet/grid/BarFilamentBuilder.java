@@ -78,7 +78,7 @@ public class BarFilamentBuilder
     {
         final Rectangle peakBox = peak.getBounds();
 
-        // Increase height slightly beyond staff
+        // Increase height slightly beyond peak bounds?
         peakBox.grow(0, verticalExtension);
 
         final int xBreak = peakBox.x + peakBox.width;

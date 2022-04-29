@@ -107,6 +107,8 @@ public interface InterVisitor
 
     void visit (MarkerInter inter);
 
+    void visit (MultipleRestInter inter);
+
     void visit (OrnamentInter inter);
 
     void visit (PedalInter inter);
@@ -144,6 +146,8 @@ public interface InterVisitor
     void visit (TimeWholeInter inter);
 
     void visit (TupletInter inter);
+
+    void visit (VerticalSerifInter inter);
 
     void visit (WedgeInter inter);
 
