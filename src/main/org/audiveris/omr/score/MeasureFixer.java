@@ -23,16 +23,24 @@ package org.audiveris.omr.score;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.util.Collection;
 
 /**
  * Class <code>MeasureFixer</code> visits the score hierarchy to fix measures:.
@@ -42,6 +50,7 @@ import org.slf4j.LoggerFactory;
  * <li>Detect implicit measures (as second half repeats)</li>
  * <li>Detect inside barlines (empty measures)</li>
  * <li>Detect cautionary measures (CKT changes at end of staff)</li>
+ * <li>Handle multiple measure rests</li>
  * <li>Assign final page-based measure IDs</li>
  * </ul>
  *
@@ -157,6 +166,10 @@ public class MeasureFixer
      */
     private boolean isEmpty (MeasureStack stack)
     {
+        if (stack.isMultiRest()) {
+            return false;
+        }
+
         final Rational actualDuration = stack.getActualDuration();
 
         return (actualDuration != null) ? actualDuration.equals(Rational.ZERO) : false;
@@ -240,12 +253,22 @@ public class MeasureFixer
     {
         logger.debug("{} processing {}", getClass().getSimpleName(), system);
 
+        // Multiple measure rests
+        final List<Inter> multipleRests = system.getSig().inters(MultipleRestInter.class);
+
         // To gather all warnings about missing time signature in this system
         final List<String> warnings = new ArrayList<>();
 
         // Loop on stacks in system (the list of stacks being modified on the fly)
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
             stack = system.getStacks().get(idx);
+
+            // Multiple measure rest in this stack?
+            final Integer multipleRestCount = stack.getMultipleMeasureNumber(multipleRests);
+            if (multipleRestCount != null) {
+                logger.debug("multiple measure rest: {}", multipleRestCount);
+                stack.setMultiRest();
+            }
 
             // First, compute voices terminations
             if (stack.getExpectedDuration() != null) {
@@ -263,11 +286,11 @@ public class MeasureFixer
                     (stackTermination != null) ? ("=" + stackTermination) : "");
 
             if (isEmpty(stack)) {
+                // This whole stack is empty (no notes/rests, hence no voices)
                 logger.debug("empty");
 
-                // This whole stack is empty (no notes/rests, hence no voices)
-                // We will merge with the following stack, if any
                 if (stack != system.getLastStack()) {
+                    // We will merge with the following stack
                     setId((lastId != null)
                             ? (lastId + 1)
                             : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
@@ -281,6 +304,11 @@ public class MeasureFixer
                         setId(lastId);
                     }
                 }
+            } else if (stack.isMultiRest()) {
+                logger.debug("multiple measure rest: {}", multipleRestCount);
+                setId((lastId != null) ? (lastId + 1)
+                        : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+                lastId += (multipleRestCount - 1);
             } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();

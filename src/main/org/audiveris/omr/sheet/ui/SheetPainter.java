@@ -60,6 +60,7 @@ import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -67,6 +68,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -971,6 +973,16 @@ public abstract class SheetPainter
         // visit //
         //-------//
         @Override
+        public void visit (MultipleRestInter rest)
+        {
+            setColor(rest);
+            g.fill(rest.getArea());
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
         public void visit (SentenceInter sentence)
         {
             FontInfo lineMeanFont = sentence.getMeanFont();
@@ -1067,6 +1079,16 @@ public abstract class SheetPainter
         public void visit (TimeWholeInter inter)
         {
             visit((Inter) inter);
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (VerticalSerifInter serif)
+        {
+            setColor(serif);
+            g.fill(serif.getArea());
         }
 
         //-------//

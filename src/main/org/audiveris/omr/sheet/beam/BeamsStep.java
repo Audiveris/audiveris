@@ -64,6 +64,7 @@ public class BeamsStep
             throws StepException
     {
         new BeamsBuilder(system, context.spotLag).buildBeams();
+        new MultipleRestsBuilder(system).process();
     }
 
     //----------//

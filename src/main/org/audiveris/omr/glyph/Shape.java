@@ -347,6 +347,7 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
+    MULTIPLE_REST("Multiple measure rest"),
     SLUR("Slur above or below notes"),
     SLUR_ABOVE("Slur above notes"),
     SLUR_BELOW("Slur below notes"),
@@ -408,6 +409,7 @@ public enum Shape
     // Stems ---
     //
     STEM("Stem"),
+    VERTICAL_SERIF("Vertical serif"),
 
     //
     // Ornaments ---
@@ -428,7 +430,8 @@ public enum Shape
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
     CUSTOM_TIME("Time signature defined by user"),
-    NO_LEGAL_TIME("No Legal Time Shape");
+    NO_LEGAL_TIME("No Legal Time Shape"),
+    MEASURE_NUMBER("Measure number in a multiple rest");
 
     // =============================================================================================
     // This is the end of shape enumeration

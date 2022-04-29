@@ -71,6 +71,24 @@ public abstract class AbstractNumberInter
     /**
      * Creates a new AbstractNumberInter object.
      *
+     * @param glyph underlying glyph
+     * @param value numerical value
+     * @param grade evaluation value
+     */
+    public AbstractNumberInter (Glyph glyph,
+                                Integer value,
+                                Double grade)
+    {
+        super(glyph, null, null, grade);
+
+        if (value != null) {
+            this.value = Integer.valueOf(value); // Copy
+        }
+    }
+
+    /**
+     * Creates a new AbstractNumberInter object.
+     *
      * @param bounds bounding box of the number
      * @param shape  precise shape
      * @param grade  evaluation value
@@ -81,6 +99,24 @@ public abstract class AbstractNumberInter
     {
         super(null, bounds, shape, grade);
         this.value = (shape != null) ? valueOf(shape) : null;
+    }
+
+    /**
+     * Creates a new AbstractNumberInter object.
+     *
+     * @param bounds bounding box of the number
+     * @param value  numerical value
+     * @param grade  evaluation value
+     */
+    public AbstractNumberInter (Rectangle bounds,
+                                Integer value,
+                                Double grade)
+    {
+        super(null, bounds, null, grade);
+
+        if (value != null) {
+            this.value = Integer.valueOf(value); // Copy
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
