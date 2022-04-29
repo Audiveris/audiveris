@@ -63,6 +63,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -141,7 +142,9 @@ import org.audiveris.proxymusic.LyricFont;
 import org.audiveris.proxymusic.MarginType;
 import org.audiveris.proxymusic.MeasureNumbering;
 import org.audiveris.proxymusic.MeasureNumberingValue;
+import org.audiveris.proxymusic.MeasureStyle;
 import org.audiveris.proxymusic.MidiInstrument;
+import org.audiveris.proxymusic.MultipleRest;
 import org.audiveris.proxymusic.Notations;
 import org.audiveris.proxymusic.Note;
 import org.audiveris.proxymusic.NoteType;
@@ -1694,6 +1697,20 @@ public class PartwiseBuilder
                 clefIters.push(slots.get(0).getXOffset(), null);
             }
 
+            // Multiple rest?
+            if (stack.isMultiRest()) {
+                final Integer count = stack.getMultipleMeasureNumber(current.multipleRests);
+                if (count != null) {
+                    final MultipleRest multipleRest = factory.createMultipleRest();
+                    multipleRest.setValue(new BigInteger("" + count));
+
+                    final MeasureStyle measureStyle = factory.createMeasureStyle();
+                    measureStyle.setMultipleRest(multipleRest);
+
+                    getAttributes().getMeasureStyle().add(measureStyle);
+                }
+            }
+
             // Now voice per voice
             Rational timeCounter = Rational.ZERO;
 
@@ -2240,7 +2257,7 @@ public class PartwiseBuilder
     // processScore //
     //--------------//
     /**
-     * Allocate/populateMeasure everything that relates to the score instance and its children.
+     * Allocate/populate everything that relates to the score instance and its children.
      */
     private void processScore ()
     {
@@ -2612,6 +2629,7 @@ public class PartwiseBuilder
             logger.debug("Processing {}", system);
 
             current.system = system;
+            current.multipleRests = system.getSig().inters(MultipleRestInter.class);
             isFirst.measure = true;
 
             Part systemPart = system.getPartById(current.logicalPart.getId());
@@ -3001,6 +3019,8 @@ public class PartwiseBuilder
 
         // System dependent
         SystemInfo system;
+
+        List<Inter> multipleRests;
 
         // Measure dependent
         Measure measure;

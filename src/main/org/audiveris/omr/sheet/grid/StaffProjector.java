@@ -37,7 +37,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.grid.StaffPeak.Attribute;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.AbstractStaffVerticalInter;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.HorizontalSide;
@@ -715,18 +715,23 @@ public class StaffProjector
      * For the time being, this is just a wrapper on top of createPeak meant to address the case of
      * wide ranges above the bar threshold, which need to be further split.
      *
-     * @param rangeStart starting abscissa of range
-     * @param rangeStop  stopping abscissa of range
-     * @param halfMode   true when dealing with initial peak of a OneLineStaff
+     * @param rangeStart        starting abscissa of range
+     * @param rangeStop         stopping abscissa of range
+     * @param halfMode          true when dealing with initial peak of a OneLineStaff
+     * @param minDerivativeUp   minimum derivative for starting peak
+     * @param minDerivativeDown minimum derivative for ending peak (absolute value)
+     * @param addedChunk        additional chunk brought by presence of the multiple-rest 'beam'
      * @return the sequence of created peak instances, perhaps empty
      */
     private List<StaffPeak> browseRange (final int rangeStart,
                                          final int rangeStop,
-                                         final boolean halfMode)
+                                         final boolean halfMode,
+                                         final int minDerivativeUp,
+                                         final int minDerivativeDown,
+                                         final int addedChunk)
     {
         logger.debug("Staff#{} browseRange [{}..{}]", staff.getId(), rangeStart, rangeStop);
 
-        final int minDerivative = halfMode ? (derivativeThreshold / 2) : derivativeThreshold;
         final List<StaffPeak> list = new ArrayList<>();
         int start = rangeStart;
         int stop;
@@ -734,9 +739,9 @@ public class StaffProjector
         for (int x = rangeStart; x <= rangeStop; x++) {
             final int der = projection.getDerivative(x);
 
-            if (der >= minDerivative) {
+            if (der >= minDerivativeUp) {
+                // Peak starting: adjust x if next derivatives are better
                 int maxDer = der;
-
                 for (int xx = x + 1; xx <= rangeStop; xx++) {
                     int xxDer = projection.getDerivative(xx);
 
@@ -749,9 +754,9 @@ public class StaffProjector
                 }
 
                 start = x;
-            } else if (der <= -minDerivative) {
+            } else if (der <= -minDerivativeDown) {
+                // Peak ending: adjust x if next derivatives are better
                 int minDer = der;
-
                 for (int xx = x + 1; xx <= xClamp(rangeStop + 1); xx++) {
                     int xxDer = projection.getDerivative(xx);
 
@@ -770,7 +775,8 @@ public class StaffProjector
                 stop = x;
 
                 if ((start != -1) && (start < stop)) {
-                    StaffPeak peak = createPeak(start, stop - 1, halfMode);
+                    final StaffPeak peak = createPeak(start, stop - 1, halfMode,
+                                                      minDerivativeUp, minDerivativeDown, addedChunk);
 
                     if (peak != null) {
                         list.add(peak);
@@ -783,7 +789,8 @@ public class StaffProjector
 
         // A last peak?
         if (start != -1) {
-            StaffPeak peak = createPeak(start, rangeStop, halfMode);
+            final StaffPeak peak = createPeak(start, rangeStop, halfMode,
+                                              minDerivativeUp, minDerivativeDown, addedChunk);
 
             if (peak != null) {
                 list.add(peak);
@@ -991,14 +998,20 @@ public class StaffProjector
     /**
      * (Try to) create a relevant peak at provided location.
      *
-     * @param rawStart raw starting abscissa of peak
-     * @param rawStop  raw stopping abscissa of peak
-     * @param halfMode true when dealing with initial peak of a OneLineStaff
+     * @param rawStart          raw starting abscissa of peak
+     * @param rawStop           raw stopping abscissa of peak
+     * @param halfMode          true when dealing with initial peak of a OneLineStaff
+     * @param minDerivativeUp   threshold for up-going derivative
+     * @param minDerivativeDown threshold for down-going derivative (absolute)
+     * @param addedChunk        additional chunk brought by presence of multiple-rest 'beam'
      * @return the created peak instance or null if failed
      */
     private StaffPeak createPeak (final int rawStart,
                                   final int rawStop,
-                                  final boolean halfMode)
+                                  final boolean halfMode,
+                                  final int minDerivativeUp,
+                                  final int minDerivativeDown,
+                                  final int addedChunk)
     {
         final int minValue = halfMode ? params.barThreshold / 2 : params.barThreshold;
         final int totalHeight = staff.getSpecificInterline() * (staff.isOneLineStaff()
@@ -1006,14 +1019,16 @@ public class StaffProjector
         final double valueRange = (halfMode ? totalHeight / 2 : totalHeight) - minValue;
 
         // Compute precise start & stop abscissae
-        PeakSide newStart = refinePeakSide(rawStart, rawStop, -1, halfMode);
+        PeakSide newStart = refinePeakSide(rawStart, rawStop, -1, halfMode, minDerivativeUp,
+                                           addedChunk);
 
         if (newStart == null) {
             return null;
         }
 
         final int start = newStart.abscissa;
-        PeakSide newStop = refinePeakSide(rawStart, rawStop, +1, halfMode);
+        PeakSide newStop = refinePeakSide(rawStart, rawStop, +1, halfMode, minDerivativeDown,
+                                          addedChunk);
 
         if (newStop == null) {
             return null;
@@ -1035,12 +1050,27 @@ public class StaffProjector
 
         // Compute largest white gap
         final int xMid = (start + stop) / 2;
-        final int yTop = staff.getFirstLine().yAt(xMid);
-        final int yBottom = staff.getLastLine().yAt(xMid);
+        int yTop = staff.getFirstLine().yAt(xMid);
+        int yBottom = staff.getLastLine().yAt(xMid);
 
         // If peak is very thin, thicken the lookup area
         final int width = stop - start + 1;
         final int dx = (width <= 2) ? 1 : 0;
+
+        // Case of multiple rest?
+        CoreData fullHeightData = null;
+        if (addedChunk != 0) {
+            // Full height core data
+            GeoPath leftLine = new GeoPath(new Line2D.Double(start - dx, yTop, start - dx, yBottom));
+            GeoPath rightLine = new GeoPath(new Line2D.Double(stop + dx, yTop, stop + dx, yBottom));
+            fullHeightData = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
+
+            // Limit core to vertical serif height
+            final int yMid = staff.getMidLine().yAt(xMid);
+            yTop += (yMid - yTop) / 2;
+            yBottom -= (yBottom - yMid) / 2;
+        }
+
         GeoPath leftLine = new GeoPath(new Line2D.Double(start - dx, yTop, start - dx, yBottom));
         GeoPath rightLine = new GeoPath(new Line2D.Double(stop + dx, yTop, stop + dx, yBottom));
         final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
@@ -1049,10 +1079,19 @@ public class StaffProjector
             return null;
         }
 
+        // Multiple rest: check white spaces beyond serif core
+        if (addedChunk != 0) {
+            if (fullHeightData.whiteRatio < constants.minWhiteRatioBeyondVerticalSerif.getValue()) {
+                logger.info("Too high serif for multiple rest in Staff#{} at x:{}",
+                            staff.getId(), xMid);
+                return null;
+            }
+        }
+
         // Compute black core & impacts
         double coreImpact = (value - minValue) / valueRange;
         double gapImpact = 1 - ((double) data.gap / params.gapThreshold);
-        GradeImpacts impacts = new BarlineInter.Impacts(
+        GradeImpacts impacts = new AbstractStaffVerticalInter.Impacts(
                 coreImpact,
                 gapImpact,
                 newStart.derGrade,
@@ -1062,11 +1101,11 @@ public class StaffProjector
         double grade = impacts.getGrade();
 
         if (grade >= Grades.minInterGrade) {
-            StaffPeak bar = new StaffPeak(staff, yTop, yBottom, start, stop, impacts);
-            bar.computeDeskewedCenter(sheet.getSkew());
-            logger.debug("Staff#{} {}", staff.getId(), bar);
+            StaffPeak peak = new StaffPeak(staff, yTop, yBottom, start, stop, impacts);
+            peak.computeDeskewedCenter(sheet.getSkew());
+            logger.debug("Staff#{} {}", staff.getId(), peak);
 
-            return bar;
+            return peak;
         }
 
         return null;
@@ -1131,39 +1170,112 @@ public class StaffProjector
      */
     private void findPeaks ()
     {
-        final boolean oneLine = staff.isOneLineStaff();
-
         final Blank leftBlank = endingBlanks.get(LEFT);
         final int xMin = (leftBlank != null) ? leftBlank.stop : 0;
 
         final Blank rightBlank = endingBlanks.get(RIGHT);
         final int xMax = (rightBlank != null) ? rightBlank.start : (sheet.getWidth() - 1);
 
+        if (params.useOneLineHalfMode && staff.isOneLineStaff()) {
+            peaks.addAll(
+                    findPeaksInRange(xMin, xMax, PeakMode.INITIAL_HALF, params.barThreshold / 2,
+                                     derivativeThreshold / 2, derivativeThreshold / 2, 0));
+        } else {
+            peaks.addAll(
+                    findPeaksInRange(xMin, xMax, PeakMode.FULL, params.barThreshold,
+                                     derivativeThreshold, derivativeThreshold, 0));
+        }
+        logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
+    }
+
+    //----------------------//
+    // processMultiRestSide //
+    //----------------------//
+    /**
+     * Process staff projection on the given side of a multiple rest, to find vertical serif.
+     *
+     * @param x          side abscissa of multiple rest "beam"
+     * @param restSide   which side of the rest to process
+     * @param addedChunk chunk added by candidate 'beam' for a multiple rest
+     * @return the abscissa-ordered list of peaks found
+     */
+    public List<StaffPeak> processMultiRestSide (int x,
+                                                 HorizontalSide restSide,
+                                                 int addedChunk)
+    {
+        if (projection == null) {
+            computeProjection();
+            computeLineThresholds();
+        }
+
+        final int dx = params.verticalSerifWidth;
+        final int minCount = params.barThreshold / 2;
+        final int outDer = minCount - params.linesThreshold;
+        final int inDer = minCount - addedChunk;
+        final int minDerUp = (restSide == HorizontalSide.LEFT) ? outDer : inDer;
+        final int minDerDown = (restSide == HorizontalSide.LEFT) ? inDer : outDer;
+
+        final List<StaffPeak> sidePeaks = findPeaksInRange(x - dx, x + dx, PeakMode.HALF,
+                                                           minCount, minDerUp, minDerDown,
+                                                           addedChunk);
+
+        return sidePeaks;
+    }
+
+    //------------------//
+    // findPeaksInRange //
+    //------------------//
+    /**
+     * Retrieve the precise peaks found in the provided range.
+     *
+     * @param xMin              first abscissa in range
+     * @param xMax              last abscissa in range
+     * @param peakMode          peak detection mode
+     * @param minCount          (initial) threshold on cumulated pixels
+     * @param minDerivativeUp   (initial) threshold on starting derivative (going up)
+     * @param minDerivatinitial (initial) absolute threshold on ending derivative (going down)
+     * @param addedChunk        additional chunk brought by presence of multiple-rest 'beam'
+     * @return the sequence of peaks found
+     */
+    private List<StaffPeak> findPeaksInRange (int xMin,
+                                              int xMax,
+                                              PeakMode peakMode,
+                                              int minCount,
+                                              int minDerivativeUp,
+                                              int minDerivativeDown,
+                                              int addedChunk)
+    {
+        final List<StaffPeak> peaksFound = new ArrayList<>();
+        boolean halfMode = ((peakMode == PeakMode.INITIAL_HALF) || (peakMode == PeakMode.HALF));
+
         int start = -1;
         int stop = -1;
-        boolean halfMode = false;
 
         for (int x = xMin; x <= xMax; x++) {
             final int value = projection.getValue(x);
 
-            if (params.useOneLineHalfMode) {
-                halfMode = oneLine && peaks.isEmpty();
-            }
-
-            final int minBar = halfMode ? (params.barThreshold / 2) : params.barThreshold;
-
-            if (value >= minBar) {
+            if (value >= minCount) {
                 if (start == -1) {
                     start = x;
                 }
 
                 stop = x;
             } else if (start != -1) {
-                for (StaffPeak peak : browseRange(start, stop, halfMode)) {
-                    peaks.add(peak);
+                for (StaffPeak peak : browseRange(start, stop,
+                                                  halfMode, minDerivativeUp, minDerivativeDown,
+                                                  addedChunk)) {
+                    peaksFound.add(peak);
 
                     // Make sure peaks do not overlap
                     x = Math.max(x, peak.getStop());
+
+                    if ((peakMode == PeakMode.INITIAL_HALF) && peaksFound.size() == 1) {
+                        // Reset to full mode
+                        halfMode = false;
+                        minCount *= 2;
+                        minDerivativeUp *= 2;
+                        minDerivativeDown *= 2;
+                    }
                 }
 
                 start = -1;
@@ -1172,14 +1284,17 @@ public class StaffProjector
 
         // Finish ongoing peak if any (case of a peak stuck to right side of image)
         if (start != -1) {
-            StaffPeak peak = createPeak(start, stop, halfMode);
+            final StaffPeak peak = createPeak(start, stop, halfMode,
+                                              minDerivativeUp, minDerivativeDown, addedChunk);
 
             if (peak != null) {
-                peaks.add(peak);
+                peaksFound.add(peak);
             }
         }
 
-        logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
+        logger.debug("Staff#{} peaks:{}", staff.getId(), peaksFound);
+
+        return peaksFound;
     }
 
     //----------------//
@@ -1196,21 +1311,24 @@ public class StaffProjector
      * Thus, to detect attached heads, we add a test on cumulated black pixels just outside the
      * peak (the chunks).
      *
-     * @param xStart   raw abscissa that starts peak
-     * @param xStop    raw abscissa that stops peak
-     * @param dir      -1 for going left, +1 for going right
-     * @param halfMode when dealing with first peak of a OneLineStaff
+     * @param xStart        raw abscissa that starts peak
+     * @param xStop         raw abscissa that stops peak
+     * @param dir           -1 for going left, +1 for going right
+     * @param halfMode      when dealing with first peak of a OneLineStaff
+     * @param minDerivative threshold on outer derivative (when going away from peak)
+     * @param addedChunk    additional chunk on peak outer side
      * @return the best peak side, or null if none
      */
     private PeakSide refinePeakSide (int xStart,
                                      int xStop,
                                      int dir,
-                                     boolean halfMode)
+                                     boolean halfMode,
+                                     int minDerivative,
+                                     int addedChunk)
     {
-        final int minDerivative = halfMode ? (derivativeThreshold / 2) : derivativeThreshold;
         final int minBar = halfMode ? (params.barThreshold / 2) : params.barThreshold;
-        final int minChunk = halfMode ? (params.linesThreshold / 2) : params.linesThreshold;
-        final int maxChunk = halfMode ? (params.chunkThreshold / 2) : params.chunkThreshold;
+        final int minChunk = addedChunk + params.linesThreshold;
+        final int maxChunk = addedChunk + params.chunkThreshold;
 
         // Additional check range
         final int dx = params.barRefineDx;
@@ -1383,9 +1501,23 @@ public class StaffProjector
         }
 
         return x;
+
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Defines how thresholds for counts and derivatives are computed.
+     */
+    private static enum PeakMode
+    {
+        /** Always use full values. */
+        FULL,
+        /** Use half values <b>only for first peak</b> in staff. */
+        INITIAL_HALF,
+        /** Always use half values. */
+        HALF;
+    }
+
     //-------//
     // Blank //
     //-------//
@@ -1496,7 +1628,7 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.45, //0.25,
+                0.45,
                 "Maximum cumul value to detect chunk (on top of staff lines)");
 
         private final Constant.Ratio blankThreshold = new Constant.Ratio(
@@ -1532,6 +1664,14 @@ public class StaffProjector
         private final Constant.Boolean useOneLineHalfMode = new Constant.Boolean(
                 true,
                 "Should we use a 'halfMode' for first peak of 1-line staves");
+
+        private final Constant.Ratio minWhiteRatioBeyondVerticalSerif = new Constant.Ratio(
+                0.3,
+                "Minimum white ratio above and below a multiple rest vertical serif");
+
+        private final Scale.Fraction verticalSerifWidth = new Scale.Fraction(
+                0.25,
+                "Maximum width for a multiple rest vertical serif");
     }
 
     //------------//
@@ -1561,6 +1701,8 @@ public class StaffProjector
         final int maxRightExtremum;
 
         final boolean useOneLineHalfMode;
+
+        final int verticalSerifWidth;
 
         // Following thresholds depend of staff (specific?) interline scale
         final int barThreshold;
@@ -1594,6 +1736,7 @@ public class StaffProjector
                 maxLeftExtremum = large.toPixels(constants.maxLeftExtremum);
                 maxRightExtremum = large.toPixels(constants.maxRightExtremum);
                 chunkWidth = large.toPixels(constants.chunkWidth);
+                verticalSerifWidth = large.toPixels(constants.verticalSerifWidth);
             }
 
             {
@@ -1609,9 +1752,9 @@ public class StaffProjector
         }
     }
 
-    //----------//
-    // PeakSide //
-    //----------//
+//----------//
+// PeakSide //
+//----------//
     /**
      * Describes the (left or right) side of a peak.
      */

@@ -107,7 +107,7 @@ import org.audiveris.omr.sheet.ui.ObjectUIModel;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractBeamInter
-        extends AbstractInter
+        extends AbstractHorizontalInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -116,22 +116,6 @@ public abstract class AbstractBeamInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
-    // Persistent data
-    //----------------
-    //
-    /**
-     * The beam average thickness, specified in pixels with 1 digit maximum after the dot.
-     */
-    @XmlAttribute
-    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    protected double height;
-
-    /** The beam median line, defined from left to right. */
-    @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
-    protected Line2D median;
-
     // Transient data
     //---------------
     //
@@ -143,7 +127,7 @@ public abstract class AbstractBeamInter
      * Creates a new AbstractBeamInter object.
      * Note there is no underlying glyph, cleaning will be based on beam area.
      *
-     * @param shape   BEAM or BEAM_HOOK
+     * @param shape   BEAM or BEAM_HOOK or BEAM_SMALL
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
@@ -153,26 +137,37 @@ public abstract class AbstractBeamInter
                                  Line2D median,
                                  double height)
     {
-        super(null, null, shape, impacts);
-        this.median = median;
-        this.height = height;
+        super(shape, impacts, median, height);
+    }
 
-        if (median != null) {
-            computeArea();
-        }
+    /**
+     * Creates a new AbstractBeamInter object.
+     * Note there is no underlying glyph, cleaning will be based on beam area.
+     *
+     * @param shape  BEAM or BEAM_HOOK or BEAM_SMALL or MULTIPLE_REST
+     * @param grade  evaluated grade
+     * @param median median beam line
+     * @param height beam height
+     */
+    protected AbstractBeamInter (Shape shape,
+                                 Double grade,
+                                 Line2D median,
+                                 double height)
+    {
+        super(shape, grade, median, height);
     }
 
     /**
      * Creates a new AbstractBeamInter <b>ghost</b> object.
      * Median and height must be assigned later
      *
-     * @param shape BEAM or BEAM_HOOK
+     * @param shape BEAM or BEAM_HOOK or BEAM_SMALL
      * @param grade the grade
      */
     protected AbstractBeamInter (Shape shape,
                                  Double grade)
     {
-        super(null, null, shape, grade);
+        super(shape, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -233,29 +228,6 @@ public abstract class AbstractBeamInter
         return isAbnormal();
     }
 
-    //----------//
-    // contains //
-    //----------//
-    @Override
-    public boolean contains (Point point)
-    {
-        getBounds();
-
-        if ((bounds != null) && !bounds.contains(point)) {
-            return false;
-        }
-
-        if ((glyph != null) && glyph.contains(point)) {
-            return true;
-        }
-
-        if (area == null) {
-            computeArea();
-        }
-
-        return area.contains(point);
-    }
-
     //-----------//
     // getLinker //
     //-----------//
@@ -280,47 +252,6 @@ public abstract class AbstractBeamInter
     public void setLinker (BeamLinker linker)
     {
         this.linker = linker;
-    }
-
-    //-----------//
-    // getBorder //
-    //-----------//
-    /**
-     * Report the beam border line on desired side
-     *
-     * @param side the desired side
-     * @return the beam border line on desired side
-     */
-    public Line2D getBorder (VerticalSide side)
-    {
-        final double dy = (side == TOP) ? (-height / 2) : (height / 2);
-
-        return new Line2D.Double(
-                median.getX1(),
-                median.getY1() + dy,
-                median.getX2(),
-                median.getY2() + dy);
-    }
-
-    //-----------//
-    // getBounds //
-    //-----------//
-    @Override
-    public Rectangle getBounds ()
-    {
-        if (bounds != null) {
-            return new Rectangle(bounds);
-        }
-
-        if (glyph != null) {
-            return new Rectangle(bounds = glyph.getBounds());
-        }
-
-        if (area == null) {
-            computeArea();
-        }
-
-        return new Rectangle(bounds = area.getBounds());
     }
 
     //-----------//
@@ -427,30 +358,6 @@ public abstract class AbstractBeamInter
         }
 
         return beamHeads;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * @return the height
-     */
-    public double getHeight ()
-    {
-        return height;
-    }
-
-    //-----------//
-    // getMedian //
-    //-----------//
-    /**
-     * Report the median line
-     *
-     * @return the beam median line
-     */
-    public Line2D getMedian ()
-    {
-        return median;
     }
 
     //-----------//
@@ -769,23 +676,6 @@ public abstract class AbstractBeamInter
         return searchObsoletelinks(links, BeamStemRelation.class);
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        if ((median == null) && (glyph != null)) {
-            // Case of manual beam: Compute height and median parameters and area
-            height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
-            median = glyph.getCenterLine();
-
-            computeArea();
-        }
-    }
-
     //---------------//
     // switchToGroup //
     //---------------//
@@ -834,37 +724,6 @@ public abstract class AbstractBeamInter
         }
 
         return upgraded;
-    }
-
-    //-------------//
-    // computeArea //
-    //-------------//
-    /**
-     * Compute the beam area.
-     */
-    protected final void computeArea ()
-    {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
-
-        // Define precise bounds based on this path
-        // NOTA: these bounds may go slightly beyond the sheet image limits...
-        bounds = getArea().getBounds();
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        if (median != null) {
-            computeArea();
-        }
     }
 
     /**
@@ -1017,15 +876,6 @@ public abstract class AbstractBeamInter
         }
 
         return bestLink;
-    }
-
-    //-------------------//
-    // getRelationCenter //
-    //-------------------//
-    @Override
-    public Point2D getRelationCenter ()
-    {
-        return PointUtil.middle(median);
     }
 
     //-----------------//

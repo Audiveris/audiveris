@@ -69,6 +69,8 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -84,7 +86,6 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -359,7 +360,17 @@ public class InterFactory
         case TIME_NINE:
         case TIME_TWELVE:
         case TIME_SIXTEEN:
-            return TimeNumberInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+            // NOTA: These shapes are generally used for time number as part as a time signature
+            // A time number is located on position -2 or +2 , at beginning of measure.
+            // They can also be used for measure number located above a multiple rest
+            // around measure center.
+            final MeasureNumberInter number = MeasureNumberInter.createValidAdded(
+                    glyph, shape, grade, closestStaff);
+            if (number != null) {
+                return number;
+            } else {
+                return TimeNumberInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+            }
 
         case COMMON_TIME:
         case CUT_TIME:

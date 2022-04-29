@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
@@ -37,6 +36,8 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
@@ -92,6 +93,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>A special value (Xn) is used for second half repeats, when first half repeat is n.</li>
  * <li>Courtesy measures that may be found at end of system (containing just cautionary key or time
  * signatures) have an ID with C suffix (nC).</li>
+ * <li>Multiple measure rests indicate a pause for several measures.</li>
  * </ul>
  * <li>IDs, as exported in MusicXML, combine the (local) page-based IDs to provide (global)
  * score-based IDs.</li>
@@ -123,7 +125,8 @@ public class MeasureStack
         PICKUP,
         FIRST_HALF,
         SECOND_HALF,
-        CAUTIONARY;
+        CAUTIONARY,
+        MULTI_REST;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -989,6 +992,52 @@ public class MeasureStack
         return measures;
     }
 
+    //--------------------------//
+    // getMultipleMeasureNumber //
+    //--------------------------//
+    /**
+     * Report the count of measures indicated by a multiple rest if any.
+     *
+     * @return the count of measures if found or null
+     */
+    public Integer getMultipleMeasureNumber ()
+    {
+        return getMultipleMeasureNumber(system.getSig().inters(MultipleRestInter.class));
+    }
+
+    //--------------------------//
+    // getMultipleMeasureNumber //
+    //--------------------------//
+    /**
+     * Report the count of measures indicated by a multiple rest if any.
+     *
+     * @param multipleRests all multiple rests in this system
+     * @return the count of measures if found or null
+     */
+    public Integer getMultipleMeasureNumber (Collection<Inter> multipleRests)
+    {
+        if (multipleRests.isEmpty()) {
+            return null;
+        }
+
+        for (Inter mri : multipleRests) {
+            final Point center = mri.getCenter();
+
+            if ((center.x >= left) && (center.x <= right)) {
+                final MultipleRestInter multipleRest = (MultipleRestInter) mri;
+                final MeasureNumberInter measureNumber = multipleRest.getMeasureNumber();
+
+                if (measureNumber == null) {
+                    return null;
+                }
+
+                return measureNumber.getValue();
+            }
+        }
+
+        return null;
+    }
+
     //----------------//
     // getNextSibling //
     //----------------//
@@ -1534,6 +1583,19 @@ public class MeasureStack
         return (special == SpecialMeasure.PICKUP) || (special == SpecialMeasure.SECOND_HALF);
     }
 
+    //-------------//
+    // isMultiRest //
+    //-------------//
+    /**
+     * Report whether this measure stack is a multi rest measure.
+     *
+     * @return true if measure is multi rest
+     */
+    public boolean isMultiRest ()
+    {
+        return special == SpecialMeasure.MULTI_REST;
+    }
+
     //----------//
     // isRepeat //
     //----------//
@@ -1857,6 +1919,17 @@ public class MeasureStack
     public void setFirstHalf ()
     {
         special = SpecialMeasure.FIRST_HALF;
+    }
+
+    //--------------//
+    // setMultiRest //
+    //--------------//
+    /**
+     * Flag stack as multi rest.
+     */
+    public void setMultiRest ()
+    {
+        special = SpecialMeasure.MULTI_REST;
     }
 
     //-----------//

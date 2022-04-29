@@ -90,7 +90,7 @@ public class BeamHookInter
      */
     private BeamHookInter ()
     {
-        super(null, null, null, 0);
+        super((Shape) null, (GradeImpacts) null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
