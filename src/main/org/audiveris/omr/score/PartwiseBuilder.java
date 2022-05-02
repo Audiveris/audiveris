@@ -1697,20 +1697,6 @@ public class PartwiseBuilder
                 clefIters.push(slots.get(0).getXOffset(), null);
             }
 
-            // Multiple rest?
-            if (stack.isMultiRest()) {
-                final Integer count = stack.getMultipleMeasureNumber(current.multipleRests);
-                if (count != null) {
-                    final MultipleRest multipleRest = factory.createMultipleRest();
-                    multipleRest.setValue(new BigInteger("" + count));
-
-                    final MeasureStyle measureStyle = factory.createMeasureStyle();
-                    measureStyle.setMultipleRest(multipleRest);
-
-                    getAttributes().getMeasureStyle().add(measureStyle);
-                }
-            }
-
             // Now voice per voice
             Rational timeCounter = Rational.ZERO;
 
