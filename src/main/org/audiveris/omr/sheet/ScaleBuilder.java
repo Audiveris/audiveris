@@ -258,11 +258,11 @@ public class ScaleBuilder
                 largerInterline - blackPeak.main,
                 (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
         final double beamRatio = constants.beamRangeRatio.getValue();
-        final int guess = (int) Math.rint(minHeight + ((maxHeight - minHeight) * beamRatio));
+        beamGuess = (int) Math.rint(minHeight + ((maxHeight - minHeight) * beamRatio));
 
         if (verbose) {
             logger.info(String.format("Beam  guessed height: %2d -- %.2f of [%d..%d] range",
-                                      guess, beamRatio, minHeight, maxHeight));
+                                      beamGuess, beamRatio, minHeight, maxHeight));
         }
 
         // Beam measurement
@@ -287,17 +287,10 @@ public class ScaleBuilder
             }
 
             // Quorum reached or measured value close to guess?
-            final int diff = Math.abs(peak - guess);
+            final int diff = Math.abs(peak - beamGuess);
 
             if ((quorumRatio >= 1.0) || (diff <= constants.beamMaxDiff.getValue())) {
                 beamKey = peak;
-            } else {
-                // Beam extrapolation from height possible range
-                beamGuess = guess;
-
-                if (verbose) {
-                    logger.warn("No reliable beam height found, guessed value: {}", beamGuess);
-                }
             }
 
             if ((comboPeak2 != null) && (peaks.size() > 1)) {
@@ -309,6 +302,10 @@ public class ScaleBuilder
                     beamKey2 = peak2;
                 }
             }
+        }
+
+        if ((beamKey == null) && verbose) {
+            logger.warn("No reliable beam height found, guessed value: {}", beamGuess);
         }
     }
 
