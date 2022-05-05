@@ -59,6 +59,8 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -78,6 +80,7 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -114,6 +117,8 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 import org.audiveris.omr.sig.relation.MirrorRelation;
+import org.audiveris.omr.sig.relation.MultipleRestNumberRelation;
+import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
@@ -200,6 +205,8 @@ public class SigValue
         @XmlElementRef(type = LyricItemInter.class),
         @XmlElementRef(type = LyricLineInter.class),
         @XmlElementRef(type = MarkerInter.class),
+        @XmlElementRef(type = MeasureNumberInter.class),
+        @XmlElementRef(type = MultipleRestInter.class),
         @XmlElementRef(type = OrnamentInter.class),
         @XmlElementRef(type = PedalInter.class),
         @XmlElementRef(type = PluckingInter.class),
@@ -219,6 +226,7 @@ public class SigValue
         @XmlElementRef(type = TimePairInter.class),
         @XmlElementRef(type = TimeWholeInter.class),
         @XmlElementRef(type = TupletInter.class),
+        @XmlElementRef(type = VerticalSerifInter.class),
         @XmlElementRef(type = WedgeInter.class),
         @XmlElementRef(type = WordInter.class)})
     private final ArrayList<AbstractInter> inters = new ArrayList<>();
@@ -393,6 +401,8 @@ public class SigValue
             @XmlElementRef(type = KeyAltersRelation.class),
             @XmlElementRef(type = MarkerBarRelation.class),
             @XmlElementRef(type = MirrorRelation.class),
+            @XmlElementRef(type = MultipleRestNumberRelation.class),
+            @XmlElementRef(type = MultipleRestSerifRelation.class),
             @XmlElementRef(type = NextInVoiceRelation.class),
             @XmlElementRef(type = NoExclusion.class),
             @XmlElementRef(type = RepeatDotBarRelation.class),

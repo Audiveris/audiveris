@@ -31,8 +31,12 @@ import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
 import org.bytedeco.javacpp.*;
-import static org.bytedeco.javacpp.lept.*;
-import static org.bytedeco.javacpp.tesseract.*;
+import org.bytedeco.leptonica.PIX;
+import org.bytedeco.tesseract.PageIterator;
+import org.bytedeco.tesseract.ResultIterator;
+import org.bytedeco.tesseract.TessBaseAPI;
+import static org.bytedeco.leptonica.global.lept.*;
+import static org.bytedeco.tesseract.global.tesseract.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

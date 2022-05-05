@@ -63,6 +63,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -141,7 +142,9 @@ import org.audiveris.proxymusic.LyricFont;
 import org.audiveris.proxymusic.MarginType;
 import org.audiveris.proxymusic.MeasureNumbering;
 import org.audiveris.proxymusic.MeasureNumberingValue;
+import org.audiveris.proxymusic.MeasureStyle;
 import org.audiveris.proxymusic.MidiInstrument;
+import org.audiveris.proxymusic.MultipleRest;
 import org.audiveris.proxymusic.Notations;
 import org.audiveris.proxymusic.Note;
 import org.audiveris.proxymusic.NoteType;
@@ -1733,8 +1736,7 @@ public class PartwiseBuilder
                             }
 
                             // Grace chord(s) before this chord?
-                            if (chord instanceof HeadChordInter) {
-                                HeadChordInter headChord = (HeadChordInter) chord;
+                            if (chord instanceof HeadChordInter headChord) {
                                 SmallChordInter small = headChord.getGraceChord();
 
                                 if (small != null) {
@@ -1778,6 +1780,12 @@ public class PartwiseBuilder
             if (!measure.isDummy()) {
                 processBarline(measure.getRightPartBarline(), RightLeftMiddle.RIGHT);
             }
+
+            // Multiple rest?
+            if (stack.isMultiRest()) {
+                insertMultipleRest(stack);
+            }
+
         } catch (Exception ex) {
             logger.warn("Error visiting {} in {}", measure, current.page, ex);
 
@@ -1790,6 +1798,63 @@ public class PartwiseBuilder
         current.endMeasure();
         tupletNumbers.clear();
         isFirst.measure = false;
+    }
+
+    //--------------------//
+    // insertMultipleRest //
+    //--------------------//
+    /**
+     * Complete current measure and insert other dummy measures for this multiple measure rest
+     *
+     * @param stack the containing stack
+     */
+    private void insertMultipleRest (MeasureStack stack)
+    {
+        final Integer count = stack.getMultipleMeasureNumber(current.multipleRests);
+
+        if (count != null) {
+            // Measure duration
+            final AbstractTimeInter timeSig = stack.getCurrentTimeSignature();
+            final int dur = current.page.simpleDurationOf(timeSig != null
+                    ? timeSig.getTimeRational().getValue()
+                    : Rational.ONE); // Safer
+
+            // Create as many measures as needed
+            for (int num = 0; num < count; num++) {
+                if (num == 0) {
+                    // Multiple rest indication is only for first measure
+                    final MultipleRest multipleRest = factory.createMultipleRest();
+                    multipleRest.setValue(new BigInteger("" + count));
+
+                    final MeasureStyle measureStyle = factory.createMeasureStyle();
+                    measureStyle.setMultipleRest(multipleRest);
+
+                    getAttributes().getMeasureStyle().add(measureStyle);
+                }
+
+                // Non printed measure rest for every measure
+                current.pmNote = factory.createNote();
+                current.pmNote.setPrintObject(YesNo.NO);
+
+                final Rest rest = factory.createRest();
+                rest.setMeasure(YesNo.YES);
+                current.pmNote.setRest(rest);
+
+                current.pmNote.setDuration(new BigDecimal(dur));
+
+                // TODO: Is voice needed?
+                //
+                current.pmMeasure.getNoteOrBackupOrForward().add(current.pmNote);
+
+                if (num != count - 1) {
+                    // Insert dummy measure
+                    current.pmMeasure = factory.createScorePartwisePartMeasure();
+                    current.pmPart.getMeasure().add(current.pmMeasure);
+                    current.pmMeasure.setNumber(stack.getScoreId(current.pageMeasureIdOffset
+                                                                         + num + 1));
+                }
+            }
+        }
     }
 
     //-------------//
@@ -2240,7 +2305,7 @@ public class PartwiseBuilder
     // processScore //
     //--------------//
     /**
-     * Allocate/populateMeasure everything that relates to the score instance and its children.
+     * Allocate/populate everything that relates to the score instance and its children.
      */
     private void processScore ()
     {
@@ -2612,6 +2677,7 @@ public class PartwiseBuilder
             logger.debug("Processing {}", system);
 
             current.system = system;
+            current.multipleRests = system.getSig().inters(MultipleRestInter.class);
             isFirst.measure = true;
 
             Part systemPart = system.getPartById(current.logicalPart.getId());
@@ -3001,6 +3067,8 @@ public class PartwiseBuilder
 
         // System dependent
         SystemInfo system;
+
+        List<Inter> multipleRests;
 
         // Measure dependent
         Measure measure;

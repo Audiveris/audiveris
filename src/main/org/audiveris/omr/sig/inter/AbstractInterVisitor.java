@@ -234,6 +234,11 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (MultipleRestInter inter)
+    {
+    }
+
+    @Override
     public void visit (OrnamentInter inter)
     {
         visit((Inter) inter); // Redirection by default
@@ -338,6 +343,11 @@ public abstract class AbstractInterVisitor
     public void visit (TupletInter inter)
     {
         visit((Inter) inter); // Redirection by default
+    }
+
+    @Override
+    public void visit (VerticalSerifInter inter)
+    {
     }
 
     @Override

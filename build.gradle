@@ -10,9 +10,9 @@ ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
-ext.jcppVersion     = '1.4.4'
-ext.leptVersion     = '1.77.0'
-ext.tessVersion     = '4.0.0'
+ext.jcppVersion     = '1.5.6'
+ext.leptVersion     = '1.81.1'
+ext.tessVersion     = '4.1.1'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
@@ -114,8 +114,8 @@ dependencies {
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
         [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
@@ -124,8 +124,8 @@ dependencies {
     )
 
     runtimeOnly(
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testImplementation(
@@ -137,8 +137,8 @@ dependencies {
 // Specific configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
 }
 
 jar {

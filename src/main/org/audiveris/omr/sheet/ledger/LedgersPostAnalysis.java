@@ -67,8 +67,11 @@ public class LedgersPostAnalysis
     /** Map system -> builder. */
     private final Map<SystemInfo, LedgersBuilder> builders;
 
-    /** Population of ordinate deltas with preceding staff line or ledger. */
-    private final Population popDelta = new Population();
+    /** Population above staff of ordinate deltas with staff line or ledger below. */
+    private final Population popDeltaAbove = new Population();
+
+    /** Population below staff of ordinate deltas with staff line or ledger above. */
+    private final Population popDeltaBelow = new Population();
 
     /** Population of heights. */
     private final Population popHeight = new Population();
@@ -160,9 +163,13 @@ public class LedgersPostAnalysis
                     final Info info = new Info(ledger, staff, key,
                                                delta, dRatio, height, hRatio, width, wRatio);
                     infoMap.put(ledger, info);
-                    logger.debug("{}", info);
+                    logger.debug("       {}", info);
 
-                    popDelta.includeValue(dRatio);
+                    if (key < 0) {
+                        popDeltaAbove.includeValue(dRatio);
+                    } else {
+                        popDeltaBelow.includeValue(dRatio);
+                    }
                     popHeight.includeValue(hRatio);
 
                     if (wRatio <= maxWidth) {
@@ -172,7 +179,8 @@ public class LedgersPostAnalysis
             }
         }
 
-        logger.debug("deltaRatio: {}", popDelta);
+        logger.debug("deltaAboveRatio: {}", popDeltaAbove);
+        logger.debug("deltaBelowRatio: {}", popDeltaBelow);
         logger.debug("heightRatio: {}", popHeight);
         logger.debug("widthRatio: {}", popWidth);
     }
@@ -193,23 +201,47 @@ public class LedgersPostAnalysis
      */
     private void filter ()
     {
-        final double minDeltaRatio = popDelta.getMeanValue()
-                                             + constants.minDeltaSigmaCoeff.getValue()
-                                                       * popDelta.getStandardDeviation();
-        final double maxDeltaRatio = popDelta.getMeanValue()
-                                             + constants.maxDeltaSigmaCoeff.getValue()
-                                                       * popDelta.getStandardDeviation();
+        Double minDeltaAboveRatio = null;
+        Double maxDeltaAboveRatio = null;
+        Double minDeltaBelowRatio = null;
+        Double maxDeltaBelowRatio = null;
+        Double minHeightRatio = null;
+        Double maxHeightRatio = null;
 
-        final double minHeightRatio = popHeight.getMeanValue()
-                                              + constants.minHeightSigmaCoeff.getValue()
-                                                        * popHeight.getStandardDeviation();
-        final double maxHeightRatio = popHeight.getMeanValue()
-                                              + constants.maxHeightSigmaCoeff.getValue()
-                                                        * popHeight.getStandardDeviation();
+        if (popDeltaAbove.getCardinality() > 0) {
+            minDeltaAboveRatio = popDeltaAbove.getMeanValue()
+                                         + constants.minDeltaSigmaCoeff.getValue()
+                                                   * popDeltaAbove.getStandardDeviation();
+            maxDeltaAboveRatio = popDeltaAbove.getMeanValue()
+                                         + constants.maxDeltaSigmaCoeff.getValue()
+                                                   * popDeltaAbove.getStandardDeviation();
+        }
+
+        if (popDeltaBelow.getCardinality() > 0) {
+            minDeltaBelowRatio = popDeltaBelow.getMeanValue()
+                                         + constants.minDeltaSigmaCoeff.getValue()
+                                                   * popDeltaBelow.getStandardDeviation();
+            maxDeltaBelowRatio = popDeltaBelow.getMeanValue()
+                                         + constants.maxDeltaSigmaCoeff.getValue()
+                                                   * popDeltaBelow.getStandardDeviation();
+        }
+
+        if (popHeight.getCardinality() > 0) {
+            minHeightRatio = popHeight.getMeanValue()
+                                     + constants.minHeightSigmaCoeff.getValue()
+                                               * popHeight.getStandardDeviation();
+            maxHeightRatio = popHeight.getMeanValue()
+                                     + constants.maxHeightSigmaCoeff.getValue()
+                                               * popHeight.getStandardDeviation();
+        }
 
         logger.debug("{}", String.format(
-                     "Filter minDeltaRatio:%.2f maxDeltaRatio:%.2f minHeightRatio:%.2f maxHeightRatio:%.2f",
-                     minDeltaRatio, maxDeltaRatio, minHeightRatio, maxHeightRatio));
+                     "Filter minDeltaAboveRatio:%.2f maxDeltaAboveRatio:%.2f"
+                             + " minDeltaBelowRatio:%.2f maxDeltaBelowRatio:%.2f"
+                             + " minHeightRatio:%.2f maxHeightRatio:%.2f",
+                     minDeltaAboveRatio, maxDeltaAboveRatio,
+                     minDeltaBelowRatio, maxDeltaBelowRatio,
+                     minHeightRatio, maxHeightRatio));
 
         // Infos sorted by ledger ID are much more convenient for user review.
         final List<Info> infos = new ArrayList<>(infoMap.values());
@@ -218,22 +250,21 @@ public class LedgersPostAnalysis
         for (Info info : infos) {
             final int interline = info.staff.getSpecificInterline();
 
-            final int minDelta = (int) Math.floor(minDeltaRatio * interline);
-            final int maxDelta = (int) Math.ceil(maxDeltaRatio * interline);
+            final int minDelta = (int) Math.floor(
+                    (info.key < 0 ? minDeltaAboveRatio : minDeltaBelowRatio) * interline);
+            final int maxDelta = (int) Math.ceil(
+                    (info.key < 0 ? maxDeltaAboveRatio : maxDeltaBelowRatio) * interline);
             final String dD = (Math.abs(info.key) == 1)
-                    ? (info.delta < minDelta
-                            ? "delta"
-                            : (info.delta > maxDelta
-                                    ? "DELTA"
-                                    : "     "))
+                    ? (Math.ceil(info.delta) < minDelta ? "delta"
+                    : (Math.floor(info.delta) > maxDelta ? "DELTA"
+                    : "     "))
                     : "     ";
 
             final int minHeight = (int) Math.floor(minHeightRatio * interline);
             final int maxHeight = (int) Math.ceil(maxHeightRatio * interline);
-            final String hH = info.height < minHeight
-                    ? "height" : (info.height > maxHeight
-                            ? "HEIGHT"
-                            : "      ");
+            final String hH = Math.ceil(info.height) < minHeight ? "height"
+                    : (Math.floor(info.height) > maxHeight ? "HEIGHT"
+                    : "      ");
 
             logger.debug("{} {} {} deltaRange:[{}..{}] heightRange:[{}..{}]",
                          dD, hH, info, minDelta, maxDelta, minHeight, maxHeight);
