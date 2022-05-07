@@ -114,8 +114,8 @@ public class HeadClassifier
      * <p>
      * To my knowledge, a ComputationGraph would better fit our needs.
      */
-    ///private final ComputationGraph model;
-    private final MultiLayerNetwork model;
+    private final ComputationGraph model;
+    ///private final MultiLayerNetwork model;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -178,6 +178,8 @@ public class HeadClassifier
         final Point pt = PointUtil.rounded(PointUtil.times(location, ratio));
         final int xMin = pt.x - (CONTEXT_WIDTH / 2);
         final int yMin = pt.y - (CONTEXT_HEIGHT / 2);
+        logger.debug("Patch ratio:{} interline:{} location:{} xMin:{} yMin:{}",
+                     ratio, interline, pt, xMin, yMin);
 
         // Extract patch pixels from scaled image
         final int numPixels = context.getNumPixels();
@@ -212,7 +214,7 @@ public class HeadClassifier
         features.divi(255.0); // Normalize
 
         // Network inference
-        INDArray output = model.output(features);
+        INDArray output = model.outputSingle(features);
 
         // Extract and sort evaluations
         List<HeadEvaluation> evalList = new ArrayList<>();
@@ -229,114 +231,115 @@ public class HeadClassifier
 
         return evalList.toArray(new HeadEvaluation[evalList.size()]);
     }
-
-    //--------------------//
-    // getHeadEvaluations //
-    //--------------------//
-    /**
-     * Report, by decreasing quality, the shapes found at provided location,
-     * using the provided interline scaling value.
-     *
-     * @param sheet        the sheet at hand
-     * @param location     provided location in sheet
-     * @param interline    relevant interline (staff or system)
-     * @param imageWrapper (output) if not null, to be populated by patch image
-     * @return the top shapes found
-     */
-    public HeadEvaluation[] getHeadEvaluationsNEW (Sheet sheet,
-                                                   Point location,
-                                                   int interline,
-                                                   Wrapper<BufferedImage> imageWrapper)
-    {
-        logger.debug("Patching sheet at ({}, {}).", location.x, location.y);
-
-        final Scale scale = sheet.getScale();
-
-        // Select properly scaled array
-        final INDArray arr;
-
-        if (interline == scale.getInterline()) {
-            arr = sheet.getPicture().getINDArray(SourceKey.LARGE_TARGET);
-        } else if (interline == scale.getSmallInterline()) {
-            // Support for hybrid sheet with 2 staff heights
-            arr = sheet.getPicture().getINDArray(SourceKey.SMALL_TARGET);
-        } else {
-            logger.error("Interline {} is not known by {}", interline, scale);
-
-            return null;
-        }
-
-        final int imgHeight = (int) arr.size(0);
-        final int imgWidth = (int) arr.size(1);
-
-        // From provided location in original image, derive pt in scaled image
-        final double ratio = (double) INTERLINE / interline;
-        final Point pt = PointUtil.rounded(PointUtil.times(location, ratio));
-        final int xMin = pt.x - (CONTEXT_WIDTH / 2);
-        final int yMin = pt.y - (CONTEXT_HEIGHT / 2);
-
-        // Check location is sufficiently far from image borders
-        if ((xMin < 0) || (xMin + CONTEXT_WIDTH > imgWidth + 1)
-                    || (yMin < 0) || (yMin + CONTEXT_HEIGHT > imgHeight + 1)) {
-            logger.warn("Patch not inside sheet");
-            return null;
-        }
 //
-//        // Extract patch pixels from scaled image
-//        final int numPixels = context.getNumPixels();
-//        final double[] pixels = new double[numPixels];
+//    //--------------------//
+//    // getHeadEvaluations //
+//    //--------------------//
+//    /**
+//     * Report, by decreasing quality, the shapes found at provided location,
+//     * using the provided interline scaling value.
+//     *
+//     * @param sheet        the sheet at hand
+//     * @param location     provided location in sheet
+//     * @param interline    relevant interline (staff or system)
+//     * @param imageWrapper (output) if not null, to be populated by patch image
+//     * @return the top shapes found
+//     */
+//    public HeadEvaluation[] getHeadEvaluationsNEW (Sheet sheet,
+//                                                   Point location,
+//                                                   int interline,
+//                                                   Wrapper<BufferedImage> imageWrapper)
+//    {
+//        logger.debug("Patching sheet at ({}, {}).", location.x, location.y);
 //
-//        int idx = 0;
-//        for (int y = 0; y < CONTEXT_HEIGHT; y++) {
-//            int ay = yMin + y; // Absolute y
+//        final Scale scale = sheet.getScale();
 //
-//            if ((ay < 0) || (ay >= imgHeight)) {
-//                // Fill row with background value
-//                for (int x = 0; x < CONTEXT_WIDTH; x++) {
-//                    pixels[idx++] = BACKGROUND;
-//                }
-//            } else {
-//                for (int x = 0; x < CONTEXT_WIDTH; x++) {
-//                    int ax = xMin + x; // Absolute x
-//                    int val = ((ax < 0) || (ax >= imgWidth)) ? BACKGROUND
-//                            : (255 - arr.get(ax, ay)); // Inversion!
-//                    pixels[idx++] = val;
-//                }
-//            }
+//        // Select properly scaled array
+//        final INDArray arr;
+//
+//        if (interline == scale.getInterline()) {
+//            arr = sheet.getPicture().getINDArray(SourceKey.LARGE_TARGET);
+//        } else if (interline == scale.getSmallInterline()) {
+//            // Support for hybrid sheet with 2 staff heights
+//            arr = sheet.getPicture().getINDArray(SourceKey.SMALL_TARGET);
+//        } else {
+//            logger.error("Interline {} is not known by {}", interline, scale);
+//
+//            return null;
 //        }
-        INDArray features = arr.get(NDArrayIndex.interval(yMin, yMin + CONTEXT_HEIGHT), // Rows
-                                    NDArrayIndex.interval(xMin, xMin + CONTEXT_WIDTH)); // Cols
-
-        ///storePixels(location, pixels);
-        // Output patch image if so asked for
-        if (imageWrapper != null) {
-            imageWrapper.value = imageOf(features);
-        }
-
-//        INDArray features = Nd4j.create(pixels).reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
-//        features.divi(255.0); // Normalize
-        // Network inference
-        INDArray output = model.output(features);
-
-        // Extract and sort evaluations
-        List<HeadEvaluation> evalList = new ArrayList<>();
-        HeadShape[] values = context.getLabels();
-
-        for (int i = 0; i < output.length(); i++) {
-            HeadShape shape = values[i];
-            double grade = output.getDouble(i);
-
-            evalList.add(new HeadEvaluation(shape, grade));
-        }
-
-        Collections.sort(evalList);
-
-        return evalList.toArray(new HeadEvaluation[evalList.size()]);
-    }
-
+//
+//        final int imgHeight = (int) arr.size(0);
+//        final int imgWidth = (int) arr.size(1);
+//
+//        // From provided location in original image, derive pt in scaled image
+//        final double ratio = (double) INTERLINE / interline;
+//        final Point pt = PointUtil.rounded(PointUtil.times(location, ratio));
+//        final int xMin = pt.x - (CONTEXT_WIDTH / 2);
+//        final int yMin = pt.y - (CONTEXT_HEIGHT / 2);
+//
+//        // Check location is sufficiently far from image borders
+//        if ((xMin < 0) || (xMin + CONTEXT_WIDTH > imgWidth + 1)
+//                    || (yMin < 0) || (yMin + CONTEXT_HEIGHT > imgHeight + 1)) {
+//            logger.warn("Patch not inside sheet");
+//            return null;
+//        }
+////
+////        // Extract patch pixels from scaled image
+////        final int numPixels = context.getNumPixels();
+////        final double[] pixels = new double[numPixels];
+////
+////        int idx = 0;
+////        for (int y = 0; y < CONTEXT_HEIGHT; y++) {
+////            int ay = yMin + y; // Absolute y
+////
+////            if ((ay < 0) || (ay >= imgHeight)) {
+////                // Fill row with background value
+////                for (int x = 0; x < CONTEXT_WIDTH; x++) {
+////                    pixels[idx++] = BACKGROUND;
+////                }
+////            } else {
+////                for (int x = 0; x < CONTEXT_WIDTH; x++) {
+////                    int ax = xMin + x; // Absolute x
+////                    int val = ((ax < 0) || (ax >= imgWidth)) ? BACKGROUND
+////                            : (255 - arr.get(ax, ay)); // Inversion!
+////                    pixels[idx++] = val;
+////                }
+////            }
+////        }
+//        INDArray features = arr.get(NDArrayIndex.interval(yMin, yMin + CONTEXT_HEIGHT), // Rows
+//                                    NDArrayIndex.interval(xMin, xMin + CONTEXT_WIDTH)); // Cols
+//
+//        ///storePixels(location, pixels);
+//        // Output patch image if so asked for
+//        if (imageWrapper != null) {
+//            imageWrapper.value = imageOf(features);
+//        }
+//
+////        INDArray features = Nd4j.create(pixels).reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
+////        features.divi(255.0); // Normalize
+//        // Network inference
+//        INDArray output = model.output(features);
+//
+//        // Extract and sort evaluations
+//        List<HeadEvaluation> evalList = new ArrayList<>();
+//        HeadShape[] values = context.getLabels();
+//
+//        for (int i = 0; i < output.length(); i++) {
+//            HeadShape shape = values[i];
+//            double grade = output.getDouble(i);
+//
+//            evalList.add(new HeadEvaluation(shape, grade));
+//        }
+//
+//        Collections.sort(evalList);
+//
+//        return evalList.toArray(new HeadEvaluation[evalList.size()]);
+//    }
+//
     //-------------//
     // getInstance //
     //-------------//
+
     /**
      * Report the single instance of HeadClassifier in the application.
      *
@@ -525,9 +528,9 @@ public class HeadClassifier
      * @param fileName file name for classifier data
      * @return the model loaded
      */
-    protected MultiLayerNetwork load (String fileName)
+    protected ComputationGraph load (String fileName)
     {
-        MultiLayerNetwork model = null;
+        ComputationGraph model = null;
         Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
         logger.debug("Searching for head model...");
 
@@ -543,7 +546,8 @@ public class HeadClassifier
 
             try {
                 ///model = KerasModelImport.importKerasModelAndWeights(path.toString());
-                model = ModelSerializer.restoreMultiLayerNetwork(path.toFile(), false);
+                ///model = ModelSerializer.restoreMultiLayerNetwork(path.toFile(), false);
+                model = ModelSerializer.restoreComputationGraph(path.toFile(), false);
 
             } catch (Exception ex) {
                 logger.warn("Load error {}", ex.toString(), ex);

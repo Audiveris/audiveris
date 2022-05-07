@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code Context} gathers the needed definitions to deal with the features
+ * Class <b>Context</b> gathers the needed definitions to deal with the features
  * of a given sample, as used for the training of a patch classifier.
  * <p>
  * There should be several sub-classes of this one, typically HeadContext and GeneralContext,
@@ -45,8 +45,8 @@ import java.util.List;
  * symbol center in the image scaled to predefined INTERLINE.
  * <li>The symbol label (shape index): 0 for none, etc
  * </ol>
- * <li>The right portion contains the data needed to <i>trace</i> the sample back to the original
- * sheet and symbol.
+ * <li>The right portion contains the metadata needed to <i>trace</i> the sample back to the
+ * original sheet and symbol.
  * This information is mandatory to analyze the root sample(s) that have led to some abnormal
  * behavior in the training process.
  * <ol>
@@ -76,7 +76,7 @@ public abstract class Context<S extends Enum>
     private static final Logger logger = LoggerFactory.getLogger(Context.class);
 
     /** Predefined interline value: {@value}. */
-    public static final int INTERLINE = 10;
+    public static final int INTERLINE = 20;
 
     /** Value used for background pixel feature: {@value}. */
     public static final int BACKGROUND = 0;

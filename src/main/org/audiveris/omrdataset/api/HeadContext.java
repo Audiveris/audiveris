@@ -37,7 +37,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code HeadContext} defines a context specifically meant for the processing of
+ * Class <b>HeadContext</b> defines a context specifically meant for the processing of
  * potential head symbols.
  *
  * @author Hervé Bitteur
@@ -50,10 +50,10 @@ public class HeadContext
     private static final Logger logger = LoggerFactory.getLogger(HeadContext.class);
 
     /** Height for symbol context, in pixels: {@value}. */
-    private static final int CONTEXT_HEIGHT = 21;
+    private static final int CONTEXT_HEIGHT = 42;
 
     /** Width for symbol context, in pixels: {@value}. */
-    private static final int CONTEXT_WIDTH = 27;
+    private static final int CONTEXT_WIDTH = 54;
 
     /** Number of pixels in a patch: {@value}. */
     private static final int NUM_PIXELS = CONTEXT_HEIGHT * CONTEXT_WIDTH;

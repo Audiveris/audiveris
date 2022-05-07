@@ -59,6 +59,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -84,6 +85,7 @@ import javax.swing.SwingConstants;
 public class HeadClassifierBoard
         extends Board
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -92,6 +94,7 @@ public class HeadClassifierBoard
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -102,6 +105,7 @@ public class HeadClassifierBoard
     /** Output: sub-image. */
     private final PatchPanel patchPanel = new PatchPanel();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code PatchClassifierBoard} instance.
      *
@@ -131,6 +135,7 @@ public class HeadClassifierBoard
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -187,12 +192,14 @@ public class HeadClassifierBoard
         Rectangle rect = locEvent.getData();
 
         if (rect != null) {
+            final Point location = GeoUtil.center(rect);
+            logger.debug("rect:{} location:{}", rect, location);
             Wrapper<BufferedImage> imageWrapper = new Wrapper<>(null);
 //            StopWatch watch = new StopWatch("PatchClassifier");
 //            watch.start("getOmrEvaluations");
             HeadEvaluation[] evals = HeadClassifier.getInstance().getHeadEvaluations(
                     sheet,
-                    GeoUtil.center(rect),
+                    location,
                     sheet.getInterline(),
                     imageWrapper);
 //            watch.print();
@@ -204,6 +211,7 @@ public class HeadClassifierBoard
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -228,16 +236,14 @@ public class HeadClassifierBoard
             extends Panel
     {
 
-        // A patch for head is rather small, it is displayed here with a scaling ratio of 2.
-        private static final AffineTransform X2 = AffineTransform.getScaleInstance(2.0, 2.0);
-
-        private static final AffineTransform SHIFT = AffineTransform.getTranslateInstance(0.5, 0.5);
+        // To leave room for patch bounds
+        private static final AffineTransform SHIFT = AffineTransform.getTranslateInstance(1, 1);
 
         private BufferedImage image;
 
         public PatchPanel ()
         {
-            final Dimension dim = new Dimension(2 * CONTEXT_WIDTH + 2, 2 * CONTEXT_HEIGHT + 2);
+            final Dimension dim = new Dimension(CONTEXT_WIDTH + 2, CONTEXT_HEIGHT + 2);
             setPreferredSize(dim);
             setMaximumSize(dim);
             setMinimumSize(dim);
@@ -256,8 +262,6 @@ public class HeadClassifierBoard
 
             super.paintComponent(g); // For background
 
-            AffineTransform savedAT = g.getTransform();
-            g.transform(X2);
             Stroke savedStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
             if (image != null) {
@@ -268,15 +272,14 @@ public class HeadClassifierBoard
             g.setColor(Color.RED);
 
             // Draw the sub-image bounds
-            g.draw(new Rectangle2D.Double(0, 0, CONTEXT_WIDTH + 0.5, CONTEXT_HEIGHT + 0.5));
+            g.draw(new Rectangle2D.Double(0.5, 0.5, CONTEXT_WIDTH + 1, CONTEXT_HEIGHT + 1));
 
             // Draw precise center
-            g.draw(new Line2D.Double(0, 0, CONTEXT_WIDTH + 0.5, CONTEXT_HEIGHT + 0.5));
-            g.draw(new Line2D.Double(0, CONTEXT_HEIGHT + 0.5, CONTEXT_WIDTH + 0.5, 0));
+            g.draw(new Line2D.Double(0.5, 0.5, CONTEXT_WIDTH + 1.5, CONTEXT_HEIGHT + 1.5));
+            g.draw(new Line2D.Double(0.5, CONTEXT_HEIGHT + 1.5, CONTEXT_WIDTH + 1.5, 0.5));
 
             // Reset environment
             g.setStroke(savedStroke);
-            g.setTransform(savedAT);
         }
     }
 
