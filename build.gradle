@@ -134,6 +134,12 @@ dependencies {
     )
 }
 
+// Needed since gradle replaced "compile" by "implementation"
+// See https://stackoverflow.com/questions/47910578/not-able-to-copy-configurations-dependencies-after-upgrading-gradle-plugin-for-a
+configurations {
+    implementationConfig.extendsFrom implementation
+}
+
 // Specific configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
@@ -271,7 +277,7 @@ task installers {
             copy {
                 into "$buildDir/installers/$os/lib"
                 from "$buildDir/jar" // audiveris.jar
-                from configurations.compile // Compile jars
+                from configurations.implementationConfig // Compile jars
                 from configurations."runtime-$os" // OS-specific jars
             }
 
