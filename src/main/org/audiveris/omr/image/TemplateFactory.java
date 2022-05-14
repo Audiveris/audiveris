@@ -725,12 +725,14 @@ public class TemplateFactory
     {
         switch (shape) {
         case NOTEHEAD_DIAMOND_FILLED:
-            return 226;
+            return Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
 
         case NOTEHEAD_DIAMOND_VOID:
+            return Symbols.CODE_NOTEHEAD_DIAMOND_VOID;
+
         case WHOLE_NOTE_DIAMOND:
-            return 79;  /* was 225 */
-        
+            return Symbols.CODE_WHOLE_NOTE_DIAMOND;
+
         case NOTEHEAD_CROSS:
             return Symbols.CODE_NOTEHEAD_CROSS;
 
