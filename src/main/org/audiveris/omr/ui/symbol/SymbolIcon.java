@@ -72,8 +72,7 @@ public interface SymbolIcon
                              Alignment alignment);
 
     /**
-     * Build the image that represents the related shape, using the scaled font.
-     * The main difficulty is to determine up-front the size of the image to allocate.
+     * Build an image that represents the related shape, using the provided specific font.
      *
      * @param font properly-scaled font (for interline and zoom)
      * @return the image built, or null if failed
@@ -81,8 +80,8 @@ public interface SymbolIcon
     SymbolImage buildImage (MusicFont font);
 
     /**
-     * Build the image that represents the related shape, using the scaled font.
-     * The main difficulty is to determine up-front the size of the image to allocate.
+     * Build an image that represents the related shape, using the provided specific font
+     * and specific stroke for curves.
      *
      * @param font        properly-scaled font (for interline and zoom)
      * @param curveStroke optional stroke for slurs, wedges and endings, or null
@@ -108,9 +107,10 @@ public interface SymbolIcon
     Dimension getDimension (MusicFont font);
 
     /**
-     * Report the icon image, suitable for icon display.
+     * Report the intrinsic symbol image, using the MusicFont (base or tiny) chosen for the
+     * symbol version.
      *
-     * @return the image meant for icon display
+     * @return the intrinsic symbol image
      */
-    BufferedImage getIconImage ();
+    SymbolImage getIntrinsicImage ();
 }

@@ -51,19 +51,7 @@ public class EndingSymbol
      */
     public EndingSymbol (boolean withRightLeg)
     {
-        this(withRightLeg, false);
-    }
-
-    /**
-     * Create an EndingSymbol.
-     *
-     * @param withRightLeg true to provide the optional right leg
-     * @param isIcon       true for an icon
-     */
-    protected EndingSymbol (boolean withRightLeg,
-                            boolean isIcon)
-    {
-        super(isIcon, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, false);
+        super(withRightLeg ? Shape.ENDING_WRL : Shape.ENDING);
         this.withRightLeg = withRightLeg;
     }
 
@@ -88,15 +76,6 @@ public class EndingSymbol
     public String getTip ()
     {
         return shape + (withRightLeg ? " (w/ right leg)" : "");
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new EndingSymbol(withRightLeg, true);
     }
 
     //-----------//

@@ -31,7 +31,8 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>FlatSymbol</code> handles a flat or double-flat symbol with a refPoint.
+ * Class <code>FlatSymbol</code> handles a flat or double-flat symbol with a specific refPoint
+ * not located at area center.
  *
  * @author Hervé Bitteur
  */
@@ -43,27 +44,13 @@ public class FlatSymbol
     /**
      * Creates a new FlatSymbol object.
      *
-     * @param shape the related shape
+     * @param shape the precise shape (FLAT or DOUBLE_FLAT)
      * @param codes the codes for MusicFont characters
      */
     public FlatSymbol (Shape shape,
                        int... codes)
     {
-        this(false, shape, codes);
-    }
-
-    /**
-     * Creates a new FlatSymbol object.
-     *
-     * @param isIcon true for an icon
-     * @param shape  the related shape
-     * @param codes  the codes for MusicFont characters
-     */
-    protected FlatSymbol (boolean isIcon,
-                          Shape shape,
-                          int... codes)
-    {
-        super(isIcon, shape, false, codes);
+        super(shape, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -82,15 +69,6 @@ public class FlatSymbol
         return model;
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new FlatSymbol(true, shape, codes);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -100,6 +78,8 @@ public class FlatSymbol
         final Params p = new Params();
         p.layout = font.layout(getString());
         p.rect = p.layout.getBounds();
+
+        // Offset from area center to flat 'head' center.
         p.offset = new Point2D.Double(0, -p.rect.getY() - p.rect.getHeight() / 2);
 
         return p;

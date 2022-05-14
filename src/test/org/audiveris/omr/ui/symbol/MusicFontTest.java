@@ -36,10 +36,12 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class <code>MusicFontTest</code> generates a PDF file with all symbols
- * from MusicalsSymbols font.
+ * from current MusicFont.
  *
  * @author Hervé Bitteur
  */
@@ -69,6 +71,15 @@ public class MusicFontTest
     public void textPrintout ()
             throws Exception
     {
+        final List<Range> codes = new ArrayList<>();
+        codes.add(new Range(0xE000, 0xE0FF));
+        codes.add(new Range(0xE1D0, 0xE1D9));
+        codes.add(new Range(0xE200, 0xE269));
+        codes.add(new Range(0xE4A0, 0xE4EA));
+        codes.add(new Range(0xE500, 0xE56F));
+        codes.add(new Range(0xE630, 0xE659));
+        codes.add(new Range(0xE880, 0xE889));
+
         File dir = new File("data/temp");
         dir.mkdirs();
 
@@ -90,75 +101,100 @@ public class MusicFontTest
             Font infoFont = stringFont.deriveFont(15f);
             String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
 
-            for (int i = 0; i < 256; i++) {
-                BasicSymbol symbol = new BasicSymbol(false, i);
-                TextLayout layout = symbol.layout(musicFont);
+            for (Range range : codes) {
+                for (int i = range.start; i <= range.stop; i++) {
+                    BasicSymbol symbol = new BasicSymbol(i);
+                    TextLayout layout = symbol.layout(musicFont);
 
-                if (i > 0) {
-                    // Compute x,y for current cell
-                    x = xMargin + (cellWidth * (i % itemsPerLine));
+                    if (i > 0) {
+                        // Compute x,y for current cell
+                        x = xMargin + (cellWidth * (i % itemsPerLine));
 
-                    if (x == xMargin) {
-                        line++;
+                        if (x == xMargin) {
+                            line++;
 
-                        if (line >= linesPerPage) {
-                            // New page
-                            g.dispose();
-                            document.setPageSize(rect);
-                            document.newPage();
-                            cb = writer.getDirectContent();
-                            g = new PdfGraphics2D(cb, pageWidth, pageHeight);
-                            x = xMargin;
-                            y = yMargin;
-                            line = 0;
-                        } else {
-                            y = yMargin + (line * cellHeight);
+                            if (line >= linesPerPage) {
+                                // New page
+                                g.dispose();
+                                document.setPageSize(rect);
+                                document.newPage();
+                                cb = writer.getDirectContent();
+                                g = new PdfGraphics2D(cb, pageWidth, pageHeight);
+                                x = xMargin;
+                                y = yMargin;
+                                line = 0;
+                            } else {
+                                y = yMargin + (line * cellHeight);
+                            }
                         }
                     }
+
+                    // Draw axes
+                    g.setColor(Color.PINK);
+                    g.drawLine(
+                            x + (cellWidth / 4),
+                            y + (cellHeight / 2),
+                            (x + cellWidth) - (cellWidth / 4),
+                            y + (cellHeight / 2));
+                    g.drawLine(
+                            x + (cellWidth / 2),
+                            y + (cellHeight / 4),
+                            x + (cellWidth / 2),
+                            (y + cellHeight) - (cellHeight / 4));
+
+                    // Draw number
+                    g.setFont(stringFont);
+                    g.setColor(Color.RED);
+                    g.drawString(Integer.toHexString(i), x + 10, y + 30);
+
+                    // Draw info
+                    Rectangle2D r = layout.getBounds();
+                    String info = String.format(
+                            frm,
+                            r.getX(),
+                            r.getY(),
+                            r.getWidth(),
+                            r.getHeight());
+                    g.setFont(infoFont);
+                    g.setColor(Color.GRAY);
+                    g.drawString(info, x + 5, (y + cellHeight) - 5);
+
+                    // Draw cell rectangle
+                    g.setColor(Color.BLUE);
+                    g.drawRect(x, y, cellWidth, cellHeight);
+
+                    // Draw symbol
+                    g.setColor(Color.BLACK);
+                    layout.draw(g, x + (cellWidth / 2), y + (cellHeight / 2));
                 }
-
-                // Draw axes
-                g.setColor(Color.PINK);
-                g.drawLine(
-                        x + (cellWidth / 4),
-                        y + (cellHeight / 2),
-                        (x + cellWidth) - (cellWidth / 4),
-                        y + (cellHeight / 2));
-                g.drawLine(
-                        x + (cellWidth / 2),
-                        y + (cellHeight / 4),
-                        x + (cellWidth / 2),
-                        (y + cellHeight) - (cellHeight / 4));
-
-                // Draw number
-                g.setFont(stringFont);
-                g.setColor(Color.RED);
-                g.drawString(Integer.toString(i), x + 10, y + 30);
-
-                // Draw info
-                Rectangle2D r = layout.getBounds();
-                String info = String.format(
-                        frm,
-                        r.getX(),
-                        r.getY(),
-                        r.getWidth(),
-                        r.getHeight());
-                g.setFont(infoFont);
-                g.setColor(Color.GRAY);
-                g.drawString(info, x + 5, (y + cellHeight) - 5);
-
-                // Draw cell rectangle
-                g.setColor(Color.BLUE);
-                g.drawRect(x, y, cellWidth, cellHeight);
-
-                // Draw symbol
-                g.setColor(Color.BLACK);
-                layout.draw(g, x + (cellWidth / 2), y + (cellHeight / 2));
             }
 
             // This is the end...
             g.dispose();
             document.close();
+        }
+    }
+
+    private static class Range
+    {
+
+        final int start;
+
+        final int stop;
+
+        public Range (int start,
+                      int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder()
+                    .append('[').append(start).append("..").append(stop).append(']')
+                    .toString();
         }
     }
 }

@@ -424,7 +424,7 @@ public enum Shape
     FORWARD("To indicate a forward"),
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
-    CUSTOM_TIME("Time signature defined by user"),
+    TIME_CUSTOM("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape");
 
     // =============================================================================================
@@ -753,7 +753,7 @@ public enum Shape
             ShapeSymbol symb = getSymbol();
 
             if (symb != null) {
-                setDecoratedSymbol(symb.getDecoratedSymbol());
+                setDecoratedSymbol(symb.getDecoratedVersion());
             }
 
             if (decoratedSymbol == null) {

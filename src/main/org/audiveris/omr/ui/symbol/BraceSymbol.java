@@ -22,16 +22,17 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.MusicFont.DEFAULT_INTERLINE;
+import static org.audiveris.omr.ui.symbol.MusicFont.getPointFont;
+import static org.audiveris.omr.ui.symbol.MusicFont.getPointSize;
 
-import java.awt.Graphics2D;
-import java.awt.font.TextLayout;
+import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>BraceSymbol</code> displays a BRACE symbol: {
+ * Class <code>BraceSymbol</code> displays a BRACE symbol: '{'
+ * <p>
+ * This class exists only to significantly modify the standard size of Bravura Brace symbol.
  *
  * @author Hervé Bitteur
  */
@@ -40,84 +41,50 @@ public class BraceSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    // The upper part symbol
-    private static final BasicSymbol upperSymbol = Symbols.SYMBOL_BRACE_UPPER_HALF;
+    /** Scaling to apply on default brace symbol size: {@value}. */
+    private static final int MULTIPLIER = 4;
 
-    // The lower part symbol
-    private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACE_LOWER_HALF;
+    /** But keep the tiny version really tiny. */
+    private static final int myTinyInterline
+            = (int) Math.rint(2 * DEFAULT_INTERLINE * OmrFont.RATIO_TINY / MULTIPLIER);
+
+    private static final MusicFont myTinyMusicFont = getPointFont(
+            getPointSize(myTinyInterline), myTinyInterline);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a BraceSymbol (which is made of upper and lower parts).
-     */
-    public BraceSymbol ()
-    {
-        this(false);
-    }
-
-    /**
-     * Create a BraceSymbol (which is made of upper and lower parts)
+     * Create a BraceSymbol.
      *
-     * @param isIcon true for an icon
+     * @param codes the codes for MusicFont characters
      */
-    protected BraceSymbol (boolean isIcon)
+    public BraceSymbol (int... codes)
     {
-        super(isIcon, Shape.BRACE, false);
+        super(Shape.BRACE, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
+    //--------------//
+    // computeImage //
+    //--------------//
     @Override
-    protected ShapeSymbol createIcon ()
+    protected void computeImage ()
     {
-        return new BraceSymbol(true);
+        image = buildImage(isTiny ? myTinyMusicFont : MusicFont.baseMusicFont);
+
+        dimension = new Dimension(image.getWidth(), image.getHeight());
     }
 
     //-----------//
     // getParams //
     //-----------//
     @Override
-    protected MyParams getParams (MusicFont font)
+    protected Params getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
-
-        AffineTransform at = isIcon ? tiny : null;
-        p.upperLayout = font.layout(upperSymbol.getString(), at);
-        p.lowerLayout = font.layout(lowerSymbol.getString(), at);
-
-        Rectangle2D r = p.upperLayout.getBounds();
-        p.rect = new Rectangle2D.Double(0, 0, r.getWidth(), 2 * r.getHeight());
+        final Params p = new Params();
+        final AffineTransform at = AffineTransform.getScaleInstance(MULTIPLIER, MULTIPLIER);
+        p.layout = font.layout(getString(), at);
+        p.rect = p.layout.getBounds();
 
         return p;
-    }
-
-    //-------//
-    // paint //
-    //-------//
-    @Override
-    protected void paint (Graphics2D g,
-                          Params params,
-                          Point2D location,
-                          Alignment alignment)
-    {
-        MyParams p = (MyParams) params;
-        Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
-        MusicFont.paint(g, p.upperLayout, loc, BOTTOM_LEFT);
-        MusicFont.paint(g, p.lowerLayout, loc, TOP_LEFT);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // Params //
-    //--------//
-    protected static class MyParams
-            extends Params
-    {
-
-        TextLayout upperLayout;
-
-        TextLayout lowerLayout;
     }
 }

@@ -354,7 +354,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             Colors.SCORE_FRAME,
-            shapesOf(shapesOf(PartialTimes, WholeTimes), shapesOf(CUSTOM_TIME)));
+            shapesOf(shapesOf(PartialTimes, WholeTimes), shapesOf(TIME_CUSTOM)));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,

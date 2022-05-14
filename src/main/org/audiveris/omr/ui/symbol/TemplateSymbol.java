@@ -42,14 +42,8 @@ import java.awt.geom.Rectangle2D;
 public class TemplateSymbol
         extends BasicSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** Affine Transform for small symbol shapes. */
-    private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
-            Template.smallRatio,
-            Template.smallRatio);
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Template shape. */
     protected final Shape shape;
 
@@ -66,7 +60,7 @@ public class TemplateSymbol
     public TemplateSymbol (Shape shape,
                            int... codes)
     {
-        super(false, codes);
+        super(codes);
         this.shape = shape;
         isSmall = shape.isSmall();
     }
@@ -93,7 +87,7 @@ public class TemplateSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        p.layout = font.layout(getString(), isSmall ? smallAt : null);
+        p.layout = font.layout(getString(), isSmall ? OmrFont.TRANSFORM_SMALL : null);
 
         // Symbol rectangle
         final Rectangle2D rawSym = p.layout.getBounds();

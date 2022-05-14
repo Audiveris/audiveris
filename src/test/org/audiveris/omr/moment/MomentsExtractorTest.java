@@ -60,11 +60,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         for (Shape shape : ShapeSet.allPhysicalShapes) {
             ShapeSymbol symbol = Symbols.getSymbol(shape);
 
-            // If no plain symbol, use the decorated symbol as plan B
-            if (symbol == null) {
-                symbol = Symbols.getSymbol(shape, true);
-            }
-
             if (symbol != null) {
                 System.out.println("shape:" + shape);
 

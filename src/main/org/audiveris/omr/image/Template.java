@@ -75,9 +75,6 @@ public class Template
 
     private static final Logger logger = LoggerFactory.getLogger(Template.class);
 
-    /** Ratio applied to small symbols (cue / grace). */
-    public static final double smallRatio = constants.smallRatio.getValue();
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Template shape. */
     private final Shape shape;
@@ -685,12 +682,8 @@ public class Template
             extends ConstantSet
     {
 
-        private final Constant.Ratio smallRatio = new Constant.Ratio(
-                0.67,
-                "Global ratio applied to small (cue/grace) templates");
-
         private final Constant.Ratio foreWeight = new Constant.Ratio(
-                5.0, // Was 1.0, now modified for cross heads
+                5.0,
                 "Weight assigned to template foreground pixels");
 
         private final Constant.Ratio backWeight = new Constant.Ratio(
@@ -698,7 +691,7 @@ public class Template
                 "Weight assigned to template exterior background pixels");
 
         private final Constant.Ratio holeWeight = new Constant.Ratio(
-                4.0, // Was 1.0, now modified for cross heads
+                4.0,
                 "Weight assigned to template interior background pixels");
 
         private final Scale.Fraction dilation = new Scale.Fraction(

@@ -29,7 +29,7 @@ import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -48,7 +48,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class BeamSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -62,44 +62,20 @@ public class BeamSymbol
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BeamSymbol.
-     *
-     * @param decorated true for a decorated image
      */
-    public BeamSymbol (boolean decorated)
+    public BeamSymbol ()
     {
-        this(false, Shape.BEAM, null, decorated);
+        this(Shape.BEAM);
     }
 
     /**
      * Create a BeamSymbol.
      *
-     * @param thicknessFraction specified thickness, if any
-     * @param decorated         true for a decorated image
+     * @param shape the precise shape
      */
-    public BeamSymbol (Double thicknessFraction,
-                       boolean decorated)
+    protected BeamSymbol (Shape shape)
     {
-        this(false, Shape.BEAM, thicknessFraction, decorated);
-    }
-
-    //------------//
-    // BeamSymbol //
-    //------------//
-    /**
-     * Create a BeamSymbol.
-     *
-     * @param isIcon            true for an icon
-     * @param shape             the precise shape
-     * @param thicknessFraction specified thickness, if any
-     * @param decorated         true for a decorated image
-     */
-    protected BeamSymbol (boolean isIcon,
-                          Shape shape,
-                          Double thicknessFraction,
-                          boolean decorated)
-    {
-        super(isIcon, shape, decorated);
-        this.thicknessFraction = thicknessFraction;
+        super(shape);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -159,24 +135,6 @@ public class BeamSymbol
         }
     }
 
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new BeamSymbol(isIcon, shape, thicknessFraction, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BeamSymbol(true, shape, thicknessFraction, decorated);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -196,7 +154,7 @@ public class BeamSymbol
 
         p.layout = font.layout(quarter.getString()); // Quarter layout
 
-        if (decorated) {
+        if (isDecorated) {
             p.quarterCount = 2;
 
             Rectangle2D qRect = p.layout.getBounds();
@@ -252,7 +210,7 @@ public class BeamSymbol
         Area area = AreaUtil.horizontalParallelogram(p.model.p1, p.model.p2, p.model.thickness);
         g.fill(area);
 
-        if (decorated) {
+        if (isDecorated) {
             // Draw the two quarters
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
