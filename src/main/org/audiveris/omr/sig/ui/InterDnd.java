@@ -401,6 +401,6 @@ public class InterDnd
         // Adapt image to current interline
         final int zoomedInterline = (int) Math.rint(zoomRatio * interline);
         final MusicFont font = MusicFont.getBaseFont(zoomedInterline);
-        glass.setImage(symbol.getDecoratedSymbol().buildImage(font, curveStroke));
+        glass.setImage(symbol.getDecoratedVersion().buildImage(font, curveStroke));
     }
 }

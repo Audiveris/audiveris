@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,7 @@ public class TimeCustomInter
                             int den,
                             Double grade)
     {
-        super(null, Shape.CUSTOM_TIME, grade);
+        super(null, Shape.TIME_CUSTOM, grade);
 
         this.num = num;
         this.den = den;
@@ -86,7 +87,7 @@ public class TimeCustomInter
      */
     private TimeCustomInter ()
     {
-        super(null, Shape.CUSTOM_TIME, 0.0);
+        super(null, Shape.TIME_CUSTOM, 0.0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -150,7 +151,7 @@ public class TimeCustomInter
     @Override
     public ShapeSymbol getShapeSymbol ()
     {
-        return new NumDenSymbol(shape, ShapeSymbol.numberCodes(num), ShapeSymbol.numberCodes(den));
+        return new NumDenSymbol(shape, Symbols.numberCodes(num), Symbols.numberCodes(den));
     }
 
     //-----------------//
@@ -162,7 +163,7 @@ public class TimeCustomInter
         // Multi symbol (num / den)
         Point center = getCenter(); // Use area center
         NumDenSymbol symbol = new NumDenSymbol(
-                shape, ShapeSymbol.numberCodes(num), ShapeSymbol.numberCodes(den));
+                shape, Symbols.numberCodes(num), Symbols.numberCodes(den));
         MusicFont musicFont = MusicFont.getBaseFont(interline);
         Dimension dim = symbol.getDimension(musicFont);
 

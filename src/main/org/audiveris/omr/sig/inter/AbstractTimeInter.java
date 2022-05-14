@@ -320,7 +320,7 @@ public abstract class AbstractTimeInter
             shape = predefinedShape(timeRational);
 
             if (shape == null) {
-                shape = Shape.CUSTOM_TIME;
+                shape = Shape.TIME_CUSTOM;
             }
         }
 

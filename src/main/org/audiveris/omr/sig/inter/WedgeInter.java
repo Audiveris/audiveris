@@ -36,7 +36,6 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.WedgeSymbol;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Jaxb;
 
@@ -58,6 +57,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
+import org.audiveris.omr.ui.symbol.Symbols;
+
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class <code>WedgeInter</code> represents a wedge (crescendo or diminuendo).
@@ -187,12 +190,21 @@ public class WedgeInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation)
+                               Point loc)
     {
-        WedgeSymbol wedgeSymbol = (WedgeSymbol) symbol;
-        Model model = wedgeSymbol.getModel(font, dropLocation);
-        l1 = new Line2D.Double(model.top1, model.top2);
-        l2 = new Line2D.Double(model.bot1, model.bot2);
+        final TextLayout layout = font.layout(Symbols.getSymbol(shape));
+        final Rectangle2D wr = layout.getBounds();
+        final double halfWidth = wr.getWidth() / 2;
+        final double halfHeight = wr.getHeight() / 2;
+
+        if (shape == Shape.CRESCENDO) {
+            l1 = new Line2D.Double(loc.x - halfWidth, loc.y, loc.x + halfWidth, loc.y - halfHeight);
+            l2 = new Line2D.Double(loc.x - halfWidth, loc.y, loc.x + halfWidth, loc.y + halfHeight);
+        } else {
+            l1 = new Line2D.Double(loc.x - halfWidth, loc.y - halfHeight, loc.x + halfWidth, loc.y);
+            l2 = new Line2D.Double(loc.x - halfWidth, loc.y + halfHeight, loc.x + halfWidth, loc.y);
+        }
+
         setBounds(null);
 
         return true;
@@ -342,7 +354,7 @@ public class WedgeInter
                 if (chordBelow != null) {
                     links.add(new Link(chordBelow, new ChordWedgeRelation(side), false));
                 } else {
-                    logger.info("No chord for {} {}", this, side);
+                    logger.debug("No chord for {} {}", this, side);
                 }
             }
         }

@@ -51,19 +51,7 @@ public class SlurSymbol
      */
     public SlurSymbol (boolean above)
     {
-        this(above, false);
-    }
-
-    /**
-     * Create a SlurSymbol.
-     *
-     * @param above  true for above, false for below
-     * @param isIcon true for an icon
-     */
-    protected SlurSymbol (boolean above,
-                          boolean isIcon)
-    {
-        super(isIcon, above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, false);
+        super(above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW);
         this.above = above;
     }
 
@@ -79,15 +67,6 @@ public class SlurSymbol
         p.model.translate(p.vectorTo(location));
 
         return p.model;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new SlurSymbol(above, true);
     }
 
     //-----------//

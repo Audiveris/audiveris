@@ -49,29 +49,10 @@ public class SlashedFlagSymbol
      */
     public SlashedFlagSymbol ()
     {
-        this(false);
-    }
-
-    /**
-     * Creates a new <code>SmallFlagSymbol</code> object.
-     *
-     * @param isIcon true for an icon
-     */
-    protected SlashedFlagSymbol (boolean isIcon)
-    {
-        super(isIcon, Shape.SMALL_FLAG_SLASH, false);
+        super(Shape.SMALL_FLAG_SLASH);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new SlashedFlagSymbol(true);
-    }
-
     //-----------//
     // getParams //
     //-----------//

@@ -36,24 +36,12 @@ public class KeySharpSymbol
     /**
      * Creates a new KeySharpSymbol object.
      *
-     * @param key    the key value: 1..7 for sharps
-     * @param isIcon true for an icon
-     * @param shape  the related shape
+     * @param key   the key value: 1..7 for sharps
+     * @param shape the related shape
      */
     public KeySharpSymbol (int key,
-                           boolean isIcon,
                            Shape shape)
     {
-        super(key, isIcon, shape, 35);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new KeySharpSymbol(fifths, true, shape);
+        super(key, shape, Symbols.CODE_SHARP);
     }
 }

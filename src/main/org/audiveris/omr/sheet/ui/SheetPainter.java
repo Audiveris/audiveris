@@ -85,8 +85,6 @@ import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
-import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
-import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -109,12 +107,10 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -489,23 +485,12 @@ public abstract class SheetPainter
         //---------//
         public void process (SIGraph sig)
         {
-            final Sheet sheet = sig.getSystem().getSheet();
-            final int bracketGrowth = 2 * sheet.getInterline();
-
             // Use a COPY of vertices, to reduce risks of concurrent modifications (but not all...)
-            Set<Inter> copy = new LinkedHashSet<>(sig.vertexSet());
-
-            for (Inter inter : copy) {
+            for (Inter inter : new LinkedHashSet<>(sig.vertexSet())) {
                 if (!inter.isRemoved()) {
-                    Rectangle bounds = inter.getBounds();
+                    final Rectangle bounds = inter.getBounds();
 
                     if (bounds != null) {
-                        // Dirty hack to make sure bracket serifs are fully painted
-                        // (despite the fact that bracket serif is not included in their bounds)
-                        if (inter.getShape() == Shape.BRACKET) {
-                            bounds.grow(bracketGrowth, bracketGrowth);
-                        }
-
                         if ((clip == null) || clip.intersects(bounds)) {
                             inter.accept(this);
                         }
@@ -689,12 +674,17 @@ public abstract class SheetPainter
         {
             setColor(brace);
 
-            final Rectangle box = brace.getBounds();
-            final Point2D center = GeoUtil.center2D(box);
-            final Dimension halfDim = new Dimension(box.width, box.height / 2);
-            final MusicFont font = getMusicFont(false);
-            OmrFont.paint(g, font.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
-            OmrFont.paint(g, font.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
+            final Staff staff = brace.getStaff();
+            final MusicFont font = getMusicFont(staff);
+            final Rectangle bounds = brace.getBounds();
+
+            if (bounds != null) {
+                final ShapeSymbol symbol = Symbols.getSymbol(brace.getShape());
+                final TextLayout layout = font.layout(symbol,
+                                                      new Dimension(bounds.width, bounds.height));
+                final Point2D center = GeoUtil.center2D(bounds);
+                MusicFont.paint(g, layout, center, AREA_CENTER);
+            }
         }
 
         //-------//
@@ -717,63 +707,25 @@ public abstract class SheetPainter
 
             final MusicFont font = getMusicFont(false);
             final BracketInter.BracketKind kind = bracket.getKind();
-            final Line2D median = bracket.getMedian();
-            final double width = bracket.getWidth();
+            final Line2D median = bracket.getMedian(); // Trunk median
+            final double width = bracket.getWidth(); // Trunk width
 
-            // Serif symbol (its dimension is defined by ratio of trunck width)
-            final double widthRatio = 2.7; // Symbol width WRT bar width
-            final double heightRatio = widthRatio * 1.25; // Symbol height WRT bar width
-            final Dimension serifDim = new Dimension(
-                    (int) Math.rint(widthRatio * width),
-                    (int) Math.rint(heightRatio * width));
-
-            Integer trunkTop = null;
-
+            // Upper symbol part?
             if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
-                // Upper symbol part
-                final TextLayout topLayout = font.layout(SYMBOL_BRACKET_UPPER_SERIF, serifDim);
-                final Rectangle2D topRect = topLayout.getBounds();
-                final Point2D topLeft = new Point2D.Double(
-                        median.getX1() - (width / 2),
-                        median.getY1() + topRect.getY());
-                final Rectangle tx = new Rectangle2D.Double(
-                        topLeft.getX(),
-                        topLeft.getY(),
-                        topRect.getWidth(),
-                        median.getY1() - topLeft.getY()).getBounds();
-                g.setClip(clip.intersection(tx));
-                OmrFont.paint(g, topLayout, topLeft, TOP_LEFT);
-                trunkTop = tx.y + tx.height;
+                final Point2D topLeft = new Point2D.Double(median.getX1() - (width / 2),
+                                                           median.getY1());
+                OmrFont.paint(g, font.layout(SYMBOL_BRACKET_UPPER_SERIF), topLeft, BOTTOM_LEFT);
             }
 
-            Integer trunkBot = null;
-
+            // Lower symbol part?
             if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
-                // Lower symbol part
-                final TextLayout botLayout = font.layout(SYMBOL_BRACKET_LOWER_SERIF, serifDim);
-                final Rectangle2D botRect = botLayout.getBounds();
-                final Point2D botLeft = new Point2D.Double(
-                        median.getX2() - (width / 2),
-                        median.getY2() + botRect.getHeight() + botRect.getY());
-                final Rectangle bx = new Rectangle2D.Double(
-                        botLeft.getX(),
-                        median.getY2(),
-                        botRect.getWidth(),
-                        botLeft.getY() - median.getY2()).getBounds();
-                g.setClip(clip.intersection(bx));
-                OmrFont.paint(g, botLayout, botLeft, BOTTOM_LEFT);
-                trunkBot = bx.y;
+                final Point2D botLeft = new Point2D.Double(median.getX2() - (width / 2),
+                                                           median.getY2());
+                OmrFont.paint(g, font.layout(SYMBOL_BRACKET_LOWER_SERIF), botLeft, TOP_LEFT);
             }
 
             // Trunk area
-            final Area trunk = AreaUtil.verticalParallelogram(
-                    new Point2D.Double(median.getX1(), (trunkTop != null) ? trunkTop : median
-                                       .getY1()),
-                    new Point2D.Double(median.getX2(), (trunkBot != null) ? trunkBot : median
-                                       .getY2()),
-                    width);
-            g.setClip(clip);
-            g.fill(trunk);
+            g.fill(AreaUtil.verticalParallelogram(median.getP1(), median.getP2(), width));
         }
 
         //-------//
@@ -1047,7 +999,7 @@ public abstract class SheetPainter
             setColor(inter);
 
             final ShapeSymbol symbol = new NumDenSymbol(
-                    Shape.CUSTOM_TIME,
+                    Shape.TIME_CUSTOM,
                     inter.getNumerator(),
                     inter.getDenominator());
 

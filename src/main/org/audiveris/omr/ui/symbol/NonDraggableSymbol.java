@@ -48,31 +48,10 @@ public class NonDraggableSymbol
      */
     public NonDraggableSymbol (int... codes)
     {
-        this(false, codes);
-    }
-
-    /**
-     * Create an NonDraggableSymbol
-     *
-     * @param isIcon true for an icon
-     * @param codes  the codes for MusicFont characters
-     */
-    protected NonDraggableSymbol (boolean isIcon,
-                                  int... codes)
-    {
-        super(isIcon, Shape.NON_DRAGGABLE, true, codes); // Decorated
+        super(Shape.NON_DRAGGABLE, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new NonDraggableSymbol(true, codes);
-    }
-
     //-----------//
     // getParams //
     //-----------//

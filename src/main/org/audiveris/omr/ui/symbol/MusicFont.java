@@ -57,13 +57,12 @@ import java.util.Map;
  * There are two well-known pre-scaled instances of this class:
  * <ul>
  * <li>{@link #baseMusicFont} for standard symbols (scale = 1)</li>
- * <li>{@link #iconMusicFont} for icon symbols (scale = 1/2)</li>
+ * <li>{@link #tinyMusicFont} for icon symbols (scale = 1/2)</li>
  * </ul>
- * The current underlying font is <b>MusicalSymbols</b>.
+ * The current underlying font is <b>Bravura</b>.
  *
- * @see
- * <a href=
- *      "http://fonts.simplythebest.net/font/108/musical_symbols-font.font">http://fonts.simplythebest.net/font/108/musical_symbols-font.font</a>
+ * @see <a href="https://www.smufl.org/version/">Bravura</a>
+ *
  * @author Hervé Bitteur
  */
 public class MusicFont
@@ -79,14 +78,17 @@ public class MusicFont
      * The music font name: {@value} (no other one is used).
      * Possibilities: MusicalSymbols, Symbola, Bravura
      */
-    public static final String FONT_NAME = "MusicalSymbols";
+    public static final String FONT_NAME = "Bravura";
 
     /**
      * Offset for code range.
-     * 0xf000 for MusicalSymbols
-     * 0x1d100 for Symbola or Bravura
+     * <ul>
+     * <li>0 for Bravura
+     * <li>0xf000 for MusicalSymbols
+     * <li>0x1d100 for Symbola
+     * </ul>
      */
-    public static final int CODE_OFFSET = 0xf000;
+    public static final int CODE_OFFSET = 0;
 
     /** Cache of font according to scaling value (pointSize, staffInterline). */
     private static final Map<Scaling, MusicFont> scalingMap = new HashMap<>();
@@ -96,13 +98,13 @@ public class MusicFont
 
     /** The music font used for default interline. */
     public static final MusicFont baseMusicFont = getPointFont(
-            getPointSize(DEFAULT_INTERLINE),
-            DEFAULT_INTERLINE);
+            getPointSize(DEFAULT_INTERLINE), DEFAULT_INTERLINE);
 
-    /** The music font used just for icons (half-size). */
-    public static final MusicFont iconMusicFont = getPointFont(
-            getPointSize(DEFAULT_INTERLINE) / 2,
-            DEFAULT_INTERLINE / 2);
+    private static final int tinyInterline = (int) Math.rint(DEFAULT_INTERLINE * RATIO_TINY);
+
+    /** The music font used for tiny images (used notably by shape buttons). */
+    public static final MusicFont tinyMusicFont = getPointFont(
+            getPointSize(tinyInterline), tinyInterline);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Interline value of the staves where this font is used. */
@@ -307,7 +309,7 @@ public class MusicFont
      *
      * @param shape     the desired shape
      * @param interline the related interline value
-     * @param decorated true if shape display must use decorations
+     * @param decorated true if shape display should use decorations
      * @return the image built with proper scaling, or null
      */
     public static BufferedImage buildImage (Shape shape,
@@ -344,7 +346,7 @@ public class MusicFont
     public static boolean checkMusicFont ()
     {
         if (baseMusicFont.getFamily().equals("Dialog")) {
-            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME + ".ttf";
+            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME;
             logger.error(msg);
 
             if (OMR.gui != null) {

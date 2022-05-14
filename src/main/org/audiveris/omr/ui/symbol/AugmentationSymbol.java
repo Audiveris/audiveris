@@ -23,7 +23,8 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
@@ -38,7 +39,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class AugmentationSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -54,42 +55,12 @@ public class AugmentationSymbol
      *
      * @param decorated true for a decorated image
      */
-    public AugmentationSymbol (boolean decorated)
+    public AugmentationSymbol ()
     {
-        this(false, decorated);
-    }
-
-    /**
-     * Create a <code>AugmentationSymbol</code> (with decoration?)
-     *
-     * @param isIcon    true for an icon
-     * @param decorated true for a decorated image
-     */
-    protected AugmentationSymbol (boolean isIcon,
-                                  boolean decorated)
-    {
-        super(isIcon, Shape.AUGMENTATION_DOT, decorated, 46);
+        super(Shape.AUGMENTATION_DOT, Symbols.CODE_AUGMENTATION_DOT);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new AugmentationSymbol(isIcon, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new AugmentationSymbol(true, decorated);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -101,7 +72,7 @@ public class AugmentationSymbol
         // Augmentation symbol layout
         p.layout = font.layout(getString());
 
-        if (decorated) {
+        if (isDecorated) {
             // Head layout
             p.headLayout = font.layout(head.getString());
 
@@ -129,7 +100,7 @@ public class AugmentationSymbol
     {
         MyParams p = (MyParams) params;
 
-        if (decorated) {
+        if (isDecorated) {
             // Draw a note head (using composite) on the left side
             Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
             Composite oldComposite = g.getComposite();

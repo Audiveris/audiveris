@@ -23,7 +23,8 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
@@ -33,12 +34,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>ArticulationSymbol</code> implements an articulation symbol.
+ * Class <code>ArticulationSymbol</code> implements an articulation symbol, perhaps decorated.
  *
  * @author Hervé Bitteur
  */
 public class ArticulationSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -53,54 +54,18 @@ public class ArticulationSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a <code>ArticulationSymbol</code> (with decoration?) standard size
+     * Create a <code>ArticulationSymbol</code> standard size, with no decoration.
      *
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for articulation part
+     * @param shape the precise shape
+     * @param codes precise code for articulation part
      */
     public ArticulationSymbol (Shape shape,
-                               boolean decorated,
                                int... codes)
     {
-        this(false, shape, decorated, codes);
-    }
-
-    /**
-     * Create a <code>ArticulationSymbol</code> (with decoration?)
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for articulation part
-     */
-    protected ArticulationSymbol (boolean isIcon,
-                                  Shape shape,
-                                  boolean decorated,
-                                  int... codes)
-    {
-        super(isIcon, shape, decorated, codes);
+        super(shape, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new ArticulationSymbol(isIcon, shape, true, codes);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new ArticulationSymbol(true, shape, decorated, codes);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -114,7 +79,7 @@ public class ArticulationSymbol
 
         Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
-        if (decorated) {
+        if (isDecorated) {
             // Head layout
             p.headLayout = font.layout(head.getString());
 
@@ -146,7 +111,7 @@ public class ArticulationSymbol
     {
         MyParams p = (MyParams) params;
 
-        if (decorated) {
+        if (isDecorated) {
             // Draw a note head (using composite) on the bottom
             Point2D loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();

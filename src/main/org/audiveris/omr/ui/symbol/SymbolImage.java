@@ -44,8 +44,7 @@ public class SymbolImage
      *
      * @param width    image width in pixels
      * @param height   image height in pixels
-     * @param refPoint the reference point, if any, with coordinates defined
-     *                 from image center
+     * @param refPoint the reference point, if any, with coordinates defined from image center
      */
     public SymbolImage (int width,
                         int height,

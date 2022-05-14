@@ -876,7 +876,7 @@ public class InterFactory
         case TIME_TWELVE_EIGHT:
             return new TimeWholeInter(null, shape, GRADE);
 
-        case CUSTOM_TIME:
+        case TIME_CUSTOM:
             return new TimeCustomInter(0, 0, GRADE);
 
         // Noteheads

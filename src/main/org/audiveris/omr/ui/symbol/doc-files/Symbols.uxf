@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>160</y>
+      <w>220</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>*/SymbolIcon/*
+bg=#ccccff
+--
+paintSymbol(g,font,loc,alignment)
+buildImage(font)
+buildImage(font,curveStroke)
+getCentroid(box)
+getDimension(font)
+getIntrinsicImage()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>280</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>60</x>
+      <y>20</y>
+      <w>150</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>javax.swing
+*/Icon/*
+bg=#ffffff
+--
+--
+paintIcon(comp,g,x,y)
+getIconWidth()
+getIconHeight()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>330</y>
+      <w>220</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>*BasicSymbol*
+bg=#ffffaa
+--
+codes
+isTiny?
+centroidOffset
+image
+dimension
+--
+getImage()
+getString()
+getTinyVersion()
+#createIcon()
+#getDimension()
+#getHeight()
+#getParams(font)
+#getWidth()
+#layout(font)
+#paint(g,params,loc,alignment)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>110</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>130</x>
+      <y>650</y>
+      <w>220</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>*ShapeSymbol*
+bg=#ffffaa
+--
+shape
+isSmallShape?
+isDecorated?
+--
+getTip()
+getModel(font,loc)
+updateModel(sheet)
+updateModel(staff)
+#supportsDecoration()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>150</x>
+      <y>600</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>20</x>
+      <y>860</y>
+      <w>140</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>*TemplateSymbol*
+bg=#ffcccc
+--
+shape
+isSmallShape?
+--
+getFatBounds(font)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>50</x>
+      <y>600</y>
+      <w>30</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;260.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>330</x>
+      <y>960</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>LedgerSymbol
+bg=#ccffcc</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>350</x>
+      <y>980</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>BeamSymbol
+bg=#ccffcc</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>190</x>
+      <y>880</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>FlatSymbol
+bg=#ccffcc</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>910</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>270</x>
+      <y>500</y>
+      <w>200</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>java.awt.datatransfer
+*/Transferable/*
+--
+--
+getTransferDataFlavors()
+isDataFlavorSupported(flavor)
+getTransferData(flavor)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>310</x>
+      <y>590</y>
+      <w>30</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>370</x>
+      <y>1000</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>etc...
+bg=#ccffcc</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>670</y>
+      <w>120</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+r2=smallVersion</panel_attributes>
+    <additional_attributes>10.0;40.0;40.0;40.0;40.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>720</y>
+      <w>150</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+r2=decoratedVersion</panel_attributes>
+    <additional_attributes>10.0;40.0;40.0;40.0;40.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>230</x>
+      <y>360</y>
+      <w>110</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+r2=tinyVersion</panel_attributes>
+    <additional_attributes>10.0;40.0;40.0;40.0;40.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>310</x>
+      <y>860</y>
+      <w>150</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>*DecorableSymbol*
+bg=#ffffaa
+--
+--
+#supportsDecoration()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>320</x>
+      <y>810</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>810</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>180</x>
+      <y>860</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>BraceSymbol
+bg=#ccffcc</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>200</x>
+      <y>900</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>etc...
+bg=#ccffcc</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
