@@ -319,6 +319,8 @@ public enum Shape
     //
     NOTEHEAD_CROSS("Ghost note with rhythmic value but no discernible pitch"),
     NOTEHEAD_DIAMOND_FILLED("Filled diamond shape note head for unpitched percussion"),
+    NOTEHEAD_TRIANGLE_DOWN_FILLED("Filled point-down triangle shape note head for unpitched percussion"),
+    NOTEHEAD_TRIANGLE_DOWN_VOID("Hollow point-down triangle shape note head for unpitched percussion"),
     NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
     NOTEHEAD_BLACK("Filled note head for quarters and less"),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
