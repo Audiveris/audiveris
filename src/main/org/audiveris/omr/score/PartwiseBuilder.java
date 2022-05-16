@@ -475,26 +475,63 @@ public class PartwiseBuilder
                 ? logicalPart.getName()
                 : logicalPart.getDefaultName());
 
-        // Score instrument
-        Integer midiProgram = logicalPart.getMidiProgram();
+        // Is this a drum part? If so, create drumset and export all midi instruments.
+        /** SystemInfo system = logicalPart.getSystem();  // doesn't work: LogicalPart has no getSystem() method!
+        Part systemPart = system.getPartById(logicalPart.getId());
+        
+        if (systemPart != null && systemPart.isDrumPart()) {
+        // TODO: What if systemPart == null? Should we create a dummy part and test its associated scorePart?
+        */
+        if ( logicalPart.getName() == "Drumset" ) // temporary workaround [doesn't actually detect drum part]
+        // if ( logicalPart.getId() == 1 ) // temporary workaround
+        {
+            Drumset drumset = new Drumset();
+            DrumInstrument[] drums = drumset.drum;
+            // current.drum = drum;  // we don't have a Current object yet
+            for (int i=0; i<Drumset.DRUM_INSTRUMENTS; i++) 
+            {
+                if (drums[i] != null)
+                {
+                    // Score instrument
+                    ScoreInstrument scoreInstrument = new ScoreInstrument();
+                    pmScorePart.getScoreInstrument().add(scoreInstrument);
+                    scoreInstrument.setId(pmScorePart.getId() + "-I" + Integer.toString(i+1));
+                    scoreInstrument.setInstrumentName(drums[i].name);
+                    
+                    // Midi instrument
+                    MidiInstrument midiInstrument = factory.createMidiInstrument();
+                    pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
+                    midiInstrument.setId(scoreInstrument);
+                    midiInstrument.setMidiChannel(10); // in [1..16] range
+                    midiInstrument.setMidiProgram(1);
+                    midiInstrument.setMidiUnpitched(i+1);
+                    midiInstrument.setVolume(new BigDecimal(score.getVolume()));
+                }
+            }
+        } else {
 
-        if (midiProgram == null) {
-            midiProgram = logicalPart.getDefaultProgram();
+            // Score instrument
+            Integer midiProgram = logicalPart.getMidiProgram();
+
+            if (midiProgram == null) {
+                midiProgram = logicalPart.getDefaultProgram();
+            }
+
+            ScoreInstrument scoreInstrument = new ScoreInstrument();
+            pmScorePart.getScoreInstrument().add(scoreInstrument);
+            scoreInstrument.setId(pmScorePart.getId() + "-I1");
+            scoreInstrument.setInstrumentName(MidiAbstractions.getProgramName(midiProgram));
+
+            // Midi instrument
+            MidiInstrument midiInstrument = factory.createMidiInstrument();
+            pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
+            midiInstrument.setId(scoreInstrument);
+            midiInstrument.setMidiChannel(1 + ((logicalPart.getId() - 1) % 16)); // in [1..16] range
+            midiInstrument.setMidiProgram(midiProgram);
+            midiInstrument.setVolume(new BigDecimal(score.getVolume()));
+
         }
-
-        ScoreInstrument scoreInstrument = new ScoreInstrument();
-        pmScorePart.getScoreInstrument().add(scoreInstrument);
-        scoreInstrument.setId(pmScorePart.getId() + "-I1");
-        scoreInstrument.setInstrumentName(MidiAbstractions.getProgramName(midiProgram));
-
-        // Midi instrument
-        MidiInstrument midiInstrument = factory.createMidiInstrument();
-        pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
-        midiInstrument.setId(scoreInstrument);
-        midiInstrument.setMidiChannel(1 + ((logicalPart.getId() - 1) % 16)); // in [1..16] range
-        midiInstrument.setMidiProgram(midiProgram);
-        midiInstrument.setVolume(new BigDecimal(score.getVolume()));
-
+        
         // LogicalPart in scorePartwise
         ScorePartwise.Part pmPart = factory.createScorePartwisePart();
         scorePartwise.getPart().add(pmPart);
@@ -1954,6 +1991,10 @@ public class PartwiseBuilder
                     }
                 }
 
+                // Measure firstMeasure = current.measure.getPart().getFirstMeasure();
+                // ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
+                // TODO: It is inefficient to check clef for every note! Should make an isDrumStaff() test.
+
                 if (staff.isOneLineStaff()) {
                     // Unpitched
                     Unpitched unpitched = factory.createUnpitched();
@@ -1961,6 +2002,13 @@ public class PartwiseBuilder
                     // For Finale:    G3
                     unpitched.setDisplayStep(Step.F);
                     unpitched.setDisplayOctave(5);
+                    current.pmNote.setUnpitched(unpitched);
+                } else if (current.isDrumPart) {
+                    // Unpitched 5-line percussion staff
+                    Unpitched unpitched = factory.createUnpitched();
+                    unpitched.setDisplayStep(stepOf(note.getStep()));
+                    unpitched.setDisplayOctave(note.getOctave());
+                    // TODO: need instrumentID too
                     current.pmNote.setUnpitched(unpitched);
                 } else {
                     // Pitch
@@ -1981,11 +2029,29 @@ public class PartwiseBuilder
                     current.pmNote.setPitch(pitch);
                 }
 
-                // Cross(x)?
+                /** Cross(x)?
                 if (note.getShape() == Shape.NOTEHEAD_CROSS) {
                     Notehead notehead = factory.createNotehead();
                     notehead.setValue(NoteheadValue.X);
                     current.pmNote.setNotehead(notehead);
+                }
+                */
+
+                // Non-oval notehead shape?
+                Notehead notehead = factory.createNotehead();
+                switch (note.getShape()) {
+                    case NOTEHEAD_CROSS:
+                        notehead.setValue(NoteheadValue.X);
+                        current.pmNote.setNotehead(notehead);
+                        break;
+                    case NOTEHEAD_DIAMOND_FILLED:
+                    case NOTEHEAD_DIAMOND_VOID:
+                    case WHOLE_NOTE_DIAMOND:
+                        notehead.setValue(NoteheadValue.DIAMOND);
+                        current.pmNote.setNotehead(notehead);
+                        break;
+                    default:
+                       // No need to specify NoteheadValue for standard oval heads
                 }
             }
 
@@ -2683,10 +2749,12 @@ public class PartwiseBuilder
             Part systemPart = system.getPartById(current.logicalPart.getId());
 
             if (systemPart != null) {
+                current.isDrumPart = systemPart.isDrumPart();
                 processPart(systemPart);
             } else {
                 // Need to build a dummy system Part on-the-fly
                 Part dummyPart = system.getFirstPart().createDummyPart(current.logicalPart.getId());
+                current.isDrumPart = dummyPart.isDrumPart();
                 processPart(dummyPart);
             }
 
@@ -3055,6 +3123,8 @@ public class PartwiseBuilder
 
         // Part dependent
         LogicalPart logicalPart;
+        Boolean isDrumPart;
+        // DrumInstrument[] drum;
 
         ScorePartwise.Part pmPart;
 
@@ -3116,6 +3186,74 @@ public class PartwiseBuilder
             endNote();
         }
     }
+
+    //----------------//
+    // DrumInstrument //
+    //----------------//
+    /** Class representing an individual percussion instrument */
+    public class DrumInstrument
+    {
+
+        /** Instrument name */
+        String name;
+
+        /** Notehead shape */
+        Shape notehead;
+
+        /** Staff pitch, 0 = middle line, increasing downwards */
+        int integerPitch;
+
+    //~ Constructors -------------------------------------------------------------------------------
+        public DrumInstrument(String name, Shape notehead, int integerPitch)
+        {
+            this.name = name;
+            this.notehead = notehead; 
+            this.integerPitch = integerPitch;
+        }
+    }
+
+    //---------//
+    // Drumset //
+    //---------//
+    /** Class representing a standard midi drumset */
+    public class Drumset
+    {
+        final static int DRUM_INSTRUMENTS = 128;
+
+        /** Array of drum instruments */
+        DrumInstrument[] drum = new DrumInstrument[DRUM_INSTRUMENTS];
+
+    //~ Constructors -------------------------------------------------------------------------------
+        public Drumset ()
+        {
+            this.drum[35] = new DrumInstrument( "Acoustic Bass Drum", Shape.NOTEHEAD_BLACK, 3);
+            this.drum[36] = new DrumInstrument( "Bass Drum 1",        Shape.NOTEHEAD_BLACK, 3);
+            this.drum[37] = new DrumInstrument( "Side Stick",         Shape.NOTEHEAD_CROSS, -1);
+            this.drum[38] = new DrumInstrument( "Acoustic Snare",     Shape.NOTEHEAD_BLACK, -1);
+            this.drum[40] = new DrumInstrument( "Electric Snare",     Shape.NOTEHEAD_BLACK, -1);
+            this.drum[41] = new DrumInstrument( "Low Floor Tom",      Shape.NOTEHEAD_BLACK, 1);
+            this.drum[42] = new DrumInstrument( "Closed Hi-Hat",      Shape.NOTEHEAD_CROSS, -5);
+            this.drum[43] = new DrumInstrument( "High Floor Tom",     Shape.NOTEHEAD_BLACK, 1);
+            this.drum[44] = new DrumInstrument( "Pedal Hi-Hat",       Shape.NOTEHEAD_CROSS, 5);
+            this.drum[45] = new DrumInstrument( "Low Tom",            Shape.NOTEHEAD_BLACK, -2);
+            this.drum[46] = new DrumInstrument( "Open Hi-Hat",        Shape.NOTEHEAD_CROSS, -3);
+            this.drum[47] = new DrumInstrument( "Low-Mid Tom",        Shape.NOTEHEAD_BLACK, -3);
+            this.drum[48] = new DrumInstrument( "Hi-Mid Tom",         Shape.NOTEHEAD_BLACK, -4);
+            this.drum[49] = new DrumInstrument( "Crash Cymbal 1",     Shape.NOTEHEAD_CROSS, -6);
+            this.drum[50] = new DrumInstrument( "High Tom",           Shape.NOTEHEAD_BLACK, -4);
+            this.drum[51] = new DrumInstrument( "Ride Cymbal 1",      Shape.NOTEHEAD_CROSS, -4);
+            this.drum[52] = new DrumInstrument( "Chinese Cymbal",     Shape.NOTEHEAD_CROSS, -7);
+            this.drum[53] = new DrumInstrument( "Ride Bell",          Shape.NOTEHEAD_DIAMOND_FILLED, -4);
+            this.drum[54] = new DrumInstrument( "Tambourine",         Shape.NOTEHEAD_DIAMOND_FILLED, -2);
+            this.drum[55] = new DrumInstrument( "Splash Cymbal",      Shape.NOTEHEAD_CROSS, -7);
+            this.drum[56] = new DrumInstrument( "Cowbell",            Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED,-3);
+            this.drum[57] = new DrumInstrument( "Crash Cymbal 2",     Shape.NOTEHEAD_CROSS, -7);
+            this.drum[59] = new DrumInstrument( "Ride Cymbal 2",      Shape.NOTEHEAD_CROSS, -2);
+            this.drum[63] = new DrumInstrument( "Open Hi Conga",      Shape.NOTEHEAD_CROSS, 4);
+            this.drum[64] = new DrumInstrument( "Low Conga",          Shape.NOTEHEAD_CROSS, 2);
+        }
+    }
+
 
     //---------//
     // IsFirst //

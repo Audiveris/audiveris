@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
@@ -1031,6 +1032,26 @@ public class Part
     public void setSystem (SystemInfo system)
     {
         this.system = system;
+    }
+
+    //------------//
+    // isDrumPart //
+    //------------//
+    /**
+     * Report whether this part is a (5-line unpitched) percussion part.
+     * 
+     * @return true if so, false if not (or if not certain, e.g. if no first measure clef is found)
+     */
+    public boolean isDrumPart()
+    {
+        Measure firstMeasure = getFirstMeasure();
+        if (firstMeasure != null) {
+            ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
+            if (staffClef != null) {
+                return staffClef.getShape() == Shape.PERCUSSION_CLEF;
+            }
+        }
+        return false;
     }
 
     //---------//
