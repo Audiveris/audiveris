@@ -40,6 +40,7 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+import static org.audiveris.omr.ui.symbol.Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Table;
