@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.3.0">
+<diagram program="umlet" version="15.0.0">
   <zoom_level>10</zoom_level>
   <element>
     <id>UMLClass</id>
@@ -95,13 +95,12 @@ getTinyVersion()
       <x>130</x>
       <y>650</y>
       <w>220</w>
-      <h>170</h>
+      <h>150</h>
     </coordinates>
     <panel_attributes>*ShapeSymbol*
 bg=#ffffaa
 --
 shape
-isSmallShape?
 isDecorated?
 --
 getTip()
@@ -114,7 +113,7 @@ updateModel(staff)
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>150</x>
+      <x>190</x>
       <y>600</y>
       <w>30</w>
       <h>70</h>
@@ -126,7 +125,7 @@ updateModel(staff)
     <id>UMLClass</id>
     <coordinates>
       <x>20</x>
-      <y>860</y>
+      <y>820</y>
       <w>140</w>
       <h>90</h>
     </coordinates>
@@ -134,7 +133,7 @@ updateModel(staff)
 bg=#ffcccc
 --
 shape
-isSmallShape?
+isSmall?
 --
 getFatBounds(font)</panel_attributes>
     <additional_attributes/>
@@ -145,16 +144,16 @@ getFatBounds(font)</panel_attributes>
       <x>50</x>
       <y>600</y>
       <w>30</w>
-      <h>280</h>
+      <h>240</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;260.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;220.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>330</x>
-      <y>960</y>
+      <y>940</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -166,7 +165,7 @@ bg=#ccffcc</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>350</x>
-      <y>980</y>
+      <y>960</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -178,7 +177,7 @@ bg=#ccffcc</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>190</x>
-      <y>880</y>
+      <y>860</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -190,7 +189,7 @@ bg=#ccffcc</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>370</x>
-      <y>910</y>
+      <y>890</y>
       <w>30</w>
       <h>70</h>
     </coordinates>
@@ -201,7 +200,7 @@ bg=#ccffcc</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>270</x>
-      <y>500</y>
+      <y>510</y>
       <w>200</w>
       <h>100</h>
     </coordinates>
@@ -217,37 +216,25 @@ getTransferData(flavor)</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>310</x>
-      <y>590</y>
+      <x>290</x>
+      <y>600</y>
       <w>30</w>
-      <h>80</h>
+      <h>70</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>370</x>
-      <y>1000</y>
+      <y>980</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>etc...
 bg=#ccffcc</panel_attributes>
     <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>340</x>
-      <y>670</y>
-      <w>120</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-
-r2=smallVersion</panel_attributes>
-    <additional_attributes>10.0;40.0;40.0;40.0;40.0;20.0;10.0;20.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -277,7 +264,7 @@ r2=tinyVersion</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>310</x>
-      <y>860</y>
+      <y>840</y>
       <w>150</w>
       <h>60</h>
     </coordinates>
@@ -292,7 +279,7 @@ bg=#ffffaa
     <id>Relation</id>
     <coordinates>
       <x>320</x>
-      <y>810</y>
+      <y>790</y>
       <w>30</w>
       <h>70</h>
     </coordinates>
@@ -303,7 +290,7 @@ bg=#ffffaa
     <id>Relation</id>
     <coordinates>
       <x>220</x>
-      <y>810</y>
+      <y>790</y>
       <w>30</w>
       <h>70</h>
     </coordinates>
@@ -314,7 +301,7 @@ bg=#ffffaa
     <id>UMLClass</id>
     <coordinates>
       <x>180</x>
-      <y>860</y>
+      <y>840</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -326,12 +313,37 @@ bg=#ccffcc</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>200</x>
-      <y>900</y>
+      <y>880</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>etc...
 bg=#ccffcc</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>100</x>
+      <y>940</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>*TransformedSymbol*
+bg=#ffffaa
+--
+affineTransform</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>160</x>
+      <y>790</y>
+      <w>30</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;150.0</additional_attributes>
   </element>
 </diagram>
