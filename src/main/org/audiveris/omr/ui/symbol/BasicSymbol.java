@@ -22,7 +22,8 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>BasicSymbol</code> is the base for implementing instances of {@link SymbolIcon}
@@ -54,16 +52,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "symbol")
 public class BasicSymbol
-        implements SymbolIcon
+        implements SymbolIcon, Cloneable
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
-
-    /** Painting origin for images. */
-    protected static final Point ORIGIN = new Point(0, 0);
 
     /** A transformation to flip horizontally (x' = -x). */
     protected static final AffineTransform horizontalFlip = new AffineTransform(
@@ -91,42 +85,26 @@ public class BasicSymbol
     protected static final AffineTransform quadrantRotateTwo = AffineTransform
             .getQuadrantRotateInstance(2);
 
-    /** A transformation for really small icon display. */
-    protected static final AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of point codes. */
     public final int[] codes;
-
-    /** To flag an icon symbol. */
-    protected final boolean isIcon;
-
-    /** Pre-scaled symbol for icon display. */
-    protected BasicSymbol icon;
 
     /** Offset of centroid WRT area center, specified in ratio of width and height. */
     protected Point2D centroidOffset;
 
     /** Related image, corresponding to standard interline. */
-    private BufferedImage image;
+    protected SymbolImage image;
 
     /** Image dimension corresponding to standard interline. */
-    private Dimension dimension;
+    protected Dimension dimension;
+
+    /** Indicates this is a tiny version. */
+    protected boolean isTiny;
+
+    /** Related tiny version, if any. */
+    protected BasicSymbol tinyVersion;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new BasicSymbol object.
-     *
-     * @param isIcon true for an icon, false for standard size
-     * @param codes  the codes for MusicFont characters
-     */
-    public BasicSymbol (boolean isIcon,
-                        int... codes)
-    {
-        this.isIcon = isIcon;
-        this.codes = shiftedCodesOf(codes);
-    }
-
     /**
      * Creates a new BasicSymbol object, standard size.
      *
@@ -134,16 +112,7 @@ public class BasicSymbol
      */
     public BasicSymbol (int... codes)
     {
-        this(false, codes);
-    }
-
-    /**
-     * Useful?
-     */
-    public BasicSymbol ()
-    {
-        this.isIcon = false;
-        this.codes = null;
+        this.codes = shiftedCodesOf(codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -219,37 +188,41 @@ public class BasicSymbol
     // getIconHeight //
     //---------------//
     /**
-     * Report the icon height.
+     * Report the tiny version height.
      *
-     * @return the height of the icon image in pixels
+     * @return the height of the tiny version image in pixels
      */
     @Override
     public int getIconHeight ()
     {
-        return getIcon().getHeight();
-    }
-
-    //--------------//
-    // getIconImage //
-    //--------------//
-    @Override
-    public BufferedImage getIconImage ()
-    {
-        return getIcon().getImage();
+        return getTinyVersion().getHeight();
     }
 
     //--------------//
     // getIconWidth //
     //--------------//
     /**
-     * Report the width of the icon (used by swing when painting).
+     * Report the width of the tiny version (used by swing when painting).
      *
-     * @return the icon image width in pixels
+     * @return the tiny version image width in pixels
      */
     @Override
     public int getIconWidth ()
     {
-        return getIcon().getWidth();
+        return getTinyVersion().getWidth();
+    }
+
+    //-------------------//
+    // getIntrinsicImage //
+    //-------------------//
+    @Override
+    public SymbolImage getIntrinsicImage ()
+    {
+        if (dimension == null) {
+            computeImage();
+        }
+
+        return image;
     }
 
     //-----------//
@@ -263,6 +236,27 @@ public class BasicSymbol
     public final String getString ()
     {
         return new String(codes, 0, codes.length);
+    }
+
+    //----------------//
+    // getTinyVersion //
+    //----------------//
+    /**
+     * Report the tiny version of this symbol.
+     *
+     * @return the related tiny version for a standard symbol, this symbol if already tiny.
+     */
+    public BasicSymbol getTinyVersion ()
+    {
+        if (isTiny) {
+            return this;
+        }
+
+        if (tinyVersion == null) {
+            tinyVersion = createTinyVersion();
+        }
+
+        return tinyVersion;
     }
 
     //-----------//
@@ -282,7 +276,7 @@ public class BasicSymbol
                            int x,
                            int y)
     {
-        g.drawImage(getIconImage(), x, y, c);
+        g.drawImage(getTinyVersion().getIntrinsicImage(), x, y, c);
     }
 
     //-------------//
@@ -313,17 +307,35 @@ public class BasicSymbol
         return sb.toString();
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    /**
-     * To be redefined by each subclass to create a icon symbol using the subclass.
-     *
-     * @return the icon-sized instance of proper symbol class
-     */
-    protected BasicSymbol createIcon ()
+    //--------------//
+    // computeImage //
+    //--------------//
+    protected void computeImage ()
     {
-        return new BasicSymbol(true, codes);
+        image = buildImage(isTiny ? MusicFont.tinyMusicFont : MusicFont.baseMusicFont);
+
+        dimension = new Dimension(image.getWidth(), image.getHeight());
+    }
+
+    //-------------------//
+    // createTinyVersion //
+    //-------------------//
+    /**
+     * Generate the tiny version of this symbol.
+     *
+     * @return the tiny-sized instance of proper symbol class
+     */
+    protected BasicSymbol createTinyVersion ()
+    {
+        try {
+            final BasicSymbol clone = (BasicSymbol) clone();
+            clone.setTiny();
+
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            logger.error("Clone not supported");
+            return null;
+        }
     }
 
     //--------------//
@@ -358,23 +370,6 @@ public class BasicSymbol
         }
 
         return dimension.height;
-    }
-
-    //----------//
-    // getImage //
-    //----------//
-    /**
-     * Report the underlying image, scaled for standard interline value.
-     *
-     * @return the underlying image
-     */
-    protected BufferedImage getImage ()
-    {
-        if (dimension == null) {
-            computeImage();
-        }
-
-        return image;
     }
 
     //-----------//
@@ -423,10 +418,10 @@ public class BasicSymbol
      */
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
-        if (isIcon) {
-            sb.append(" icon");
+        if (isTiny) {
+            sb.append(" TINY");
         }
 
         if (codes != null) {
@@ -504,35 +499,13 @@ public class BasicSymbol
                 (yBar / image.getHeight()) - 0.5);
     }
 
-    //--------------//
-    // computeImage //
-    //--------------//
-    private void computeImage ()
-    {
-        image = buildImage(isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
-
-        dimension = new Dimension(image.getWidth(), image.getHeight());
-    }
-
     //---------//
-    // getIcon //
+    // setTiny //
     //---------//
-    /**
-     * Report the icon version of this symbol.
-     *
-     * @return the related icon for a standard symbol, this symbol if already the icon.
-     */
-    public BasicSymbol getIcon ()
+    private void setTiny ()
     {
-        if (isIcon) {
-            return this;
-        }
-
-        if (icon == null) {
-            icon = createIcon();
-        }
-
-        return icon;
+        isTiny = true;
+        computeImage(); // Recompute image and dimension as well
     }
 
     //----------------//

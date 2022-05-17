@@ -147,28 +147,18 @@ public class ShapeBoard
      * Called-back when a set is selected: the panel of shape sets is "replaced" by
      * the panel of shapes that compose the selected set.
      */
-    private final ActionListener setListener = new ActionListener()
-    {
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            String setName = ((JButton) e.getSource()).getName();
-            ShapeSet set = ShapeSet.getShapeSet(setName);
-            selectShapeSet(set);
-        }
+    private final ActionListener setListener = (ActionEvent e) -> {
+        String setName = ((Component) e.getSource()).getName();
+        ShapeSet set = ShapeSet.getShapeSet(setName);
+        selectShapeSet(set);
     };
 
     /**
      * Called-back when a panel of shapes is closed: the panel is replaced by the
      * panel of sets to allow the selection of another set.
      */
-    private final ActionListener closeListener = new ActionListener()
-    {
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            closeShapeSet();
-        }
+    private final ActionListener closeListener = (ActionEvent e) -> {
+        closeShapeSet();
     };
 
     /**
@@ -190,9 +180,6 @@ public class ShapeBoard
             }
         }
     };
-
-    /** Related sheet editor. */
-    private final SheetEditor sheetEditor;
 
     /** Panel of all shape sets. */
     private final Panel setsPanel;
@@ -222,14 +209,8 @@ public class ShapeBoard
     private final SheetKeyListener keyListener;
 
     /** When split container is resized, we reshape this board. */
-    private final PropertyChangeListener dividerListener = new PropertyChangeListener()
-    {
-        @Override
-        public void propertyChange (
-                PropertyChangeEvent pce)
-        {
-            resizeBoard();
-        }
+    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce) -> {
+        resizeBoard();
     };
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -246,7 +227,6 @@ public class ShapeBoard
     {
         super(Board.SHAPE, null, null, selected, false, false, false);
         this.sheet = sheet;
-        this.sheetEditor = sheetEditor;
 
         keyListener = sheetEditor.getSheetKeyListener();
         getComponent().addKeyListener(keyListener);
@@ -477,13 +457,8 @@ public class ShapeBoard
                              List<Shape> shapes)
     {
         for (Shape shape : shapes) {
-            // Preference for plain symbol
-            ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-            if (symbol == null) {
-                // Fall back to decorated symbol
-                symbol = Symbols.getSymbol(shape, true);
-            }
+            // Preference for decorated symbol
+            ShapeSymbol symbol = Symbols.getSymbol(shape, true);
 
             if (symbol != null) {
                 addButton(p, new ShapeButton(symbol));
@@ -627,14 +602,6 @@ public class ShapeBoard
         }
     }
 
-    //--------------//
-    // getIconImage //
-    //--------------//
-    private BufferedImage getIconImage (ShapeSymbol symbol)
-    {
-        return symbol.getIconImage();
-    }
-
     //----------------------//
     // getNonDraggableImage //
     //----------------------//
@@ -733,9 +700,8 @@ public class ShapeBoard
                 space -= insets.left;
                 space -= insets.right;
 
-                if (parent instanceof JScrollPane) {
+                if (parent instanceof JScrollPane scrollPane) {
                     // Remove bar width if any
-                    JScrollPane scrollPane = (JScrollPane) parent;
                     JScrollBar bar = scrollPane.getVerticalScrollBar();
 
                     if (bar.isShowing()) {
@@ -809,10 +775,10 @@ public class ShapeBoard
             if (shape.isDraggable()) {
                 // Wait for drag to actually begin...
                 action = shape;
-                image = getIconImage(button.symbol);
+                image = button.symbol.getTinyVersion().getIntrinsicImage();
             } else {
                 action = Shape.NON_DRAGGABLE;
-                image = Shape.NON_DRAGGABLE.getSymbol().getIconImage();
+                image = Shape.NON_DRAGGABLE.getSymbol().getTinyVersion().getIntrinsicImage();
                 ((OmrGlassPane) glassPane).setInterDnd(null);
             }
 
@@ -1062,8 +1028,7 @@ public class ShapeBoard
         public void setFocus ()
         {
             for (Component comp : panel.getComponents()) {
-                if (comp instanceof ShapeButton) {
-                    ShapeButton button = (ShapeButton) comp;
+                if (comp instanceof ShapeButton button) {
                     button.requestFocusInWindow();
 
                     return;
@@ -1098,7 +1063,7 @@ public class ShapeBoard
         public ShapeButton (ShapeSymbol symbol)
         {
             this.symbol = symbol;
-            setIcon(symbol.getDecoratedSymbol().getIcon());
+            setIcon(symbol.getDecoratedVersion().getTinyVersion());
             setName(symbol.getShape().toString());
 
             final String shortcut = reverseShapeMap.get(symbol.getShape());

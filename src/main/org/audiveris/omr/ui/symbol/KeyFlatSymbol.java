@@ -36,24 +36,12 @@ public class KeyFlatSymbol
     /**
      * Creates a new KeyFlatSymbol object.
      *
-     * @param key    the key value: -7..-1 for flats
-     * @param isIcon true for an icon
-     * @param shape  the related shape
+     * @param key   the key value: -7..-1 for flats
+     * @param shape the related shape
      */
     public KeyFlatSymbol (int key,
-                          boolean isIcon,
                           Shape shape)
     {
-        super(key, isIcon, shape, 98);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new KeyFlatSymbol(fifths, true, shape);
+        super(key, shape, Symbols.CODE_FLAT);
     }
 }

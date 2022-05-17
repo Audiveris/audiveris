@@ -40,6 +40,7 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+import static org.audiveris.omr.ui.symbol.Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Table;
@@ -87,7 +88,6 @@ import java.util.TreeMap;
  * All cue notes (*_SMALL shapes) have background locations on upper and lower sides.
  * <p>
  * TODO: Support could be added for slightly different widths, if so needed?
- *
  *
  * @author Hervé Bitteur
  */
@@ -726,26 +726,34 @@ public class TemplateFactory
     {
         switch (shape) {
         case NOTEHEAD_DIAMOND_FILLED:
-            return 226;
+            return Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
 
         case NOTEHEAD_DIAMOND_VOID:
+<<<<<<< HEAD
         case WHOLE_NOTE_DIAMOND:
             return 79;  /* was 225 */
         
+=======
+            return Symbols.CODE_NOTEHEAD_DIAMOND_VOID;
+
+        case WHOLE_NOTE_DIAMOND:
+            return Symbols.CODE_WHOLE_NOTE_DIAMOND;
+
+>>>>>>> upstream/drum-scores
         case NOTEHEAD_CROSS:
-            return 192;
+            return Symbols.CODE_NOTEHEAD_CROSS;
 
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:
-            return 207;
+            return Symbols.CODE_NOTEHEAD_BLACK;
 
         case NOTEHEAD_VOID:
         case NOTEHEAD_VOID_SMALL:
-            return 250;
+            return Symbols.CODE_NOTEHEAD_VOID;
 
         case WHOLE_NOTE:
         case WHOLE_NOTE_SMALL:
-            return 119;
+            return Symbols.CODE_WHOLE_NOTE;
         }
 
         logger.error(shape + " is not supported!");

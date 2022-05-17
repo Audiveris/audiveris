@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.BracketSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
@@ -194,10 +193,15 @@ public class BracketInter
                                MusicFont font,
                                Point dropLocation)
     {
-        BracketSymbol bracketSymbol = (BracketSymbol) symbol;
-        Model model = bracketSymbol.getModel(font, dropLocation);
-        median = new Line2D.Double(model.p1, model.p2);
-        width = model.width;
+        final Rectangle2D wholeRect = font.layout(symbol).getBounds();
+        final Rectangle2D upperRect = font.layout(Symbols.SYMBOL_BRACKET_UPPER_SERIF).getBounds();
+        final double wholeWidth = wholeRect.getWidth();
+        final double trunkHeight = wholeRect.getHeight() - 2 * upperRect.getHeight();
+        width = font.layout(Shape.THICK_BARLINE).getBounds().getWidth();
+        median = new Line2D.Double(dropLocation.x - wholeWidth / 2 + width / 2,
+                                   dropLocation.y - trunkHeight / 2,
+                                   dropLocation.x - wholeWidth / 2 + width / 2,
+                                   dropLocation.y + trunkHeight / 2);
         computeArea(font);
 
         return true;
@@ -244,9 +248,9 @@ public class BracketInter
         // Top serif?
         if (kind == BracketKind.TOP || kind == BracketKind.BOTH) {
             Rectangle2D tr = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                    median.getY1() + upperRect.getY(),
+                                                    median.getY1() - upperRect.getHeight(),
                                                     upperRect.getWidth(),
-                                                    -upperRect.getY());
+                                                    upperRect.getHeight());
             area.add(new Area(tr));
         }
 
@@ -255,7 +259,7 @@ public class BracketInter
             Rectangle2D br = new Rectangle2D.Double(median.getX1() - width / 2,
                                                     median.getY2(),
                                                     lowerRect.getWidth(),
-                                                    lowerRect.getHeight() + lowerRect.getY());
+                                                    lowerRect.getHeight());
             area.add(new Area(br));
         }
 

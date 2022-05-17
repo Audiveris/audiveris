@@ -23,7 +23,8 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.DOT_set;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
 
 import java.awt.Color;
 import java.awt.Composite;
@@ -34,11 +35,15 @@ import java.awt.geom.Point2D;
 /**
  * Class <code>FermataArcSymbol</code> implements Fermata Arc symbols with the related dot
  * as decoration.
+ * <p>
+ * Purpose of this symbol is to allow the glyph classifier to recognize fermata arc and fermata dot
+ * as two separate entities (they lie too far apart for the glyph classifier to be considered as
+ * a single symbol candidate).
  *
  * @author Hervé Bitteur
  */
 public class FermataArcSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -47,45 +52,18 @@ public class FermataArcSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a FermataArcSymbol (with decoration?) standard size.
+     * Create a FermataArcSymbol standard size with no decoration.
      *
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for rest part
+     * @param shape the precise shape
+     * @param codes the codes for MusicFont characters
      */
     public FermataArcSymbol (Shape shape,
-                             boolean decorated,
                              int... codes)
     {
-        this(false, shape, decorated, codes);
-    }
-
-    /**
-     * Create a FermataArcSymbol (with decoration?).
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for rest part
-     */
-    protected FermataArcSymbol (boolean isIcon,
-                                Shape shape,
-                                boolean decorated,
-                                int... codes)
-    {
-        super(isIcon, shape, decorated, codes);
+        super(shape, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new FermataArcSymbol(true, shape, decorated, codes);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -121,7 +99,7 @@ public class FermataArcSymbol
 
         MusicFont.paint(g, p.layout, loc, align); // Arc + Dot
 
-        if (decorated) {
+        if (isDecorated) {
             // Paint dot in gray
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);

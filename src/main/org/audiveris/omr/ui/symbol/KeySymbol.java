@@ -52,16 +52,14 @@ public abstract class KeySymbol
      * Creates a new KeySymbol object.
      *
      * @param fifths fifths value within [-7 .. +7]
-     * @param isIcon true for an icon
      * @param shape  the related shape
      * @param codes  the code for item shape
      */
     public KeySymbol (int fifths,
-                      boolean isIcon,
                       Shape shape,
                       int... codes)
     {
-        super(isIcon, shape, false, codes);
+        super(shape, codes);
         this.fifths = fifths;
     }
 

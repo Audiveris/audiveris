@@ -22,6 +22,8 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.Logger;
@@ -40,6 +42,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -56,7 +59,25 @@ public abstract class OmrFont
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
+
+    /** Ratio to be applied for tiny symbols. */
+    public static final double RATIO_TINY = constants.tinyRatio.getValue();
+
+    /** Ratio to be applied for small shapes. */
+    public static final double RATIO_SMALL = constants.smallRatio.getValue();
+
+    /** AffineTransform for tiny displays. */
+    public static final AffineTransform TRANSFORM_TINY = AffineTransform.getScaleInstance(
+            RATIO_TINY,
+            RATIO_TINY);
+
+    /** AffineTransform for small shapes. */
+    public static final AffineTransform TRANSFORM_SMALL = AffineTransform.getScaleInstance(
+            RATIO_SMALL,
+            RATIO_SMALL);
 
     /** Default color for images. */
     public static final Color defaultImageColor = Color.BLACK;
@@ -190,27 +211,29 @@ public abstract class OmrFont
         // Lookup our own fonts (defined in "res" folder)
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-        try {
-            InputStream input = null;
+        // Some font use ".ttf" extension, others ".otf"
+        for (String ext : new String[]{".ttf", ".otf"}) {
+            final String fileName = fontName + ext;
 
             try {
-                URL url = UriUtil.toURI(WellKnowns.RES_URI, fontName + ".ttf").toURL();
+                final URL url = UriUtil.toURI(WellKnowns.RES_URI, fileName).toURL();
                 logger.debug("Font url={}", url);
-                input = url.openStream();
-                font = Font.createFont(Font.TRUETYPE_FONT, input);
-                fontCache.put(fontName, font);
-                ge.registerFont(font);
-                logger.debug("Created custom font {}", fontName);
 
-                return font.deriveFont(style, pointSize);
-            } finally {
-                if (input != null) {
-                    input.close();
+                try (InputStream input = url.openStream()) {
+                    logger.debug("Succeeded with {}", fileName);
+                    font = Font.createFont(Font.TRUETYPE_FONT, input);
+                    fontCache.put(fontName, font);
+                    ge.registerFont(font);
+                    logger.debug("Created custom font {}", fileName);
+
+                    return font.deriveFont(style, pointSize);
+                } catch (FontFormatException |
+                         IOException ex) {
+                    logger.debug("Could not create custom font {} " + ex, fileName);
                 }
+            } catch (MalformedURLException ex) {
+                logger.warn("MalformedURLException", ex);
             }
-        } catch (FontFormatException |
-                 IOException ex) {
-            logger.debug("Could not create custom font {} " + ex, fontName);
         }
 
         // Finally, try a platform font
@@ -219,5 +242,22 @@ public abstract class OmrFont
         logger.debug("Using platform font {}", font.getFamily());
 
         return font;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Ratio smallRatio = new Constant.Ratio(
+                0.67,
+                "Ratio applied to small shapes (cue/grace head or clef change)");
+
+        private final Constant.Ratio tinyRatio = new Constant.Ratio(
+                0.5,
+                "Ratio applied to tiny symbols (generally for buttons)");
     }
 }

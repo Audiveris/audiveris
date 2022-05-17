@@ -46,13 +46,9 @@ public class CompoundNoteSymbol
 
     private static final BasicSymbol stemSymbol = Symbols.SYMBOL_STEM;
 
-    private static final BasicSymbol blackSymbol = new BasicSymbol(207);
-
-    private static final BasicSymbol voidSymbol = new BasicSymbol(250);
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a non-icon CompoundNoteSymbol.
+     * Create a standard size CompoundNoteSymbol.
      *
      * @param shape one of {@link ShapeSet#CompoundNotes}
      * @param codes the codes for MusicFont characters
@@ -60,21 +56,7 @@ public class CompoundNoteSymbol
     public CompoundNoteSymbol (Shape shape,
                                int... codes)
     {
-        this(false, shape, codes);
-    }
-
-    /**
-     * Create a CompoundNoteSymbol.
-     *
-     * @param isIcon true for an icon
-     * @param shape  one of {@link ShapeSet#CompoundNotes}
-     * @param codes  the codes for MusicFont characters
-     */
-    public CompoundNoteSymbol (boolean isIcon,
-                               Shape shape,
-                               int... codes)
-    {
-        super(isIcon, shape, false, codes);
+        super(shape, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -89,15 +71,6 @@ public class CompoundNoteSymbol
         p.model.translate(p.vectorTo(location));
 
         return p.model;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new CompoundNoteSymbol(true, shape, codes);
     }
 
     //-----------//
@@ -136,19 +109,6 @@ public class CompoundNoteSymbol
                 stem.getHeight());
 
         return p;
-    }
-
-    //-------//
-    // paint //
-    //-------//
-    @Override
-    protected void paint (Graphics2D g,
-                          Params params,
-                          Point2D location,
-                          Alignment alignment)
-    {
-        final MyParams p = (MyParams) params;
-        OmrFont.paint(g, p.layout, location, alignment);
     }
 
     //------//

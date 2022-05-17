@@ -20,7 +20,7 @@ ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
 ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
-                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf"]\
+                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf", "aarch64":"arm64"]\
                      [System.getProperty('os.arch').toLowerCase()]
 ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"
 println "targetOS=${project.ext.targetOS}"
@@ -132,6 +132,12 @@ dependencies {
         [group: 'junit', name: 'junit', version: '4.13.2'],
         [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.1']
     )
+}
+
+// Needed since gradle replaced "compile" by "implementation"
+// See https://stackoverflow.com/questions/47910578/not-able-to-copy-configurations-dependencies-after-upgrading-gradle-plugin-for-a
+configurations {
+    implementationConfig.extendsFrom implementation
 }
 
 // Specific configurations for specific OS dependencies
@@ -271,7 +277,7 @@ task installers {
             copy {
                 into "$buildDir/installers/$os/lib"
                 from "$buildDir/jar" // audiveris.jar
-                from configurations.compile // Compile jars
+                from configurations.implementationConfig // Compile jars
                 from configurations."runtime-$os" // OS-specific jars
             }
 

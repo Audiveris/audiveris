@@ -51,21 +51,7 @@ public class TextSymbol
     public TextSymbol (Shape shape,
                        String str)
     {
-        this(false, shape, str);
-    }
-
-    /**
-     * Create an TextSymbol
-     *
-     * @param isIcon true for an icon
-     * @param shape  the precise shape
-     * @param str    the text to draw
-     */
-    protected TextSymbol (boolean isIcon,
-                          Shape shape,
-                          String str)
-    {
-        super(isIcon, shape, true); // Decorated
+        super(shape);
         this.str = str;
     }
 
@@ -81,15 +67,6 @@ public class TextSymbol
         p.model.translate(p.vectorTo(location));
 
         return p.model;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new TextSymbol(true, shape, str);
     }
 
     //-----------//

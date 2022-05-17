@@ -39,59 +39,13 @@ public class BeamHookSymbol
 
     /**
      * Create a BeamHookSymbol.
-     *
-     * @param decorated true for a decorated image
      */
-    public BeamHookSymbol (boolean decorated)
+    public BeamHookSymbol ()
     {
-        this(false, null, decorated);
-    }
-
-    /**
-     * Create a BeamHookSymbol.
-     *
-     * @param beamThickness specified thickness, if any
-     * @param decorated     true for a decorated image
-     */
-    public BeamHookSymbol (Double beamThickness,
-                           boolean decorated)
-    {
-        this(false, beamThickness, decorated);
-    }
-
-    /**
-     * Create a BeamHookSymbol
-     *
-     * @param isIcon        true for an icon
-     * @param beamThickness specified thickness, if any
-     * @param decorated     true for a decorated image
-     */
-    protected BeamHookSymbol (boolean isIcon,
-                              Double beamThickness,
-                              boolean decorated)
-    {
-        super(isIcon, Shape.BEAM_HOOK, beamThickness, decorated);
+        super(Shape.BEAM_HOOK);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new BeamHookSymbol(isIcon, thicknessFraction, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BeamHookSymbol(true, thicknessFraction, decorated);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -105,7 +59,7 @@ public class BeamHookSymbol
         final double yShift = (p.model.p2.getY() - p.model.p1.getY()) / 2;
         final double absShift = Math.abs(yShift);
 
-        if (decorated) {
+        if (isDecorated) {
             p.quarterCount = 1;
 
             Rectangle2D qRect = p.layout.getBounds();

@@ -22,7 +22,8 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_RIGHT;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -31,63 +32,30 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>StemSymbol</code> implements a stem symbol.
+ * Class <code>StemSymbol</code> implements a stem symbol, perhaps decorated.
  *
  * @author Hervé Bitteur
  */
 public class StemSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head+stem part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
-    // The stem part
-    private static final BasicSymbol stem = Symbols.SYMBOL_STEM;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a <code>StemSymbol</code> (with decoration?) standard size
+     * Create a <code>StemSymbol</code> standard size with no decoration.
      *
-     * @param decorated true for a decorated image
+     * @param codes the codes for MusicFont characters
      */
-    public StemSymbol (boolean decorated)
+    public StemSymbol (int... codes)
     {
-        this(false, decorated);
-    }
-
-    /**
-     * Create a <code>StemSymbol</code>(with decoration?)
-     *
-     * @param isIcon    true for an icon
-     * @param decorated true for a decorated image
-     */
-    protected StemSymbol (boolean isIcon,
-                          boolean decorated)
-    {
-        super(isIcon, Shape.STEM, decorated);
+        super(Shape.STEM, codes);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new StemSymbol(isIcon, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new StemSymbol(true, decorated);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -97,11 +65,11 @@ public class StemSymbol
         MyParams p = new MyParams();
 
         // Stem layout
-        p.layout = font.layout(stem.getString());
+        p.layout = font.layout(getString());
 
         Rectangle rs = p.layout.getBounds().getBounds(); // Stem bounds
 
-        if (decorated) {
+        if (isDecorated) {
             // Quarter layout
             p.quarterLayout = font.layout(quarter.getString());
 
@@ -128,7 +96,7 @@ public class StemSymbol
     {
         MyParams p = (MyParams) params;
 
-        if (decorated) {
+        if (isDecorated) {
             Point2D loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
             // Decorations (using composite)

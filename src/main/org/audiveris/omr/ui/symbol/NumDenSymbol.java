@@ -22,7 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -55,15 +55,11 @@ public class NumDenSymbol
                          int numerator,
                          int denominator)
     {
-        this(
-                shape,
-                ShapeSymbol.numberCodes(numerator),
-                ShapeSymbol.numberCodes(denominator));
+        this(shape,
+             Symbols.numberCodes(numerator),
+             Symbols.numberCodes(denominator));
     }
 
-    //--------------//
-    // NumDenSymbol //
-    //--------------//
     /**
      * Creates a new NumDenSymbol object.
      *
@@ -75,42 +71,13 @@ public class NumDenSymbol
                          int[] numCodes,
                          int[] denCodes)
     {
-        this(false, shape, false, numCodes, denCodes);
-    }
 
-    //--------------//
-    // NumDenSymbol //
-    //--------------//
-    /**
-     * Creates a new NumDenSymbol object.
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the related shape
-     * @param decorated true for decoration
-     * @param numCodes  the numerator codes
-     * @param denCodes  the denominator codes
-     */
-    public NumDenSymbol (boolean isIcon,
-                         Shape shape,
-                         boolean decorated,
-                         int[] numCodes,
-                         int[] denCodes)
-    {
-        super(isIcon, shape, decorated);
+        super(shape);
         this.numCodes = numCodes;
         this.denCodes = denCodes;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new NumDenSymbol(true, shape, decorated, numCodes, denCodes);
-    }
-
     //-----------//
     // getParams //
     //-----------//

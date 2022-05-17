@@ -30,6 +30,9 @@ import java.awt.geom.Point2D;
 
 /**
  * Class <code>TransformedSymbol</code> displays a baseShape symbol with AffineTransform.
+ * <p>
+ * NOTA: This class is no longer needed since we moved to Bravura font.
+ * It is kept only for potential reuse.
  *
  * @author Hervé Bitteur
  */
@@ -38,12 +41,6 @@ public class TransformedSymbol
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The baseShape shape */
-    protected final Shape baseShape;
-
-    /** The baseShape symbol */
-    protected final ShapeSymbol baseSymbol;
-
     /** Proper transformation */
     private final AffineTransform at;
 
@@ -51,46 +48,20 @@ public class TransformedSymbol
     /**
      * Creates a new TransformedSymbol object.
      *
-     * @param shape     the related shape
-     * @param baseShape the baseShape shape which is reused
-     * @param at        the AffineTransform to apply
+     * @param shape the related shape
+     * @param at    the AffineTransform to apply
+     * @param codes the codes for MusicFont characters
      */
     public TransformedSymbol (Shape shape,
-                              Shape baseShape,
-                              AffineTransform at)
+                              AffineTransform at,
+                              int... codes)
     {
-        this(false, shape, baseShape, at);
-    }
 
-    /**
-     * Creates a new TransformedSymbol object.
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the related shape
-     * @param baseShape the baseShape shape which is reused
-     * @param at        the AffineTransform to apply
-     */
-    protected TransformedSymbol (boolean isIcon,
-                                 Shape shape,
-                                 Shape baseShape,
-                                 AffineTransform at)
-    {
-        super(isIcon, shape, false);
-        this.baseShape = baseShape;
-        this.baseSymbol = Symbols.getSymbol(baseShape);
+        super(shape, codes);
         this.at = at;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new TransformedSymbol(true, shape, baseShape, at);
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -99,22 +70,22 @@ public class TransformedSymbol
     {
         Params p = new Params();
 
-        p.layout = font.layout(baseSymbol.getString(), at);
+        p.layout = font.layout(getString(), at);
         p.rect = p.layout.getBounds();
 
         return p;
     }
-
-    //-------//
-    // paint //
-    //-------//
-    @Override
-    protected void paint (Graphics2D g,
-                          Params p,
-                          Point2D location,
-                          Alignment alignment)
-    {
-        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        MusicFont.paint(g, p.layout, loc, TOP_LEFT);
-    }
+//
+//    //-------//
+//    // paint //
+//    //-------//
+//    @Override
+//    protected void paint (Graphics2D g,
+//                          Params p,
+//                          Point2D location,
+//                          Alignment alignment)
+//    {
+//        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+//        MusicFont.paint(g, p.layout, loc, TOP_LEFT);
+//    }
 }

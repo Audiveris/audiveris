@@ -38,14 +38,14 @@ import java.io.IOException;
  * Class <code>ShapeSymbol</code> extends the {@link BasicSymbol} with the handling of a
  * related {@link Shape}.
  * <p>
- * A ShapeSymbol thus adds several features:
+ * A ShapeSymbol can thus be used:
  * <ul>
- * <li>It can be used for dedicated shape assignment buttons.</li>
- * <li>It can be used for Drag n' Drop operations, since it implements the {@link Transferable}
- * interface.</li>
- * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
- * available.</li>
+ * <li>For dedicated shape assignment buttons.
+ * <li>For Drag n' Drop operations, since it implements the {@link Transferable} interface.
+ * <li>To <b>train</b> the glyph classifier when we don't have enough "real" glyphs available.
  * </ul>
+ * Beside the plain shape image, a ShapeSymbol may also provide a <b>decorated</b> version
+ * whose image represents the shape within a larger decoration.
  *
  * @author Hervé Bitteur
  */
@@ -67,34 +67,15 @@ public class ShapeSymbol
     /** Related shape. */
     protected final Shape shape;
 
-    /** Is this a decorated symbol. (shape with additional stuff) */
-    protected final boolean decorated;
+    /** Is this a decorated symbol. (shape with additional decoration) */
+    protected boolean isDecorated;
 
     /** Decorated version if any. */
-    protected ShapeSymbol decoratedSymbol;
+    protected ShapeSymbol decoratedVersion;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a ShapeSymbol with the provided shape and codes
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the related shape
-     * @param decorated true if the symbol uses decoration around the shape
-     * @param codes     the codes for MusicFont characters
-     */
-    public ShapeSymbol (boolean isIcon,
-                        Shape shape,
-                        boolean decorated,
-                        int... codes)
-    {
-        super(isIcon, codes);
-        this.shape = shape;
-        this.decorated = decorated;
-    }
-
-    /**
-     * Create a non decorated standard ShapeSymbol with the provided
-     * shape and codes.
+     * Create a standard ShapeSymbol with the provided shape and codes.
      *
      * @param shape the related shape
      * @param codes the codes for MusicFont characters
@@ -102,7 +83,8 @@ public class ShapeSymbol
     public ShapeSymbol (Shape shape,
                         int... codes)
     {
-        this(false, shape, false, codes);
+        super(codes);
+        this.shape = shape;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -110,21 +92,25 @@ public class ShapeSymbol
     // getDecoratedSymbol //
     //--------------------//
     /**
-     * Report the decorated version of this ShapeSymbol.
+     * Report the (preferably decorated) version of this ShapeSymbol.
      *
-     * @return the decorated version
+     * @return the decorated version if any, otherwise the plain version
      */
-    public ShapeSymbol getDecoratedSymbol ()
+    public ShapeSymbol getDecoratedVersion ()
     {
-        if (decorated) {
+        if (isDecorated) {
             return this;
         }
 
-        if (decoratedSymbol == null) {
-            decoratedSymbol = createDecoratedSymbol();
-        }
+        if (!supportsDecoration()) {
+            return this; // Fallback using the non-decorated version
+        } else {
+            if (decoratedVersion == null) {
+                decoratedVersion = createDecoratedVersion();
+            }
 
-        return decoratedSymbol;
+            return decoratedVersion;
+        }
     }
 
     //----------//
@@ -141,23 +127,7 @@ public class ShapeSymbol
     public ObjectUIModel getModel (MusicFont font,
                                    Point location)
     {
-        throw new UnsupportedOperationException();
-    }
-
-    //-------------//
-    // updateModel //
-    //-------------//
-    /**
-     * Tell the symbol that it can update its model with sheet informations.
-     * <p>
-     * This is useful when the dragged item enters a sheet view, since it can adapt itself to
-     * sheet informations (such as the typical beam thickness).
-     *
-     * @param sheet underlying sheet
-     */
-    public void updateModel (Sheet sheet)
-    {
-        // Void, by default
+        throw new UnsupportedOperationException(); // By default
     }
 
     //-------------//
@@ -239,23 +209,55 @@ public class ShapeSymbol
     // isDecorated //
     //-------------//
     /**
-     * Tell whether the image represents the shape with additional
-     * decorations.
+     * Tell whether the image represents the shape with additional decorations.
      *
      * @return true if decorated
      */
     public boolean isDecorated ()
     {
-        return decorated;
+        return isDecorated;
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
+    //-------------//
+    // updateModel //
+    //-------------//
+    /**
+     * Tell the symbol that it can update its model with sheet informations.
+     * <p>
+     * This is useful when the dragged item enters a sheet view, since it can adapt itself to
+     * sheet informations (such as the typical beam thickness).
+     *
+     * @param sheet underlying sheet
+     */
+    public void updateModel (Sheet sheet)
     {
-        return new ShapeSymbol(true, shape, decorated, codes);
+        // Void, by default
+    }
+
+    //------------------------//
+    // createDecoratedVersion //
+    //------------------------//
+    /**
+     * Create symbol with proper decorations.
+     * To be redefined by each subclass that does provide a specific decorated version
+     *
+     * @return the decorated version, which may be the same symbol if no decoration exists
+     */
+    protected ShapeSymbol createDecoratedVersion ()
+    {
+        if (!supportsDecoration()) {
+            return null; // No decoration by default
+        }
+
+        try {
+            final ShapeSymbol clone = (ShapeSymbol) clone();
+            clone.setDecorated();
+
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            logger.error("Clone not supported");
+            return null;
+        }
     }
 
     //-----------//
@@ -268,53 +270,35 @@ public class ShapeSymbol
 
         sb.append(" ").append(shape);
 
+        if (isDecorated) {
+            sb.append(" DECORATED");
+        }
+
         return sb.toString();
     }
 
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
+    //--------------------//
+    // supportsDecoration //
+    //--------------------//
     /**
-     * Create symbol with proper decorations.
-     * To be redefined by each subclass that does provide a specific decorated version
+     * Report whether this symbol class can have a decorated version.
+     * <p>
+     * Answer is false by default and thus must be overridden by any ShapeSymbol subclass that does
+     * provide support for decoration.
      *
-     * @return the decorated version, which may be the same symbol if no decoration exists
+     * @return true if so
      */
-    protected ShapeSymbol createDecoratedSymbol ()
+    protected boolean supportsDecoration ()
     {
-        return this; // No decoration by default
+        return false; // By default
     }
 
-    //-------------//
-    // numberCodes //
-    //-------------//
-    /**
-     * Report the codes for a time number symbol.
-     *
-     * @param number integer value of the symbol (must be within [0..99] range)
-     * @return corresponding codes in music font
-     */
-    public static int[] numberCodes (int number)
+    //--------------//
+    // setDecorated //
+    //--------------//
+    private void setDecorated ()
     {
-        if (number < 0) {
-            throw new IllegalArgumentException(number + " < 0");
-        }
-
-        if (number > 99) {
-            throw new IllegalArgumentException(number + " > 99");
-        }
-
-        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
-        int base = symbol.codes[0];
-        int[] numberCodes = (number > 9) ? new int[2] : new int[1];
-        int index = 0;
-
-        if (number > 9) {
-            numberCodes[index++] = base + (number / 10);
-        }
-
-        numberCodes[index] = base + (number % 10);
-
-        return numberCodes;
+        isDecorated = true;
+        computeImage(); // Recompute image and dimension as well
     }
 }

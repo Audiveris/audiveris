@@ -1372,11 +1372,6 @@ public class SampleRepository
         // Make sure we have the drawing available for this shape
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
-        // If no plain symbol, use the decorated symbol as plan B
-        if (symbol == null) {
-            symbol = Symbols.getSymbol(shape, true);
-        }
-
         if (symbol != null) {
             sample = SymbolSample.create(shape, symbol, STANDARD_INTERLINE);
             sample.setSymbol(true);

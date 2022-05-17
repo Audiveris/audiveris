@@ -35,13 +35,11 @@ public class KeyCancelSymbol
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>KeyCancelSymbol</code> object
-     *
-     * @param isIcon true for an icon
+     * Creates a new <code>KeyCancelSymbol</code> object.
      */
-    public KeyCancelSymbol (boolean isIcon)
+    public KeyCancelSymbol ()
     {
-        super(0, isIcon, Shape.KEY_CANCEL, 110);
+        super(0, Shape.KEY_CANCEL, Symbols.CODE_NATURAL);
     }
 
     /**
@@ -52,16 +50,6 @@ public class KeyCancelSymbol
      */
     public KeyCancelSymbol (int fifths)
     {
-        super(fifths, false, Shape.KEY_CANCEL, 110);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new KeyCancelSymbol(true);
+        super(fifths, Shape.KEY_CANCEL, Symbols.CODE_NATURAL);
     }
 }
