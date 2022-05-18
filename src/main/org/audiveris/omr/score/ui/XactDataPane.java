@@ -163,6 +163,11 @@ public abstract class XactDataPane<E>
         return 2;
     }
 
+    public Param<E> getModel ()
+    {
+        return model;
+    }
+
     /**
      * User has selected (and enabled) this pane
      *
@@ -186,7 +191,10 @@ public abstract class XactDataPane<E>
     @Override
     public String toString ()
     {
-        return getClass().getSimpleName() + " " + title.getText();
+        return new StringBuilder(getClass().getSimpleName())
+                .append(' ').append(title.getText())
+                .append(' ').append(model)
+                .toString();
     }
 
     /**

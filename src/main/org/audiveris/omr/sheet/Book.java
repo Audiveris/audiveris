@@ -693,7 +693,7 @@ public class Book
     public FilterParam getBinarizationFilter ()
     {
         if (binarizationFilter == null) {
-            binarizationFilter = new FilterParam();
+            binarizationFilter = new FilterParam(this);
             binarizationFilter.setParent(FilterDescriptor.defaultFilter);
         }
 
@@ -855,7 +855,7 @@ public class Book
     public Param<String> getOcrLanguages ()
     {
         if (ocrLanguages == null) {
-            ocrLanguages = new StringParam();
+            ocrLanguages = new StringParam(this);
             ocrLanguages.setParent(Language.ocrDefaultLanguages);
         }
 
@@ -948,7 +948,7 @@ public class Book
     public ProcessingSwitches getProcessingSwitches ()
     {
         if (switches == null) {
-            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches());
+            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches(), this);
         }
 
         return switches;
@@ -2602,14 +2602,16 @@ public class Book
     {
         if (binarizationFilter != null) {
             binarizationFilter.setParent(FilterDescriptor.defaultFilter);
+            binarizationFilter.setScope(this);
         }
 
         if (ocrLanguages != null) {
             ocrLanguages.setParent(Language.ocrDefaultLanguages);
+            ocrLanguages.setScope(this);
         }
 
         if (switches != null) {
-            switches.setParent(ProcessingSwitches.getDefaultSwitches());
+            switches.setParent(ProcessingSwitches.getDefaultSwitches(), this);
         }
 
         if (alias == null) {
@@ -2832,23 +2834,5 @@ public class Book
         private final Constant.Boolean batchUpgradeBooks = new Constant.Boolean(
                 false,
                 "In batch, should we automatically upgrade all book sheets?");
-    }
-
-    //------------------//
-    // OcrBookLanguages //
-    //------------------//
-    private static class OcrBookLanguages
-            extends Param<String>
-    {
-
-        @Override
-        public boolean setSpecific (String specific)
-        {
-            if ((specific != null) && specific.isEmpty()) {
-                specific = null;
-            }
-
-            return super.setSpecific(specific);
-        }
     }
 }

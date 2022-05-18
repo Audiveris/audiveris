@@ -197,27 +197,37 @@ public class ShapeSet
 
     /** All heads with a stem. */
     public static final EnumSet<Shape> StemHeads = EnumSet.of(
-            NOTEHEAD_CROSS,
-            NOTEHEAD_DIAMOND_FILLED,
-            NOTEHEAD_DIAMOND_VOID,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL);
+            NOTEHEAD_VOID_SMALL,
+            NOTEHEAD_CROSS,
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_DIAMOND_VOID);
 
     /** All heads. */
     public static final List<Shape> Heads = Arrays.asList(
-            BREVE,
-            WHOLE_NOTE,
-            WHOLE_NOTE_SMALL,
-            NOTEHEAD_CROSS,
-            NOTEHEAD_DIAMOND_FILLED,
-            NOTEHEAD_DIAMOND_VOID,
-            WHOLE_NOTE_DIAMOND,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL);
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL,
+            BREVE,
+            NOTEHEAD_CROSS,
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_DIAMOND_VOID,
+            WHOLE_NOTE_DIAMOND);
+
+    /** Void heads. */
+    public static final List<Shape> VoidHeads = Arrays.asList(
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL,
+            BREVE,
+            NOTEHEAD_DIAMOND_VOID,
+            WHOLE_NOTE_DIAMOND);
 
     /** All compound notes. */
     public static final List<Shape> CompoundNotes = Arrays.asList(
@@ -236,6 +246,16 @@ public class ShapeSet
     /** Beams. */
     public static final EnumSet<Shape> Beams = EnumSet.copyOf(
             Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK, BEAM_HOOK_SMALL));
+
+    /** Cross heads. */
+    public static final List<Shape> CrossHeads = Arrays.asList(
+            NOTEHEAD_CROSS);
+
+    /** Drum heads. */
+    public static final List<Shape> DrumHeads = Arrays.asList(
+            WHOLE_NOTE_DIAMOND,
+            NOTEHEAD_DIAMOND_VOID,
+            NOTEHEAD_DIAMOND_FILLED);
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
@@ -259,9 +279,7 @@ public class ShapeSet
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             Colors.SCORE_MODIFIERS,
-            shapesOf( /* OTTAVA_ALTA, */
-                    /* OTTAVA_BASSA, */
-                    PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
+            shapesOf(PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
@@ -323,7 +341,7 @@ public class ShapeSet
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
             Colors.SCORE_NOTES,
-            shapesOf(Heads, shapesOf(AUGMENTATION_DOT), CompoundNotes));
+            shapesOf(shapesOf(AUGMENTATION_DOT), Heads, CompoundNotes));
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
@@ -761,6 +779,54 @@ public class ShapeSet
         return sb.toString();
     }
 
+    //--------------------//
+    // getProcessedShapes //
+    //--------------------//
+    /**
+     * Report among the provided collection of shapes, only those that are compatible with the
+     * current sheet processing switches.
+     *
+     * @param sheet      the related sheet. If null, no filtering is performed.
+     * @param collection the initial shape collection
+     * @return the list of shapes kept
+     */
+    public static List<Shape> getProcessedShapes (Sheet sheet,
+                                                  Collection<Shape> collection)
+    {
+        final List<Shape> list = new ArrayList<>(collection);
+
+        if (sheet != null) {
+            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+            if (!switches.getValue(ProcessingSwitch.smallBlackHeads)) {
+                list.remove(NOTEHEAD_BLACK_SMALL);
+            }
+
+            if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
+                list.remove(NOTEHEAD_VOID_SMALL);
+            }
+
+            if (!switches.getValue(ProcessingSwitch.smallWholeHeads)) {
+                list.remove(WHOLE_NOTE_SMALL);
+            }
+
+            /**
+             * Only remove cross noteheads from search if _both_ switches
+             * crossHeads and drumNotation are off.
+             */
+            if (!switches.getValue(ProcessingSwitch.crossHeads)
+                        && !switches.getValue(ProcessingSwitch.drumNotation)) {
+                list.removeAll(CrossHeads);
+            }
+
+            if (!switches.getValue(ProcessingSwitch.drumNotation)) {
+                list.removeAll(DrumHeads);
+            }
+        }
+
+        return list;
+    }
+
     //------------------//
     // getTemplateNotes //
     //------------------//
@@ -772,48 +838,7 @@ public class ShapeSet
      */
     public static EnumSet<Shape> getTemplateNotes (Sheet sheet)
     {
-        final EnumSet<Shape> set = EnumSet.of(
-                NOTEHEAD_DIAMOND_FILLED,
-                NOTEHEAD_DIAMOND_VOID,
-                WHOLE_NOTE_DIAMOND,
-                NOTEHEAD_CROSS,
-                NOTEHEAD_BLACK,
-                NOTEHEAD_VOID,
-                WHOLE_NOTE,
-                NOTEHEAD_BLACK_SMALL,
-                NOTEHEAD_VOID_SMALL,
-                WHOLE_NOTE_SMALL);
-
-        if (sheet == null) {
-            return set;
-        }
-
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-
-        if (!switches.getValue(ProcessingSwitch.smallBlackHeads)) {
-            set.remove(NOTEHEAD_BLACK_SMALL);
-        }
-
-        if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
-            set.remove(NOTEHEAD_VOID_SMALL);
-        }
-
-        if (!switches.getValue(ProcessingSwitch.smallWholeHeads)) {
-            set.remove(WHOLE_NOTE_SMALL);
-        }
-
-        /** Only remove cross noteheads from search if _both_ switches crossHeads and drumNotation are off */
-        if (!switches.getValue(ProcessingSwitch.crossHeads) && !switches.getValue(ProcessingSwitch.drumNotation)) {
-            set.remove(NOTEHEAD_CROSS);
-        }
-
-        if (!switches.getValue(ProcessingSwitch.drumNotation)) {
-            set.remove(NOTEHEAD_DIAMOND_FILLED);
-            set.remove(NOTEHEAD_DIAMOND_VOID);
-            set.remove(WHOLE_NOTE_DIAMOND);
-        }
-
-        return set;
+        return EnumSet.copyOf(getProcessedShapes(sheet, Heads));
     }
 
     //-------------//
@@ -854,40 +879,7 @@ public class ShapeSet
      */
     public static EnumSet<Shape> getStemTemplateNotes (Sheet sheet)
     {
-        final EnumSet<Shape> set = EnumSet.of(
-                NOTEHEAD_CROSS,
-                NOTEHEAD_DIAMOND_FILLED,
-                NOTEHEAD_DIAMOND_VOID,
-                NOTEHEAD_BLACK,
-                NOTEHEAD_VOID,
-                NOTEHEAD_BLACK_SMALL,
-                NOTEHEAD_VOID_SMALL);
-
-        if (sheet == null) {
-            return set;
-        }
-
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-
-        if (!switches.getValue(ProcessingSwitch.smallBlackHeads)) {
-            set.remove(NOTEHEAD_BLACK_SMALL);
-        }
-
-        if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
-            set.remove(NOTEHEAD_VOID_SMALL);
-        }
-
-        /** Only remove cross noteheads from search if _both_ switches crossHeads and drumNotation are off */
-        if (!switches.getValue(ProcessingSwitch.crossHeads) && !switches.getValue(ProcessingSwitch.drumNotation)) {
-            set.remove(NOTEHEAD_CROSS);
-        }
-
-        if (!switches.getValue(ProcessingSwitch.drumNotation)) {
-            set.remove(NOTEHEAD_DIAMOND_FILLED);
-            set.remove(NOTEHEAD_DIAMOND_VOID);
-        }
-
-        return set;
+        return EnumSet.copyOf(getProcessedShapes(sheet, StemHeads));
     }
 
     //----------------------//
@@ -901,28 +893,7 @@ public class ShapeSet
      */
     public static EnumSet<Shape> getVoidTemplateNotes (Sheet sheet)
     {
-        final EnumSet<Shape> set = EnumSet.of(NOTEHEAD_VOID, 
-                                            WHOLE_NOTE, 
-                                            NOTEHEAD_VOID_SMALL, 
-                                            NOTEHEAD_DIAMOND_VOID,
-                                            WHOLE_NOTE_DIAMOND);
-
-        if (sheet == null) {
-            return set;
-        }
-
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-
-        if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
-            set.remove(NOTEHEAD_VOID_SMALL);
-        }
-
-        if (!switches.getValue(ProcessingSwitch.drumNotation)) {
-            set.remove(NOTEHEAD_DIAMOND_VOID);
-            set.remove(WHOLE_NOTE_DIAMOND);
-        }
-
-        return set;
+        return EnumSet.copyOf(getProcessedShapes(sheet, VoidHeads));
     }
 
     //----------//

@@ -258,6 +258,7 @@ public class SheetParameters
 
         ScalingParam (Item key)
         {
+            super(sheet);
             this.key = key;
         }
 
