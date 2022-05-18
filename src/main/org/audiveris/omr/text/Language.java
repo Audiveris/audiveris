@@ -27,6 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
+import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 import org.audiveris.omr.util.param.StringParam;
 
 import org.slf4j.Logger;
@@ -71,7 +72,7 @@ public class Language
 
     /** Default language specification (such as deu+eng+fra). */
     public static final Param<String> ocrDefaultLanguages
-            = new ConstantBasedParam<String, Constant.String>(constants.defaultSpecification);
+            = new ConstantBasedParam<>(constants.defaultSpecification, GLOBAL_SCOPE);
 
     /** Languages file name. */
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
@@ -167,6 +168,11 @@ public class Language
     private static class OcrDefaultLanguages
             extends StringParam
     {
+
+        public OcrDefaultLanguages (Object scope)
+        {
+            super(scope);
+        }
 
         private final Constant.String constant = constants.defaultSpecification;
 

@@ -238,6 +238,8 @@ public abstract class Board
      */
     public void connect ()
     {
+        logger.debug("connect {}", this);
+
         if (eventsRead != null) {
             for (Class<?> eventClass : eventsRead) {
                 selectionService.subscribeStrongly(eventClass, this);
@@ -251,6 +253,9 @@ public abstract class Board
                 }
             }
         }
+
+        // Update action if any
+        update();
     }
 
     //------------//
@@ -261,6 +266,8 @@ public abstract class Board
      */
     public void disconnect ()
     {
+        logger.debug("disconnect {}", this);
+
         if (eventsRead != null) {
             for (Class<?> eventClass : eventsRead) {
                 selectionService.unsubscribe(eventClass, this);
@@ -527,6 +534,17 @@ public abstract class Board
                 ((JTextComponent) comp).setText("");
             }
         }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Trigger an update of the board.
+     */
+    public void update ()
+    {
+        // Void by default
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

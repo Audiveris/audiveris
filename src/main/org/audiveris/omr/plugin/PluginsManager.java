@@ -287,6 +287,11 @@ public class PluginsManager
             extends Param<String>
     {
 
+        public Default ()
+        {
+            super(GLOBAL_SCOPE);
+        }
+
         @Override
         public String getSpecific ()
         {

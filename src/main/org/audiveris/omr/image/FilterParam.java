@@ -35,8 +35,14 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class FilterParam
         extends Param<FilterDescriptor>
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
+    public FilterParam (Object scope)
+    {
+        super(scope);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * JAXB adapter.
      */
@@ -72,7 +78,7 @@ public class FilterParam
                 return null;
             }
 
-            FilterParam fp = new FilterParam();
+            FilterParam fp = new FilterParam(Param.GLOBAL_SCOPE);
             fp.setSpecific(value.filter);
 
             return fp;

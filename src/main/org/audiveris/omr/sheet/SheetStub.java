@@ -397,7 +397,7 @@ public class SheetStub
     public FilterParam getBinarizationFilter ()
     {
         if (binarizationFilter == null) {
-            binarizationFilter = new FilterParam();
+            binarizationFilter = new FilterParam(this);
             binarizationFilter.setParent(book.getBinarizationFilter());
         }
 
@@ -586,7 +586,7 @@ public class SheetStub
     public Param<String> getOcrLanguages ()
     {
         if (ocrLanguages == null) {
-            ocrLanguages = new StringParam();
+            ocrLanguages = new StringParam(this);
             ocrLanguages.setParent(book.getOcrLanguages());
         }
 
@@ -617,7 +617,7 @@ public class SheetStub
     public ProcessingSwitches getProcessingSwitches ()
     {
         if (switches == null) {
-            switches = new ProcessingSwitches(book.getProcessingSwitches());
+            switches = new ProcessingSwitches(book.getProcessingSwitches(), this);
         }
 
         return switches;
@@ -1450,10 +1450,11 @@ public class SheetStub
 
             if (ocrLanguages != null) {
                 ocrLanguages.setParent(book.getOcrLanguages());
+                ocrLanguages.setScope(this);
             }
 
             if (switches != null) {
-                switches.setParent(book.getProcessingSwitches());
+                switches.setParent(book.getProcessingSwitches(), this);
             }
 
             if (OMR.gui != null) {
@@ -1475,25 +1476,6 @@ public class SheetStub
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch for sheet loading");
-    }
-
-    //-------------------//
-    // OcrSheetLanguages //
-    //-------------------//
-    private static class OcrSheetLanguages
-            extends Param<String>
-    {
-
-        @Override
-        public boolean setSpecific (String specific)
-        {
-            // Normalize
-            if ((specific != null) && specific.isEmpty()) {
-                specific = null;
-            }
-
-            return super.setSpecific(specific);
-        }
     }
 
     //------------//

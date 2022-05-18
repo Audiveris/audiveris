@@ -245,7 +245,7 @@ public class SelectionService
     // getEventsAllowed //
     //------------------//
     /**
-     * Report the event classes that can ne published on this service.
+     * Report the event classes that can be published on this service.
      *
      * @return the allowed classes of event
      */
