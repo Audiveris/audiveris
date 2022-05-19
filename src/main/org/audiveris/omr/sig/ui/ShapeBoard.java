@@ -31,6 +31,8 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.SheetEditor;
@@ -94,9 +96,13 @@ import javax.swing.SwingUtilities;
  * inter.
  * <p>
  * Shapes are gathered and presented in separate families that are mutually exclusive.
- * <p>
- * A special set of shapes, always visible, caches the latest shapes used to ease the
- * repetition of user actions.
+ * <ol>
+ * <li>The <b>history</b> panel, always visible, caches the latest shapes actually used.
+ * <li>The <b>global</b> panel allows to choose among shape families.
+ * It is then dynamically replaced by the selected family panel.
+ * <li>A <b>family</b> panel is dedicated to the shapes of the selected family.
+ * The user can always quit this family panel and go back to the global panel.
+ * </ol>
  * <ul>
  * <li>Direct insertion is performed by drag and drop to the target score view or sheet view</li>
  * <li>Assignment from an existing glyph is performed by a double-click</li>
@@ -144,21 +150,21 @@ public class ShapeBoard
     private InterDnd dnd;
 
     /**
-     * Called-back when a set is selected: the panel of shape sets is "replaced" by
-     * the panel of shapes that compose the selected set.
+     * Called-back when a family is selected:
+     * The global panel is replaced by the selected family panel.
      */
     private final ActionListener setListener = (ActionEvent e) -> {
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
-        selectShapeSet(set);
+        selectFamily(set);
     };
 
     /**
-     * Called-back when a panel of shapes is closed: the panel is replaced by the
-     * panel of sets to allow the selection of another set.
+     * Called-back when a family panel is closed:
+     * It is replaced by the global panel to allow the selection of another family.
      */
     private final ActionListener closeListener = (ActionEvent e) -> {
-        closeShapeSet();
+        closeFamily();
     };
 
     /**
@@ -181,17 +187,17 @@ public class ShapeBoard
         }
     };
 
-    /** Panel of all shape sets. */
-    private final Panel setsPanel;
+    /** The global panel. */
+    private final Panel globalPanel;
 
-    /** Map of shape panels, indexed by shapeSet. */
-    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<>();
+    /** Map of family panels, indexed by shapeSet. */
+    private final Map<ShapeSet, Panel> familyPanels = new HashMap<>();
 
     /** History of recently used shapes. */
     private final ShapeHistory shapeHistory;
 
-    /** Current panel of shapes. */
-    private Panel shapesPanel;
+    /** Current family panel. */
+    private Panel familyPanel;
 
     /** GlassPane. */
     private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
@@ -213,6 +219,9 @@ public class ShapeBoard
         resizeBoard();
     };
 
+    /** Cached list of HeadsAndDot shapes, if any. To trigger board update only when needed. */
+    private List<Shape> cachedHeads;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new ShapeBoard object.
@@ -233,10 +242,9 @@ public class ShapeBoard
 
         dropAdapter.addDropListener(dropListener);
         shapeHistory = new ShapeHistory();
-        setsPanel = buildSetsPanel();
+        globalPanel = buildAllPanels();
 
         defineLayout();
-
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -289,15 +297,15 @@ public class ShapeBoard
         final int space = getSplitSpace();
 
         // Resize all visible panels in this board
-        if (setsPanel.isVisible()) {
-            setsPanel.setSize(space, 1);
+        if (globalPanel.isVisible()) {
+            globalPanel.setSize(space, 1);
         }
 
         if (shapeHistory.panel.isVisible()) {
             shapeHistory.panel.setSize(space, 1);
         }
 
-        for (Panel panel : shapesPanels.values()) {
+        for (Panel panel : familyPanels.values()) {
             if (panel.isVisible()) {
                 panel.setSize(space, 1);
             }
@@ -341,7 +349,7 @@ public class ShapeBoard
             return false;
         }
 
-        closeShapeSet();
+        closeFamily();
 
         // First character (family)
         ShapeSet set = setMap.get(c);
@@ -351,7 +359,7 @@ public class ShapeBoard
         }
 
         logger.debug("family:{}", set.getName());
-        selectShapeSet(set);
+        selectFamily(set);
 
         return true;
     }
@@ -381,7 +389,7 @@ public class ShapeBoard
                     shapeHistory.setFocus();
                 }
             } else {
-                closeShapeSet();
+                closeFamily();
             }
         }
     }
@@ -492,17 +500,17 @@ public class ShapeBoard
     }
 
     //----------------//
-    // buildSetsPanel //
+    // buildAllPanels //
     //----------------//
     /**
-     * Build the catalog of families.
+     * Build the global panel and populate the catalog of family panels.
      *
-     * @return the global panel of families
+     * @return the global panel
      */
-    private Panel buildSetsPanel ()
+    private Panel buildAllPanels ()
     {
         Panel panel = new Panel();
-        panel.setName("setsPanel");
+        panel.setName("globalPanel");
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
         panel.setBackground(Color.LIGHT_GRAY);
@@ -520,8 +528,9 @@ public class ShapeBoard
                 button.setToolTipText(set.getName() + standardized(shortcut));
                 panel.add(button);
 
-                // Create the child shapesPanel
-                shapesPanels.put(set, buildShapesPanel(set));
+                // Create the child family Panel
+                final Panel childPanel = buildFamilyPanel(set);
+                familyPanels.put(set, childPanel);
             }
         }
 
@@ -531,33 +540,38 @@ public class ShapeBoard
     }
 
     //------------------//
-    // buildShapesPanel //
+    // buildFamilyPanel //
     //------------------//
     /**
-     * Build the panel of shapes for a given set.
+     * Build the family panel for a given set.
      *
      * @param set the given set of shapes
-     * @return the panel of shapes for the provided set
+     * @return the family panel created
      */
-    private Panel buildShapesPanel (ShapeSet set)
+    private Panel buildFamilyPanel (ShapeSet set)
     {
-        Panel panel = new Panel();
+        final Panel panel = new Panel();
         panel.setName(set.getName());
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
-        // Button to close this family and return to all-families panel
-        JButton close = new JButton(BACK);
+        // Button to close this family and return to global panel
+        final JButton close = new JButton(BACK);
         close.addActionListener(closeListener);
-        close.setToolTipText("Back to all families");
+        close.setToolTipText("Back to all-families");
         close.setBorderPainted(false); // To avoid visual confusion with draggable items
         panel.add(close);
 
         // Title for this family
         panel.add(new JLabel(set.getName()));
 
-        // One button (or more) per shape
-        addButtons(panel, set.getSortedShapes());
+        // One button (or more) per filtered shape
+        final List<Shape> filtered = filteredShapes(set);
+        addButtons(panel, filtered);
+
+        if (set == ShapeSet.HeadsAndDot) {
+            cachedHeads = filtered; // Keep in cache
+        }
 
         // Specific listener for keyboard
         panel.addKeyListener(keyListener);
@@ -565,21 +579,39 @@ public class ShapeBoard
         return panel;
     }
 
-    //---------------//
-    // closeShapeSet //
-    //---------------//
-    private void closeShapeSet ()
+    //----------------//
+    // filteredShapes //
+    //----------------//
+    /**
+     * A hack to filter shapes according to processing switches.
+     *
+     * @param set the set of shapes to filter
+     * @return the shapes kept
+     */
+    private List<Shape> filteredShapes (ShapeSet set)
     {
-        // Hide current panel of shapes
-        if (shapesPanel != null) {
-            shapesPanel.setVisible(false);
+        final List<Shape> all = set.getSortedShapes();
+
+        if (set != ShapeSet.HeadsAndDot) {
+            return all;
         }
 
-        // Show panel of sets
-        setsPanel.setVisible(true);
+        return ShapeSet.getProcessedShapes(sheet, all);
+    }
+
+    //-------------//
+    // closeFamily //
+    //-------------//
+    private void closeFamily ()
+    {
+        if (familyPanel != null) {
+            familyPanel.setVisible(false);
+        }
+
+        globalPanel.setVisible(true);
 
         resizeBoard();
-        setsPanel.requestFocusInWindow();
+        globalPanel.requestFocusInWindow();
     }
 
     //--------------//
@@ -594,10 +626,10 @@ public class ShapeBoard
         getBody().setName("ShapeBody");
 
         builder.add(shapeHistory.panel, cst.xy(1, 1));
-        builder.add(setsPanel, cst.xy(1, 3));
+        builder.add(globalPanel, cst.xy(1, 3));
 
-        for (Panel sp : shapesPanels.values()) {
-            builder.add(sp, cst.xy(1, 3)); // All overlap setsPanel
+        for (Panel sp : familyPanels.values()) {
+            builder.add(sp, cst.xy(1, 3)); // Global panel and all family panels overlap!
             sp.setVisible(false);
         }
     }
@@ -612,25 +644,35 @@ public class ShapeBoard
         return MusicFont.buildImage(Shape.NON_DRAGGABLE, zoomedInterline, true); // Decorated
     }
 
-    //----------------//
-    // selectShapeSet //
-    //----------------//
+    //--------------//
+    // selectFamily //
+    //--------------//
     /**
-     * Display the panel dedicated to the provided ShapeSet
+     * Display the family panel dedicated to the provided ShapeSet
      *
      * @param set the provided shape set
      */
-    private void selectShapeSet (ShapeSet set)
+    private void selectFamily (ShapeSet set)
     {
-        // Hide panel of sets
-        setsPanel.setVisible(false);
+        selectFamily(familyPanels.get(set));
+    }
 
-        // Show specific panel of shapes
-        shapesPanel = shapesPanels.get(set);
-        shapesPanel.setVisible(true);
+    //--------------//
+    // selectFamily //
+    //--------------//
+    /**
+     * Display the selected family panel.
+     *
+     * @param fPanel the provided family panel
+     */
+    private void selectFamily (Panel fPanel)
+    {
+        globalPanel.setVisible(false);
 
+        familyPanel = fPanel;
+        familyPanel.setVisible(true);
         resizeBoard();
-        shapesPanel.requestFocusInWindow();
+        familyPanel.requestFocusInWindow();
     }
 
     //--------------//
@@ -724,6 +766,39 @@ public class ShapeBoard
             }
 
             return space;
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Update the filtered shapes according to current effective values of processing switches.
+     */
+    @Override
+    public void update ()
+    {
+        final ShapeSet headSet = ShapeSet.HeadsAndDot;
+        final List<Shape> newHeads = filteredShapes(headSet);
+
+        if (!newHeads.equals(cachedHeads)) {
+            final boolean isGlobal = globalPanel.isVisible();
+            final String currentFamilyName = isGlobal ? null : familyPanel.getName();
+
+            familyPanels.put(headSet, buildFamilyPanel(headSet));
+
+            defineLayout();
+
+            if (isGlobal) {
+                closeFamily();
+            } else {
+                if (!headSet.getName().equals(currentFamilyName)) {
+                    selectFamily(familyPanel);
+                } else {
+                    closeFamily();
+                    selectFamily(headSet);
+                }
+            }
         }
     }
 

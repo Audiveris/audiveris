@@ -31,8 +31,14 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class StringParam
         extends Param<String>
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
+    public StringParam (Object scope)
+    {
+        super(scope);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * JAXB adapter for StringParam type.
      */
@@ -55,7 +61,7 @@ public class StringParam
         public StringParam unmarshal (String str)
                 throws Exception
         {
-            StringParam sp = new StringParam();
+            StringParam sp = new StringParam(null);
             sp.setSpecific(str);
 
             return sp;

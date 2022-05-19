@@ -2433,6 +2433,11 @@ public class BookActions
             extends Param<Boolean>
     {
 
+        public PromptOnClosingUnsaved ()
+        {
+            super(GLOBAL_SCOPE);
+        }
+
         @Override
         public Boolean getSpecific ()
         {

@@ -238,6 +238,11 @@ public class OmrExecutors
             extends Param<Boolean>
     {
 
+        public Default ()
+        {
+            super(GLOBAL_SCOPE);
+        }
+
         @Override
         public Boolean getSpecific ()
         {

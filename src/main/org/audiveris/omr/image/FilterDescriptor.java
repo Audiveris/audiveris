@@ -154,6 +154,11 @@ public abstract class FilterDescriptor
             extends Param<FilterDescriptor>
     {
 
+        public Default ()
+        {
+            super(Param.GLOBAL_SCOPE);
+        }
+
         @Override
         public FilterDescriptor getSourceValue ()
         {

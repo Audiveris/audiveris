@@ -32,8 +32,14 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.SheetAssembly;
+import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sheet.ui.SheetView;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
+import org.audiveris.omr.ui.Board;
+import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.util.param.Param;
 
@@ -47,7 +53,9 @@ import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -254,6 +262,7 @@ public class BookParameters
         try {
             boolean defaultModified = false;
             boolean bookModified = false;
+            final Set<Object> modifiedScopes = new LinkedHashSet<>();
 
             // Commit all specific values, if any, to their model object
             for (int tab = 0, tBreak = component.getTabCount(); tab < tBreak; tab++) {
@@ -266,6 +275,10 @@ public class BookParameters
                     if (paneModified) {
                         logger.debug("BookParameters modified tab:{} {} {}",
                                      tab, panel.getName(), pane);
+
+                        if (pane instanceof SwitchPane switchPane) {
+                            modifiedScopes.add(switchPane.getModel().getScope());
+                        }
                     }
 
                     modified |= paneModified;
@@ -291,6 +304,26 @@ public class BookParameters
 
             if (bookModified) {
                 logger.info("Book parameters committed");
+            }
+
+            if (!modifiedScopes.isEmpty()) {
+                // Immediate GUI update if current selected sheet is impacted
+                // Non-selected ones will be updated when they get selected
+                final SheetStub stub = StubsController.getInstance().getSelectedStub();
+
+                if (stub != null) {
+                    final SheetAssembly assembly = stub.getAssembly();
+                    final SheetView dataView = assembly.getView(SheetTab.DATA_TAB.label);
+
+                    if (dataView != null) {
+                        final BoardsPane boardsPane = dataView.getBoardsPane();
+                        final Board shapeBoard = boardsPane.getBoard(Board.SHAPE.name);
+
+                        if (shapeBoard != null) {
+                            shapeBoard.update();
+                        }
+                    }
+                }
             }
         } catch (Exception ex) {
             logger.warn("Could not commit book parameters {}", ex.toString(), ex);

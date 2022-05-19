@@ -30,9 +30,10 @@ import org.slf4j.LoggerFactory;
  * Class <code>ConstantBasedParam</code> is a {@link Param} backed by an application constant
  * as is the case for many default Param.
  *
- * @author Hervé Bitteur
  * @param <E> type for value
  * @param <C> type for value constant
+ *
+ * @author Hervé Bitteur
  */
 public class ConstantBasedParam<E, C extends Constant<E>>
         extends Param<E>
@@ -49,9 +50,12 @@ public class ConstantBasedParam<E, C extends Constant<E>>
      * Creates a new <code>ConstantBasedParam</code> object.
      *
      * @param constant the underlying constant
+     * @param scope    the owning object
      */
-    public ConstantBasedParam (C constant)
+    public ConstantBasedParam (C constant,
+                               Object scope)
     {
+        super(scope);
         this.cst = constant;
     }
 

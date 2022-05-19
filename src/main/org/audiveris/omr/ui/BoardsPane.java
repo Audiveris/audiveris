@@ -345,7 +345,7 @@ public class BoardsPane
     //----------//
     // getBoard //
     //----------//
-    private Board getBoard (String title)
+    public Board getBoard (String title)
     {
         for (Board b : boards) {
             if (b.getName().equals(title)) {

@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
+import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -63,11 +64,13 @@ public class ProcessingSwitches
      * Create a <code>ProcessingSwitches</code> object with its parent.
      *
      * @param parent parent switches
+     * @param scope  owning scope of these switches
      */
-    public ProcessingSwitches (ProcessingSwitches parent)
+    public ProcessingSwitches (ProcessingSwitches parent,
+                               Object scope)
     {
         if (parent != null) {
-            setParent(parent);
+            setParent(parent, scope);
         }
     }
 
@@ -116,19 +119,23 @@ public class ProcessingSwitches
     }
 
     /**
-     * Assign the parent of this object.
+     * Assign parent and scope for each switch.
      *
-     * @param parent the parent to assign
+     * @param parent the parent set of switches
+     * @param scope  the scope of these switches
      */
-    public final void setParent (ProcessingSwitches parent)
+    public final void setParent (ProcessingSwitches parent,
+                                 Object scope)
     {
-        // Complete the map and link each switch to parent switch
+        // Complete the map, link each switch to parent switch, set provided scope
         for (ProcessingSwitch key : ProcessingSwitch.values()) {
             Param<Boolean> param = getParam(key);
 
             if (param == null) {
-                param = new Param<>();
+                param = new Param<>(scope);
                 map.put(key, param);
+            } else {
+                param.setScope(scope);
             }
 
             param.setParent(parent.getParam(key));
@@ -194,7 +201,7 @@ public class ProcessingSwitches
 
             // We populate entries for which we have a specific value
             for (ProcessingEntry entry : value.entries) {
-                Param<Boolean> param = new Param<>();
+                Param<Boolean> param = new Param<>(null); // NOTA: Actual scope is to be set later
 
                 if (entry.value != null) {
                     param.setSpecific(entry.value);
@@ -205,7 +212,7 @@ public class ProcessingSwitches
             // Then fill empty entries
             for (ProcessingSwitch key : ProcessingSwitch.values()) {
                 if (switches.map.get(key) == null) {
-                    switches.map.put(key, new Param<>());
+                    switches.map.put(key, new Param<>(null)); // IDEM
                 }
             }
 
@@ -330,11 +337,11 @@ public class ProcessingSwitches
         final Constant.Boolean oneLineStaves = new Constant.Boolean(
                 false,
                 "Support for percussion staves (1 line)");
- 
+
         final Constant.Boolean drumNotation = new Constant.Boolean(
                 false,
                 "Support for unpitched percussion (5-line) notation");
-    
+
         final Constant.Boolean partialWholeRests = new Constant.Boolean(
                 false,
                 "Support for partial whole rests");
@@ -342,7 +349,7 @@ public class ProcessingSwitches
         final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
                 false,
                 "Support for multi-whole head chords");
-       }
+    }
 
     //-----------------//
     // DefaultSwitches //
@@ -354,7 +361,7 @@ public class ProcessingSwitches
         DefaultSwitches ()
         {
             for (ProcessingSwitch key : ProcessingSwitch.values()) {
-                map.put(key, new ConstantBasedParam<>(key.getConstant()));
+                map.put(key, new ConstantBasedParam<>(key.getConstant(), GLOBAL_SCOPE));
             }
         }
     }

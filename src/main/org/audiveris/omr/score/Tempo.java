@@ -71,6 +71,11 @@ public abstract class Tempo
             extends Param<Integer>
     {
 
+        public Default ()
+        {
+            super(GLOBAL_SCOPE);
+        }
+
         @Override
         public Integer getSpecific ()
         {

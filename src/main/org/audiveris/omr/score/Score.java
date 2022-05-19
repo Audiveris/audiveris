@@ -130,10 +130,10 @@ public class Score
     private ArrayList<Page> pages;
 
     /** Handling of parts name and program. */
-    private final Param<List<PartData>> partsParam = new PartsParam();
+    private final Param<List<PartData>> partsParam;
 
     /** Handling of tempo parameter. */
-    private final Param<Integer> tempoParam = new Param<>();
+    private final Param<Integer> tempoParam;
 
     /** The specified sound volume, if any. */
     private Integer volume;
@@ -144,6 +144,9 @@ public class Score
      */
     public Score ()
     {
+        partsParam = new PartsParam(this);
+
+        tempoParam = new Param<>(this);
         tempoParam.setParent(Tempo.defaultTempo);
     }
 
@@ -791,6 +794,11 @@ public class Score
     private class PartsParam
             extends Param<List<PartData>>
     {
+
+        public PartsParam (Object scope)
+        {
+            super(scope);
+        }
 
         @Override
         public List<PartData> getSpecific ()

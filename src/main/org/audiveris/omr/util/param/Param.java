@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util.param;
 
+import org.audiveris.omr.util.Navigable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
@@ -42,12 +44,26 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Param<E>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Unique object for global scope. */
+    public static final String GLOBAL_SCOPE = "Global";
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Create a <b>Param</b> instance with its related scope.
+     *
+     * @param scope the owning scope (GLOBAL_SCOPE, book or sheet/stub)
+     */
+    public Param (Object scope)
+    {
+        this.scope = scope;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
-    /** Specifically set parameter, if any. */
     protected E specific;
 
     // Transient data
@@ -56,7 +72,37 @@ public class Param<E>
     /** Parent param, if any, to inherit from. */
     protected Param<E> parent;
 
+    /** Scope of this param: GLOBAL_SCOPE, otherwise book or sheet/stub. */
+    @Navigable(false)
+    protected Object scope;
+
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // getScope //
+    //----------//
+    /**
+     * Report the scope of this param.
+     *
+     * @return scope, perhaps null
+     */
+    public Object getScope ()
+    {
+        return scope;
+    }
+
+    //----------//
+    // setScope //
+    //----------//
+    /**
+     * Setter for scope field, needed after unmarshalling.
+     *
+     * @param scope the scope to set
+     */
+    public void setScope (Object scope)
+    {
+        this.scope = scope;
+    }
+
     //----------------//
     // getSourceValue //
     //----------------//
@@ -167,20 +213,17 @@ public class Param<E>
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-        sb.append(internalsString());
-        sb.append("}");
-
-        return sb.toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append('{')
+                .append(internalsString())
+                .append('}').toString();
     }
 
     //-----------------//
     // internalsString //
     //-----------------//
     /**
-     * Return the string of the internals of this class, typically for
-     * inclusion in a toString.
+     * Return the string of the internals of this class, typically for inclusion in a toString.
      *
      * @return the string of internals
      */
@@ -188,12 +231,14 @@ public class Param<E>
     {
         StringBuilder sb = new StringBuilder();
 
-        if (parent != null) {
-            sb.append("parent:").append(parent);
-        }
+        sb.append("scope:").append(scope);
 
         if (getSpecific() != null) {
             sb.append(" specific:").append(getSpecific());
+        }
+
+        if (parent != null) {
+            sb.append(" parent:").append(parent);
         }
 
         return sb.toString();
