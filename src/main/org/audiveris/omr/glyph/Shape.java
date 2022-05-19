@@ -319,15 +319,10 @@ public enum Shape
     //
     NOTEHEAD_CROSS("Ghost note with rhythmic value but no discernible pitch"),
     NOTEHEAD_DIAMOND_FILLED("Filled diamond shape note head for unpitched percussion"),
-<<<<<<< HEAD
-    NOTEHEAD_TRIANGLE_DOWN_FILLED("Filled point-down triangle shape note head for unpitched percussion"),
-    NOTEHEAD_TRIANGLE_DOWN_VOID("Hollow point-down triangle shape note head for unpitched percussion"),
-=======
     NOTEHEAD_TRIANGLE_DOWN_FILLED(
             "Filled point-down triangle shape note head for unpitched percussion"),
     NOTEHEAD_TRIANGLE_DOWN_VOID(
             "Hollow point-down triangle shape note head for unpitched percussion"),
->>>>>>> upstream/drum-scores
     NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
     NOTEHEAD_BLACK("Filled note head for quarters and less"),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
@@ -438,11 +433,7 @@ public enum Shape
     FORWARD("To indicate a forward"),
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
-<<<<<<< HEAD
-    CUSTOM_TIME("Time signature defined by user"),
-=======
     TIME_CUSTOM("Time signature defined by user"),
->>>>>>> upstream/drum-scores
     NO_LEGAL_TIME("No Legal Time Shape"),
     MEASURE_NUMBER("Measure number in a multiple rest");
 

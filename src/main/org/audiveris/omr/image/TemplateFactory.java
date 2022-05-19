@@ -729,17 +729,11 @@ public class TemplateFactory
             return Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
 
         case NOTEHEAD_DIAMOND_VOID:
-<<<<<<< HEAD
-        case WHOLE_NOTE_DIAMOND:
-            return 79;  /* was 225 */
-        
-=======
             return Symbols.CODE_NOTEHEAD_DIAMOND_VOID;
 
         case WHOLE_NOTE_DIAMOND:
             return Symbols.CODE_WHOLE_NOTE_DIAMOND;
 
->>>>>>> upstream/drum-scores
         case NOTEHEAD_CROSS:
             return Symbols.CODE_NOTEHEAD_CROSS;
 

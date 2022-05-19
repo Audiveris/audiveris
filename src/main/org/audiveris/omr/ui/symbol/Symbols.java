@@ -291,17 +291,6 @@ public abstract class Symbols
         mapShape(MORDENT, 0xE56C);
         mapShape(MORDENT_INVERTED, 0xE56D);
 
-<<<<<<< HEAD
-        mapShape(NATURAL, 110);
-        sym.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
-        small(NOTEHEAD_BLACK_SMALL, 207);
-        mapShape(NOTEHEAD_CROSS, 192);
-        mapShape(NOTEHEAD_DIAMOND_FILLED, 226);
-        mapShape(NOTEHEAD_DIAMOND_VOID, 79);  /* was 225 */
-        mapShape(NOTEHEAD_VOID, 250);
-        small(NOTEHEAD_VOID_SMALL, 250);
-        //        mapShape(NO_LEGAL_TIME);
-=======
         mapShape(NATURAL, CODE_NATURAL);
         sym.put(NON_DRAGGABLE, new NonDraggableSymbol(0xEA94, 0xEA93));
         small(NOTEHEAD_BLACK_SMALL, CODE_NOTEHEAD_BLACK);
@@ -310,7 +299,6 @@ public abstract class Symbols
         mapShape(NOTEHEAD_DIAMOND_VOID, CODE_NOTEHEAD_DIAMOND_VOID);
         mapShape(NOTEHEAD_VOID, CODE_NOTEHEAD_VOID);
         small(NOTEHEAD_VOID_SMALL, CODE_NOTEHEAD_VOID);
->>>>>>> upstream/drum-scores
 
         //        mapShape(OLD_QUARTER_REST, 0xE4F2);
         mapShape(ONE_16TH_REST, 0xE4E7);
@@ -385,12 +373,6 @@ public abstract class Symbols
         numDen(TIME_TWO_FOUR, 2, 4);
         numDen(TIME_TWO_TWO, 2, 2);
 
-<<<<<<< HEAD
-        mapShape(WHOLE_NOTE, 119);
-        mapShape(WHOLE_NOTE_DIAMOND, 79);
-        small(WHOLE_NOTE_SMALL, 119);
-        sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
-=======
         mapShape(TR, 0xE566);
         mapShape(TUPLET_SIX, 0xE886);
         mapShape(TUPLET_THREE, 0xE883);
@@ -403,7 +385,6 @@ public abstract class Symbols
         mapShape(WHOLE_NOTE_DIAMOND, CODE_WHOLE_NOTE_DIAMOND);
         small(WHOLE_NOTE_SMALL, CODE_WHOLE_NOTE);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, 0xE4E3));
->>>>>>> upstream/drum-scores
     }
 
     //- Convenient methods -------------------------------------------------------------------------

@@ -134,6 +134,7 @@ import org.audiveris.proxymusic.Grace;
 import org.audiveris.proxymusic.Harmony;
 import org.audiveris.proxymusic.HarmonyAlter;
 import org.audiveris.proxymusic.Identification;
+import org.audiveris.proxymusic.Instrument;
 import org.audiveris.proxymusic.Key;
 import org.audiveris.proxymusic.Kind;
 import org.audiveris.proxymusic.LeftCenterRight;
@@ -475,28 +476,39 @@ public class PartwiseBuilder
                 ? logicalPart.getName()
                 : logicalPart.getDefaultName());
 
-        // Is this a drum part? If so, create drumset and export all midi instruments.
-        /** SystemInfo system = logicalPart.getSystem();  // doesn't work: LogicalPart has no getSystem() method!
-        Part systemPart = system.getPartById(logicalPart.getId());
-        
-        if (systemPart != null && systemPart.isDrumPart()) {
-        // TODO: What if systemPart == null? Should we create a dummy part and test its associated scorePart?
-        */
-        if ( logicalPart.getName() == "Drumset" ) // temporary workaround [doesn't actually detect drum part]
-        // if ( logicalPart.getId() == 1 ) // temporary workaround
-        {
+        // Is this a drum part? If so, create drumset and export all midi instruments in xml preamble.
+        boolean isDrumLogicalPart;
+        isDrumLogicalPart = false;
+        final List<SheetStub> scoreStubs = score.getStubs();
+        outermost:
+        for (SheetStub stub : scoreStubs) {
+        	final Integer sheetPageId = score.getSheetPageId(stub.getNumber());
+        	final Sheet sheet = stub.getSheet();
+        	final Page page = sheet.getPages().get(sheetPageId - 1);
+        	for (SystemInfo system : page.getSystems()) {
+            	Part systemPart = system.getPartById(logicalPart.getId());
+            	if (systemPart != null) {
+            	// we've found a SystemPart that corresponds to this LogicalPart
+            		isDrumLogicalPart = systemPart.isDrumPart();
+            		break outermost;
+            	}
+       		}
+		}
+		if (isDrumLogicalPart) {
             Drumset drumset = new Drumset();
-            DrumInstrument[] drums = drumset.drum;
-            // current.drum = drum;  // we don't have a Current object yet
+            DrumInstrument[] drum = drumset.drum;
+            Map<Integer, ScoreInstrument> instrumentMap = new HashMap<>();
             for (int i=0; i<Drumset.DRUM_INSTRUMENTS; i++) 
             {
-                if (drums[i] != null)
+                if (drum[i] != null)
                 {
                     // Score instrument
                     ScoreInstrument scoreInstrument = new ScoreInstrument();
                     pmScorePart.getScoreInstrument().add(scoreInstrument);
                     scoreInstrument.setId(pmScorePart.getId() + "-I" + Integer.toString(i+1));
-                    scoreInstrument.setInstrumentName(drums[i].name);
+                    scoreInstrument.setInstrumentName(drum[i].name);
+
+                    instrumentMap.put(i, scoreInstrument);
                     
                     // Midi instrument
                     MidiInstrument midiInstrument = factory.createMidiInstrument();
@@ -508,6 +520,7 @@ public class PartwiseBuilder
                     midiInstrument.setVolume(new BigDecimal(score.getVolume()));
                 }
             }
+            current.instrumentMap = instrumentMap;
         } else {
 
             // Score instrument
@@ -1991,10 +2004,6 @@ public class PartwiseBuilder
                     }
                 }
 
-                // Measure firstMeasure = current.measure.getPart().getFirstMeasure();
-                // ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
-                // TODO: It is inefficient to check clef for every note! Should make an isDrumStaff() test.
-
                 if (staff.isOneLineStaff()) {
                     // Unpitched
                     Unpitched unpitched = factory.createUnpitched();
@@ -2008,7 +2017,6 @@ public class PartwiseBuilder
                     Unpitched unpitched = factory.createUnpitched();
                     unpitched.setDisplayStep(stepOf(note.getStep()));
                     unpitched.setDisplayOctave(note.getOctave());
-                    // TODO: need instrumentID too
                     current.pmNote.setUnpitched(unpitched);
                 } else {
                     // Pitch
@@ -2108,6 +2116,65 @@ public class PartwiseBuilder
                     }
                 }
             }
+
+            // Instrument (for unpitched percussion)
+            if (current.isDrumPart) {
+                // Find a midi instrument with the correct pitch and notehead
+                Boolean instrumentFound = false;
+                int instId;
+                Shape headShape = null;
+                for (int i=0; i<Drumset.DRUM_INSTRUMENTS && !instrumentFound; i++) 
+                {
+                    if (current.drum[i] != null) {
+                        if ( current.drum[i].integerPitch == note.getIntegerPitch() )
+                        // TODO: Maybe create general note shape categories (or families)
+                        // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
+                        // duration or size, to avoid this switch statement
+                        {
+                            switch (note.getShape()) {
+                                case NOTEHEAD_BLACK:
+                                case NOTEHEAD_BLACK_SMALL:
+                                case NOTEHEAD_VOID:
+                                case NOTEHEAD_VOID_SMALL:
+                                case WHOLE_NOTE:
+                                case WHOLE_NOTE_SMALL:
+                                    headShape = Shape.NOTEHEAD_BLACK;
+                                    break;
+
+                                case NOTEHEAD_CROSS:
+                                    headShape = Shape.NOTEHEAD_CROSS;
+                                    break;
+
+                                case NOTEHEAD_DIAMOND_FILLED:
+                                case NOTEHEAD_DIAMOND_VOID:
+                                case WHOLE_NOTE_DIAMOND:
+                                    headShape = Shape.NOTEHEAD_DIAMOND_FILLED;
+                                    break;
+
+                                case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+                                case NOTEHEAD_TRIANGLE_DOWN_VOID:
+                                    headShape = Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED;
+                                    break;
+
+                                default:
+                                    logger.error("Unsupported notehead shape", note.getShape());
+
+                            }
+                             if ( current.drum[i].notehead == headShape ) {
+                                instId = i;
+                                instrumentFound = true;
+                                Instrument instrument = factory.createInstrument();
+                                instrument.setId(current.instrumentMap.get(instId));
+                                current.pmNote.getInstrument().add(instrument);  
+                             }      
+                        }
+                    }
+                }  
+                if (!instrumentFound) {
+                    logger.warn("No instrument for note integerPitch / Shape combo", 
+                        note.getIntegerPitch(), note.getShape());
+                }
+            } 
 
             // Voice
             Voice voice = chord.getVoice();
@@ -2750,11 +2817,19 @@ public class PartwiseBuilder
 
             if (systemPart != null) {
                 current.isDrumPart = systemPart.isDrumPart();
+                if (current.isDrumPart) {
+                    Drumset drumset = new Drumset();
+                    current.drum = drumset.drum;
+                }    
                 processPart(systemPart);
             } else {
                 // Need to build a dummy system Part on-the-fly
                 Part dummyPart = system.getFirstPart().createDummyPart(current.logicalPart.getId());
                 current.isDrumPart = dummyPart.isDrumPart();
+                if (current.isDrumPart) {
+                    Drumset drumset = new Drumset();
+                    current.drum = drumset.drum;
+                }    
                 processPart(dummyPart);
             }
 
@@ -3124,7 +3199,11 @@ public class PartwiseBuilder
         // Part dependent
         LogicalPart logicalPart;
         Boolean isDrumPart;
-        // DrumInstrument[] drum;
+        DrumInstrument[] drum;
+        // Map midi instrument number to ScoreInstrument for lookup during note export
+        // TODO: The map should eventually have a second key, the part number
+        // But so far we only have one possible set of unpitched percussion instruments
+        Map<Integer, ScoreInstrument> instrumentMap;
 
         ScorePartwise.Part pmPart;
 
@@ -3191,7 +3270,7 @@ public class PartwiseBuilder
     // DrumInstrument //
     //----------------//
     /** Class representing an individual percussion instrument */
-    public class DrumInstrument
+    private class DrumInstrument
     {
 
         /** Instrument name */
@@ -3204,7 +3283,7 @@ public class PartwiseBuilder
         int integerPitch;
 
     //~ Constructors -------------------------------------------------------------------------------
-        public DrumInstrument(String name, Shape notehead, int integerPitch)
+        private DrumInstrument(String name, Shape notehead, int integerPitch)
         {
             this.name = name;
             this.notehead = notehead; 
@@ -3215,8 +3294,8 @@ public class PartwiseBuilder
     //---------//
     // Drumset //
     //---------//
-    /** Class representing a standard midi drumset */
-    public class Drumset
+    /** Class representing the standard MuseScore midi drumset */
+    private class Drumset
     {
         final static int DRUM_INSTRUMENTS = 128;
 
@@ -3224,7 +3303,7 @@ public class PartwiseBuilder
         DrumInstrument[] drum = new DrumInstrument[DRUM_INSTRUMENTS];
 
     //~ Constructors -------------------------------------------------------------------------------
-        public Drumset ()
+        private Drumset ()
         {
             this.drum[35] = new DrumInstrument( "Acoustic Bass Drum", Shape.NOTEHEAD_BLACK, 3);
             this.drum[36] = new DrumInstrument( "Bass Drum 1",        Shape.NOTEHEAD_BLACK, 3);
@@ -3253,7 +3332,6 @@ public class PartwiseBuilder
             this.drum[64] = new DrumInstrument( "Low Conga",          Shape.NOTEHEAD_CROSS, 2);
         }
     }
-
 
     //---------//
     // IsFirst //
