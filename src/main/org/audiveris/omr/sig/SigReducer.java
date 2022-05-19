@@ -305,9 +305,11 @@ public class SigReducer
 
                 // NOTEHEAD_CROSS shape appears before the oval-shape heads in Shape enum
                 // There is no exclusion with oval-shape heads on the same stem
-                // Likewise for NOTEHEAD_DIAMOND_FILLED and NOTEHEAD_DIAMOND_VOID
-                if (c1 == Shape.NOTEHEAD_CROSS || c1 == Shape.NOTEHEAD_DIAMOND_FILLED || c1 == Shape.NOTEHEAD_DIAMOND_VOID) {
-                    continue;
+                // Likewise for the DIAMOND and TRIANGLE_DOWN notehead shapes
+                if (c1 == Shape.NOTEHEAD_CROSS || c1 == Shape.NOTEHEAD_CROSS_VOID || 
+                    c1 == Shape.NOTEHEAD_DIAMOND_FILLED || c1 == Shape.NOTEHEAD_DIAMOND_VOID ||
+                    c1 == Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED || c1 == Shape.NOTEHEAD_TRIANGLE_DOWN_VOID) {
+                        continue;
                 }
 
                 Set<Inter> set1 = heads.get(c1);
@@ -408,7 +410,9 @@ public class SigReducer
                     }
 
                     // Standard beams support black heads (not void)
-                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_DIAMOND_FILLED}) {
+                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_DIAMOND_FILLED,
+                        Shape.NOTEHEAD_CROSS, Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED}) {
+                            
                         Set<Inter> blackHeadSet = heads.get(shape);
 
                         if (blackHeadSet != null) {

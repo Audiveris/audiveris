@@ -318,12 +318,13 @@ public enum Shape
     // Noteheads ---
     //
     NOTEHEAD_CROSS("Ghost note with rhythmic value but no discernible pitch"),
+    NOTEHEAD_CROSS_VOID("Hollow cross shape note head for unpitched percussion"),
     NOTEHEAD_DIAMOND_FILLED("Filled diamond shape note head for unpitched percussion"),
+    NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
     NOTEHEAD_TRIANGLE_DOWN_FILLED(
             "Filled point-down triangle shape note head for unpitched percussion"),
     NOTEHEAD_TRIANGLE_DOWN_VOID(
             "Hollow point-down triangle shape note head for unpitched percussion"),
-    NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
     NOTEHEAD_BLACK("Filled note head for quarters and less"),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
     NOTEHEAD_VOID("Hollow note head for halves"),
@@ -342,7 +343,9 @@ public enum Shape
     //
     WHOLE_NOTE("Hollow node head for wholes"),
     WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
+    WHOLE_NOTE_CROSS("Hollow cross shape note head for unpitched percussion wholes"),
     WHOLE_NOTE_DIAMOND("Hollow diamond-shaped note head for unpitched percussion wholes"),
+    WHOLE_NOTE_TRIANGLE_DOWN("Hollow point-down triangle shape for unpitched percussion wholes"),
 
     //
     // Beams and slurs ---

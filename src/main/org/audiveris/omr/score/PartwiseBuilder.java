@@ -475,6 +475,11 @@ public class PartwiseBuilder
         partName.setValue((logicalPart.getName() != null)
                 ? logicalPart.getName()
                 : logicalPart.getDefaultName());
+        PartName partAbbrev = factory.createPartName();
+        pmScorePart.setPartAbbreviation(partAbbrev);
+        partAbbrev.setValue((logicalPart.getAbbreviation() != null)
+                ? logicalPart.getAbbreviation()
+                : partName.getValue());
 
         // Is this a drum part? If so, create drumset and export all midi instruments in xml preamble.
         boolean isDrumLogicalPart;
@@ -2049,15 +2054,25 @@ public class PartwiseBuilder
                 Notehead notehead = factory.createNotehead();
                 switch (note.getShape()) {
                     case NOTEHEAD_CROSS:
+                    case NOTEHEAD_CROSS_VOID:
+                    case WHOLE_NOTE_CROSS:
                         notehead.setValue(NoteheadValue.X);
                         current.pmNote.setNotehead(notehead);
                         break;
+                    
                     case NOTEHEAD_DIAMOND_FILLED:
                     case NOTEHEAD_DIAMOND_VOID:
                     case WHOLE_NOTE_DIAMOND:
                         notehead.setValue(NoteheadValue.DIAMOND);
                         current.pmNote.setNotehead(notehead);
                         break;
+
+                    case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+                    case NOTEHEAD_TRIANGLE_DOWN_VOID:
+                    case WHOLE_NOTE_TRIANGLE_DOWN:
+                        notehead.setValue(NoteheadValue.INVERTED_TRIANGLE);
+                        current.pmNote.setNotehead(notehead);
+                    
                     default:
                        // No need to specify NoteheadValue for standard oval heads
                 }
@@ -2118,64 +2133,68 @@ public class PartwiseBuilder
             }
 
             // Instrument (for unpitched percussion)
-            if (current.isDrumPart) {
-                // Find a midi instrument with the correct pitch and notehead
-                Boolean instrumentFound = false;
-                int instId;
-                Shape headShape = null;
-                for (int i=0; i<Drumset.DRUM_INSTRUMENTS && !instrumentFound; i++) 
-                {
-                    if (current.drum[i] != null) {
-                        if ( current.drum[i].integerPitch == note.getIntegerPitch() )
-                        // TODO: Maybe create general note shape categories (or families)
-                        // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
-                        // duration or size, to avoid this switch statement
-                        {
-                            switch (note.getShape()) {
-                                case NOTEHEAD_BLACK:
-                                case NOTEHEAD_BLACK_SMALL:
-                                case NOTEHEAD_VOID:
-                                case NOTEHEAD_VOID_SMALL:
-                                case WHOLE_NOTE:
-                                case WHOLE_NOTE_SMALL:
-                                    headShape = Shape.NOTEHEAD_BLACK;
-                                    break;
+            if (!note.getShape().isRest()) {
+                if (current.isDrumPart) {
+                    // Find a midi instrument with the correct pitch and notehead
+                    Boolean instrumentFound = false;
+                    int instId;
+                    Shape headShape = null;
+                    for (int i=0; i<Drumset.DRUM_INSTRUMENTS && !instrumentFound; i++) 
+                    {
+                        if (current.drum[i] != null) {
+                            if ( current.drum[i].integerPitch == note.getIntegerPitch() )
+                            // TODO: Maybe create general note shape categories (or families)
+                            // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
+                            // duration or size, to avoid this and earlier switch statements
+                            {
+                                switch (note.getShape()) {
+                                    case NOTEHEAD_BLACK:
+                                    case NOTEHEAD_BLACK_SMALL:
+                                    case NOTEHEAD_VOID:
+                                    case NOTEHEAD_VOID_SMALL:
+                                    case WHOLE_NOTE:
+                                    case WHOLE_NOTE_SMALL:
+                                        headShape = Shape.NOTEHEAD_BLACK;
+                                        break;
 
-                                case NOTEHEAD_CROSS:
-                                    headShape = Shape.NOTEHEAD_CROSS;
-                                    break;
+                                    case NOTEHEAD_CROSS:
+                                    case NOTEHEAD_CROSS_VOID:
+                                    case WHOLE_NOTE_CROSS:
+                                        headShape = Shape.NOTEHEAD_CROSS;
+                                        break;
 
-                                case NOTEHEAD_DIAMOND_FILLED:
-                                case NOTEHEAD_DIAMOND_VOID:
-                                case WHOLE_NOTE_DIAMOND:
-                                    headShape = Shape.NOTEHEAD_DIAMOND_FILLED;
-                                    break;
+                                    case NOTEHEAD_DIAMOND_FILLED:
+                                    case NOTEHEAD_DIAMOND_VOID:
+                                    case WHOLE_NOTE_DIAMOND:
+                                        headShape = Shape.NOTEHEAD_DIAMOND_FILLED;
+                                        break;
 
-                                case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-                                case NOTEHEAD_TRIANGLE_DOWN_VOID:
-                                    headShape = Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED;
-                                    break;
+                                    case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+                                    case NOTEHEAD_TRIANGLE_DOWN_VOID:
+                                    case WHOLE_NOTE_TRIANGLE_DOWN:
+                                        headShape = Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED;
+                                        break;
 
-                                default:
-                                    logger.error("Unsupported notehead shape", note.getShape());
+                                    default:
+                                        logger.error("Unsupported notehead shape {}", note.getShape());
 
+                                }
+                                if ( current.drum[i].notehead == headShape ) {
+                                    instId = i;
+                                    instrumentFound = true;
+                                    Instrument instrument = factory.createInstrument();
+                                    instrument.setId(current.instrumentMap.get(instId));
+                                    current.pmNote.getInstrument().add(instrument);  
+                                }      
                             }
-                             if ( current.drum[i].notehead == headShape ) {
-                                instId = i;
-                                instrumentFound = true;
-                                Instrument instrument = factory.createInstrument();
-                                instrument.setId(current.instrumentMap.get(instId));
-                                current.pmNote.getInstrument().add(instrument);  
-                             }      
                         }
+                    }  
+                    if (!instrumentFound) {
+                        logger.warn("No instrument for note integerPitch {} Shape {}", 
+                            note.getIntegerPitch(), note.getShape());
                     }
-                }  
-                if (!instrumentFound) {
-                    logger.warn("No instrument for note integerPitch / Shape combo", 
-                        note.getIntegerPitch(), note.getShape());
-                }
-            } 
-
+                } 
+            }
             // Voice
             Voice voice = chord.getVoice();
 

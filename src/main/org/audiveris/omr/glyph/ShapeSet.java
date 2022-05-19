@@ -173,12 +173,15 @@ public class ShapeSet
     /** All black note heads. */
     public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
             NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_TRIANGLE_DOWN_FILLED,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL);
 
     /** All void note heads. */
     public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
             NOTEHEAD_DIAMOND_VOID,
+            NOTEHEAD_CROSS_VOID,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL);
 
@@ -193,6 +196,8 @@ public class ShapeSet
             BREVE,
             WHOLE_NOTE,
             WHOLE_NOTE_SMALL,
+            WHOLE_NOTE_CROSS,
+            WHOLE_NOTE_TRIANGLE_DOWN,
             WHOLE_NOTE_DIAMOND);
 
     /** All heads with a stem. */
@@ -202,8 +207,11 @@ public class ShapeSet
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL,
             NOTEHEAD_CROSS,
+            NOTEHEAD_CROSS_VOID,
             NOTEHEAD_DIAMOND_FILLED,
-            NOTEHEAD_DIAMOND_VOID);
+            NOTEHEAD_DIAMOND_VOID,
+            NOTEHEAD_TRIANGLE_DOWN_FILLED,
+            NOTEHEAD_TRIANGLE_DOWN_VOID);
 
     /** All heads. */
     public static final List<Shape> Heads = Arrays.asList(
@@ -215,9 +223,14 @@ public class ShapeSet
             WHOLE_NOTE_SMALL,
             BREVE,
             NOTEHEAD_CROSS,
+            NOTEHEAD_CROSS_VOID,
             NOTEHEAD_DIAMOND_FILLED,
             NOTEHEAD_DIAMOND_VOID,
-            WHOLE_NOTE_DIAMOND);
+            NOTEHEAD_TRIANGLE_DOWN_FILLED,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            WHOLE_NOTE_CROSS,
+            WHOLE_NOTE_DIAMOND,
+            WHOLE_NOTE_TRIANGLE_DOWN);
 
     /** Void heads. */
     public static final List<Shape> VoidHeads = Arrays.asList(
@@ -226,8 +239,12 @@ public class ShapeSet
             WHOLE_NOTE,
             WHOLE_NOTE_SMALL,
             BREVE,
+            NOTEHEAD_CROSS_VOID,
+            WHOLE_NOTE_CROSS,
             NOTEHEAD_DIAMOND_VOID,
-            WHOLE_NOTE_DIAMOND);
+            WHOLE_NOTE_DIAMOND,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            WHOLE_NOTE_TRIANGLE_DOWN);
 
     /** All compound notes. */
     public static final List<Shape> CompoundNotes = Arrays.asList(
@@ -249,13 +266,18 @@ public class ShapeSet
 
     /** Cross heads. */
     public static final List<Shape> CrossHeads = Arrays.asList(
+            WHOLE_NOTE_CROSS,
+            NOTEHEAD_CROSS_VOID,
             NOTEHEAD_CROSS);
 
     /** Drum heads. */
     public static final List<Shape> DrumHeads = Arrays.asList(
             WHOLE_NOTE_DIAMOND,
             NOTEHEAD_DIAMOND_VOID,
-            NOTEHEAD_DIAMOND_FILLED);
+            NOTEHEAD_DIAMOND_FILLED,
+            WHOLE_NOTE_TRIANGLE_DOWN,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            NOTEHEAD_TRIANGLE_DOWN_FILLED);
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
