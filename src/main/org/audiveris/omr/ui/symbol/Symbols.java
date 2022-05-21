@@ -44,11 +44,20 @@ public abstract class Symbols
     /** Code for NOTEHEAD_CROSS */
     public static final int CODE_NOTEHEAD_CROSS = 0xE0A9;
 
+    /** Code for NOTEHEAD_CROSS_VOID */
+    public static final int CODE_NOTEHEAD_CROSS_VOID = 0xE0A8;
+
     /** Code for NOTEHEAD_DIAMOND_FILLED */
     public static final int CODE_NOTEHEAD_DIAMOND_FILLED = 0xE0DB;
 
     /** Code for NOTEHEAD_DIAMOND_VOID */
     public static final int CODE_NOTEHEAD_DIAMOND_VOID = 0xE0D9;
+
+    /** Code for NOTEHEAD_TRIANGLE_DOWN_FILLED */
+    public static final int CODE_NOTEHEAD_TRIANGLE_DOWN_FILLED = 0xE0C7;
+
+    /** Code for NOTEHEAD_TRIANGLE_DOWN_VOID */
+    public static final int CODE_NOTEHEAD_TRIANGLE_DOWN_VOID = 0xE0C5;
 
     /** Code for NOTEHEAD_BLACK */
     public static final int CODE_NOTEHEAD_BLACK = 0xE0A4;
@@ -59,8 +68,14 @@ public abstract class Symbols
     /** Code for WHOLE_NOTE */
     public static final int CODE_WHOLE_NOTE = 0xE0A2;
 
+    /** Code for WHOLE_NOTE_CROSS */
+    public static final int CODE_WHOLE_NOTE_CROSS = 0xE0A7;
+
     /** Code for WHOLE_NOTE_DIAMOND */
     public static final int CODE_WHOLE_NOTE_DIAMOND = 0xE0D8;
+
+    /** Code for WHOLE_NOTE_TRIANGLE_DOWN */
+    public static final int CODE_WHOLE_NOTE_TRIANGLE_DOWN = 0xE0C4;
 
     /** Code for AUGMENTATION_DOT */
     public static final int CODE_AUGMENTATION_DOT = 0xE044;
@@ -297,6 +312,8 @@ public abstract class Symbols
         mapShape(NOTEHEAD_CROSS, CODE_NOTEHEAD_CROSS);
         mapShape(NOTEHEAD_DIAMOND_FILLED, CODE_NOTEHEAD_DIAMOND_FILLED);
         mapShape(NOTEHEAD_DIAMOND_VOID, CODE_NOTEHEAD_DIAMOND_VOID);
+        mapShape(NOTEHEAD_TRIANGLE_DOWN_FILLED, CODE_NOTEHEAD_TRIANGLE_DOWN_FILLED);
+        mapShape(NOTEHEAD_TRIANGLE_DOWN_VOID, CODE_NOTEHEAD_TRIANGLE_DOWN_VOID);
         mapShape(NOTEHEAD_VOID, CODE_NOTEHEAD_VOID);
         small(NOTEHEAD_VOID_SMALL, CODE_NOTEHEAD_VOID);
 
@@ -383,6 +400,7 @@ public abstract class Symbols
 
         mapShape(WHOLE_NOTE, CODE_WHOLE_NOTE);
         mapShape(WHOLE_NOTE_DIAMOND, CODE_WHOLE_NOTE_DIAMOND);
+        mapShape(WHOLE_NOTE_TRIANGLE_DOWN, CODE_WHOLE_NOTE_TRIANGLE_DOWN);
         small(WHOLE_NOTE_SMALL, CODE_WHOLE_NOTE);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, 0xE4E3));
     }

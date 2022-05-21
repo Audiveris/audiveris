@@ -26,6 +26,13 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_DIAMOND_VOID;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_DIAMOND;
+<<<<<<< HEAD
+=======
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_CROSS_VOID;
+import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_CROSS;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_TRIANGLE_DOWN_VOID;
+import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_TRIANGLE_DOWN;
+>>>>>>> brian-pr
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID_SMALL;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
@@ -91,6 +98,8 @@ import java.util.TreeMap;
  *
  * @author Hervé Bitteur
  */
+
+
 public class TemplateFactory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -105,6 +114,10 @@ public class TemplateFactory
     /** All shapes with hole(s). */
     private static final EnumSet shapesWithHoles = EnumSet.of(NOTEHEAD_DIAMOND_VOID,
                                                               WHOLE_NOTE_DIAMOND,
+                                                              NOTEHEAD_CROSS_VOID,
+                                                              WHOLE_NOTE_CROSS,
+                                                              NOTEHEAD_TRIANGLE_DOWN_VOID,
+                                                              WHOLE_NOTE_TRIANGLE_DOWN,
                                                               NOTEHEAD_VOID,
                                                               NOTEHEAD_VOID_SMALL,
                                                               WHOLE_NOTE,
@@ -225,7 +238,7 @@ public class TemplateFactory
         template.putOffset(Anchor.MIDDLE_LEFT, slimBox.x, center.getY());
         template.putOffset(Anchor.MIDDLE_RIGHT, slimBox.x + slimBox.width, center.getY());
 
-        // WHOLE_NOTE & WHOLE_NOTE_SMALL & WHOLE_NOTE_DIAMOND are not concerned further
+        // WHOLE_NOTE & WHOLE_NOTE_SMALL & the drum whole notes are not concerned further
         if (ShapeSet.StemLessHeads.contains(template.getShape())) {
             return;
         }
@@ -736,6 +749,21 @@ public class TemplateFactory
 
         case NOTEHEAD_CROSS:
             return Symbols.CODE_NOTEHEAD_CROSS;
+
+        case NOTEHEAD_CROSS_VOID:
+            return Symbols.CODE_NOTEHEAD_CROSS_VOID;
+
+        case WHOLE_NOTE_CROSS:
+            return Symbols.CODE_WHOLE_NOTE_CROSS;
+
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+            return Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_FILLED;
+
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+            return Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_VOID;
+
+        case WHOLE_NOTE_TRIANGLE_DOWN:
+            return Symbols.CODE_WHOLE_NOTE_TRIANGLE_DOWN;
 
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:

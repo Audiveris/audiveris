@@ -305,8 +305,12 @@ public class SigReducer
 
                 // NOTEHEAD_CROSS shape appears before the oval-shape heads in Shape enum
                 // There is no exclusion with oval-shape heads on the same stem
-                // Likewise for NOTEHEAD_DIAMOND_FILLED and NOTEHEAD_DIAMOND_VOID
-                if (c1 == Shape.NOTEHEAD_CROSS || c1 == Shape.NOTEHEAD_DIAMOND_FILLED || c1 == Shape.NOTEHEAD_DIAMOND_VOID) {
+                // Likewise for the DIAMOND and TRIANGLE_DOWN notehead shapes
+                if (c1 == Shape.NOTEHEAD_CROSS || c1 == Shape.NOTEHEAD_CROSS_VOID || c1
+                                                                                     == Shape.NOTEHEAD_DIAMOND_FILLED
+                    || c1 == Shape.NOTEHEAD_DIAMOND_VOID || c1
+                                                            == Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED
+                    || c1 == Shape.NOTEHEAD_TRIANGLE_DOWN_VOID) {
                     continue;
                 }
 
@@ -408,23 +412,27 @@ public class SigReducer
                     }
 
                     // Standard beams support black heads (not void)
-                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_DIAMOND_FILLED}) {
+                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK,
+                                                   Shape.NOTEHEAD_DIAMOND_FILLED,
+                                                   Shape.NOTEHEAD_CROSS,
+                                                   Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED}) {
+
                         Set<Inter> blackHeadSet = heads.get(shape);
 
                         if (blackHeadSet != null) {
                             for (Inter beam : beamSet) {
                                 BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
-                                    beam,
-                                    stem,
-                                    BeamStemRelation.class);
+                                        beam,
+                                        stem,
+                                        BeamStemRelation.class);
 
                                 for (Inter head : blackHeadSet) {
                                     if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
                                         // Use average of beam-stem and head-stem relation grades
                                         HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
-                                            head,
-                                            stem,
-                                            HeadStemRelation.class);
+                                                head,
+                                                stem,
+                                                HeadStemRelation.class);
                                         double grade = (bs.getGrade() + hs.getGrade()) / 2;
 
                                         ///sig.addEdge(beam, head, new BeamHeadRelation(grade));

@@ -881,9 +881,14 @@ public class InterFactory
 
         // Noteheads
         case NOTEHEAD_CROSS:
+        case NOTEHEAD_CROSS_VOID:
+        case WHOLE_NOTE_CROSS:
         case NOTEHEAD_DIAMOND_FILLED:
         case NOTEHEAD_DIAMOND_VOID:
         case WHOLE_NOTE_DIAMOND:
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+        case WHOLE_NOTE_TRIANGLE_DOWN:
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:
         case NOTEHEAD_VOID:
