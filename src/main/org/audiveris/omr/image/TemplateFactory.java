@@ -26,13 +26,10 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_DIAMOND_VOID;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_DIAMOND;
-<<<<<<< HEAD
-=======
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_CROSS_VOID;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_CROSS;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_TRIANGLE_DOWN_VOID;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_TRIANGLE_DOWN;
->>>>>>> brian-pr
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID_SMALL;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
@@ -47,7 +44,6 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
-import static org.audiveris.omr.ui.symbol.Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Table;
@@ -98,8 +94,6 @@ import java.util.TreeMap;
  *
  * @author Hervé Bitteur
  */
-
-
 public class TemplateFactory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
