@@ -770,6 +770,9 @@ public class TemplateFactory
         case WHOLE_NOTE:
         case WHOLE_NOTE_SMALL:
             return Symbols.CODE_WHOLE_NOTE;
+
+        case BREVE:
+            return Symbols.CODE_BREVE;
         }
 
         logger.error(shape + " is not supported!");

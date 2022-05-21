@@ -68,6 +68,9 @@ public abstract class Symbols
     /** Code for WHOLE_NOTE */
     public static final int CODE_WHOLE_NOTE = 0xE0A2;
 
+    /** Code for BREVE */
+    public static final int CODE_BREVE = 0xE0A0;
+
     /** Code for WHOLE_NOTE_CROSS */
     public static final int CODE_WHOLE_NOTE_CROSS = 0xE0A7;
 
@@ -190,7 +193,7 @@ public abstract class Symbols
         sym.put(BRACE, new BraceSymbol(0xE000));
         mapShape(BRACKET, 0xE002);
         mapShape(BREATH_MARK, 0xE4CE);
-        mapShape(BREVE, 0xE0A0); // a.k.a. DoubleWhole
+        mapShape(BREVE, CODE_BREVE); // a.k.a. DoubleWhole
         sym.put(BREVE_REST, new RestSymbol(BREVE_REST, 0xE4E2));
 
         mapShape(CAESURA, 0xE4D1);
