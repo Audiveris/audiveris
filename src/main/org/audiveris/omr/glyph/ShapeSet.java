@@ -224,12 +224,12 @@ public class ShapeSet
             BREVE,
             NOTEHEAD_CROSS,
             NOTEHEAD_CROSS_VOID,
+            WHOLE_NOTE_CROSS,
             NOTEHEAD_DIAMOND_FILLED,
             NOTEHEAD_DIAMOND_VOID,
+            WHOLE_NOTE_DIAMOND,
             NOTEHEAD_TRIANGLE_DOWN_FILLED,
             NOTEHEAD_TRIANGLE_DOWN_VOID,
-            WHOLE_NOTE_CROSS,
-            WHOLE_NOTE_DIAMOND,
             WHOLE_NOTE_TRIANGLE_DOWN);
 
     /** Void heads. */
