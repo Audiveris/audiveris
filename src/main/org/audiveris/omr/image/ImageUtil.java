@@ -30,19 +30,16 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.JAI;
 
 /**
  * Class <code>ImageUtil</code> gathers convenient static methods working on images.
  * <p>
- * TODO: Perhaps chaining JAI commands into a single operation would be more efficient (memory-wise
- * and performance-wise) that performing each bulk operation one after the other. It would also
- * save multiple calls to "getAsBufferedImage()".
+ * NOTA: Most of its methods have been re-written in order to remove all former dependencies on JAI.
+ * They may not be as efficient as their JAI counterparts, but this is a first implementation.
  *
  * @author Hervé Bitteur
  */
@@ -53,31 +50,49 @@ public abstract class ImageUtil
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+    /** No constructor needed, this is just a functional class. */
     private ImageUtil ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // invert //
-    //--------//
+    //-----------------//
+    // grayAlphaToGray //
+    //-----------------//
     /**
-     * Invert an image.
+     * Take a 2-band image (gray + alpha) and provide the output gray value.
      *
-     * @param image the image to process
-     * @return the inverted image
+     * @param image input image with 2 bands (gray band and alpha band)
+     * @return a gray image
      */
-    public static BufferedImage invert (BufferedImage image)
+    public static BufferedImage grayAlphaToGray (BufferedImage image)
     {
-        return JAI.create("Invert", new ParameterBlock().addSource(image).add(null), null)
-                .getAsBufferedImage();
+        logger.info("Converting gray+alpha to gray");
+
+        final int width = image.getWidth();
+        final int height = image.getHeight();
+        final Raster source = image.getData();
+        final int numBands = image.getSampleModel().getNumBands(); // Including alpha
+        final int[] levels = new int[numBands];
+
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        final WritableRaster raster = img.getRaster();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                source.getPixel(x, y, levels);
+                raster.setSample(x, y, 0, levels[0]);
+            }
+        }
+
+        return img;
     }
 
     //--------------//
     // maxRgbToGray //
     //--------------//
     /**
-     * Take an RGB image and always select the maximum pixel value among R,G and B bands
+     * Take an RGB image and always select the maximum pixel value among R, G and B bands
      * to provide the output gray value.
      *
      * @param image input image with 3 bands RGB
@@ -87,13 +102,15 @@ public abstract class ImageUtil
     {
         logger.info("Converting max RGB to gray");
 
+        final int width = image.getWidth();
+        final int height = image.getHeight();
+        final Raster source = image.getData();
+
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        final WritableRaster raster = img.getRaster();
+
         // We use the max value among the RGB channels
-        int width = image.getWidth();
-        int height = image.getHeight();
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        WritableRaster raster = img.getRaster();
-        Raster source = image.getData();
-        int[] levels = new int[3];
+        final int[] levels = new int[3];
         int maxLevel;
 
         for (int y = 0; y < height; y++) {
@@ -141,8 +158,8 @@ public abstract class ImageUtil
     public static void printInfo (BufferedImage img,
                                   String title)
     {
-        int type = img.getType();
-        ColorModel colorModel = img.getColorModel();
+        final int type = img.getType();
+        final ColorModel colorModel = img.getColorModel();
         logger.info(
                 "{} type:({}={}) cm:({})",
                 (title != null) ? title : "",
@@ -155,7 +172,7 @@ public abstract class ImageUtil
     // rgbToGray //
     //-----------//
     /**
-     * Take an RGB image and combine the R,G and B bands according to standard luminance
+     * Take an RGB image and combine the R, G and B bands according to standard luminance
      * value to provide the output gray value.
      *
      * @param rgb input image with 3 bands RGB
@@ -165,11 +182,32 @@ public abstract class ImageUtil
     {
         logger.info("Converting RGB to gray ...");
 
-        // We use luminance value based on standard RGB combination
-        double[][] matrix = {{0.114d, 0.587d, 0.299d, 0.0d}};
+        final int width = rgb.getWidth();
+        final int height = rgb.getHeight();
+        final Raster source = rgb.getData();
+        final int numBands = rgb.getColorModel().getNumComponents();
+        final int[] inLevels = new int[numBands];
 
-        return JAI.create("bandcombine", new ParameterBlock().addSource(rgb).add(matrix), null)
-                .getAsBufferedImage();
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        final WritableRaster raster = img.getRaster();
+
+        // We use luminance value based on standard RGB combination
+        final double[] weights = {0.114d, 0.587d, 0.299d};
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                source.getPixel(x, y, inLevels);
+
+                double val = 0;
+                for (int i = 0; i < 3; i++) {
+                    val += weights[i] * inLevels[i];
+                }
+
+                raster.setSample(x, y, 0, (int) Math.rint(val));
+            }
+        }
+
+        return img;
     }
 
     //------------//
@@ -177,7 +215,8 @@ public abstract class ImageUtil
     //------------//
     /**
      * Take an RBGA image and provide an output gray image, using standard luminance.
-     * This method assumes that the bands were premultiplied.
+     * <p>
+     * This method assumes that the bands were pre-multiplied.
      *
      * @param rgba input RGBA image
      * @return output gray image
@@ -192,7 +231,8 @@ public abstract class ImageUtil
     //-----------//
     /**
      * Take an RBGA image and provide an output with the alpha channel removed.
-     * This method assumes that the bands were premultiplied.
+     * <p>
+     * This method assumes that the bands were pre-multiplied.
      *
      * @param rgba input RGBA image
      * @return output RGB image
@@ -201,7 +241,23 @@ public abstract class ImageUtil
     {
         logger.info("Discarding alpha band ...");
 
-        return JAI.create("bandselect", rgba, new int[]{0, 1, 2}).getAsBufferedImage();
+        final int width = rgba.getWidth();
+        final int height = rgba.getHeight();
+        final Raster source = rgba.getData();
+        final int numBands = rgba.getColorModel().getNumComponents(); // Including alpha
+        final int[] levels = new int[numBands];
+
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        final WritableRaster raster = img.getRaster();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                source.getPixel(x, y, levels);
+                raster.setPixel(x, y, levels);
+            }
+        }
+
+        return img;
     }
 
     //------------//
@@ -223,22 +279,6 @@ public abstract class ImageUtil
         } catch (IOException ex) {
             logger.warn("Error saving " + name, ex);
         }
-    }
-
-    //-----//
-    // xor //
-    //-----//
-    /**
-     * Xor operation on two images.
-     *
-     * @param image1 first image to process
-     * @param image2 second image to process
-     * @return the resulting image
-     */
-    public static BufferedImage xor (BufferedImage image1,
-                                     BufferedImage image2)
-    {
-        return JAI.create("Xor", image1, image2).getAsBufferedImage();
     }
 
     //--------//

@@ -155,16 +155,6 @@ public class GridBuilder
             // Complete the staff lines w/ sections & filaments left over
             watch.start("completeLines");
             linesRetriever.completeLines();
-
-            /** Companion in charge of target grid. */
-            // Define the destination grid, if so desired
-            if (constants.buildDewarpedTarget.isSet()) {
-                watch.start("targetBuilder");
-
-                TargetBuilder targetBuilder = new TargetBuilder(sheet);
-                sheet.addItemRenderer(targetBuilder);
-                targetBuilder.buildInfo();
-            }
         } catch (StepException se) {
             throw se;
         } catch (Throwable ex) {
@@ -243,10 +233,6 @@ public class GridBuilder
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
-
-        private final Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-                false,
-                "Should we build a dewarped target?");
 
         private final Constant.Boolean showGrid = new Constant.Boolean(
                 false,

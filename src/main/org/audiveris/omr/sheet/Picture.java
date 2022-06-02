@@ -65,7 +65,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import javax.media.jai.JAI;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -1015,7 +1014,7 @@ public class Picture
         } else if ((numBands == 2) && hasAlpha) {
             // Pixel + alpha
             // Discard alpha
-            return JAI.create("bandselect", img, new int[]{0}).getAsBufferedImage();
+            return ImageUtil.grayAlphaToGray(img);
         } else if ((numBands == 3) && !hasAlpha) {
             // RGB
             return ImageUtil.maxRgbToGray(img);
