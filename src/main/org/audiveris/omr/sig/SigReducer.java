@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -92,6 +93,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -235,18 +237,24 @@ public class SigReducer
         logger.debug("S#{} analyzeChords", system.getId());
 
         // All stems of the sig
-        List<Inter> stems = sig.inters(Shape.STEM);
+        final List<Inter> stems = sig.inters(Shape.STEM);
         Collections.sort(stems, Inters.byReverseGrade);
 
         // All heads of the sig
-        List<Inter> allHeads = sig.inters(HeadInter.class);
+        final List<Inter> allHeads = sig.inters(HeadInter.class);
         Collections.sort(allHeads, Inters.byAbscissa);
 
-        // Stem Heads organized by shape (black, void, and small versions)
-        Map<Shape, Set<Inter>> heads = new EnumMap<>(Shape.class);
+        // Stem Heads organized by shape:
+        // - Standard oval head shapes (black, void)
+        // - Small version of oval head shapes (black, void)
+        // - Cross and drum head shapes
+        final Map<Shape, Set<Inter>> heads = new EnumMap<>(Shape.class);
 
         // Stem Beams organized by size (standard vs small versions)
-        Map<Size, Set<Inter>> beams = new EnumMap<>(Size.class);
+        final Map<Size, Set<Inter>> beams = new EnumMap<>(Size.class);
+
+        // Stem Heads organized by intrinsic duration
+        final Map<Rational, Set<Inter>> durs = new LinkedHashMap<>();
 
         for (Inter stem : stems) {
             if (stem.isVip()) {
@@ -260,6 +268,7 @@ public class SigReducer
 
             heads.clear();
             beams.clear();
+            durs.clear();
 
             // Heads intersected by current stem
             final List<Inter> intersectedHeads = intersectedHeads((StemInter) stem, allHeads);
@@ -267,16 +276,29 @@ public class SigReducer
             // Populate the various head & beam classes around this stem
             for (Relation rel : sig.edgesOf(stem)) {
                 if (rel instanceof HeadStemRelation) {
-                    Inter head = sig.getEdgeSource(rel);
-                    Shape shape = head.getShape();
-                    Set<Inter> set = heads.get(shape);
+                    final Inter head = sig.getEdgeSource(rel);
+                    intersectedHeads.remove(head);
 
-                    if (set == null) {
-                        heads.put(shape, set = new LinkedHashSet<>());
+                    // By shape
+                    final Shape shape = head.getShape();
+                    Set<Inter> sSet = heads.get(shape);
+
+                    if (sSet == null) {
+                        heads.put(shape, sSet = new LinkedHashSet<>());
                     }
 
-                    set.add(head);
-                    intersectedHeads.remove(head);
+                    sSet.add(head);
+
+                    // By duration
+                    final Rational duration = AbstractNoteInter.getShapeDuration(shape);
+                    Set<Inter> dSet = durs.get(duration);
+
+                    if (dSet == null) {
+                        durs.put(duration, dSet = new LinkedHashSet<>());
+                    }
+
+                    dSet.add(head);
+
                 } else if (rel instanceof BeamStemRelation) {
                     Inter beam = sig.getEdgeSource(rel);
                     Size size = (beam instanceof SmallBeamInter) ? Size.SMALL : Size.STANDARD;
@@ -298,33 +320,28 @@ public class SigReducer
             // Mutual head exclusion based on head shape
             // But perhaps the joining stem is the problem, so check the two conflicting heads
             // are not linked to any other stem than the one at hand.
-            List<Shape> headShapes = new ArrayList<>(heads.keySet());
+            final List<Shape> headShapes = new ArrayList<>(heads.keySet());
 
             for (int ic = 0; ic < (headShapes.size() - 1); ic++) {
-                Shape c1 = headShapes.get(ic);
+                final Shape c1 = headShapes.get(ic);
 
-                // NOTEHEAD_CROSS shape appears before the oval-shape heads in Shape enum
-                // There is no exclusion with oval-shape heads on the same stem
-                // Likewise for the DIAMOND and TRIANGLE_DOWN notehead shapes
-                if (c1 == Shape.NOTEHEAD_CROSS || c1 == Shape.NOTEHEAD_CROSS_VOID || c1
-                                                                                     == Shape.NOTEHEAD_DIAMOND_FILLED
-                    || c1 == Shape.NOTEHEAD_DIAMOND_VOID || c1
-                                                            == Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED
-                    || c1 == Shape.NOTEHEAD_TRIANGLE_DOWN_VOID) {
+                // Cross and drum head shape appear before the oval-shape heads in Shape enum
+                // They have no exclusion with oval-shape heads on the same stem
+                if (ShapeSet.CrossHeads.contains(c1) || ShapeSet.DrumHeads.contains(c1)) {
                     continue;
                 }
 
-                Set<Inter> set1 = heads.get(c1);
+                final Set<Inter> set1 = heads.get(c1);
 
                 for (Inter h1 : set1) {
-                    HeadInter head1 = (HeadInter) h1;
+                    final HeadInter head1 = (HeadInter) h1;
 
                     if (head1.getStems().size() == 1) {
                         for (Shape c2 : headShapes.subList(ic + 1, headShapes.size())) {
-                            Set<Inter> set2 = heads.get(c2);
+                            final Set<Inter> set2 = heads.get(c2);
 
                             for (Inter h2 : set2) {
-                                HeadInter head2 = (HeadInter) h2;
+                                final HeadInter head2 = (HeadInter) h2;
 
                                 if (head2.getStems().size() == 1) {
                                     sig.insertExclusion(h1, h2,
@@ -336,15 +353,16 @@ public class SigReducer
                 }
             }
 
-            // Mutual head support within same shape
-            for (Set<Inter> set : heads.values()) {
-                List<Inter> list = new ArrayList<>(set);
+            // Mutual head support within shapes with same DURATION
+            // (Remember: insertSupport is effective only if no exclusion is already set)
+            for (Set<Inter> set : durs.values()) {
+                final List<Inter> list = new ArrayList<>(set);
 
                 for (int i = 0; i < list.size(); i++) {
-                    HeadInter h1 = (HeadInter) list.get(i);
+                    final HeadInter h1 = (HeadInter) list.get(i);
 
                     for (Inter other : list.subList(i + 1, list.size())) {
-                        HeadInter h2 = (HeadInter) other;
+                        final HeadInter h2 = (HeadInter) other;
                         sig.insertSupport(h1, h2, HeadHeadRelation.class);
                     }
                 }
@@ -377,32 +395,32 @@ public class SigReducer
                             exclude(beamSet, headSet);
                         }
                     }
-
-                    // Small beams support small black heads
-                    Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
-
-                    if (smallHeadSet != null) {
-                        for (Inter smallBeam : beamSet) {
-                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
-                                    smallBeam,
-                                    stem,
-                                    BeamStemRelation.class);
-
-                            for (Inter smallHead : smallHeadSet) {
-                                if (sig.getRelation(smallBeam, smallHead, BeamHeadRelation.class)
-                                            == null) {
-                                    // Use average of beam-stem and head-stem relation grades
-                                    HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
-                                            smallHead,
-                                            stem,
-                                            HeadStemRelation.class);
-                                    double grade = (bs.getGrade() + hs.getGrade()) / 2;
-
-                                    ///sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
-                                }
-                            }
-                        }
-                    }
+//
+//                    // Small beams support small black heads
+//                    Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
+//
+//                    if (smallHeadSet != null) {
+//                        for (Inter smallBeam : beamSet) {
+//                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
+//                                    smallBeam,
+//                                    stem,
+//                                    BeamStemRelation.class);
+//
+//                            for (Inter smallHead : smallHeadSet) {
+//                                if (sig.getRelation(smallBeam, smallHead, BeamHeadRelation.class)
+//                                            == null) {
+//                                    // Use average of beam-stem and head-stem relation grades
+//                                    HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
+//                                            smallHead,
+//                                            stem,
+//                                            HeadStemRelation.class);
+//                                    double grade = (bs.getGrade() + hs.getGrade()) / 2;
+//
+//                                    ///sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
+//                                }
+//                            }
+//                        }
+//                    }
                 } else {
                     // Standard beams exclude small heads
                     Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
@@ -410,37 +428,37 @@ public class SigReducer
                     if (smallHeadSet != null) {
                         exclude(beamSet, smallHeadSet);
                     }
-
-                    // Standard beams support black heads (not void)
-                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK,
-                                                   Shape.NOTEHEAD_DIAMOND_FILLED,
-                                                   Shape.NOTEHEAD_CROSS,
-                                                   Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED}) {
-
-                        Set<Inter> blackHeadSet = heads.get(shape);
-
-                        if (blackHeadSet != null) {
-                            for (Inter beam : beamSet) {
-                                BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
-                                        beam,
-                                        stem,
-                                        BeamStemRelation.class);
-
-                                for (Inter head : blackHeadSet) {
-                                    if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
-                                        // Use average of beam-stem and head-stem relation grades
-                                        HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
-                                                head,
-                                                stem,
-                                                HeadStemRelation.class);
-                                        double grade = (bs.getGrade() + hs.getGrade()) / 2;
-
-                                        ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
-                                    }
-                                }
-                            }
-                        }
-                    }
+//
+//                    // Standard beams support black heads (not void)
+//                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK,
+//                                                   Shape.NOTEHEAD_DIAMOND_FILLED,
+//                                                   Shape.NOTEHEAD_CROSS,
+//                                                   Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED}) {
+//
+//                        Set<Inter> blackHeadSet = heads.get(shape);
+//
+//                        if (blackHeadSet != null) {
+//                            for (Inter beam : beamSet) {
+//                                BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
+//                                        beam,
+//                                        stem,
+//                                        BeamStemRelation.class);
+//
+//                                for (Inter head : blackHeadSet) {
+//                                    if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
+//                                        // Use average of beam-stem and head-stem relation grades
+//                                        HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
+//                                                head,
+//                                                stem,
+//                                                HeadStemRelation.class);
+//                                        double grade = (bs.getGrade() + hs.getGrade()) / 2;
+//
+//                                        ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
         }

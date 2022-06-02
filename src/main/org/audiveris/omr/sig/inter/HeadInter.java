@@ -852,7 +852,7 @@ public class HeadInter
     {
         if (that instanceof HeadInter) {
             if (this.isVip() && that.isVip()) {
-                logger.info("HeadInter checking overlaps between {} and {}", this, that);
+                logger.info("VIP HeadInter checking overlaps between {} and {}", this, that);
             }
 
             HeadInter thatHead = (HeadInter) that;
