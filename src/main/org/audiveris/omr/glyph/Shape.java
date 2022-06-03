@@ -557,6 +557,19 @@ public enum Shape
     }
 
     //--------------//
+    // isPercussion //
+    //--------------//
+    /**
+     * Check whether the shape represents an un-pitched percussion.
+     *
+     * @return true if so
+     */
+    public boolean isPercussion ()
+    {
+        return ShapeSet.CrossHeads.contains(this) || ShapeSet.DrumHeads.contains(this);
+    }
+
+    //--------------//
     // isPersistent //
     //--------------//
     /**

@@ -277,15 +277,17 @@ public class StemInter
             // Retrieve the stem portion for this link
             if (rel instanceof HeadStemRelation) {
                 // Head -> Stem
+                final HeadInter head = (HeadInter) source;
+                final Shape shape = head.getShape();
                 HeadStemRelation link = (HeadStemRelation) rel;
                 StemPortion portion = link.getStemPortion(source, stemLine, scale);
 
                 if (portion == STEM_BOTTOM) {
-                    if (link.getHeadSide() == RIGHT) {
+                    if ((link.getHeadSide() == RIGHT) || shape.isPercussion()) {
                         return -1;
                     }
                 } else if (portion == STEM_TOP) {
-                    if (link.getHeadSide() == LEFT) {
+                    if ((link.getHeadSide() == LEFT) || shape.isPercussion()) {
                         return 1;
                     }
                 }

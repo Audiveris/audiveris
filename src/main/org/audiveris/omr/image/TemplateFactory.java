@@ -243,17 +243,63 @@ public class TemplateFactory
         final double left = slimBox.x - dx;
         final double right = slimBox.x + slimBox.width + dx;
 
-        // NOTA: dy is negative inside head bounds and positive outside
-        final double dy = (template.getShape() == Shape.NOTEHEAD_CROSS) ? 0
-                : (constants.stemDy.getValue() * slimBox.height);
-        final double top = slimBox.y - dy;
-        final double bottom = slimBox.y + slimBox.height + dy;
+        final Shape shape = template.getShape();
+        final double top = getTop(shape, slimBox);
+        final double bottom = getBottom(shape, slimBox);
 
         template.putOffset(Anchor.LEFT_STEM, left, center.getY());
         template.putOffset(Anchor.BOTTOM_LEFT_STEM, left, bottom);
 
         template.putOffset(Anchor.TOP_RIGHT_STEM, right, top);
         template.putOffset(Anchor.RIGHT_STEM, right, center.getY());
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+    private double getTop (Shape shape,
+                           Rectangle slimBox)
+    {
+        switch (shape) {
+        case NOTEHEAD_CROSS:
+        case NOTEHEAD_CROSS_VOID:
+            return slimBox.y;
+
+        case NOTEHEAD_DIAMOND_FILLED:
+        case NOTEHEAD_DIAMOND_VOID:
+            return slimBox.y + slimBox.height / 2;
+
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+            return slimBox.y;
+
+        default:
+            return slimBox.y - constants.stemDy.getValue() * slimBox.height;
+        }
+    }
+
+    //-----------//
+    // getBottom //
+    //-----------//
+    private double getBottom (Shape shape,
+                              Rectangle slimBox)
+    {
+        switch (shape) {
+        case NOTEHEAD_CROSS:
+        case NOTEHEAD_CROSS_VOID:
+            return slimBox.y + slimBox.height;
+
+        case NOTEHEAD_DIAMOND_FILLED:
+        case NOTEHEAD_DIAMOND_VOID:
+            return slimBox.y + slimBox.height / 2;
+
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+            return slimBox.y;
+
+        default:
+            return slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+        }
     }
 
     //----------//

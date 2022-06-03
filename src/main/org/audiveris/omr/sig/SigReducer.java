@@ -327,7 +327,7 @@ public class SigReducer
 
                 // Cross and drum head shape appear before the oval-shape heads in Shape enum
                 // They have no exclusion with oval-shape heads on the same stem
-                if (ShapeSet.CrossHeads.contains(c1) || ShapeSet.DrumHeads.contains(c1)) {
+                if (c1.isPercussion()) {
                     continue;
                 }
 
@@ -1643,21 +1643,27 @@ public class SigReducer
 
             for (Relation rel : links) {
                 // Retrieve the stem portion for this Head -> Stem link
-                HeadInter head = (HeadInter) sig.getEdgeSource(rel);
-                HeadStemRelation link = (HeadStemRelation) rel;
-                StemPortion portion = link.getStemPortion(head, stemLine, scale);
-                HorizontalSide headSide = link.getHeadSide();
+                final HeadInter head = (HeadInter) sig.getEdgeSource(rel);
+
+                // This policy does not apply to percussion heads
+                if (head.getShape().isPercussion()) {
+                    continue;
+                }
+
+                final HeadStemRelation link = (HeadStemRelation) rel;
+                final StemPortion portion = link.getStemPortion(head, stemLine, scale);
+                final HorizontalSide headSide = link.getHeadSide();
 
                 if (((portion == STEM_BOTTOM) && (headSide != RIGHT))
                             || ((portion == STEM_TOP) && (headSide != LEFT))) {
+                    if (stem.isVip() || head.isVip()) {
+                        logger.info("VIP pruned {} from {}", head, stem);
+                    }
+
                     sig.removeEdge(rel);
                     links.remove(rel);
                     modifs++;
                     modified = true;
-
-                    if (stem.isVip() || head.isVip()) {
-                        logger.info("VIP pruned {} from {}", head, stem);
-                    }
 
                     if (link.isInvading()) {
                         if (stem.isVip() || head.isVip()) {
