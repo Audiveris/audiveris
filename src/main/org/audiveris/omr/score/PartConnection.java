@@ -267,6 +267,12 @@ public class PartConnection
                 } else {
                     // We are compatible
                     resultEntry.candidates.add(candidate);
+
+                    // Use name of affiliate to define abbreviation?
+                    final String abbrev = resultEntry.result.getAbbreviation();
+                    if (abbrev == null) {
+                        resultEntry.result.setAbbreviation(candidate.getName());
+                    }
                 }
             }
         }
@@ -300,8 +306,8 @@ public class PartConnection
     // Candidate //
     //-----------//
     /**
-     * Interface <code>Candidate</code> is used to process part candidates, regardless whether they are
-     * provided as:
+     * Interface <code>Candidate</code> is used to process part candidates, regardless whether they
+     * are provided as:
      * <ul>
      * <li>System physical {@link org.audiveris.omr.sheet.Part} instances when merging system parts
      * into the logical parts of one page.</li>
