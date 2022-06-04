@@ -155,10 +155,7 @@ public class MeasureRhythm
             measure.resetRhythm();
             ok = true;
 
-            // Process all measure-long rest chords, they are decoupled from any slot
-            processMeasureRestChords();
-
-            // Retrieve slots
+            // Retrieve narrow slots
             slots.clear();
             narrowSlotsRetriever = new SlotsRetriever(measure, false); // Narrow
 
@@ -167,6 +164,7 @@ public class MeasureRhythm
                 dumpSlots("narrowSlots", narrowSlots);
             }
 
+            // Retrieve wide slots
             final SlotsRetriever wideSlotsRetriever = new SlotsRetriever(measure, true); // Wide
             final List<MeasureSlot> wideSlots = wideSlotsRetriever.buildSlots();
             if (logger.isDebugEnabled()) {
@@ -179,11 +177,12 @@ public class MeasureRhythm
                 dumpSlots("compoundSlots", slots);
             }
 
+            // Starting chords (measure-long rests plus chords of first slot)
+            processStartingChords();
+
             if (slots.isEmpty()) {
                 return ok;
             }
-
-            setFirstSlot(); // Set and push time ZERO for chords of first slot
 
             // Slots list may be shrunk dynamically
             for (int i = 0; i < slots.size(); i++) {
@@ -252,10 +251,10 @@ public class MeasureRhythm
 
         WideSlots:
         for (MeasureSlot wide : wideSlots) {
-            List<AbstractChordInter> wideChords = wide.getChords();
+            final List<AbstractChordInter> wideChords = wide.getChords();
 
             for (int i = iStart; i < narrowCount; i++) {
-                MeasureSlot narrow = narrowSlots.get(i);
+                final MeasureSlot narrow = narrowSlots.get(i);
 
                 if (!intersection(wideChords, narrow.getChords())) {
                     if (i > iStart) {
@@ -439,28 +438,38 @@ public class MeasureRhythm
         return false;
     }
 
-    //--------------------------//
-    // processMeasureRestChords //
-    //--------------------------//
+    //-----------------------//
+    // processStartingChords //
+    //-----------------------//
     /**
-     * Assign a dedicated voice to each measure-long rest chord in stack.
+     * Process all measure-long rests as well as chords from the first slot.
+     * <ul>
+     * <li>Assign their voice number, ordered by their vertical position
+     * <li>Set their time offset to ZERO
+     * </ul>
      */
-    private List<Voice> processMeasureRestChords ()
+    private void processStartingChords ()
     {
-        final List<Voice> measureRestVoices = new ArrayList<>();
-        final List<AbstractChordInter> measureRestChords
-                = new ArrayList<>(measure.getMeasureRestChords());
-        Collections.sort(measureRestChords, Inters.byOrdinate);
+        final List<AbstractChordInter> rookies = new ArrayList<>();
 
-        for (AbstractChordInter chord : measureRestChords) {
-            chord.setTimeOffset(Rational.ZERO);
+        final Set<AbstractChordInter> measureRestsChords = measure.getMeasureRestChords();
+        rookies.addAll(measureRestsChords);
 
-            Voice voice = Voice.createMeasureRestVoice((RestChordInter) chord, chord.getMeasure());
-            measure.addVoice(voice);
-            measureRestVoices.add(voice);
+        if (!slots.isEmpty()) {
+            rookies.addAll(slots.get(0).getChords());
         }
 
-        return measureRestVoices;
+        Collections.sort(rookies, Inters.byCenterOrdinate);
+
+        for (AbstractChordInter ch : rookies) {
+            // Voice
+            measure.addVoice(measureRestsChords.contains(ch)
+                    ? Voice.createMeasureRestVoice((RestChordInter) ch, measure)
+                    : new Voice(ch, measure));
+
+            // Time
+            ch.setAndPushTime(Rational.ZERO);
+        }
     }
 
     //--------------------//

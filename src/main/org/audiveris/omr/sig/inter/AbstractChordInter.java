@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -79,7 +80,9 @@ public abstract class AbstractChordInter
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
-    private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
+    /** For comparing chords by head location ordinate. */
+    public static final Comparator<AbstractChordInter> byHeadOrdinate = (c1, c2)
+            -> Integer.compare(c1.getHeadLocation().y, c2.getHeadLocation().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //

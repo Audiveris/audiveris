@@ -198,7 +198,7 @@ public class SlotsRetriever
         }
     };
 
-    /** Candidate measure chords for slots. Whole rests and small chords are excluded. */
+    /** Candidate measure chords for slots. Measure-long rests and small chords are excluded. */
     private final List<AbstractChordInter> candidateChords;
 
     //~ Constructors -------------------------------------------------------------------------------
