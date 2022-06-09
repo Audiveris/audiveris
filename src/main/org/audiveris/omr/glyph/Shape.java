@@ -76,9 +76,9 @@ import java.util.List;
 public enum Shape
 {
     /**
-     * =================================================================================
-     * Nota: Avoid changing the order of the physical shapes, otherwise the evaluators
-     * won't detect this and you'll have to retrain them on your own.
+     * =============================================================================================
+     * NOTA: Avoid changing the order of the physical shapes,
+     * otherwise the evaluators won't detect this and you'll have to retrain them on your own!
      * =============================================================================================
      */
 
@@ -99,6 +99,9 @@ public enum Shape
     CAESURA("Caesura"),
     FERMATA_ARC("Fermata arc, without dot"),
     FERMATA_ARC_BELOW("Fermata arc below, without dot"),
+    REPEAT_ONE_BAR("Repeat last bar"),
+    REPEAT_TWO_BARS("Repeat last two bars"),
+    REPEAT_FOUR_BARS("Repeat last four bars"),
 
     //
     // Clefs ---
@@ -719,6 +722,28 @@ public enum Shape
         } else if (this.color == null) {
             setColor(color); // Use the provided (range) default color
         }
+    }
+
+    //---------------//
+    // getSlashCount //
+    //---------------//
+    /**
+     * Report the number of slashes in this shape (currently effective on RepeatBars only).
+     *
+     * @return count of slashes
+     */
+    public int getSlashCount ()
+    {
+        switch (this) {
+        case REPEAT_ONE_BAR:
+            return 1;
+        case REPEAT_TWO_BARS:
+            return 2;
+        case REPEAT_FOUR_BARS:
+            return 4;
+        }
+
+        return 0;
     }
 
     //-----------//

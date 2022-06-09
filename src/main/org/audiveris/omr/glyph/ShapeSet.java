@@ -260,6 +260,12 @@ public class ShapeSet
     public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
             Arrays.asList(THICK_BARLINE, THICK_CONNECTOR, THIN_BARLINE, THIN_CONNECTOR));
 
+    /** Repeat bars. */
+    public static final List<Shape> RepeatBars = Arrays.asList(
+            REPEAT_ONE_BAR,
+            REPEAT_TWO_BARS,
+            REPEAT_FOUR_BARS);
+
     /** Beams. */
     public static final EnumSet<Shape> Beams = EnumSet.copyOf(
             Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK, BEAM_HOOK_SMALL));
@@ -307,17 +313,19 @@ public class ShapeSet
             LEFT_REPEAT_SIGN,
             Colors.SCORE_FRAME,
             shapesOf(
-                    THIN_BARLINE,
-                    THICK_BARLINE,
-                    DOUBLE_BARLINE,
-                    FINAL_BARLINE,
-                    REVERSE_FINAL_BARLINE,
-                    LEFT_REPEAT_SIGN,
-                    RIGHT_REPEAT_SIGN,
-                    BACK_TO_BACK_REPEAT_SIGN,
-                    BRACE,
-                    BRACKET,
-                    REPEAT_DOT));
+                    shapesOf(
+                            THIN_BARLINE,
+                            THICK_BARLINE,
+                            DOUBLE_BARLINE,
+                            FINAL_BARLINE,
+                            REVERSE_FINAL_BARLINE,
+                            LEFT_REPEAT_SIGN,
+                            RIGHT_REPEAT_SIGN,
+                            BACK_TO_BACK_REPEAT_SIGN,
+                            BRACE,
+                            BRACKET,
+                            REPEAT_DOT),
+                    RepeatBars));
 
     public static final ShapeSet BeamsAndTuplets = new ShapeSet(
             BEAM,

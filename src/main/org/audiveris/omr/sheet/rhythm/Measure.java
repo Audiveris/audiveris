@@ -23,6 +23,9 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.score.LogicalPart;
+import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -43,6 +46,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
@@ -221,6 +225,13 @@ public class Measure
     @Trimmable.Collection
     private final LinkedHashSet<AugmentationDotInter> augDots = new LinkedHashSet<>();
 
+    /** All simile marks in this measure. */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "similes")
+    @Trimmable.Collection
+    private final LinkedHashSet<SimileMarkInter> similes = new LinkedHashSet<>();
+
     /**
      * All voices within this measure, sorted by voice id.
      * <p>
@@ -386,6 +397,8 @@ public class Measure
             tuplets.add(tupletInter);
         } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
             augDots.add(augmentationDotInter);
+        } else if (inter instanceof SimileMarkInter simileInter) {
+            similes.add(simileInter);
         } else {
             logger.error("Attempt to use addInter() with {}", inter);
         }
@@ -1037,6 +1050,48 @@ public class Measure
         }
     }
 
+    //---------------------//
+    // getPrecedingInScore //
+    //---------------------//
+    /**
+     * Report the preceding measure of this one, either in this system / part, or in the
+     * preceding system / part, or in the preceding page.
+     *
+     * @return the preceding measure, or null if not found in score
+     */
+    public Measure getPrecedingInScore ()
+    {
+        // Look in current part
+        final Measure prevMeasure = getPrecedingInSystem();
+
+        if (prevMeasure != null) {
+            return prevMeasure;
+        }
+
+        // Look in preceding part in page
+        Part precedingPart = part.getPrecedingInPage();
+
+        if (precedingPart != null) {
+            return precedingPart.getLastMeasure();
+        }
+
+        // Look in preceding part in preceding page
+        final Page page = part.getSystem().getPage();
+        final Score score = page.getScore();
+        final Page precedingPage = score.getPrecedingPage(page);
+
+        if (precedingPage != null) {
+            final LogicalPart logicalPart = part.getLogicalPart();
+            precedingPart = precedingPage.getLastSystem().getPhysicalPart(logicalPart);
+
+            if (precedingPart != null) {
+                return precedingPart.getLastMeasure();
+            }
+        }
+
+        return null;
+    }
+
     //--------------------//
     // getPrecedingInPage //
     //--------------------//
@@ -1154,6 +1209,19 @@ public class Measure
 
             return null;
         }
+    }
+
+    //----------------//
+    // getSimileMarks //
+    //----------------//
+    /**
+     * Report the simile marks in this measure.
+     *
+     * @return the simile marks in measure
+     */
+    public Set<SimileMarkInter> getSimileMarks ()
+    {
+        return Collections.unmodifiableSet(similes);
     }
 
     //----------//
@@ -1664,24 +1732,26 @@ public class Measure
             logger.info("VIP removeInter {} from {}", inter, this);
         }
 
-        if (inter instanceof ClefInter) {
-            clefs.remove((ClefInter) inter);
-        } else if (inter instanceof KeyInter) {
-            keys.remove((KeyInter) inter);
-        } else if (inter instanceof AbstractTimeInter) {
-            timeSigs.remove((AbstractTimeInter) inter);
-        } else if (inter instanceof HeadChordInter) {
-            headChords.remove((HeadChordInter) inter);
-            removeVoiceChord((HeadChordInter) inter);
-        } else if (inter instanceof RestChordInter) {
-            restChords.remove((RestChordInter) inter);
-            removeVoiceChord((RestChordInter) inter);
-        } else if (inter instanceof FlagInter) {
-            flags.remove((FlagInter) inter);
-        } else if (inter instanceof TupletInter) {
-            tuplets.remove((TupletInter) inter);
-        } else if (inter instanceof AugmentationDotInter) {
-            augDots.remove((AugmentationDotInter) inter);
+        if (inter instanceof ClefInter clefInter) {
+            clefs.remove(clefInter);
+        } else if (inter instanceof KeyInter keyInter) {
+            keys.remove(keyInter);
+        } else if (inter instanceof AbstractTimeInter abstractTimeInter) {
+            timeSigs.remove(abstractTimeInter);
+        } else if (inter instanceof HeadChordInter headChordInter) {
+            headChords.remove(headChordInter);
+            removeVoiceChord(headChordInter);
+        } else if (inter instanceof RestChordInter restChordInter) {
+            restChords.remove(restChordInter);
+            removeVoiceChord(restChordInter);
+        } else if (inter instanceof FlagInter flagInter) {
+            flags.remove(flagInter);
+        } else if (inter instanceof TupletInter tupletInter) {
+            tuplets.remove(tupletInter);
+        } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
+            augDots.remove(augmentationDotInter);
+        } else if (inter instanceof SimileMarkInter simileInter) {
+            similes.remove(simileInter);
         } else {
             logger.error("Attempt to use removeInter() with {}", inter);
         }
@@ -1907,6 +1977,7 @@ public class Measure
         splitCollectionBefore(stavesBelow, measureBelow, flags);
         splitCollectionBefore(stavesBelow, measureBelow, tuplets);
         splitCollectionBefore(stavesBelow, measureBelow, augDots);
+        splitCollectionBefore(stavesBelow, measureBelow, similes);
 
         // Voices: rhythm is reprocessed when part is vertically split (brace removal)
         //
@@ -1972,6 +2043,7 @@ public class Measure
         switchCollectionPart(newPart, flags);
         switchCollectionPart(newPart, tuplets);
         switchCollectionPart(newPart, augDots);
+        switchCollectionPart(newPart, similes);
 
         // voices: no part field
     }
@@ -2158,6 +2230,7 @@ public class Measure
         addOtherCollection(other.flags);
         addOtherCollection(other.tuplets);
         addOtherCollection(other.augDots);
+        addOtherCollection(other.similes);
 
         // Voices: addressed by caller
     }

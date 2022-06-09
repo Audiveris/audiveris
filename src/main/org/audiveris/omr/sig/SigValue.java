@@ -69,6 +69,7 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
@@ -215,6 +216,7 @@ public class SigValue
         @XmlElementRef(type = RestInter.class),
         @XmlElementRef(type = SegmentInter.class),
         @XmlElementRef(type = SentenceInter.class),
+        @XmlElementRef(type = SimileMarkInter.class),
         @XmlElementRef(type = SlurInter.class),
         @XmlElementRef(type = SmallBeamInter.class),
         @XmlElementRef(type = SmallChordInter.class),

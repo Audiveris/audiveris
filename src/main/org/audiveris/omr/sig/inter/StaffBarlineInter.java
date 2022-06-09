@@ -220,17 +220,7 @@ public final class StaffBarlineInter
                                MusicFont font,
                                Point dropLocation)
     {
-        // Needed to get bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation);
-
-        if (staff != null) {
-            // Snap ordinate on staff middle line
-            final double y = staff.pitchToOrdinate(getCenter().x, 0);
-            dropLocation.y = (int) Math.rint(y);
-            super.deriveFrom(symbol, sheet, font, dropLocation);
-        }
-
-        return true;
+        return deriveOnStaffMiddleLine(this, staff, symbol, sheet, font, dropLocation);
     }
 
     //-----------//

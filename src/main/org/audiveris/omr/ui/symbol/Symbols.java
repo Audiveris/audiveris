@@ -342,6 +342,9 @@ public abstract class Symbols
         mapShape(QUARTER_REST, 0xE4E5);
 
         sym.put(REPEAT_DOT, new RepeatDotSymbol(0xE044));
+        mapShape(REPEAT_ONE_BAR, 0xE500);
+        mapShape(REPEAT_TWO_BARS, 0xE501);
+        mapShape(REPEAT_FOUR_BARS, 0xE502);
         mapShape(REVERSE_FINAL_BARLINE, 0xE033);
         mapText(ROMAN_I, "I");
         mapText(ROMAN_II, "II");

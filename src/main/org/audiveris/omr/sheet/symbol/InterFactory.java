@@ -70,12 +70,12 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureNumberInter;
-import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -315,6 +315,12 @@ public class InterFactory
             dotFactory.instantDotChecks(eval, glyph, closestStaff);
 
             return null;
+
+        // Simile marks
+        case REPEAT_ONE_BAR:
+        case REPEAT_TWO_BARS:
+        case REPEAT_FOUR_BARS:
+            return SimileMarkInter.create(glyph, shape, grade, closestStaff); // Staff is OK
 
         // Clefs
         case G_CLEF:
@@ -796,6 +802,12 @@ public class InterFactory
         // Repeats
         case REPEAT_DOT:
             return new RepeatDotInter(null, GRADE, null, null); // No visit
+
+        // Simile marks
+        case REPEAT_ONE_BAR:
+        case REPEAT_TWO_BARS:
+        case REPEAT_FOUR_BARS:
+            return new SimileMarkInter(shape, GRADE);
 
         // Curves
         case SLUR_ABOVE:

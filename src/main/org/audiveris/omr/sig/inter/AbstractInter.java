@@ -363,6 +363,50 @@ public abstract class AbstractInter
         return true;
     }
 
+    //-------------------------//
+    // deriveOnStaffMiddleLine //
+    //-------------------------//
+    /**
+     * Snap ghost symbol vertically on staff middle line.
+     *
+     * @param inter        the dropped inter
+     * @param staff        the related staff, if any
+     * @param symbol       the dropped symbol
+     * @param sheet        containing sheet
+     * @param font         properly sized font
+     * @param dropLocation (input/output) current drag/drop location.
+     *                     Input: location is assumed to be the symbol focus center
+     *                     Output: location may get modified when some snapping occurs
+     * @return true if OK
+     */
+    protected static boolean deriveOnStaffMiddleLine (Inter inter,
+                                                      Staff staff,
+                                                      ShapeSymbol symbol,
+                                                      Sheet sheet,
+                                                      MusicFont font,
+                                                      Point dropLocation)
+    {
+        // Get initial bounds
+        final Dimension dim = symbol.getDimension(font);
+        final Rectangle box = new Rectangle(
+                dropLocation.x - (dim.width / 2),
+                dropLocation.y - (dim.height / 2),
+                dim.width,
+                dim.height);
+        final Point center = GeoUtil.center(box);
+
+        if (staff != null) {
+            // Snap ordinate on staff middle line
+            final double y = staff.pitchToOrdinate(center.x, 0);
+            dropLocation.y = (int) Math.rint(y);
+            box.y = dropLocation.y - (dim.height / 2);
+
+            inter.setBounds(box);
+        }
+
+        return true;
+    }
+
     //--------//
     // dumpOf //
     //--------//

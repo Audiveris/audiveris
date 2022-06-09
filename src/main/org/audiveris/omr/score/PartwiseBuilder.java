@@ -68,6 +68,7 @@ import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -143,6 +144,7 @@ import org.audiveris.proxymusic.LyricFont;
 import org.audiveris.proxymusic.MarginType;
 import org.audiveris.proxymusic.MeasureNumbering;
 import org.audiveris.proxymusic.MeasureNumberingValue;
+import org.audiveris.proxymusic.MeasureRepeat;
 import org.audiveris.proxymusic.MeasureStyle;
 import org.audiveris.proxymusic.MidiInstrument;
 import org.audiveris.proxymusic.MultipleRest;
@@ -225,6 +227,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -248,22 +251,15 @@ public class PartwiseBuilder
     private static final Logger logger = LoggerFactory.getLogger(PartwiseBuilder.class);
 
     /** A future which reflects whether JAXB has been initialized. */
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(
-            new Callable<Void>()
-    {
-        @Override
-        public Void call ()
-                throws Exception
-        {
-            try {
-                Marshalling.getContext(ScorePartwise.class);
-            } catch (JAXBException ex) {
-                logger.warn("Error preloading JaxbContext", ex);
-                throw ex;
-            }
-
-            return null;
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(() -> {
+        try {
+            Marshalling.getContext(ScorePartwise.class);
+        } catch (JAXBException ex) {
+            logger.warn("Error preloading JaxbContext", ex);
+            throw ex;
         }
+
+        return null;
     });
 
     /** Default page horizontal margin. */
@@ -567,8 +563,8 @@ public class PartwiseBuilder
     private Articulations getArticulations ()
     {
         for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
-            if (obj instanceof Articulations) {
-                return (Articulations) obj;
+            if (obj instanceof Articulations articulations) {
+                return articulations;
             }
         }
 
@@ -630,7 +626,8 @@ public class PartwiseBuilder
     //---------------//
     /**
      * Report the key that applies to the current part.
-     * TODO: we could as well add a Key member in current structure?
+     * <p>
+     * NOTA: This method is currently not used, should we keep it just in case?
      *
      * @return the current key
      */
@@ -644,8 +641,7 @@ public class PartwiseBuilder
             ScorePartwise.Part.Measure pmMeasure = it.previous();
 
             for (Object obj : pmMeasure.getNoteOrBackupOrForward()) {
-                if (obj instanceof Attributes) {
-                    Attributes attributes = (Attributes) obj;
+                if (obj instanceof Attributes attributes) {
                     List<Key> keys = attributes.getKey();
 
                     if (!keys.isEmpty()) {
@@ -689,8 +685,8 @@ public class PartwiseBuilder
     private Ornaments getOrnaments ()
     {
         for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
-            if (obj instanceof Ornaments) {
-                return (Ornaments) obj;
+            if (obj instanceof Ornaments ornaments) {
+                return ornaments;
             }
         }
 
@@ -843,9 +839,7 @@ public class PartwiseBuilder
             for (ListIterator<Object> it = items.listIterator(items.size()); it.hasPrevious();) {
                 Object obj = it.previous();
 
-                if (obj instanceof Attributes) {
-                    Attributes attributes = (Attributes) obj;
-
+                if (obj instanceof Attributes attributes) {
                     // Check for clef on proper staff
                     for (Clef clef : attributes.getClef()) {
                         // Check proper staff (in case of multi-staff part)
@@ -1648,8 +1642,7 @@ public class PartwiseBuilder
     private void processMeasure (Measure measure)
     {
         try {
-            logger.debug("Processing {}", measure);
-            current.pmMeasure = null;
+            logger.debug("Processing {} {}", measure, current.simileCopying ? "Copying" : "");
 
             // Very first measure in score?
             final boolean isPageFirstMeasure = isFirst.system && isFirst.measure;
@@ -1661,80 +1654,83 @@ public class PartwiseBuilder
             current.measure = measure;
             tupletNumbers.clear();
 
-            // Allocate proxymusic Measure
-            current.pmMeasure = factory.createScorePartwisePartMeasure();
-            current.pmPart.getMeasure().add(current.pmMeasure);
-            current.pmMeasure.setNumber(stack.getScoreId(current.pageMeasureIdOffset));
+            if (!current.simileCopying) {
+                // Allocate proxymusic Measure
+                current.pmMeasure = factory.createScorePartwisePartMeasure();
+                current.pmPart.getMeasure().add(current.pmMeasure);
+                current.pmMeasure.setNumber(stack.getScoreId(current.pageMeasureIdOffset));
 
-            if (!measure.isDummy()) {
-                current.pmMeasure.setWidth(toTenths(measure.getWidth()));
-            }
+                if (!measure.isDummy()) {
+                    current.pmMeasure.setWidth(toTenths(measure.getWidth()));
+                }
 
-            if (stack.isImplicit()) {
-                current.pmMeasure.setImplicit(YesNo.YES);
-            }
+                if (stack.isImplicit()) {
+                    current.pmMeasure.setImplicit(YesNo.YES);
+                }
 
-            // Print?
-            new MeasurePrint(measure).process();
+                // Print?
+                new MeasurePrint(measure).process();
 
-            // Left/mid barline?
-            PartBarline mid = measure.getMidPartBarline();
+                // Left/mid barline?
+                PartBarline mid = measure.getMidPartBarline();
 
-            if (mid != null) {
-                processBarline(mid, RightLeftMiddle.MIDDLE);
-            } else {
-                processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
-            }
+                if (mid != null) {
+                    processBarline(mid, RightLeftMiddle.MIDDLE);
+                } else {
+                    processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
+                }
 
-            // Divisions?
-            if (isPageFirstMeasure) {
-                try {
-                    getAttributes().setDivisions(
-                            new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
-                } catch (Exception ex) {
-                    if (current.page.getDurationDivisor() == null) {
-                        logger.warn("Not able to infer division value for part {} in {}",
-                                    current.logicalPart.getPid(), current.page);
-                    } else {
-                        logger.warn("Error on divisions in {}", current.page, ex);
+                // Divisions?
+                if (isPageFirstMeasure) {
+                    try {
+                        getAttributes().setDivisions(
+                                new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
+                    } catch (Exception ex) {
+                        if (current.page.getDurationDivisor() == null) {
+                            logger.warn("Not able to infer division value for part {} in {}",
+                                        current.logicalPart.getPid(), current.page);
+                        } else {
+                            logger.warn("Error on divisions in {}", current.page, ex);
+                        }
                     }
                 }
-            }
 
-            // Number of staves, if > 1
-            if (isScoreFirstMeasure && current.logicalPart.isMultiStaff()) {
-                getAttributes().setStaves(new BigInteger("" + current.logicalPart.getStaffCount()));
-            }
+                // Number of staves, if > 1
+                if (isScoreFirstMeasure && current.logicalPart.isMultiStaff()) {
+                    getAttributes().setStaves(
+                            new BigInteger("" + current.logicalPart.getStaffCount()));
+                }
 
-            // Tempo?
-            if (isScoreFirstMeasure && isFirst.part && !measure.isDummy()) {
-                Direction direction = factory.createDirection();
-                current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-                direction.setPlacement(AboveBelow.ABOVE);
+                // Tempo?
+                if (isScoreFirstMeasure && isFirst.part && !measure.isDummy()) {
+                    Direction direction = factory.createDirection();
+                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+                    direction.setPlacement(AboveBelow.ABOVE);
 
-                DirectionType directionType = factory.createDirectionType();
-                direction.getDirectionType().add(directionType);
+                    DirectionType directionType = factory.createDirectionType();
+                    direction.getDirectionType().add(directionType);
 
-                // Use a dummy words element
-                FormattedTextId pmWords = factory.createFormattedTextId();
-                directionType.getWordsOrSymbol().add(pmWords);
-                pmWords.setValue("");
+                    // Use a dummy words element
+                    FormattedTextId pmWords = factory.createFormattedTextId();
+                    directionType.getWordsOrSymbol().add(pmWords);
+                    pmWords.setValue("");
 
-                Sound sound = factory.createSound();
-                sound.setTempo(new BigDecimal(score.getTempoParam().getValue()));
-                direction.setSound(sound);
-            }
+                    Sound sound = factory.createSound();
+                    sound.setTempo(new BigDecimal(score.getTempoParam().getValue()));
+                    direction.setSound(sound);
+                }
 
-            // Insert KeySignature(s), if any (they may vary between staves)
-            processKeys();
+                // Insert KeySignature(s), if any (they may vary between staves)
+                processKeys();
 
-            // Insert TimeSignature, if any
-            if (measure.getTimeSignature() != null) {
-                processTime(measure.getTimeSignature());
-            } else if (isScoreFirstMeasure) {
-                // We need to insert a time sig!
-                // TODO
-                ///processTime(4,4,null);
+                // Insert TimeSignature, if any
+                if (measure.getTimeSignature() != null) {
+                    processTime(measure.getTimeSignature());
+                } else if (isScoreFirstMeasure) {
+                    // We need to insert a time sig!
+                    // TODO
+                    ///processTime(4,4,null);
+                }
             }
 
             // Clefs may be inserted further down the measure
@@ -1838,6 +1834,49 @@ public class PartwiseBuilder
                 insertMultipleRest(stack);
             }
 
+            // Simile marks in measure staves?
+            final Set<SimileMarkInter> similes = measure.getSimileMarks();
+            if (!similes.isEmpty()) {
+                // Insert "measure-repeat" element in measure attributes?
+                if (!current.simileStarted) {
+                    final SimileMarkInter simile = similes.iterator().next();
+                    final int slashes = simile.getShape().getSlashCount();
+                    final MeasureStyle measureStyle = factory.createMeasureStyle();
+                    final MeasureRepeat repeat = factory.createMeasureRepeat();
+
+                    repeat.setSlashes(new BigInteger("" + slashes));
+                    repeat.setType(StartStop.START);
+                    measureStyle.setMeasureRepeat(repeat);
+                    getAttributes().getMeasureStyle().add(measureStyle);
+
+                    current.simileStarted = true;
+                }
+
+                // Copy logical content of proper preceding measure(s), w/o physical info
+                Measure precMeasure = measure.getPrecedingInScore();
+                while (precMeasure != null) {
+                    if (precMeasure.getSimileMarks().isEmpty()) {
+                        current.simileCopying = true;
+                        logger.debug("{} copying {}", measure, precMeasure);
+                        processMeasure(precMeasure);
+                        current.simileCopying = false;
+                        break;
+                    }
+
+                    precMeasure = precMeasure.getPrecedingInScore();
+                }
+            } else {
+                if (current.simileStarted) {
+                    // Stop the simile sequence
+                    final MeasureStyle measureStyle = factory.createMeasureStyle();
+                    final MeasureRepeat repeat = factory.createMeasureRepeat();
+                    repeat.setType(StartStop.STOP);
+                    measureStyle.setMeasureRepeat(repeat);
+                    getAttributes().getMeasureStyle().add(measureStyle);
+
+                    current.simileStarted = false;
+                }
+            }
         } catch (Exception ex) {
             logger.warn("Error visiting {} in {}", measure, current.page, ex);
 
@@ -1929,7 +1968,7 @@ public class PartwiseBuilder
 
             // For first note in chord
             if (isFirstInChord) {
-                if (!current.measure.isDummy()) {
+                if (!current.measure.isDummy() && !current.simileCopying) {
                     // Chord events (direction, pedal, dynamics, articulation, ornament)
                     for (Relation rel : sig.edgesOf(chord)) {
                         final Inter other = sig.getOppositeInter(chord, rel);
@@ -1938,8 +1977,8 @@ public class PartwiseBuilder
                             processDirection((SentenceInter) other);
                         } else if (rel instanceof ChordPedalRelation) {
                             processPedal((PedalInter) other);
-                        } else if (rel instanceof ChordWedgeRelation) {
-                            HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
+                        } else if (rel instanceof ChordWedgeRelation chordWedgeRelation) {
+                            HorizontalSide side = chordWedgeRelation.getSide();
                             processWedge((WedgeInter) other, side);
                         } else if (rel instanceof ChordDynamicsRelation) {
                             processDynamics((DynamicsInter) other);
@@ -2042,13 +2081,6 @@ public class PartwiseBuilder
                     current.pmNote.setPitch(pitch);
                 }
 
-                /** Cross(x)?
-                 * if (note.getShape() == Shape.NOTEHEAD_CROSS) {
-                 * Notehead notehead = factory.createNotehead();
-                 * notehead.setValue(NoteheadValue.X);
-                 * current.pmNote.setNotehead(notehead);
-                 * }
-                 */
                 // Non-oval notehead shape?
                 Notehead notehead = factory.createNotehead();
                 switch (note.getShape()) {
@@ -2078,7 +2110,7 @@ public class PartwiseBuilder
             }
 
             // Default-x (use left side of the note wrt measure)
-            if (!current.measure.isDummy()) {
+            if (!current.measure.isDummy() && !current.simileCopying) {
                 int noteLeft = note.getCenterLeft().x;
                 current.pmNote.setDefaultX(
                         toTenths(noteLeft - current.measure.getAbscissa(LEFT, staff)));
@@ -2229,7 +2261,7 @@ public class PartwiseBuilder
                 Stem pmStem = factory.createStem();
                 Point tail = chord.getTailLocation();
 
-                if (!staff.isOneLineStaff()) {
+                if (!staff.isOneLineStaff() && !current.simileCopying) {
                     pmStem.setDefaultY(yOf(tail, staff));
                 }
 
@@ -3242,6 +3274,10 @@ public class PartwiseBuilder
         // Measure dependent
         Measure measure;
 
+        boolean simileStarted; // True when in a sequence of simile measures
+
+        boolean simileCopying; // True when copying measure pure logical content
+
         ScorePartwise.Part.Measure pmMeasure;
 
         final TreeMap<Integer, Key> keys = new TreeMap<>();
@@ -3302,7 +3338,6 @@ public class PartwiseBuilder
         /** Staff pitch, 0 = middle line, increasing downwards */
         int integerPitch;
 
-        //~ Constructors -------------------------------------------------------------------------------
         private DrumInstrument (String name,
                                 Shape notehead,
                                 int integerPitch)
@@ -3325,7 +3360,6 @@ public class PartwiseBuilder
         /** Array of drum instruments */
         DrumInstrument[] drum = new DrumInstrument[DRUM_INSTRUMENTS];
 
-        //~ Constructors -------------------------------------------------------------------------------
         private Drumset ()
         {
             this.drum[35] = new DrumInstrument("Acoustic Bass Drum", Shape.NOTEHEAD_BLACK, 3);

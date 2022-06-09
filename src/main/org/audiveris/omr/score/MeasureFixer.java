@@ -160,7 +160,7 @@ public class MeasureFixer
     // isEmpty //
     //---------//
     /**
-     * Check for an empty stack: perhaps clef and key or time, but no note or rest.
+     * Check for an empty stack: perhaps clef and key or time, but no note or rest or simile mark.
      *
      * @return true if so
      */
@@ -168,6 +168,12 @@ public class MeasureFixer
     {
         if (stack.isMultiRest()) {
             return false;
+        }
+
+        for (Measure measure : stack.getMeasures()) {
+            if (!measure.getSimileMarks().isEmpty()) {
+                return false;
+            }
         }
 
         final Rational actualDuration = stack.getActualDuration();
@@ -262,6 +268,7 @@ public class MeasureFixer
         // Loop on stacks in system (the list of stacks being modified on the fly)
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
             stack = system.getStacks().get(idx);
+            stack.resetSpecial();
 
             // Multiple measure rest in this stack?
             final Integer multipleRestCount = stack.getMultipleMeasureNumber(multipleRests);

@@ -1881,6 +1881,17 @@ public class MeasureStack
         g.fill(new Rectangle(left, top, right - left + 1, bottom - top + 1));
     }
 
+    //--------------//
+    // resetSpecial //
+    //--------------//
+    /**
+     * Reset special indication flag.
+     */
+    public void resetSpecial ()
+    {
+        special = null;
+    }
+
     //-------------//
     // resetRhythm //
     //-------------//
