@@ -1444,8 +1444,8 @@ public class SigReducer
             if (header.time != null) {
                 inters.add(header.time);
 
-                if (header.time instanceof InterEnsemble) {
-                    inters.addAll(((InterEnsemble) header.time).getMembers());
+                if (header.time instanceof InterEnsemble interEnsemble) {
+                    inters.addAll(interEnsemble.getMembers());
                 }
             }
         }

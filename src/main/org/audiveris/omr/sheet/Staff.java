@@ -816,14 +816,14 @@ public class Staff
      */
     public Integer getClefStop ()
     {
-        if ((header.clefRange != null) && header.clefRange.valid) {
-            return header.clefRange.getStop();
-        }
-
         if (header.clef != null) {
             Rectangle bounds = header.clef.getBounds();
 
             return (bounds.x + bounds.width) - 1;
+        }
+
+        if ((header.clefRange != null) && header.clefRange.valid) {
+            return header.clefRange.getStop();
         }
 
         return null;
@@ -1190,14 +1190,14 @@ public class Staff
      */
     public Integer getKeyStop ()
     {
-        if ((header.keyRange != null) && header.keyRange.valid) {
-            return header.keyRange.getStop();
-        }
-
         if (header.key != null) {
             Rectangle bounds = header.key.getBounds();
 
             return (bounds.x + bounds.width) - 1;
+        }
+
+        if ((header.keyRange != null) && header.keyRange.valid) {
+            return header.keyRange.getStop();
         }
 
         return null;
@@ -1567,14 +1567,14 @@ public class Staff
      */
     public Integer getTimeStop ()
     {
-        if ((header.timeRange != null) && header.timeRange.valid) {
-            return header.timeRange.getStop();
-        }
-
         if (header.time != null) {
             Rectangle bounds = header.time.getBounds();
 
             return (bounds.x + bounds.width) - 1;
+        }
+
+        if ((header.timeRange != null) && header.timeRange.valid) {
+            return header.timeRange.getStop();
         }
 
         return null;

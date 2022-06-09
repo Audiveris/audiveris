@@ -32,6 +32,7 @@ import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.PartGroup;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -378,6 +379,41 @@ public class SystemInfo
     public int compareTo (SystemInfo that)
     {
         return Integer.compare(id, that.id); // This is a total ordering
+    }
+
+    //-------------------//
+    // updateHeadersStop //
+    //-------------------//
+    /**
+     * Recompute the ending abscissa offset for each staff header.
+     * <p>
+     * This must be called whenever a header content is modified, such as the removal of a
+     * header time signature.
+     */
+    public void updateHeadersStop ()
+    {
+        int maxOffset = 0;
+
+        for (Staff staff : staves) {
+            if (!staff.isTablature()) {
+                final StaffHeader header = staff.getHeader();
+                final Integer stop = header.getActualStop();
+
+                if (stop != null) {
+                    maxOffset = Math.max(maxOffset, stop - header.start);
+                }
+            }
+        }
+
+        // Push this value to all staves
+        if (maxOffset > 0) {
+            for (Staff staff : staves) {
+                if (!staff.isTablature()) {
+                    StaffHeader header = staff.getHeader();
+                    header.stop = header.start + maxOffset;
+                }
+            }
+        }
     }
 
     //--------//

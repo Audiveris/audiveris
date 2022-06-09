@@ -488,6 +488,7 @@ public class KeyInter
 
         if ((header != null) && (header.key == this)) {
             header.key = null;
+            staff.getSystem().updateHeadersStop();
         }
 
         // Remove from containing measure

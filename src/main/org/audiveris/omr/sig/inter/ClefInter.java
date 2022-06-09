@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omrdataset.api.OmrShape;
 
@@ -224,6 +225,14 @@ public class ClefInter
     {
         if (isRemoved()) {
             return;
+        }
+
+        // Remove from staff header if relevant
+        final StaffHeader header = staff.getHeader();
+
+        if ((header != null) && (header.clef == this)) {
+            header.clef = null;
+            staff.getSystem().updateHeadersStop();
         }
 
         MeasureStack stack = sig.getSystem().getStackAt(getCenter());

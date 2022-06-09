@@ -338,6 +338,7 @@ public abstract class AbstractTimeInter
 
         if ((header != null) && (header.time == this)) {
             header.time = null;
+            staff.getSystem().updateHeadersStop();
         }
 
         // Remove from containing measure

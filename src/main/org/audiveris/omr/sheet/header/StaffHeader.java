@@ -28,6 +28,7 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -138,6 +139,34 @@ public class StaffHeader
         }
     }
 
+    //---------------//
+    // getActualStop //
+    //---------------//
+    /**
+     * Check current header CKT content to compute and report the actual ending abscissa.
+     *
+     * @return actual ending abscissa or null
+     */
+    public Integer getActualStop ()
+    {
+        final Rectangle bounds = (time != null)
+                ? time.getBounds()
+                : (key != null)
+                        ? key.getBounds()
+                        : (clef != null)
+                                ? clef.getBounds()
+                                : null;
+
+        if (bounds != null) {
+            return bounds.x + bounds.width - 1;
+        }
+
+        return null;
+    }
+
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
@@ -164,9 +193,9 @@ public class StaffHeader
             sb.append(" TIME(").append(timeRange).append(")");
         }
 
-        sb.append(" clef:").append((clef != null) ? clef : "null");
-        sb.append(" key:").append((key != null) ? key : "null");
-        sb.append(" time:").append((time != null) ? time : "null");
+        sb.append(" clef:").append(clef);
+        sb.append(" key:").append(key);
+        sb.append(" time:").append(time);
 
         sb.append("}");
 
