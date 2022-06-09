@@ -256,24 +256,31 @@ public class PartConnection
                 final LogicalPart result = resultEntry.result;
                 logger.debug("   Comparing with {}/ {}", resultIndex, result);
 
-                // Check we are compatible in terms of staves and line counts
-                if (result.getStaffCount() == candidate.getStaffCount()
-                            && Objects.deepEquals(result.getLineCounts(), lineCounts)) {
-                    logger.debug("   Success");
-                    resultEntry.candidates.add(candidate);
+                // Check parts are compatible in terms of staves counts
+                if (result.getStaffCount() == candidate.getStaffCount()) {
 
-                    // Use name of affiliate to define abbreviation of logical?
-                    final String abbrev = resultEntry.result.getAbbreviation();
-                    if (abbrev == null) {
-                        final String affiName = candidate.getName();
-                        if ((affiName != null) && !affiName.equals(resultEntry.result.getName())) {
-                            resultEntry.result.setAbbreviation(affiName);
+                    // Check parts are compatible in terms of line counts
+                    // (for backward compatibility, check is made only if line counts exist)
+                    if (lineCounts.isEmpty() || result.getLineCounts().isEmpty()
+                                || Objects.deepEquals(result.getLineCounts(), lineCounts)) {
+                        logger.debug("   Success");
+                        resultEntry.candidates.add(candidate);
+
+                        // Use name of affiliate to define abbreviation of logical?
+                        final String abbrev = resultEntry.result.getAbbreviation();
+                        if (abbrev == null) {
+                            final String affiName = candidate.getName();
+                            if ((affiName != null) && !affiName.equals(resultEntry.result.getName())) {
+                                resultEntry.result.setAbbreviation(affiName);
+                            }
                         }
-                    }
 
-                    continue CandidateLoop;
+                        continue CandidateLoop;
+                    } else {
+                        logger.debug("   Line count incompatibility");
+                    }
                 } else {
-                    logger.debug("   Count incompatibility");
+                    logger.debug("   Staff count incompatibility");
                 }
             }
 

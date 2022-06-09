@@ -93,7 +93,7 @@ public class LogicalPart
      * The number of lines for each staff in this part.
      */
     @XmlElement(name = "line-count")
-    private final List<Integer> lineCounts;
+    private final List<Integer> lineCounts = new ArrayList<>();
 
     /**
      * This is the name, often an instrument name, for this logical part.
@@ -136,7 +136,7 @@ public class LogicalPart
     {
         setId(id);
         this.staffCount = staffCount;
-        this.lineCounts = new ArrayList<>(lineCounts);
+        setLineCounts(lineCounts);
     }
 
     /** Meant for XML binder only */
@@ -144,7 +144,6 @@ public class LogicalPart
     {
         setId(0);
         staffCount = 0;
-        lineCounts = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -286,7 +285,7 @@ public class LogicalPart
     //---------------//
     // setLineCounts //
     //---------------//
-    public void setLineCounts (List<Integer> lineCounts)
+    public final void setLineCounts (List<Integer> lineCounts)
     {
         this.lineCounts.clear();
         this.lineCounts.addAll(lineCounts);
