@@ -21,11 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import org.audiveris.omr.util.IntUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class <code>PartConnection</code> is in charge of finding the connections of parts across
@@ -43,7 +46,7 @@ import java.util.List;
  * The strategy used to build Results out of Candidates is based on the following assumptions:
  * <ul>
  * <li>For a part of a system to be connected to a part of another system, they must exhibit the
- * same count of staves.</li>
+ * same count of staves and the same count of lines in corresponding staves</li>
  * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
  * partA followed by partB in a system, and partB followed by partA in another system.</li>
  * <li>A part with 2 staves, if any, is used to align connections.</li>
@@ -62,7 +65,10 @@ public class PartConnection
     private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private List<ResultEntry> resultEntries;
+    /**
+     * The sorted list of resulting parts, each with its affiliated candidates.
+     */
+    private final List<ResultEntry> resultEntries = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -72,7 +78,7 @@ public class PartConnection
      */
     public PartConnection (List<List<Candidate>> sequences)
     {
-        resultEntries = connect(sequences);
+        connect(sequences);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -114,33 +120,33 @@ public class PartConnection
     // addResultEntry //
     //----------------//
     /**
-     * Build a new ResultEntry based on provided Candidate and insert it at the desired
-     * resultIndex in the list of resultEntries.
+     * Build a new ResultEntry based on provided Candidate and insert it at last position,
+     * according to provided direction, in the list of results.
      *
-     * @param resultIndex
-     * @param candidate
-     * @param resultEntries
-     * @return the entry created
+     * @param dir       -1 for up, +1 for down
+     * @param candidate the provided candidate
+     * @param results   the results to be augmented
      */
-    private ResultEntry addResultEntry (int resultIndex,
-                                        Candidate candidate,
-                                        List<ResultEntry> resultEntries)
+    private void addResultEntry (int dir,
+                                 Candidate candidate,
+                                 List<ResultEntry> results)
     {
         // Create a brand new logical part for this candidate
-        // Id is irrelevant for the time being
-        LogicalPart result = new LogicalPart(0, candidate.getStaffCount());
+        // Its id is irrelevant for the time being
+        final LogicalPart result
+                = new LogicalPart(0, candidate.getStaffCount(), candidate.getLineCounts());
         result.setName(candidate.getName());
         result.setAbbreviation(candidate.getAbbreviation());
         logger.debug("Created {} from {}", result, candidate);
 
-        ResultEntry entry = new ResultEntry();
+        final ResultEntry entry = new ResultEntry();
         List<Candidate> candidates = new ArrayList<>();
         candidates.add(candidate);
         entry.result = result;
         entry.candidates = candidates;
-        resultEntries.add(resultIndex, entry);
 
-        return entry;
+        // Insert at proper end of results
+        results.add(dir < 0 ? 0 : results.size(), entry);
     }
 
     //---------//
@@ -172,13 +178,9 @@ public class PartConnection
      * one page, or when we connect parts across several pages.
      *
      * @param sequences a list of sequences of candidate parts
-     * @return the sorted list of resulting parts, each with its affiliated candidates
      */
-    private List<ResultEntry> connect (List<List<Candidate>> sequences)
+    private void connect (List<List<Candidate>> sequences)
     {
-        /** Resulting sequence of logical parts. */
-        resultEntries = new ArrayList<>();
-
         // Two-staff entry found, if any
         ResultEntry biEntry = null;
 
@@ -219,16 +221,17 @@ public class PartConnection
 
         // Assign numbers to logical parts
         renumberResults();
-
-        return resultEntries;
     }
 
+    //----------//
+    // dispatch //
+    //----------//
     /**
-     * Dispatch the list of candidate parts (perhaps a sublist of a system) to the
+     * Dispatch the list of candidate parts (for example a sublist of a system) to the
      * current sublist of logical parts.
      *
      * @param sequence the candidate parts to dispatch
-     * @param results  (input/output) the current sublist of logicals
+     * @param results  (input/output) the current sublist of logical parts
      * @param dir      -1 or +1 for browsing up or down
      */
     private void dispatch (List<Candidate> sequence,
@@ -239,42 +242,45 @@ public class PartConnection
         final int ic2 = (dir > 0) ? sequence.size() : (-1);
         int resultIndex = (dir > 0) ? (-1) : results.size();
 
+        CandidateLoop:
         for (int ic = ic1; ic != ic2; ic += dir) {
-            Candidate candidate = sequence.get(ic);
-            logger.debug("Processing {}", candidate);
+            final Candidate candidate = sequence.get(ic);
+            final List<Integer> lineCounts = candidate.getLineCounts();
+            logger.debug("\nCandidate {} [{}]", candidate, IntUtil.toCsvString(lineCounts));
 
             // Check with logical parts currently defined
             resultIndex += dir;
-            logger.debug("resultIndex:{}", resultIndex);
+            for (; ((dir > 0) && (resultIndex < results.size()))
+                           || ((dir < 0) && (resultIndex >= 0)); resultIndex += dir) {
+                final ResultEntry resultEntry = results.get(resultIndex);
+                final LogicalPart result = resultEntry.result;
+                logger.debug("   Comparing with {}/ {}", resultIndex, result);
 
-            if (((dir > 0) && (resultIndex >= results.size()))
-                        || ((dir < 0) && (resultIndex < 0))) {
-                logger.debug("No more entries available");
-
-                // Create a brand new logical part for this candidate
-                addResultEntry((dir < 0) ? 0 : resultIndex, candidate, results);
-            } else {
-                ResultEntry resultEntry = results.get(resultIndex);
-                LogicalPart result = resultEntry.result;
-                logger.debug("Part:{}", result);
-
-                // Check we are compatible in terms of staves
-                if (result.getStaffCount() != candidate.getStaffCount()) {
-                    logger.debug("Count incompatibility");
-
-                    // Create a brand new logical part for this candidate
-                    addResultEntry(resultIndex, candidate, results);
-                } else {
-                    // We are compatible
+                // Check we are compatible in terms of staves and line counts
+                if (result.getStaffCount() == candidate.getStaffCount()
+                            && Objects.deepEquals(result.getLineCounts(), lineCounts)) {
+                    logger.debug("   Success");
                     resultEntry.candidates.add(candidate);
 
-                    // Use name of affiliate to define abbreviation?
+                    // Use name of affiliate to define abbreviation of logical?
                     final String abbrev = resultEntry.result.getAbbreviation();
                     if (abbrev == null) {
-                        resultEntry.result.setAbbreviation(candidate.getName());
+                        final String affiName = candidate.getName();
+                        if ((affiName != null) && !affiName.equals(resultEntry.result.getName())) {
+                            resultEntry.result.setAbbreviation(affiName);
+                        }
                     }
+
+                    continue CandidateLoop;
+                } else {
+                    logger.debug("   Count incompatibility");
                 }
             }
+
+            logger.debug("   No more entries available");
+
+            // Create a brand new logical part for this candidate
+            addResultEntry(dir, candidate, results);
         }
     }
 
@@ -282,15 +288,14 @@ public class PartConnection
     // renumberResults //
     //-----------------//
     /**
-     * Reverse and renumber the result entries.
+     * Renumber the result entries.
      */
     private void renumberResults ()
     {
-        ///Collections.reverse(resultEntries);
         for (int i = 0; i < resultEntries.size(); i++) {
-            ResultEntry resultEntry = resultEntries.get(i);
-            LogicalPart result = resultEntry.result;
-            int id = i + 1;
+            final ResultEntry resultEntry = resultEntries.get(i);
+            final LogicalPart result = resultEntry.result;
+            final int id = i + 1;
             result.setId(id);
 
             for (Candidate candidate : resultEntry.candidates) {
@@ -324,6 +329,13 @@ public class PartConnection
          * @return the abbreviation if any
          */
         String getAbbreviation ();
+
+        /**
+         * Report the line count for each staff.
+         *
+         * @return the list of line counts
+         */
+        List<Integer> getLineCounts ();
 
         /**
          * Report the name of the part, if any

@@ -572,7 +572,7 @@ public class Part
     }
 
     //--------------------//
-    // getPrecedingInPage //
+    // getFollowingInPage //
     //--------------------//
     /**
      * Report the corresponding part (if any) in the following system in current page.
@@ -674,6 +674,25 @@ public class Part
     public void setLeftPartBarline (PartBarline leftBarline)
     {
         this.leftBarline = leftBarline;
+    }
+
+    //---------------//
+    // getLineCounts //
+    //---------------//
+    /**
+     * Report the line counts of all staves.
+     *
+     * @return list of staff line count
+     */
+    public List<Integer> getLineCounts ()
+    {
+        final List<Integer> lineCounts = new ArrayList<>(staves.size());
+
+        for (Staff staff : staves) {
+            lineCounts.add(staff.getLineCount());
+        }
+
+        return lineCounts;
     }
 
     //----------------//
@@ -1039,10 +1058,10 @@ public class Part
     //------------//
     /**
      * Report whether this part is a (5-line unpitched) percussion part.
-     * 
+     *
      * @return true if so, false if not (or if not certain, e.g. if no first measure clef is found)
      */
-    public boolean isDrumPart()
+    public boolean isDrumPart ()
     {
         Measure firstMeasure = getFirstMeasure();
         if (firstMeasure != null) {

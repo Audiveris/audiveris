@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -72,5 +73,31 @@ public abstract class IntUtil
         }
 
         return intList;
+    }
+
+    //-------------//
+    // toCsvString //
+    //-------------//
+    /**
+     * Report a string formatted as comma-separated values from the provided collection.
+     *
+     * @param collection provided collection of integers
+     * @return the CSV string
+     */
+    public static String toCsvString (Collection<Integer> collection)
+    {
+        final StringBuilder sb = new StringBuilder();
+        boolean started = false;
+
+        for (Integer i : collection) {
+            if (started) {
+                sb.append(',');
+            }
+
+            sb.append((i == null) ? "null" : i);
+            started = true;
+        }
+
+        return sb.toString();
     }
 }

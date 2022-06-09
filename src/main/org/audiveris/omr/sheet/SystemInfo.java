@@ -898,8 +898,10 @@ public class SystemInfo
      */
     public Part getPhysicalPart (LogicalPart logicalPart)
     {
+        final int id = logicalPart.getId();
+
         for (Part part : parts) {
-            if (part.getLogicalPart() == logicalPart) {
+            if (part.getLogicalPart().getId() == id) {
                 return part;
             }
         }

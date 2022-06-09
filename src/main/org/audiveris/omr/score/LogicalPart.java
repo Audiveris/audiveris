@@ -25,15 +25,20 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class <code>LogicalPart</code> describes a part at score or page level.
@@ -85,6 +90,12 @@ public class LogicalPart
     private final int staffCount;
 
     /**
+     * The number of lines for each staff in this part.
+     */
+    @XmlElement(name = "line-count")
+    private final List<Integer> lineCounts;
+
+    /**
      * This is the name, often an instrument name, for this logical part.
      * <p>
      * It is generally located in the left margin of the very first physical part and the OCR can
@@ -117,12 +128,15 @@ public class LogicalPart
      *
      * @param id         the id for this part
      * @param staffCount the count of staves within this part
+     * @param lineCounts the count of lines for each staff in part
      */
     public LogicalPart (int id,
-                        int staffCount)
+                        int staffCount,
+                        List<Integer> lineCounts)
     {
         setId(id);
         this.staffCount = staffCount;
+        this.lineCounts = new ArrayList<>(lineCounts);
     }
 
     /** Meant for XML binder only */
@@ -130,6 +144,7 @@ public class LogicalPart
     {
         setId(0);
         staffCount = 0;
+        lineCounts = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -155,7 +170,8 @@ public class LogicalPart
 
         return Objects.deepEquals(midiProgram, that.midiProgram)
                        && Objects.deepEquals(name, that.name)
-                       && Objects.deepEquals(abbreviation, that.abbreviation);
+                       && Objects.deepEquals(abbreviation, that.abbreviation)
+                       && Objects.deepEquals(lineCounts, that.lineCounts);
     }
 
     //-------//
@@ -254,6 +270,28 @@ public class LogicalPart
         }
     }
 
+    //---------------//
+    // getLineCounts //
+    //---------------//
+    /**
+     * Report the line count for each staff in this part.
+     *
+     * @return the staves line counts
+     */
+    public List<Integer> getLineCounts ()
+    {
+        return Collections.unmodifiableList(lineCounts);
+    }
+
+    //---------------//
+    // setLineCounts //
+    //---------------//
+    public void setLineCounts (List<Integer> lineCounts)
+    {
+        this.lineCounts.clear();
+        this.lineCounts.addAll(lineCounts);
+    }
+
     //----------------//
     // getMidiProgram //
     //----------------//
@@ -330,6 +368,9 @@ public class LogicalPart
         return staffCount;
     }
 
+    //----------//
+    // hashCode //
+    //----------//
     @Override
     public int hashCode ()
     {
@@ -399,6 +440,8 @@ public class LogicalPart
         }
 
         sb.append(" staffCount:").append(staffCount);
+
+        sb.append(" lineCounts:[").append(IntUtil.toCsvString(lineCounts)).append(']');
 
         sb.append("}");
 

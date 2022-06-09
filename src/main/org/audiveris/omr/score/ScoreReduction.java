@@ -187,6 +187,12 @@ public class ScoreReduction
         }
 
         @Override
+        public List<Integer> getLineCounts ()
+        {
+            return logicalPart.getLineCounts();
+        }
+
+        @Override
         public String getName ()
         {
             return logicalPart.getName();

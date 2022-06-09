@@ -24,6 +24,7 @@ package org.audiveris.omr.score;
 import org.audiveris.omr.score.PartConnection.Candidate;
 import org.audiveris.omr.score.PartConnection.ResultEntry;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
@@ -159,6 +160,12 @@ public class PageReduction
         public String getAbbreviation ()
         {
             return null;
+        }
+
+        @Override
+        public List<Integer> getLineCounts ()
+        {
+            return systemPart.getLineCounts();
         }
 
         @Override
