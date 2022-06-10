@@ -92,6 +92,9 @@ public abstract class Symbols
     /** Code for SHARP */
     public static final int CODE_SHARP = 0xE262;
 
+    /** Code for THIN_BARLINE */
+    public static final int CODE_THIN_BARLINE = 0xE030;
+
     /** Symbol of '8' char for ottava sign (alta or bassa) on F and G clefs */
     public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(0xE510);
 
@@ -178,7 +181,7 @@ public abstract class Symbols
         mapShape(REPEAT_DOT_PAIR, 0xE043);
         mapShape(RIGHT_REPEAT_SIGN, 0xE041);
         mapShape(THICK_BARLINE, 0xE034);
-        mapShape(THIN_BARLINE, 0xE030);
+        mapShape(THIN_BARLINE, CODE_THIN_BARLINE);
         mapShape(TIME_ZERO, 0xE080);
 
         // Other instances, in alphabetical shape order for easier browsing
@@ -343,8 +346,8 @@ public abstract class Symbols
 
         sym.put(REPEAT_DOT, new RepeatDotSymbol(0xE044));
         mapShape(REPEAT_ONE_BAR, 0xE500);
-        mapShape(REPEAT_TWO_BARS, 0xE501);
-        mapShape(REPEAT_FOUR_BARS, 0xE502);
+        sym.put(REPEAT_TWO_BARS, new RepeatBarSymbol(REPEAT_TWO_BARS, 0xE501));
+        sym.put(REPEAT_FOUR_BARS, new RepeatBarSymbol(REPEAT_FOUR_BARS, 0xE502));
         mapShape(REVERSE_FINAL_BARLINE, 0xE033);
         mapText(ROMAN_I, "I");
         mapText(ROMAN_II, "II");

@@ -1654,11 +1654,25 @@ public class PartwiseBuilder
             current.measure = measure;
             tupletNumbers.clear();
 
+            // Simile marks in measure staves?
+            final Set<SimileMarkInter> similes = measure.getSimileMarks();
+
             if (!current.simileCopying) {
                 // Allocate proxymusic Measure
                 current.pmMeasure = factory.createScorePartwisePartMeasure();
                 current.pmPart.getMeasure().add(current.pmMeasure);
                 current.pmMeasure.setNumber(stack.getScoreId(current.pageMeasureIdOffset));
+
+                if (current.simileStarted && similes.isEmpty()) {
+                    // Stop the simile sequence
+                    final MeasureStyle measureStyle = factory.createMeasureStyle();
+                    final MeasureRepeat repeat = factory.createMeasureRepeat();
+                    repeat.setType(StartStop.STOP);
+                    measureStyle.setMeasureRepeat(repeat);
+                    getAttributes().getMeasureStyle().add(measureStyle);
+
+                    current.simileStarted = false;
+                }
 
                 if (!measure.isDummy()) {
                     current.pmMeasure.setWidth(toTenths(measure.getWidth()));
@@ -1834,13 +1848,12 @@ public class PartwiseBuilder
                 insertMultipleRest(stack);
             }
 
-            // Simile marks in measure staves?
-            final Set<SimileMarkInter> similes = measure.getSimileMarks();
             if (!similes.isEmpty()) {
-                // Insert "measure-repeat" element in measure attributes?
+                final SimileMarkInter simile = similes.iterator().next();
+                final int slashes = simile.getShape().getSlashCount();
+
+                // Insert "measure-repeat" element in measure attributes, unless already started
                 if (!current.simileStarted) {
-                    final SimileMarkInter simile = similes.iterator().next();
-                    final int slashes = simile.getShape().getSlashCount();
                     final MeasureStyle measureStyle = factory.createMeasureStyle();
                     final MeasureRepeat repeat = factory.createMeasureRepeat();
 
@@ -1853,28 +1866,42 @@ public class PartwiseBuilder
                 }
 
                 // Copy logical content of proper preceding measure(s), w/o physical info
+                // One measure per slash
+                // TODO: take into account the number symbol if any above the simile mark
+                final List<Measure> toCopy = new ArrayList<>();
+
                 Measure precMeasure = measure.getPrecedingInScore();
-                while (precMeasure != null) {
+                int countLeft = slashes;
+                while (countLeft > 0 && precMeasure != null) {
                     if (precMeasure.getSimileMarks().isEmpty()) {
-                        current.simileCopying = true;
-                        logger.debug("{} copying {}", measure, precMeasure);
-                        processMeasure(precMeasure);
-                        current.simileCopying = false;
-                        break;
+                        toCopy.add(0, precMeasure);
+                        if (--countLeft == 0) {
+                            break;
+                        }
+                    } else if (!toCopy.isEmpty()) {
+                        // We need a whole sequence of "normal" measures (w/o simile marks)
+                        logger.warn("Abnormal measure sequence before simile {}", measure);
+                        break; // Safer!
                     }
 
                     precMeasure = precMeasure.getPrecedingInScore();
                 }
-            } else {
-                if (current.simileStarted) {
-                    // Stop the simile sequence
-                    final MeasureStyle measureStyle = factory.createMeasureStyle();
-                    final MeasureRepeat repeat = factory.createMeasureRepeat();
-                    repeat.setType(StartStop.STOP);
-                    measureStyle.setMeasureRepeat(repeat);
-                    getAttributes().getMeasureStyle().add(measureStyle);
 
-                    current.simileStarted = false;
+                for (int i = 0, iMax = toCopy.size() - 1; i <= iMax; i++) {
+                    final Measure source = toCopy.get(i);
+                    current.simileCopying = true;
+                    logger.debug("{} copying {}", measure, source);
+                    processMeasure(source);
+
+                    if (i < iMax) {
+                        // Allocate a new Measure
+                        current.pmMeasure = factory.createScorePartwisePartMeasure();
+                        current.pmPart.getMeasure().add(current.pmMeasure);
+                        current.pmMeasure.setNumber(
+                                stack.getScoreId(current.pageMeasureIdOffset) + "+" + (i + 1));
+                    }
+
+                    current.simileCopying = false;
                 }
             }
         } catch (Exception ex) {

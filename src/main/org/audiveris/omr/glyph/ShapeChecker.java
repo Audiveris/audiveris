@@ -734,6 +734,26 @@ public class ShapeChecker
                 return (constants.minDirectionPitchPosition.getValue() <= pitch) && (pitch <= -5);
             }
         };
+
+        new Checker("SimileMarks", ShapeSet.RepeatBars)
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph)
+            {
+                // Check these simile marks are located on staff mid line
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
+
+                if (Math.abs(pp) > constants.maxSimilePitchPosition.getValue()) {
+                    eval.failure = new Evaluation.Failure("pitch");
+
+                    return false;
+                }
+
+                return true;
+            }
+        };
     }
 
     //-------------//
@@ -801,6 +821,11 @@ public class ShapeChecker
                 "PitchPosition",
                 -13.0,
                 "Minimum pitch value for a  segno / coda direction");
+
+        private final Constant.Double maxSimilePitchPosition = new Constant.Double(
+                "PitchPosition",
+                1.0,
+                "Maximum absolute pitch position for a simile mark");
 
         private final Constant.Double minTitlePitchPosition = new Constant.Double(
                 "PitchPosition",

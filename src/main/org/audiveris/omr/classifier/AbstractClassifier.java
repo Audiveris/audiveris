@@ -298,7 +298,7 @@ public abstract class AbstractClassifier<M extends Object>
 
                     if (!isCompatible(model, norms)) {
                         final String msg = "Obsolete classifier user data in " + path
-                                           + ", trying default data";
+                                                   + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
@@ -346,7 +346,7 @@ public abstract class AbstractClassifier<M extends Object>
 
             if (!isCompatible(model, norms)) {
                 final String msg = "Obsolete classifier default data in " + uri
-                                   + ", please retrain from scratch";
+                                           + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
                 logger.info("Classifier data loaded from default uri {}", uri);
