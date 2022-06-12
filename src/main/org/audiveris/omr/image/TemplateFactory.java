@@ -30,6 +30,8 @@ import static org.audiveris.omr.glyph.Shape.NOTEHEAD_CROSS_VOID;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_CROSS;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_TRIANGLE_DOWN_VOID;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_TRIANGLE_DOWN;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_CIRCLE_X;
+import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_CIRCLE_X;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
 import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID_SMALL;
 import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
@@ -112,6 +114,8 @@ public class TemplateFactory
                                                               WHOLE_NOTE_CROSS,
                                                               NOTEHEAD_TRIANGLE_DOWN_VOID,
                                                               WHOLE_NOTE_TRIANGLE_DOWN,
+                                                              NOTEHEAD_CIRCLE_X,
+                                                              WHOLE_NOTE_CIRCLE_X,
                                                               NOTEHEAD_VOID,
                                                               NOTEHEAD_VOID_SMALL,
                                                               WHOLE_NOTE,
@@ -267,6 +271,7 @@ public class TemplateFactory
 
         case NOTEHEAD_DIAMOND_FILLED:
         case NOTEHEAD_DIAMOND_VOID:
+        case NOTEHEAD_CIRCLE_X:
             return slimBox.y + slimBox.height / 2;
 
         case NOTEHEAD_TRIANGLE_DOWN_FILLED:
@@ -291,6 +296,7 @@ public class TemplateFactory
 
         case NOTEHEAD_DIAMOND_FILLED:
         case NOTEHEAD_DIAMOND_VOID:
+        case NOTEHEAD_CIRCLE_X:
             return slimBox.y + slimBox.height / 2;
 
         case NOTEHEAD_TRIANGLE_DOWN_FILLED:
@@ -804,6 +810,12 @@ public class TemplateFactory
 
         case WHOLE_NOTE_TRIANGLE_DOWN:
             return Symbols.CODE_WHOLE_NOTE_TRIANGLE_DOWN;
+
+        case NOTEHEAD_CIRCLE_X:
+            return Symbols.CODE_NOTEHEAD_CIRCLE_X;
+
+        case WHOLE_NOTE_CIRCLE_X:
+            return Symbols.CODE_WHOLE_NOTE_CIRCLE_X;
 
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:

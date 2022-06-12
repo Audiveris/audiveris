@@ -61,6 +61,9 @@ public abstract class Symbols
     /** Code for NOTEHEAD_TRIANGLE_DOWN_VOID */
     public static final int CODE_NOTEHEAD_TRIANGLE_DOWN_VOID = 0xE0C5;
 
+    /** Code for NOTEHEAD_CIRCLE_X */
+    public static final int CODE_NOTEHEAD_CIRCLE_X = 0xE0B3;
+
     /** Code for NOTEHEAD_BLACK */
     public static final int CODE_NOTEHEAD_BLACK = 0xE0A4;
 
@@ -81,6 +84,9 @@ public abstract class Symbols
 
     /** Code for WHOLE_NOTE_TRIANGLE_DOWN */
     public static final int CODE_WHOLE_NOTE_TRIANGLE_DOWN = 0xE0C4;
+
+    /** Code for WHOLE_NOTE_CIRCLE_X */
+    public static final int CODE_WHOLE_NOTE_CIRCLE_X = 0xE0B1;
 
     /** Code for AUGMENTATION_DOT */
     public static final int CODE_AUGMENTATION_DOT = 0xE044;
@@ -317,6 +323,7 @@ public abstract class Symbols
         mapShape(NATURAL, CODE_NATURAL);
         sym.put(NON_DRAGGABLE, new NonDraggableSymbol(0xEA94, 0xEA93));
         small(NOTEHEAD_BLACK_SMALL, CODE_NOTEHEAD_BLACK);
+        mapShape(NOTEHEAD_CIRCLE_X, CODE_NOTEHEAD_CIRCLE_X);
         mapShape(NOTEHEAD_CROSS, CODE_NOTEHEAD_CROSS);
         mapShape(NOTEHEAD_CROSS_VOID, CODE_NOTEHEAD_CROSS_VOID);
         mapShape(NOTEHEAD_DIAMOND_FILLED, CODE_NOTEHEAD_DIAMOND_FILLED);
@@ -413,6 +420,7 @@ public abstract class Symbols
         sym.put(VENTIDUESIMA, new OctaveShiftSymbol(VENTIDUESIMA, 0xE517));
 
         mapShape(WHOLE_NOTE, CODE_WHOLE_NOTE);
+        mapShape(WHOLE_NOTE_CIRCLE_X, CODE_WHOLE_NOTE_CIRCLE_X);
         mapShape(WHOLE_NOTE_DIAMOND, CODE_WHOLE_NOTE_DIAMOND);
         mapShape(WHOLE_NOTE_CROSS, CODE_WHOLE_NOTE_CROSS);
         mapShape(WHOLE_NOTE_TRIANGLE_DOWN, CODE_WHOLE_NOTE_TRIANGLE_DOWN);

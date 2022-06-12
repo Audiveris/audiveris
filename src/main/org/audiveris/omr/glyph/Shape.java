@@ -329,6 +329,7 @@ public enum Shape
             "Filled point-down triangle shape note head for unpitched percussion"),
     NOTEHEAD_TRIANGLE_DOWN_VOID(
             "Hollow point-down triangle shape note head for unpitched percussion"),
+    NOTEHEAD_CIRCLE_X("Circle-x shape note head for unpitched percussion"),
     NOTEHEAD_BLACK("Filled note head for quarters and less"),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
     NOTEHEAD_VOID("Hollow note head for halves"),
@@ -350,6 +351,7 @@ public enum Shape
     WHOLE_NOTE_CROSS("Hollow cross shape note head for unpitched percussion wholes"),
     WHOLE_NOTE_DIAMOND("Hollow diamond-shaped note head for unpitched percussion wholes"),
     WHOLE_NOTE_TRIANGLE_DOWN("Hollow point-down triangle shape for unpitched percussion wholes"),
+    WHOLE_NOTE_CIRCLE_X("Stemless circle-x head shape for unpitched percussion wholes"),
 
     //
     // Beams and slurs ---

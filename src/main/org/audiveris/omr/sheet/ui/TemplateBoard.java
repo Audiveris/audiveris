@@ -264,6 +264,7 @@ public class TemplateBoard
         case WHOLE_NOTE_DIAMOND:
         case WHOLE_NOTE_CROSS:
         case WHOLE_NOTE_TRIANGLE_DOWN:
+        case WHOLE_NOTE_CIRCLE_X:
             return anchor == Anchor.MIDDLE_LEFT;
 
         default:

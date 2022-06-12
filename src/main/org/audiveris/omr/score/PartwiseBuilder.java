@@ -2261,6 +2261,11 @@ public class PartwiseBuilder
                     notehead.setValue(NoteheadValue.INVERTED_TRIANGLE);
                     current.pmNote.setNotehead(notehead);
 
+                case NOTEHEAD_CIRCLE_X:
+                case WHOLE_NOTE_CIRCLE_X:
+                    notehead.setValue(NoteheadValue.CIRCLE_X);
+                    current.pmNote.setNotehead(notehead);
+
                 default:
                 // No need to specify NoteheadValue for standard oval heads
                 }
@@ -2321,60 +2326,79 @@ public class PartwiseBuilder
             }
 
             // Instrument (for unpitched percussion)
-            if (!note.getShape().isRest()) {
+            Shape noteShape = note.getShape();
+            if (!noteShape.isRest()) {
                 if (current.isDrumPart) {
                     // Find a midi instrument with the correct pitch and notehead
+                    int notePitch = note.getIntegerPitch();
                     Boolean instrumentFound = false;
                     int instId;
                     Shape headShape = null;
+
+                    // Special case for circle-x notehead with pitch -5 or 5:
+                    // These should be sounded as midi instrument Open Hi-Hat, midi# 46,
+                    // having notehead shape NOTEHEAD_CROSS, integer pitch -3.
+                    // All other circle-x notes should sound as instrument with ordinary
+                    // x head shape at the integer pitch of the note at hand.
+                    if (noteShape == Shape.NOTEHEAD_CIRCLE_X || noteShape
+                                                                == Shape.WHOLE_NOTE_CIRCLE_X) {
+                        headShape = Shape.NOTEHEAD_CROSS;
+                        if (notePitch == -5 || notePitch == 5) {
+                            notePitch = -3;
+                        }
+
+                    } else {
+
+                        // TODO: Maybe create general note shape categories (or families)
+                        // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
+                        // duration or size, to avoid this and earlier switch statements
+                        switch (noteShape) {
+                        case NOTEHEAD_BLACK:
+                        case NOTEHEAD_BLACK_SMALL:
+                        case NOTEHEAD_VOID:
+                        case NOTEHEAD_VOID_SMALL:
+                        case WHOLE_NOTE:
+                        case WHOLE_NOTE_SMALL:
+                            headShape = Shape.NOTEHEAD_BLACK;
+                            break;
+
+                        case NOTEHEAD_CROSS:
+                        case NOTEHEAD_CROSS_VOID:
+                        case WHOLE_NOTE_CROSS:
+                            headShape = Shape.NOTEHEAD_CROSS;
+                            break;
+
+                        case NOTEHEAD_DIAMOND_FILLED:
+                        case NOTEHEAD_DIAMOND_VOID:
+                        case WHOLE_NOTE_DIAMOND:
+                            headShape = Shape.NOTEHEAD_DIAMOND_FILLED;
+                            break;
+
+                        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+                        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+                        case WHOLE_NOTE_TRIANGLE_DOWN:
+                            headShape = Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED;
+                            break;
+
+                        default:
+                            logger.error("Unsupported notehead shape {}", note.getShape());
+
+                        }
+                    }
+
                     for (int i = 0; i < Drumset.DRUM_INSTRUMENTS && !instrumentFound; i++) {
                         if (current.drum[i] != null) {
-                            if (current.drum[i].integerPitch == note.getIntegerPitch()) {
-                                // TODO: Maybe create general note shape categories (or families)
-                                // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
-                                // duration or size, to avoid this and earlier switch statements
-                                switch (note.getShape()) {
-                                case NOTEHEAD_BLACK:
-                                case NOTEHEAD_BLACK_SMALL:
-                                case NOTEHEAD_VOID:
-                                case NOTEHEAD_VOID_SMALL:
-                                case WHOLE_NOTE:
-                                case WHOLE_NOTE_SMALL:
-                                    headShape = Shape.NOTEHEAD_BLACK;
-                                    break;
-
-                                case NOTEHEAD_CROSS:
-                                case NOTEHEAD_CROSS_VOID:
-                                case WHOLE_NOTE_CROSS:
-                                    headShape = Shape.NOTEHEAD_CROSS;
-                                    break;
-
-                                case NOTEHEAD_DIAMOND_FILLED:
-                                case NOTEHEAD_DIAMOND_VOID:
-                                case WHOLE_NOTE_DIAMOND:
-                                    headShape = Shape.NOTEHEAD_DIAMOND_FILLED;
-                                    break;
-
-                                case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-                                case NOTEHEAD_TRIANGLE_DOWN_VOID:
-                                case WHOLE_NOTE_TRIANGLE_DOWN:
-                                    headShape = Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED;
-                                    break;
-
-                                default:
-                                    logger.error("Unsupported notehead shape {}", note.getShape());
-
-                                }
-                                if (current.drum[i].notehead == headShape) {
-                                    instId = i;
-                                    instrumentFound = true;
-                                    Instrument instrument = factory.createInstrument();
-                                    instrument.setId(current.instrumentMap.get(instId));
-                                    current.pmNote.getInstrument().add(instrument);
-                                }
+                            if (current.drum[i].integerPitch == notePitch
+                                        && current.drum[i].notehead == headShape) {
+                                instId = i;
+                                instrumentFound = true;
+                                Instrument instrument = factory.createInstrument();
+                                instrument.setId(current.instrumentMap.get(instId));
+                                current.pmNote.getInstrument().add(instrument);
                             }
                         }
                     }
+
                     if (!instrumentFound) {
                         logger.warn("No instrument for note integerPitch {} Shape {}",
                                     note.getIntegerPitch(), note.getShape());

@@ -242,6 +242,8 @@ public class Skeleton
                         Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED,
                         Shape.NOTEHEAD_TRIANGLE_DOWN_VOID,
                         Shape.WHOLE_NOTE_TRIANGLE_DOWN,
+                        Shape.NOTEHEAD_CIRCLE_X,
+                        Shape.WHOLE_NOTE_CIRCLE_X,
                         Shape.NOTEHEAD_BLACK,
                         Shape.NOTEHEAD_BLACK_SMALL,
                         Shape.NOTEHEAD_VOID,

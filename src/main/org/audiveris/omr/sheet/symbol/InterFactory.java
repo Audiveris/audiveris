@@ -906,6 +906,8 @@ public class InterFactory
         case NOTEHEAD_TRIANGLE_DOWN_FILLED:
         case NOTEHEAD_TRIANGLE_DOWN_VOID:
         case WHOLE_NOTE_TRIANGLE_DOWN:
+        case NOTEHEAD_CIRCLE_X:
+        case WHOLE_NOTE_CIRCLE_X:
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:
         case NOTEHEAD_VOID:
