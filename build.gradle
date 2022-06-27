@@ -42,6 +42,9 @@ allprojects {
     }
 }
 
+// To circumvent limitations brought by Jigsaw
+applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
+
 run {
     minHeapSize = '512m'
     maxHeapSize = '1g'
