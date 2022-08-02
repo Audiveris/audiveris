@@ -25,5 +25,5 @@ to ease the visual detection of any discrepancies.
 * ![](../assets/images/ModeLogical.png) The _logical_ mode displays only the logical score entities (inters).
   It represents the whole transcription of the original image.
 
-Using menu `Views | Switch layers` or **F12** function key or the dedicated toolbar icon,
+Using menu `View | Switch layers` or **F12** function key or the dedicated toolbar icon,
 you can cycle through these 3 different modes: Physical / Combined / Logical.
