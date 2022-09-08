@@ -297,7 +297,7 @@ public abstract class AbstractClassifier<M extends Object>
                     root.getFileSystem().close();
 
                     if (!isCompatible(model, norms)) {
-                        final String msg = "Obsolete classifier user data in " + path
+                        final String msg = "Incompatible classifier user data in " + path
                                                    + ", trying default data";
                         logger.warn(msg);
                     } else {

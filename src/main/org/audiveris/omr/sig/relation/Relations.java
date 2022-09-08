@@ -254,14 +254,13 @@ public abstract class Relations
         Set<Class<? extends Relation>> suggestions = new LinkedHashSet<>(
                 definedRelationsBetween(source.getClass(), target.getClass()));
 
-        // Let's not remove existing relation, to allow cleaning of relations
-        //        // NO (Skip existing relation, if any, between source & target) NO
-        //        Relation edge = sig.getEdge(source, target);
-        //
-        //        if (edge != null) {
-        //            suggestions.remove(edge.getClass());
-        //        }
-        //
+        // Skip existing relation, if any, between source & target
+        Relation edge = sig.getEdge(source, target);
+
+        if (edge != null) {
+            suggestions.remove(edge.getClass());
+        }
+
         // Return what we got
         if (suggestions.isEmpty()) {
             return Collections.emptySet();

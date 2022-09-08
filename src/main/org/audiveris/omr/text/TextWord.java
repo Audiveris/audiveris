@@ -240,7 +240,7 @@ public class TextWord
 
         if (ratio < constants.minFontRatio.getSourceValue()
                     || ratio > constants.maxFontRatio.getSourceValue()) {
-            logger.info("      abnormal font ratio {} {}", String.format("%.2f", ratio), this);
+            logger.debug("      abnormal font ratio {} {}", String.format("%.2f", ratio), this);
 
             return false;
         }
