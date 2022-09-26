@@ -88,7 +88,7 @@ public class CompoundNoteInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>HeadInter</code> object.
+     * Creates a new <code>CompoundNoteInter</code> object.
      *
      * @param glyph  the underlying glyph if any
      * @param bounds the object bounds

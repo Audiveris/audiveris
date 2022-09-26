@@ -95,8 +95,8 @@ public abstract class Symbols
     /** Code for THIN_BARLINE */
     public static final int CODE_THIN_BARLINE = 0xE030;
 
-    /** Symbol of '8' char for ottava sign (alta or bassa) on F and G clefs */
-    public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(0xE510);
+    /** Symbol of small '8' char for ottava sign (alta or bassa) on F and G clefs */
+    public static final BasicSymbol SYMBOL_CLEF_OTTAVA = new BasicSymbol(0xE07D);
 
     /** Symbol for upper serif of bracket */
     public static final BasicSymbol SYMBOL_BRACKET_UPPER_SERIF = new BasicSymbol(0xE003);
@@ -329,8 +329,7 @@ public abstract class Symbols
         mapShape(ONE_64TH_REST, 0xE4E9);
         mapShape(ONE_32ND_REST, 0xE4E8);
         mapShape(ONE_128TH_REST, 0xE4EA);
-        mapShape(OTTAVA_ALTA, 0xE511);
-        mapShape(OTTAVA_BASSA, 0xE512);
+        sym.put(OTTAVA, new OctaveShiftSymbol(OTTAVA, 0xE510));
 
         mapShape(PEDAL_MARK, 0xE650);
         mapShape(PEDAL_UP_MARK, 0xE655);
@@ -343,6 +342,7 @@ public abstract class Symbols
         sym.put(QUARTER_NOTE_DOWN, new CompoundNoteSymbol(QUARTER_NOTE_DOWN, 0xE1D6));
         sym.put(QUARTER_NOTE_UP, new CompoundNoteSymbol(QUARTER_NOTE_UP, 0xE1D5));
         mapShape(QUARTER_REST, 0xE4E5);
+        sym.put(QUINDICESIMA, new OctaveShiftSymbol(QUINDICESIMA, 0xE514));
 
         sym.put(REPEAT_DOT, new RepeatDotSymbol(0xE044));
         mapShape(REPEAT_ONE_BAR, 0xE500);
@@ -408,12 +408,18 @@ public abstract class Symbols
         mapShape(TURN_SLASH, 0xE569);
         mapShape(TURN_UP, 0xE56A);
 
+        sym.put(VENTIDUESIMA, new OctaveShiftSymbol(VENTIDUESIMA, 0xE517));
+
         mapShape(WHOLE_NOTE, CODE_WHOLE_NOTE);
         mapShape(WHOLE_NOTE_DIAMOND, CODE_WHOLE_NOTE_DIAMOND);
         mapShape(WHOLE_NOTE_CROSS, CODE_WHOLE_NOTE_CROSS);
         mapShape(WHOLE_NOTE_TRIANGLE_DOWN, CODE_WHOLE_NOTE_TRIANGLE_DOWN);
         small(WHOLE_NOTE_SMALL, CODE_WHOLE_NOTE);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, 0xE4E3));
+
+        // TO BE REMOVED
+        mapShape(OTTAVA_ALTA, 0xE511);
+        mapShape(OTTAVA_BASSA, 0xE512);
     }
 
     //- Convenient methods -------------------------------------------------------------------------

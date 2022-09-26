@@ -239,6 +239,11 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (OctaveShiftInter inter)
+    {
+    }
+
+    @Override
     public void visit (OrnamentInter inter)
     {
         visit((Inter) inter); // Redirection by default

@@ -160,8 +160,9 @@ public enum Shape
     //
     // Octave shifts ---
     //
-    OTTAVA_ALTA("8 va"),
-    OTTAVA_BASSA("8 vb"),
+    OTTAVA("8"),
+    QUINDICESIMA("15"),
+    VENTIDUESIMA("22"),
 
     //
     // Rests ---
@@ -441,7 +442,12 @@ public enum Shape
     GLYPH_PART("Part of a larger glyph"),
     TIME_CUSTOM("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
-    MEASURE_NUMBER("Measure number in a multiple rest");
+    MEASURE_NUMBER("Measure number in a multiple rest"),
+
+    // To be removed ---
+    //
+    OTTAVA_ALTA("8 va"),
+    OTTAVA_BASSA("8 vb");
 
     // =============================================================================================
     // This is the end of shape enumeration
@@ -570,23 +576,6 @@ public enum Shape
     public boolean isPercussion ()
     {
         return ShapeSet.CrossHeads.contains(this) || ShapeSet.DrumHeads.contains(this);
-    }
-
-    //--------------//
-    // isPersistent //
-    //--------------//
-    /**
-     * Report whether the impact of this shape persists across system
-     * (actually measure) borders (clefs, time signatures, key signatures).
-     * Based on just the shape, we cannot tell whether an accidental is part of
-     * a key signature or not, so we take a conservative approach.
-     *
-     * @return true if persistent, false otherwise
-     */
-    public boolean isPersistent ()
-    {
-        return ShapeSet.Clefs.contains(this) || ShapeSet.Times.contains(this)
-                       || ShapeSet.Accidentals.contains(this);
     }
 
     //--------//

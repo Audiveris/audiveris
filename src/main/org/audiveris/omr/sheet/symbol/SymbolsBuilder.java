@@ -37,8 +37,10 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
@@ -91,7 +93,7 @@ public class SymbolsBuilder
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
 
-    /** Aras where fine glyphs may be needed. */
+    /** Areas where fine glyphs may be needed. */
     private final List<Rectangle> fineBoxes = new ArrayList<>();
 
     /** Scale-dependent global constants. */
@@ -202,41 +204,32 @@ public class SymbolsBuilder
             return;
         }
 
-        // TODO: checks should be run only AFTER both classifiers have been run
-        Evaluation[] evals = classifier.evaluate(
+        final Evaluation[] evals = classifier.evaluate(
                 glyph,
                 system,
-                2,
+                constants.maxEvaluationCount.getValue(),
                 Grades.symbolMinGrade,
                 EnumSet.of(Classifier.Condition.CHECKED));
 
-        //        Evaluation[] evals2 = classifier2.evaluate(
-        //                glyph,
-        //                system,
-        //                2,
-        //                Grades.symbolMinGrade, // Not OK for deep classifier!
-        //                EnumSet.of(Classifier.Condition.CHECKED));
-        //
-        if (evals.length > 0) {
-            //            // Create one interpretation for each acceptable evaluation
-            //            for (Evaluation eval : evals) {
-            //                try {
-            //                    factory.create(eval, glyph, closestStaff);
-            //                } catch (Exception ex) {
-            //                    logger.warn("Error in glyph evaluation " + ex, ex);
-            //                }
-            //            }
-            //
-            Evaluation eval = evals[0];
+        // Create one interpretation for each acceptable evaluation
+        final SIGraph sig = system.getSig();
+        final List<Inter> createdInters = new ArrayList<>();
 
-            ///if (evals2.length > 0 && eval.shape == evals2[0].shape) {
+        for (Evaluation eval : evals) {
             try {
-                factory.create(eval, glyph, closestStaff);
+                final Inter created = factory.create(eval, glyph, closestStaff);
+
+                if (created != null) {
+                    // Set exclusion with all competitors already created
+                    for (Inter other : createdInters) {
+                        sig.insertExclusion(other, created, Exclusion.ExclusionCause.OVERLAP);
+                    }
+
+                    createdInters.add(created);
+                }
             } catch (Exception ex) {
                 logger.warn("Error in glyph evaluation " + ex, ex);
             }
-
-            ///}
         }
     }
 
@@ -397,6 +390,11 @@ public class SymbolsBuilder
                 "Glyphs",
                 7,
                 "Maximum number of parts considered for a symbol");
+
+        private final Constant.Integer maxEvaluationCount = new Constant.Integer(
+                "Evaluations",
+                2,
+                "Maximum number of evaluations kept for a symbol");
 
         private final Scale.Fraction maxGap = new Scale.Fraction(
                 0.6, // Was 0.5, but 0.55 is minimum needed for simile marks

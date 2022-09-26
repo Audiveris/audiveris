@@ -61,6 +61,7 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -82,6 +83,7 @@ import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
+import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
@@ -111,6 +113,7 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -476,7 +479,7 @@ public abstract class SheetPainter
             {
                 // Stroke for ledgers
                 float width = (float) LedgerInter.DEFAULT_THICKNESS;
-                ledgerStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+                ledgerStroke = new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
             }
         }
 
@@ -912,7 +915,7 @@ public abstract class SheetPainter
                 g.setStroke(
                         new BasicStroke(
                                 (float) Math.rint(thickness),
-                                BasicStroke.CAP_BUTT,
+                                BasicStroke.CAP_ROUND,
                                 BasicStroke.JOIN_ROUND));
             } else {
                 g.setStroke(ledgerStroke); // Should not occur
@@ -929,6 +932,42 @@ public abstract class SheetPainter
         {
             setColor(rest);
             g.fill(rest.getArea());
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (OctaveShiftInter os)
+        {
+            final Rectangle bounds = os.getBounds();
+            if (bounds == null) {
+                return;
+            }
+
+            setColor(os);
+            final Staff staff = os.getStaff();
+            final MusicFont font = getMusicFont(staff);
+
+            // Value part
+            final ShapeSymbol symbol = Symbols.getSymbol(os.getShape());
+            final TextLayout layout = font.layout(symbol.getString());
+            final Rectangle2D symBounds = layout.getBounds();
+            final Point2D valueCenter = os.getLine().getP1();
+            MusicFont.paint(g, layout, valueCenter, AREA_CENTER);
+
+            // Line (drawn from right to left, to preserve the right corner with hook)
+            g.setStroke(OctaveShiftSymbol.DEFAULT_STROKE);
+            g.draw(new Line2D.Double(
+                    os.getLine().getP2(),
+                    new Point2D.Double(valueCenter.getX() + symBounds.getWidth() / 2,
+                                       valueCenter.getY())));
+
+            // Hook?
+            final Point2D hookEnd = os.getHookCopy();
+            if (hookEnd != null) {
+                g.draw(new Line2D.Double(os.getLine().getP2(), hookEnd));
+            }
         }
 
         //-------//

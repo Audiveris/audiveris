@@ -64,6 +64,8 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
+import static org.audiveris.omr.sig.inter.OctaveShiftInter.Kind.ALTA;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -87,6 +89,7 @@ import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
+import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
@@ -154,6 +157,7 @@ import org.audiveris.proxymusic.NoteType;
 import org.audiveris.proxymusic.Notehead;
 import org.audiveris.proxymusic.NoteheadValue;
 import org.audiveris.proxymusic.ObjectFactory;
+import org.audiveris.proxymusic.OctaveShift;
 import org.audiveris.proxymusic.Ornaments;
 import org.audiveris.proxymusic.OverUnder;
 import org.audiveris.proxymusic.PageLayout;
@@ -197,6 +201,7 @@ import org.audiveris.proxymusic.TimeSymbol;
 import org.audiveris.proxymusic.Tuplet;
 import org.audiveris.proxymusic.TypedText;
 import org.audiveris.proxymusic.Unpitched;
+import org.audiveris.proxymusic.UpDownStopContinue;
 import org.audiveris.proxymusic.UprightInverted;
 import org.audiveris.proxymusic.Wedge;
 import org.audiveris.proxymusic.WedgeType;
@@ -229,7 +234,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -270,8 +274,8 @@ public class PartwiseBuilder
     private static final BigDecimal pageVerticalMargin = new BigDecimal(
             constants.pageVerticalMargin.getValue());
 
-    /** Should be 6, but is 12 to cope with slurs not closed for lack of time slot. */
-    private static final int MAX_SLUR_NUMBER = 12;
+    /** Maximum level number. */
+    private static final int MAX_LEVEL_NUMBER = 16;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The ScorePartwise instance to be populated. */
@@ -288,6 +292,9 @@ public class PartwiseBuilder
 
     /** Current flags. */
     private final IsFirst isFirst = new IsFirst();
+
+    /** Map of OctaveShift numbers, reset for every (physical) Part. */
+    private final Map<OctaveShiftInter, Integer> octaveShiftNumbers = new HashMap<>();
 
     /** Map of Slur numbers, reset for every LogicalPart. */
     private final Map<SlurInter, Integer> slurNumbers = new HashMap<>();
@@ -446,6 +453,66 @@ public class PartwiseBuilder
         }
 
         return pmClef;
+    }
+
+    //------------------//
+    // checkOctaveShift //
+    //------------------//
+    /**
+     * Check for insertion of start or stop of an octave-shift element.
+     *
+     * @param chord the chord at hand
+     * @param side  LEFT for octaveShift start check, RIGHT for octaveShift stop check
+     */
+    private void checkOctaveShift (AbstractChordInter chord,
+                                   HorizontalSide side)
+    {
+        try {
+            final SIGraph sig = current.system.getSig();
+            final Set<Relation> rels = sig.getRelations(chord, OctaveShiftChordRelation.class);
+
+            if (rels.isEmpty()) {
+                return;
+            }
+
+            for (Relation rel : rels) {
+                final OctaveShiftChordRelation oscRel = (OctaveShiftChordRelation) rel;
+
+                if (oscRel.getSide() != side) {
+                    continue;
+                }
+
+                // Insert octave-shift element
+                final OctaveShiftInter os = (OctaveShiftInter) sig.getOppositeInter(chord, rel);
+                final OctaveShift octaveShift = factory.createOctaveShift();
+                octaveShift.setNumber(getOctaveShiftNumber(os));
+                octaveShift.setSize(new BigInteger("" + os.getValue()));
+                octaveShift.setType((side == RIGHT) ? UpDownStopContinue.STOP
+                        : (os.getKind() == OctaveShiftInter.Kind.ALTA
+                        ? UpDownStopContinue.DOWN
+                        : UpDownStopContinue.UP));
+                octaveShift.setDefaultY(yOf(
+                        side == LEFT ? os.getLine().getP1() : os.getLine().getP2(),
+                        os.getStaff()));
+
+                // Within a direction-type element
+                final DirectionType directionType = factory.createDirectionType();
+                directionType.setOctaveShift(octaveShift);
+
+                // Within a direction element
+                final Direction direction = factory.createDirection();
+                insertStaffId(direction, os.getStaff());
+
+                // NOTA: We consider ALTA is always above staff and BASSA always below
+                direction.setPlacement(os.getKind() == OctaveShiftInter.Kind.ALTA
+                        ? AboveBelow.ABOVE
+                        : AboveBelow.BELOW);
+                direction.getDirectionType().add(directionType);
+                current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error checking octave-shift {} side on {}", side, chord, ex);
+        }
     }
 
     //-----------------//
@@ -673,6 +740,70 @@ public class PartwiseBuilder
         return current.pmNotations;
     }
 
+    //----------------------//
+    // getOctaveShiftNumber //
+    //----------------------//
+    private Integer getOctaveShiftNumber (OctaveShiftInter os)
+    {
+        final Integer num = octaveShiftNumbers.get(os);
+
+        if (num != null) {
+            octaveShiftNumbers.remove(os);
+            logger.debug("{} last use {} -> {}", os, num, octaveShiftNumbers);
+
+            return num;
+        } else {
+            // Determine first available number
+            for (int i = 1; i <= MAX_LEVEL_NUMBER; i++) {
+                if (!octaveShiftNumbers.containsValue(i)) {
+                    octaveShiftNumbers.put(os, i);
+                    logger.debug("{} first use {} -> {}", os, i, octaveShiftNumbers);
+
+                    return i;
+                }
+            }
+        }
+
+        logger.warn("No number for {}", os);
+
+        return null;
+    }
+
+    //----------------//
+    // getOctaveShift //
+    //----------------//
+    /**
+     * Report the effective octaveShift, if any, for the provided note.
+     *
+     * @param note the provided note
+     * @return the effective octaveShift found, null otherwise
+     */
+    private OctaveShiftInter getOctaveShift (AbstractNoteInter note)
+    {
+        final Staff staff = note.getStaff();
+        final Point center = note.getChord().getCenter();
+
+        for (OctaveShiftInter os : octaveShiftNumbers.keySet()) {
+            if (os.getStaff() == staff) {
+                final AbstractChordInter first = os.getChord(LEFT);
+                if (first == null) {
+                    continue;
+                }
+
+                final AbstractChordInter last = os.getChord(RIGHT);
+                if (last == null) {
+                    continue;
+                }
+
+                if (center.x >= first.getCenter().x && center.x <= last.getCenter().x) {
+                    return os;
+                }
+            }
+        }
+
+        return null;
+    }
+
     //--------------//
     // getOrnaments //
     //--------------//
@@ -711,7 +842,7 @@ public class PartwiseBuilder
             return num;
         } else {
             // Determine first available number
-            for (int i = 1; i <= MAX_SLUR_NUMBER; i++) {
+            for (int i = 1; i <= MAX_LEVEL_NUMBER; i++) {
                 if (!slurNumbers.containsValue(i)) {
                     if (slur.getExtension(RIGHT) != null) {
                         slurNumbers.put(slur.getExtension(RIGHT), i);
@@ -1117,9 +1248,13 @@ public class PartwiseBuilder
     //--------------//
     private void processChord (AbstractChordInter chord)
     {
+        checkOctaveShift(chord, LEFT); // Check for octave shift start
+
         for (Inter inter : chord.getNotes()) {
             processNote((AbstractNoteInter) inter);
         }
+
+        checkOctaveShift(chord, RIGHT); // Check for octave shift stop
     }
 
     //------------------//
@@ -1540,7 +1675,7 @@ public class PartwiseBuilder
         logger.debug("Populating {}", logicalPart);
         isFirst.system = true;
 
-        // Reset slur numbers
+        // Reset numbers
         slurNumbers.clear();
 
         // Process all systems in page
@@ -2093,7 +2228,13 @@ public class PartwiseBuilder
                     // Pitch
                     Pitch pitch = factory.createPitch();
                     pitch.setStep(stepOf(note.getStep()));
-                    pitch.setOctave(note.getOctave());
+                    // Apply octave-shift if needed
+                    final OctaveShiftInter os = getOctaveShift(note);
+                    if (os != null) {
+                        pitch.setOctave(note.getOctave() + os.getShift());
+                    } else {
+                        pitch.setOctave(note.getOctave());
+                    }
 
                     // Alter?
                     HeadInter head = (HeadInter) note;
@@ -2199,10 +2340,10 @@ public class PartwiseBuilder
                     Shape headShape = null;
                     for (int i = 0; i < Drumset.DRUM_INSTRUMENTS && !instrumentFound; i++) {
                         if (current.drum[i] != null) {
-                            if (current.drum[i].integerPitch == note.getIntegerPitch()) // TODO: Maybe create general note shape categories (or families)
-                            // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
-                            // duration or size, to avoid this and earlier switch statements
-                            {
+                            if (current.drum[i].integerPitch == note.getIntegerPitch()) {
+                                // TODO: Maybe create general note shape categories (or families)
+                                // like OVAL, CROSS, DIAMOND, TRIANGLE_DOWN, irrespective of note
+                                // duration or size, to avoid this and earlier switch statements
                                 switch (note.getShape()) {
                                 case NOTEHEAD_BLACK:
                                 case NOTEHEAD_BLACK_SMALL:
@@ -2412,6 +2553,9 @@ public class PartwiseBuilder
     {
         try {
             logger.debug("Processing {}", part);
+
+            // Reset numbers
+            octaveShiftNumbers.clear();
 
             // Delegate to measures
             for (Measure measure : part.getMeasures()) {
@@ -3005,7 +3149,7 @@ public class PartwiseBuilder
                 tupletNumbers.remove(tuplet); // Release the number
             } else {
                 // Determine first available number
-                for (num = 1; num <= 6; num++) {
+                for (num = 1; num <= MAX_LEVEL_NUMBER; num++) {
                     if (!tupletNumbers.containsValue(num)) {
                         tupletNumbers.put(tuplet, num);
                         pmTuplet.setNumber(num);
@@ -3262,9 +3406,9 @@ public class PartwiseBuilder
                 "Should we avoid brackets for all tuplets");
     }
 
-    //---------//
-    // Current //
-    //---------//
+//---------//
+// Current //
+//---------//
     /** Keep references of all current entities. */
     private static class Current
     {
@@ -3349,9 +3493,9 @@ public class PartwiseBuilder
         }
     }
 
-    //----------------//
-    // DrumInstrument //
-    //----------------//
+//----------------//
+// DrumInstrument //
+//----------------//
     /** Class representing an individual percussion instrument */
     private class DrumInstrument
     {
@@ -3375,9 +3519,9 @@ public class PartwiseBuilder
         }
     }
 
-    //---------//
-    // Drumset //
-    //---------//
+//---------//
+// Drumset //
+//---------//
     /** Class representing the standard MuseScore midi drumset */
     private class Drumset
     {
@@ -3417,9 +3561,9 @@ public class PartwiseBuilder
         }
     }
 
-    //---------//
-    // IsFirst //
-    //---------//
+//---------//
+// IsFirst //
+//---------//
     /** Composite flag to help drive processing of any entity. */
     private static class IsFirst
     {
@@ -3461,9 +3605,9 @@ public class PartwiseBuilder
         }
     }
 
-    //---------------//
-    // ClefIterators //
-    //---------------//
+//---------------//
+// ClefIterators //
+//---------------//
     /**
      * Class to handle the insertion of clefs in a measure.
      * If needed, this class could be reused for some attribute other than clef,
@@ -3556,9 +3700,9 @@ public class PartwiseBuilder
         }
     }
 
-    //--------------//
-    // MeasurePrint //
-    //--------------//
+//--------------//
+// MeasurePrint //
+//--------------//
     /**
      * Handles the print element for a measure.
      */

@@ -519,7 +519,11 @@ public class BasicSymbol
      */
     private int[] shiftedCodesOf (int[] codes)
     {
-        int[] values = new int[codes.length];
+        if (codes == null) {
+            return null;
+        }
+
+        final int[] values = new int[codes.length];
 
         for (int i = 0; i < codes.length; i++) {
             if (codes[i] < MusicFont.CODE_OFFSET) {

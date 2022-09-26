@@ -37,6 +37,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -235,6 +236,7 @@ public class SymbolsLinker
         linkGraces();
         linkAugmentationDots();
         linkTuplets();
+        linkOctaveShifts();
     }
 
     //-------------------//
@@ -435,6 +437,37 @@ public class SymbolsLinker
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkGraces for {} {}", smallChord, ex.toString(), ex);
+            }
+        }
+    }
+
+    //------------------//
+    // linkOctaveShifts //
+    //------------------//
+    /**
+     * Link an OctaveShift (left and right) to proper chords if any.
+     */
+    private void linkOctaveShifts ()
+    {
+        for (Inter inter : sig.inters(OctaveShiftInter.class)) {
+            final OctaveShiftInter os = (OctaveShiftInter) inter;
+
+            try {
+                if (os.isVip()) {
+                    logger.info("VIP linkOctaveShifts for {}", os);
+                }
+
+                final Collection<Link> links = os.searchLinks(system);
+
+                if (!links.isEmpty()) {
+                    for (Link link : links) {
+                        link.applyTo(os);
+                    }
+                } else {
+                    logger.info("No chord linked to {}", os);
+                }
+            } catch (Exception ex) {
+                logger.warn("Error in linkOctaveShifts for {} {}", os, ex.toString(), ex);
             }
         }
     }

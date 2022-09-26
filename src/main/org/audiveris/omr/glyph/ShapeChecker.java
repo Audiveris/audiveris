@@ -353,7 +353,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("NotWithinStaffHeight", Clefs)
+        new Checker("NotWithinStaffHeight", shapesOf(Clefs, Times.getShapes()))
         {
             @Override
             public boolean check (SystemInfo system,

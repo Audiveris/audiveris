@@ -167,7 +167,6 @@ public abstract class AbstractVerticalInter
 
         if (glyph != null) {
             width = glyph.getMeanThickness(VERTICAL);
-            ///setMedian(glyph.getStartPoint(VERTICAL), glyph.getStopPoint(VERTICAL));
             median = glyph.getCenterLine();
             computeArea();
         }

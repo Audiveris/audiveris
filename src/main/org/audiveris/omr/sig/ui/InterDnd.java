@@ -374,7 +374,6 @@ public class InterDnd
      */
     private boolean updateGhost (Point location)
     {
-        // We use the non-decorated symbol
         final int staffInterline = staff.getSpecificInterline();
         final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
                 ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)

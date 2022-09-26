@@ -109,6 +109,8 @@ public interface InterVisitor
 
     void visit (MultipleRestInter inter);
 
+    void visit (OctaveShiftInter inter);
+
     void visit (OrnamentInter inter);
 
     void visit (PedalInter inter);

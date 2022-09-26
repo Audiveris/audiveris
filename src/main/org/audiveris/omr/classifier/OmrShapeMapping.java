@@ -199,8 +199,8 @@ public abstract class OmrShapeMapping
         map.put(Shape.TIME_THREE_EIGHT, OmrShape.timeSig3over8);
         map.put(Shape.TIME_SIX_EIGHT, OmrShape.timeSig6over8);
         map.put(Shape.TIME_TWELVE_EIGHT, OmrShape.timeSig12over8);
-        map.put(Shape.OTTAVA_ALTA, OmrShape.ottavaAlta);
-        map.put(Shape.OTTAVA_BASSA, OmrShape.ottavaBassaVb);
+//        map.put(Shape.OTTAVA_ALTA, OmrShape.ottavaAlta);
+//        map.put(Shape.OTTAVA_BASSA, OmrShape.ottavaBassaVb);
         map.put(Shape.LONG_REST, OmrShape.restLonga);
         map.put(Shape.BREVE_REST, OmrShape.restDoubleWhole);
         map.put(Shape.QUARTER_REST, OmrShape.restQuarter);

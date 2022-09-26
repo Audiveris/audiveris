@@ -131,6 +131,10 @@ public class ShapeSet
             G_CLEF_8VA,
             G_CLEF_8VB);
 
+    /** All clefs. */
+    public static final EnumSet<Shape> Clefs = EnumSet.copyOf(
+            shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
+
     /** All flags down. */
     public static final EnumSet<Shape> FlagsDown = EnumSet.of(
             FLAG_1,
@@ -285,6 +289,12 @@ public class ShapeSet
             NOTEHEAD_TRIANGLE_DOWN_VOID,
             NOTEHEAD_TRIANGLE_DOWN_FILLED);
 
+    /** Octave shifts. */
+    public static final List<Shape> OctaveShifts = Arrays.asList(
+            OTTAVA,
+            QUINDICESIMA,
+            VENTIDUESIMA);
+
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
     //
@@ -332,10 +342,10 @@ public class ShapeSet
             Colors.SCORE_NOTES,
             shapesOf(BEAM /* ,BEAM_SMALL */, BEAM_HOOK, TUPLET_THREE, TUPLET_SIX));
 
-    public static final ShapeSet Clefs = new ShapeSet(
+    public static final ShapeSet ClefsAndShifts = new ShapeSet(
             G_CLEF,
             Colors.SCORE_FRAME,
-            shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
+            shapesOf(Clefs, OctaveShifts));
 
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,

@@ -61,6 +61,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureNumberInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -122,6 +123,7 @@ import org.audiveris.omr.sig.relation.MultipleRestNumberRelation;
 import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
+import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
@@ -208,6 +210,7 @@ public class SigValue
         @XmlElementRef(type = MarkerInter.class),
         @XmlElementRef(type = MeasureNumberInter.class),
         @XmlElementRef(type = MultipleRestInter.class),
+        @XmlElementRef(type = OctaveShiftInter.class),
         @XmlElementRef(type = OrnamentInter.class),
         @XmlElementRef(type = PedalInter.class),
         @XmlElementRef(type = PluckingInter.class),
@@ -407,6 +410,7 @@ public class SigValue
             @XmlElementRef(type = MultipleRestSerifRelation.class),
             @XmlElementRef(type = NextInVoiceRelation.class),
             @XmlElementRef(type = NoExclusion.class),
+            @XmlElementRef(type = OctaveShiftChordRelation.class),
             @XmlElementRef(type = RepeatDotBarRelation.class),
             @XmlElementRef(type = RepeatDotPairRelation.class),
             @XmlElementRef(type = SameTimeRelation.class),

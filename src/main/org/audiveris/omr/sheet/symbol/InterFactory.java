@@ -70,6 +70,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -192,10 +193,11 @@ public class InterFactory
      * @param eval         evaluation result
      * @param glyph        evaluated glyph
      * @param closestStaff only the closest staff, ordinate-wise
+     * @return the created inter, perhaps null
      */
-    public void create (Evaluation eval,
-                        Glyph glyph,
-                        Staff closestStaff)
+    public Inter create (Evaluation eval,
+                         Glyph glyph,
+                         Staff closestStaff)
     {
         final Inter inter = doCreate(eval, glyph, closestStaff);
 
@@ -203,6 +205,8 @@ public class InterFactory
         if ((inter != null) && (inter.getSig() == null)) {
             sig.addVertex(inter);
         }
+
+        return inter;
     }
 
     //---------------//
@@ -300,11 +304,12 @@ public class InterFactory
         case CLUTTER:
             return null;
 
-        // Ottava (TODO: not yet handled ???)
-        //
-        case OTTAVA_ALTA:
-        case OTTAVA_BASSA:
-            return null;
+        // Octave shift
+        case OTTAVA:
+        case QUINDICESIMA:
+        case VENTIDUESIMA:
+            // Staff is very questionable!
+            return OctaveShiftInter.create(glyph, shape, grade, closestStaff);
 
         // All dots:
         // - REPEAT_DOT
@@ -753,12 +758,12 @@ public class InterFactory
         case CLUTTER:
             return new ClutterInter(null, GRADE);
 
-        //
-        // Ottava TODO ???
-        //        case OTTAVA_ALTA:
-        //        case OTTAVA_BASSA:
-        //            return null;
-        //
+        // Octave shift
+        case OTTAVA:
+        case QUINDICESIMA:
+        case VENTIDUESIMA:
+            return new OctaveShiftInter(shape, GRADE);
+
         // Brace, bracket
         case BRACE:
             return new BraceInter(GRADE);

@@ -202,10 +202,15 @@ public class SymbolRipper
         pointCode.setModel(new SpinnerNumberModel(0x1_d100, 0, 0x1_d1ff, 1));
 
         // Initial values
-        fontName.getSpinner().setValue("MusicalSymbols");
-        ///fontName.getSpinner().setValue("Symbola");
-        fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
-        pointCode.setValue(113); // Quarter note (in MusicalSymbols)
+        if (true) {
+            fontName.getSpinner().setValue("Bravura");
+            fontBase.setValue(0); // (for Bravura)
+            pointCode.setValue(0xE0A4); // Quarter note (in Bravura)
+        } else {
+            fontName.getSpinner().setValue("MusicalSymbols");
+            fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
+            pointCode.setValue(113); // Quarter note (in MusicalSymbols)
+        }
 
         fontSize.setValue(200);
         width.setValue(400);

@@ -145,13 +145,17 @@ public class SampleSheet
 
         for (Sample sample : value.samples) {
             Shape shape = sample.getShape();
-            ArrayList<Sample> list = shapeMap.get(shape);
+            if (shape == null) {
+                logger.warn("Null shape sample:{} in sheet:{}", sample, descriptor.getName());
+            } else {
+                ArrayList<Sample> list = shapeMap.get(shape);
 
-            if (list == null) {
-                shapeMap.put(shape, list = new ArrayList<>());
+                if (list == null) {
+                    shapeMap.put(shape, list = new ArrayList<>());
+                }
+
+                list.add(sample);
             }
-
-            list.add(sample);
         }
     }
 

@@ -981,7 +981,8 @@ public class SampleBrowser
      * A specific waiting task to display a temporary message while the underlying
      * SampleBrowser instance is being built.
      * <p>
-     * Building of the sample browser must be done in method <code>doInBackground</code> of subclass.
+     * Building of the sample browser must be done in method <code>doInBackground</code> of
+     * subclass.
      */
     public abstract static class Waiter
             extends WaitingTask<SampleBrowser, Void>

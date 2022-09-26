@@ -58,6 +58,7 @@ import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -105,7 +106,6 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,14 +114,12 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 /**
  * Class <code>InterController</code> is the UI in charge of dealing with Inter and
@@ -1560,46 +1558,48 @@ public class InterController
             return staff;
         }
 
-        // Sort the 2 staves by increasing distance from glyph center
-        Collections.sort(staves,
-                         (s1, s2) -> Double.compare(s1.distanceTo(center), s2.distanceTo(center)));
+        if (!(ghost instanceof OctaveShiftInter)) {
+            // Sort the 2 staves by increasing distance from glyph center
+            Collections.sort(staves, (s1, s2) -> Double.compare(s1.distanceTo(center),
+                                                                s2.distanceTo(center)));
 
-        if (constants.useStaffLink.isSet()) {
-            // Try to use link
-            SystemInfo prevSystem = null;
-            StaffLoop:
-            for (Staff stf : staves) {
-                system = stf.getSystem();
+            if (constants.useStaffLink.isSet()) {
+                // Try to use link
+                SystemInfo prevSystem = null;
+                StaffLoop:
+                for (Staff stf : staves) {
+                    system = stf.getSystem();
 
-                if (system != prevSystem) {
-                    ghost.setStaff(stf); // Start of hack ...
-                    links.addAll(ghost.searchLinks(system));
+                    if (system != prevSystem) {
+                        ghost.setStaff(stf); // Start of hack ...
+                        links.addAll(ghost.searchLinks(system));
 
-                    for (Link p : links) {
-                        if (p.partner.getStaff() != null) {
-                            staff = p.partner.getStaff();
+                        for (Link p : links) {
+                            if (p.partner.getStaff() != null) {
+                                staff = p.partner.getStaff();
 
-                            // We stop on first link found (we check closest staff first)
-                            break StaffLoop;
+                                // We stop on first link found (we check closest staff first)
+                                break StaffLoop;
+                            }
                         }
+
+                        ghost.setStaff(null); // End of hack
+                        links.clear();
                     }
 
-                    ghost.setStaff(null); // End of hack
-                    links.clear();
+                    prevSystem = system;
                 }
-
-                prevSystem = system;
             }
-        }
 
-        if ((staff == null) && constants.useStaffProximity.isSet()) {
-            // Use proximity to staff (vertical margin defined as ratio of gutter)
-            final double bestDist = staves.get(0).distanceTo(center);
-            final double otherDist = staves.get(1).distanceTo(center);
-            final double gutter = bestDist + otherDist;
+            if ((staff == null) && constants.useStaffProximity.isSet()) {
+                // Use proximity to staff (vertical margin defined as ratio of gutter)
+                final double bestDist = staves.get(0).distanceTo(center);
+                final double otherDist = staves.get(1).distanceTo(center);
+                final double gutter = bestDist + otherDist;
 
-            if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
-                staff = staves.get(0);
+                if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
+                    staff = staves.get(0);
+                }
             }
         }
 
