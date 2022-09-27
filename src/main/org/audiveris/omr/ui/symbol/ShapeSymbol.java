@@ -254,8 +254,10 @@ public class ShapeSymbol
             clone.setDecorated();
 
             return clone;
-        } catch (CloneNotSupportedException ex) {
-            logger.error("Clone not supported");
+        } catch (Exception ex) {
+            logger.warn("No decorated glyph for code: {} shape: {}",
+                        getHexaString(), shape);
+
             return null;
         }
     }

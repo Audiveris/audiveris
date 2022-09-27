@@ -112,7 +112,7 @@ public class BasicSymbol
      */
     public BasicSymbol (int... codes)
     {
-        this.codes = shiftedCodesOf(codes);
+        this.codes = codes;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -236,6 +236,29 @@ public class BasicSymbol
     public final String getString ()
     {
         return new String(codes, 0, codes.length);
+    }
+
+    //---------------//
+    // getHexaString //
+    //---------------//
+    /**
+     * Report the symbol code(s) as an hexadecimal string
+     *
+     * @return the codes hexadecimal value
+     */
+    public String getHexaString ()
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < codes.length; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+
+            sb.append(Long.toHexString(((Number) codes[i]).longValue()));
+        }
+
+        return sb.toString();
     }
 
     //----------------//
@@ -506,34 +529,6 @@ public class BasicSymbol
     {
         isTiny = true;
         computeImage(); // Recompute image and dimension as well
-    }
-
-    //----------------//
-    // shiftedCodesOf //
-    //----------------//
-    /**
-     * Make sure the codes are above the CODE_OFFSET value.
-     *
-     * @param codes raw codes
-     * @return codes suitable for font display
-     */
-    private int[] shiftedCodesOf (int[] codes)
-    {
-        if (codes == null) {
-            return null;
-        }
-
-        final int[] values = new int[codes.length];
-
-        for (int i = 0; i < codes.length; i++) {
-            if (codes[i] < MusicFont.CODE_OFFSET) {
-                values[i] = codes[i] + MusicFont.CODE_OFFSET;
-            } else {
-                values[i] = codes[i];
-            }
-        }
-
-        return values;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

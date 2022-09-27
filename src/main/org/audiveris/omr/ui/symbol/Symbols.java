@@ -32,6 +32,8 @@ import java.util.EnumMap;
  * symbols and for a few decorated symbols.
  * <p>
  * This class is highly dependent on the chosen music font.
+ * In fact, there should be <b>NO</b> explicit font code value outside this class.
+ * And it is now assumed that we use a SMuFL-compliant font.
  * <p>
  * <img alt="Symbols diagram" src="doc-files/Symbols.png">
  *

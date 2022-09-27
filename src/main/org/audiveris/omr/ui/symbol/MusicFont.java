@@ -76,19 +76,11 @@ public class MusicFont
 
     /**
      * The music font name: {@value} (no other one is used).
-     * Possibilities: MusicalSymbols, Symbola, Bravura
+     * Possibilities are: Bravura, FinaleJazz
+     * <p>
+     * Provided that a related "XXX.ttf" or "XXX.otf" font file exists in Audiveris "res" folder.
      */
-    public static final String FONT_NAME = "Bravura";
-
-    /**
-     * Offset for code range.
-     * <ul>
-     * <li>0 for Bravura
-     * <li>0xf000 for MusicalSymbols
-     * <li>0x1d100 for Symbola
-     * </ul>
-     */
-    public static final int CODE_OFFSET = 0;
+    public static final String FONT_NAME = constants.fontName.getValue();
 
     /** Cache of font according to scaling value (pointSize, staffInterline). */
     private static final Map<Scaling, MusicFont> scalingMap = new HashMap<>();
@@ -520,6 +512,10 @@ public class MusicFont
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.String fontName = new Constant.String(
+                "Bravura",
+                "Font name for music symbols");
 
         private final Constant.Ratio headRatio = new Constant.Ratio(
                 1.1,

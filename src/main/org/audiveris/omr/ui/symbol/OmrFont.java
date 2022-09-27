@@ -211,7 +211,7 @@ public abstract class OmrFont
         // Lookup our own fonts (defined in "res" folder)
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-        // Some font use ".ttf" extension, others ".otf"
+        // Some fonts use ".ttf" extension, others ".otf"
         for (String ext : new String[]{".ttf", ".otf"}) {
             final String fileName = fontName + ext;
 

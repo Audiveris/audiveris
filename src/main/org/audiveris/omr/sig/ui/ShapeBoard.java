@@ -469,7 +469,12 @@ public class ShapeBoard
             ShapeSymbol symbol = Symbols.getSymbol(shape, true);
 
             if (symbol != null) {
-                addButton(p, new ShapeButton(symbol));
+                try {
+                    addButton(p, new ShapeButton(symbol));
+                } catch (Exception ex) {
+                    logger.warn("No musical glyph for code: {} shape: {}",
+                                symbol.getHexaString(), shape);
+                }
             }
         }
     }
