@@ -65,7 +65,6 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
-import static org.audiveris.omr.sig.inter.OctaveShiftInter.Kind.ALTA;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -471,10 +470,6 @@ public class PartwiseBuilder
             final SIGraph sig = current.system.getSig();
             final Set<Relation> rels = sig.getRelations(chord, OctaveShiftChordRelation.class);
 
-            if (rels.isEmpty()) {
-                return;
-            }
-
             for (Relation rel : rels) {
                 final OctaveShiftChordRelation oscRel = (OctaveShiftChordRelation) rel;
 
@@ -617,10 +612,10 @@ public class PartwiseBuilder
 
         return pmPart;
     }
+
     //------------------//
     // getArticulations //
     //------------------//
-
     /**
      * Report (after creating it if necessary) the articulations elements in the
      * notations element of the current note.
@@ -773,12 +768,12 @@ public class PartwiseBuilder
     // getOctaveShift //
     //----------------//
     /**
-     * Report the effective octaveShift, if any, for the provided note.
+     * Report the numerical octave shift, if any, for the provided note.
      *
      * @param note the provided note
-     * @return the effective octaveShift found, null otherwise
+     * @return the effective octave shift found: 0, +/-1, +/-2 or +/-3
      */
-    private OctaveShiftInter getOctaveShift (AbstractNoteInter note)
+    private int getOctaveShift (AbstractNoteInter note)
     {
         final Staff staff = note.getStaff();
         final Point center = note.getChord().getCenter();
@@ -796,12 +791,12 @@ public class PartwiseBuilder
                 }
 
                 if (center.x >= first.getCenter().x && center.x <= last.getCenter().x) {
-                    return os;
+                    return os.getShift();
                 }
             }
         }
 
-        return null;
+        return 0;
     }
 
     //--------------//
@@ -2178,7 +2173,7 @@ public class PartwiseBuilder
                 if (!current.measure.isDummy() && !staff.isOneLineStaff()) {
                     // Set displayStep & displayOctave for rest
                     rest.setDisplayStep(stepOf(note.getStep()));
-                    rest.setDisplayOctave(note.getOctave());
+                    rest.setDisplayOctave(note.getOctave() + getOctaveShift(note));
                 }
 
                 current.pmNote.setRest(rest);
@@ -2228,13 +2223,7 @@ public class PartwiseBuilder
                     // Pitch
                     Pitch pitch = factory.createPitch();
                     pitch.setStep(stepOf(note.getStep()));
-                    // Apply octave-shift if needed
-                    final OctaveShiftInter os = getOctaveShift(note);
-                    if (os != null) {
-                        pitch.setOctave(note.getOctave() + os.getShift());
-                    } else {
-                        pitch.setOctave(note.getOctave());
-                    }
+                    pitch.setOctave(note.getOctave() + getOctaveShift(note));
 
                     // Alter?
                     HeadInter head = (HeadInter) note;
@@ -3406,9 +3395,9 @@ public class PartwiseBuilder
                 "Should we avoid brackets for all tuplets");
     }
 
-//---------//
-// Current //
-//---------//
+    //---------//
+    // Current //
+    //---------//
     /** Keep references of all current entities. */
     private static class Current
     {
@@ -3493,9 +3482,9 @@ public class PartwiseBuilder
         }
     }
 
-//----------------//
-// DrumInstrument //
-//----------------//
+    //----------------//
+    // DrumInstrument //
+    //----------------//
     /** Class representing an individual percussion instrument */
     private class DrumInstrument
     {
@@ -3519,9 +3508,9 @@ public class PartwiseBuilder
         }
     }
 
-//---------//
-// Drumset //
-//---------//
+    //---------//
+    // Drumset //
+    //---------//
     /** Class representing the standard MuseScore midi drumset */
     private class Drumset
     {
@@ -3561,9 +3550,9 @@ public class PartwiseBuilder
         }
     }
 
-//---------//
-// IsFirst //
-//---------//
+    //---------//
+    // IsFirst //
+    //---------//
     /** Composite flag to help drive processing of any entity. */
     private static class IsFirst
     {
@@ -3605,9 +3594,9 @@ public class PartwiseBuilder
         }
     }
 
-//---------------//
-// ClefIterators //
-//---------------//
+    //---------------//
+    // ClefIterators //
+    //---------------//
     /**
      * Class to handle the insertion of clefs in a measure.
      * If needed, this class could be reused for some attribute other than clef,
@@ -3700,9 +3689,9 @@ public class PartwiseBuilder
         }
     }
 
-//--------------//
-// MeasurePrint //
-//--------------//
+    //--------------//
+    // MeasurePrint //
+    //--------------//
     /**
      * Handles the print element for a measure.
      */

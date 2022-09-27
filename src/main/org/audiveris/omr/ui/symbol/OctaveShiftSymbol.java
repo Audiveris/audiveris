@@ -72,7 +72,7 @@ public class OctaveShiftSymbol
                                                           BasicStroke.CAP_ROUND,
                                                           BasicStroke.JOIN_ROUND,
                                                           10.0f,
-                                                          new float[]{4.0f, 4.0f},
+                                                          new float[]{8.0f, 8.0f},
                                                           0.0f);
 
     //~ Instance fields ----------------------------------------------------------------------------
