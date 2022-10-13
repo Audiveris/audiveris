@@ -120,7 +120,9 @@ public abstract class UriUtil
                 throw new IllegalArgumentException("Child is absolute: " + child);
             }
 
-            return new URI(dirName.append(child).toString());
+            final String escapedStr = dirName.append(child).toString().replace(" ", "%20");
+
+            return new URI(escapedStr);
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }

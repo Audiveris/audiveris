@@ -675,9 +675,9 @@ public class InterController
         }.execute();
     }
 
-    //-----------//
-    // editInter //
-    //-----------//
+    //------------//
+    // editObject //
+    //------------//
     /**
      * Modify position or geometry of an object.
      *

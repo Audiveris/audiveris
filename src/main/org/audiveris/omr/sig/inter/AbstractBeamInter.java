@@ -1045,11 +1045,12 @@ public abstract class AbstractBeamInter
             handles.add(new Handle(p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Handles
-                    PointUtil.add(p1, vector);
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(p1, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
 
                     // Data
                     beam.median.setLine(p1, p2);
@@ -1078,11 +1079,12 @@ public abstract class AbstractBeamInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Handles
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     // Data
@@ -1119,11 +1121,12 @@ public abstract class AbstractBeamInter
             handles.add(new Handle(p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Handles
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
-                    PointUtil.add(p2, vector);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
+                    PointUtil.add(p2, dx, dy);
 
                     // Data
                     beam.median.setLine(p1, p2);

@@ -182,12 +182,11 @@ public class OctaveShiftSymbol
             final Stroke oldStroke = g.getStroke();
             g.setStroke(DEFAULT_STROKE);
             g.draw(new Line2D.Double(
-                    p.model.lineRight,
-                    new Point2D.Double(p.model.valueCenter.getX() + symBounds.getWidth() / 2,
-                                       p.model.valueCenter.getY())));
+                    p.model.p2,
+                    new Point2D.Double(p.model.p1.getX() + symBounds.getWidth() / 2,
+                                       p.model.p1.getY())));
 
-            // No hook drawn in symbol
-            ///g.draw(new Line2D.Double(p.model.lineRight, p.model.hookEnd));
+            // NOTA: No hook is drawn in symbol
             //
             g.setComposite(oldComposite);
             g.setStroke(oldStroke);
@@ -212,7 +211,7 @@ public class OctaveShiftSymbol
                 "Default length for octave shift line");
 
         private final Scale.Fraction defaultHookLength = new Scale.Fraction(
-                1.5,
+                1.0,
                 "Default length for ending hook");
     }
 
@@ -225,7 +224,7 @@ public class OctaveShiftSymbol
 
         // offset: used
         // layout: used for value symbol
-        // rect:   global image (value + line only)
+        // rect:   bounds of global image composed of value + line only (no hook)
         //
         // model
         OctaveShiftInter.Model model;

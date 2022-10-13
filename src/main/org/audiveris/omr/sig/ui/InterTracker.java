@@ -52,7 +52,7 @@ public class InterTracker
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The Inter instance being tracked. */
-    protected final Inter inter;
+    protected Inter inter;
 
     /** The containing sheet. */
     protected final Sheet sheet;
@@ -78,6 +78,11 @@ public class InterTracker
     public Inter getInter ()
     {
         return inter;
+    }
+
+    public void setInter (Inter inter)
+    {
+        this.inter = inter;
     }
 
     public Sheet getSheet ()
@@ -124,7 +129,7 @@ public class InterTracker
             Collection<Link> links = inter.searchLinks(system);
 
             for (Link link : links) {
-                painter.drawLink(inter, link.partner, link.relation.getClass());
+                painter.drawLink(inter, link.partner, link.relation);
             }
         }
     }

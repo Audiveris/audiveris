@@ -259,14 +259,16 @@ public class WordInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
+        final StringBuilder sb = new StringBuilder(super.getDetails());
 
         if (value != null) {
-            sb.append(" codes[").append(StringUtil.codesOf(value, false)).append(']');
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("codes[").append(StringUtil.codesOf(value, false)).append(']');
         }
 
         if (fontInfo != null) {
-            sb.append(' ').append(fontInfo.getMnemo());
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append(fontInfo.getMnemo());
         }
 
         return sb.toString();
@@ -466,14 +468,15 @@ public class WordInter
             handles.add(selectedHandle = new InterEditor.Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data
-                    PointUtil.add(model.baseLoc, vector);
+                    PointUtil.add(model.baseLoc, dx, dy);
 
                     // Handles
                     for (InterEditor.Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
@@ -484,10 +487,9 @@ public class WordInter
             handles.add(new Handle(right)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }

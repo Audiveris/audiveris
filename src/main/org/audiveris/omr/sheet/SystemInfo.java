@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
@@ -346,6 +347,11 @@ public class SystemInfo
             for (Inter inter : sig.inters(SentenceInter.class)) {
                 SentenceInter sentence = (SentenceInter) inter;
                 sentence.assignStaff(this, sentence.getLocation());
+            }
+
+            for (Inter inter : sig.inters(OctaveShiftInter.class)) {
+                OctaveShiftInter os = (OctaveShiftInter) inter;
+                os.afterReload(this);
             }
 
             // Listen to sig modifications
@@ -827,6 +833,30 @@ public class SystemInfo
     public Collection<Section> getMutableVerticalSections ()
     {
         return vSections;
+    }
+
+    //---------------//
+    // getNextInPage //
+    //---------------//
+    /**
+     * Report the next system, if any, in current page.
+     *
+     * @return the next system in page, or null
+     */
+    public SystemInfo getNextInPage ()
+    {
+        if (page == null) {
+            return null;
+        }
+
+        final List<SystemInfo> pageSystems = page.getSystems();
+        final int index = pageSystems.indexOf(this);
+
+        if (index < pageSystems.size() - 1) {
+            return pageSystems.get(index + 1);
+        }
+
+        return null;
     }
 
     //---------//

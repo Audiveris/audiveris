@@ -911,6 +911,25 @@ public class Part
         return prevSystem.getPartById(id);
     }
 
+    //---------------//
+    // getNextInPage //
+    //---------------//
+    /**
+     * Report the corresponding part (if any) in the next system in current page.
+     *
+     * @return the corresponding part, or null
+     */
+    public Part getNextInPage ()
+    {
+        SystemInfo nextSystem = getSystem().getNextInPage();
+
+        if (nextSystem == null) {
+            return null;
+        }
+
+        return nextSystem.getPartById(id);
+    }
+
     //----------//
     // getSlurs //
     //----------//

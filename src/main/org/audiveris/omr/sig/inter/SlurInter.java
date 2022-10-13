@@ -515,21 +515,24 @@ public class SlurInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
+        final StringBuilder sb = new StringBuilder(super.getDetails());
 
         if (isTie()) {
-            sb.append(" tie");
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("tie");
         }
 
         if (info != null) {
-            sb.append(" ").append(info);
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append(info);
         }
 
         for (HorizontalSide side : HorizontalSide.values()) {
             SlurInter ext = getExtension(side);
 
             if (ext != null) {
-                sb.append(" ").append(side).append("-extension:").append(ext);
+                sb.append((sb.length() != 0) ? " " : "");
+                sb.append(side).append("-extension:").append(ext);
             }
         }
 
@@ -654,6 +657,25 @@ public class SlurInter
     public Point2D getRelationCenter ()
     {
         return CubicUtil.getMidPoint(curve);
+    }
+
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point2D getRelationCenter (Relation relation)
+    {
+        if (relation instanceof SlurHeadRelation shRel) {
+            switch (shRel.getSide()) {
+            default:
+            case LEFT:
+                return curve.getP1();
+            case RIGHT:
+                return curve.getP2();
+            }
+        } else {
+            return getRelationCenter();
+        }
     }
 
     //----------//
@@ -1210,12 +1232,13 @@ public class SlurInter
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    PointUtil.add(model.p1, vector);
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(model.p1, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
 
-                    PointUtil.add(model.c1, vector); // Move ctrl point like end point
+                    PointUtil.add(model.c1, dx, dy); // Move ctrl point like end point
                     midC.setLocation(PointUtil.middle(model.c1, model.c2));
 
                     return true;
@@ -1225,10 +1248,11 @@ public class SlurInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
@@ -1239,12 +1263,13 @@ public class SlurInter
                     new Handle(model.p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    PointUtil.add(model.p2, vector);
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(model.p2, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
 
-                    PointUtil.add(model.c2, vector); // Move ctrl point like end point
+                    PointUtil.add(model.c2, dx, dy); // Move ctrl point like end point
                     midC.setLocation(PointUtil.middle(model.c1, model.c2));
 
                     return true;
@@ -1254,10 +1279,11 @@ public class SlurInter
             handles.add(new Handle(model.c2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    PointUtil.add(model.c2, vector);
-                    PointUtil.add(midC, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(model.c2, dx, dy);
+                    PointUtil.add(midC, dx / 2.0, dy / 2.0);
 
                     return true;
                 }
@@ -1266,11 +1292,12 @@ public class SlurInter
             handles.add(new Handle(midC)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    PointUtil.add(midC, vector);
-                    PointUtil.add(model.c1, vector);
-                    PointUtil.add(model.c2, vector);
+                    PointUtil.add(midC, dx, dy);
+                    PointUtil.add(model.c1, dx, dy);
+                    PointUtil.add(model.c2, dx, dy);
 
                     return true;
                 }
@@ -1279,10 +1306,11 @@ public class SlurInter
             handles.add(new Handle(model.c1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    PointUtil.add(model.c1, vector);
-                    PointUtil.add(midC, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(model.c1, dx, dy);
+                    PointUtil.add(midC, dx / 2.0, dy / 2.0);
 
                     return true;
                 }
@@ -1300,7 +1328,7 @@ public class SlurInter
                 Point2D last = null;
 
                 for (Handle handle : handles) {
-                    Point2D p = handle.getHandleCenter();
+                    Point2D p = handle.getPoint();
 
                     if (last != null) {
                         g.draw(new Line2D.Double(last, p));
@@ -1311,7 +1339,7 @@ public class SlurInter
 
                 // Close path?
                 if (handles.size() > 2) {
-                    g.draw(new Line2D.Double(last, handles.get(0).getHandleCenter()));
+                    g.draw(new Line2D.Double(last, handles.get(0).getPoint()));
                 }
             }
 

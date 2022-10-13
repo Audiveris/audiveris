@@ -733,7 +733,7 @@ public abstract class UIUtil
                 BasicStroke.CAP_SQUARE,
                 BasicStroke.JOIN_MITER,
                 10.0f,
-                new float[]{3.0f},
+                new float[]{6.0f / (float) ratio},
                 0.0f);
         g2.setStroke(stroke);
 

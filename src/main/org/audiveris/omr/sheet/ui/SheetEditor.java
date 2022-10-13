@@ -70,7 +70,6 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -264,6 +263,24 @@ public class SheetEditor
         }
 
         return null;
+    }
+
+    //-----------//
+    // isEditing //
+    //-----------//
+    /**
+     * Report whether the provided Inter is being edited.
+     *
+     * @param inter provided inter
+     * @return true if provided inter is involved in editor activity
+     */
+    public boolean isEditing (Inter inter)
+    {
+        if (view.objectEditor instanceof InterEditor interEditor) {
+            return interEditor.concerns(inter);
+        }
+
+        return false;
     }
 
     //-----------------//
@@ -915,9 +932,7 @@ public class SheetEditor
                     SelectionPainter painter = new SelectionPainter(sheet, g);
 
                     for (Inter inter : inters) {
-                        if ((inter != null)
-                                    && !inter.isRemoved()
-                                    && inter != getEditedInter()) {
+                        if ((inter != null) && !inter.isRemoved()) {
                             // Highlight selected inter
                             painter.render(inter);
 
@@ -926,16 +941,18 @@ public class SheetEditor
                             inter.renderAttachments(g);
                             g.setStroke(oldStroke);
 
-                            // Inter: main links
-                            SIGraph sig = inter.getSig();
+                            if (!isEditing(inter)) {
+                                // Inter: main links
+                                SIGraph sig = inter.getSig();
 
-                            if (sig != null) {
-                                final Set<Relation> links = sig.getRelations(inter,
-                                                                             Support.class,
-                                                                             Rhythm.class);
-                                for (Relation rel : links) {
-                                    Inter opp = sig.getOppositeInter(inter, rel);
-                                    painter.drawLink(inter, opp, rel.getClass());
+                                if (sig != null) {
+                                    final Set<Relation> links = sig.getRelations(inter,
+                                                                                 Support.class,
+                                                                                 Rhythm.class);
+                                    for (Relation rel : links) {
+                                        Inter opp = sig.getOppositeInter(inter, rel);
+                                        painter.drawLink(inter, opp, rel);
+                                    }
                                 }
                             }
                         }

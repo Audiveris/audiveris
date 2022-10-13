@@ -510,14 +510,15 @@ public class WedgeInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data
-                    model.translate(vector.x, vector.y);
+                    model.translate(dx, dy);
 
                     // Handles
                     for (InterEditor.Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
@@ -528,15 +529,16 @@ public class WedgeInter
             handles.add(new InterEditor.Handle(mid1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data
-                    PointUtil.add(model.top1, vector);
-                    PointUtil.add(model.bot1, vector);
+                    PointUtil.add(model.top1, dx, dy);
+                    PointUtil.add(model.bot1, dx, dy);
 
                     // Handles
-                    PointUtil.add(mid1, vector);
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(mid1, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
                     below.setLocation(getBelow(wedge.shape));
 
                     return true;
@@ -548,15 +550,16 @@ public class WedgeInter
                     new InterEditor.Handle(mid2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data
-                    PointUtil.add(model.top2, vector);
-                    PointUtil.add(model.bot2, vector);
+                    PointUtil.add(model.top2, dx, dy);
+                    PointUtil.add(model.bot2, dx, dy);
 
                     // Handles
-                    PointUtil.add(mid2, vector);
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(mid2, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
                     below.setLocation(getBelow(wedge.shape));
 
                     return true;
@@ -567,10 +570,9 @@ public class WedgeInter
             handles.add(new InterEditor.Handle(below)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }

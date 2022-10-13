@@ -53,7 +53,7 @@ public class StaffEditionTask
     @Override
     public void performDo ()
     {
-        editor.doit();
+        editor.finalDoit();
     }
 
     @Override

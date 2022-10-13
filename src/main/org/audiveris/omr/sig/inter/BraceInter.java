@@ -354,10 +354,9 @@ public class BraceInter
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }
@@ -373,11 +372,12 @@ public class BraceInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data (and shared handles)
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
@@ -388,10 +388,9 @@ public class BraceInter
             handles.add(new Handle(model.p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }

@@ -35,6 +35,7 @@ import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.ui.ObjectEditor;
 import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -806,6 +807,32 @@ public class Staff
         }
 
         return xMax;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the abscissa-sorted sequence of chords found in this staff.
+     *
+     * @return list of staff chords
+     */
+    public List<AbstractChordInter> getChords ()
+    {
+        final List<AbstractChordInter> staffChords = new ArrayList<>();
+
+        for (Inter inter : system.getSig().inters(AbstractChordInter.class)) {
+            final AbstractChordInter chord = (AbstractChordInter) inter;
+
+            // TODO: Should we discard SmallChordInter instances?
+            if (chord.getStaves().contains(this)) {
+                staffChords.add(chord);
+            }
+        }
+
+        Collections.sort(staffChords, Inters.byAbscissa);
+
+        return staffChords;
     }
 
     //-------------//

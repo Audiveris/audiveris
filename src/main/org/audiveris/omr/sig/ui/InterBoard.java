@@ -313,20 +313,18 @@ public class InterBoard
                                     ? resources.getString("deassign.Action.deleted")
                                     : resources.getString("deassign.Action.text"));
 
-            final Inter editedInter = sheet.getSheetEditor().getEditedInter();
-
-            if (inter instanceof WordInter) {
+            if (inter instanceof WordInter wordInter) {
                 selfUpdatingText = true;
 
-                WordInter word = (WordInter) inter;
+                WordInter word = wordInter;
                 textField.setText(word.getValue());
                 textField.setEnabled(true);
                 textField.setVisible(true);
                 selfUpdatingText = false;
-            } else if (inter instanceof SentenceInter) {
+            } else if (inter instanceof SentenceInter sentenceInter) {
                 selfUpdatingText = true;
 
-                SentenceInter sentence = (SentenceInter) inter;
+                SentenceInter sentence = sentenceInter;
                 textField.setText(sentence.getValue());
                 textField.setVisible(true);
 
@@ -334,8 +332,7 @@ public class InterBoard
                 roleCombo.setVisible(true);
                 roleCombo.setEnabled(true);
 
-                if (inter instanceof LyricLineInter) {
-                    LyricLineInter lyric = (LyricLineInter) inter;
+                if (inter instanceof LyricLineInter lyric) {
                     verse.setVisible(true);
                     verse.setValue(lyric.getNumber());
 
@@ -357,23 +354,21 @@ public class InterBoard
                 }
 
                 selfUpdatingText = false;
-            } else if (inter instanceof TimeCustomInter) {
+            } else if (inter instanceof TimeCustomInter timeCustomInter) {
                 selfUpdatingText = true;
 
-                TimeCustomInter timeCustom = (TimeCustomInter) inter;
-                custom.setText(timeCustom.getTimeRational().toString());
+                custom.setText(timeCustomInter.getTimeRational().toString());
                 custom.setEnabled(true);
                 custom.setVisible(true);
 
                 selfUpdatingText = false;
-            } else if (inter instanceof SlurInter) {
-                SlurInter slur = (SlurInter) inter;
+            } else if (inter instanceof SlurInter slur) {
                 tie.getField().setSelected(slur.isTie());
                 tie.setEnabled(true);
                 tie.setVisible(true);
             }
 
-            edit.getField().setSelected(inter == editedInter);
+            edit.getField().setSelected(sheet.getSheetEditor().isEditing(inter));
         } else {
             grade.setText("");
             specific.setText("");

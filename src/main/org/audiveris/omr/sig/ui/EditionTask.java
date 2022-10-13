@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * Class <code>EditionTask</code> modifies the location and/or geometry of an inter
+ * Class <code>EditionTask</code> modifies the location and/or geometry of an inter.
  *
  * @author Hervé Bitteur
  */
@@ -70,7 +70,7 @@ public class EditionTask
     @Override
     public void performDo ()
     {
-        editor.doit();
+        editor.finalDoit();
 
         for (Iterator<Link> it = links.iterator(); it.hasNext();) {
             Link link = it.next();

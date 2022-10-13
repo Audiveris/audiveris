@@ -441,10 +441,9 @@ public abstract class AbstractVerticalInter
                         new Handle(model.p1)
                 {
                     @Override
-                    public boolean move (Point vector)
+                    public boolean move (int dx,
+                                         int dy)
                     {
-                        final int dy = vector.y;
-
                         if (dy == 0) {
                             return false;
                         }
@@ -462,10 +461,9 @@ public abstract class AbstractVerticalInter
                     selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }
@@ -487,10 +485,9 @@ public abstract class AbstractVerticalInter
                         new Handle(model.p2)
                 {
                     @Override
-                    public boolean move (Point vector)
+                    public boolean move (int dx,
+                                         int dy)
                     {
-                        final int dy = vector.y;
-
                         if (dy == 0) {
                             return false;
                         }

@@ -477,33 +477,51 @@ public class PartwiseBuilder
                     continue;
                 }
 
-                // Insert octave-shift element
+                // Insert octave-shift element?
                 final OctaveShiftInter os = (OctaveShiftInter) sig.getOppositeInter(chord, rel);
-                final OctaveShift octaveShift = factory.createOctaveShift();
-                octaveShift.setNumber(getOctaveShiftNumber(os));
-                octaveShift.setSize(new BigInteger("" + os.getValue()));
-                octaveShift.setType((side == RIGHT) ? UpDownStopContinue.STOP
-                        : (os.getKind() == OctaveShiftInter.Kind.ALTA
-                        ? UpDownStopContinue.DOWN
-                        : UpDownStopContinue.UP));
-                octaveShift.setDefaultY(yOf(
-                        side == LEFT ? os.getLine().getP1() : os.getLine().getP2(),
-                        os.getStaff()));
+                OctaveShift octaveShift = null;
+                if (side == RIGHT) {
+                    if (os.getExtension(RIGHT) == null) {
+                        octaveShift = factory.createOctaveShift();
+                        octaveShift.setType(UpDownStopContinue.STOP);
+                    }
+                } else {
+                    if (os.getExtension(LEFT) == null) {
+                        octaveShift = factory.createOctaveShift();
+                        if (os.getKind() == OctaveShiftInter.Kind.ALTA) {
+                            octaveShift.setType(UpDownStopContinue.DOWN);
+                        } else {
+                            octaveShift.setType(UpDownStopContinue.UP); // BASSA
+                        }
+                    } else {
+// TODO: uncomment the following 2 lines when Finale software can handle the CONTINUE type
+//                        octaveShift = factory.createOctaveShift();
+//                        octaveShift.setType(UpDownStopContinue.CONTINUE);
+                    }
+                }
 
-                // Within a direction-type element
-                final DirectionType directionType = factory.createDirectionType();
-                directionType.setOctaveShift(octaveShift);
+                if (octaveShift != null) {
+                    octaveShift.setNumber(getOctaveShiftNumber(os));
+                    octaveShift.setSize(new BigInteger("" + os.getValue()));
+                    octaveShift.setDefaultY(yOf(
+                            side == LEFT ? os.getLine().getP1() : os.getLine().getP2(),
+                            os.getStaff()));
 
-                // Within a direction element
-                final Direction direction = factory.createDirection();
-                insertStaffId(direction, os.getStaff());
+                    // Within a direction-type element
+                    final DirectionType directionType = factory.createDirectionType();
+                    directionType.setOctaveShift(octaveShift);
 
-                // NOTA: We consider ALTA is always above staff and BASSA always below
-                direction.setPlacement(os.getKind() == OctaveShiftInter.Kind.ALTA
-                        ? AboveBelow.ABOVE
-                        : AboveBelow.BELOW);
-                direction.getDirectionType().add(directionType);
-                current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+                    // Within a direction element
+                    final Direction direction = factory.createDirection();
+                    insertStaffId(direction, os.getStaff());
+
+                    // NOTA: We consider ALTA is always above staff and BASSA always below
+                    direction.setPlacement(os.getKind() == OctaveShiftInter.Kind.ALTA
+                            ? AboveBelow.ABOVE
+                            : AboveBelow.BELOW);
+                    direction.getDirectionType().add(directionType);
+                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+                }
             }
         } catch (Exception ex) {
             logger.warn("Error checking octave-shift {} side on {}", side, chord, ex);
@@ -2341,7 +2359,7 @@ public class PartwiseBuilder
                     // All other circle-x notes should sound as instrument with ordinary
                     // x head shape at the integer pitch of the note at hand.
                     if (noteShape == Shape.NOTEHEAD_CIRCLE_X || noteShape
-                                                                == Shape.WHOLE_NOTE_CIRCLE_X) {
+                                                                        == Shape.WHOLE_NOTE_CIRCLE_X) {
                         headShape = Shape.NOTEHEAD_CROSS;
                         if (notePitch == -5 || notePitch == 5) {
                             notePitch = -3;

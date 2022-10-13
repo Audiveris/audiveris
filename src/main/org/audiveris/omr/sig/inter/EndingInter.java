@@ -720,20 +720,21 @@ public class EndingInter
             handles.add(selectedHandle = new Handle(midTop)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    PointUtil.add(model.topLeft, vector);
-                    PointUtil.add(midTop, vector);
-                    PointUtil.add(model.topRight, vector);
+                    PointUtil.add(model.topLeft, dx, dy);
+                    PointUtil.add(midTop, dx, dy);
+                    PointUtil.add(model.topRight, dx, dy);
 
                     if (ending.leftLeg != null) {
-                        PointUtil.add(midLeft, vector);
-                        PointUtil.add(model.bottomLeft, vector);
+                        PointUtil.add(midLeft, dx, dy);
+                        PointUtil.add(model.bottomLeft, dx, dy);
                     }
 
                     if (ending.rightLeg != null) {
-                        PointUtil.add(midRight, vector);
-                        PointUtil.add(model.bottomRight, vector);
+                        PointUtil.add(midRight, dx, dy);
+                        PointUtil.add(model.bottomRight, dx, dy);
                     }
 
                     return true;
@@ -745,10 +746,9 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(midLeft)
                 {
                     @Override
-                    public boolean move (Point vector)
+                    public boolean move (int dx,
+                                         int dy)
                     {
-                        final double dx = vector.getX();
-
                         if (dx == 0) {
                             return false;
                         }
@@ -765,10 +765,9 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(model.topLeft)
                 {
                     @Override
-                    public boolean move (Point vector)
+                    public boolean move (int dx,
+                                         int dy)
                     {
-                        final double dx = vector.getX();
-
                         if (dx == 0) {
                             return false;
                         }
@@ -786,10 +785,9 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(midRight)
                 {
                     @Override
-                    public boolean move (Point vector)
+                    public boolean move (int dx,
+                                         int dy)
                     {
-                        final double dx = vector.getX();
-
                         if (dx == 0) {
                             return false;
                         }
@@ -806,10 +804,9 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(model.topRight)
                 {
                     @Override
-                    public boolean move (Point vector)
+                    public boolean move (int dx,
+                                         int dy)
                     {
-                        final double dx = vector.getX();
-
                         if (dx == 0) {
                             return false;
                         }

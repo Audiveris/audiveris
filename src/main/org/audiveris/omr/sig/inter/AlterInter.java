@@ -247,11 +247,14 @@ public class AlterInter
     @Override
     public String getDetails ()
     {
+        final StringBuilder sb = new StringBuilder(super.getDetails());
+
         if (measuredPitch != null) {
-            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append(String.format("mPitch:%.1f", measuredPitch));
         }
 
-        return super.getDetails();
+        return sb.toString();
     }
 
     /**

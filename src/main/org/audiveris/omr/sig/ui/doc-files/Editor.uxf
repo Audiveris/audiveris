@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.2">
+<diagram program="umlet" version="15.0.0">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -18,7 +18,7 @@
     <id>UMLClass</id>
     <coordinates>
       <x>80</x>
-      <y>380</y>
+      <y>430</y>
       <w>180</w>
       <h>280</h>
     </coordinates>
@@ -29,7 +29,7 @@ inter
 system
 originalGlyph
 selectedHandle
-lastPoint
+lastPt
 hasMoved
 --
 +render()
@@ -47,7 +47,7 @@ hasMoved
     <id>UMLClass</id>
     <coordinates>
       <x>120</x>
-      <y>700</y>
+      <y>750</y>
       <w>100</w>
       <h>100</h>
     </coordinates>
@@ -57,7 +57,7 @@ bg=#ffaaaa
 center
 --
 +contains(pt)
-+move(vector)
++move(dx, dy)
 +render()</panel_attributes>
     <additional_attributes/>
   </element>
@@ -65,7 +65,7 @@ center
     <id>Relation</id>
     <coordinates>
       <x>160</x>
-      <y>650</y>
+      <y>700</y>
       <w>30</w>
       <h>70</h>
     </coordinates>
@@ -76,7 +76,7 @@ center
     <id>UMLClass</id>
     <coordinates>
       <x>480</x>
-      <y>380</y>
+      <y>430</y>
       <w>150</w>
       <h>310</h>
     </coordinates>
@@ -107,7 +107,7 @@ staffReference
     <id>UMLClass</id>
     <coordinates>
       <x>690</x>
-      <y>380</y>
+      <y>430</y>
       <w>160</w>
       <h>170</h>
     </coordinates>
@@ -158,10 +158,10 @@ overTarget
       <x>750</x>
       <y>330</y>
       <w>30</w>
-      <h>70</h>
+      <h>120</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -169,15 +169,16 @@ overTarget
       <x>140</x>
       <y>190</y>
       <w>460</w>
-      <h>180</h>
+      <h>200</h>
     </coordinates>
     <panel_attributes>*Inter (HeadInter example)*
 bg=#88ff88
 --
 --
-+deriveFrom(sym)
-+searchLinks(sys)
++deriveFrom(symbol)
++searchLinks(system)
 +preAdd()
++preEdit(editor)
 
 -getNeededLedgers()
 -getSnapAbscissa()
@@ -190,34 +191,34 @@ bg=#88ff88
     <id>Relation</id>
     <coordinates>
       <x>540</x>
-      <y>360</y>
+      <y>380</y>
       <w>30</w>
-      <h>40</h>
+      <h>70</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;20.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>160</x>
-      <y>360</y>
+      <y>380</y>
       <w>30</w>
-      <h>40</h>
+      <h>70</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;20.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>360</x>
-      <y>360</y>
+      <y>380</y>
       <w>30</w>
-      <h>90</h>
+      <h>120</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -248,7 +249,7 @@ mouseDragged(ev)</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>250</x>
-      <y>510</y>
+      <y>560</y>
       <w>70</w>
       <h>30</h>
     </coordinates>
@@ -259,7 +260,7 @@ mouseDragged(ev)</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>620</x>
-      <y>490</y>
+      <y>540</y>
       <w>90</w>
       <h>80</h>
     </coordinates>
@@ -270,7 +271,7 @@ mouseDragged(ev)</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>210</x>
-      <y>510</y>
+      <y>560</y>
       <w>90</w>
       <h>300</h>
     </coordinates>
@@ -281,7 +282,7 @@ mouseDragged(ev)</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>430</x>
-      <y>510</y>
+      <y>560</y>
       <w>70</w>
       <h>60</h>
     </coordinates>
@@ -314,10 +315,10 @@ TA.actionPerformed(ev)
       <x>20</x>
       <y>110</y>
       <w>110</w>
-      <h>460</h>
+      <h>510</h>
     </coordinates>
     <panel_attributes>lt=&lt;..</panel_attributes>
-    <additional_attributes>60.0;440.0;10.0;440.0;10.0;10.0;90.0;10.0</additional_attributes>
+    <additional_attributes>60.0;490.0;10.0;490.0;10.0;10.0;90.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -325,10 +326,10 @@ TA.actionPerformed(ev)
       <x>10</x>
       <y>100</y>
       <w>120</w>
-      <h>480</h>
+      <h>530</h>
     </coordinates>
     <panel_attributes>lt=&lt;..</panel_attributes>
-    <additional_attributes>70.0;460.0;10.0;460.0;10.0;10.0;100.0;10.0</additional_attributes>
+    <additional_attributes>70.0;510.0;10.0;510.0;10.0;10.0;100.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -336,16 +337,16 @@ TA.actionPerformed(ev)
       <x>40</x>
       <y>150</y>
       <w>90</w>
-      <h>390</h>
+      <h>440</h>
     </coordinates>
     <panel_attributes>lt=&lt;..</panel_attributes>
-    <additional_attributes>40.0;370.0;10.0;370.0;10.0;10.0;70.0;10.0</additional_attributes>
+    <additional_attributes>40.0;420.0;10.0;420.0;10.0;10.0;70.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>430</x>
-      <y>380</y>
+      <y>430</y>
       <w>70</w>
       <h>80</h>
     </coordinates>
@@ -356,7 +357,7 @@ TA.actionPerformed(ev)
     <id>Relation</id>
     <coordinates>
       <x>250</x>
-      <y>380</y>
+      <y>430</y>
       <w>70</w>
       <h>80</h>
     </coordinates>
@@ -367,7 +368,7 @@ TA.actionPerformed(ev)
     <id>Relation</id>
     <coordinates>
       <x>210</x>
-      <y>570</y>
+      <y>620</y>
       <w>80</w>
       <h>220</h>
     </coordinates>
@@ -380,10 +381,10 @@ TA.actionPerformed(ev)
       <x>820</x>
       <y>270</y>
       <w>70</w>
-      <h>250</h>
+      <h>300</h>
     </coordinates>
     <panel_attributes>lt=&lt;..</panel_attributes>
-    <additional_attributes>30.0;230.0;50.0;230.0;50.0;10.0;10.0;10.0</additional_attributes>
+    <additional_attributes>30.0;280.0;50.0;280.0;50.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -391,10 +392,10 @@ TA.actionPerformed(ev)
       <x>110</x>
       <y>160</y>
       <w>30</w>
-      <h>240</h>
+      <h>290</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;220.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;270.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -402,16 +403,16 @@ TA.actionPerformed(ev)
       <x>610</x>
       <y>60</y>
       <w>30</w>
-      <h>340</h>
+      <h>390</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;320.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;370.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>300</x>
-      <y>430</y>
+      <y>480</y>
       <w>140</w>
       <h>160</h>
     </coordinates>

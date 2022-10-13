@@ -57,15 +57,16 @@ public class DefaultEditor
                 selectedHandle = new Handle(inter.getCenter())
         {
             @Override
-            public boolean move (Point vector)
+            public boolean move (int dx,
+                                 int dy)
             {
                 // Data
-                latestBounds.x += vector.x;
-                latestBounds.y += vector.y;
+                latestBounds.x += dx;
+                latestBounds.y += dy;
 
                 // Handle
                 for (Handle handle : handles) {
-                    PointUtil.add(handle.getHandleCenter(), vector);
+                    PointUtil.add(handle.getPoint(), dx, dy);
                 }
 
                 return true;

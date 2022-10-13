@@ -229,10 +229,11 @@ public class LedgerInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
+        final StringBuilder sb = new StringBuilder(super.getDetails());
 
         if (index != null) {
-            sb.append(" index:").append(index);
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("index:").append(index);
         }
 
         return sb.toString();
@@ -556,10 +557,9 @@ public class LedgerInter
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }
@@ -575,16 +575,15 @@ public class LedgerInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }
 
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), 0, dy);
+                        PointUtil.add(handle.getPoint(), 0, dy);
                     }
 
                     return true;
@@ -595,10 +594,9 @@ public class LedgerInter
             handles.add(new Handle(model.p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }

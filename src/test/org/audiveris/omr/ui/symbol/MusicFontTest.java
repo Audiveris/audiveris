@@ -72,13 +72,8 @@ public class MusicFontTest
             throws Exception
     {
         final List<Range> codes = new ArrayList<>();
-        codes.add(new Range(0xE000, 0xE0FF));
-        codes.add(new Range(0xE1D0, 0xE1D9));
-        codes.add(new Range(0xE200, 0xE269));
-        codes.add(new Range(0xE4A0, 0xE4EA));
-        codes.add(new Range(0xE500, 0xE56F));
-        codes.add(new Range(0xE630, 0xE659));
-        codes.add(new Range(0xE880, 0xE889));
+        codes.add(new Range(0xE000, 0xF8FF)); // Private Use Area
+        ////codes.add(new Range(0, 0x10FFFF)); // All valid codes?
 
         File dir = new File("data/temp");
         dir.mkdirs();
@@ -100,15 +95,22 @@ public class MusicFontTest
             Font stringFont = g.getFont().deriveFont(24f);
             Font infoFont = stringFont.deriveFont(15f);
             String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
+            int n = -1;
 
             for (Range range : codes) {
                 for (int i = range.start; i <= range.stop; i++) {
                     BasicSymbol symbol = new BasicSymbol(i);
                     TextLayout layout = symbol.layout(musicFont);
 
-                    if (i > 0) {
+                    Rectangle2D r = layout.getBounds();
+                    if (r.getWidth() == 0 && r.getHeight() == 0) {
+                        continue;
+                    }
+
+                    n++;
+                    if (n > 0) {
                         // Compute x,y for current cell
-                        x = xMargin + (cellWidth * (i % itemsPerLine));
+                        x = xMargin + (cellWidth * (n % itemsPerLine));
 
                         if (x == xMargin) {
                             line++;
@@ -148,7 +150,6 @@ public class MusicFontTest
                     g.drawString(Integer.toHexString(i), x + 10, y + 30);
 
                     // Draw info
-                    Rectangle2D r = layout.getBounds();
                     String info = String.format(
                             frm,
                             r.getX(),

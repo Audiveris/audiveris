@@ -52,13 +52,13 @@ public abstract class Inters
      * Comparator to put members first and ensembles last.
      */
     public static final Comparator<Inter> membersFirst = (Inter o1, Inter o2) -> {
-        if (o1 instanceof InterEnsemble) {
-            if (o2 instanceof InterEnsemble) {
-                if (((InterEnsemble) o1).getMembers().contains(o2)) {
+        if (o1 instanceof InterEnsemble interEnsemble1) {
+            if (o2 instanceof InterEnsemble interEnsemble2) {
+                if (interEnsemble1.getMembers().contains(o2)) {
                     return 1;
                 }
 
-                if (((InterEnsemble) o2).getMembers().contains(o1)) {
+                if (interEnsemble2.getMembers().contains(o1)) {
                     return -1;
                 }
 
@@ -516,23 +516,20 @@ public abstract class Inters
                 found.add(inter);
             } else {
                 switch (order) {
-                case BY_ABSCISSA:
-
+                case BY_ABSCISSA -> {
                     if (iBox.x > xMax) {
                         return found;
                     }
+                }
 
-                    break;
-
-                case BY_ORDINATE:
-
+                case BY_ORDINATE -> {
                     if (iBox.y > yMax) {
                         return found;
                     }
+                }
 
-                    break;
-
-                case NONE:
+                case NONE -> {
+                }
                 }
             }
         }

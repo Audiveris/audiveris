@@ -444,10 +444,9 @@ public abstract class AbstractFlagInter
             handles.add(selectedHandle = new Handle(flag.getCenter())
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final double dy = vector.getY();
-
                     if (dy == 0) {
                         return false;
                     }
@@ -457,7 +456,7 @@ public abstract class AbstractFlagInter
 
                     // Handle
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), 0, dy);
+                        PointUtil.add(handle.getPoint(), 0, dy);
                     }
 
                     return true;

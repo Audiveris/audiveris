@@ -685,22 +685,20 @@ public abstract class AbstractInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         if (glyph != null) {
             sb.append("g#").append(glyph.getId());
         }
 
         if (impacts != null) {
-            if (sb.length() != 0) {
-                sb.append(" ");
-            }
-
+            sb.append((sb.length() != 0) ? " " : "");
             sb.append("(").append(impacts).append(")");
         }
 
         if (abnormal) {
-            sb.append(" ABNORMAL");
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("ABNORMAL");
         }
 
         return sb.toString();
@@ -798,6 +796,32 @@ public abstract class AbstractInter
         return impacts;
     }
 
+    //----------//
+    // getLinks //
+    //----------//
+    @Override
+    public Collection<Link> getLinks ()
+    {
+        Set<Link> links = null;
+
+        if (sig.containsVertex(this)) {
+            for (Relation rel : sig.edgesOf(this)) {
+                if (links == null) {
+                    links = new LinkedHashSet<>();
+                }
+
+                final Inter partner = sig.getOppositeInter(this, rel);
+                links.add(new Link(partner, rel, sig.getEdgeTarget(rel) == partner));
+            }
+        }
+
+        if (links == null) {
+            return Collections.emptySet();
+        }
+
+        return links;
+    }
+
     //-----------//
     // getMirror //
     //-----------//
@@ -889,6 +913,15 @@ public abstract class AbstractInter
         }
 
         return null;
+    }
+
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point2D getRelationCenter (Relation relation)
+    {
+        return getRelationCenter(); // By default
     }
 
     //----------//
@@ -1290,6 +1323,7 @@ public abstract class AbstractInter
     @Override
     public List<? extends UITask> preEdit (InterEditor editor)
     {
+        // Append the EditionTask with inter links and unlinks
         final SystemInfo system = getSig().getSystem();
         final Collection<Link> links = searchLinks(system);
         final Collection<Link> unlinks = searchUnlinks(system, links);
@@ -1354,9 +1388,7 @@ public abstract class AbstractInter
                     }
                 }
 
-                if (this instanceof InterEnsemble) {
-                    InterEnsemble ens = (InterEnsemble) this;
-
+                if (this instanceof InterEnsemble ens) {
                     // Delete all its members that are not part of another ensemble
                     for (Inter member : ens.getMembers()) {
                         Set<Inter> ensembles = member.getAllEnsembles();

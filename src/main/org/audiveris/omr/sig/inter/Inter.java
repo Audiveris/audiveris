@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
@@ -282,6 +283,13 @@ public interface Inter
     GradeImpacts getImpacts ();
 
     /**
+     * Retrieve the current links around this inter.
+     *
+     * @return its links, perhaps empty
+     */
+    Collection<Link> getLinks ();
+
+    /**
      * Report the inter, if any, this instance is a mirror of.
      * <p>
      * This is used only for HeadInter and HeadChordInter classes.
@@ -331,6 +339,14 @@ public interface Inter
      * @return center for relation
      */
     Point2D getRelationCenter ();
+
+    /**
+     * Report the inter center for drawing the specified relation instance.
+     *
+     * @param relation the provided relation if any
+     * @return center for relation
+     */
+    Point2D getRelationCenter (Relation relation);
 
     /**
      * Report the shape related to interpretation.
@@ -596,6 +612,7 @@ public interface Inter
      * <li>For a tuplet: 3 or 6 chords (approximately)
      * <li>For a fermata: 1 barline or 1 chord
      * <li>For a measure number: 1 multiple rest
+     * <li>For an octave shift: 1 chord
      * </ul>
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.
      * <p>

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.util.Jaxb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

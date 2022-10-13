@@ -62,10 +62,9 @@ public class HorizontalEditor
                 selectedHandle = new Handle(inter.getCenter())
         {
             @Override
-            public boolean move (Point vector)
+            public boolean move (int dx,
+                                 int dy)
             {
-                final double dx = vector.getX();
-
                 if (dx == 0) {
                     return false;
                 }
@@ -75,7 +74,7 @@ public class HorizontalEditor
 
                 // Handle
                 for (Handle handle : handles) {
-                    PointUtil.add(handle.getHandleCenter(), dx, 0);
+                    PointUtil.add(handle.getPoint(), dx, 0);
                 }
 
                 return true;

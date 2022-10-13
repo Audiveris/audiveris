@@ -953,15 +953,15 @@ public abstract class SheetPainter
             final ShapeSymbol symbol = Symbols.getSymbol(os.getShape());
             final TextLayout layout = font.layout(symbol.getString());
             final Rectangle2D symBounds = layout.getBounds();
-            final Point2D valueCenter = os.getLine().getP1();
-            MusicFont.paint(g, layout, valueCenter, AREA_CENTER);
+            final Point2D p1 = os.getLine().getP1();
+            MusicFont.paint(g, layout, p1, AREA_CENTER);
 
             // Line (drawn from right to left, to preserve the right corner with hook)
             g.setStroke(OctaveShiftSymbol.DEFAULT_STROKE);
             g.draw(new Line2D.Double(
                     os.getLine().getP2(),
-                    new Point2D.Double(valueCenter.getX() + symBounds.getWidth() / 2,
-                                       valueCenter.getY())));
+                    new Point2D.Double(p1.getX() + symBounds.getWidth() / 2,
+                                       p1.getY())));
 
             // Hook?
             final Point2D hookEnd = os.getHookCopy();

@@ -156,8 +156,9 @@ public class BracketInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-        sb.append(" ").append(kind);
+        final StringBuilder sb = new StringBuilder(super.getDetails());
+        sb.append((sb.length() != 0) ? " " : "");
+        sb.append(kind);
 
         return sb.toString();
     }

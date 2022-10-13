@@ -31,6 +31,7 @@ import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.view.Zoom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,7 @@ public abstract class ObjectEditor
     protected final Object object;
 
     /** Containing system. */
-    protected final SystemInfo system;
+    protected SystemInfo system;
 
     /** List of handles. */
     protected final List<Handle> handles = new ArrayList<>();
@@ -94,11 +95,14 @@ public abstract class ObjectEditor
     /** Currently selected handle. */
     protected Handle selectedHandle;
 
-    /** Current last point. */
-    protected Point lastPoint;
+    /** Previous mouse location. */
+    protected Point lastPt;
 
     /** Has the mouse been actually moved since being pressed?. */
     protected boolean hasMoved = false;
+
+    /** Current zoom. */
+    protected Zoom zoom;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -112,6 +116,8 @@ public abstract class ObjectEditor
     {
         this.object = object;
         this.system = system;
+
+        zoom = system.getSheet().getSheetEditor().getSheetView().getZoom();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -153,7 +159,7 @@ public abstract class ObjectEditor
     /**
      * Process user mouse action.
      *
-     * @param pt       current mouse location
+     * @param pt       new mouse location
      * @param movement (PRESSING, DRAGGING or RELEASING)
      * @return true if editor is still active (and thus consumes user input)
      */
@@ -167,14 +173,14 @@ public abstract class ObjectEditor
             case PRESSING:
                 // Drag must start within a handle vicinity
                 selectedHandle = null;
-                lastPoint = null;
+                lastPt = null;
 
                 // Find closest handle
                 double bestSq = Double.MAX_VALUE;
                 Handle bestHandle = null;
 
                 for (Handle handle : handles) {
-                    double sq = handle.getHandleCenter().distanceSq(pt);
+                    double sq = handle.getPoint().distanceSq(pt);
 
                     if (((bestHandle == null) || (sq < bestSq))) {
                         bestHandle = handle;
@@ -182,9 +188,9 @@ public abstract class ObjectEditor
                     }
                 }
 
-                if ((bestHandle != null) && (bestHandle.contains(pt))) {
+                if ((bestHandle != null) && (bestHandle.contains(pt, zoom))) {
                     selectedHandle = bestHandle;
-                    lastPoint = pt;
+                    lastPt = pt;
                     active = true;
 
                     // Keep underlying object as selected
@@ -200,16 +206,16 @@ public abstract class ObjectEditor
             case DRAGGING:
 
                 if (selectedHandle != null) {
-                    if (lastPoint != null) {
-                        Point vector = PointUtil.subtraction(pt, lastPoint);
-                        moveHandle(vector);
+                    if (lastPt != null) {
+                        final Point vector = PointUtil.subtraction(pt, lastPt);
+                        moveHandle(vector.x, vector.y);
                     } else {
-                        lastPoint = pt;
+                        lastPt = pt;
                     }
 
                     active = true;
                 } else {
-                    lastPoint = null;
+                    lastPt = null;
                     hasMoved = false;
                 }
 
@@ -222,7 +228,7 @@ public abstract class ObjectEditor
                     switchHandleOnRelease();
                 }
 
-                lastPoint = null;
+                lastPt = null;
                 active = true;
 
                 break;
@@ -249,11 +255,11 @@ public abstract class ObjectEditor
             return;
         }
 
-        if (lastPoint == null) {
-            lastPoint = PointUtil.rounded(selectedHandle.getHandleCenter());
+        if (lastPt == null) {
+            lastPt = PointUtil.rounded(selectedHandle.getPoint());
         }
 
-        moveHandle(vector);
+        moveHandle(vector.x, vector.y);
     }
 
     //---------//
@@ -268,34 +274,35 @@ public abstract class ObjectEditor
     // moveHandle //
     //------------//
     /**
-     * Move the selected handle, along the desired vector.
+     * Move the selected handle, according to user drag.
      * <p>
      * The move can be limited due to handle specific limitations (horizontal, vertical) or to
      * system area.
      *
-     * @param vector desired move
+     * @param dx desired move in x
+     * @param dy desired move in y
      */
-    private void moveHandle (Point vector)
+    protected void moveHandle (int dx,
+                               int dy)
     {
-        if ((vector.x != 0) || (vector.y != 0)) {
+        if ((dx != 0) || (dy != 0)) {
             // Make sure we stay within system area
-            Point newPt = PointUtil.addition(lastPoint, vector);
+            final Point newPt = new Point(lastPt.x + dx, lastPt.y + dy);
 
             if (system.getArea().contains(newPt)) {
                 // Move the selected handle
-                if (selectedHandle.move(vector)) {
+                if (selectedHandle.move(dx, dy)) {
                     hasMoved = true;
-                    lastPoint = newPt;
-                    doit();
+                    lastPt = newPt;
+                    doit(); // Apply modified model to the object position/geometry
                 }
             } else {
                 // Remain on last point
-                system.getSheet().getLocationService().publish(
-                        new LocationEvent(
-                                this,
-                                SelectionHint.ENTITY_TRANSIENT,
-                                MouseMovement.DRAGGING,
-                                new Rectangle(lastPoint)));
+                system.getSheet().getLocationService().publish(new LocationEvent(
+                        this,
+                        SelectionHint.ENTITY_TRANSIENT,
+                        MouseMovement.DRAGGING,
+                        new Rectangle(lastPt)));
             }
         }
     }
@@ -348,20 +355,33 @@ public abstract class ObjectEditor
     // doit //
     //------//
     /**
-     * Set internal object data, now that handle(s) have worked.
+     * Apply (modified) model to object geometry.
      * <p>
-     * This method is called only if a non-zero move has occurred on the handle.
+     * This method is called only if a non-zero move has occurred on the selected handle.
      */
     protected void doit ()
     {
         // Void
     }
 
+    //-----------//
+    // finalDoit //
+    //-----------//
+    /**
+     * Apply final (modified) model to object geometry.
+     * <p>
+     * This method is called at end of edition.
+     */
+    public void finalDoit ()
+    {
+        doit(); //By default
+    }
+
     //------//
     // undo //
     //------//
     /**
-     * Reset internal object data.
+     * Re-apply original model to object geometry.
      */
     public void undo ()
     {
@@ -375,7 +395,7 @@ public abstract class ObjectEditor
     /**
      * A <code>Handle</code> represents a control point in the geometry of an inter.
      * <p>
-     * If is rendered as a small square and can be moved by the user via mouse or keyboard.
+     * If is rendered as a small rounded square and can be moved by the user via mouse or keyboard.
      * <p>
      * Any movement of the handle impacts the symbol geometry (position or shape) according to the
      * role of the underlying control point with respect to the symbol.
@@ -384,49 +404,57 @@ public abstract class ObjectEditor
     {
 
         /** Handle center point. */
-        protected final Point2D handleCenter;
+        protected final Point2D center;
 
         /**
-         * Create a <code>Handle</code> object.
+         * Create a <code>Handle</code> object with a reference to live center point.
          *
-         * @param center absolute coordinates of handle center
+         * @param center (live) center point, using absolute coordinates
          */
         public Handle (Point2D center)
         {
-            this.handleCenter = center;
+            this.center = center;
         }
 
         /**
          * Report whether this handle contains the provided point.
          *
-         * @param pt the provided point
-         * @return true if the provided point lies within detection distance from handle center
+         * @param pt   the provided point
+         * @param zoom current display zoom
+         * @return true if the provided point lies within handle square
          */
-        public boolean contains (Point pt)
+        public boolean contains (Point pt,
+                                 Zoom zoom)
         {
-            return handleCenter.distanceSq(pt)
-                           <= (HANDLE_DETECTION_RADIUS * HANDLE_DETECTION_RADIUS);
+            final double ratio = Math.min(constants.handleMaxZoom.getValue(), zoom.getRatio());
+            final double maxDist = HANDLE_DETECTION_RADIUS / ratio;
+            final double dx = Math.abs(pt.x - center.getX());
+            final double dy = Math.abs(pt.y - center.getY());
+            final double dist = Math.max(dx, dy);
+
+            return dist <= maxDist;
         }
 
         /**
          * Report (live) handle center point.
          *
-         * @return handle center
+         * @return (live) handle center
          */
-        public Point2D getHandleCenter ()
+        public Point2D getPoint ()
         {
-            return handleCenter;
+            return center;
         }
 
         /**
-         * Apply the handle move, depending on the role of this handle, to data model.
-         * <p>
-         * This method is called only if vector length is not 0.
+         * Apply the suggested handle move (based on user location translation) to data model,
+         * depending on the role of this handle.
          *
-         * @param vector handle translation given by mouse movement or keyboard arrow increment
+         * @param dx abscissa translation of user location
+         * @param dy ordinate translation of user location
          * @return true if some real move has been performed
          */
-        public abstract boolean move (Point vector);
+        public abstract boolean move (int dx,
+                                      int dy);
 
         /**
          * Render this handle as a rounded rectangle centered on the control point.
@@ -438,12 +466,13 @@ public abstract class ObjectEditor
                             boolean isSelected)
         {
             // Draw handle rectangle with a fixed size, regardless of current zoom of score view
-            final double zoom = g.getTransform().getScaleX();
+            final double zoom = Math.min(constants.handleMaxZoom.getValue(),
+                                         g.getTransform().getScaleX());
             final double halfSide = HANDLE_HALF_SIDE / zoom;
             final double arcRadius = HANDLE_ARC_RADIUS / zoom;
             final RoundRectangle2D square = new RoundRectangle2D.Double(
-                    handleCenter.getX() - halfSide,
-                    handleCenter.getY() - halfSide,
+                    center.getX() - halfSide,
+                    center.getY() - halfSide,
                     2 * halfSide,
                     2 * halfSide,
                     arcRadius,
@@ -460,7 +489,7 @@ public abstract class ObjectEditor
         public String toString ()
         {
             StringBuilder sb = new StringBuilder("Handle{");
-            sb.append("@").append(handleCenter);
+            sb.append("@").append(center);
             sb.append('}');
 
             return sb.toString();
@@ -473,6 +502,10 @@ public abstract class ObjectEditor
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Ratio handleMaxZoom = new Constant.Ratio(
+                2.0,
+                "Maximum effective zoom on handle");
 
         private final Constant.Double handleDetectionRadius = new Constant.Double(
                 "pixels",

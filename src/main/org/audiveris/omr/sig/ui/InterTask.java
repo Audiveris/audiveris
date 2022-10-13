@@ -99,6 +99,7 @@ public abstract class InterTask
     {
         StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(inter);
+        sb.append(" @").append(Integer.toHexString(inter.hashCode()));
 
         if (links != null) {
             for (Link link : links) {
@@ -107,35 +108,5 @@ public abstract class InterTask
         }
 
         return sb.toString();
-    }
-
-    //---------//
-    // linksOf //
-    //---------//
-    /**
-     * Retrieve the current links around the provided inter.
-     *
-     * @param inter the provided inter
-     * @return its links, perhaps empty
-     */
-    protected static Collection<Link> linksOf (Inter inter)
-    {
-        final SIGraph sig = inter.getSig();
-        Set<Link> links = null;
-
-        for (Relation rel : sig.edgesOf(inter)) {
-            if (links == null) {
-                links = new LinkedHashSet<>();
-            }
-
-            final Inter partner = sig.getOppositeInter(inter, rel);
-            links.add(new Link(partner, rel, sig.getEdgeTarget(rel) == partner));
-        }
-
-        if (links == null) {
-            return Collections.emptySet();
-        }
-
-        return links;
     }
 }

@@ -24,6 +24,8 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
 
+import java.util.Collection;
+
 /**
  * Class <code>RemovalTask</code> removes an inter (with its relations).
  *
@@ -41,14 +43,31 @@ public class RemovalTask
      */
     public RemovalTask (Inter inter)
     {
-        super(inter.getSig(), inter, inter.getBounds(), null, "del");
+        this(inter, null);
+    }
+
+    /**
+     * Creates a new <code>RemovalTask</code> object, with its current links.
+     * <p>
+     * Useful when inter is no longer in sig when this task is performed.
+     *
+     * @param inter the inter to remove
+     * @param links the inter current links
+     */
+    public RemovalTask (Inter inter,
+                        Collection<Link> links)
+    {
+        super(inter.getSig(), inter, inter.getBounds(), links, "del");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {
-        links = linksOf(inter);
+        if (links == null) {
+            links = inter.getLinks();
+        }
+
         inter.remove(false);
     }
 

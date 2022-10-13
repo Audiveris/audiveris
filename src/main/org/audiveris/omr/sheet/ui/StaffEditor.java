@@ -368,10 +368,11 @@ public abstract class StaffEditor
                     p -> handles.add(new Handle(p)
                     {
                         @Override
-                        public boolean move (Point vector)
+                        public boolean move (int dx,
+                                             int dy)
                         {
                             // Move in any direction
-                            PointUtil.add(p, vector);
+                            PointUtil.add(p, dx, dy);
 
                             return true;
                         }
@@ -382,11 +383,10 @@ public abstract class StaffEditor
                     p -> handles.add(new Handle(p)
                     {
                         @Override
-                        public boolean move (Point vector)
+                        public boolean move (int dx,
+                                             int dy)
                         {
                             // Move only vertically
-                            final int dy = vector.y;
-
                             if (dy == 0) {
                                 return false;
                             }
@@ -499,11 +499,10 @@ public abstract class StaffEditor
                             p -> handles.add(new Handle(p)
                             {
                                 @Override
-                                public boolean move (Point vector)
+                                public boolean move (int dx,
+                                                     int dy)
                                 {
                                     // Move only vertically
-                                    final int dy = vector.y;
-
                                     if (dy == 0) {
                                         return false;
                                     }

@@ -82,26 +82,27 @@ public class SelectionPainter
     /**
      * Draw the link between two inters.
      *
-     * @param one       first inter
-     * @param two       second inter
-     * @param linkClass provided link class
+     * @param one      first inter
+     * @param two      second inter
+     * @param relation the relation instance
      */
     public void drawLink (Inter one,
                           Inter two,
-                          Class<? extends Relation> linkClass)
+                          Relation relation)
     {
         final double zoom = g.getTransform().getScaleX();
 
         // Draw link line
-        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 2f);
+        final Stroke oldStroke = UIUtil.setAbsoluteDashedStroke(g, 1f);
+        final Class<? extends Relation> linkClass = relation.getClass();
         g.setColor(NoExclusion.class.isAssignableFrom(linkClass) ? Color.GRAY
-                : Support.class.isAssignableFrom(linkClass) ? Color.GREEN : Color.ORANGE);
+                : Support.class.isAssignableFrom(linkClass) ? Color.GREEN.darker() : Color.ORANGE);
 
         final double r = 2 / zoom; // Radius
-        final Point2D oneCenter = one.getRelationCenter();
+        final Point2D oneCenter = one.getRelationCenter(relation);
         g.fill(new Ellipse2D.Double(oneCenter.getX() - r, oneCenter.getY() - r, 2 * r, 2 * r));
 
-        final Point2D twoCenter = two.getRelationCenter();
+        final Point2D twoCenter = two.getRelationCenter(relation);
         g.fill(new Ellipse2D.Double(twoCenter.getX() - r, twoCenter.getY() - r, 2 * r, 2 * r));
 
         final Line2D line = new Line2D.Double(oneCenter, twoCenter);

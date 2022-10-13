@@ -1356,16 +1356,14 @@ public class HeadInter
             handles.add(selectedHandle = new InterEditor.Handle(head.getCenter())
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-                    final int dy = vector.y;
-
                     // Handle
-                    PointUtil.add(selectedHandle.getHandleCenter(), dx, dy);
+                    PointUtil.add(selectedHandle.getPoint(), dx, dy);
 
                     // Data
-                    Point2D center = selectedHandle.getHandleCenter();
+                    Point2D center = selectedHandle.getPoint();
                     latestBounds.x = (int) Math.rint(center.getX() - halfWidth);
                     latestBounds.y = (int) Math.rint(center.getY() - halfHeight);
                     head.setBounds(latestBounds);

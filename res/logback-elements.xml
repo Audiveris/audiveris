@@ -40,7 +40,7 @@
         <appender-ref ref="CONSOLE" />
     </root>    
     
-    <!-- Too avoid useless messages from nd4j or reflections -->
+    <!-- To avoid useless messages from nd4j or reflections -->
     <logger name="org.nd4j.nativeblas.Nd4jBlas" level="WARN"/>
     <logger name="org.nd4j.nativeblas.NativeOps" level="WARN"/>
     <logger name="org.reflections.Reflections" level="WARN"/>

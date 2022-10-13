@@ -876,15 +876,6 @@ public class BeamGroupInter
         EnsembleHelper.removeMember(this, member);
     }
 
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip (boolean vip)
-    {
-        this.vip = vip;
-    }
-
     //----------//
     // setVoice //
     //----------//
