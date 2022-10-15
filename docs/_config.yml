@@ -84,6 +84,18 @@ footer_content: "Copyright &copy; Audiveris 2022. Distributed under <a href=\"ht
 color_scheme: nil
 #color_scheme: "dark"
 
+# Callouts
+callouts:
+  warning:
+    title: Warning
+    color: red
+  new:
+    title: New
+    color: green
+  nota:
+    title: Nota
+    color: purple
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
