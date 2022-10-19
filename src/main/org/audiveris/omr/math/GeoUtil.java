@@ -88,6 +88,33 @@ public abstract class GeoUtil
         return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
     }
 
+    //-----//
+    // iou //
+    //-----//
+    /**
+     * Report the "intersection over union" of the provided rectangles.
+     *
+     * @param one first provided rectangle
+     * @param two the other provided rectangle
+     * @return a ratio between 0.0 and 1.0
+     */
+    public static double iou (Rectangle one,
+                              Rectangle two)
+    {
+        final Rectangle inter = one.intersection(two);
+        final int interArea = inter.width * inter.height;
+
+        if (interArea == 0) {
+            return 0;
+        }
+
+        final int oneArea = one.width * one.height;
+        final int twoArea = two.width * two.height;
+        final int unionArea = oneArea + twoArea - interArea;
+
+        return (double) interArea / unionArea;
+    }
+
     //--------------//
     // ptDistanceSq //
     //--------------//

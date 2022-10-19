@@ -22,13 +22,12 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.image.Template;
+import org.audiveris.omr.image.TemplateFactory;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -42,8 +41,8 @@ import java.awt.geom.Rectangle2D;
 public class TemplateSymbol
         extends BasicSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Template shape. */
     protected final Shape shape;
 
@@ -94,13 +93,12 @@ public class TemplateSymbol
         final Rectangle fatSym = rawSym.getBounds();
 
         // Template rectangle with origin at (0,0) and some room around the symbol
-        final int dx = 6;
-        final int dy = 5;
+        final int room = 2 * (int) Math.ceil(TemplateFactory.maxDistanceFromSymbol());
         p.rect = new Rectangle2D.Double(
                 0,
                 0,
-                isSmall ? (fatSym.width + dx) : (rawSym.getWidth() + dx),
-                isSmall ? (font.getStaffInterline() + dy) : (rawSym.getHeight() + dy));
+                room + (isSmall ? fatSym.width : rawSym.getWidth()),
+                room + (isSmall ? fatSym.height : rawSym.getHeight()));
 
         // Symbol bounds relative to template rectangle
         p.rawRect = new Rectangle2D.Double(

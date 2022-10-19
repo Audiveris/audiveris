@@ -51,6 +51,8 @@ import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -73,9 +75,6 @@ public class DistancesBuilder
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
-
-    /** Table of distances to fore. */
-    private DistanceTable table;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -100,12 +99,18 @@ public class DistancesBuilder
     public DistanceTable buildDistances ()
     {
         // Compute the distance-to-foreground transform image
-        Picture picture = sheet.getPicture();
-        ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
-        table = new ChamferDistance.Short().computeToFore(buffer);
+        final ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
+        final BufferedImage image = rawBuf.getBufferedImage();
 
-        // "Erase" staff lines, ledgers, stems
-        paintLines();
+        // "Erase" staff lines, ledgers, stems with background value in image
+        paintLines(new ImagePainter(image)); // This modifies (shared) buffer
+
+        // Table of distances to relevant foreground.
+        final ByteProcessor buffer = new ByteProcessor(image);
+        final DistanceTable table = new ChamferDistance.Short().computeToFore(buffer);
+
+        // "Erase" staff lines, ledgers, stems with neutralized value in table
+        paintLines(new TablePainter(table));
 
         // Display distances image in a template view?
         if ((OMR.gui != null) && constants.displayTemplates.isSet()) {
@@ -125,21 +130,13 @@ public class DistancesBuilder
     }
 
     //------------//
-    // paintGlyph //
-    //------------//
-    private void paintGlyph (Glyph glyph)
-    {
-        glyph.getRunTable().render(table, ChamferDistance.VALUE_UNKNOWN, glyph.getTopLeft());
-    }
-
-    //------------//
     // paintLines //
     //------------//
     /**
      * Paint the "neutralized" lines (staff lines, ledgers, stems) with a special value,
      * so that template matching can ignore these locations.
      */
-    private void paintLines ()
+    private void paintLines (Painter painter)
     {
         // Neutralize foreground due to staff lines / ledgers and stems
         for (SystemInfo system : sheet.getSystems()) {
@@ -153,7 +150,7 @@ public class DistancesBuilder
                     // Paint the line glyph.
                     // Note this does not erase staff line pixels at crossing objects
                     Glyph glyph = line.getGlyph();
-                    paintGlyph(glyph);
+                    painter.paintGlyph(glyph);
 
                     // Also paint the whole line, even at crossing objects.
                     // If we don't do that, void heads grades are slightly underestimated,
@@ -170,7 +167,7 @@ public class DistancesBuilder
                         int yMax = (int) Math.rint(yl + halfLine);
 
                         for (int y = yMin; y <= yMax; y++) {
-                            table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
+                            painter.paintPixel(x, y);
                         }
                     }
                 }
@@ -180,7 +177,7 @@ public class DistancesBuilder
 
                 for (List<LedgerInter> ledgers : ledgerMap.values()) {
                     for (LedgerInter ledger : ledgers) {
-                        paintGlyph(ledger.getGlyph());
+                        painter.paintGlyph(ledger.getGlyph());
                     }
                 }
             }
@@ -189,12 +186,82 @@ public class DistancesBuilder
             List<Glyph> systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
 
             for (Glyph seed : systemSeeds) {
-                paintGlyph(seed);
+                painter.paintGlyph(seed);
             }
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Painter //
+    //---------//
+    private static interface Painter
+    {
+
+        void paintGlyph (Glyph glyph);
+
+        void paintPixel (int x,
+                         int y);
+    }
+
+    //--------------//
+    // TablePainter //
+    //--------------//
+    private static class TablePainter
+            implements Painter
+    {
+
+        final DistanceTable table;
+
+        public TablePainter (DistanceTable table)
+        {
+            this.table = table;
+        }
+
+        @Override
+        public void paintGlyph (Glyph glyph)
+        {
+            glyph.getRunTable().render(table, ChamferDistance.VALUE_UNKNOWN, glyph.getTopLeft());
+        }
+
+        @Override
+        public void paintPixel (int x,
+                                int y)
+        {
+            table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
+        }
+
+    }
+
+    //--------------//
+    // ImagePainter //
+    //--------------//
+    private static class ImagePainter
+            implements Painter
+    {
+
+        final Graphics2D g;
+
+        public ImagePainter (BufferedImage img)
+        {
+            g = img.createGraphics();
+            g.setColor(Color.WHITE);
+        }
+
+        @Override
+        public void paintGlyph (Glyph glyph)
+        {
+            glyph.getRunTable().render(g, glyph.getTopLeft());
+        }
+
+        @Override
+        public void paintPixel (int x,
+                                int y)
+        {
+            g.fillRect(x, y, 1, 1);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//

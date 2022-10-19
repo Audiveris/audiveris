@@ -850,12 +850,10 @@ public class HeadInter
     @Override
     public boolean overlaps (Inter that)
     {
-        if (that instanceof HeadInter) {
+        if (that instanceof HeadInter thatHead) {
             if (this.isVip() && that.isVip()) {
                 logger.info("VIP HeadInter checking overlaps between {} and {}", this, that);
             }
-
-            HeadInter thatHead = (HeadInter) that;
 
             // Check integer pitch distance
             final Integer dPitch = (this.getStaff() == that.getStaff())

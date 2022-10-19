@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -66,7 +67,6 @@ import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AbstractConnection;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
-import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
@@ -395,32 +395,6 @@ public class SigReducer
                             exclude(beamSet, headSet);
                         }
                     }
-//
-//                    // Small beams support small black heads
-//                    Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
-//
-//                    if (smallHeadSet != null) {
-//                        for (Inter smallBeam : beamSet) {
-//                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
-//                                    smallBeam,
-//                                    stem,
-//                                    BeamStemRelation.class);
-//
-//                            for (Inter smallHead : smallHeadSet) {
-//                                if (sig.getRelation(smallBeam, smallHead, BeamHeadRelation.class)
-//                                            == null) {
-//                                    // Use average of beam-stem and head-stem relation grades
-//                                    HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
-//                                            smallHead,
-//                                            stem,
-//                                            HeadStemRelation.class);
-//                                    double grade = (bs.getGrade() + hs.getGrade()) / 2;
-//
-//                                    ///sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
-//                                }
-//                            }
-//                        }
-//                    }
                 } else {
                     // Standard beams exclude small heads
                     Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
@@ -428,37 +402,6 @@ public class SigReducer
                     if (smallHeadSet != null) {
                         exclude(beamSet, smallHeadSet);
                     }
-//
-//                    // Standard beams support black heads (not void)
-//                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK,
-//                                                   Shape.NOTEHEAD_DIAMOND_FILLED,
-//                                                   Shape.NOTEHEAD_CROSS,
-//                                                   Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED}) {
-//
-//                        Set<Inter> blackHeadSet = heads.get(shape);
-//
-//                        if (blackHeadSet != null) {
-//                            for (Inter beam : beamSet) {
-//                                BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
-//                                        beam,
-//                                        stem,
-//                                        BeamStemRelation.class);
-//
-//                                for (Inter head : blackHeadSet) {
-//                                    if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
-//                                        // Use average of beam-stem and head-stem relation grades
-//                                        HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
-//                                                head,
-//                                                stem,
-//                                                HeadStemRelation.class);
-//                                        double grade = (bs.getGrade() + hs.getGrade()) / 2;
-//
-//                                        ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
                 }
             }
         }
@@ -1500,7 +1443,11 @@ public class SigReducer
 
         for (Inter ih : allHeads) {
             if (median.intersects(ih.getBounds())) {
-                found.add(ih);
+                final double iou = GeoUtil.iou(stem.getBounds(), ih.getBounds());
+
+                if (iou >= constants.minIouStemHead.getSourceValue()) {
+                    found.add(ih);
+                }
             }
         }
 
@@ -2063,6 +2010,10 @@ public class SigReducer
         private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
+
+        private final Constant.Ratio minIouStemHead = new Constant.Ratio(
+                0.02,
+                "Minimum IOU between stem and intersected heads");
     }
 
     //-----------------------//

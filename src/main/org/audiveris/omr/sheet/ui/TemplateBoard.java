@@ -37,6 +37,8 @@ import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.note.NoteHeadsBuilder;
+import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
@@ -95,12 +97,24 @@ public class TemplateBoard
     /** Input: Anchor selection. */
     private final JSpinner anchorSpinner;
 
-    /** Output: evaluation result. */
+    /** Output: distance. */
     private final JTextField evalField = new JTextField(6);
+
+    /** Output: raw (non-boosted) grade. */
+    private final LDoubleField rawField = new LDoubleField(
+            "Raw",
+            "Inter grade",
+            "%.3f");
+
+    /** Output: (boosted) grade. */
+    private final LDoubleField gradeField = new LDoubleField(
+            "Grade",
+            "Inter boosted grade",
+            "%.3f");
 
     /** Output: key point value. */
     private final LDoubleField keyPointField = new LDoubleField(
-            "Tpl",
+            "KeyPt",
             "Template key point value",
             "%.1f");
 
@@ -258,18 +272,13 @@ public class TemplateBoard
     private boolean areCompatible (Shape shape,
                                    Anchor anchor)
     {
-        switch (shape) {
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-        case WHOLE_NOTE_DIAMOND:
-        case WHOLE_NOTE_CROSS:
-        case WHOLE_NOTE_TRIANGLE_DOWN:
-        case WHOLE_NOTE_CIRCLE_X:
-            return anchor == Anchor.MIDDLE_LEFT;
-
-        default:
-            return true;
-        }
+        return switch (shape) {
+            case BREVE, WHOLE_NOTE, WHOLE_NOTE_CIRCLE_X, WHOLE_NOTE_CROSS,
+                WHOLE_NOTE_DIAMOND, WHOLE_NOTE_SMALL, WHOLE_NOTE_TRIANGLE_DOWN ->
+                anchor == Anchor.MIDDLE_LEFT;
+            default ->
+                true;
+        };
     }
 
     //--------------//
@@ -289,6 +298,12 @@ public class TemplateBoard
         builder.add(shapeSpinner, cst.xyw(7, r, 5));
 
         r += 2; // --------------------------------
+        builder.add(gradeField.getLabel(), cst.xy(1, r));
+        builder.add(gradeField.getField(), cst.xy(3, r));
+
+        builder.add(rawField.getLabel(), cst.xy(5, r));
+        builder.add(rawField.getField(), cst.xy(7, r));
+
         builder.add(keyPointField.getLabel(), cst.xy(9, r));
         builder.add(keyPointField.getField(), cst.xy(11, r));
     }
@@ -296,22 +311,37 @@ public class TemplateBoard
     //-------------//
     // tryEvaluate //
     //-------------//
-    private void tryEvaluate (Point p,
+    /**
+     * Evaluate provided template at provided location.
+     *
+     * @param pt               the provided location in sheet
+     * @param anchoredTemplate the template to use
+     */
+    private void tryEvaluate (Point pt,
                               AnchoredTemplate anchoredTemplate)
     {
-        if ((p != null) && (anchoredTemplate != null)) {
-            // Evaluate current anchored template at this location
-            if ((p.x < table.getWidth()) && (p.y < table.getHeight())) {
-                final Anchor anchor = anchoredTemplate.anchor;
-                final Template template = anchoredTemplate.template;
-                double dist = template.evaluate(p.x, p.y, anchor, table);
-                double grade = Grades.intrinsicRatio * Template.impactOf(dist);
-                evalField.setText(String.format("%.3f", grade));
-            } else {
-                evalField.setText("");
-            }
+        if ((pt != null)
+                    && (anchoredTemplate != null)
+                    && (pt.x < table.getWidth())
+                    && (pt.y < table.getHeight())) {
+            final Anchor anchor = anchoredTemplate.anchor;
+            final Template template = anchoredTemplate.template;
+
+            final double dist = template.evaluate(pt.x, pt.y, anchor, table);
+            evalField.setText(String.format("%.3f", dist));
+
+            final double grade = Math.max(0, Grades.intrinsicRatio * Template.impactOf(dist));
+            rawField.setValue(grade);
+
+            final Shape shape = (Shape) shapeSpinner.getValue();
+            final double boosted = (grade == 0) ? 0 : (ShapeSet.StemLessHeads.contains(shape)
+                    ? AbstractInter.increaseGrade(grade, NoteHeadsBuilder.getStemLessBoost())
+                    : grade);
+            gradeField.setValue(boosted);
         } else {
             evalField.setText("");
+            rawField.setText("");
+            gradeField.setText("");
         }
     }
 }

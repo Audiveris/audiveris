@@ -60,6 +60,12 @@ public interface ChamferDistance
         new int[]{5, 1, 346},
         new int[]{6, 1, 413}};
 
+    /** Default chamfer mask. */
+    public static final int[][] DEFAULT_MASK = chamfer3;
+
+    /** Normalizer of default mask. */
+    public static final int DEFAULT_NORMALIZER = DEFAULT_MASK[0][2];
+
     //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // compute //
@@ -115,11 +121,11 @@ public interface ChamferDistance
         private final int normalizer;
 
         /**
-         * Creates a new Abstract object, with chamfer3 as default mask.
+         * Creates a new Abstract object, with default mask.
          */
         public Abstract ()
         {
-            this(chamfer3);
+            this(DEFAULT_MASK);
         }
 
         /**

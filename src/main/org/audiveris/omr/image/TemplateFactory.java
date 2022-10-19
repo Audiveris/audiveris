@@ -24,18 +24,7 @@ package org.audiveris.omr.image;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.NOTEHEAD_DIAMOND_VOID;
-import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_DIAMOND;
-import static org.audiveris.omr.glyph.Shape.NOTEHEAD_CROSS_VOID;
-import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_CROSS;
-import static org.audiveris.omr.glyph.Shape.NOTEHEAD_TRIANGLE_DOWN_VOID;
-import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_TRIANGLE_DOWN;
-import static org.audiveris.omr.glyph.Shape.NOTEHEAD_CIRCLE_X;
-import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_CIRCLE_X;
-import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
-import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID_SMALL;
-import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE;
-import static org.audiveris.omr.glyph.Shape.WHOLE_NOTE_SMALL;
+import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.math.GeoUtil;
@@ -108,18 +97,20 @@ public class TemplateFactory
     private static final TemplateFactory INSTANCE = new TemplateFactory();
 
     /** All shapes with hole(s). */
-    private static final EnumSet shapesWithHoles = EnumSet.of(NOTEHEAD_DIAMOND_VOID,
-                                                              WHOLE_NOTE_DIAMOND,
-                                                              NOTEHEAD_CROSS_VOID,
-                                                              WHOLE_NOTE_CROSS,
-                                                              NOTEHEAD_TRIANGLE_DOWN_VOID,
-                                                              WHOLE_NOTE_TRIANGLE_DOWN,
-                                                              NOTEHEAD_CIRCLE_X,
-                                                              WHOLE_NOTE_CIRCLE_X,
-                                                              NOTEHEAD_VOID,
-                                                              NOTEHEAD_VOID_SMALL,
-                                                              WHOLE_NOTE,
-                                                              WHOLE_NOTE_SMALL);
+    private static final EnumSet shapesWithHoles = EnumSet.of(
+            BREVE,
+            NOTEHEAD_CIRCLE_X,
+            NOTEHEAD_CROSS_VOID,
+            NOTEHEAD_DIAMOND_VOID,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE,
+            WHOLE_NOTE_CIRCLE_X,
+            WHOLE_NOTE_CROSS,
+            WHOLE_NOTE_DIAMOND,
+            WHOLE_NOTE_SMALL,
+            WHOLE_NOTE_TRIANGLE_DOWN);
 
     /** Color for foreground pixels. */
     private static final int FORE = Color.BLACK.getRGB();
@@ -215,6 +206,20 @@ public class TemplateFactory
         }
     }
 
+    //-----------------------//
+    // maxDistanceFromSymbol //
+    //-----------------------//
+    /**
+     * Report the maximum external distance from symbol foreground for a pixel to be considered.
+     *
+     * @return the (normalized) maximum distance
+     */
+    public static double maxDistanceFromSymbol ()
+    {
+        return constants.maxRawDistanceFromSymbol.getValue()
+                       / (double) ChamferDistance.DEFAULT_NORMALIZER;
+    }
+
     //------------//
     // addAnchors //
     //------------//
@@ -264,23 +269,16 @@ public class TemplateFactory
     private double getTop (Shape shape,
                            Rectangle slimBox)
     {
-        switch (shape) {
-        case NOTEHEAD_CROSS:
-        case NOTEHEAD_CROSS_VOID:
-            return slimBox.y;
-
-        case NOTEHEAD_DIAMOND_FILLED:
-        case NOTEHEAD_DIAMOND_VOID:
-        case NOTEHEAD_CIRCLE_X:
-            return slimBox.y + slimBox.height / 2;
-
-        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-        case NOTEHEAD_TRIANGLE_DOWN_VOID:
-            return slimBox.y;
-
-        default:
-            return slimBox.y - constants.stemDy.getValue() * slimBox.height;
-        }
+        return switch (shape) {
+            case NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID ->
+                slimBox.y;
+            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID, NOTEHEAD_CIRCLE_X ->
+                slimBox.y + slimBox.height / 2;
+            case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID ->
+                slimBox.y;
+            default ->
+                slimBox.y - constants.stemDy.getValue() * slimBox.height;
+        };
     }
 
     //-----------//
@@ -289,23 +287,16 @@ public class TemplateFactory
     private double getBottom (Shape shape,
                               Rectangle slimBox)
     {
-        switch (shape) {
-        case NOTEHEAD_CROSS:
-        case NOTEHEAD_CROSS_VOID:
-            return slimBox.y + slimBox.height;
-
-        case NOTEHEAD_DIAMOND_FILLED:
-        case NOTEHEAD_DIAMOND_VOID:
-        case NOTEHEAD_CIRCLE_X:
-            return slimBox.y + slimBox.height / 2;
-
-        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-        case NOTEHEAD_TRIANGLE_DOWN_VOID:
-            return slimBox.y;
-
-        default:
-            return slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
-        }
+        return switch (shape) {
+            case NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID ->
+                slimBox.y + slimBox.height;
+            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID, NOTEHEAD_CIRCLE_X ->
+                slimBox.y + slimBox.height / 2;
+            case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID ->
+                slimBox.y;
+            default ->
+                slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+        };
     }
 
     //----------//
@@ -317,17 +308,27 @@ public class TemplateFactory
      * Such pixels are marked with a specific color (pink foreground) so that the template can
      * measure their distance to (black) foreground.
      *
-     * @param img the source image
-     * @param box bounds of symbol relative to image
+     * @param shape given shape
+     * @param img   the source image
+     * @param box   bounds of symbol relative to image
      */
-    private void addHoles (BufferedImage img,
+    private void addHoles (Shape shape,
+                           BufferedImage img,
                            Rectangle box)
     {
         // Identify holes
         final List<Point> holeSeeds = new ArrayList<>();
 
-        // We have no ledger, just a big hole in the symbol center
-        holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
+        if (shape == NOTEHEAD_CIRCLE_X || shape == WHOLE_NOTE_CIRCLE_X) {
+            // 4 holes
+            holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
+            holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
+            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
+            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
+        } else {
+            // Just one hole in the symbol center
+            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
+        }
 
         // Fill the holes if any with HOLE color
         FloodFiller floodFiller = new FloodFiller(img);
@@ -336,8 +337,8 @@ public class TemplateFactory
             // Background (BACK) -> interior background (HOLE)
             // Hole seeds are very coarse with low interline value, so try points nearby
             Neighborhood:
-            for (int iy = 0; iy <= 1; iy++) {
-                for (int ix = 0; ix <= 1; ix++) {
+            for (int iy = -1; iy <= 1; iy++) {
+                for (int ix = -1; ix <= 1; ix++) {
                     if (isBackground(img, seed.x + ix, seed.y + iy)) {
                         floodFiller.fill(seed.x + ix, seed.y + iy, BACK, HOLE);
 
@@ -395,6 +396,7 @@ public class TemplateFactory
                                                        DistanceTable distances)
     {
         final List<PixelDistance> keyPoints = new ArrayList<>();
+        final int maxDist = constants.maxRawDistanceFromSymbol.getSourceValue();
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
@@ -402,12 +404,15 @@ public class TemplateFactory
 
                 // We consider only relevant pixels
                 if (pix != IRRELEVANT) {
-                    // For hole, use *NEGATIVE* dist to nearest foreground
-                    // For background, use dist to nearest foreground
-                    // For foreground, dist to nearest foreground is 0 by definition
+                    // For hole, use *NEGATIVE* distance to nearest foreground
+                    // For background, use distance to nearest foreground
+                    // For foreground, distance to nearest foreground is 0 by definition
                     final int val = distances.getValue(x, y);
                     final int d = (pix == HOLE) ? (-val) : ((pix == BACK) ? val : 0);
-                    keyPoints.add(new PixelDistance(x, y, d));
+
+                    if (d <= maxDist) {
+                        keyPoints.add(new PixelDistance(x, y, d));
+                    }
                 }
             }
         }
@@ -420,10 +425,6 @@ public class TemplateFactory
     //------------------//
     /**
      * Compute all distances to nearest foreground pixel.
-     * <p>
-     * For this we work as if there was a foreground rectangle right around the image.
-     * Similarly, the non-relevant pixels are assumed to be foreground.
-     * This is to allow the detection of reliable background key points.
      *
      * @param img   the source image
      * @param shape the template shape
@@ -435,28 +436,14 @@ public class TemplateFactory
         // Retrieve foreground pixels
         final int width = img.getWidth();
         final int height = img.getHeight();
-        final boolean[][] fore = new boolean[width + 2][height + 2];
+        final boolean[][] fore = new boolean[width][height];
 
-        // Fill with img foreground pixels and irrelevant pixels
-        for (int y = 1; y < (height + 1); y++) {
-            for (int x = 1; x < (width + 1); x++) {
-                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
-
-                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (img.getRGB(x, y) == FORE) {
                     fore[x][y] = true;
                 }
             }
-        }
-
-        // Surround with a rectangle of foreground pixels
-        for (int y = 0; y < (height + 2); y++) {
-            fore[0][y] = true;
-            fore[width + 1][y] = true;
-        }
-
-        for (int x = 0; x < (width + 2); x++) {
-            fore[x][0] = true;
-            fore[x][height + 1] = true;
         }
 
         // Compute template distance transform
@@ -466,11 +453,7 @@ public class TemplateFactory
             TableUtil.dump(shape + "  distances", distances);
         }
 
-        // Trim the distance table of its surrounding rectangle
-        final Rectangle roi = new Rectangle(1, 1, width, height);
-        final DistanceTable trimmed = (DistanceTable) distances.getView(roi);
-
-        return trimmed;
+        return distances;
     }
 
     //---------------------//
@@ -619,7 +602,13 @@ public class TemplateFactory
         MusicFont font = MusicFont.getPointFont(pointSize, interline);
 
         // Get symbol image painted on template rectangle
-        final TemplateSymbol symbol = new TemplateSymbol(shape, getCode(shape));
+        final int code = getCode(shape);
+        if (code == -1) {
+            logger.error("Shape {} is not supported", shape);
+            return null;
+        }
+
+        final TemplateSymbol symbol = new TemplateSymbol(shape, code);
         final BufferedImage img = symbol.buildImage(font); // Gray pixels
 
         binarize(img, constants.binarizationThreshold.getValue()); // B&W pixels + IRRELEVANT
@@ -631,7 +620,7 @@ public class TemplateFactory
 
         // Add holes if any
         if (shapesWithHoles.contains(shape)) {
-            addHoles(img, fatBounds); // B=FORE & W=BACK + HOLE pixels
+            addHoles(shape, img, fatBounds); // B=FORE & W=BACK + HOLE pixels
         }
 
         // Flag non-relevant pixels
@@ -670,112 +659,22 @@ public class TemplateFactory
     /**
      * Some pixels in (non-hole) background regions must be set as non relevant.
      * <p>
-     * They are roughly the "exterior" half of these regions, where the distance to foreground would
-     * be impacted by the presence of nearby stem or staff / ledger line.
-     * Only the "interior" half of such region is relevant, for its distance to foreground is not
-     * dependent upon the presence of stem or line.
+     * All exterior pixels where distance is larger than maxRawDistanceFromSymbol.
      *
      * @param img the image to modify
      */
     private void flagIrrelevantPixels (BufferedImage img,
                                        DistanceTable distances)
     {
-        // First browse from each foreground pixel in the 4 directions to first non-foreground pixel
-        // If this pixel is relevant and non-hole, flag it as a border pixel.
-        final Set<Point> borderPoints = getBorderPoints(img);
-
-        // Then, extend each border pixel in the 4 directions as long as the
-        // distance read for the pixel increases.
-        final Table extensions = getExtensions(borderPoints, img, distances);
-
-        // The border pixels and extensions compose the relevant part of (non-hole background) regions.
-        // Flag the other (non-hole) background pixels as irrelevant
-        for (int y = 0, h = img.getHeight(); y < h; y++) {
-            for (int x = 0, w = img.getWidth(); x < w; x++) {
-                // Check (non-hole) background pixel
-                if (img.getRGB(x, y) == BACK) {
-                    if (extensions.getValue(x, y) != 1) {
-                        img.setRGB(x, y, IRRELEVANT);
-                    }
-                }
-            }
-        }
-    }
-
-    //-----------------//
-    // getBorderPoints //
-    //-----------------//
-    /**
-     * Report the set of border points in provided image, that is any FORE pixel next to
-     * a BACK pixel (HOLE pixels are not considered).
-     *
-     * @param img the provided image
-     * @return the set of border points
-     */
-    private Set<Point> getBorderPoints (BufferedImage img)
-    {
-        final Set<Point> borders = new LinkedHashSet<>();
+        final int maxDist = constants.maxRawDistanceFromSymbol.getValue();
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
-                // Check foreground pixel
-                if (img.getRGB(x, y) == FORE) {
-                    // North
-                    for (int ny = y - 1; ny >= 0; ny--) {
-                        int pix = img.getRGB(x, ny);
-
-                        if (pix != FORE) {
-                            if (pix == BACK) {
-                                borders.add(new Point(x, ny));
-                            }
-
-                            break;
-                        }
-                    }
-
-                    // South
-                    for (int ny = y + 1; ny < h; ny++) {
-                        int pix = img.getRGB(x, ny);
-
-                        if (pix != FORE) {
-                            if (pix == BACK) {
-                                borders.add(new Point(x, ny));
-                            }
-
-                            break;
-                        }
-                    }
-
-                    // West
-                    for (int nx = x - 1; nx >= 0; nx--) {
-                        int pix = img.getRGB(nx, y);
-
-                        if (pix != FORE) {
-                            if (pix == BACK) {
-                                borders.add(new Point(nx, y));
-                            }
-
-                            break;
-                        }
-                    }
-
-                    // East
-                    for (int nx = x + 1; nx < w; nx++) {
-                        int pix = img.getRGB(nx, y);
-
-                        if (pix != FORE) {
-                            if (pix == BACK) {
-                                borders.add(new Point(nx, y));
-                            }
-
-                            break;
-                        }
-                    }
+                if ((img.getRGB(x, y) == BACK) && (distances.getValue(x, y) > maxDist)) {
+                    img.setRGB(x, y, IRRELEVANT);
                 }
             }
         }
-
-        return borders;
     }
 
     //---------//
@@ -783,144 +682,40 @@ public class TemplateFactory
     //---------//
     private static int getCode (Shape shape)
     {
-        switch (shape) {
-        case NOTEHEAD_DIAMOND_FILLED:
-            return Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
-
-        case NOTEHEAD_DIAMOND_VOID:
-            return Symbols.CODE_NOTEHEAD_DIAMOND_VOID;
-
-        case WHOLE_NOTE_DIAMOND:
-            return Symbols.CODE_WHOLE_NOTE_DIAMOND;
-
-        case NOTEHEAD_CROSS:
-            return Symbols.CODE_NOTEHEAD_CROSS;
-
-        case NOTEHEAD_CROSS_VOID:
-            return Symbols.CODE_NOTEHEAD_CROSS_VOID;
-
-        case WHOLE_NOTE_CROSS:
-            return Symbols.CODE_WHOLE_NOTE_CROSS;
-
-        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-            return Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_FILLED;
-
-        case NOTEHEAD_TRIANGLE_DOWN_VOID:
-            return Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_VOID;
-
-        case WHOLE_NOTE_TRIANGLE_DOWN:
-            return Symbols.CODE_WHOLE_NOTE_TRIANGLE_DOWN;
-
-        case NOTEHEAD_CIRCLE_X:
-            return Symbols.CODE_NOTEHEAD_CIRCLE_X;
-
-        case WHOLE_NOTE_CIRCLE_X:
-            return Symbols.CODE_WHOLE_NOTE_CIRCLE_X;
-
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-            return Symbols.CODE_NOTEHEAD_BLACK;
-
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-            return Symbols.CODE_NOTEHEAD_VOID;
-
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-            return Symbols.CODE_WHOLE_NOTE;
-
-        case BREVE:
-            return Symbols.CODE_BREVE;
-        }
-
-        logger.error(shape + " is not supported!");
-
-        return 0;
-    }
-
-    //---------------//
-    // getExtensions //
-    //---------------//
-    /**
-     * Extend each border pixel in the 4 directions as long as the distance read for the
-     * pixel increases.
-     *
-     * @param borderPoints all points detected to be on border
-     * @param img          the colored image
-     * @param distances    table of distances
-     * @return the table (same dimension as image) filled with 1's at extension locations
-     */
-    private Table getExtensions (Set<Point> borderPoints,
-                                 BufferedImage img,
-                                 DistanceTable distances)
-    {
-        final Table ext = new Table.UnsignedByte(img.getWidth(), img.getHeight());
-        ext.fill(0);
-
-        final int w = img.getWidth();
-        final int h = img.getHeight();
-
-        for (Point p : borderPoints) {
-            ext.setValue(p.x, p.y, 1);
-
-            int dist = distances.getValue(p.x, p.y);
-
-            // North
-            for (int ny = p.y - 1; ny >= 0; ny--) {
-                int d = distances.getValue(p.x, ny);
-
-                if (d > dist) {
-                    dist = d;
-                    ext.setValue(p.x, ny, 1);
-                } else {
-                    break;
-                }
-            }
-
-            // South
-            dist = distances.getValue(p.x, p.y);
-
-            for (int ny = p.y + 1; ny < h; ny++) {
-                int d = distances.getValue(p.x, ny);
-
-                if (d > dist) {
-                    dist = d;
-                    ext.setValue(p.x, ny, 1);
-                } else {
-                    break;
-                }
-            }
-
-            // West
-            dist = distances.getValue(p.x, p.y);
-
-            for (int nx = p.x - 1; nx >= 0; nx--) {
-                int d = distances.getValue(nx, p.y);
-
-                if (d > dist) {
-                    dist = d;
-                    ext.setValue(nx, p.y, 1);
-                } else {
-                    break;
-                }
-            }
-
-            // East
-            dist = distances.getValue(p.x, p.y);
-
-            for (int nx = p.x + 1; nx < w; nx++) {
-                int d = distances.getValue(nx, p.y);
-
-                if (d > dist) {
-                    dist = d;
-                    ext.setValue(nx, p.y, 1);
-                } else {
-                    break;
-                }
-            }
-        }
-
-        return ext;
+        return switch (shape) {
+            case BREVE ->
+                Symbols.CODE_BREVE;
+            case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL ->
+                Symbols.CODE_NOTEHEAD_BLACK;
+            case NOTEHEAD_CIRCLE_X ->
+                Symbols.CODE_NOTEHEAD_CIRCLE_X;
+            case NOTEHEAD_CROSS ->
+                Symbols.CODE_NOTEHEAD_CROSS;
+            case NOTEHEAD_CROSS_VOID ->
+                Symbols.CODE_NOTEHEAD_CROSS_VOID;
+            case NOTEHEAD_DIAMOND_FILLED ->
+                Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
+            case NOTEHEAD_DIAMOND_VOID ->
+                Symbols.CODE_NOTEHEAD_DIAMOND_VOID;
+            case NOTEHEAD_TRIANGLE_DOWN_FILLED ->
+                Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_FILLED;
+            case NOTEHEAD_TRIANGLE_DOWN_VOID ->
+                Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_VOID;
+            case NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL ->
+                Symbols.CODE_NOTEHEAD_VOID;
+            case WHOLE_NOTE_CIRCLE_X ->
+                Symbols.CODE_WHOLE_NOTE_CIRCLE_X;
+            case WHOLE_NOTE_CROSS ->
+                Symbols.CODE_WHOLE_NOTE_CROSS;
+            case WHOLE_NOTE_DIAMOND ->
+                Symbols.CODE_WHOLE_NOTE_DIAMOND;
+            case WHOLE_NOTE_TRIANGLE_DOWN ->
+                Symbols.CODE_WHOLE_NOTE_TRIANGLE_DOWN;
+            case WHOLE_NOTE, WHOLE_NOTE_SMALL ->
+                Symbols.CODE_WHOLE_NOTE;
+            default ->
+                -1;
+        };
     }
 
     //--------------//
@@ -954,7 +749,7 @@ public class TemplateFactory
         final int imgHeight = img.getHeight();
 
         // Minimum count of foreground cells to include current row or column
-        final int minCells = 2;
+        final int minCells = constants.minCellPerSide.getValue();
 
         // Symbol bounds taken as default values
         int x1 = fatBox.x;
@@ -1097,7 +892,7 @@ public class TemplateFactory
                 "Should we save the templates images to disk?");
 
         private final Constant.Integer binarizationThreshold = new Constant.Integer(
-                "pixel",
+                "pixel value",
                 140,
                 "Binarization threshold for building head templates");
 
@@ -1118,5 +913,15 @@ public class TemplateFactory
                 "pointSize",
                 69,
                 "Default point size used to generate decorated images");
+
+        private final Constant.Integer minCellPerSide = new Constant.Integer(
+                "pixels",
+                2,
+                "Minimum number of foreground pixels for slim bounds");
+
+        private final Constant.Integer maxRawDistanceFromSymbol = new Constant.Integer(
+                "distance",
+                8,
+                "Maximum raw distance from symbol for a keypoint");
     }
 }

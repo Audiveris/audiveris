@@ -31,6 +31,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import static org.audiveris.omr.image.Anchored.Anchor.*;
+import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
@@ -38,6 +39,7 @@ import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoPath;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.PointUtil;
@@ -97,11 +99,11 @@ import java.util.Set;
  * shape, with a combination of foreground and background information.
  * <p>
  * We don't need to check each and every location in the system, but only the locations where such
- * note kind is possible:
+ * head kind is possible:
  * <ul>
  * <li>We can stick to staff lines and ledgers locations.</li>
  * <li>We cannot fully use stems, since at this time we just have vertical seeds and not all stems
- * will contain seeds. However, if a vertical seed exists nearby we can use it to evaluate a note
+ * will contain seeds. However, if a vertical seed exists nearby we can use it to evaluate a head
  * candidate at proper location.</li>
  * <li>We can reasonably skip the locations where a really good beam or a really good bar line has
  * been detected.</li>
@@ -133,9 +135,6 @@ public class NoteHeadsBuilder
                     Shape.MULTIPLE_REST,
                     Shape.VERTICAL_SERIF));
 
-    /** Specific value for no offsets. */
-    private static final int[] NO_OFFSETS = new int[]{0};
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
@@ -149,14 +148,14 @@ public class NoteHeadsBuilder
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Sheet scale. */
+    /** The sheet scale. */
     @Navigable(false)
     private final Scale scale;
 
     /** The distance table to use. */
     private final DistanceTable distances;
 
-    /** The note-oriented spots for this system. */
+    /** The head-oriented spots for this system. */
     private final List<Glyph> systemSpots;
 
     /** Scale-dependent constants. */
@@ -183,17 +182,20 @@ public class NoteHeadsBuilder
     /** Offsets tried around a given (stem-based) abscissa. */
     private final int[] xOffsets;
 
-    /** All note templates for this sheet. */
+    /** All head templates for this sheet. */
     private final EnumSet<Shape> sheetTemplateNotes;
 
-    /** All stem note templates for this sheet. */
+    /** All stem head templates for this sheet. */
     private final EnumSet<Shape> sheetStemTemplateNotes;
 
-    /** All void note templates for this sheet. */
+    /** All void head templates for this sheet. */
     private final EnumSet<Shape> sheetVoidTemplateNotes;
 
     /** Collector for seed-based heads. */
     private final HeadSeedTally tally;
+
+    /** Max template half width. */
+    private final int templateHalf;
 
     // Debug
     private final Perf seedsPerf = new Perf();
@@ -238,6 +240,7 @@ public class NoteHeadsBuilder
 
         // Compute a reasonable minTemplateWidth
         minTemplateWidth = computeMinTemplateWidth();
+        templateHalf = computeTemplateHalf();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -266,6 +269,7 @@ public class NoteHeadsBuilder
             logger.debug("Staff #{}", staff.getId());
 
             // Determine the proper catalog, based on staff size
+            watch.start("Staff #" + staff.getId() + " catalog");
             final int pointSize = staff.getHeadPointSize();
             catalog = TemplateFactory.getInstance().getCatalog(pointSize);
 
@@ -306,7 +310,7 @@ public class NoteHeadsBuilder
             for (Inter inter : ch) {
                 // Boost head shapes that don't expect stem
                 if (ShapeSet.StemLessHeads.contains(inter.getShape())) {
-                    inter.increase(constants.wholeBoost.getValue());
+                    inter.increase(getStemLessBoost());
                 }
 
                 // Keep created heads in staff
@@ -327,11 +331,24 @@ public class NoteHeadsBuilder
     }
 
     //------------------//
+    // getStemLessBoost //
+    //------------------//
+    /**
+     * Report the boost value for stem-less heads since they can't expect support from stem.
+     *
+     * @return the boost value
+     */
+    public static double getStemLessBoost ()
+    {
+        return constants.stemLessBoost.getValue();
+    }
+
+    //------------------//
     // aggregateMatches //
     //------------------//
     private List<HeadInter> aggregateMatches (List<HeadInter> heads)
     {
-        // Sort by decreasing grade
+        // Sort heads by decreasing grade, whatever their shape
         Collections.sort(heads, Inters.byReverseGrade);
 
         // Gather matches per close locations
@@ -384,6 +401,14 @@ public class NoteHeadsBuilder
         return sheet.getScale().getInterline(); // Not too stupid...
     }
 
+    //---------------------//
+    // computeTemplateHalf //
+    //---------------------//
+    private int computeTemplateHalf ()
+    {
+        return (3 * sheet.getScale().getInterline()) / 2; // Not too stupid...
+    }
+
     //-----------------//
     // computeXOffsets //
     //-----------------//
@@ -401,8 +426,9 @@ public class NoteHeadsBuilder
             length++;
         }
 
-        int[] offsets = new int[length];
+        final int[] offsets = new int[length];
 
+        // 0, -1, +1, -2, +2, ...
         for (int i = 0; i < length; i++) {
             if ((i % 2) == 0) {
                 offsets[i] = -(i / 2);
@@ -424,7 +450,7 @@ public class NoteHeadsBuilder
      * @param anchor position of location WRT shape
      * @param shape  the shape tested
      * @param staff  the related staff
-     * @param pitch  the note pitch
+     * @param pitch  the head pitch
      * @return the head inter created, if any
      */
     private HeadInter createInter (PixelDistance loc,
@@ -669,7 +695,7 @@ public class NoteHeadsBuilder
     // overlapSeed //
     //-------------//
     /**
-     * We check overlap with seed-based note and return true only when
+     * We check overlap with seed-based head and return true only when
      * the overlapping seed-based inter has a rather similar or better grade.
      *
      * @param head        the x-based head to check
@@ -691,8 +717,12 @@ public class NoteHeadsBuilder
             Rectangle cBox = comp.getBounds();
 
             if (cBox.intersects(box)) {
-                if (comp.getGrade() >= loweredGrade) {
-                    return true;
+                final double iou = GeoUtil.iou(cBox, box);
+
+                if (iou >= constants.minIouHeads.getValue()) {
+                    if (comp.getGrade() >= loweredGrade) {
+                        return true;
+                    }
                 }
             } else if (cBox.x > xMax) {
                 break;
@@ -979,7 +1009,6 @@ public class NoteHeadsBuilder
         }
     }
 
-    //~ Inner classes ------------------------------------------------------------------------------
     //---------------//
     // purgeOverlaps //
     //---------------//
@@ -1034,6 +1063,7 @@ public class NoteHeadsBuilder
         return removed.size();
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //---------------//
     // LedgerAdapter //
     //---------------//
@@ -1044,8 +1074,6 @@ public class NoteHeadsBuilder
             extends LineAdapter
     {
 
-        private final Glyph ledger;
-
         private final Point2D left;
 
         private final Point2D right;
@@ -1055,7 +1083,6 @@ public class NoteHeadsBuilder
                        Glyph ledger)
         {
             super(staff, prefix);
-            this.ledger = ledger;
             left = ledger.getStartPoint(Orientation.HORIZONTAL);
             right = ledger.getStopPoint(Orientation.HORIZONTAL);
         }
@@ -1158,7 +1185,7 @@ public class NoteHeadsBuilder
             this.pitch = pitch;
             this.useSeeds = useSeeds;
 
-            // Open line?
+            // Open line (in staff space) or closed line (on staff line/ledger)?
             isOpen = ((pitch % 2) != 0) && ((line2 == null) || (Math.abs(pitch) == 5));
             yOffsets = computeYOffsets();
 
@@ -1184,9 +1211,8 @@ public class NoteHeadsBuilder
 
             {
                 // Horizontal slice to detect bars/connectors
-                final double vMargin = scale.toPixelsDouble(constants.barVerticalMargin);
-                final double above = ((interline * dir) / 2.0) - vMargin;
-                final double below = ((interline * dir) / 2.0) + vMargin;
+                final double above = ((interline * dir) / 2.0) - params.vBarMargin;
+                final double below = ((interline * dir) / 2.0) + params.vBarMargin;
                 Area barsArea = line.getArea(above, below);
                 barAreas = getBarAreas(barsArea);
             }
@@ -1235,8 +1261,8 @@ public class NoteHeadsBuilder
          */
         private int[] computeYOffsets ()
         {
-            if (isOpen) {
-                int[] offsets = new int[1 + params.maxOpenDy];
+            if (isOpen) { // InSpace
+                final int[] offsets = new int[1 + params.maxOpenDy];
 
                 for (int i = 0; i < offsets.length; i++) {
                     // According to 'dir' sign:
@@ -1264,14 +1290,15 @@ public class NoteHeadsBuilder
                 }
 
                 return offsets;
-            } else {
-                int[] offsets = new int[1 + params.maxClosedDy];
+            } else { // OnLine
+                final int[] offsets = new int[1 + params.maxClosedDy];
 
+                // 0, -1, +1, -2, +2, ...
                 for (int i = 0; i < offsets.length; i++) {
                     if ((i % 2) == 0) {
-                        offsets[i] = -(i / 2);
+                        offsets[i] = i / 2;
                     } else {
-                        offsets[i] = ((i + 1) / 2);
+                        offsets[i] = -((i + 1) / 2);
                     }
                 }
 
@@ -1387,7 +1414,7 @@ public class NoteHeadsBuilder
         // getRelevantBlackAbscissae //
         //---------------------------//
         /**
-         * Select the x values that are intersected by note spots and thus could
+         * Select the x values that are intersected by head spots and thus could
          * correspond to black heads.
          *
          * @param scanLeft  range starting abscissa
@@ -1460,22 +1487,52 @@ public class NoteHeadsBuilder
             }
         }
 
+        //--------------------//
+        // isWeakStemLessHead //
+        //--------------------//
+        /**
+         * Check whether the candidate head is a stemless shape with too low grade.
+         * <p>
+         * These heads can't expect support for stem nearby, so we can discard weak candidates now.
+         *
+         * @param shape head shape
+         * @param loc   pixel distance
+         * @return true if candidate can be discarded
+         */
+        private boolean isWeakStemLessHead (Shape shape,
+                                            PixelDistance loc)
+        {
+            if (!ShapeSet.StemLessHeads.contains(shape)) {
+                return false;
+            }
+
+            // Compute final grade
+            double grade = new HeadInter.Impacts(Template.impactOf(loc.d)).getGrade();
+            grade = AbstractInter.increaseGrade(grade, getStemLessBoost());
+
+            return grade < Grades.minContextualGrade;
+        }
+
         //-------------//
         // lookupRange //
         //-------------//
         /**
          * Try every relevant abscissa in the provided range of the line.
          * <p>
-         * For a staff line, if every abscissa in range were checked, the cost of lookupRange()
+         * For a staff line, if all abscissae in range were checked, then the cost of lookupRange()
          * would be about 3 times the cost of lookupSeed().
          * Hence, to limit the number of abscissa values to browse for black heads, we first check
-         * with note spots. Void notes however can exist without detected note spots.
+         * with head spots.
+         * Void heads however can exist without detected head spots.
+         * <p>
+         * We simply use the sheet distances table to check whether there is some foreground in
+         * the next template space and, if not, we just skip the template width range.
          * <p>
          * Regarding the template shapes, it would be tempting to restrain range browsing to
          * stem-less shapes (wholes & cue wholes).
          * However we cannot skip the check for stem-based shapes because some stems are so poor
          * that we don't have stem seeds of proper length for them, and range browsing is then the
-         * only way to reach note heads with such poor stems.
+         * only way to reach heads with such poor stems.
          *
          * @return the head inters created
          */
@@ -1488,15 +1545,23 @@ public class NoteHeadsBuilder
                 return heads;
             }
 
-            // Use the note spots to limit the abscissae to be checked for blacks
+            // Use the head spots to limit the abscissae to be checked for blacks
             boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
                 final int y0 = getTheoreticalOrdinate(x0);
 
+                // Make sure there is some foreground within template reach
+                final double d = distances.getValue(x0 + templateHalf, y0);
+                if (d / ChamferDistance.DEFAULT_NORMALIZER > templateHalf) {
+                    x0 += 2 * templateHalf - 1;
+                    continue;
+                }
+
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft] ? sheetTemplateNotes
+                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft]
+                        ? sheetTemplateNotes
                         : sheetVoidTemplateNotes;
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
@@ -1531,6 +1596,11 @@ public class NoteHeadsBuilder
                             }
                         }
 
+                        // Weak stemless heads can be discarded immediately
+                        if (isWeakStemLessHead(shape, bestLoc)) {
+                            continue;
+                        }
+
                         final HeadInter head = createInter(
                                 bestLoc, MIDDLE_LEFT, shape, line.getStaff(), pitch);
 
@@ -1546,9 +1616,10 @@ public class NoteHeadsBuilder
             // Check conflict with seed-based instances
             heads = filterSeedConflicts(heads, competitors);
 
+            // Make sure we have an underlying glyph for each head
             for (Iterator<HeadInter> it = heads.iterator(); it.hasNext();) {
-                HeadInter inter = it.next();
-                Glyph glyph = inter.retrieveGlyph(image);
+                final HeadInter inter = it.next();
+                final Glyph glyph = inter.retrieveGlyph(image);
 
                 if (glyph != null) {
                     sig.addVertex(inter);
@@ -1819,36 +1890,36 @@ public class NoteHeadsBuilder
                 "Maximum dx between similar template instances");
 
         private final Scale.Fraction maxClosedDy = new Scale.Fraction(
-                0.0,
-                "Extension allowed in y for closed lines");
+                0,
+                "Extension allowed in y when located on line/ledger");
 
         private final Scale.Fraction maxOpenDy = new Scale.Fraction(
                 0.2,
-                "Extension allowed in y for open lines");
+                "Extension allowed in y when located in space");
 
         private final Constant.Ratio gradeMargin = new Constant.Ratio(
                 0.1,
                 "Grade margin to boost seed-based competitors");
 
+        private final Constant.Ratio minIouHeads = new Constant.Ratio(
+                0.1,
+                "Minimum intersection over union for head overlapping");
+
         private final Constant.Ratio pitchMargin = new Constant.Ratio(
                 0.75,
                 "Vertical margin for intercepting stem seed around a target pitch");
 
-        private final Constant.Ratio wholeBoost = new Constant.Ratio(
+        private final Constant.Ratio stemLessBoost = new Constant.Ratio(
                 0.38,
-                "How much do we boost whole notes (always isolated)");
+                "How much do we boost stem-less heads (always isolated)");
 
         private final Constant.Ratio crossBoost = new Constant.Ratio(
                 0.1,
-                "How much do we boost cross head notes (badly recognized by template matching)");
+                "How much do we boost cross heads (badly recognized by template matching)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
                 2.5,
                 "Minimum good beam width to exclude heads");
-
-        private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
-                0.1,
-                "Horizontal margin around frozen barline or connector");
 
         private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
                 2.0,
@@ -1863,7 +1934,7 @@ public class NoteHeadsBuilder
     // Aggregate //
     //-----------//
     /**
-     * Describes an aggregate of matches around similar location.
+     * Describes an aggregate of matches around similar locations.
      */
     private static class Aggregate
     {
@@ -1919,8 +1990,6 @@ public class NoteHeadsBuilder
 
         final double maxDistanceLow;
 
-        final double maxDistanceHigh;
-
         final double reallyBadDistance;
 
         final int maxTemplateDx;
@@ -1931,9 +2000,7 @@ public class NoteHeadsBuilder
 
         final int minBeamWidth;
 
-        final int hBarMargin;
-
-        final int vBarMargin;
+        final double vBarMargin;
 
         /**
          * Creates a new Parameters object.
@@ -1943,7 +2010,6 @@ public class NoteHeadsBuilder
         Parameters (Scale scale)
         {
             maxDistanceLow = Template.maxDistanceLow();
-            maxDistanceHigh = Template.maxDistanceHigh();
             reallyBadDistance = Template.reallyBadDistance();
 
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
@@ -1951,13 +2017,12 @@ public class NoteHeadsBuilder
             maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
 
-            hBarMargin = scale.toPixels(constants.barHorizontalMargin);
-            vBarMargin = scale.toPixels(constants.barVerticalMargin);
+            vBarMargin = scale.toPixelsDouble(constants.barVerticalMargin);
         }
     }
 
     /**
-     * DEBUG: meant to precisely measure behavior of notes retrieval.
+     * DEBUG: meant to precisely measure behavior of heads retrieval.
      */
     private static class Perf
     {

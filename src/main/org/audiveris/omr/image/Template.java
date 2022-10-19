@@ -682,13 +682,13 @@ public class Template
             extends ConstantSet
     {
 
-        private final Constant.Ratio foreWeight = new Constant.Ratio(
-                5.0,
-                "Weight assigned to template foreground pixels");
-
         private final Constant.Ratio backWeight = new Constant.Ratio(
                 1.0,
                 "Weight assigned to template exterior background pixels");
+
+        private final Constant.Ratio foreWeight = new Constant.Ratio(
+                6.0,
+                "Weight assigned to template foreground pixels");
 
         private final Constant.Ratio holeWeight = new Constant.Ratio(
                 4.0,

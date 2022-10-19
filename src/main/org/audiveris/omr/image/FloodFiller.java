@@ -72,10 +72,17 @@ public class FloodFiller
 
             if ((pix == oldColor) && (pix != newColor)) {
                 image.setRGB(x, y, newColor);
+                fill(x - 1, y - 1, oldColor, newColor);
                 fill(x - 1, y, oldColor, newColor);
-                fill(x + 1, y, oldColor, newColor);
+                fill(x - 1, y + 1, oldColor, newColor);
+
                 fill(x, y - 1, oldColor, newColor);
+
                 fill(x, y + 1, oldColor, newColor);
+
+                fill(x + 1, y - 1, oldColor, newColor);
+                fill(x + 1, y, oldColor, newColor);
+                fill(x + 1, y + 1, oldColor, newColor);
             }
         }
     }

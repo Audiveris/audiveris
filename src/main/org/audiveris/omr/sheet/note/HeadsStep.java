@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class <code>HeadsStep</code> implements <b>HEADS</b> step, which uses distance matching
+ * Class <code>HeadsStep</code> implements <b>HEADS</b> step, which uses template matching
  * technique to retrieve all possible interpretations of note heads (black, void or
  * whole) but no note rests.
  *
