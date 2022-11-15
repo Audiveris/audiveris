@@ -2410,7 +2410,7 @@ public class BookActions
     {
 
         private final Constant.String validImageExtensions = new Constant.String(
-                ".bmp .gif .jpg .png .tiff .tif .pdf",
+                ".bmp .gif .jpg .jpeg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
 
         private final Constant.Boolean closeConfirmation = new Constant.Boolean(
