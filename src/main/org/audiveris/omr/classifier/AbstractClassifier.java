@@ -327,7 +327,7 @@ public abstract class AbstractClassifier<M extends Object>
                 // We have a .zip within a .jar
                 // Quick fix: copy the .zip into a separate temp file
                 // TODO: investigate a better solution!
-                File tmpFile = File.createTempFile("AbstractClassifier-", ".tmp");
+                File tmpFile = Files.createTempFile("AbstractClassifier-", ".tmp").toFile();
                 logger.debug("tmpFile={}", tmpFile);
                 tmpFile.deleteOnExit();
 
