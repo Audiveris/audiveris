@@ -24,6 +24,7 @@ package org.audiveris.omr.glyph.ui;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.OmrGui;
+import org.audiveris.omr.ui.symbol.MusicFont;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -415,7 +416,7 @@ public class ShapeColorChooser
             menu.removeAll();
 
             // Add all shapes within current range
-            ShapeSet.addSetShapes(ranges.current, menu, selectionListener);
+            ShapeSet.addSetShapes(MusicFont.BACKUP_FAMILY, ranges.current, menu, selectionListener);
         }
 
         private void prepareDefaultOption ()

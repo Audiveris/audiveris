@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
@@ -34,7 +35,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>ArticulationSymbol</code> implements an articulation symbol, perhaps decorated.
+ * Class <code>ArticulationSymbol</code> implements an articulation symbol, perhaps decorated
+ * with a note head.
  *
  * @author Hervé Bitteur
  */
@@ -42,9 +44,6 @@ public class ArticulationSymbol
         extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** The head part. */
-    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
     /** Ratio of head height for the decorated rectangle height. */
     private static final double yRatio = 2.5;
@@ -56,13 +55,13 @@ public class ArticulationSymbol
     /**
      * Create a <code>ArticulationSymbol</code> standard size, with no decoration.
      *
-     * @param shape the precise shape
-     * @param codes precise code for articulation part
+     * @param shape  the precise shape
+     * @param family the musicFont family
      */
     public ArticulationSymbol (Shape shape,
-                               int... codes)
+                               Family family)
     {
-        super(shape, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -75,13 +74,12 @@ public class ArticulationSymbol
         MyParams p = new MyParams();
 
         // Articulation symbol layout
-        p.layout = font.layout(getString());
-
+        p.layout = font.layoutShapeByCode(shape);
         Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
         if (isDecorated) {
             // Head layout
-            p.headLayout = font.layout(head.getString());
+            p.headLayout = font.layoutShapeByCode(Shape.NOTEHEAD_BLACK); // Should be OK with inheritance
 
             // Use a rectangle 'yRatio' times as high as note head
             Rectangle2D rh = p.headLayout.getBounds(); // Head bounds

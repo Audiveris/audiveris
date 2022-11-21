@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.TimeRational;
@@ -49,6 +46,8 @@ import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.Application;
@@ -56,6 +55,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -217,7 +219,7 @@ public class InterBoard
     public void actionPerformed (ActionEvent e)
     {
         if (edit.getField() == e.getSource()) {
-            final Inter inter = InterBoard.this.getSelectedEntity();
+            final Inter inter = getSelectedEntity();
 
             if (edit.getField().isSelected()) {
                 sheet.getSheetEditor().openEditMode(inter);
@@ -231,157 +233,22 @@ public class InterBoard
         }
     }
 
-    //---------------------//
-    // dumpActionPerformed //
-    //---------------------//
-    @Override
-    protected void dumpActionPerformed (ActionEvent e)
-    {
-        final Inter inter = getSelectedEntity();
-
-        // Compute contextual grade
-        if ((inter.getSig() != null) && !inter.isRemoved()) {
-            inter.getSig().computeContextualGrade(inter);
-        }
-
-        super.dumpActionPerformed(e);
-    }
-
-    //--------------------//
-    // tieActionPerformed //
-    //--------------------//
-    protected void tieActionPerformed (ActionEvent e)
-    {
-        final Inter inter = getSelectedEntity();
-
-        if (!inter.isRemoved()) {
-            final SlurInter slur = (SlurInter) inter;
-            sheet.getInterController().toggleTie(slur);
-        }
-    }
-
-    //---------------//
-    // getFormLayout //
-    //---------------//
-    @Override
-    protected FormLayout getFormLayout ()
-    {
-        return Panel.makeFormLayout(5, 3);
-    }
-
-    //-----------------------//
-    // handleEntityListEvent //
-    //-----------------------//
+    //--------------------------//
+    // adjustFontForAlterations //
+    //--------------------------//
     /**
-     * Interest in InterList for shape, icon, text, role, etc... fields
-     *
-     * @param interListEvent the inter list event
+     * Text items 'shapeName' and 'textField' need to display alteration signs:
+     * {@link ChordNameInter#FLAT} , {@link ChordNameInter#SHARP} and perhaps
+     * {@link ChordNameInter#NATURAL}, so they need a font different from default Arial.
      */
-    @Override
-    protected void handleEntityListEvent (EntityListEvent<Inter> interListEvent)
+    private void adjustFontForAlterations ()
     {
-        super.handleEntityListEvent(interListEvent);
+        final String specificFontName = constants.fontForAlterations.getValue();
 
-        final Inter inter = interListEvent.getEntity();
-
-        // Shape text and icon
-        shapeName.setText((inter != null) ? inter.getShapeString() : "");
-        shapeIcon.setIcon((inter != null) ? inter.getShapeSymbol() : null);
-
-        // Inter characteristics
-        textField.setVisible(false);
-        textField.setEnabled(false);
-        roleCombo.setVisible(false);
-        verse.setVisible(false);
-        aboveBelow.setVisible(false);
-        voice.setVisible(false);
-        custom.setVisible(false);
-        tie.setVisible(false);
-
-        if (inter != null) {
-            Double cp = inter.getContextualGrade();
-
-            if (cp != null) {
-                grade.setText(String.format("%.2f/%.2f", inter.getGrade(), cp));
-            } else {
-                grade.setText(String.format("%.2f", inter.getGrade()));
-            }
-
-            specific.setText(inter.isImplicit() ? "IMPLICIT" : (inter.isManual() ? "MANUAL" : ""));
-
-            deassignAction.putValue(Action.NAME, inter.isRemoved()
-                                    ? resources.getString("deassign.Action.deleted")
-                                    : resources.getString("deassign.Action.text"));
-
-            if (inter instanceof WordInter wordInter) {
-                selfUpdatingText = true;
-
-                WordInter word = wordInter;
-                textField.setText(word.getValue());
-                textField.setEnabled(true);
-                textField.setVisible(true);
-                selfUpdatingText = false;
-            } else if (inter instanceof SentenceInter sentenceInter) {
-                selfUpdatingText = true;
-
-                SentenceInter sentence = sentenceInter;
-                textField.setText(sentence.getValue());
-                textField.setVisible(true);
-
-                roleCombo.setSelectedItem(sentence.getRole());
-                roleCombo.setVisible(true);
-                roleCombo.setEnabled(true);
-
-                if (inter instanceof LyricLineInter lyric) {
-                    verse.setVisible(true);
-                    verse.setValue(lyric.getNumber());
-
-                    boolean isAbove = lyric.getStaff().pitchPositionOf(inter.getCenter()) < 0;
-                    aboveBelow.setText(resources.getString(isAbove ? "above" : "below"));
-                    aboveBelow.setVisible(true);
-
-                    LyricItemInter firstNormalItem = lyric.getFirstNormalItem();
-
-                    if (firstNormalItem != null) {
-                        HeadChordInter firstChord = firstNormalItem.getHeadChord();
-                        Voice theVoice = firstChord.getVoice();
-
-                        if (theVoice != null) {
-                            voice.setVisible(true);
-                            voice.setValue(theVoice.getId());
-                        }
-                    }
-                }
-
-                selfUpdatingText = false;
-            } else if (inter instanceof TimeCustomInter timeCustomInter) {
-                selfUpdatingText = true;
-
-                custom.setText(timeCustomInter.getTimeRational().toString());
-                custom.setEnabled(true);
-                custom.setVisible(true);
-
-                selfUpdatingText = false;
-            } else if (inter instanceof SlurInter slur) {
-                tie.getField().setSelected(slur.isTie());
-                tie.setEnabled(true);
-                tie.setVisible(true);
-            }
-
-            edit.getField().setSelected(sheet.getSheetEditor().isEditing(inter));
-        } else {
-            grade.setText("");
-            specific.setText("");
-            deassignAction.putValue(Action.NAME, " ");
-            edit.getField().setSelected(false);
+        for (JComponent comp : Arrays.asList(shapeName.getField(), textField.getField())) {
+            final Font oldFont = comp.getFont(); // To keep style and size
+            comp.setFont(new Font(specificFontName, oldFont.getStyle(), oldFont.getSize()));
         }
-
-        deassignAction.setEnabled((inter != null) && !inter.isRemoved());
-        grade.setEnabled(inter != null);
-        shapeName.setEnabled(inter != null);
-        edit.setEnabled((inter != null) && !inter.isRemoved() && inter.isEditable());
-        toEnsAction.setEnabled((inter != null) && !inter.isRemoved() && (inter.getSig() != null)
-                                       && (inter.getEnsemble() != null));
     }
 
     //--------------//
@@ -479,22 +346,181 @@ public class InterBoard
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
-    //--------------------------//
-    // adjustFontForAlterations //
-    //--------------------------//
-    /**
-     * Text items 'shapeName' and 'textField' need to display alteration signs:
-     * {@link ChordNameInter#FLAT} , {@link ChordNameInter#SHARP} and perhaps
-     * {@link ChordNameInter#NATURAL}, so they need a font different from default Arial.
-     */
-    private void adjustFontForAlterations ()
+    //---------------------//
+    // dumpActionPerformed //
+    //---------------------//
+    @Override
+    protected void dumpActionPerformed (ActionEvent e)
     {
-        final String specificFontName = constants.fontForAlterations.getValue();
+        final Inter inter = getSelectedEntity();
 
-        for (JComponent comp : Arrays.asList(shapeName.getField(), textField.getField())) {
-            final Font oldFont = comp.getFont(); // To keep style and size
-            comp.setFont(new Font(specificFontName, oldFont.getStyle(), oldFont.getSize()));
+        // Compute contextual grade
+        if ((inter.getSig() != null) && !inter.isRemoved()) {
+            inter.getSig().computeContextualGrade(inter);
         }
+
+        super.dumpActionPerformed(e);
+    }
+
+    //---------------//
+    // getFormLayout //
+    //---------------//
+    @Override
+    protected FormLayout getFormLayout ()
+    {
+        return Panel.makeFormLayout(5, 3);
+    }
+
+    //---------------//
+    // getTinySymbol //
+    //---------------//
+    protected ShapeSymbol getTinySymbol (Inter inter)
+    {
+        if (inter == null) {
+            return null;
+        }
+
+        final MusicFont.Family family = sheet.getStub().getMusicFontFamily();
+        final ShapeSymbol symbol = inter.getShapeSymbol(family);
+
+        return (symbol != null) ? symbol.getTinyVersion() : null;
+    }
+
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in InterList for shape, icon, text, role, etc... fields
+     *
+     * @param interListEvent the inter list event
+     */
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Inter> interListEvent)
+    {
+        super.handleEntityListEvent(interListEvent);
+
+        final Inter inter = interListEvent.getEntity();
+
+        // Shape text and icon
+        shapeName.setText((inter != null) ? inter.getShapeString() : "");
+        shapeIcon.setIcon(getTinySymbol(inter));
+
+        // Inter characteristics
+        textField.setVisible(false);
+        textField.setEnabled(false);
+        roleCombo.setVisible(false);
+        verse.setVisible(false);
+        aboveBelow.setVisible(false);
+        voice.setVisible(false);
+        custom.setVisible(false);
+        tie.setVisible(false);
+
+        if (inter != null) {
+            Double cp = inter.getContextualGrade();
+
+            if (cp != null) {
+                grade.setText(String.format("%.2f/%.2f", inter.getGrade(), cp));
+            } else {
+                grade.setText(String.format("%.2f", inter.getGrade()));
+            }
+
+            specific.setText(inter.isImplicit() ? "IMPLICIT" : (inter.isManual() ? "MANUAL" : ""));
+
+            deassignAction.putValue(Action.NAME, inter.isRemoved()
+                                    ? resources.getString("deassign.Action.deleted")
+                                    : resources.getString("deassign.Action.text"));
+
+            if (inter instanceof WordInter wordInter) {
+                selfUpdatingText = true;
+
+                WordInter word = wordInter;
+                textField.setText(word.getValue());
+                textField.setEnabled(true);
+                textField.setVisible(true);
+                selfUpdatingText = false;
+            } else if (inter instanceof SentenceInter sentenceInter) {
+                selfUpdatingText = true;
+
+                SentenceInter sentence = sentenceInter;
+                textField.setText(sentence.getValue());
+                textField.setVisible(true);
+
+                roleCombo.setSelectedItem(sentence.getRole());
+                roleCombo.setVisible(true);
+                roleCombo.setEnabled(true);
+
+                if (inter instanceof LyricLineInter lyric) {
+                    verse.setVisible(true);
+                    verse.setValue(lyric.getNumber());
+
+                    boolean isAbove = lyric.getStaff().pitchPositionOf(inter.getCenter()) < 0;
+                    aboveBelow.setText(resources.getString(isAbove ? "above" : "below"));
+                    aboveBelow.setVisible(true);
+
+                    LyricItemInter firstNormalItem = lyric.getFirstNormalItem();
+
+                    if (firstNormalItem != null) {
+                        HeadChordInter firstChord = firstNormalItem.getHeadChord();
+                        Voice theVoice = firstChord.getVoice();
+
+                        if (theVoice != null) {
+                            voice.setVisible(true);
+                            voice.setValue(theVoice.getId());
+                        }
+                    }
+                }
+
+                selfUpdatingText = false;
+            } else if (inter instanceof TimeCustomInter timeCustomInter) {
+                selfUpdatingText = true;
+
+                custom.setText(timeCustomInter.getTimeRational().toString());
+                custom.setEnabled(true);
+                custom.setVisible(true);
+
+                selfUpdatingText = false;
+            } else if (inter instanceof SlurInter slur) {
+                tie.getField().setSelected(slur.isTie());
+                tie.setEnabled(true);
+                tie.setVisible(true);
+            }
+
+            edit.getField().setSelected(sheet.getSheetEditor().isEditing(inter));
+        } else {
+            grade.setText("");
+            specific.setText("");
+            deassignAction.putValue(Action.NAME, " ");
+            edit.getField().setSelected(false);
+        }
+
+        deassignAction.setEnabled((inter != null) && !inter.isRemoved());
+        grade.setEnabled(inter != null);
+        shapeName.setEnabled(inter != null);
+        edit.setEnabled((inter != null) && !inter.isRemoved() && inter.isEditable());
+        toEnsAction.setEnabled((inter != null) && !inter.isRemoved() && (inter.getSig() != null)
+                                       && (inter.getEnsemble() != null));
+    }
+
+    //--------------------//
+    // tieActionPerformed //
+    //--------------------//
+    protected void tieActionPerformed (ActionEvent e)
+    {
+        final Inter inter = getSelectedEntity();
+
+        if (!inter.isRemoved()) {
+            final SlurInter slur = (SlurInter) inter;
+            sheet.getInterController().toggleTie(slur);
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    @Override
+    public void update ()
+    {
+        shapeIcon.setIcon(getTinySymbol(getSelectedEntity()));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

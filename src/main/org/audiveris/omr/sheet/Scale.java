@@ -1440,8 +1440,7 @@ public class Scale
     // MusicFontScale //
     //----------------//
     /**
-     * Class <code>MusicFontScale</code> keeps scaling information about music font
-     * in sheet.
+     * Class <code>MusicFontScale</code> keeps scaling information about music font in sheet.
      * <p>
      * It can optionally handle a small font size for small staves in sheet.
      */

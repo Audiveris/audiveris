@@ -30,6 +30,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationAction;
@@ -218,11 +219,11 @@ public class SampleController
         {
             super("Assign to");
             putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
-            ShapeSet.addAllShapes(popup, actionListener);
+            ShapeSet.addAllShapes(Family.Bravura, popup, actionListener);
 
             // Build menu for SamplePopup
             menu = new JMenu("Assign to");
-            ShapeSet.addAllShapes(menu, actionListener);
+            ShapeSet.addAllShapes(Family.Bravura, menu, actionListener);
             menu.setToolTipText("Assign a new shape");
         }
 

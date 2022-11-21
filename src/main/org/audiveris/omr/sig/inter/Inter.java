@@ -32,11 +32,11 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
@@ -215,16 +215,6 @@ public interface Inter
     String getDetails ();
 
     /**
-     * Report a suitable InterDnd, to handle drag and drop of this inter.
-     *
-     * @param sheet  containing sheet
-     * @param symbol the originating symbol
-     * @return suitable DnD for this inter
-     */
-    InterDnd getDnd (Sheet sheet,
-                     ShapeSymbol symbol);
-
-    /**
      * Report whether the inter can be manually edited.
      *
      * @return true id editable
@@ -365,9 +355,10 @@ public interface Inter
     /**
      * Report a shape-based symbol.
      *
+     * @param family the MusicFont family
      * @return shape.getDecoratedSymbol() by default.
      */
-    ShapeSymbol getShapeSymbol ();
+    ShapeSymbol getShapeSymbol (Family family);
 
     /**
      * Report the sig which hosts this interpretation.

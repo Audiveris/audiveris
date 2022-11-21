@@ -57,7 +57,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
@@ -192,7 +191,7 @@ public class WedgeInter
                                MusicFont font,
                                Point loc)
     {
-        final TextLayout layout = font.layout(Symbols.getSymbol(shape));
+        final TextLayout layout = font.layoutShapeByCode(shape);
         final Rectangle2D wr = layout.getBounds();
         final double halfWidth = wr.getWidth() / 2;
         final double halfHeight = wr.getHeight() / 2;

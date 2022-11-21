@@ -43,13 +43,13 @@ import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.DefaultEditor;
 import org.audiveris.omr.sig.ui.EditionTask;
-import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -713,16 +713,6 @@ public abstract class AbstractInter
         return !(this instanceof InterEnsemble);
     }
 
-    //--------//
-    // getDnd //
-    //--------//
-    @Override
-    public InterDnd getDnd (Sheet sheet,
-                            ShapeSymbol symbol)
-    {
-        return new InterDnd(this, sheet, symbol);
-    }
-
     //-----------//
     // getEditor //
     //-----------//
@@ -946,13 +936,13 @@ public abstract class AbstractInter
     // getShapeSymbol //
     //----------------//
     @Override
-    public ShapeSymbol getShapeSymbol ()
+    public ShapeSymbol getShapeSymbol (Family family)
     {
         if (shape == null) {
             return null;
         }
 
-        return shape.getDecoratedSymbol();
+        return shape.getDecoratedSymbol(family);
     }
 
     //--------//
@@ -1011,11 +1001,12 @@ public abstract class AbstractInter
     @Override
     public Rectangle getSymbolBounds (int interline)
     {
-        Point center = getCenter(); // Use area center
-
-        MusicFont musicFont = MusicFont.getBaseFont(interline);
-        TextLayout layout = musicFont.layout(getShape());
-        Rectangle2D bounds = layout.getBounds();
+        final Point center = getCenter(); // Use area center
+        final Sheet sheet = staff.getSystem().getSheet();
+        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFont musicFont = MusicFont.getBaseFont(family, interline);
+        final TextLayout layout = musicFont.layoutShapeByCode(getShape());
+        final Rectangle2D bounds = layout.getBounds();
 
         return new Rectangle(
                 center.x - (int) Math.rint(bounds.getWidth() / 2),

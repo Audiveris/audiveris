@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 
+import java.util.Comparator;
+
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -36,10 +39,18 @@ public class FretInter
         extends AbstractInter
         implements StringSymbolInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /**
+     * For comparing FretInter instances by their decreasing length.
+     */
+    public static final Comparator<FretInter> byDecreasingLength = (f1, f2)
+            -> Integer.compare(f2.getSymbolString().length(),
+                               f1.getSymbolString().length());
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Fret value. */
-    private final int value;
+    private Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -62,7 +73,7 @@ public class FretInter
      */
     private FretInter ()
     {
-        this.value = 0;
+        this.value = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -81,90 +92,80 @@ public class FretInter
     @Override
     public String getSymbolString ()
     {
-        switch (value) {
-        case 1:
-            return "I";
+        return switch (value) {
+            case 1 ->
+                "I";
+            case 2 ->
+                "II";
+            case 3 ->
+                "III";
+            case 4 ->
+                "IV";
+            case 5 ->
+                "V";
+            case 6 ->
+                "VI";
+            case 7 ->
+                "VII";
+            case 8 ->
+                "VIII";
+            case 9 ->
+                "IX";
+            case 10 ->
+                "X";
+            case 11 ->
+                "XI";
+            case 12 ->
+                "XII";
 
-        case 2:
-            return "II";
-
-        case 3:
-            return "III";
-
-        case 4:
-            return "IV";
-
-        case 5:
-            return "V";
-
-        case 6:
-            return "VI";
-
-        case 7:
-            return "VII";
-
-        case 8:
-            return "VIII";
-
-        case 9:
-            return "IX";
-
-        case 10:
-            return "X";
-
-        case 11:
-            return "XI";
-
-        case 12:
-            return "XII";
-        }
-
-        throw new IllegalArgumentException("Invalid roman value " + value);
+            default ->
+                null;
+        };
     }
 
     //---------//
     // valueOf //
     //---------//
-    private static char valueOf (Shape shape)
+    public static Integer valueOf (Shape shape)
     {
-        switch (shape) {
-        case ROMAN_I:
-            return 1;
+        return switch (shape) {
+            case ROMAN_I ->
+                1;
+            case ROMAN_II ->
+                2;
+            case ROMAN_III ->
+                3;
+            case ROMAN_IV ->
+                4;
+            case ROMAN_V ->
+                5;
+            case ROMAN_VI ->
+                6;
+            case ROMAN_VII ->
+                7;
+            case ROMAN_VIII ->
+                8;
+            case ROMAN_IX ->
+                9;
+            case ROMAN_X ->
+                10;
+            case ROMAN_XI ->
+                11;
+            case ROMAN_XII ->
+                12;
 
-        case ROMAN_II:
-            return 2;
+            default ->
+                null;
+        };
+    }
 
-        case ROMAN_III:
-            return 3;
-
-        case ROMAN_IV:
-            return 4;
-
-        case ROMAN_V:
-            return 5;
-
-        case ROMAN_VI:
-            return 6;
-
-        case ROMAN_VII:
-            return 7;
-
-        case ROMAN_VIII:
-            return 8;
-
-        case ROMAN_IX:
-            return 9;
-
-        case ROMAN_X:
-            return 10;
-
-        case ROMAN_XI:
-            return 11;
-
-        case ROMAN_XII:
-            return 12;
-        }
-
-        throw new IllegalArgumentException("Invalid roman shape " + shape);
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller m,
+                                 Object parent)
+    {
+        value = valueOf(shape);
     }
 }

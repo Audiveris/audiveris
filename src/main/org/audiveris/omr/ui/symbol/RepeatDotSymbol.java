@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
@@ -49,11 +50,11 @@ public class RepeatDotSymbol
     /**
      * Create a <code>RepeatDotSymbol</code> standard size with no decoration.
      *
-     * @param codes the codes for MusicFont characters
+     * @param family the musicFont family
      */
-    public RepeatDotSymbol (int... codes)
+    public RepeatDotSymbol (Family family)
     {
-        super(Shape.REPEAT_DOT, codes);
+        super(Shape.REPEAT_DOT, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -69,7 +70,7 @@ public class RepeatDotSymbol
         Params p = new Params();
 
         // Dot layout
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
 
         Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 

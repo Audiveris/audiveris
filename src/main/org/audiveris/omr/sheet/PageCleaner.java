@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -52,11 +50,13 @@ import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.BasicStroke;
 import static java.awt.BasicStroke.*;
@@ -134,21 +134,22 @@ public abstract class PageCleaner
         this.g = g;
         this.sheet = sheet;
 
-        Scale scale = sheet.getScale();
+        final Scale scale = sheet.getScale();
+        final Family family = sheet.getStub().getMusicFontFamily();
 
         // Use music fonts slightly larger (TODO: perhaps only for heads?)
         final int interline = scale.getInterline();
         int pointSize = MusicFont.getPointSize(interline);
-        musicFont = MusicFont.getPointFont(dilated(pointSize), interline);
+        musicFont = MusicFont.getPointFont(family, dilated(pointSize), interline);
 
         int headPointSize = MusicFont.getHeadPointSize(scale, interline);
-        headMusicFont = MusicFont.getPointFont(dilated(headPointSize), interline);
+        headMusicFont = MusicFont.getPointFont(family, dilated(headPointSize), interline);
 
         final Integer smallInterline = scale.getSmallInterline();
 
         if (smallInterline != null) {
-            smallMusicFont = MusicFont.getBaseFont(smallInterline);
-            smallHeadMusicFont = MusicFont.getHeadFont(scale, smallInterline);
+            smallMusicFont = MusicFont.getBaseFont(family, smallInterline);
+            smallHeadMusicFont = MusicFont.getHeadFont(family, scale, smallInterline);
         } else {
             smallMusicFont = smallHeadMusicFont = null;
         }
@@ -236,11 +237,20 @@ public abstract class PageCleaner
     @Override
     public void visit (HeadInter head)
     {
-        ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
-        Glyph glyph = head.getGlyph();
-        Point2D center = (glyph != null) ? glyph.getCenter2D() : head.getCenter2D();
+        final Glyph glyph = head.getGlyph();
+        final Point2D center = (glyph != null) ? glyph.getCenter2D() : head.getCenter2D();
+
         MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
-        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+        ShapeSymbol symbol = font.getSymbol(head.getShape());
+
+        if (symbol == null && font.getBackup() != null) {
+            font = font.getBackup();
+            symbol = font.getSymbol(head.getShape());
+        }
+
+        if (symbol != null) {
+            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+        }
     }
 
     /**
@@ -255,12 +265,21 @@ public abstract class PageCleaner
             return;
         }
 
-        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph glyph = inter.getGlyph();
-        Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
-        boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
+        final Glyph glyph = inter.getGlyph();
+        final Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
+        final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
+
         MusicFont font = isSmall ? smallMusicFont : musicFont;
-        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+        ShapeSymbol symbol = font.getSymbol(inter.getShape());
+
+        if (symbol == null && font.getBackup() != null) {
+            font = font.getBackup();
+            symbol = font.getSymbol(inter.getShape());
+        }
+
+        if (symbol != null) {
+            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+        }
     }
 
     @Override

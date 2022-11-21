@@ -24,6 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -47,11 +48,13 @@ public class SlurSymbol
     /**
      * Create a SlurSymbol.
      *
-     * @param above true for above, false for below
+     * @param above  true for above, false for below
+     * @param family the musicFont family
      */
-    public SlurSymbol (boolean above)
+    public SlurSymbol (boolean above,
+                       Family family)
     {
-        super(above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW);
+        super(above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, family);
         this.above = above;
     }
 
@@ -114,7 +117,7 @@ public class SlurSymbol
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: used

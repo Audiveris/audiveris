@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -39,10 +40,12 @@ public class BeamHookSymbol
 
     /**
      * Create a BeamHookSymbol.
+     *
+     * @param family the musicFont family
      */
-    public BeamHookSymbol ()
+    public BeamHookSymbol (Family family)
     {
-        super(Shape.BEAM_HOOK);
+        super(Shape.BEAM_HOOK, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

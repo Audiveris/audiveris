@@ -26,7 +26,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.ui.EvaluationBoard;
 import org.audiveris.omr.glyph.ui.GlyphsController;
@@ -71,6 +70,7 @@ import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -202,13 +202,14 @@ public class SheetEditor
         boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet()));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(evaluationBoard = new EvaluationBoard(
-                true,
-                sheet,
-                BasicClassifier.getInstance(),
-                sheet.getGlyphIndex().getEntityService(),
-                interController,
-                constants.selectBasicClassifierBoard.isSet()));
+        boards.add(
+                evaluationBoard = new EvaluationBoard(
+                        true,
+                        sheet,
+                        BasicClassifier.getInstance(),
+                        sheet.getGlyphIndex().getEntityService(),
+                        interController,
+                        constants.selectBasicClassifierBoard.isSet()));
 
         //        boards.add(
         //                new EvaluationBoard(
@@ -488,9 +489,10 @@ public class SheetEditor
     public void setRepetitiveInputMode (boolean repetitiveInputMode)
     {
         view.repetitiveInputMode = repetitiveInputMode;
-        logger.info("{} Repetitive input mode is {}",
-                    sheet.getId(),
-                    view.repetitiveInputMode ? "ON" : "OFF");
+        logger.info(
+                "{} Repetitive input mode is {}",
+                sheet.getId(),
+                view.repetitiveInputMode ? "ON" : "OFF");
     }
 
     //---------------------------//
@@ -585,11 +587,12 @@ public class SheetEditor
 
         private EditorView (GlyphIndex glyphIndex)
         {
-            super(glyphIndex.getEntityService(),
-                  Arrays.asList(
-                          sheet.getLagManager().getLag(Lags.HLAG),
-                          sheet.getLagManager().getLag(Lags.VLAG)),
-                  sheet);
+            super(
+                    glyphIndex.getEntityService(),
+                    Arrays.asList(
+                            sheet.getLagManager().getLag(Lags.HLAG),
+                            sheet.getLagManager().getLag(Lags.VLAG)),
+                    sheet);
             setName("SymbolsEditor-EditorView");
 
             // Subscribe to all lags for SectionSet events
@@ -762,10 +765,11 @@ public class SheetEditor
             if (objectEditor != null) {
                 // Publish (transient) location to allow shifting when getting close to view borders
                 locationService.publish(
-                        new LocationEvent(this,
-                                          SelectionHint.ENTITY_TRANSIENT,
-                                          MouseMovement.DRAGGING,
-                                          new Rectangle(pt)));
+                        new LocationEvent(
+                                this,
+                                SelectionHint.ENTITY_TRANSIENT,
+                                MouseMovement.DRAGGING,
+                                new Rectangle(pt)));
 
                 if (objectEditor.processMouse(pt, movement)) {
                     return;
@@ -794,7 +798,6 @@ public class SheetEditor
                 break;
 
             case DRAGGING:
-
                 if (relationVector != null) {
                     relationVector.extendTo(pt); // Extension
                 }
@@ -802,7 +805,6 @@ public class SheetEditor
                 break;
 
             case RELEASING:
-
                 if ((relationVector != null)) {
                     relationVector.process(); // Handle end of vector
                     relationVector = null; // This is the end
@@ -946,9 +948,10 @@ public class SheetEditor
                                 SIGraph sig = inter.getSig();
 
                                 if (sig != null) {
-                                    final Set<Relation> links = sig.getRelations(inter,
-                                                                                 Support.class,
-                                                                                 Rhythm.class);
+                                    final Set<Relation> links = sig.getRelations(
+                                            inter,
+                                            Support.class,
+                                            Rhythm.class);
                                     for (Relation rel : links) {
                                         Inter opp = sig.getOppositeInter(inter, rel);
                                         painter.drawLink(inter, opp, rel);
@@ -1017,11 +1020,12 @@ public class SheetEditor
             Inter inter = InterFactory.createManual(shape, sheet);
             inter.setStaff(staff);
 
+            final Family family = sheet.getStub().getMusicFontFamily();
             final int staffInterline = staff.getSpecificInterline();
-            final MusicFont font = (ShapeSet.Heads.contains(inter.getShape()))
-                    ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
-                    : MusicFont.getBaseFont(staffInterline);
-            inter.deriveFrom(shape.getSymbol(), sheet, font, location);
+            final MusicFont font = inter.getShape().isHead()
+                    ? MusicFont.getHeadFont(family, sheet.getScale(), staffInterline)
+                    : MusicFont.getBaseFont(family, staffInterline);
+            inter.deriveFrom(font.getSymbol(shape), sheet, font, location);
 
             staff.getSystem().getSig().addVertex(inter); // To set inter sig
             sheet.getInterController().addInter(inter); // NOTA: this runs in a background task...
@@ -1040,7 +1044,6 @@ public class SheetEditor
          *
          * @param location provided location
          * @return the create editor, if proper Inter was found at location.
-         *
          * @see #createEditor(Point)
          */
         private InterEditor selectEditor (Point location)

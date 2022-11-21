@@ -22,9 +22,12 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
+import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +80,9 @@ public enum Shape
 {
     /**
      * =============================================================================================
-     * NOTA: Avoid changing the order of the physical shapes,
-     * otherwise the evaluators won't detect this and you'll have to retrain them on your own!
+     * Beginning of physical shapes, they are recognized by trainable classifiers
+     * NOTA: Order of physicals is relevant, its modification would silently impact the classifiers,
+     * and you would have to retrain them on your own!
      * =============================================================================================
      */
 
@@ -116,6 +120,7 @@ public enum Shape
     F_CLEF_8VA("Bass Clef Ottava Alta"),
     F_CLEF_8VB("Bass Clef Ottava Bassa"),
     PERCUSSION_CLEF("Percussion Clef"),
+    //CLEF_OTTAVA("Clef 8"), Not handled without its related clef
 
     //
     // Accidentals ---
@@ -194,12 +199,7 @@ public enum Shape
     // Small Flags
     //
     SMALL_FLAG("Flag for grace note"),
-    SMALL_FLAG_SLASH("Flag for slashed grace note"),
-
-    //
-    // StemLessHeads ---
-    //
-    BREVE("Double Whole"),
+    SMALL_FLAG_SLASH("Slashed flag for grace note"),
 
     //
     // Articulations ---
@@ -297,15 +297,17 @@ public enum Shape
     //
     CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
     /**
-     * =================================================================================
-     * End of physical shapes, beginning of logical shapes.
+     * =============================================================================================
+     * End of physical shapes
+     * Beginning of logical shapes, their order is irrelevant
+     * All head shapes are among them, they are recognized by template matching
      * =============================================================================================
      */
     TEXT("Sequence of letters & spaces"),
     CHARACTER("Any letter"),
 
     //
-    // Shapes from DOT_set ---
+    // Shapes based on physical DOT_set ---
     //
     REPEAT_DOT("Repeat dot", DOT_set),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
@@ -313,27 +315,52 @@ public enum Shape
     STACCATO("Staccato dot", DOT_set),
 
     //
-    // Shapes from HW_REST_set ---
+    // Shapes based on physical HW_REST_set ---
     //
     WHOLE_REST("Rest for a 1", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
 
     //
-    // Noteheads ---
+    // StemLessHeads duration 2 ---
     //
-    NOTEHEAD_CROSS("Ghost note with rhythmic value but no discernible pitch"),
-    NOTEHEAD_CROSS_VOID("Hollow cross shape note head for unpitched percussion"),
-    NOTEHEAD_DIAMOND_FILLED("Filled diamond shape note head for unpitched percussion"),
-    NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
-    NOTEHEAD_TRIANGLE_DOWN_FILLED(
-            "Filled point-down triangle shape note head for unpitched percussion"),
-    NOTEHEAD_TRIANGLE_DOWN_VOID(
-            "Hollow point-down triangle shape note head for unpitched percussion"),
-    NOTEHEAD_CIRCLE_X("Circle-x shape note head for unpitched percussion"),
-    NOTEHEAD_BLACK("Filled note head for quarters and less"),
-    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
+    BREVE("Double Whole"),
+    BREVE_SMALL("Small Double Whole"),
+    BREVE_CROSS("Double Whole Cross"),
+    BREVE_DIAMOND("Double Whole Diamond"),
+    BREVE_TRIANGLE_DOWN("Double Whole Triangle Down"),
+    BREVE_CIRCLE_X("Double Whole Circle X"),
+
+    //
+    // StemLessHeads duration 1 ---
+    //
+    WHOLE_NOTE("Hollow node head for wholes"),
+    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
+    WHOLE_NOTE_CROSS("Hollow cross shape note head for unpitched percussion wholes"),
+    WHOLE_NOTE_DIAMOND("Hollow diamond-shaped note head for unpitched percussion wholes"),
+    WHOLE_NOTE_TRIANGLE_DOWN("Hollow point-down triangle shape for unpitched percussion wholes"),
+    WHOLE_NOTE_CIRCLE_X("Stemless circle-x head shape for unpitched percussion wholes"),
+
+    //
+    // Noteheads duration 1/2 ---
+    //
     NOTEHEAD_VOID("Hollow note head for halves"),
     NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue"),
+    NOTEHEAD_CROSS_VOID("Hollow cross shape note head for unpitched percussion"),
+    NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
+    NOTEHEAD_TRIANGLE_DOWN_VOID(
+            "Hollow point-down triangle shape note head for unpitched percussion"),
+    NOTEHEAD_CIRCLE_X_VOID("Hollow circle-x shape note head for unpitched percussion"),
+
+    //
+    // Noteheads duration 1/4 ---
+    //
+    NOTEHEAD_BLACK("Filled note head for quarters and less"),
+    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
+    NOTEHEAD_CROSS("Ghost note with rhythmic value but no discernible pitch"),
+    NOTEHEAD_DIAMOND_FILLED("Filled diamond shape note head for unpitched percussion"),
+    NOTEHEAD_TRIANGLE_DOWN_FILLED(
+            "Filled point-down triangle shape note head for unpitched percussion"),
+    NOTEHEAD_CIRCLE_X("Circle-x shape note head for unpitched percussion"),
 
     //
     // Compound notes (head + stem) ---
@@ -342,16 +369,6 @@ public enum Shape
     QUARTER_NOTE_DOWN("Filled head plus its down stem"),
     HALF_NOTE_UP("Hollow head plus its up stem"),
     HALF_NOTE_DOWN("Hollow head plus its down stem"),
-
-    //
-    // StemLessHeads ---
-    //
-    WHOLE_NOTE("Hollow node head for wholes"),
-    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
-    WHOLE_NOTE_CROSS("Hollow cross shape note head for unpitched percussion wholes"),
-    WHOLE_NOTE_DIAMOND("Hollow diamond-shaped note head for unpitched percussion wholes"),
-    WHOLE_NOTE_TRIANGLE_DOWN("Hollow point-down triangle shape for unpitched percussion wholes"),
-    WHOLE_NOTE_CIRCLE_X("Stemless circle-x head shape for unpitched percussion wholes"),
 
     //
     // Beams and slurs ---
@@ -445,11 +462,9 @@ public enum Shape
     TIME_CUSTOM("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
     MEASURE_NUMBER("Measure number in a multiple rest"),
-
-    // To be removed ---
-    //
-    OTTAVA_ALTA("8 va"),
-    OTTAVA_BASSA("8 vb");
+    BRACKET_UPPER_SERIF("Top serif of a bracket"),
+    BRACKET_LOWER_SERIF("Bottom serif of a bracket"),
+    STAFF_LINES("5-line staff");
 
     // =============================================================================================
     // This is the end of shape enumeration
@@ -461,23 +476,12 @@ public enum Shape
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
     /** A comparator based on shape name. */
-    public static final Comparator<Shape> alphaComparator = (Shape o1, Shape o2)
-            -> o1.name().compareTo(o2.name());
+    public static final Comparator<Shape> alphaComparator = (Shape o1,
+                                                             Shape o2) -> o1.name().compareTo(
+                                                                     o2.name());
 
     /** Explanation of the glyph shape. */
     private final String description;
-
-    /** Potential related symbol. */
-    private ShapeSymbol symbol;
-
-    /** Potential related decorated symbol for menus. */
-    private ShapeSymbol decoratedSymbol;
-
-    /** Remember the fact that this shape has no related symbol. */
-    private boolean hasNoSymbol;
-
-    /** Remember the fact that this shape has no related decorated symbol. */
-    private boolean hasNoDecoratedSymbol;
 
     /** Potential related physical shape. */
     private Shape physicalShape;
@@ -577,7 +581,8 @@ public enum Shape
      */
     public boolean isPercussion ()
     {
-        return ShapeSet.CrossHeads.contains(this) || ShapeSet.DrumHeads.contains(this);
+        return ShapeSet.HeadsCross.contains(this) || ShapeSet.HeadsDiamond.contains(this)
+                || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(this);
     }
 
     //--------//
@@ -623,13 +628,13 @@ public enum Shape
     // isSmall //
     //---------//
     /**
-     * Check whether the shape is a small note, meant for cue or grace.
+     * Check whether the shape is a small note head, meant for cue or grace.
      *
      * @return true if small (black/void/whole)
      */
     public boolean isSmall ()
     {
-        return ShapeSet.SmallNotes.contains(this);
+        return ShapeSet.HeadsOvalSmall.contains(this);
     }
 
     //-------------//
@@ -725,54 +730,12 @@ public enum Shape
      */
     public int getSlashCount ()
     {
-        switch (this) {
-        case REPEAT_ONE_BAR:
-            return 1;
-        case REPEAT_TWO_BARS:
-            return 2;
-        case REPEAT_FOUR_BARS:
-            return 4;
-        }
-
-        return 0;
-    }
-
-    //-----------//
-    // getSymbol //
-    //-----------//
-    /**
-     * Report the symbol related to the shape, if any.
-     *
-     * @return the related symbol, or null
-     */
-    public ShapeSymbol getSymbol ()
-    {
-        if (hasNoSymbol) {
-            return null;
-        }
-
-        if (symbol == null) {
-            symbol = Symbols.getSymbol(this);
-
-            if (symbol == null) {
-                hasNoSymbol = true;
-            }
-        }
-
-        return symbol;
-    }
-
-    //-----------//
-    // setSymbol //
-    //-----------//
-    /**
-     * Assign a symbol to this shape.
-     *
-     * @param symbol the assigned symbol, which may be null
-     */
-    public void setSymbol (ShapeSymbol symbol)
-    {
-        this.symbol = symbol;
+        return switch (this) {
+        case REPEAT_ONE_BAR -> 1;
+        case REPEAT_TWO_BARS -> 2;
+        case REPEAT_FOUR_BARS -> 4;
+        default -> 0;
+        };
     }
 
     //--------------------//
@@ -781,45 +744,132 @@ public enum Shape
     /**
      * Report the symbol to use for menu items.
      *
-     * @return the shape symbol, with decorations if any
+     * @param family the selected MusicFont family
+     * @return the shape symbol, with decorations if any, perhaps null
      */
-    public ShapeSymbol getDecoratedSymbol ()
+    public ShapeSymbol getDecoratedSymbol (Family family)
     {
-        if (hasNoDecoratedSymbol) {
-            // Avoid a new search, just use the undecorated symbol instead
-            return getSymbol();
+        final ShapeSymbol symbol = getSymbol(family);
+
+        if (symbol == null) {
+            return null;
         }
 
-        if (decoratedSymbol == null) {
-            // Try to build / load a decorated symbol
-            ShapeSymbol symb = getSymbol();
-
-            if (symb != null) {
-                setDecoratedSymbol(symb.getDecoratedVersion());
-            }
-
-            if (decoratedSymbol == null) {
-                hasNoDecoratedSymbol = true;
-
-                return getSymbol();
-            }
-        }
-
-        // Return the cached decorated symbol
-        return decoratedSymbol;
+        return symbol.getDecoratedVersion();
     }
 
-    //--------------------//
-    // setDecoratedSymbol //
-    //--------------------//
+    //-----------//
+    // getSymbol //
+    //-----------//
     /**
-     * Assign a decorated symbol to this shape.
+     * Report the symbol to use for this shape.
      *
-     * @param decoratedSymbol the assigned decorated symbol, which may be null
+     * @param family the selected MusicFont family
+     * @return the shape symbol, perhaps null
      */
-    public void setDecoratedSymbol (ShapeSymbol decoratedSymbol)
+    public ShapeSymbol getSymbol (Family family)
     {
-        this.decoratedSymbol = decoratedSymbol;
+        final MusicFont font = MusicFont.getBaseFont(family, MusicFont.DEFAULT_INTERLINE);
+        ShapeSymbol symbol = font.getSymbol(this);
+
+        if (symbol == null && font.getBackup() != null) {
+            symbol = font.getBackup().getSymbol(this);
+        }
+
+        return symbol;
+    }
+
+    //-----------------//
+    // getNoteDuration //
+    //-----------------//
+    /**
+     * Report the intrinsic duration of the note shape.
+     * This is the head or rest duration, regardless of any tuplet, beam/flag or augmentation dot.
+     *
+     * @return the duration as a rational value, or null if this shape is not a note shape
+     */
+    public Rational getNoteDuration ()
+    {
+        switch (this) {
+        case LONG_REST:
+            return new Rational(4, 1);
+
+        case BREVE_REST:
+        case BREVE:
+        case BREVE_SMALL:
+        case BREVE_CROSS:
+        case BREVE_DIAMOND:
+        case BREVE_TRIANGLE_DOWN, BREVE_CIRCLE_X:
+            return Rational.TWO;
+
+        case WHOLE_REST:
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_SMALL:
+        case WHOLE_NOTE_CROSS:
+        case WHOLE_NOTE_DIAMOND, WHOLE_NOTE_TRIANGLE_DOWN:
+        case WHOLE_NOTE_CIRCLE_X:
+            return Rational.ONE;
+
+        case HALF_REST:
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+        case NOTEHEAD_CROSS_VOID, NOTEHEAD_DIAMOND_VOID:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+        case NOTEHEAD_CIRCLE_X_VOID:
+            return Rational.HALF;
+
+        case QUARTER_REST:
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+        case NOTEHEAD_CROSS, NOTEHEAD_DIAMOND_FILLED:
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+        case NOTEHEAD_CIRCLE_X:
+            return Rational.QUARTER;
+
+        case EIGHTH_REST:
+            return new Rational(1, 8);
+
+        case ONE_16TH_REST:
+            return new Rational(1, 16);
+
+        case ONE_32ND_REST:
+            return new Rational(1, 32);
+
+        case ONE_64TH_REST:
+            return new Rational(1, 64);
+
+        case ONE_128TH_REST:
+            return new Rational(1, 128);
+
+        default:
+            return null;
+        }
+    }
+
+    //--------------//
+    // getHeadMotif //
+    //--------------//
+    public HeadMotif getHeadMotif ()
+    {
+        if (ShapeSet.HeadsOval.contains(this))
+            return HeadMotif.oval;
+
+        if (ShapeSet.HeadsOvalSmall.contains(this))
+            return HeadMotif.small;
+
+        if (ShapeSet.HeadsCross.contains(this))
+            return HeadMotif.cross;
+
+        if (ShapeSet.HeadsDiamond.contains(this))
+            return HeadMotif.diamond;
+
+        if (ShapeSet.HeadsTriangle.contains(this))
+            return HeadMotif.triangle;
+
+        if (ShapeSet.HeadsCircle.contains(this))
+            return HeadMotif.circle;
+
+        return null;
     }
 
     //------------------//
@@ -849,11 +899,12 @@ public enum Shape
      */
     public boolean isDraggable ()
     {
-        if (ShapeSet.PartialTimes.contains(this)) {
-            return false;
-        }
-
-        return getPhysicalShape().getSymbol() != null;
+        //        if (ShapeSet.PartialTimes.contains(this)) {
+        //            return false;
+        //        }
+        //
+        //        return getPhysicalShape().getSymbol() != null;
+        return !ShapeSet.Undraggables.contains(this);
     }
 
     //-----------------//

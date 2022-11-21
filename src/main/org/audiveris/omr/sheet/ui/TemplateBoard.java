@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -51,6 +47,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -194,8 +194,9 @@ public class TemplateBoard
         AnchoredTemplate at = null;
 
         if (areCompatible(shape, anchor)) {
-            Scale scale = sheet.getScale();
-            Template template = TemplateFactory.getInstance().getCatalog(
+            final Scale scale = sheet.getScale();
+            final Template template = TemplateFactory.getInstance().getCatalog(
+                    sheet.getStub().getMusicFontFamily(),
                     MusicFont.getHeadPointSize(scale, scale.getInterline())).getTemplate(shape);
             at = new AnchoredTemplate(anchor, template);
         }
@@ -273,8 +274,7 @@ public class TemplateBoard
                                    Anchor anchor)
     {
         return switch (shape) {
-            case BREVE, WHOLE_NOTE, WHOLE_NOTE_CIRCLE_X, WHOLE_NOTE_CROSS,
-                WHOLE_NOTE_DIAMOND, WHOLE_NOTE_SMALL, WHOLE_NOTE_TRIANGLE_DOWN ->
+            case BREVE, WHOLE_NOTE, WHOLE_NOTE_CIRCLE_X, WHOLE_NOTE_CROSS, WHOLE_NOTE_DIAMOND, WHOLE_NOTE_SMALL, WHOLE_NOTE_TRIANGLE_DOWN ->
                 anchor == Anchor.MIDDLE_LEFT;
             default ->
                 true;

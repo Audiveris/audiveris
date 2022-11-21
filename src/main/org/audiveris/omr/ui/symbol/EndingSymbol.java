@@ -24,6 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.EndingInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -32,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>EndingSymbol</code> implements an ending symbol
+ * Class <code>EndingSymbol</code> implements an ending symbol.
  *
  * @author Hervé Bitteur
  */
@@ -48,10 +49,12 @@ public class EndingSymbol
      * Create an EndingSymbol.
      *
      * @param withRightLeg true to provide the optional right leg
+     * @param family       the musicFont family
      */
-    public EndingSymbol (boolean withRightLeg)
+    public EndingSymbol (boolean withRightLeg,
+                         Family family)
     {
-        super(withRightLeg ? Shape.ENDING_WRL : Shape.ENDING);
+        super(withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, family);
         this.withRightLeg = withRightLeg;
     }
 
@@ -130,7 +133,7 @@ public class EndingSymbol
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: used

@@ -38,7 +38,6 @@ import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
 import org.audiveris.omr.ui.symbol.KeySymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -80,8 +79,8 @@ public class KeyInter
             = new AbstractNoteInter.NoteStep[]{F, C, G, D, A, E, B};
 
     /** Flat keys note steps. */
-    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS
-            = new AbstractNoteInter.NoteStep[]{B, E, A, D, G, C, F};
+    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS = new AbstractNoteInter.NoteStep[]{
+        B, E, A, D, G, C, F};
 
     static {
         SHARP_PITCHES_MAP.put(TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
@@ -194,7 +193,7 @@ public class KeyInter
         super.deriveFrom(symbol, sheet, font, dropLocation);
 
         // Adapt key (count/location of naturals) to current effective key in staff
-        KeySymbol keySymbol = (KeySymbol) getSymbolToDraw();
+        KeySymbol keySymbol = (KeySymbol) getSymbolToDraw(font);
 
         if (keySymbol == null) {
             return false;
@@ -278,7 +277,6 @@ public class KeyInter
                 for (Inter alter : alters) {
                     switch (alter.getShape()) {
                     case SHARP:
-
                         if (count < 0) {
                             throw new IllegalStateException("Sharp and Flat in same Key");
                         }
@@ -288,7 +286,6 @@ public class KeyInter
                         break;
 
                     case FLAT:
-
                         if (count > 0) {
                             throw new IllegalStateException("Sharp and Flat in same Key");
                         }
@@ -321,13 +318,14 @@ public class KeyInter
      * <p>
      * Constraint: we cannot insert a new key if there is already a key in the target measure.
      * <ul>
-     * <li> For a standard key inter, the KeySymbol is its fifths value.
+     * <li>For a standard key inter, the KeySymbol is its fifths value.
      * <li>But for a KEY_CANCEL, it's the fifths of the preceding key signature in staff
      * </ul>
      *
+     * @param font the chosen music font
      * @return the fifths to actually draw, or null if could not be determined
      */
-    public ShapeSymbol getSymbolToDraw ()
+    public ShapeSymbol getSymbolToDraw (MusicFont font)
     {
         if (staff == null) {
             logger.debug("null staff");
@@ -360,7 +358,14 @@ public class KeyInter
         }
 
         if (!isCancel()) {
-            return Symbols.getSymbol(shape);
+            ShapeSymbol symbol = font.getSymbol(shape);
+
+            if (symbol == null && font.getBackup() != null) {
+                font = font.getBackup();
+                symbol = font.getSymbol(shape);
+            }
+
+            return symbol;
         }
 
         KeyInter keyBefore = null;
@@ -378,7 +383,7 @@ public class KeyInter
             logger.debug("keyBefore: {}", keyBefore);
         }
 
-        return new KeyCancelSymbol(keyBefore.getFifths());
+        return new KeyCancelSymbol(keyBefore.getFifths(), font.getMusicFamily());
     }
 
     //------------------//

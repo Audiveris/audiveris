@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  D e c o r a b l e S y m b o l                                 //
+//                                  F o n t F a m i l y P a r a m                                 //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,39 +21,54 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.util.param.Param;
+
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class <code>DecorableSymbol</code> is a {@link ShapeSymbol} which can provide a decorated
- * version (the symbol within decoration).
+ * Class <code>FontFamilyParam</code> is a param on MusicFont.Family.
  *
  * @author Hervé Bitteur
  */
-public class DecorableSymbol
-        extends ShapeSymbol
+public class FontFamilyParam
+        extends Param<Family>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
-    /**
-     * Create a DecorableSymbol with the provided shape and codes.
-     *
-     * @param shape  the related shape
-     * @param family the MusicFont family
-     */
-    public DecorableSymbol (Shape shape,
-                            Family family)
+    //~ Constructors -------------------------------------------------------------------------------
+    public FontFamilyParam (Object scope)
     {
-        super(shape, family);
+        super(scope);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // supportsDecoration //
-    //--------------------//
-    @Override
-    protected boolean supportsDecoration ()
+    //~ Inner Classes ------------------------------------------------------------------------------
+    public static class JaxbAdapter
+            extends XmlAdapter<Family, FontFamilyParam>
     {
-        return true;
+
+        @Override
+        public Family marshal (FontFamilyParam fp)
+                throws Exception
+        {
+            if (fp == null) {
+                return null;
+            }
+
+            return fp.getSpecific();
+        }
+
+        @Override
+        public FontFamilyParam unmarshal (Family value)
+                throws Exception
+        {
+            if (value == null) {
+                return null;
+            }
+
+            final FontFamilyParam fp = new FontFamilyParam(null);
+            fp.setSpecific(value);
+
+            return fp;
+        }
     }
 }

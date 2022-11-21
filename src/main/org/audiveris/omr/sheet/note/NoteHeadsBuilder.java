@@ -66,6 +66,7 @@ import org.audiveris.omr.sig.inter.InterPairPredicate;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.Exclusion;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -84,7 +85,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -122,18 +122,17 @@ public class NoteHeadsBuilder
     private static final double EPSILON = 1E-5;
 
     /** Shapes of note head competitors. */
-    private static final Set<Shape> COMPETING_SHAPES = EnumSet.copyOf(
-            Arrays.asList(
-                    Shape.THICK_BARLINE,
-                    Shape.THIN_BARLINE,
-                    Shape.THICK_CONNECTOR,
-                    Shape.THIN_CONNECTOR,
-                    Shape.BEAM,
-                    Shape.BEAM_HOOK,
-                    Shape.BEAM_SMALL,
-                    Shape.BEAM_HOOK_SMALL,
-                    Shape.MULTIPLE_REST,
-                    Shape.VERTICAL_SERIF));
+    private static final Set<Shape> COMPETING_SHAPES = EnumSet.of(
+            Shape.THICK_BARLINE,
+            Shape.THIN_BARLINE,
+            Shape.THICK_CONNECTOR,
+            Shape.THIN_CONNECTOR,
+            Shape.BEAM,
+            Shape.BEAM_HOOK,
+            Shape.BEAM_SMALL,
+            Shape.BEAM_HOOK_SMALL,
+            Shape.MULTIPLE_REST,
+            Shape.VERTICAL_SERIF);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
@@ -248,11 +247,11 @@ public class NoteHeadsBuilder
     // buildHeads //
     //------------//
     /**
-     * Retrieve all void heads, black heads, (cross heads) and whole notes in the system
-     * both for standard and small (cue/grace) sizes.
+     * Retrieve all heads in the system both for standard and small (cue/grace) sizes.
      */
     public void buildHeads ()
     {
+        final Family family = sheet.getStub().getMusicFontFamily();
         StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
         systemBarAreas = getSystemBarAreas();
         systemCompetitors = getSystemCompetitors(); // Competitors
@@ -271,7 +270,7 @@ public class NoteHeadsBuilder
             // Determine the proper catalog, based on staff size
             watch.start("Staff #" + staff.getId() + " catalog");
             final int pointSize = staff.getHeadPointSize();
-            catalog = TemplateFactory.getInstance().getCatalog(pointSize);
+            catalog = TemplateFactory.getInstance().getCatalog(family, pointSize);
 
             final List<HeadInter> ch = new ArrayList<>(); // Created Heads, for this staff
 
@@ -290,7 +289,12 @@ public class NoteHeadsBuilder
             // Remove duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
-            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2), true);
+            final int duplicates = purge(
+                    ch,
+                    "duplicate",
+                    (h1,
+                            h2) -> h1.isSameAs(h2),
+                    true);
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
@@ -298,7 +302,12 @@ public class NoteHeadsBuilder
 
             // Overlaps for current staff are formalized as exclusions
             watch.start("Staff #" + staff.getId() + " overlaps");
-            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2), false);
+            final int overlaps = purge(
+                    ch,
+                    "overlap",
+                    (h1,
+                            h2) -> h1.overlaps(h2),
+                    false);
 
             if (overlaps > 0) {
                 logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
@@ -601,9 +610,9 @@ public class NoteHeadsBuilder
     private List<Area> getSystemBarAreas ()
     {
         final List<Area> areas = new ArrayList<>();
-        final List<Inter> inters = sig.inters(inter
-                -> inter.isFrozen() && (inter instanceof BarlineInter
-                                                || inter instanceof BarConnectorInter));
+        final List<Inter> inters = sig.inters(
+                inter -> inter.isFrozen() && (inter instanceof BarlineInter
+                                                      || inter instanceof BarConnectorInter));
         Collections.sort(inters, Inters.byOrdinate);
 
         for (Inter inter : inters) {
@@ -967,9 +976,9 @@ public class NoteHeadsBuilder
         final List<Inter> heads = sig.inters(HeadInter.class);
         Collections.sort(heads, Inters.byOrdinate);
 
-        final List<Inter> smallBeams = sig.inters(inter
-                -> ShapeSet.Beams.contains(inter.getShape())
-                           && inter.getBounds().width < params.minBeamWidth);
+        final List<Inter> smallBeams = sig.inters(
+                inter -> ShapeSet.Beams.contains(inter.getShape()) && inter
+                .getBounds().width < params.minBeamWidth);
 
         for (Iterator<Inter> itb = smallBeams.iterator(); itb.hasNext();) {
             final Inter iBeam = itb.next();
@@ -1466,7 +1475,8 @@ public class NoteHeadsBuilder
                     //TODO: refine using width of template?
                     if (Math.abs(pitch) > 5) {
                         for (LedgerAdapter ledger : ledgers) {
-                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger.getRightAbscissa())) {
+                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger
+                                    .getRightAbscissa())) {
                                 return (int) Math.rint(
                                         (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
                             }
@@ -1560,8 +1570,7 @@ public class NoteHeadsBuilder
                 }
 
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft]
-                        ? sheetTemplateNotes
+                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft] ? sheetTemplateNotes
                         : sheetVoidTemplateNotes;
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
@@ -1602,7 +1611,11 @@ public class NoteHeadsBuilder
                         }
 
                         final HeadInter head = createInter(
-                                bestLoc, MIDDLE_LEFT, shape, line.getStaff(), pitch);
+                                bestLoc,
+                                MIDDLE_LEFT,
+                                shape,
+                                line.getStaff(),
+                                pitch);
 
                         if (head != null) {
                             heads.add(head);
@@ -1619,7 +1632,8 @@ public class NoteHeadsBuilder
             // Make sure we have an underlying glyph for each head
             for (Iterator<HeadInter> it = heads.iterator(); it.hasNext();) {
                 final HeadInter inter = it.next();
-                final Glyph glyph = inter.retrieveGlyph(image);
+                final Template template = catalog.getTemplate(inter.getShape());
+                final Glyph glyph = inter.retrieveGlyph(template, image);
 
                 if (glyph != null) {
                     sig.addVertex(inter);
@@ -1711,13 +1725,18 @@ public class NoteHeadsBuilder
                             }
                         }
 
-                        final HeadInter head = createInter(bestLoc, anchor, shape, line.getStaff(),
-                                                           pitch);
+                        final HeadInter head = createInter(
+                                bestLoc,
+                                anchor,
+                                shape,
+                                line.getStaff(),
+                                pitch);
                         if (head == null) {
                             continue;
                         }
 
-                        final Glyph glyph = head.retrieveGlyph(image);
+                        final Template template = catalog.getTemplate(shape);
+                        final Glyph glyph = head.retrieveGlyph(template, image);
 
                         if (glyph == null) {
                             continue;
@@ -1734,8 +1753,7 @@ public class NoteHeadsBuilder
                         // Dx is positive if outside head box and negative if inside
                         final HorizontalSide hSide = (anchor == LEFT_STEM) ? LEFT : RIGHT;
                         final Rectangle box = head.getBounds();
-                        final double dx = (hSide == LEFT)
-                                ? box.x - x0 + 0.5
+                        final double dx = (hSide == LEFT) ? box.x - x0 + 0.5
                                 : x0 + 0.5 - (box.x + box.width - 1);
                         tally.putDx(head, hSide, dx);
                     }
@@ -2038,8 +2056,12 @@ public class NoteHeadsBuilder
         @Override
         public String toString ()
         {
-            return String.format("%7d bars, %7d overlaps, %7d evals, %7d abandons",
-                                 bars, overlaps, evals, abandons);
+            return String.format(
+                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
+                    bars,
+                    overlaps,
+                    evals,
+                    abandons);
         }
     }
 }

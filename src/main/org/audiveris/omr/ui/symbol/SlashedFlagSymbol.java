@@ -23,6 +23,7 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -31,25 +32,23 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>SlashedFlagSymbol</code> displays a SMALL_FLAG_SLASH.
+ * Class <code>SlashedFlagSymbol</code> displays a FLAG_SLASH_SMALL.
  *
  * @author Hervé Bitteur
  */
 public class SlashedFlagSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** The small flag symbol. */
-    private final ShapeSymbol flagSymbol = Symbols.getSymbol(Shape.SMALL_FLAG);
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SmallFlagSymbol</code> object.
+     *
+     * @param family the MusicFont family
      */
-    public SlashedFlagSymbol ()
+    public SlashedFlagSymbol (Family family)
     {
-        super(Shape.SMALL_FLAG_SLASH);
+        super(Shape.SMALL_FLAG_SLASH, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -61,7 +60,7 @@ public class SlashedFlagSymbol
     {
         MyParams p = new MyParams();
 
-        p.layout = flagSymbol.layout(font);
+        p.layout = font.layoutShapeByCode(Shape.FLAG_1, OmrFont.TRANSFORM_SMALL);
 
         p.rect = p.layout.getBounds();
         p.stroke = new BasicStroke(Math.max(1f, (float) p.rect.getWidth() / 10f));

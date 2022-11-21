@@ -57,6 +57,7 @@ import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.HorizontalSide;
@@ -569,7 +570,15 @@ public class HeadInter
     {
         if (template == null) {
             final int pointSize = staff.getHeadPointSize();
-            template = TemplateFactory.getInstance().getCatalog(pointSize).getTemplate(shape);
+            final Sheet sheet = staff.getSystem().getSheet();
+            final Family family = sheet.getStub().getMusicFontFamily();
+
+            template = TemplateFactory.getInstance()
+                    .getCatalog(family, pointSize).getTemplate(shape);
+
+            if (template == null) {
+                logger.warn("Null template for {} {}", shape, family);
+            }
         }
 
         return template;
@@ -979,13 +988,13 @@ public class HeadInter
     /**
      * Use template to build an underlying glyph.
      *
-     * @param image the image to read pixels from
+     * @param template the template that detected this head
+     * @param image    the image to read pixels from
      * @return the underlying glyph or null if failed
      */
-    public Glyph retrieveGlyph (ByteProcessor image)
+    public Glyph retrieveGlyph (Template template,
+                                ByteProcessor image)
     {
-        getTemplate();
-
         final Sheet sheet = staff.getSystem().getSheet();
         final Rectangle interBox = getBounds();
         final Rectangle tplBox = template.getBounds(interBox);

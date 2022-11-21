@@ -21,16 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterKind;
 import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -38,9 +35,10 @@ import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
-import org.audiveris.omr.ui.Board;
-import org.audiveris.omr.ui.BoardsPane;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.field.SpinnerUtil;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
@@ -48,6 +46,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -78,6 +79,7 @@ import javax.swing.event.ListSelectionListener;
  * It addresses:
  * <ul>
  * <li>Binarization parameters</li>
+ * <li>Music font specification</li>
  * <li>Text language specification</li>
  * <li>Support for specific features</li>
  * <!-- TODO
@@ -136,7 +138,7 @@ public class BookParameters
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a ScoreParameters object.
+     * Create a BookParameters object.
      *
      * @param stub the current sheet stub, or null
      */
@@ -148,7 +150,7 @@ public class BookParameters
             book = null;
         }
 
-        // component.setName("ScoreParametersPane"); <== NO!
+        // component.setName("BookParametersPane"); <== NO!
         // NOTA: no name is set to component to avoid SAF to store/restore tab selection
         component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 
@@ -158,7 +160,12 @@ public class BookParameters
 
         // Default panel
         List<XactDataPane> defaultPanes = new ArrayList<>();
-        defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
+
+        if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
+            defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
+        }
+
+        defaultPanes.add(new FontPane(null, MusicFont.defaultFamilyParam));
 
         TextPane defaultTextPane = createTextPane(null, Language.ocrDefaultLanguages);
 
@@ -168,22 +175,28 @@ public class BookParameters
 
         ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
 
-        for (ProcessingSwitch key : ProcessingSwitch.values()) {
+        for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
             SwitchPane switchPane = new SwitchPane(key, null, defaultSwitches.getParam(key));
             defaultPanes.add(switchPane);
         }
 
-        defaultPanel = new ScopedPanel(resources.getString("defaultTab.toolTipText"), defaultPanes);
+        defaultPanel = new ScopedPanel(resources.getString("defaultTab.toolTipText"),
+                                       defaultPanes);
         component.addTab(resources.getString("defaultTab.text"),
                          null, defaultPanel, defaultPanel.getName());
 
         // Book panel?
         if (book != null) {
             List<XactDataPane> bookPanes = new ArrayList<>();
-            bookPanes.add(
-                    new FilterPane(
-                            (FilterPane) defaultPanel.getPane(FilterPane.class),
-                            book.getBinarizationFilter()));
+            if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
+                bookPanes.add(
+                        new FilterPane(
+                                (FilterPane) defaultPanel.getPane(FilterPane.class),
+                                book.getBinarizationFilter()));
+            }
+
+            bookPanes.add(new FontPane((FontPane) defaultPanel.getPane(FontPane.class),
+                                       book.getMusicFontFamily()));
 
             TextPane bookTextPane = createTextPane(
                     (TextPane) defaultPanel.getPane(TextPane.class),
@@ -193,7 +206,7 @@ public class BookParameters
                 bookPanes.add(bookTextPane);
             }
 
-            for (ProcessingSwitch key : ProcessingSwitch.values()) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
                 Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
                 bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
             }
@@ -205,10 +218,17 @@ public class BookParameters
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
                     List<XactDataPane> sheetPanes = new ArrayList<>();
+                    if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
+                        sheetPanes.add(
+                                new FilterPane(
+                                        (FilterPane) bookPanel.getPane(FilterPane.class),
+                                        s.getBinarizationFilter()));
+                    }
+
                     sheetPanes.add(
-                            new FilterPane(
-                                    (FilterPane) bookPanel.getPane(FilterPane.class),
-                                    s.getBinarizationFilter()));
+                            new FontPane(
+                                    (FontPane) bookPanel.getPane(FontPane.class),
+                                    s.getMusicFontFamilyParam()));
 
                     TextPane sheetTextPane = createTextPane(
                             (TextPane) bookPanel.getPane(TextPane.class),
@@ -218,7 +238,7 @@ public class BookParameters
                         sheetPanes.add(sheetTextPane);
                     }
 
-                    for (ProcessingSwitch key : ProcessingSwitch.values()) {
+                    for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
                         Param<Boolean> bp = s.getProcessingSwitches().getParam(key);
                         sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
@@ -244,13 +264,14 @@ public class BookParameters
         // Initially selected tab
         component.addChangeListener(this);
         component.setSelectedComponent(
-                (sheetPanel != null) ? sheetPanel : ((bookPanel != null) ? bookPanel : defaultPanel));
+                (sheetPanel != null) ? sheetPanel : ((bookPanel != null) ? bookPanel
+                                : defaultPanel));
     }
-
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // commit //
     //--------//
+
     /**
      * Commit the user actions.
      *
@@ -270,18 +291,12 @@ public class BookParameters
                 boolean modified = false;
 
                 for (XactDataPane pane : panel.getPanes()) {
-                    final boolean paneModified = pane.commit();
-
-                    if (paneModified) {
+                    if (pane.commit()) {
                         logger.debug("BookParameters modified tab:{} {} {}",
                                      tab, panel.getName(), pane);
-
-                        if (pane instanceof SwitchPane switchPane) {
-                            modifiedScopes.add(switchPane.getModel().getScope());
-                        }
+                        modifiedScopes.add(pane.getModel().getScope());
+                        modified = true;
                     }
-
-                    modified |= paneModified;
                 }
 
                 // Default / Book modifications
@@ -289,7 +304,7 @@ public class BookParameters
                     if (tab == 0) {
                         defaultModified = true;
                     } else {
-                        // Test on book not really needed (unless tabs order gets changed one day)
+                        // Test on book not really needed (unless tabs order gets changed some day)
                         if (book != null) {
                             book.setModified(true);
                             bookModified = true;
@@ -316,12 +331,8 @@ public class BookParameters
                     final SheetView dataView = assembly.getView(SheetTab.DATA_TAB.label);
 
                     if (dataView != null) {
-                        final BoardsPane boardsPane = dataView.getBoardsPane();
-                        final Board shapeBoard = boardsPane.getBoard(Board.SHAPE.name);
-
-                        if (shapeBoard != null) {
-                            shapeBoard.update();
-                        }
+                        dataView.getBoardsPane().updateAllBoards();
+                        dataView.getScrollView().getView().repaint();
                     }
                 }
             }
@@ -440,9 +451,7 @@ public class BookParameters
                                        ProcessingSwitch key)
     {
         for (XactDataPane pane : panel.getPanes()) {
-            if (pane instanceof SwitchPane) {
-                SwitchPane switchPane = (SwitchPane) pane;
-
+            if (pane instanceof SwitchPane switchPane) {
                 if (switchPane.getKey() == key) {
                     return switchPane;
                 }
@@ -561,14 +570,12 @@ public class BookParameters
 
             switch (kind) {
             case GLOBAL:
-
                 GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
                 globalData.spinner.setValue(globalDesc.threshold);
 
                 break;
 
             case ADAPTIVE:
-
                 AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
                 localDataMean.spinner.setValue(localDesc.meanCoeff);
                 localDataDev.spinner.setValue(localDesc.stdDevCoeff);
@@ -837,6 +844,61 @@ public class BookParameters
         {
             langList.setEnabled(bool);
             langSpec.setEnabled(bool);
+        }
+    }
+
+    //----------//
+    // FontPane //
+    //----------//
+    /**
+     * Pane to set the music font family.
+     * Scope can be: default, book, sheet.
+     */
+    private static class FontPane
+            extends XactDataPane<Family>
+    {
+
+        /** ComboBox for family. */
+        private final JComboBox<Family> familyCombo = new JComboBox<>(Family.values());
+
+        FontPane (FontPane parent,
+                  Param<Family> model)
+        {
+            super(resources.getString("FontPane.title"), parent, model);
+
+            familyCombo.setToolTipText(resources.getString("FontPane.familyCombo.toolTipText"));
+            familyCombo.addActionListener(this);
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            ///builder.add(familyCombo, cst.xyw(3, r, 5));
+            builder.add(familyCombo, cst.xyw(5, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (Family family)
+        {
+            familyCombo.setSelectedItem(family);
+        }
+
+        @Override
+        protected Family read ()
+        {
+            return familyCombo.getItemAt(familyCombo.getSelectedIndex());
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            familyCombo.setEnabled(bool);
         }
     }
 }

@@ -39,8 +39,8 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -199,9 +199,10 @@ public class TemplateView
                 Composite oldComposite = g.getComposite();
                 g.setComposite(templateComposite);
 
-                ShapeSymbol symbol = Symbols.getSymbol(template.getShape());
-                Scale scale = sheet.getScale();
-                MusicFont musicFont = MusicFont.getHeadFont(scale, scale.getInterline());
+                final Scale scale = sheet.getScale();
+                final Family family = sheet.getStub().getMusicFontFamily();
+                MusicFont musicFont = MusicFont.getHeadFont(family, scale, scale.getInterline());
+                ShapeSymbol symbol = musicFont.getSymbol(template.getShape());
                 final Point2D center = GeoUtil.center2D(slimRect);
                 symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
                 g.setComposite(oldComposite);

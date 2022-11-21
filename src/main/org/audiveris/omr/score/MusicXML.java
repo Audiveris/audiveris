@@ -63,10 +63,23 @@ public abstract class MusicXML
 
     private static final Logger logger = LoggerFactory.getLogger(MusicXML.class);
 
-    /** Names of the various note types used in MusicXML. */
-    private static final String[] noteTypeNames = new String[]{"256th", "128th", "64th", "32nd",
-                                                               "16th", "eighth", "quarter", "half",
-                                                               "whole", "breve", "long"};
+    /**
+     * Names of the various note types used in MusicXML.
+     * <p>
+     * NOTA: If this array is modified, check method {@link #getNoteTypeName(Rational) accordingly.
+     */
+    private static final String[] noteTypeNames = new String[] {
+            "256th",
+            "128th",
+            "64th",
+            "32nd",
+            "16th",
+            "eighth",
+            "quarter",
+            "half",
+            "whole",
+            "breve",
+            "long" };
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -159,7 +172,6 @@ public abstract class MusicXML
             return factory.createArticulationsAccent(ep);
 
         case STRONG_ACCENT:
-
             // Type for strong accent: either up (^) or down (v)
             // For the time being we recognize only up ones
             StrongAccent strongAccent = factory.createStrongAccent();
@@ -177,7 +189,6 @@ public abstract class MusicXML
             return factory.createArticulationsStaccatissimo(ep);
 
         case BREATH_MARK:
-
             BreathMark breathMark = factory.createBreathMark();
             breathMark.setValue("comma");
 
@@ -303,7 +314,7 @@ public abstract class MusicXML
     public static String getNoteTypeName (Rational duration)
     {
         // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
-        double dur = 64 * duration.divides(AbstractNoteInter.QUARTER_DURATION).doubleValue();
+        double dur = 64 * duration.divides(Rational.QUARTER).doubleValue();
         int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return noteTypeNames[index];

@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter.Kind;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.BasicStroke;
@@ -83,27 +84,27 @@ public class OctaveShiftSymbol
     /**
      * Create a standard size OctaveShiftSymbol, ALTA by default
      *
-     * @param shape OTTAVA, QUINDICESIMA or VENTIDUESIMA
-     * @param codes precise code for 8/15/22 value part
+     * @param shape  OTTAVA, QUINDICESIMA or VENTIDUESIMA
+     * @param family the musicFont family
      */
     public OctaveShiftSymbol (Shape shape,
-                              int... codes)
+                              Family family)
     {
-        this(shape, Kind.ALTA, codes);
+        this(shape, Kind.ALTA, family);
     }
 
     /**
      * Create a standard size OctaveShiftSymbol.
      *
-     * @param shape OTTAVA, QUINDICESIMA or VENTIDUESIMA
-     * @param kind  ALTA or BASSA
-     * @param codes precise code for 8/15/22 value part
+     * @param shape  OTTAVA, QUINDICESIMA or VENTIDUESIMA
+     * @param kind   ALTA or BASSA
+     * @param family the musicFont family
      */
     public OctaveShiftSymbol (Shape shape,
                               Kind kind,
-                              int... codes)
+                              Family family)
     {
-        super(shape, codes);
+        super(shape, family);
         this.kind = kind;
     }
 
@@ -130,7 +131,7 @@ public class OctaveShiftSymbol
         final MyParams p = new MyParams();
 
         // 8/15/22 value layout
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
 
         final Rectangle2D rs = p.layout.getBounds(); // Just value bounds
         final double w = rs.getWidth();
@@ -219,7 +220,7 @@ public class OctaveShiftSymbol
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: used

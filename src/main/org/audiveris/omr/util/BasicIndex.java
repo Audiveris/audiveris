@@ -27,7 +27,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.BasicSymbol;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -545,7 +545,7 @@ public class BasicIndex<E extends Entity>
     {
 
         @XmlElementRefs({@XmlElementRef(type = Glyph.class),
-                         @XmlElementRef(type = BasicSymbol.class)
+                         @XmlElementRef(type = ShapeSymbol.class)
         })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }

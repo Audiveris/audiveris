@@ -22,7 +22,7 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.ui.symbol.SymbolIcon;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Navigable;
 
 import java.awt.Point;
@@ -58,7 +58,7 @@ public class Mark
     private final Position position;
 
     /** The symbol of the mark in the MusicFont */
-    private final SymbolIcon symbol;
+    private final ShapeSymbol symbol;
 
     /** Additional data, perhaps depending on shape for example */
     private final Object data;
@@ -76,7 +76,7 @@ public class Mark
     public Mark (SystemInfo system,
                  Point location,
                  Position position,
-                 SymbolIcon symbol,
+                 ShapeSymbol symbol,
                  Object data)
     {
         this.system = system;
@@ -134,7 +134,7 @@ public class Mark
      *
      * @return the MusicFont symbol descriptor
      */
-    public SymbolIcon getSymbol ()
+    public ShapeSymbol getSymbol ()
     {
         return symbol;
     }

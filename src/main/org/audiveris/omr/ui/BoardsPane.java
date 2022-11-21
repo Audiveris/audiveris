@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
 import static org.audiveris.omr.ui.util.UIPredicates.*;
@@ -32,6 +28,10 @@ import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -370,6 +370,19 @@ public class BoardsPane
         component.invalidate();
         component.revalidate();
         component.repaint();
+    }
+
+    //-----------------//
+    // updateAllBoards //
+    //-----------------//
+    /**
+     * Refresh all boards in boardsPane.
+     */
+    public void updateAllBoards ()
+    {
+        for (Board board : boards) {
+            board.update();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

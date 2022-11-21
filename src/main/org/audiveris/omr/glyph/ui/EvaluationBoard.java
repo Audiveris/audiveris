@@ -21,11 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.FormSpecs;
-
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.Sample;
@@ -43,6 +38,7 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
@@ -50,6 +46,11 @@ import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -466,22 +467,25 @@ public class EvaluationBoard
             final JComponent comp = isActive ? button : field;
 
             if (eval != null) {
-                Evaluation.Failure failure = eval.failure;
-                String text = eval.shape.toString();
-                String tip = (failure != null) ? failure.toString() : null;
+                final Evaluation.Failure failure = eval.failure;
+                final String text = eval.shape.toString();
+                final String tip = (failure != null) ? failure.toString() : null;
+                final MusicFont.Family family = sheet != null
+                        ? sheet.getStub().getMusicFontFamily()
+                        : MusicFont.getDefaultMusicFamily();
 
                 if (isActive) {
                     button.setEnabled(enabled);
                     button.setText(text);
                     button.setToolTipText(tip);
 
-                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
+                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
                     button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 } else {
                     field.setText(text);
                     field.setToolTipText(tip);
 
-                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
+                    final ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
                     field.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 }
 

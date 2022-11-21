@@ -29,7 +29,6 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.CompoundNoteInter;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -42,21 +41,18 @@ import java.awt.geom.Rectangle2D;
 public class CompoundNoteSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final BasicSymbol stemSymbol = Symbols.SYMBOL_STEM;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a standard size CompoundNoteSymbol.
      *
-     * @param shape one of {@link ShapeSet#CompoundNotes}
-     * @param codes the codes for MusicFont characters
+     * @param shape  one of {@link ShapeSet#CompoundNotes}
+     * @param family the musicFont family
      */
     public CompoundNoteSymbol (Shape shape,
-                               int... codes)
+                               MusicFont.Family family)
     {
-        super(shape, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -81,7 +77,7 @@ public class CompoundNoteSymbol
     {
         final MyParams p = new MyParams();
         p.model = new CompoundNoteInter.Model();
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
 
         final Rectangle2D r = p.layout.getBounds();
         p.rect = new Rectangle2D.Double(0, 0, r.getWidth(), r.getHeight());
@@ -98,9 +94,8 @@ public class CompoundNoteSymbol
                 isUp() ? 2 * (r.getHeight() + r.getY()) : -2 * r.getY());
 
         // Stem
-        final Rectangle2D stem = font.layout(stemSymbol.getString()).getBounds();
-        final Point2D stemTop = isUp()
-                ? new Point2D.Double(r.getWidth() - stem.getWidth() / 2, 0)
+        final Rectangle2D stem = font.layoutShapeByCode(Shape.STEM).getBounds();
+        final Point2D stemTop = isUp() ? new Point2D.Double(r.getWidth() - stem.getWidth() / 2, 0)
                 : new Point2D.Double(stem.getWidth() / 2, -r.getY());
         p.model.stemBox = new Rectangle2D.Double(
                 stemTop.getX() - stem.getWidth() / 2,

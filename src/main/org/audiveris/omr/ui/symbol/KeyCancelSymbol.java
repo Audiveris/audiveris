@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 /**
  * Class <code>KeyCancelSymbol</code> displays a Key Signature cancel symbol, using a
@@ -36,10 +37,12 @@ public class KeyCancelSymbol
 
     /**
      * Creates a new <code>KeyCancelSymbol</code> object.
+     *
+     * @param family the musicFont family
      */
-    public KeyCancelSymbol ()
+    public KeyCancelSymbol (Family family)
     {
-        super(0, Shape.KEY_CANCEL, Symbols.CODE_NATURAL);
+        super(0, Shape.KEY_CANCEL, family, Shape.NATURAL);
     }
 
     /**
@@ -47,9 +50,11 @@ public class KeyCancelSymbol
      * to cancel.
      *
      * @param fifths the canceled key
+     * @param family the musicFont family
      */
-    public KeyCancelSymbol (int fifths)
+    public KeyCancelSymbol (int fifths,
+                            Family family)
     {
-        super(fifths, Shape.KEY_CANCEL, Symbols.CODE_NATURAL);
+        super(fifths, Shape.KEY_CANCEL, family, Shape.NATURAL);
     }
 }

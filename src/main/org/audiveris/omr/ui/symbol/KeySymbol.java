@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.KeyInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -47,20 +48,26 @@ public abstract class KeySymbol
      */
     public final int fifths;
 
+    /** The shape for key item (a sharp, a flat). */
+    public final Shape itemShape;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeySymbol object.
      *
-     * @param fifths fifths value within [-7 .. +7]
-     * @param shape  the related shape
-     * @param codes  the code for item shape
+     * @param fifths    fifths value within [-7 .. +7]
+     * @param shape     the related key shape
+     * @param family    the musicFont family
+     * @param itemShape the shape for any key item
      */
     public KeySymbol (int fifths,
                       Shape shape,
-                      int... codes)
+                      Family family,
+                      Shape itemShape)
     {
-        super(shape, codes);
+        super(shape, family);
         this.fifths = fifths;
+        this.itemShape = itemShape;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -75,7 +82,7 @@ public abstract class KeySymbol
         p.stepDy = font.getStaffInterline() / 2.0;
 
         // One item
-        p.layout = layout(font);
+        p.layout = font.layoutShapeByCode(itemShape);
 
         Rectangle2D r2 = p.layout.getBounds();
         p.itemDx = r2.getWidth() * 1.15;

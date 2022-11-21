@@ -24,12 +24,14 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>TextSymbol</code> implements a decorated text symbol
+ * Class <code>TextSymbol</code> implements a decorated text symbol.
  *
  * @author Hervé Bitteur
  */
@@ -43,15 +45,17 @@ public class TextSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create an TextSymbol
+     * Create a <code>TextSymbol</code>.
      *
-     * @param shape the precise shape
-     * @param str   the text to draw
+     * @param shape  the precise shape
+     * @param family the MusicFont family (irrelevant in fact, but cannot be null...)
+     * @param str    the text to draw
      */
     public TextSymbol (Shape shape,
+                       Family family,
                        String str)
     {
-        super(shape);
+        super(shape, family);
         this.str = str;
     }
 
@@ -77,14 +81,13 @@ public class TextSymbol
     {
         MyParams p = new MyParams();
 
-        int fontSize = (int) Math.rint(font.getSize2D() * 0.5); // 0.5 for icon size
-        TextFont textFont = new TextFont(fontSize);
+        final int fontSize = (int) Math.rint(font.getSize2D() * RATIO_TINY);
+        final TextFont textFont = new TextFont(fontSize);
         p.layout = textFont.layout(str);
         p.rect = p.layout.getBounds();
 
-        Point2D baseLoc = new Point2D.Double(0, 0);
-        FontInfo fontInfo = FontInfo.createDefault(fontSize);
-
+        final Point2D baseLoc = new Point2D.Double(0, 0);
+        final FontInfo fontInfo = FontInfo.createDefault(fontSize);
         p.model = new WordInter.Model(str, baseLoc, fontInfo);
 
         return p;
@@ -95,16 +98,12 @@ public class TextSymbol
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: not used
-        // layout: head decoration
+        // layout: text layout
         // rect:   global image
-        //
-        // ledger thickness
-        int thickness;
-
         // model
         WordInter.Model model;
     }

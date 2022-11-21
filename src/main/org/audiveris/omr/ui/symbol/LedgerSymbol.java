@@ -24,6 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -40,20 +41,16 @@ import java.awt.geom.Rectangle2D;
 public class LedgerSymbol
         extends DecorableSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    // The head part
-    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a LedgerSymbol (with decoration?) standard size
      *
-     * @param codes the codes for MusicFont characters
+     * @param family the musicFont family
      */
-    public LedgerSymbol (int... codes)
+    public LedgerSymbol (Family family)
     {
-        super(Shape.LEDGER, codes);
+        super(Shape.LEDGER, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -80,12 +77,12 @@ public class LedgerSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
         p.rect = p.layout.getBounds();
 
         if (isDecorated) {
             // Add head layout
-            p.headLayout = font.layout(head.getString());
+            p.headLayout = font.layoutShapeByCode(Shape.NOTEHEAD_BLACK);
             final Rectangle2D hr = p.headLayout.getBounds();
             Rectangle2D.union(p.rect, hr, p.rect);
         }
@@ -122,7 +119,7 @@ public class LedgerSymbol
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: not used

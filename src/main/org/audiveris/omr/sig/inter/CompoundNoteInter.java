@@ -43,8 +43,8 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.symbol.CompoundNoteSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -189,8 +189,10 @@ public class CompoundNoteInter
         final Point hCenter = new Point(
                 center.x,
                 isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
-        final CompoundNoteSymbol symbol = (CompoundNoteSymbol) Symbols.getSymbol(shape);
-        final MusicFont font = MusicFont.getBaseFont(staffInterline);
+        final Sheet sheet = staff.getSystem().getSheet();
+        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, staffInterline);
+        final CompoundNoteSymbol symbol = (CompoundNoteSymbol) font.getSymbol(shape);
         deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter);
         logger.debug("{}", model);
 

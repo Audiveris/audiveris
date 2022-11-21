@@ -24,20 +24,18 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -194,15 +192,16 @@ public class BracketInter
                                MusicFont font,
                                Point dropLocation)
     {
-        final Rectangle2D wholeRect = font.layout(symbol).getBounds();
-        final Rectangle2D upperRect = font.layout(Symbols.SYMBOL_BRACKET_UPPER_SERIF).getBounds();
+        final Rectangle2D wholeRect = font.layoutShapeByCode(symbol.getShape()).getBounds();
+        final Rectangle2D upperRect = font.layoutShapeByCode(Shape.BRACKET_UPPER_SERIF).getBounds();
         final double wholeWidth = wholeRect.getWidth();
         final double trunkHeight = wholeRect.getHeight() - 2 * upperRect.getHeight();
-        width = font.layout(Shape.THICK_BARLINE).getBounds().getWidth();
-        median = new Line2D.Double(dropLocation.x - wholeWidth / 2 + width / 2,
-                                   dropLocation.y - trunkHeight / 2,
-                                   dropLocation.x - wholeWidth / 2 + width / 2,
-                                   dropLocation.y + trunkHeight / 2);
+        width = font.layoutShapeByCode(Shape.THICK_BARLINE).getBounds().getWidth();
+        median = new Line2D.Double(
+                dropLocation.x - wholeWidth / 2 + width / 2,
+                dropLocation.y - trunkHeight / 2,
+                dropLocation.x - wholeWidth / 2 + width / 2,
+                dropLocation.y + trunkHeight / 2);
         computeArea(font);
 
         return true;
@@ -227,8 +226,9 @@ public class BracketInter
     protected void computeArea ()
     {
         if (sig != null) {
-            Scale scale = sig.getSystem().getSheet().getScale();
-            MusicFont font = MusicFont.getBaseFont(scale.getInterline());
+            final Sheet sheet = sig.getSystem().getSheet();
+            final Family family = sheet.getStub().getMusicFontFamily();
+            final MusicFont font = MusicFont.getBaseFont(family, sheet.getScale().getInterline());
             computeArea(font);
         }
     }
@@ -238,29 +238,28 @@ public class BracketInter
     //-------------//
     protected void computeArea (MusicFont font)
     {
-        TextLayout upperLayout = font.layout(Symbols.SYMBOL_BRACKET_UPPER_SERIF.getString());
-        Rectangle2D upperRect = upperLayout.getBounds();
-
-        TextLayout lowerLayout = font.layout(Symbols.SYMBOL_BRACKET_LOWER_SERIF.getString());
-        Rectangle2D lowerRect = lowerLayout.getBounds();
+        final Rectangle2D upperRect = font.layoutShapeByCode(Shape.BRACKET_UPPER_SERIF).getBounds();
+        final Rectangle2D lowerRect = font.layoutShapeByCode(Shape.BRACKET_LOWER_SERIF).getBounds();
 
         area = AreaUtil.verticalParallelogram(median.getP1(), median.getP2(), getWidth());
 
         // Top serif?
         if (kind == BracketKind.TOP || kind == BracketKind.BOTH) {
-            Rectangle2D tr = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                    median.getY1() - upperRect.getHeight(),
-                                                    upperRect.getWidth(),
-                                                    upperRect.getHeight());
+            Rectangle2D tr = new Rectangle2D.Double(
+                    median.getX1() - width / 2,
+                    median.getY1() - upperRect.getHeight(),
+                    upperRect.getWidth(),
+                    upperRect.getHeight());
             area.add(new Area(tr));
         }
 
         // Bottom serif?
         if (kind == BracketKind.BOTTOM || kind == BracketKind.BOTH) {
-            Rectangle2D br = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                    median.getY2(),
-                                                    lowerRect.getWidth(),
-                                                    lowerRect.getHeight());
+            Rectangle2D br = new Rectangle2D.Double(
+                    median.getX1() - width / 2,
+                    median.getY2(),
+                    lowerRect.getWidth(),
+                    lowerRect.getHeight());
             area.add(new Area(br));
         }
 

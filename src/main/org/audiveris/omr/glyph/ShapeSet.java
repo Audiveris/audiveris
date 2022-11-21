@@ -24,10 +24,11 @@ package org.audiveris.omr.glyph;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,95 +175,6 @@ public class ShapeSet
             KEY_FLAT_6,
             KEY_FLAT_7);
 
-    /** All black note heads. */
-    public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
-            NOTEHEAD_DIAMOND_FILLED,
-            NOTEHEAD_TRIANGLE_DOWN_FILLED,
-            NOTEHEAD_CIRCLE_X,
-            NOTEHEAD_BLACK,
-            NOTEHEAD_BLACK_SMALL);
-
-    /** All void note heads. */
-    public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
-            NOTEHEAD_DIAMOND_VOID,
-            NOTEHEAD_CROSS_VOID,
-            NOTEHEAD_TRIANGLE_DOWN_VOID,
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL);
-
-    /** All supported small notes. (for cue/grace) */
-    public static final EnumSet<Shape> SmallNotes = EnumSet.of(
-            NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE_SMALL);
-
-    /** All heads without a stem. */
-    public static final EnumSet<Shape> StemLessHeads = EnumSet.of(
-            BREVE,
-            WHOLE_NOTE,
-            WHOLE_NOTE_SMALL,
-            WHOLE_NOTE_CROSS,
-            WHOLE_NOTE_TRIANGLE_DOWN,
-            WHOLE_NOTE_DIAMOND,
-            WHOLE_NOTE_CIRCLE_X);
-
-    /** All heads with a stem. */
-    public static final EnumSet<Shape> StemHeads = EnumSet.of(
-            NOTEHEAD_BLACK,
-            NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL,
-            NOTEHEAD_CROSS,
-            NOTEHEAD_CROSS_VOID,
-            NOTEHEAD_DIAMOND_FILLED,
-            NOTEHEAD_DIAMOND_VOID,
-            NOTEHEAD_TRIANGLE_DOWN_FILLED,
-            NOTEHEAD_TRIANGLE_DOWN_VOID,
-            NOTEHEAD_CIRCLE_X);
-
-    /** All heads. */
-    public static final List<Shape> Heads = Arrays.asList(
-            NOTEHEAD_BLACK,
-            NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE,
-            WHOLE_NOTE_SMALL,
-            BREVE,
-            NOTEHEAD_CROSS,
-            NOTEHEAD_CROSS_VOID,
-            WHOLE_NOTE_CROSS,
-            NOTEHEAD_DIAMOND_FILLED,
-            NOTEHEAD_DIAMOND_VOID,
-            WHOLE_NOTE_DIAMOND,
-            NOTEHEAD_TRIANGLE_DOWN_FILLED,
-            NOTEHEAD_TRIANGLE_DOWN_VOID,
-            WHOLE_NOTE_TRIANGLE_DOWN,
-            NOTEHEAD_CIRCLE_X,
-            WHOLE_NOTE_CIRCLE_X);
-
-    /** Void heads. */
-    public static final List<Shape> VoidHeads = Arrays.asList(
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE,
-            WHOLE_NOTE_SMALL,
-            BREVE,
-            NOTEHEAD_CROSS_VOID,
-            WHOLE_NOTE_CROSS,
-            NOTEHEAD_DIAMOND_VOID,
-            WHOLE_NOTE_DIAMOND,
-            NOTEHEAD_TRIANGLE_DOWN_VOID,
-            WHOLE_NOTE_TRIANGLE_DOWN,
-            WHOLE_NOTE_CIRCLE_X);
-
-    /** All compound notes. */
-    public static final List<Shape> CompoundNotes = Arrays.asList(
-            QUARTER_NOTE_UP,
-            QUARTER_NOTE_DOWN,
-            HALF_NOTE_UP,
-            HALF_NOTE_DOWN);
-
     /** FermataArcs. */
     public static final EnumSet<Shape> FermataArcs = EnumSet.of(FERMATA_ARC, FERMATA_ARC_BELOW);
 
@@ -280,11 +192,117 @@ public class ShapeSet
     public static final EnumSet<Shape> Beams = EnumSet.copyOf(
             Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK, BEAM_HOOK_SMALL));
 
-    /** Cross heads. */
-    public static final List<Shape> CrossHeads = Arrays.asList(
-            WHOLE_NOTE_CROSS,
+    /** Heads with an oval shape. */
+    public static final List<Shape> HeadsOval = Arrays.asList(
+            NOTEHEAD_BLACK,
+            NOTEHEAD_VOID,
+            WHOLE_NOTE,
+            BREVE);
+
+    /** Heads with a small oval shape. */
+    public static final List<Shape> HeadsOvalSmall = Arrays.asList(
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE_SMALL,
+            BREVE_SMALL);
+
+    /** Heads with a cross shape. */
+    public static final List<Shape> HeadsCross = Arrays.asList(
+            NOTEHEAD_CROSS,
             NOTEHEAD_CROSS_VOID,
-            NOTEHEAD_CROSS);
+            WHOLE_NOTE_CROSS,
+            BREVE_CROSS);
+
+    /** Heads with a diamond shape. */
+    public static final List<Shape> HeadsDiamond = Arrays.asList(
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_DIAMOND_VOID,
+            WHOLE_NOTE_DIAMOND,
+            BREVE_DIAMOND);
+
+    /** Heads with a triangle down shape. */
+    public static final List<Shape> HeadsTriangle = Arrays.asList(
+            NOTEHEAD_TRIANGLE_DOWN_FILLED,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            WHOLE_NOTE_TRIANGLE_DOWN,
+            BREVE_TRIANGLE_DOWN);
+
+    /** Heads with a circle X shape. */
+    public static final List<Shape> HeadsCircle = Arrays.asList(
+            NOTEHEAD_CIRCLE_X,
+            NOTEHEAD_CIRCLE_X_VOID,
+            WHOLE_NOTE_CIRCLE_X,
+            BREVE_CIRCLE_X);
+
+    /** All compound notes. */
+    public static final List<Shape> CompoundNotes = Arrays.asList(
+            QUARTER_NOTE_UP,
+            QUARTER_NOTE_DOWN,
+            HALF_NOTE_UP,
+            HALF_NOTE_DOWN);
+
+    /** All heads with a stem. */
+    public static final EnumSet<Shape> StemHeads = EnumSet.of(
+            NOTEHEAD_BLACK,
+            NOTEHEAD_VOID,
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID_SMALL,
+            NOTEHEAD_CROSS,
+            NOTEHEAD_CROSS_VOID,
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_DIAMOND_VOID,
+            NOTEHEAD_TRIANGLE_DOWN_FILLED,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            NOTEHEAD_CIRCLE_X,
+            NOTEHEAD_CIRCLE_X_VOID);
+
+    /** All heads without a stem. */
+    public static final EnumSet<Shape> StemLessHeads = EnumSet.of(
+            WHOLE_NOTE,
+            BREVE,
+            WHOLE_NOTE_SMALL,
+            BREVE_SMALL,
+            WHOLE_NOTE_CROSS,
+            BREVE_CROSS,
+            WHOLE_NOTE_DIAMOND,
+            BREVE_DIAMOND,
+            WHOLE_NOTE_TRIANGLE_DOWN,
+            BREVE_TRIANGLE_DOWN,
+            WHOLE_NOTE_CIRCLE_X,
+            BREVE_CIRCLE_X);
+
+    /** All heads. */
+    public static final List<Shape> Heads = new ArrayList<>();
+
+    static {
+        Heads.addAll(HeadsOval);
+        Heads.addAll(HeadsOvalSmall);
+        Heads.addAll(HeadsCross);
+        Heads.addAll(HeadsDiamond);
+        Heads.addAll(HeadsTriangle);
+        Heads.addAll(HeadsCircle);
+    }
+
+    /** Hollow heads. */
+    public static final List<Shape> HollowHeads = Arrays.asList(
+            NOTEHEAD_VOID,
+            WHOLE_NOTE,
+            BREVE,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE_SMALL,
+            BREVE_SMALL,
+            NOTEHEAD_CROSS_VOID,
+            WHOLE_NOTE_CROSS,
+            BREVE_CROSS,
+            NOTEHEAD_DIAMOND_VOID,
+            WHOLE_NOTE_DIAMOND,
+            BREVE_DIAMOND,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            WHOLE_NOTE_TRIANGLE_DOWN,
+            BREVE_TRIANGLE_DOWN,
+            NOTEHEAD_CIRCLE_X_VOID,
+            WHOLE_NOTE_CIRCLE_X,
+            BREVE_CIRCLE_X);
 
     /** Drum heads. */
     public static final List<Shape> DrumHeads = Arrays.asList(
@@ -302,6 +320,11 @@ public class ShapeSet
             OTTAVA,
             QUINDICESIMA,
             VENTIDUESIMA);
+
+    /** All non-draggable shapes. */
+    public static final EnumSet<Shape> Undraggables = EnumSet.of(
+            NON_DRAGGABLE,
+            PartialTimes.toArray(Shape[]::new));
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
@@ -348,7 +371,7 @@ public class ShapeSet
     public static final ShapeSet BeamsAndTuplets = new ShapeSet(
             BEAM,
             Colors.SCORE_NOTES,
-            shapesOf(BEAM /* ,BEAM_SMALL */, BEAM_HOOK, TUPLET_THREE, TUPLET_SIX));
+            shapesOf(BEAM, BEAM_HOOK, TUPLET_THREE, TUPLET_SIX));
 
     public static final ShapeSet ClefsAndShifts = new ShapeSet(
             G_CLEF,
@@ -389,7 +412,7 @@ public class ShapeSet
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
             Colors.SCORE_NOTES,
-            shapesOf(shapesOf(AUGMENTATION_DOT), Heads, CompoundNotes));
+            shapesOf(Heads, shapesOf(AUGMENTATION_DOT), CompoundNotes));
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
@@ -433,13 +456,7 @@ public class ShapeSet
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
             Colors.SCORE_MODIFIERS,
-            shapesOf(
-                    DIGIT_0,
-                    DIGIT_1,
-                    DIGIT_2,
-                    DIGIT_3,
-                    DIGIT_4,
-                    DIGIT_5 //  ,
+            shapesOf(DIGIT_0, DIGIT_1, DIGIT_2, DIGIT_3, DIGIT_4, DIGIT_5 //  ,
             //                    DIGIT_6,
             //                    DIGIT_7,
             //                    DIGIT_8,
@@ -472,10 +489,17 @@ public class ShapeSet
             LEDGER,
             Colors.SCORE_PHYSICALS,
             shapesOf(
-                    shapesOf(LYRICS, TEXT, /// CHARACTER,
-                             SLUR_ABOVE, SLUR_BELOW, LEDGER, STEM, ENDING, ENDING_WRL),
-                    constants.addClutterInPhysicals.isSet() ? shapesOf(CLUTTER) : Collections
-                    .emptyList()));
+                    shapesOf(
+                            LYRICS,
+                            TEXT, /// CHARACTER,
+                            SLUR_ABOVE,
+                            SLUR_BELOW,
+                            LEDGER,
+                            STEM,
+                            ENDING,
+                            ENDING_WRL),
+                    constants.addClutterInPhysicals.isSet() ? shapesOf(CLUTTER)
+                    : Collections.emptyList()));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -520,6 +544,17 @@ public class ShapeSet
 
         // Debug
         ///dumpShapeColors();
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+    public static enum HeadMotif
+    {
+        oval,
+        small,
+        cross,
+        diamond,
+        triangle,
+        circle;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -734,10 +769,12 @@ public class ShapeSet
      * Populate the given menu with a hierarchy of all shapes,
      * organized by defined ShapeSets.
      *
+     * @param family   the selected MusicFont family
      * @param top      the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addAllShapes (JComponent top,
+    public static void addAllShapes (Family family,
+                                     JComponent top,
                                      ActionListener listener)
     {
         // All ranges of glyph shapes
@@ -747,13 +784,13 @@ public class ShapeSet
                 JMenu menu = new JMenu(field.getName());
 
                 if (set.rep != null) {
-                    menu.setIcon(set.rep.getDecoratedSymbol());
+                    menu.setIcon(set.rep.getDecoratedSymbol(family));
                 }
 
                 addColoredItem(top, menu, Color.black);
 
                 // Add menu items for this range
-                addSetShapes(set, menu, listener);
+                addSetShapes(family, set, menu, listener);
             }
         }
     }
@@ -762,21 +799,21 @@ public class ShapeSet
     // addSetShapes //
     //--------------//
     /**
-     * Populate the given menu with a list of all shapes that belong
-     * to the given ShapeSet.
+     * Populate the given menu with a list of all shapes that belong to the given ShapeSet.
      *
+     * @param family   the selected MusicFont family
      * @param set      the set for which shape menu items must be built
-     * @param top      the JComponent to populate (typically a JMenu or a
-     *                 JPopupMenu)
+     * @param top      the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addSetShapes (ShapeSet set,
+    public static void addSetShapes (Family family,
+                                     ShapeSet set,
                                      JComponent top,
                                      ActionListener listener)
     {
         // All shapes in the given range
         for (Shape shape : set.getSortedShapes()) {
-            JMenuItem menuItem = new JMenuItem(shape.toString(), shape.getDecoratedSymbol());
+            JMenuItem menuItem = new JMenuItem(shape.toString(), shape.getDecoratedSymbol(family));
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.getDescription());
@@ -846,29 +883,23 @@ public class ShapeSet
         if (sheet != null) {
             final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
-            if (!switches.getValue(ProcessingSwitch.smallBlackHeads)) {
-                list.remove(NOTEHEAD_BLACK_SMALL);
-            }
-
-            if (!switches.getValue(ProcessingSwitch.smallVoidHeads)) {
-                list.remove(NOTEHEAD_VOID_SMALL);
-            }
-
-            if (!switches.getValue(ProcessingSwitch.smallWholeHeads)) {
-                list.remove(WHOLE_NOTE_SMALL);
+            if (!switches.getValue(ProcessingSwitch.smallHeads)) {
+                list.removeAll(HeadsOvalSmall);
             }
 
             /**
-             * Only remove cross noteheads from search if _both_ switches
+             * Only remove cross heads from search if _both_ switches
              * crossHeads and drumNotation are off.
              */
             if (!switches.getValue(ProcessingSwitch.crossHeads)
                         && !switches.getValue(ProcessingSwitch.drumNotation)) {
-                list.removeAll(CrossHeads);
+                list.removeAll(HeadsCross);
             }
 
             if (!switches.getValue(ProcessingSwitch.drumNotation)) {
-                list.removeAll(DrumHeads);
+                list.removeAll(HeadsDiamond);
+                list.removeAll(HeadsTriangle);
+                list.removeAll(HeadsCircle);
             }
         }
 
@@ -941,7 +972,7 @@ public class ShapeSet
      */
     public static EnumSet<Shape> getVoidTemplateNotes (Sheet sheet)
     {
-        return EnumSet.copyOf(getProcessedShapes(sheet, VoidHeads));
+        return EnumSet.copyOf(getProcessedShapes(sheet, HollowHeads));
     }
 
     //----------//

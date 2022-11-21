@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
@@ -32,6 +30,8 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -75,15 +75,16 @@ public class SymbolSample
      *
      * @param shape     assigned shape
      * @param symbol    the font-based symbol
+     * @param musicFont the proper family font
      * @param interline the related interline value
      * @return the created SymbolSample
      */
     public static SymbolSample create (Shape shape,
                                        ShapeSymbol symbol,
+                                       MusicFont musicFont,
                                        int interline)
     {
         // Build the corresponding runTable
-        MusicFont musicFont = MusicFont.getBaseFont(interline);
         BufferedImage image = symbol.buildImage(musicFont);
         ByteProcessor buffer = createBuffer(image);
         RunTableFactory factory = new RunTableFactory(Orientation.VERTICAL);

@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.TIME_ZERO;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Scale.MusicFontScale;
+import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.param.ConstantBasedParam;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,32 +39,42 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class <code>MusicFont</code> is meant to simplify the use of the underlying music font
- * when rendering score views.
+ * Class <code>MusicFont</code> allows the use of proper music font family and size.
+ * <br>Major goals are:
+ * <ol>
+ * <li>Head template matching
+ * <li>Precise rendering of score views and boards
+ * <li>Generation of rare training samples
+ * </ol>
+ * <dl>
+ * <dt><b>Font family:</b></dt>
+ * <dd>The end-user can select any font family among the ones defined by {@link Family} enum type.
+ * <br>
+ * The current default family is the rather exhaustive SMuFL-compliant {@link Family#Bravura}.
  * <p>
- * The strategy is to use a properly scaled instance of this class to carry out the drawing of music
- * symbols with the correct size. The scaling should address:
+ * Other families are available, notably {@link Family#FinaleJazz}, which may better fit
+ * Jazz-like printed scores.
+ * When a symbol is not directly available in a given family, {@link Family#Bravura} is used as a
+ * backup for the shape at hand.
+ * </dd>
+ * <dt><b>Item sizes:</b></dt>
+ * <dd>The strategy is to use properly scaled instances of this class to carry out the drawing of
+ * music symbols with the correct size:
  * <ul>
- * <li>An interline value adapted to current sheet (or even staff) scaling,</li>
- * <li>A specific font size meant for heads rendering, which may significantly differ from pure
- * interline-based scaling.</li>
+ * <li>A general font size based on current sheet (or even staff) interline value,</li>
+ * <li>A specific font size meant for heads rendering, which may differ from pure interline-based
+ * scaling.</li>
  * </ul>
- * To get properly scaled instances, use the convenient methods {@link #getBaseFont(int)} and
- * {@link #getHeadFont(Scale, int)}.
- * <p>
- * There are two well-known pre-scaled instances of this class:
- * <ul>
- * <li>{@link #baseMusicFont} for standard symbols (scale = 1)</li>
- * <li>{@link #tinyMusicFont} for icon symbols (scale = 1/2)</li>
- * </ul>
- * The current underlying font is <b>Bravura</b>.
+ * To get properly scaled instances, use the convenient methods {@link #getBaseFont(Family,int)}
+ * and {@link #getHeadFont(Family,Scale, int)}.
+ * </dl>
  *
- * @see <a href="https://www.smufl.org/version/">Bravura</a>
- *
+ * @see <a href="https://www.smufl.org/version/">SMuFL web site</a>
  * @author Hervé Bitteur
  */
 public class MusicFont
@@ -74,46 +86,99 @@ public class MusicFont
 
     private static final Logger logger = LoggerFactory.getLogger(MusicFont.class);
 
-    /**
-     * The music font name: {@value} (no other one is used).
-     * Possibilities are: Bravura, FinaleJazz
-     * <p>
-     * Provided that a related "XXX.ttf" or "XXX.otf" font file exists in Audiveris "res" folder.
-     */
-    public static final String FONT_NAME = constants.fontName.getValue();
-
-    /** Cache of font according to scaling value (pointSize, staffInterline). */
-    private static final Map<Scaling, MusicFont> scalingMap = new HashMap<>();
-
     /** Default interline value, consistent with base font: {@value}. */
-    public static final int DEFAULT_INTERLINE = 16;
+    public static final int DEFAULT_INTERLINE = (int) Math.rint(16 * UIUtil.getGlobalFontRatio());
 
-    /** The music font used for default interline. */
-    public static final MusicFont baseMusicFont = getPointFont(
-            getPointSize(DEFAULT_INTERLINE), DEFAULT_INTERLINE);
+    /** Interline value for shape buttons. */
+    public static final int TINY_INTERLINE = (int) Math.rint(DEFAULT_INTERLINE * RATIO_TINY);
 
-    private static final int tinyInterline = (int) Math.rint(DEFAULT_INTERLINE * RATIO_TINY);
+    /** The backup font family, used when other family has failed. */
+    public static final Family BACKUP_FAMILY = Family.Bravura;
 
-    /** The music font used for tiny images (used notably by shape buttons). */
-    public static final MusicFont tinyMusicFont = getPointFont(
-            getPointSize(tinyInterline), tinyInterline);
+    /** Default music font family. */
+    public static final Param<Family> defaultFamilyParam = new ConstantBasedParam<>(
+            constants.defaultFontFamily,
+            Param.GLOBAL_SCOPE);
+
+    /** Cache of font according to family and scaling value (pointSize, staffInterline). */
+    private static final Map<Family, Map<Scaling, MusicFont>> familyScalings = new EnumMap<>(
+            Family.class);
+
+    /** Available symbols per font family. */
+    public static final Map<Family, Symbols> familySymbols = new EnumMap<>(Family.class);
+
+    static {
+        familySymbols.put(Family.Bravura, new BravuraSymbols());
+        familySymbols.put(Family.FinaleJazz, new FinaleJazzSymbols());
+        familySymbols.put(Family.MusicalSymbols, new MusicalSymbols());
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * The supported music font families.
+     */
+    public static enum Family
+    {
+        /** Backup family. */
+        Bravura("Bravura", "Bravura.otf"),
+
+        /** Alternate family, some symbols missing. */
+        FinaleJazz("Finale Jazz", "FinaleJazz.otf"),
+
+        /** Alternate family, with many missing symbols. */
+        MusicalSymbols("MusicalSymbols", "MusicalSymbols.ttf");
+
+        final String fontName;
+
+        final String fileName;
+
+        Family (String fontName,
+                String fileName)
+        {
+            this.fontName = fontName;
+            this.fileName = fileName;
+        }
+
+        public String getFontName ()
+        {
+            return fontName;
+        }
+
+        public String getFileName ()
+        {
+            return fileName;
+        }
+    }
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Music family this font belongs to. */
+    protected final Family musicFamily;
+
     /** Interline value of the staves where this font is used. */
-    private final int staffInterline;
+    protected final int staffInterline;
+
+    /** Symbols handled by this font. */
+    protected final Symbols symbols;
+
+    /** Backup font, if any. */
+    protected MusicFont backupFont;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MusicFont object.
      *
+     * @param family         chosen music font family
      * @param sizePts        the point size of the <code>Font</code>
      * @param staffInterline the staff interline value where this font is used
      */
-    private MusicFont (int sizePts,
-                       int staffInterline)
+    protected MusicFont (Family family,
+                         int sizePts,
+                         int staffInterline)
     {
-        super(FONT_NAME, Font.PLAIN, sizePts);
+        super(family.getFontName(), family.getFileName(), Font.PLAIN, sizePts);
+        this.musicFamily = family;
         this.staffInterline = staffInterline;
+        this.symbols = familySymbols.get(family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -131,186 +196,13 @@ public class MusicFont
     public BufferedImage buildImage (Shape shape,
                                      boolean decorated)
     {
-        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
+        ShapeSymbol symbol = symbols.getSymbol(shape, decorated);
 
         if (symbol == null) {
             return null;
         } else {
             return symbol.buildImage(this);
         }
-    }
-
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
-    {
-        if (obj == this) {
-            return true;
-        }
-
-        if (obj instanceof MusicFont) {
-            MusicFont that = (MusicFont) obj;
-
-            if (this.staffInterline != that.staffInterline) {
-                return false;
-            }
-
-            return super.equals(obj);
-        }
-
-        return false;
-    }
-
-    //----------//
-    // hashCode //
-    //----------//
-    @Override
-    public int hashCode ()
-    {
-        int hash = 7;
-        hash = (71 * hash) + this.staffInterline;
-
-        return hash;
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont characters,
-     * and potentially sized by an AffineTransform instance.
-     *
-     * @param shape the shape to be drawn with MusicFont chars
-     * @param fat   potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    public TextLayout layout (Shape shape,
-                              AffineTransform fat)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-        if (symbol == null) {
-            logger.debug("No MusicFont symbol for {}", shape);
-
-            return null;
-        }
-
-        return layout(symbol.getString(), fat);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of
-     * MusicFont characters, and sized to fit the provided dimension.
-     *
-     * @param shape     the shape to be drawn with MusicFont chars
-     * @param dimension the dim to fit as much as possible
-     * @return the adjusted TextLayout ready to be drawn
-     */
-    public TextLayout layout (Shape shape,
-                              Dimension dimension)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-        if (symbol != null) {
-            return layout(symbol, dimension);
-        } else {
-            return null;
-        }
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a symbol, using its related String of
-     * MusicFont characters, and sized to fit the provided dimension.
-     *
-     * @param symbol    the symbol to be drawn with MusicFont chars
-     * @param dimension the dim to fit as much as possible
-     * @return the adjusted TextLayout ready to be drawn
-     */
-    public TextLayout layout (BasicSymbol symbol,
-                              Dimension dimension)
-    {
-        String str = symbol.getString();
-        TextLayout layout = new TextLayout(str, this, frc);
-
-        // Compute proper affine transformation
-        Rectangle2D rect = layout.getBounds();
-        AffineTransform fat = AffineTransform.getScaleInstance(
-                dimension.width / rect.getWidth(),
-                dimension.height / rect.getHeight());
-
-        return layout(str, fat);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of
-     * MusicFont character codes.
-     *
-     * @param shape the shape to be drawn with MusicFont chars
-     * @return the TextLayout ready to be drawn
-     */
-    public TextLayout layout (Shape shape)
-    {
-        return layout(shape, (AffineTransform) null);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a String of MusicFont character codes.
-     *
-     * @param codes the MusicFont codes
-     * @return the TextLayout ready to be drawn
-     */
-    public TextLayout layout (int... codes)
-    {
-        return layout(new String(codes, 0, codes.length));
-    }
-
-    //-------------------//
-    // getStaffInterline //
-    //-------------------//
-    /**
-     * Report the number of pixels of the interline that corresponds to the staves
-     * where this font is used.
-     *
-     * @return the scaled interline of the related staff size.
-     */
-    protected int getStaffInterline ()
-    {
-        return staffInterline;
-    }
-
-    //------------//
-    // buildImage //
-    //------------//
-    /**
-     * Build an image from the shape definition in MusicFont, using the
-     * scaling determined by the provided interline value.
-     *
-     * @param shape     the desired shape
-     * @param interline the related interline value
-     * @param decorated true if shape display should use decorations
-     * @return the image built with proper scaling, or null
-     */
-    public static BufferedImage buildImage (Shape shape,
-                                            int interline,
-                                            boolean decorated)
-    {
-        MusicFont font = getBaseFont(interline);
-
-        return font.buildImage(shape, decorated);
     }
 
     //---------------------//
@@ -322,9 +214,9 @@ public class MusicFont
      * @param width with of black heads
      * @return the music font scaling info
      */
-    public static MusicFontScale buildMusicFontScale (double width)
+    public Scale.MusicFontScale buildMusicFontScale (double width)
     {
-        return new Scale.MusicFontScale(MusicFont.FONT_NAME, computePointSize(width));
+        return new Scale.MusicFontScale(musicFamily.name(), computePointSize(width));
     }
 
     //----------------//
@@ -337,17 +229,17 @@ public class MusicFont
      */
     public static boolean checkMusicFont ()
     {
-        if (baseMusicFont.getFamily().equals("Dialog")) {
-            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME;
-            logger.error(msg);
-
-            if (OMR.gui != null) {
-                OMR.gui.displayError(msg);
-            }
-
-            return false;
-        }
-
+        //        if (baseMusicFont.getFamily().equals("Dialog")) {
+        //            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME;
+        //            logger.error(msg);
+        //
+        //            if (OMR.gui != null) {
+        //                OMR.gui.displayError(msg);
+        //            }
+        //
+        //            return false;
+        //        }
+        //
         return true;
     }
 
@@ -361,20 +253,19 @@ public class MusicFont
      * @param width actual width of black head
      * @return the corresponding point size with FONT_NAME font
      */
-    public static int computePointSize (double width)
+    private int computePointSize (double width)
     {
         final Shape shape = Shape.NOTEHEAD_BLACK;
-        final ShapeSymbol symbol = Symbols.getSymbol(shape);
         final int dv = (int) Math.rint(width * 0.25); // Should be OK
 
         final int v1 = (int) Math.rint(width * 3.3); // Very rough value to start with
-        final MusicFont font1 = new MusicFont(v1, 0);
-        final TextLayout layout1 = symbol.layout(font1);
+        final MusicFont font1 = new MusicFont(musicFamily, v1, 0);
+        final TextLayout layout1 = font1.layoutShapeByCode(shape);
         final double w1 = layout1.getBounds().getWidth();
 
         final int v2 = (w1 < width) ? (v1 + dv) : (v1 - dv); // Other value for interpolation
-        final MusicFont font2 = new MusicFont(v2, 0);
-        final TextLayout layout2 = symbol.layout(font2);
+        final MusicFont font2 = new MusicFont(musicFamily, v2, 0);
+        final TextLayout layout2 = font2.layoutShapeByCode(shape);
         final double w2 = layout2.getBounds().getWidth();
 
         final double dw = w2 - w1;
@@ -382,13 +273,47 @@ public class MusicFont
                 : (int) Math.rint(v1 + ((v2 - v1) * ((width - w1) / (w2 - w1))));
 
         // Verification
-        final MusicFont font = new MusicFont(v, 0);
-        final TextLayout layout = symbol.layout(font);
+        final MusicFont font = new MusicFont(musicFamily, v, 0);
+        final TextLayout layout = font.layoutShapeByCode(shape);
         final double w = layout.getBounds().getWidth();
         logger.debug("width:{}", width);
         logger.debug("v1:{},w1:{} v:{},w:{} v2:{},w2:{}", v1, w1, v, w, v2, w2);
 
         return v;
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof MusicFont that) {
+            if (this.staffInterline != that.staffInterline) {
+                return false;
+            }
+
+            return super.equals(obj);
+        }
+
+        return false;
+    }
+
+    //-----------//
+    // getBackup //
+    //-----------//
+    /**
+     * Report the backup font, if any, for this font.
+     *
+     * @return the backup font, perhaps null
+     */
+    public MusicFont getBackup ()
+    {
+        return backupFont;
     }
 
     //-------------//
@@ -397,12 +322,30 @@ public class MusicFont
     /**
      * Report the (cached) music font based on predefined font.
      *
+     * @param family         chosen family font
      * @param staffInterline real interline value for related staves
      * @return proper scaled music font
      */
-    public static MusicFont getBaseFont (int staffInterline)
+    public static MusicFont getBaseFont (Family family,
+                                         int staffInterline)
     {
-        return getPointFont(getPointSize(staffInterline), staffInterline);
+        return getPointFont(family, getPointSize(staffInterline), staffInterline);
+    }
+
+    //---------//
+    // getCode //
+    //---------//
+    public int[] getCode (Shape shape)
+    {
+        return symbols.getCode(shape);
+    }
+
+    //-----------------------//
+    // getDefaultMusicFamily //
+    //-----------------------//
+    public static Family getDefaultMusicFamily ()
+    {
+        return defaultFamilyParam.getValue();
     }
 
     //-------------//
@@ -411,14 +354,16 @@ public class MusicFont
     /**
      * Report the (cached) music font meant for heads.
      *
+     * @param family         chosen family font
      * @param scale          scaling information for the sheet
      * @param staffInterline real interline value for related staves.
      * @return proper scaled music font
      */
-    public static MusicFont getHeadFont (Scale scale,
+    public static MusicFont getHeadFont (Family family,
+                                         Scale scale,
                                          int staffInterline)
     {
-        return getPointFont(getHeadPointSize(scale, staffInterline), staffInterline);
+        return getPointFont(family, getHeadPointSize(scale, staffInterline), staffInterline);
     }
 
     //------------------//
@@ -467,24 +412,44 @@ public class MusicFont
         return constants.headRatio.getValue();
     }
 
+    //----------------//
+    // getMusicFamily //
+    //----------------//
+    public Family getMusicFamily ()
+    {
+        return musicFamily;
+    }
+
     //--------------//
     // getPointFont //
     //--------------//
     /**
      * Report the music font properly scaled by point size and staffInterline.
      *
+     * @param family         font family
      * @param pointSize      precise point size value (perhaps different from 4 * staffInterline)
      * @param staffInterline real interline value for related staves
      * @return proper scaled music font
      */
-    public static MusicFont getPointFont (int pointSize,
+    public static MusicFont getPointFont (Family family,
+                                          int pointSize,
                                           int staffInterline)
     {
         final Scaling scaling = new Scaling(pointSize, staffInterline);
-        MusicFont font = scalingMap.get(scaling);
+
+        Map<Scaling, MusicFont> map = familyScalings.get(family);
+        if (map == null) {
+            familyScalings.put(family, map = new HashMap<>());
+        }
+
+        MusicFont font = map.get(scaling);
 
         if (font == null) {
-            scalingMap.put(scaling, font = new MusicFont(pointSize, staffInterline));
+            map.put(scaling, font = new MusicFont(family, pointSize, staffInterline));
+
+            if (family != BACKUP_FAMILY) {
+                font.backupFont = getPointFont(BACKUP_FAMILY, pointSize, staffInterline);
+            }
         }
 
         return font;
@@ -505,6 +470,233 @@ public class MusicFont
         return 4 * staffInterline;
     }
 
+    //-------------------//
+    // getStaffInterline //
+    //-------------------//
+    /**
+     * Report the number of pixels of the interline that corresponds to the staves
+     * where this font is used.
+     *
+     * @return the scaled interline of the related staff size.
+     */
+    protected int getStaffInterline ()
+    {
+        return staffInterline;
+    }
+
+    //-----------//
+    // getString //
+    //-----------//
+    /**
+     * Report the String defined by Unicode characters
+     *
+     * @param codes Unicode code points
+     * @return the resulting String, perhaps null
+     */
+    public static String getString (int... codes)
+    {
+        if (codes == null) {
+            return null;
+        }
+
+        return new String(codes, 0, codes.length);
+    }
+
+    //-----------//
+    // getSymbol //
+    //-----------//
+    /**
+     * Return the symbol, if any, defined in this font for the provided shape.
+     *
+     * @param shape the provided shape
+     * @return corresponding symbol in this font, or null
+     */
+    public ShapeSymbol getSymbol (Shape shape)
+    {
+        return symbols.getSymbol(shape);
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (71 * hash) + this.staffInterline;
+
+        return hash;
+    }
+
+    //--------------------//
+    // layoutNumberByCode //
+    //--------------------//
+    /**
+     * Report the layout that corresponds to a number (sequence of numeral digits).
+     *
+     * @param number the provided number, limited to range [0..999]
+     * @return the layout or null
+     * @throws IllegalArgumentException if number is beyond range limits
+     */
+    public TextLayout layoutNumberByCode (int number)
+    {
+        if (number < 0) {
+            throw new IllegalArgumentException(number + " < 0");
+        }
+
+        if (number > 999) {
+            throw new IllegalArgumentException(number + " > 999");
+        }
+
+        MusicFont font = this;
+        int[] zeroCode = symbols.getCode(TIME_ZERO);
+
+        if (zeroCode == null && font.getBackup() != null) {
+            font = font.getBackup();
+            zeroCode = font.symbols.getCode(TIME_ZERO);
+        }
+
+        if (zeroCode == null) {
+            return null; // Should not occur, unless [backup] font provides no code for TIME_ZERO
+        }
+
+        final int baseCode = zeroCode[0];
+        final int[] numberCodes = (number >= 100) ? new int[3]
+                : (number >= 10) ? new int[2] : new int[1];
+        int index = 0;
+
+        if (number >= 100) {
+            numberCodes[index++] = baseCode + (number / 100);
+            number = number % 100;
+        }
+
+        if (number >= 10) {
+            numberCodes[index++] = baseCode + (number / 10);
+            number = number % 10;
+        }
+
+        numberCodes[index] = baseCode + number;
+
+        return new TextLayout(getString(numberCodes), font, frc);
+    }
+
+    //-------------//
+    // layoutShape // Safe, but unused so far!!?
+    //-------------//
+    /**
+     * Build a TextLayout from a Shape, using its corresponding symbol.
+     *
+     * @param shape the shape to be drawn
+     * @return the adjusted TextLayout ready to be drawn
+     */
+    public TextLayout layoutShape (Shape shape)
+    {
+        return layoutShape(shape, null);
+    }
+
+    //-------------//
+    // layoutShape // Used when visiting BRACE in SigPainter
+    //-------------//
+    /**
+     * Build a TextLayout from a Shape, using its corresponding symbol,
+     * and sized to fit the provided dimension.
+     *
+     * @param shape     the shape to be drawn with MusicFont chars
+     * @param dimension the dim to fit as much as possible
+     * @return the adjusted TextLayout ready to be drawn
+     */
+    public TextLayout layoutShape (Shape shape,
+                                   Dimension dimension)
+    {
+        final ShapeSymbol symbol = symbols.getSymbol(shape);
+
+        if (symbol != null) {
+            return layoutSymbol(symbol, dimension);
+        } else {
+            return null;
+        }
+    }
+
+    //-------------------//
+    // layoutShapeByCode //
+    //-------------------//
+    /**
+     * Build a TextLayout from a Shape, using its related font character codes.
+     * <p>
+     * NOTA: This method bypasses font shape symbols but uses shape codes from this font
+     * (or from its backup font if needed)
+     *
+     * @param shape the shape to be drawn with MusicFont chars
+     * @return the TextLayout or null
+     */
+    public TextLayout layoutShapeByCode (Shape shape)
+    {
+        return layoutShapeByCode(shape, null);
+    }
+
+    //-------------------//
+    // layoutShapeByCode //
+    //-------------------//
+    /**
+     * Build a TextLayout from a Shape, using its related font character codes,
+     * and potentially sized by an AffineTransform instance.
+     * <p>
+     * NOTA: This method bypasses font shape symbols but uses shape codes from this font
+     * (or from its backup font if needed)
+     *
+     * @param shape the shape to be drawn with MusicFont chars
+     * @param fat   potential affine transformation
+     * @return the (sized) TextLayout ready to be drawn or null
+     */
+    public TextLayout layoutShapeByCode (Shape shape,
+                                         AffineTransform fat)
+    {
+        final String str = getString(symbols.getCode(shape));
+
+        if (str != null) {
+            return layout(str, fat);
+        }
+
+        logger.debug("No {} layout for {}", musicFamily, shape);
+
+        if (backupFont != null) {
+            return backupFont.layoutShapeByCode(shape, fat);
+        }
+
+        return null;
+    }
+
+    //--------------//
+    // layoutSymbol //
+    //--------------//
+    /**
+     * Build a TextLayout from a Symbol, sized to fit the provided dimension.
+     * <p>
+     * This method bypasses font shape symbols but uses font shape codes
+     * (or its backup font shape codes if needed)
+     *
+     * @param symbol    the symbol to be drawn
+     * @param dimension the dimension to fit as much as possible
+     * @return the adjusted TextLayout ready to be drawn
+     */
+    public TextLayout layoutSymbol (ShapeSymbol symbol,
+                                    Dimension dimension)
+    {
+        final TextLayout layout = layoutShapeByCode(symbol.getShape());
+
+        if (layout == null) {
+            return null;
+        }
+
+        // Compute proper affine transformation
+        final Rectangle2D rect = layout.getBounds();
+        final AffineTransform fat = AffineTransform.getScaleInstance(
+                dimension.width / rect.getWidth(),
+                dimension.height / rect.getHeight());
+
+        return layoutShapeByCode(symbol.getShape(), fat);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -513,9 +705,10 @@ public class MusicFont
             extends ConstantSet
     {
 
-        private final Constant.String fontName = new Constant.String(
-                "Bravura",
-                "Font name for music symbols");
+        private final Constant.Enum<Family> defaultFontFamily = new Constant.Enum<>(
+                Family.class,
+                Family.Bravura,
+                "Default font family for music symbols");
 
         private final Constant.Ratio headRatio = new Constant.Ratio(
                 1.1,
@@ -542,14 +735,12 @@ public class MusicFont
         @Override
         public boolean equals (Object obj)
         {
-            if (!(obj instanceof Scaling)) {
-                return false;
+            if (obj instanceof Scaling that) {
+                return (this.pointSize == that.pointSize)
+                               && (this.staffInterline == that.staffInterline);
             }
 
-            Scaling that = (Scaling) obj;
-
-            return (this.pointSize == that.pointSize)
-                           && (this.staffInterline == that.staffInterline);
+            return false;
         }
 
         @Override

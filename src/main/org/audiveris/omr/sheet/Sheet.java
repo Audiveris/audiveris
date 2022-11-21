@@ -43,8 +43,8 @@ import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
-import org.audiveris.omr.sheet.rhythm.PageRhythm;
 import org.audiveris.omr.score.ui.BookPdfOutput;
+import org.audiveris.omr.sheet.rhythm.PageRhythm;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
@@ -67,6 +67,9 @@ import org.audiveris.omr.ui.ErrorsEditor;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.WeakItemRenderer;
 import org.audiveris.omr.util.Dumping;
@@ -322,8 +325,6 @@ public class Sheet
     {
         if ((renderer != null) && (OMR.gui != null)) {
             return itemRenderers.add(new WeakItemRenderer(renderer));
-
-            ///return itemRenderers.add(renderer);
         }
 
         return false;
@@ -1062,6 +1063,23 @@ public class Sheet
     public List<SystemInfo> getSystems ()
     {
         return systemManager.getSystems();
+    }
+
+    //-----------//
+    // getSymbol //
+    //-----------//
+    /**
+     * Report proper symbol for the provided shape, according to sheet preferred music font.
+     *
+     * @param shape the provided shape
+     * @return the proper symbol, perhaps null
+     */
+    public ShapeSymbol getSymbol (Shape shape)
+    {
+        final Family family = getStub().getMusicFontFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, getScale().getInterline());
+
+        return font.getSymbol(shape);
     }
 
     //----------//

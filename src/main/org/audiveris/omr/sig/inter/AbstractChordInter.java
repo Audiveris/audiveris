@@ -81,8 +81,10 @@ public abstract class AbstractChordInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
     /** For comparing chords by head location ordinate. */
-    public static final Comparator<AbstractChordInter> byHeadOrdinate = (c1, c2)
-            -> Integer.compare(c1.getHeadLocation().y, c2.getHeadLocation().y);
+    public static final Comparator<AbstractChordInter> byHeadOrdinate = (c1,
+                                                                         c2) -> Integer.compare(
+                                                                                 c1.getHeadLocation().y,
+                                                                                 c2.getHeadLocation().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -224,7 +226,6 @@ public abstract class AbstractChordInter
      * Method meant for afterReload only.
      *
      * @see #setVoice(Voice)
-     *
      * @param voice the voice to assign
      */
     public void justAssignVoice (Voice voice)
@@ -334,16 +335,17 @@ public abstract class AbstractChordInter
 
                 if (headLoc != null) {
                     // Keep the sequence ordered by distance from chord tail
-                    Collections.sort(beams, (AbstractBeamInter b1, AbstractBeamInter b2) -> {
-                                 int x = getCenter().x;
-                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                                 int yHead = headLoc.y;
+                    Collections.sort(
+                            beams,
+                            (AbstractBeamInter b1,
+                             AbstractBeamInter b2) -> {
+                                int x = getCenter().x;
+                                double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                                double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                                int yHead = headLoc.y;
 
-                                 return Double.compare(
-                                         Math.abs(yHead - y2),
-                                         Math.abs(yHead - y1));
-                             });
+                                return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
+                            });
                 }
             }
         }
@@ -521,7 +523,7 @@ public abstract class AbstractChordInter
             final Shape noteShape = note.getShape();
 
             // Duration from note shape
-            dur = AbstractNoteInter.getShapeDuration(noteShape);
+            dur = noteShape.getNoteDuration();
 
             if (!noteShape.isRest()) {
                 // Apply flags/beams for non-rests
@@ -535,7 +537,7 @@ public abstract class AbstractChordInter
                      * the note head should be considered as black.
                      */
                     if ((noteShape == Shape.NOTEHEAD_VOID) && (note.getMirror() != null)) {
-                        dur = AbstractNoteInter.getShapeDuration(Shape.NOTEHEAD_BLACK);
+                        dur = Shape.NOTEHEAD_BLACK.getNoteDuration();
                     }
 
                     for (int i = 0; i < fbn; i++) {
@@ -1034,7 +1036,6 @@ public abstract class AbstractChordInter
      * related by beam or tie.
      *
      * @see #justAssignVoice(Voice)
-     *
      * @param voice the voice to set
      */
     public void setVoice (Voice voice)

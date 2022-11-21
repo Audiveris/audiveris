@@ -21,12 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.TableUtil;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.junit.Test;
+
+import ij.process.ByteProcessor;
 
 import java.util.Collections;
 import java.util.List;
@@ -99,7 +100,7 @@ public class ChamferMatchingTest
     {
         System.out.println("match");
 
-        Template template = TemplateFactory.getInstance().getCatalog(56)
+        Template template = TemplateFactory.getInstance().getCatalog(Family.Bravura, 56)
                 .getTemplate(Shape.NOTEHEAD_BLACK);
         template.dump();
 

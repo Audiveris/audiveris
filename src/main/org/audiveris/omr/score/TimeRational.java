@@ -172,11 +172,11 @@ public class TimeRational
     // decode //
     //--------//
     /**
-     * Decode a string expected to contain one TimeRational value,
-     * formatted as "num / den".
+     * Decode a string expected to contain one TimeRational value, formatted as "num / den".
      *
      * @param str the string to decode
      * @return the TimeRational value if successful
+     * @throws IllegalArgumentException if numerator or denominator outside [0..99] range.
      */
     public static TimeRational decode (String str)
     {
@@ -187,13 +187,13 @@ public class TimeRational
             int num = Integer.decode(tokens[0].trim());
 
             if ((num < 0) || (num > 99)) {
-                throw new IllegalArgumentException("numerator outside [0..99] range: " + num);
+                throw new IllegalArgumentException("numerator " + num + " outside [0..99] range");
             }
 
             int den = Integer.decode(tokens[1].trim());
 
             if ((den < 0) || (den > 99)) {
-                throw new IllegalArgumentException("denominator outside [0..99] range: " + den);
+                throw new IllegalArgumentException("denominator " + num + " outside [0..99] range");
             }
 
             return new TimeRational(num, den);

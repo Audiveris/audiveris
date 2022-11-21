@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.HorizontalSide;
@@ -105,7 +106,7 @@ public class InterDnd
      *
      * @param ghost  the inter being dragged
      * @param sheet  the containing sheet
-     * @param symbol the originating symbol
+     * @param symbol the originating symbol, standard size, perhaps decorated
      */
     public InterDnd (Inter ghost,
                      Sheet sheet,
@@ -375,9 +376,10 @@ public class InterDnd
     private boolean updateGhost (Point location)
     {
         final int staffInterline = staff.getSpecificInterline();
+        final Family family = sheet.getStub().getMusicFontFamily();
         final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
-                ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
-                : MusicFont.getBaseFont(staffInterline);
+                ? MusicFont.getHeadFont(family, sheet.getScale(), staffInterline)
+                : MusicFont.getBaseFont(family, staffInterline);
 
         return ghost.deriveFrom(symbol, sheet, font, location);
     }
@@ -399,7 +401,7 @@ public class InterDnd
     {
         // Adapt image to current interline
         final int zoomedInterline = (int) Math.rint(zoomRatio * interline);
-        final MusicFont font = MusicFont.getBaseFont(zoomedInterline);
+        final MusicFont font = MusicFont.getBaseFont(symbol.getFamily(), zoomedInterline);
         glass.setImage(symbol.getDecoratedVersion().buildImage(font, curveStroke));
     }
 }

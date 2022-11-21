@@ -41,6 +41,9 @@ import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.FontFamilyParam;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.Navigable;
@@ -82,7 +85,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.util.FileUtil;
 
 /**
  * Class <code>SheetStub</code> is a placeholder in a <code>Book</code> to
@@ -156,6 +158,16 @@ public class SheetStub
     @XmlElement(name = "binarization")
     @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
     private FilterParam binarizationFilter;
+
+    /**
+     * Specification of the MusicFont family to use in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book or application
+     * levels.
+     */
+    @XmlElement(name = "music-font")
+    @XmlJavaTypeAdapter(FontFamilyParam.JaxbAdapter.class)
+    private FontFamilyParam musicFontFamily;
 
     /**
      * This string specifies the dominant language(s) to guide OCR on this sheet.
@@ -402,6 +414,37 @@ public class SheetStub
         }
 
         return binarizationFilter;
+    }
+
+    //--------------------//
+    // getMusicFontFamily //
+    //--------------------//
+    /**
+     * Report the music font family defined at sheet level.
+     *
+     * @return the font family
+     */
+    public Family getMusicFontFamily ()
+    {
+        return getMusicFontFamilyParam().getValue();
+    }
+
+    //-------------------------//
+    // getMusicFontFamilyParam //
+    //-------------------------//
+    /**
+     * Report the music font family param defined at sheet level.
+     *
+     * @return the font family parameter
+     */
+    public FontFamilyParam getMusicFontFamilyParam ()
+    {
+        if (musicFontFamily == null) {
+            musicFontFamily = new FontFamilyParam(this);
+            musicFontFamily.setParent(book.getMusicFontFamily());
+        }
+
+        return musicFontFamily;
     }
 
     //---------//
@@ -1264,6 +1307,10 @@ public class SheetStub
             binarizationFilter = null;
         }
 
+        if ((musicFontFamily != null) && !musicFontFamily.isSpecific()) {
+            musicFontFamily = null;
+        }
+
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
             ocrLanguages = null;
         }
@@ -1446,6 +1493,10 @@ public class SheetStub
 
             if (binarizationFilter != null) {
                 binarizationFilter.setParent(book.getBinarizationFilter());
+            }
+
+            if (musicFontFamily != null) {
+                musicFontFamily.setParent(book.getMusicFontFamily());
             }
 
             if (ocrLanguages != null) {

@@ -27,6 +27,9 @@ import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
 import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -46,6 +49,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class ProcessingSwitches
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessingSwitches.class);
 
     static final Constants constants = new Constants();
 
@@ -128,7 +133,7 @@ public class ProcessingSwitches
                                  Object scope)
     {
         // Complete the map, link each switch to parent switch, set provided scope
-        for (ProcessingSwitch key : ProcessingSwitch.values()) {
+        for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
             Param<Boolean> param = getParam(key);
 
             if (param == null) {
@@ -197,20 +202,40 @@ public class ProcessingSwitches
         public ProcessingSwitches unmarshal (ProcessingEntries value)
                 throws Exception
         {
+            // We need to convert obsolete switches to supported ones
             ProcessingSwitches switches = new ProcessingSwitches();
 
             // We populate entries for which we have a specific value
             for (ProcessingEntry entry : value.entries) {
-                Param<Boolean> param = new Param<>(null); // NOTA: Actual scope is to be set later
+                if (entry.key == null) {
+                    logger.warn("Null processing switch");
+                    continue;
+                }
 
+                ProcessingSwitch ps = entry.key;
                 if (entry.value != null) {
+                    if (ProcessingSwitch.obsoleteValues.contains(ps)) {
+                        // Today this means a small head flag
+                        // We consider the small black flag applies for all
+                        // and we ignore the others (void and whole)
+                        if (ps == ProcessingSwitch.smallBlackHeads) {
+                            logger.info("Processing switch '{}' converted to 'smallHeads'", ps);
+                            ps = ProcessingSwitch.smallHeads;
+                        } else {
+                            logger.info("Processing switch '{}' ignored, please use 'smallHeads'",
+                                        ps);
+                            continue;
+                        }
+                    }
+
+                    Param<Boolean> param = new Param<>(null); // NOTA: Actual scope is to be set later
                     param.setSpecific(entry.value);
-                    switches.map.put(entry.key, param);
+                    switches.map.put(ps, param);
                 }
             }
 
             // Then fill empty entries
-            for (ProcessingSwitch key : ProcessingSwitch.values()) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
                 if (switches.map.get(key) == null) {
                     switches.map.put(key, new Param<>(null)); // IDEM
                 }
@@ -306,17 +331,9 @@ public class ProcessingSwitches
                 false,
                 "Support for lyrics even located above staff");
 
-        final Constant.Boolean smallBlackHeads = new Constant.Boolean(
+        final Constant.Boolean smallHeads = new Constant.Boolean(
                 false,
-                "Support for small black note heads");
-
-        final Constant.Boolean smallVoidHeads = new Constant.Boolean(
-                false,
-                "Support for small void note heads");
-
-        final Constant.Boolean smallWholeHeads = new Constant.Boolean(
-                false,
-                "Support for small whole note heads");
+                "Support for small heads");
 
         final Constant.Boolean crossHeads = new Constant.Boolean(
                 false,
@@ -360,7 +377,7 @@ public class ProcessingSwitches
 
         DefaultSwitches ()
         {
-            for (ProcessingSwitch key : ProcessingSwitch.values()) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
                 map.put(key, new ConstantBasedParam<>(key.getConstant(), GLOBAL_SCOPE));
             }
         }

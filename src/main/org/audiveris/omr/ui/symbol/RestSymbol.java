@@ -28,6 +28,7 @@ import static org.audiveris.omr.glyph.Shape.LONG_REST;
 import static org.audiveris.omr.glyph.Shape.WHOLE_REST;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,13 +56,13 @@ public class RestSymbol
     /**
      * Create a RestSymbol (with decoration?) standard size.
      *
-     * @param shape the precise shape
-     * @param codes precise code for rest part
+     * @param shape  the precise shape (LONG_REST, BREVE_REST, WHOLE_REST, HALF_REST, HW_REST_set)
+     * @param family the musicFont family
      */
     public RestSymbol (Shape shape,
-                       int... codes)
+                       Family family)
     {
-        super(shape, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -86,7 +87,7 @@ public class RestSymbol
         final MyParams p = new MyParams();
 
         // Rest symbol layout
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
 
         final Rectangle2D rs = p.layout.getBounds();
 
@@ -95,7 +96,7 @@ public class RestSymbol
             p.offset = new Point2D.Double(0, getYOffset(rs.getHeight()));
 
             // Lines layout
-            p.linesLayout = font.layout(Symbols.SYMBOL_STAFF_LINES.getString());
+            p.linesLayout = font.layoutShapeByCode(Shape.STAFF_LINES);
             p.rect = p.linesLayout.getBounds();
         } else {
             p.rect = rs;

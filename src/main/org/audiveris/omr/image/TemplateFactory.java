@@ -32,12 +32,10 @@ import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.ui.TemplateView;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.OmrFont;
-import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
-import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,12 +55,10 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -98,19 +94,29 @@ public class TemplateFactory
 
     /** All shapes with hole(s). */
     private static final EnumSet shapesWithHoles = EnumSet.of(
+            // 2
             BREVE,
-            NOTEHEAD_CIRCLE_X,
+            BREVE_SMALL,
+            BREVE_CROSS,
+            BREVE_DIAMOND,
+            BREVE_TRIANGLE_DOWN,
+            BREVE_CIRCLE_X,
+            // 1
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL,
+            WHOLE_NOTE_CROSS,
+            WHOLE_NOTE_DIAMOND,
+            WHOLE_NOTE_TRIANGLE_DOWN,
+            WHOLE_NOTE_CIRCLE_X,
+            // 1/2
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL,
             NOTEHEAD_CROSS_VOID,
             NOTEHEAD_DIAMOND_VOID,
             NOTEHEAD_TRIANGLE_DOWN_VOID,
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE,
-            WHOLE_NOTE_CIRCLE_X,
-            WHOLE_NOTE_CROSS,
-            WHOLE_NOTE_DIAMOND,
-            WHOLE_NOTE_SMALL,
-            WHOLE_NOTE_TRIANGLE_DOWN);
+            NOTEHEAD_CIRCLE_X_VOID,
+            // 1/4
+            NOTEHEAD_CIRCLE_X);
 
     /** Color for foreground pixels. */
     private static final int FORE = Color.BLACK.getRGB();
@@ -125,8 +131,8 @@ public class TemplateFactory
     private static final int IRRELEVANT = new Color(0, 0, 0, 0).getRGB(); // Fully transparent
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** All catalogs allocated so far, mapped by point size. */
-    private final Map<Integer, Catalog> catalogs;
+    /** All catalogs allocated so far, mapped by font family and point size. */
+    private final Map<Family, Map<Integer, Catalog>> catalogs;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -134,7 +140,7 @@ public class TemplateFactory
      */
     private TemplateFactory ()
     {
-        catalogs = new TreeMap<>();
+        catalogs = new EnumMap<>(Family.class);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -144,19 +150,28 @@ public class TemplateFactory
     /**
      * Report the template catalog dedicated to the provided pointSize.
      *
+     * @param family    the MusicFont family
      * @param pointSize provided point size
      * @return the catalog of all templates for the point size value
      */
-    public Catalog getCatalog (int pointSize)
+    public Catalog getCatalog (Family family,
+                               int pointSize)
     {
-        Catalog catalog = catalogs.get(pointSize);
+        Map<Integer, Catalog> familyCatalogs = catalogs.get(family);
+        Catalog catalog = null;
 
-        if (catalog == null) {
+        if (familyCatalogs == null || (catalog = familyCatalogs.get(pointSize)) == null) {
             synchronized (catalogs) {
-                catalog = catalogs.get(pointSize);
+                familyCatalogs = catalogs.get(family);
+
+                if (familyCatalogs == null) {
+                    catalogs.put(family, familyCatalogs = new TreeMap<>());
+                }
+
+                catalog = familyCatalogs.get(pointSize);
 
                 if (catalog == null) {
-                    catalogs.put(pointSize, catalog = new Catalog(pointSize));
+                    familyCatalogs.put(pointSize, catalog = new Catalog(family, pointSize));
                 }
             }
         }
@@ -181,7 +196,7 @@ public class TemplateFactory
     // main //
     //------//
     /**
-     * An entry point to allow generation and visual check of a bunch of templates.
+     * An entry point to allow stand alone generation and visual check of a bunch of templates.
      *
      * @param args minimum and maximum pointSize values
      */
@@ -201,8 +216,10 @@ public class TemplateFactory
 
         final TemplateFactory factory = TemplateFactory.getInstance();
 
-        for (int pointSize = min; pointSize <= max; pointSize++) {
-            factory.getCatalog(pointSize);
+        for (Family family : Family.values()) {
+            for (int pointSize = min; pointSize <= max; pointSize++) {
+                factory.getCatalog(family, pointSize);
+            }
         }
     }
 
@@ -217,7 +234,7 @@ public class TemplateFactory
     public static double maxDistanceFromSymbol ()
     {
         return constants.maxRawDistanceFromSymbol.getValue()
-                       / (double) ChamferDistance.DEFAULT_NORMALIZER;
+                / (double) ChamferDistance.DEFAULT_NORMALIZER;
     }
 
     //------------//
@@ -231,8 +248,8 @@ public class TemplateFactory
      * @param template the template to populate
      * @param slimBox  the slim symbol bounds within template
      */
-    private void addAnchors (Template template,
-                             Rectangle slimBox)
+    private static void addAnchors (Template template,
+                                    Rectangle slimBox)
     {
         final Point2D center = GeoUtil.center2D(slimBox);
 
@@ -266,36 +283,30 @@ public class TemplateFactory
     //--------//
     // getTop //
     //--------//
-    private double getTop (Shape shape,
-                           Rectangle slimBox)
+    private static double getTop (Shape shape,
+                                  Rectangle slimBox)
     {
         return switch (shape) {
-            case NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID ->
-                slimBox.y;
-            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID, NOTEHEAD_CIRCLE_X ->
-                slimBox.y + slimBox.height / 2;
-            case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID ->
-                slimBox.y;
-            default ->
-                slimBox.y - constants.stemDy.getValue() * slimBox.height;
+        case NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID -> slimBox.y;
+        case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID, NOTEHEAD_CIRCLE_X -> slimBox.y
+                + slimBox.height / 2;
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
+        default -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
         };
     }
 
     //-----------//
     // getBottom //
     //-----------//
-    private double getBottom (Shape shape,
-                              Rectangle slimBox)
+    private static double getBottom (Shape shape,
+                                     Rectangle slimBox)
     {
         return switch (shape) {
-            case NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID ->
-                slimBox.y + slimBox.height;
-            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID, NOTEHEAD_CIRCLE_X ->
-                slimBox.y + slimBox.height / 2;
-            case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID ->
-                slimBox.y;
-            default ->
-                slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+        case NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID -> slimBox.y + slimBox.height;
+        case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID, NOTEHEAD_CIRCLE_X -> slimBox.y
+                + slimBox.height / 2;
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
+        default -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
         };
     }
 
@@ -312,22 +323,40 @@ public class TemplateFactory
      * @param img   the source image
      * @param box   bounds of symbol relative to image
      */
-    private void addHoles (Shape shape,
-                           BufferedImage img,
-                           Rectangle box)
+    private static void addHoles (Shape shape,
+                                  BufferedImage img,
+                                  Rectangle box)
     {
         // Identify holes
         final List<Point> holeSeeds = new ArrayList<>();
 
-        if (shape == NOTEHEAD_CIRCLE_X || shape == WHOLE_NOTE_CIRCLE_X) {
-            // 4 holes
+        switch (shape) {
+        case WHOLE_NOTE_CIRCLE_X, NOTEHEAD_CIRCLE_X_VOID, NOTEHEAD_CIRCLE_X ->
+        {
+            // 4 holes on vertical and on horizontal axes
             holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
-        } else {
-            // Just one hole in the symbol center
+        }
+        case BREVE_CIRCLE_X ->
+        {
+            // 4 holes on vertical and on horizontal axes
+            holeSeeds.add(new Point(box.x + ((3 * box.width) / 8), box.y + (box.height / 2)));
+            holeSeeds.add(new Point(box.x + ((5 * box.width) / 8), box.y + (box.height / 2)));
+            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
+            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
+        }
+        case BREVE_CROSS ->
+        {
+            // 3 holes on horizontal axis
+            holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
+            holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
+        }
+        default ->
+                // Just one hole in the symbol center
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
         }
 
         // Fill the holes if any with HOLE color
@@ -336,8 +365,7 @@ public class TemplateFactory
         for (Point seed : holeSeeds) {
             // Background (BACK) -> interior background (HOLE)
             // Hole seeds are very coarse with low interline value, so try points nearby
-            Neighborhood:
-            for (int iy = -1; iy <= 1; iy++) {
+            Neighborhood: for (int iy = -1; iy <= 1; iy++) {
                 for (int ix = -1; ix <= 1; ix++) {
                     if (isBackground(img, seed.x + ix, seed.y + iy)) {
                         floodFiller.fill(seed.x + ix, seed.y + iy, BACK, HOLE);
@@ -358,8 +386,8 @@ public class TemplateFactory
      * @param img       the source image
      * @param threshold alpha level to separate relevant from irrelevant pixels
      */
-    private void binarize (BufferedImage img,
-                           int threshold)
+    private static void binarize (BufferedImage img,
+                                  int threshold)
     {
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
@@ -464,8 +492,8 @@ public class TemplateFactory
      * <p>
      * TODO: improve this method with g.setTransform() instead of scaling each and every item!
      *
-     * @param src source colored image
      * @param tpl the template at hand
+     * @param src source colored image
      * @return decorated magnified image
      */
     private BufferedImage buildDecoratedImage (Template tpl,
@@ -493,11 +521,11 @@ public class TemplateFactory
         Composite oldComposite = g.getComposite();
         g.setComposite(TemplateView.templateComposite);
 
-        MusicFont musicFont = MusicFont.getPointFont(r * tpl.getPointSize(), 0);
+        MusicFont musicFont = MusicFont.getPointFont(tpl.getFamily(), r * tpl.getPointSize(), 0);
         final Point2D center = GeoUtil.center2D(slim);
         center.setLocation(r * center.getX(), r * center.getY());
 
-        ShapeSymbol symbol = Symbols.getSymbol(tpl.getShape());
+        final TemplateSymbol symbol = new TemplateSymbol(tpl.getShape(), tpl.getFamily());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
         g.setComposite(oldComposite);
 
@@ -535,8 +563,12 @@ public class TemplateFactory
         for (Entry<Anchor, Point2D> entry : tpl.getOffsets().entrySet()) {
             final Anchor anchor = entry.getKey();
             final Point2D pt2D = entry.getValue();
-            g.draw(new Ellipse2D.Double(r * (pt2D.getX() - 0.25), r * (pt2D.getY() - 0.25),
-                                        r * 0.5, r * 0.5));
+            g.draw(
+                    new Ellipse2D.Double(
+                            r * (pt2D.getX() - 0.25),
+                            r * (pt2D.getY() - 0.25),
+                            r * 0.5,
+                            r * 0.5));
 
             final String str = anchor.abbreviation().toLowerCase(Locale.US);
             final TextLayout layout = textFont.layout(str);
@@ -596,56 +628,50 @@ public class TemplateFactory
      * @return the brand new template
      */
     private Template buildTemplate (Shape shape,
+                                    Family family,
                                     int pointSize)
     {
-        int interline = (pointSize + 2) / 4; // Approximate value
-        MusicFont font = MusicFont.getPointFont(pointSize, interline);
+        final int interline = (pointSize + 2) / 4; // Approximate value
+        final MusicFont font = MusicFont.getPointFont(family, pointSize, interline);
+        final TemplateSymbol symbol = new TemplateSymbol(shape, family);
 
-        // Get symbol image painted on template rectangle
-        final int code = getCode(shape);
-        if (code == -1) {
-            logger.error("Shape {} is not supported", shape);
+        // Check whether we have a usable template symbol
+        if (symbol.getDimension(font) == null) {
+            logger.info("{} No template for {}", family, shape);
+
             return null;
         }
 
-        final TemplateSymbol symbol = new TemplateSymbol(shape, code);
-        final BufferedImage img = symbol.buildImage(font); // Gray pixels
-
-        binarize(img, constants.binarizationThreshold.getValue()); // B&W pixels + IRRELEVANT
-
-        // Distances to foreground
-        final DistanceTable distances = computeDistances(img, shape);
-
         final Rectangle fatBounds = symbol.getFatBounds(font);
-
-        // Add holes if any
-        if (shapesWithHoles.contains(shape)) {
-            addHoles(shape, img, fatBounds); // B=FORE & W=BACK + HOLE pixels
-        }
-
-        // Flag non-relevant pixels
-        flagIrrelevantPixels(img, distances); // B=FORE & W=BACK + HOLE pixels + IRRELEVANT pixels
-
-        // Generate key points for relevant pixels only (fore, holes or back)
-        final List<PixelDistance> keyPoints = buildKeyPoints(img, distances);
-
+        final BufferedImage img = symbol.buildImage(font); // Gray pixels
+        binarize(img, constants.binarizationThreshold.getValue()); // B&W pixels + IRRELEVANT
         final Rectangle slimBounds = getSlimBounds(img, fatBounds);
 
+        // Pre-populate template keyPoints?
+        final List<PixelDistance> keyPoints = (constants.prePopulateKeyPoints.isSet()
+                || constants.saveTemplates.isSet()) ? retrieveKeyPoints(
+                        shape,
+                        family,
+                        pointSize,
+                        img,
+                        fatBounds) : null;
         // Generate the template instance
-        final Template tpl = new Template(shape,
-                                          pointSize,
-                                          img.getWidth(),
-                                          img.getHeight(),
-                                          keyPoints,
-                                          slimBounds);
+        final Template tpl = new Template(
+                shape,
+                family,
+                pointSize,
+                img.getWidth(),
+                img.getHeight(),
+                keyPoints,
+                slimBounds);
 
         // Add specific anchor points, if any
         addAnchors(tpl, slimBounds);
 
         // Store a copy on disk for visual check?
-        if (constants.keepTemplates.isSet()) {
+        if (constants.saveTemplates.isSet()) {
             BufferedImage output = buildDecoratedImage(tpl, img);
-            ImageUtil.saveOnDisk(output, shape + ".tpl-" + pointSize);
+            ImageUtil.saveOnDisk(output, shape + ".tpl-" + family + "-" + pointSize);
         }
 
         logger.debug("{} size:{} \n{}", shape, pointSize, tpl);
@@ -663,8 +689,8 @@ public class TemplateFactory
      *
      * @param img the image to modify
      */
-    private void flagIrrelevantPixels (BufferedImage img,
-                                       DistanceTable distances)
+    private static void flagIrrelevantPixels (BufferedImage img,
+                                              DistanceTable distances)
     {
         final int maxDist = constants.maxRawDistanceFromSymbol.getValue();
 
@@ -675,47 +701,6 @@ public class TemplateFactory
                 }
             }
         }
-    }
-
-    //---------//
-    // getCode //
-    //---------//
-    private static int getCode (Shape shape)
-    {
-        return switch (shape) {
-            case BREVE ->
-                Symbols.CODE_BREVE;
-            case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL ->
-                Symbols.CODE_NOTEHEAD_BLACK;
-            case NOTEHEAD_CIRCLE_X ->
-                Symbols.CODE_NOTEHEAD_CIRCLE_X;
-            case NOTEHEAD_CROSS ->
-                Symbols.CODE_NOTEHEAD_CROSS;
-            case NOTEHEAD_CROSS_VOID ->
-                Symbols.CODE_NOTEHEAD_CROSS_VOID;
-            case NOTEHEAD_DIAMOND_FILLED ->
-                Symbols.CODE_NOTEHEAD_DIAMOND_FILLED;
-            case NOTEHEAD_DIAMOND_VOID ->
-                Symbols.CODE_NOTEHEAD_DIAMOND_VOID;
-            case NOTEHEAD_TRIANGLE_DOWN_FILLED ->
-                Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_FILLED;
-            case NOTEHEAD_TRIANGLE_DOWN_VOID ->
-                Symbols.CODE_NOTEHEAD_TRIANGLE_DOWN_VOID;
-            case NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL ->
-                Symbols.CODE_NOTEHEAD_VOID;
-            case WHOLE_NOTE_CIRCLE_X ->
-                Symbols.CODE_WHOLE_NOTE_CIRCLE_X;
-            case WHOLE_NOTE_CROSS ->
-                Symbols.CODE_WHOLE_NOTE_CROSS;
-            case WHOLE_NOTE_DIAMOND ->
-                Symbols.CODE_WHOLE_NOTE_DIAMOND;
-            case WHOLE_NOTE_TRIANGLE_DOWN ->
-                Symbols.CODE_WHOLE_NOTE_TRIANGLE_DOWN;
-            case WHOLE_NOTE, WHOLE_NOTE_SMALL ->
-                Symbols.CODE_WHOLE_NOTE;
-            default ->
-                -1;
-        };
     }
 
     //--------------//
@@ -828,15 +813,60 @@ public class TemplateFactory
         return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
     }
 
+    //-------------------//
+    // retrieveKeyPoints //
+    //-------------------//
+    public static List<PixelDistance> retrieveKeyPoints (Shape shape,
+                                                         Family family,
+                                                         int pointSize)
+    {
+        final int interline = (pointSize + 2) / 4; // Approximate value
+        final MusicFont font = MusicFont.getPointFont(family, pointSize, interline);
+        final TemplateSymbol symbol = new TemplateSymbol(shape, family);
+        final Rectangle fatBounds = symbol.getFatBounds(font);
+        final BufferedImage img = symbol.buildImage(font); // Gray pixels
+        binarize(img, constants.binarizationThreshold.getValue()); // B&W pixels + IRRELEVANT
+
+        return retrieveKeyPoints(shape, family, pointSize, img, fatBounds);
+    }
+
+    //-------------------//
+    // retrieveKeyPoints //
+    //-------------------//
+    private static List<PixelDistance> retrieveKeyPoints (Shape shape,
+                                                          Family family,
+                                                          int pointSize,
+                                                          BufferedImage img,
+                                                          Rectangle fatBounds)
+    {
+        logger.debug("Building template keyPoints for {} {} {}", shape, family, pointSize);
+        // Distances to foreground
+        final DistanceTable distances = computeDistances(img, shape);
+
+        // Add holes if any
+        if (shapesWithHoles.contains(shape)) {
+            addHoles(shape, img, fatBounds); // B=FORE & W=BACK + HOLE pixels
+        }
+
+        // Flag non-relevant pixels
+        flagIrrelevantPixels(img, distances); // B=FORE & W=BACK + HOLE pixels + IRRELEVANT pixels
+
+        // Generate key points for relevant pixels only (fore, holes or back)
+        return buildKeyPoints(img, distances);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Catalog //
     //---------//
     /**
-     * Handles all templates for a given pointSize value.
+     * Handles all templates for a given family and a given pointSize value.
      */
     public class Catalog
     {
+
+        /** Selected music font family. */
+        final Family family;
 
         /** Point size value for this catalog. */
         final int pointSize;
@@ -847,10 +877,13 @@ public class TemplateFactory
         /**
          * Create a <code>Catalog</code> object.
          *
+         * @param family    the selected MusicFont family
          * @param pointSize provided pointSize value
          */
-        public Catalog (int pointSize)
+        public Catalog (Family family,
+                        int pointSize)
         {
+            this.family = family;
             this.pointSize = pointSize;
             buildAllTemplates();
         }
@@ -874,8 +907,13 @@ public class TemplateFactory
         //-------------------//
         private void buildAllTemplates ()
         {
-            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
-                templates.put(shape, buildTemplate(shape, pointSize));
+            logger.debug(
+                    "TemplateFactory building all head templates for {} {}",
+                    family,
+                    pointSize);
+
+            for (Shape shape : ShapeSet.Heads) {
+                templates.put(shape, buildTemplate(shape, family, pointSize));
             }
         }
     }
@@ -887,7 +925,11 @@ public class TemplateFactory
             extends ConstantSet
     {
 
-        private final Constant.Boolean keepTemplates = new Constant.Boolean(
+        private final Constant.Boolean prePopulateKeyPoints = new Constant.Boolean(
+                false,
+                "Should we populate keyPoints at template creation?");
+
+        private final Constant.Boolean saveTemplates = new Constant.Boolean(
                 false,
                 "Should we save the templates images to disk?");
 

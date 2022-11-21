@@ -138,22 +138,18 @@ public class LinksStep
         logger.debug("LINKS impact {} {}", opKind, seq);
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
+            if (task instanceof InterTask interTask) {
                 Inter inter = interTask.getInter();
                 SystemInfo system = inter.getSig().getSystem();
                 Class interClass = inter.getClass();
 
                 if (isImpactedBy(interClass, forTexts)) {
-                    if (inter instanceof LyricItemInter) {
-                        LyricItemInter item = (LyricItemInter) inter;
-
+                    if (inter instanceof LyricItemInter item) {
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             final int profile = Math.max(item.getProfile(), system.getProfile());
                             item.mapToChord(profile);
                         }
-                    } else if (inter instanceof SentenceInter) {
-                        SentenceInter sentence = (SentenceInter) inter;
+                    } else if (inter instanceof SentenceInter sentence) {
                         SymbolsLinker linker = new SymbolsLinker(system);
 
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {

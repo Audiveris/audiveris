@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 /**
  * Class <code>KeySharpSymbol</code> displays a Key Signature symbol.
@@ -36,12 +37,14 @@ public class KeySharpSymbol
     /**
      * Creates a new KeySharpSymbol object.
      *
-     * @param key   the key value: 1..7 for sharps
-     * @param shape the related shape
+     * @param key    the key value: 1..7 for sharps
+     * @param shape  the related shape
+     * @param family the selected MusicFont family
      */
     public KeySharpSymbol (int key,
-                           Shape shape)
+                           Shape shape,
+                           Family family)
     {
-        super(key, shape, Symbols.CODE_SHARP);
+        super(key, shape, family, Shape.SHARP);
     }
 }

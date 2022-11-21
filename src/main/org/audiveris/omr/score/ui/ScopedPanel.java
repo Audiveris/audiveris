@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.ui.util.Panel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
-import org.audiveris.omr.ui.util.Panel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class ScopedPanel
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Standard column spec for 4 fields. */
-    private static final String colSpec4 = "12dlu,1dlu,100dlu,1dlu,35dlu,1dlu,right:12dlu";
+    private static final String colSpec4 = "12dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:12dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of individual data panes. */

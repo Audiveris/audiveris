@@ -22,9 +22,9 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.DOT_set;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Color;
 import java.awt.Composite;
@@ -45,22 +45,18 @@ import java.awt.geom.Point2D;
 public class FermataArcSymbol
         extends DecorableSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    // The DOT_set symbol
-    private final ShapeSymbol dotSymbol = Symbols.getSymbol(DOT_set);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a FermataArcSymbol standard size with no decoration.
      *
-     * @param shape the precise shape
-     * @param codes the codes for MusicFont characters
+     * @param shape  the precise shape
+     * @param family the musicFont family
      */
     public FermataArcSymbol (Shape shape,
-                             int... codes)
+                             Family family)
     {
-        super(shape, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -73,11 +69,11 @@ public class FermataArcSymbol
         MyParams p = new MyParams();
 
         // Full symbol (arc + dot)
-        p.layout = font.layout(codes);
+        p.layout = font.layoutShapeByCode(shape);
         p.rect = p.layout.getBounds();
 
         // Dot layout
-        p.dotLayout = font.layout(dotSymbol);
+        p.dotLayout = font.layoutShapeByCode(Shape.DOT_set);
 
         return p;
     }

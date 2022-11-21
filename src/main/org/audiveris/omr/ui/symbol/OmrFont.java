@@ -85,25 +85,115 @@ public abstract class OmrFont
     /** Needed for font size computation. */
     public static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
-    /** Cache for fonts. No style, no size. */
+    /** Cache for created fonts. No style, no size. */
     private static final Map<String, Font> fontCache = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OmrFont object.
      *
-     * @param name      the font name
+     * @param fontName  the font name
+     * @param fileName  the file name if any
      * @param style     generally PLAIN
      * @param pointSize the point size of the font
      */
-    protected OmrFont (String name,
+    protected OmrFont (String fontName,
+                       String fileName,
                        int style,
                        float pointSize)
     {
-        super(createFont(name, style, pointSize));
+        super(getFont(fontName, fileName, style, pointSize));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // createFont //
+    //------------//
+    /**
+     * Create and register the desired font.
+     *
+     * @param fontName  font name (e.g. "Finale Jazz")
+     * @param fileName  file name (e.g. "FinaleJazz.otf")
+     * @param style     the desired font style (generally 0 for PLAIN)
+     * @param pointSize the desired point size for this font
+     * @return the cached or created font
+     */
+    private static Font createFont (String fontName,
+                                    String fileName,
+                                    int style,
+                                    float pointSize)
+    {
+        logger.debug("OmrFont.createFont fontName: {} fileName: {}", fontName, fileName);
+
+        final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+
+        if (logger.isTraceEnabled()) {
+            for (String familyName : ge.getAvailableFontFamilyNames()) {
+                logger.info("Font familyName: {}", familyName);
+            }
+        }
+
+        Font font;
+
+        // First, lookup our own fonts (defined in "res" folder)
+        if (fileName != null)
+        try {
+            final URL url = UriUtil.toURI(WellKnowns.RES_URI, fileName).toURL();
+            logger.debug("Font url={}", url);
+
+            try (InputStream input = url.openStream()) {
+                logger.debug("Found file {}", fileName);
+                font = Font.createFont(Font.TRUETYPE_FONT, input);
+                fontCache.put(fontName, font);
+                final boolean added = ge.registerFont(font);
+                logger.debug("Created custom font {} added:{}", font, added);
+
+                return font.deriveFont(style, pointSize);
+            } catch (FontFormatException |
+                     IOException ex) {
+                logger.debug("Could not create custom font {} " + ex, fileName);
+            }
+        } catch (MalformedURLException ex) {
+            logger.warn("MalformedURLException", ex);
+        }
+
+        // Finally, try a platform font
+        font = new Font(fontName, style, (int) pointSize);
+        fontCache.put(fontName, font);
+        logger.debug("Using platform font {}", font.getFamily());
+
+        return font;
+    }
+
+    //---------//
+    // getFont //
+    //---------//
+    /**
+     * Retrieve the desired font, either from cache or newly created.
+     *
+     * @param fontName  font name (e.g. "Finale Jazz")
+     * @param fileName  file name (e.g. "FinaleJazz.otf")
+     * @param style     the desired font style (generally 0 for PLAIN)
+     * @param pointSize the desired point size for this font
+     * @return the cached or created font
+     */
+    private static Font getFont (String fontName,
+                                 String fileName,
+                                 int style,
+                                 float pointSize)
+    {
+        // Font already registered?
+        final Font font = fontCache.get(fontName);
+
+        if (font != null) {
+            logger.debug("Using cached font {}", fontName);
+
+            return font.deriveFont(style, pointSize);
+        }
+
+        return createFont(fontName, fileName, style, pointSize);
+    }
+
     //----------------//
     // getLineMetrics //
     //----------------//
@@ -116,8 +206,8 @@ public abstract class OmrFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a String of OmrFont characters
-     * (transformed by the provided AffineTransform if any).
+     * Build a TextLayout from a String of OmrFont characters,
+     * transformed by the provided AffineTransform if any.
      *
      * @param str the string of proper codes
      * @param fat potential affine transformation
@@ -145,26 +235,12 @@ public abstract class OmrFont
         return layout(str, null);
     }
 
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a ShapeSymbol.
-     *
-     * @param symbol the symbol to draw
-     * @return the TextLayout ready to be drawn
-     */
-    public TextLayout layout (BasicSymbol symbol)
-    {
-        return layout(symbol.getString(), null);
-    }
-
     //-------//
     // paint //
     //-------//
     /**
-     * This is the general paint method for drawing a symbol layout, at
-     * a specified location, using a specified alignment.
+     * This is the general paint method for drawing a symbol layout, at a specified location,
+     * using a specified alignment.
      *
      * @param g         the graphics environment
      * @param layout    what: the symbol, perhaps transformed
@@ -188,60 +264,6 @@ public abstract class OmrFont
         } catch (Exception ex) {
             logger.warn("Cannot paint at " + location, ex);
         }
-    }
-
-    //------------//
-    // createFont //
-    //------------//
-    private static Font createFont (String fontName,
-                                    int style,
-                                    float pointSize)
-    {
-        Font font;
-
-        // Font already registered?
-        font = fontCache.get(fontName);
-
-        if (font != null) {
-            logger.debug("Using cached font {}", fontName);
-
-            return font.deriveFont(style, pointSize);
-        }
-
-        // Lookup our own fonts (defined in "res" folder)
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-
-        // Some fonts use ".ttf" extension, others ".otf"
-        for (String ext : new String[]{".ttf", ".otf"}) {
-            final String fileName = fontName + ext;
-
-            try {
-                final URL url = UriUtil.toURI(WellKnowns.RES_URI, fileName).toURL();
-                logger.debug("Font url={}", url);
-
-                try (InputStream input = url.openStream()) {
-                    logger.debug("Succeeded with {}", fileName);
-                    font = Font.createFont(Font.TRUETYPE_FONT, input);
-                    fontCache.put(fontName, font);
-                    ge.registerFont(font);
-                    logger.debug("Created custom font {}", fileName);
-
-                    return font.deriveFont(style, pointSize);
-                } catch (FontFormatException |
-                         IOException ex) {
-                    logger.debug("Could not create custom font {} " + ex, fileName);
-                }
-            } catch (MalformedURLException ex) {
-                logger.warn("MalformedURLException", ex);
-            }
-        }
-
-        // Finally, try a platform font
-        font = new Font(fontName, style, (int) pointSize);
-        fontCache.put(fontName, font);
-        logger.debug("Using platform font {}", font.getFamily());
-
-        return font;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

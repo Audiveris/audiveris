@@ -220,7 +220,7 @@ public abstract class OmrShapeMapping
         map.put(Shape.FLAG_5, OmrShape.flag128thUp);
         map.put(Shape.FLAG_5_UP, OmrShape.flag128thDown);
         map.put(Shape.SMALL_FLAG, OmrShape.flag8thUpSmall);
-        //        map.put(Shape.SMALL_FLAG_SLASH, OmrShape.none);
+        //        map.put(Shape.FLAG_SLASH_SMALL, OmrShape.none);
         map.put(Shape.BREVE, OmrShape.noteheadDoubleWhole);
         //        map.put(Shape.ACCENT, OmrShape.none); // articAccentAbove or articAccentBelow
         //        map.put(Shape.TENUTO, OmrShape.none); // articTenutoAbove or articTenutoBelow

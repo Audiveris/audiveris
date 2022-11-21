@@ -52,6 +52,8 @@ import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.FontFamilyParam;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Jaxb.OmrSchemaOutputResolver;
@@ -183,6 +185,16 @@ public class Book
     @XmlElement(name = "binarization")
     @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
     private FilterParam binarizationFilter;
+
+    /**
+     * Specification of the MusicFont family to use in this book.
+     * <p>
+     * If present, this specification overrides any global specification made at application level,
+     * but can still be overridden at sheet level.
+     */
+    @XmlElement(name = "music-font")
+    @XmlJavaTypeAdapter(FontFamilyParam.JaxbAdapter.class)
+    private FontFamilyParam musicFontFamily;
 
     /**
      * This string specifies the dominant language(s) for this whole book.
@@ -698,6 +710,24 @@ public class Book
         }
 
         return binarizationFilter;
+    }
+
+    //--------------------//
+    // getMusicFontFamily //
+    //--------------------//
+    /**
+     * Report the music font family defined at book level.
+     *
+     * @return the font family parameter
+     */
+    public FontFamilyParam getMusicFontFamily ()
+    {
+        if (musicFontFamily == null) {
+            musicFontFamily = new FontFamilyParam(this);
+            musicFontFamily.setParent(MusicFont.defaultFamilyParam);
+        }
+
+        return musicFontFamily;
     }
 
     //-------------//
@@ -1501,7 +1531,7 @@ public class Book
             // Load book internals (just the stubs) out of book.xml
             Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
 
-            try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
+            try ( InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
                 JAXBContext ctx = getJaxbContext();
                 Unmarshaller um = ctx.createUnmarshaller();
                 book = (Book) um.unmarshal(is);
@@ -2394,6 +2424,10 @@ public class Book
             binarizationFilter = null;
         }
 
+        if ((musicFontFamily != null) && !musicFontFamily.isSpecific()) {
+            musicFontFamily = null;
+        }
+
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
             ocrLanguages = null;
         }
@@ -2603,6 +2637,11 @@ public class Book
         if (binarizationFilter != null) {
             binarizationFilter.setParent(FilterDescriptor.defaultFilter);
             binarizationFilter.setScope(this);
+        }
+
+        if (musicFontFamily != null) {
+            musicFontFamily.setParent(MusicFont.defaultFamilyParam);
+            musicFontFamily.setScope(this);
         }
 
         if (ocrLanguages != null) {

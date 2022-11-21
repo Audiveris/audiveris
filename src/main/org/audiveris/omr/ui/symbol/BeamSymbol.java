@@ -30,6 +30,10 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -52,8 +56,7 @@ public class BeamSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    // The decorating quarter (head + stem) part
-    private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
+    private static final Logger logger = LoggerFactory.getLogger(BeamSymbol.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Specified beam thickness, if any, as a ratio of interline. */
@@ -62,20 +65,24 @@ public class BeamSymbol
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BeamSymbol.
+     *
+     * @param family the musicFont family
      */
-    public BeamSymbol ()
+    public BeamSymbol (Family family)
     {
-        this(Shape.BEAM);
+        this(Shape.BEAM, family);
     }
 
     /**
      * Create a BeamSymbol.
      *
-     * @param shape the precise shape
+     * @param shape  the precise shape
+     * @param family the musicFont family
      */
-    protected BeamSymbol (Shape shape)
+    protected BeamSymbol (Shape shape,
+                          Family family)
     {
-        super(shape);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -152,24 +159,27 @@ public class BeamSymbol
         double yShift = 0; ///-il * 1.0; // Non zero for a slanted beam (p2.y - p1.y)
         double absShift = Math.abs(yShift);
 
-        p.layout = font.layout(quarter.getString()); // Quarter layout
+        p.layout = font.layoutShapeByCode(Shape.QUARTER_NOTE_UP); // Quarter layout
 
         if (isDecorated) {
             p.quarterCount = 2;
 
             Rectangle2D qRect = p.layout.getBounds();
-            p.rect = new Rectangle2D.Double(0,
-                                            0,
-                                            qRect.getWidth() + width,
-                                            qRect.getHeight() + absShift);
+            p.rect = new Rectangle2D.Double(
+                    0,
+                    0,
+                    qRect.getWidth() + width,
+                    qRect.getHeight() + absShift);
 
             if (yShift >= 0) {
                 p.model.p1 = new Point2D.Double(qRect.getWidth(), p.model.thickness / 2.0);
-                p.model.p2 = new Point2D.Double(qRect.getWidth() + width,
-                                                (p.model.thickness / 2.0) + absShift);
+                p.model.p2 = new Point2D.Double(
+                        qRect.getWidth() + width,
+                        (p.model.thickness / 2.0) + absShift);
             } else {
-                p.model.p1 = new Point2D.Double(qRect.getWidth(),
-                                                (p.model.thickness / 2.0) + absShift);
+                p.model.p1 = new Point2D.Double(
+                        qRect.getWidth(),
+                        (p.model.thickness / 2.0) + absShift);
                 p.model.p2 = new Point2D.Double(qRect.getWidth() + width, p.model.thickness / 2.0);
             }
 
@@ -186,8 +196,9 @@ public class BeamSymbol
                 p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0);
             }
 
-            p.rect = new Rectangle((int) Math.ceil(width),
-                                   (int) Math.ceil(p.model.thickness + absShift));
+            p.rect = new Rectangle(
+                    (int) Math.ceil(width),
+                    (int) Math.ceil(p.model.thickness + absShift));
         }
 
         return p;

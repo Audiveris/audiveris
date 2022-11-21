@@ -109,10 +109,13 @@ public class TimeWholeInter
         }
 
         // Multi symbol (num / den), such as for shape TIME_FOUR_FOUR
-        Point center = getCenter(); // Use area center
-        TimeRational nd = getTimeRational();
-        NumDenSymbol symbol = new NumDenSymbol(shape, nd.num, nd.den);
-        MusicFont musicFont = MusicFont.getBaseFont(interline);
+        final Point center = getCenter(); // Use area center
+        final TimeRational nd = getTimeRational();
+        final MusicFont.Family family = staff != null
+                ? staff.getSystem().getSheet().getStub().getMusicFontFamily()
+                : MusicFont.getDefaultMusicFamily();
+        MusicFont musicFont = MusicFont.getBaseFont(family, interline);
+        NumDenSymbol symbol = new NumDenSymbol(shape, family, nd.num, nd.den);
         Dimension dim = symbol.getDimension(musicFont);
 
         return new Rectangle(

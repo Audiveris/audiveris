@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -44,11 +45,11 @@ public class NonDraggableSymbol
     /**
      * Create an NonDraggableSymbol
      *
-     * @param codes the codes for MusicFont characters
+     * @param family the musicFont family
      */
-    public NonDraggableSymbol (int... codes)
+    public NonDraggableSymbol (Family family)
     {
-        super(Shape.NON_DRAGGABLE, codes);
+        super(Shape.NON_DRAGGABLE, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ public class NonDraggableSymbol
     {
         Params p = new Params();
 
-        p.layout = font.layout(getString(), at);
+        p.layout = font.layoutShapeByCode(shape, at);
         p.rect = p.layout.getBounds();
 
         return p;

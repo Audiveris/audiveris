@@ -107,6 +107,7 @@ public class SelectionPainter
 
         final Line2D line = new Line2D.Double(oneCenter, twoCenter);
         g.draw(line);
+        g.setStroke(oldStroke);
 
         // Print link name at center of line?
         if (zoom >= constants.minZoomForLinkNames.getValue()) {

@@ -87,7 +87,10 @@ public class Sample
     //---------------
     //
     /** True for artificial (font-based) sample. */
-    private boolean symbol;
+    private boolean isSymbol;
+
+    /** True for a redundant artificial smaple. */
+    private boolean isIgnored;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -146,7 +149,8 @@ public class Sample
      * We need equality strictly based on reference.
      *
      * @param obj the reference object with which to compare.
-     * @return <code>true</code> if this object is the same as the obj argument; <code>false</code> otherwise.
+     * @return <code>true</code> if this object is the same as the obj argument; <code>false</code>
+     *         otherwise.
      */
     @Override
     public boolean equals (Object obj)
@@ -234,20 +238,30 @@ public class Sample
         return hash;
     }
 
-    /**
-     * @return the symbol
-     */
-    public boolean isSymbol ()
+    public boolean isIgnored ()
     {
-        return symbol;
+        return isIgnored;
+    }
+
+    public void setIgnored (boolean bool)
+    {
+        isIgnored = bool;
     }
 
     /**
-     * @param symbol the symbol to set
+     * @return the isSymbol
      */
-    public void setSymbol (boolean symbol)
+    public boolean isSymbol ()
     {
-        this.symbol = symbol;
+        return isSymbol;
+    }
+
+    /**
+     * @param bool true for a font symbol, false otherwise
+     */
+    public void setSymbol (boolean bool)
+    {
+        isSymbol = bool;
     }
 
     //-----------//

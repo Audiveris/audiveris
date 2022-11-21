@@ -126,21 +126,21 @@ public class SymbolsBuilder
      * <p>
      * <b>Synopsis:</b>
      * <ol>
-     * <li> retrieveFineBoxes() // Retrieve areas around small chords
-     * <li> getSymbolsGlyphs() // Retrieve all glyphs usable for symbols
-     * <li> buildLinks() // Build graph with distances
-     * <li> processClusters(): // Group connected glyphs into clusters
+     * <li>retrieveFineBoxes() // Retrieve areas around small chords
+     * <li>getSymbolsGlyphs() // Retrieve all glyphs usable for symbols
+     * <li>buildLinks() // Build graph with distances
+     * <li>processClusters(): // Group connected glyphs into clusters
      * <ol>
-     * <li> FOREACH cluster of connected glyphs:
+     * <li>FOREACH cluster of connected glyphs:
      * <ol>
-     * <li> cluster.decompose() // Decompose cluster into all subsets
-     * <li> FOREACH subset process(subset):
+     * <li>cluster.decompose() // Decompose cluster into all subsets
+     * <li>FOREACH subset process(subset):
      * <ol>
-     * <li> build compound glyph // Build one compound glyph per subset
-     * <li> evaluateGlyph(compound) // Run shape classifier on compound
-     * <li> FOREACH acceptable evaluation:
+     * <li>build compound glyph // Build one compound glyph per subset
+     * <li>evaluateGlyph(compound) // Run shape classifier on compound
+     * <li>FOREACH acceptable evaluation:
      * <ol>
-     * <li> interFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     * <li>interFactory.create(eval, glyph) // Create inter(s) related to evaluation
      * </ol>
      * </ol>
      * </ol>

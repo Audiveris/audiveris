@@ -126,7 +126,7 @@ public class SymbolsLinker
             final Scale scale = system.getSheet().getScale();
 
             switch (role) {
-            case Lyrics: {
+            case Lyrics -> {
                 // Map each syllable with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
                     final LyricItemInter item = (LyricItemInter) wInter;
@@ -135,9 +135,7 @@ public class SymbolsLinker
                 }
             }
 
-            break;
-
-            case Direction: {
+            case Direction -> {
                 // Map direction with proper chord
                 MeasureStack stack = system.getStackAt(location);
 
@@ -146,35 +144,29 @@ public class SymbolsLinker
                             "No measure stack for direction {} {}",
                             sentence,
                             sentence.getValue());
-
-                    break;
-                }
-
-                int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
-                Rectangle fatBounds = new Rectangle(bounds);
-                fatBounds.grow(xGapMax, 0);
-
-                AbstractChordInter chord = stack.getEventChord(location, fatBounds);
-
-                if (chord != null) {
-                    sig.addEdge(chord, sentence, new ChordSentenceRelation());
                 } else {
-                    logger.info("No chord near direction {} {}", sentence, sentence.getValue());
+                    int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                    Rectangle fatBounds = new Rectangle(bounds);
+                    fatBounds.grow(xGapMax, 0);
+
+                    AbstractChordInter chord = stack.getEventChord(location, fatBounds);
+
+                    if (chord != null) {
+                        sig.addEdge(chord, sentence, new ChordSentenceRelation());
+                    } else {
+                        logger.info("No chord near direction {} {}", sentence, sentence.getValue());
+                    }
                 }
             }
 
-            break;
-
-            case PartName:
-
+            case PartName -> {
                 // Assign part name to proper part
                 Staff staff = system.getClosestStaff(sentence.getCenter());
                 Part part = staff.getPart();
                 part.setName(sentence);
+            }
 
-                break;
-
-            case ChordName: {
+            case ChordName -> {
                 // Map each word with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
                     WordInter word = (WordInter) wInter;
@@ -197,10 +189,7 @@ public class SymbolsLinker
                 }
             }
 
-            break;
-
-            case EndingNumber:
-            case EndingText: {
+            case EndingNumber, EndingText -> {
                 // Look for related ending
                 final Link link = sentence.lookupEndingLink(system);
 
@@ -209,12 +198,8 @@ public class SymbolsLinker
                     sig.addEdge(link.partner, sentence, link.relation);
                 }
             }
-
-            break;
-
-            default:
-            // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
             }
+            // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
         } catch (Exception ex) {
             logger.warn("Error in linkOneSentence for {} {}", sentence, ex.toString(), ex);
         }

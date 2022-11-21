@@ -24,6 +24,7 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_RIGHT;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -39,20 +40,16 @@ import java.awt.geom.Point2D;
 public class StemSymbol
         extends DecorableSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    // The head+stem part
-    private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>StemSymbol</code> standard size with no decoration.
      *
-     * @param codes the codes for MusicFont characters
+     * @param family the musicFont family
      */
-    public StemSymbol (int... codes)
+    public StemSymbol (Family family)
     {
-        super(Shape.STEM, codes);
+        super(Shape.STEM, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -65,19 +62,19 @@ public class StemSymbol
         MyParams p = new MyParams();
 
         // Stem layout
-        p.layout = font.layout(getString());
-
+        p.layout = font.layoutShapeByCode(shape);
         Rectangle rs = p.layout.getBounds().getBounds(); // Stem bounds
 
         if (isDecorated) {
             // Quarter layout
-            p.quarterLayout = font.layout(quarter.getString());
+            p.quarterLayout = font.layoutShapeByCode(Shape.QUARTER_NOTE_UP);
 
             p.rect = p.quarterLayout.getBounds();
 
             // Define specific offset
-            p.offset = new Point2D.Double((p.rect.getWidth() - rs.width) / 2,
-                                          -(p.rect.getHeight() - rs.height) / 2);
+            p.offset = new Point2D.Double(
+                    (p.rect.getWidth() - rs.width) / 2,
+                    -(p.rect.getHeight() - rs.height) / 2);
         } else {
             p.rect = p.layout.getBounds();
         }

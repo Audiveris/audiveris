@@ -52,8 +52,8 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.ui.symbol.SymbolIcon;
-import org.audiveris.omr.ui.symbol.Symbols;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
@@ -75,7 +75,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -443,6 +442,9 @@ public class ClefBuilder
      */
     private void registerClefs (Collection<ClefInter> clefSet)
     {
+        final MusicFont font = MusicFont.getBaseFont(sheet.getStub().getMusicFontFamily(),
+                                                     sheet.getInterline());
+
         // Sort clefs by decreasing grade
         final List<ClefInter> clefList = new ArrayList<>(clefSet);
         Collections.sort(clefList, Inters.byReverseGrade);
@@ -457,7 +459,7 @@ public class ClefBuilder
             Rectangle clefBox = inter.getSymbolBounds(staff.getSpecificInterline());
 
             if (inter.getGlyph() != null) {
-                SymbolIcon symbol = Symbols.getSymbol(inter.getShape());
+                ShapeSymbol symbol = font.getSymbol(inter.getShape());
                 Point symbolCentroid = symbol.getCentroid(clefBox);
                 Point glyphCentroid = inter.getGlyph().getCentroid();
                 int dx = glyphCentroid.x - symbolCentroid.x;

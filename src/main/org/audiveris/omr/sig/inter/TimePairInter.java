@@ -25,6 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.NumDenSymbol;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
@@ -149,7 +152,6 @@ public class TimePairInter
             return (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
 
         case 1:
-
             if (staff != null) {
                 final TimeNumberInter tni = (TimeNumberInter) members.get(0);
                 final double pp = staff.pitchPositionOf(tni.getCenter());
@@ -199,6 +201,22 @@ public class TimePairInter
     public String getShapeString ()
     {
         return "TIME_SIG:" + getTimeRational();
+    }
+
+    //----------------//
+    // getShapeSymbol //
+    //----------------//
+    @Override
+    public ShapeSymbol getShapeSymbol (MusicFont.Family family)
+    {
+        final TimeNumberInter num = getNum();
+        final TimeNumberInter den = getDen();
+
+        if (num == null || den == null) {
+            return null;
+        }
+
+        return new NumDenSymbol(null, family, num.getValue(), den.getValue());
     }
 
     //-----------------//

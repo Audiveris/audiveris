@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
@@ -82,13 +78,11 @@ import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
-import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
-import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -96,6 +90,10 @@ import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -199,91 +197,6 @@ public abstract class SheetPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Paint the sheet.
-     */
-    public void process ()
-    {
-        sigPainter = getSigPainter();
-
-        if (!sheet.getSystems().isEmpty()) {
-            for (SystemInfo system : sheet.getSystems()) {
-                // Check whether this system is visible
-                Rectangle bounds = system.getBounds();
-
-                if ((bounds != null) && ((clip == null) || bounds.intersects(clip))) {
-                    processSystem(system);
-                }
-            }
-        }
-    }
-
-    //---------------//
-    // getVoicePanel //
-    //---------------//
-    /**
-     * Build a panel which displays all defined voice ID colors.
-     * <p>
-     * Separate numbers for first staff and second staff as: 1234 / 5678
-     *
-     * @return the populated voice panel
-     */
-    public static JPanel getVoicePanel ()
-    {
-        final int length = Voices.getColorCount();
-        final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
-        final Color background = Color.WHITE;
-        final StringBuilder sbc = new StringBuilder();
-
-        for (int i = 0; i <= length; i++) {
-            if (i != 0) {
-                sbc.append(",");
-            }
-
-            sbc.append("10dlu");
-        }
-
-        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
-        final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
-        final CellConstraints cst = new CellConstraints();
-
-        // Adjust dimensions
-        final Dimension cellDim = new Dimension(5, 22);
-        panel.setInsets(3, 0, 0, 3); // TLBR
-
-        final int mid = length / 2;
-
-        for (int c = 1; c <= length; c++) {
-            final Color color = new Color(Voices.colorOf(c).getRGB()); // Remove alpha
-            final JLabel label = new JLabel("" + c, JLabel.CENTER);
-            label.setPreferredSize(cellDim);
-            label.setFont(font);
-            label.setOpaque(true);
-            label.setBackground(background);
-            label.setForeground(color);
-
-            int col = (c <= mid) ? c : (c + 1);
-            builder.add(label, cst.xy(col, 1));
-        }
-        // Separation between staves
-        {
-            final Color color = Color.BLACK;
-            final JLabel label = new JLabel(" /");
-            label.setPreferredSize(cellDim);
-            label.setFont(font);
-            label.setOpaque(true);
-            label.setBackground(background);
-            label.setForeground(color);
-            builder.add(label, cst.xy(mid + 1, 1));
-        }
-
-        return panel;
-    }
-
     //-------------//
     // basicLayout //
     //-------------//
@@ -353,6 +266,69 @@ public abstract class SheetPainter
      */
     protected abstract SigPainter getSigPainter ();
 
+    //---------------//
+    // getVoicePanel //
+    //---------------//
+    /**
+     * Build a panel which displays all defined voice ID colors.
+     * <p>
+     * Separate numbers for first staff and second staff as: 1234 / 5678
+     *
+     * @return the populated voice panel
+     */
+    public static JPanel getVoicePanel ()
+    {
+        final int length = Voices.getColorCount();
+        final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
+        final Color background = Color.WHITE;
+        final StringBuilder sbc = new StringBuilder();
+
+        for (int i = 0; i <= length; i++) {
+            if (i != 0) {
+                sbc.append(",");
+            }
+
+            sbc.append("10dlu");
+        }
+
+        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
+        final Panel panel = new Panel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final CellConstraints cst = new CellConstraints();
+
+        // Adjust dimensions
+        final Dimension cellDim = new Dimension(5, 22);
+        panel.setInsets(3, 0, 0, 3); // TLBR
+
+        final int mid = length / 2;
+
+        for (int c = 1; c <= length; c++) {
+            final Color color = new Color(Voices.colorOf(c).getRGB()); // Remove alpha
+            final JLabel label = new JLabel("" + c, JLabel.CENTER);
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+
+            int col = (c <= mid) ? c : (c + 1);
+            builder.add(label, cst.xy(col, 1));
+        }
+        // Separation between staves
+        {
+            final Color color = Color.BLACK;
+            final JLabel label = new JLabel(" /");
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy(mid + 1, 1));
+        }
+
+        return panel;
+    }
+
     //-------//
     // paint //
     //-------//
@@ -369,6 +345,28 @@ public abstract class SheetPainter
                           Alignment alignment)
     {
         OmrFont.paint(g, layout, location, alignment);
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Paint the sheet.
+     */
+    public void process ()
+    {
+        sigPainter = getSigPainter();
+
+        if (!sheet.getSystems().isEmpty()) {
+            for (SystemInfo system : sheet.getSystems()) {
+                // Check whether this system is visible
+                Rectangle bounds = system.getBounds();
+
+                if ((bounds != null) && ((clip == null) || bounds.intersects(clip))) {
+                    processSystem(system);
+                }
+            }
+        }
     }
 
     //---------------//
@@ -425,17 +423,17 @@ public abstract class SheetPainter
             extends AbstractInterVisitor
     {
 
-        /** Music font for large staves. */
-        protected final MusicFont musicFontLarge;
+        /** General shape, large size. */
+        protected final MusicFont musicFont;
 
-        /** Music font for small staves, if any. */
+        /** Head shapes, large size. */
+        protected final MusicFont headMusicFont;
+
+        /** General shape, small size. */
         protected final MusicFont musicFontSmall;
 
-        /** Music font for heads in large staves. */
-        protected final MusicFont musicHeadFontLarge;
-
-        /** Music font for heads in small staves, if any. */
-        protected final MusicFont musicHeadFontSmall;
+        /** Head shapes, small size. */
+        protected final MusicFont headMusicFontSmall;
 
         /** Global stroke for curves (slur, wedge, ending). */
         protected final Stroke curveStroke;
@@ -452,15 +450,22 @@ public abstract class SheetPainter
         public SigPainter ()
         {
             // Determine proper music fonts
-            // Standard size
-            final int large = scale.getInterline();
-            musicFontLarge = MusicFont.getBaseFont(large);
-            musicHeadFontLarge = MusicFont.getHeadFont(scale, large);
+            final Family family = sheet.getStub().getMusicFontFamily();
 
-            // Smaller size
+            // Standard (large) size
+            final int large = scale.getInterline();
+            musicFont = MusicFont.getBaseFont(family, large);
+            headMusicFont = MusicFont.getHeadFont(family, scale, large);
+
+            // Smaller size?
             final Integer small = scale.getSmallInterline();
-            musicFontSmall = (small != null) ? MusicFont.getBaseFont(small) : null;
-            musicHeadFontSmall = (small != null) ? MusicFont.getHeadFont(scale, small) : null;
+            if (small != null) {
+                musicFontSmall = MusicFont.getBaseFont(family, small);
+                headMusicFontSmall = MusicFont.getHeadFont(family, scale, small);
+            } else {
+                musicFontSmall = null;
+                headMusicFontSmall = null;
+            }
 
             {
                 // Stroke for curves (slurs, wedges and endings)
@@ -479,8 +484,165 @@ public abstract class SheetPainter
             {
                 // Stroke for ledgers
                 float width = (float) LedgerInter.DEFAULT_THICKNESS;
-                ledgerStroke = new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+                ledgerStroke = new BasicStroke(
+                        width,
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND);
             }
+        }
+
+        //--------------//
+        // getMusicFont //
+        //--------------//
+        /**
+         * Select the proper music font according to end-user font family choice.
+         *
+         * @param isHead     true for a head inter, which implies a separate font size
+         * @param smallStaff true for a small staff
+         * @return the sequence of one or several music fonts
+         */
+        private MusicFont getMusicFont (boolean isHead,
+                                        boolean smallStaff)
+        {
+            if (smallStaff) {
+                return isHead ? headMusicFontSmall : musicFontSmall;
+            } else {
+                return isHead ? headMusicFont : musicFont;
+            }
+        }
+
+        //--------------//
+        // getMusicFont //
+        //--------------//
+        private MusicFont getMusicFont (boolean isHead,
+                                        Staff staff)
+        {
+
+            return getMusicFont(isHead, (staff != null) ? staff.isSmall() : false);
+        }
+
+        //--------------//
+        // getMusicFont //
+        //--------------//
+        private MusicFont getMusicFont (Staff staff)
+        {
+            return getMusicFont(false, staff);
+        }
+
+        //--------------//
+        // getMusicFont //
+        //--------------//
+        private MusicFont getMusicFont ()
+        {
+            return getMusicFont(false, false);
+        }
+
+        //-----------//
+        // paintHalf //
+        //-----------//
+        /**
+         * Paint upper and lower parts of a symbol, if it is linked to two shared heads.
+         * Otherwise, paint it normally as a whole.
+         *
+         * @param inter  the inter to paint
+         *               (AugmentationDotInter or AlterInter)
+         * @param classe the relation class to search between inter and head
+         *               (AugmentationRelation or AlterHeadRelation)
+         */
+        private void paintHalf (Inter inter,
+                                Class<? extends Relation> classe)
+        {
+            final SIGraph sig = inter.getSig();
+
+            if (!splitMirrors() || (sig == null)) {
+                visit(inter);
+
+                return;
+            }
+
+            final List<HeadInter> heads = new ArrayList<>();
+
+            for (Relation rel : sig.getRelations(inter, classe)) {
+                Inter opposite = sig.getOppositeInter(inter, rel);
+
+                if (opposite instanceof HeadInter headInter) {
+                    heads.add(headInter);
+                }
+            }
+
+            if ((heads.size() != 2) || (heads.get(0).getMirror() != heads.get(1))) {
+                // Standard case where symbol is painted as a whole
+                visit(inter);
+            } else {
+                // Split according to linked shared heads
+                final Rectangle box = inter.getBounds();
+                final int height = box.height;
+                final Point center = inter.getCenter();
+                final Shape shape = inter.getShape();
+                final Staff staff = inter.getStaff();
+
+                MusicFont font = getMusicFont(staff);
+                ShapeSymbol symbol = font.getSymbol(shape);
+
+                if (symbol == null && font.getBackup() != null) {
+                    font = font.getBackup();
+                    symbol = font.getSymbol(shape);
+                }
+
+                if (symbol != null) {
+                    final Dimension dim = symbol.getDimension(font);
+                    final int w = dim.width;
+                    final Point2D ref = inter.getRelationCenter(); // Not always the area center
+                    final Line2D line = new Line2D.Double(
+                            ref.getX() - w,
+                            ref.getY(),
+                            ref.getX() + w,
+                            ref.getY());
+
+                    // Draw each inter half
+                    for (HeadInter h : heads) {
+                        final AbstractChordInter ch = h.getChord();
+                        final int yDir = (ch.getCenter().y > h.getCenter().y) ? (+1) : (-1);
+                        final Path2D p = new Path2D.Double();
+                        p.append(line, false);
+                        p.lineTo(line.getX2(), line.getY2() + (yDir * height));
+                        p.lineTo(line.getX1(), line.getY1() + (yDir * height));
+                        p.closePath();
+
+                        final java.awt.Shape oldClip = g.getClip();
+                        g.clip(p);
+
+                        setColor(ch);
+                        symbol.paintSymbol(g, font, center, AREA_CENTER);
+
+                        g.setClip(oldClip);
+                    }
+                }
+            }
+        }
+
+        //-----------//
+        // paintWord //
+        //-----------//
+        protected void paintWord (WordInter word,
+                                  FontInfo lineMeanFont)
+        {
+            if (word.getValue().trim().isEmpty()) {
+                return;
+            }
+
+            if (lineMeanFont == null) {
+                logger.warn("No font information for {}", word);
+
+                return;
+            }
+
+            Font font = new TextFont(lineMeanFont);
+            FontRenderContext frc = g.getFontRenderContext();
+            TextLayout layout = new TextLayout(word.getValue(), font, frc);
+            setColor(word);
+
+            paint(layout, word.getLocation(), BASELINE_LEFT);
         }
 
         //---------//
@@ -501,6 +663,26 @@ public abstract class SheetPainter
                 }
             }
         }
+
+        //----------//
+        // setColor //
+        //----------//
+        /**
+         * Use color adapted to current inter and global viewing parameters.
+         *
+         * @param inter the interpretation to colorize
+         */
+        protected abstract void setColor (Inter inter);
+
+        //--------------//
+        // splitMirrors //
+        //--------------//
+        /**
+         * Tell whether shared heads are split.
+         *
+         * @return true if so
+         */
+        protected abstract boolean splitMirrors ();
 
         //-------//
         // visit //
@@ -587,14 +769,21 @@ public abstract class SheetPainter
                 // Paint the flag precisely on stem abscissa
                 StemInter stem = (StemInter) sig.getOppositeInter(flag, rels.iterator().next());
                 Point location = new Point(stem.getCenter().x, flag.getCenter().y);
-                ShapeSymbol symbol = Symbols.getSymbol(flag.getShape());
+
+                MusicFont font = getMusicFont(flag.getStaff());
+                ShapeSymbol symbol = font.getSymbol(flag.getShape());
+
+                if (symbol == null && font.getBackup() != null) {
+                    font = font.getBackup();
+                    symbol = font.getSymbol(flag.getShape());
+                }
 
                 if (symbol != null) {
-                    final MusicFont font = getMusicFont(flag.getStaff());
-                    symbol.paintSymbol(g, font, location, Alignment.MIDDLE_LEFT);
+                    symbol.paintSymbol(g, font, location, MIDDLE_LEFT);
                 } else {
                     logger.error("No symbol to paint {}", flag);
                 }
+
             }
         }
 
@@ -616,27 +805,35 @@ public abstract class SheetPainter
             setColor(arpeggiato);
 
             final Rectangle bx = arpeggiato.getBounds();
-            Point location = new Point(bx.x + (bx.width / 2), bx.y);
-            ShapeSymbol symbol = Symbols.getSymbol(arpeggiato.getShape());
+            final Point location = new Point(bx.x + (bx.width / 2), bx.y);
+
             MusicFont font = getMusicFont(arpeggiato.getStaff());
-            Dimension dim = symbol.getDimension(font);
+            ShapeSymbol symbol = font.getSymbol(arpeggiato.getShape());
 
-            bx.grow(dim.width, 0); // To avoid any clipping on x
-
-            if (clip != null) {
-                g.setClip(clip.intersection(bx));
+            if (symbol == null && font.getBackup() != null) {
+                font = font.getBackup();
+                symbol = font.getSymbol(arpeggiato.getShape());
             }
 
-            // Nb of symbols to draw, one below the other
-            int nb = (int) Math.ceil((double) bx.height / dim.height);
+            if (symbol != null) {
+                Dimension dim = symbol.getDimension(font);
+                bx.grow(dim.width, 0); // To avoid any clipping on x
 
-            for (int i = 0; i < nb; i++) {
-                symbol.paintSymbol(g, font, location, Alignment.TOP_CENTER);
-                location.y += dim.height;
-            }
+                if (clip != null) {
+                    g.setClip(clip.intersection(bx));
+                }
 
-            if (clip != null) {
-                g.setClip(clip);
+                // Nb of symbols to draw, one below the other
+                final int nb = (int) Math.ceil((double) bx.height / dim.height);
+
+                for (int i = 0; i < nb; i++) {
+                    symbol.paintSymbol(g, font, location, TOP_CENTER);
+                    location.y += dim.height;
+                }
+
+                if (clip != null) {
+                    g.setClip(clip);
+                }
             }
         }
 
@@ -675,18 +872,17 @@ public abstract class SheetPainter
         @Override
         public void visit (BraceInter brace)
         {
-            setColor(brace);
-
-            final Staff staff = brace.getStaff();
-            final MusicFont font = getMusicFont(staff);
             final Rectangle bounds = brace.getBounds();
 
             if (bounds != null) {
-                final ShapeSymbol symbol = Symbols.getSymbol(brace.getShape());
-                final TextLayout layout = font.layout(symbol,
-                                                      new Dimension(bounds.width, bounds.height));
+                setColor(brace);
+                final Staff staff = brace.getStaff();
                 final Point2D center = GeoUtil.center2D(bounds);
-                MusicFont.paint(g, layout, center, AREA_CENTER);
+                final MusicFont font = getMusicFont(staff);
+                final TextLayout layout = font.layoutShape(
+                        Shape.BRACE,
+                        new Dimension(bounds.width, bounds.height));
+                OmrFont.paint(g, layout, center, AREA_CENTER);
             }
         }
 
@@ -708,23 +904,35 @@ public abstract class SheetPainter
         {
             setColor(bracket);
 
-            final MusicFont font = getMusicFont(false);
             final BracketInter.BracketKind kind = bracket.getKind();
             final Line2D median = bracket.getMedian(); // Trunk median
             final double width = bracket.getWidth(); // Trunk width
 
+            final MusicFont font = getMusicFont();
+
             // Upper symbol part?
             if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
-                final Point2D topLeft = new Point2D.Double(median.getX1() - (width / 2),
-                                                           median.getY1());
-                OmrFont.paint(g, font.layout(SYMBOL_BRACKET_UPPER_SERIF), topLeft, BOTTOM_LEFT);
+                final TextLayout upper = font.layoutShapeByCode(Shape.BRACKET_UPPER_SERIF);
+
+                if (upper != null) {
+                    final Point2D topLeft = new Point2D.Double(
+                            median.getX1() - (width / 2),
+                            median.getY1());
+                    OmrFont.paint(g, upper, topLeft, BOTTOM_LEFT);
+                }
             }
 
             // Lower symbol part?
-            if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
-                final Point2D botLeft = new Point2D.Double(median.getX2() - (width / 2),
-                                                           median.getY2());
-                OmrFont.paint(g, font.layout(SYMBOL_BRACKET_LOWER_SERIF), botLeft, TOP_LEFT);
+            if ((kind == BracketInter.BracketKind.BOTTOM)
+                    || (kind == BracketInter.BracketKind.BOTH)) {
+                final TextLayout lower = font.layoutShapeByCode(Shape.BRACKET_LOWER_SERIF);
+
+                if (lower != null) {
+                    final Point2D botLeft = new Point2D.Double(
+                            median.getX2() - (width / 2),
+                            median.getY2());
+                    OmrFont.paint(g, lower, botLeft, TOP_LEFT);
+                }
             }
 
             // Trunk area
@@ -811,28 +1019,26 @@ public abstract class SheetPainter
                 return;
             }
 
-            setColor(inter);
+            final Rectangle bounds = inter.getBounds();
 
-            final ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-            if (symbol != null) {
+            if (bounds != null) {
+                final Point2D center = GeoUtil.center2D(bounds);
                 final Staff staff = inter.getStaff();
-                final MusicFont font;
+                setColor(inter);
 
-                if (shape.isHead()) {
-                    font = getMusicHeadFont(staff);
+                MusicFont font = getMusicFont(shape.isHead(), staff);
+                ShapeSymbol symbol = font.getSymbol(shape);
+
+                if (symbol == null && font.getBackup() != null) {
+                    font = font.getBackup();
+                    symbol = font.getSymbol(shape);
+                }
+
+                if (symbol != null) {
+                    symbol.paintSymbol(g, font, center, AREA_CENTER);
                 } else {
-                    font = getMusicFont(staff);
+                    logger.error("No symbol to paint {}", inter);
                 }
-
-                final Rectangle bounds = inter.getBounds();
-
-                if (bounds != null) {
-                    final Point2D center = GeoUtil.center2D(bounds);
-                    symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
-                }
-            } else {
-                logger.error("No symbol to paint {}", inter);
             }
         }
 
@@ -842,11 +1048,10 @@ public abstract class SheetPainter
         @Override
         public void visit (KeyAlterInter inter)
         {
-            final MusicFont font = getMusicFont(inter.getStaff());
             setColor(inter);
 
+            final Shape shape = inter.getShape();
             final Point2D center = GeoUtil.center2D(inter.getBounds());
-
             Staff staff = inter.getStaff();
 
             if (staff == null) {
@@ -854,18 +1059,17 @@ public abstract class SheetPainter
                 staff = system.getClosestStaff(center);
             }
 
-            center.setLocation(center.getX(),
-                               staff.pitchToOrdinate(center.getX(), inter.getPitch()));
+            center.setLocation(
+                    center.getX(),
+                    staff.pitchToOrdinate(center.getX(), inter.getPitch()));
 
-            final Shape shape = inter.getShape();
-            final ShapeSymbol symbol = Symbols.getSymbol(shape);
+            final MusicFont font = getMusicFont(staff);
+            final TextLayout layout = font.layoutShapeByCode(shape);
 
-            if (shape == Shape.SHARP) {
-                symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+            if (layout != null) {
+                OmrFont.paint(g, layout, center, Alignment.AREA_CENTER);
             } else {
-                Dimension dim = symbol.getDimension(font);
-                center.setLocation(center.getX(), center.getY() + dim.width); // Roughly...
-                symbol.paintSymbol(g, font, center, Alignment.BOTTOM_CENTER);
+                logger.error("No layout to paint {}", inter);
             }
         }
 
@@ -879,21 +1083,21 @@ public abstract class SheetPainter
             // But for a manual key, there are no members available, so we paint the symbol
             if (key.isManual()) {
                 if (key.isCancel()) {
-                    setColor(key);
-
-                    ShapeSymbol symbol = key.getSymbolToDraw();
-
-                    if (symbol == null) {
-                        symbol = Symbols.getSymbol(Shape.NON_DRAGGABLE);
-                    }
-
-                    final Staff staff = key.getStaff();
-                    final MusicFont font = getMusicFont(staff);
                     final Rectangle bounds = key.getBounds();
 
                     if (bounds != null) {
                         final Point2D center = GeoUtil.center2D(bounds);
-                        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+                        final Staff staff = key.getStaff();
+                        setColor(key);
+
+                        final MusicFont font = getMusicFont(staff);
+                        ShapeSymbol symbol = key.getSymbolToDraw(font);
+
+                        if (symbol == null) {
+                            symbol = font.getSymbol(Shape.NON_DRAGGABLE);
+                        }
+
+                        symbol.paintSymbol(g, font, center, AREA_CENTER);
                     }
                 } else {
                     visit((Inter) key);
@@ -950,18 +1154,17 @@ public abstract class SheetPainter
             final MusicFont font = getMusicFont(staff);
 
             // Value part
-            final ShapeSymbol symbol = Symbols.getSymbol(os.getShape());
-            final TextLayout layout = font.layout(symbol.getString());
+            final TextLayout layout = font.layoutShapeByCode(os.getShape());
             final Rectangle2D symBounds = layout.getBounds();
             final Point2D p1 = os.getLine().getP1();
-            MusicFont.paint(g, layout, p1, AREA_CENTER);
+            OmrFont.paint(g, layout, p1, AREA_CENTER);
 
             // Line (drawn from right to left, to preserve the right corner with hook)
             g.setStroke(OctaveShiftSymbol.DEFAULT_STROKE);
-            g.draw(new Line2D.Double(
-                    os.getLine().getP2(),
-                    new Point2D.Double(p1.getX() + symBounds.getWidth() / 2,
-                                       p1.getY())));
+            g.draw(
+                    new Line2D.Double(
+                            os.getLine().getP2(),
+                            new Point2D.Double(p1.getX() + symBounds.getWidth() / 2, p1.getY())));
 
             // Hook?
             final Point2D hookEnd = os.getHookCopy();
@@ -1037,18 +1240,18 @@ public abstract class SheetPainter
         {
             setColor(inter);
 
-            final ShapeSymbol symbol = new NumDenSymbol(
-                    Shape.TIME_CUSTOM,
-                    inter.getNumerator(),
-                    inter.getDenominator());
-
             final Staff staff = inter.getStaff();
-            final MusicFont font = getMusicFont(staff);
             final Rectangle bounds = inter.getBounds();
 
             if (bounds != null) {
+                final MusicFont font = getMusicFont(staff);
+                final ShapeSymbol symbol = new NumDenSymbol(
+                        Shape.TIME_CUSTOM,
+                        font.getMusicFamily(),
+                        inter.getNumerator(),
+                        inter.getDenominator());
                 final Point2D center = GeoUtil.center2D(bounds);
-                symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+                symbol.paintSymbol(g, font, center, AREA_CENTER);
             }
         }
 
@@ -1106,166 +1309,6 @@ public abstract class SheetPainter
                 FontInfo fontInfo = word.getFontInfo();
                 paintWord(word, fontInfo);
             }
-        }
-
-        //----------//
-        // setColor //
-        //----------//
-        /**
-         * Use color adapted to current inter and global viewing parameters.
-         *
-         * @param inter the interpretation to colorize
-         */
-        protected abstract void setColor (Inter inter);
-
-        //--------------//
-        // splitMirrors //
-        //--------------//
-        /**
-         * Tell whether shared heads are split.
-         *
-         * @return true if so
-         */
-        protected abstract boolean splitMirrors ();
-
-        //--------------//
-        // getMusicFont //
-        //--------------//
-        /**
-         * Select proper size of music font, according to provided staff size.
-         *
-         * @param small true for small staff
-         * @return selected music font
-         */
-        protected MusicFont getMusicFont (boolean small)
-        {
-            return small ? musicFontSmall : musicFontLarge;
-        }
-
-        //--------------//
-        // getMusicFont //
-        //--------------//
-        /**
-         * Select proper size of music font, according to provided staff.
-         *
-         * @param staff related staff
-         * @return selected music font
-         */
-        protected MusicFont getMusicFont (Staff staff)
-        {
-            return getMusicFont((staff != null) ? staff.isSmall() : false);
-        }
-
-        //------------------//
-        // getMusicHeadFont //
-        //------------------//
-        protected MusicFont getMusicHeadFont (Staff staff)
-        {
-            return getMusicHeadFont((staff != null) ? staff.isSmall() : false);
-        }
-
-        //------------------//
-        // getMusicHeadFont //
-        //------------------//
-        protected MusicFont getMusicHeadFont (boolean small)
-        {
-            return small ? musicHeadFontSmall : musicHeadFontLarge;
-        }
-
-        //-----------//
-        // paintHalf //
-        //-----------//
-        /**
-         * Paint upper and lower parts of a symbol, if it is linked to two shared heads.
-         * Otherwise, paint it normally as a whole.
-         *
-         * @param inter  the inter to paint
-         *               (AugmentationDotInter or AlterInter)
-         * @param classe the relation class to search between inter and head
-         *               (AugmentationRelation or AlterHeadRelation)
-         */
-        private void paintHalf (Inter inter,
-                                Class<? extends Relation> classe)
-        {
-            final SIGraph sig = inter.getSig();
-
-            if (!splitMirrors() || (sig == null)) {
-                visit(inter);
-
-                return;
-            }
-
-            final List<HeadInter> heads = new ArrayList<>();
-
-            for (Relation rel : sig.getRelations(inter, classe)) {
-                Inter opposite = sig.getOppositeInter(inter, rel);
-
-                if (opposite instanceof HeadInter) {
-                    heads.add((HeadInter) opposite);
-                }
-            }
-
-            if ((heads.size() != 2) || (heads.get(0).getMirror() != heads.get(1))) {
-                // Standard case where symbol is painted as a whole
-                visit(inter);
-            } else {
-                // Split according to linked shared heads
-                final Rectangle box = inter.getBounds();
-                final int height = box.height;
-                final Point center = inter.getCenter();
-                final Shape shape = inter.getShape();
-                final Staff staff = inter.getStaff();
-                final ShapeSymbol symbol = Symbols.getSymbol(shape);
-                final MusicFont font = getMusicFont(staff);
-                final Dimension dim = symbol.getDimension(font);
-                final int w = dim.width;
-                final Point2D ref = inter.getRelationCenter(); // Not always the area center
-                final Line2D line = new Line2D.Double(ref.getX() - w, ref.getY(),
-                                                      ref.getX() + w, ref.getY());
-
-                // Draw each inter half
-                for (HeadInter h : heads) {
-                    final AbstractChordInter ch = h.getChord();
-                    final int yDir = (ch.getCenter().y > h.getCenter().y) ? (+1) : (-1);
-                    final Path2D p = new Path2D.Double();
-                    p.append(line, false);
-                    p.lineTo(line.getX2(), line.getY2() + (yDir * height));
-                    p.lineTo(line.getX1(), line.getY1() + (yDir * height));
-                    p.closePath();
-
-                    final java.awt.Shape oldClip = g.getClip();
-                    g.clip(p);
-
-                    setColor(ch);
-                    symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
-
-                    g.setClip(oldClip);
-                }
-            }
-        }
-
-        //-----------//
-        // paintWord //
-        //-----------//
-        protected void paintWord (WordInter word,
-                                  FontInfo lineMeanFont)
-        {
-            if (word.getValue().trim().isEmpty()) {
-                return;
-            }
-
-            if (lineMeanFont == null) {
-                logger.warn("No font information for {}", word);
-
-                return;
-            }
-
-            Font font = new TextFont(lineMeanFont);
-            FontRenderContext frc = g.getFontRenderContext();
-            TextLayout layout = new TextLayout(word.getValue(), font, frc);
-            setColor(word);
-
-            paint(layout, word.getLocation(), BASELINE_LEFT);
         }
     }
 

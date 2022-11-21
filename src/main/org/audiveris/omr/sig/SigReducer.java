@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.EnsembleHelper;
+import org.audiveris.omr.sig.inter.FretInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -55,6 +56,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -122,6 +124,7 @@ public class SigReducer
     /** Inter classes for which overlap detection is (currently) disabled. */
     private static final Class<?>[] disabledClasses = new Class<?>[]{BeamGroupInter.class,
                                                                      LedgerInter.class,
+                                                                     SentenceInter.class,
                                                                      WedgeInter.class};
 
     /** Predicate for non-disabled overlap. */
@@ -290,7 +293,7 @@ public class SigReducer
                     sSet.add(head);
 
                     // By duration
-                    final Rational duration = AbstractNoteInter.getShapeDuration(shape);
+                    final Rational duration = shape.getNoteDuration();
                     Set<Inter> dSet = durs.get(duration);
 
                     if (dSet == null) {
@@ -344,8 +347,10 @@ public class SigReducer
                                 final HeadInter head2 = (HeadInter) h2;
 
                                 if (head2.getStems().size() == 1) {
-                                    sig.insertExclusion(h1, h2,
-                                                        Exclusion.ExclusionCause.INCOMPATIBLE);
+                                    sig.insertExclusion(
+                                            h1,
+                                            h2,
+                                            Exclusion.ExclusionCause.INCOMPATIBLE);
                                 }
                             }
                         }
@@ -471,6 +476,47 @@ public class SigReducer
                 }
             }
         }
+    }
+
+    //-------------//
+    // checkRomans //
+    //-------------//
+    /**
+     * Check overlapping roman digits and delete the shorter.
+     */
+    private int checkRomans ()
+    {
+        int modifs = 0;
+        final List<Inter> inters = sig.inters(ShapeSet.Romans.getShapes());
+        final List<FretInter> romans = new ArrayList<>();
+        for (Inter inter : inters) {
+            romans.add((FretInter) inter);
+        }
+
+        Collections.sort(romans, FretInter.byDecreasingLength);
+
+        for (int i = 0; i < romans.size(); i++) {
+            final FretInter f1 = romans.get(i);
+            final Rectangle r1 = f1.getBounds();
+            final int lg1 = f1.getSymbolString().length();
+
+            for (int j = i + 1; j < romans.size(); j++) {
+                final FretInter f2 = romans.get(j);
+                final Rectangle r2 = f2.getBounds();
+
+                if (r1.intersects(r2)) {
+                    final int lg2 = f2.getSymbolString().length();
+
+                    if (lg1 > lg2) {
+                        f2.remove();
+                        romans.remove(f2);
+                        modifs++;
+                    }
+                }
+            }
+        }
+
+        return modifs;
     }
 
     //-----------------------//
@@ -985,16 +1031,14 @@ public class SigReducer
 
         Set<Inter> deleted = new LinkedHashSet<>();
         final int maxSlurWidth = scale.toPixels(constants.maxTupletSlurWidth);
-        final List<Inter> slurs = sig.inters((Inter inter)
-                -> !inter.isRemoved()
-                           && (inter instanceof SlurInter)
-                           && (inter.getBounds().width <= maxSlurWidth));
+        final List<Inter> slurs = sig.inters(
+                (Inter inter) -> !inter.isRemoved() && (inter instanceof SlurInter) && (inter
+                .getBounds().width <= maxSlurWidth));
 
-        final List<Inter> tuplets = sig.inters((Inter inter)
-                -> !inter.isRemoved()
-                           && !inter.isImplicit()
-                           && (inter instanceof TupletInter)
-                           && (inter.isContextuallyGood()));
+        final List<Inter> tuplets = sig.inters(
+                (Inter inter) -> !inter.isRemoved() && !inter.isImplicit()
+                                         && (inter instanceof TupletInter) && (inter
+                        .isContextuallyGood()));
 
         for (Inter slurInter : slurs) {
             final SlurInter slur = (SlurInter) slurInter;
@@ -1298,7 +1342,8 @@ public class SigReducer
                             if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
                                 left.decrease(0.5);
                             }
-                        } else if (left instanceof StringSymbolInter && right instanceof WordInter) {
+                        } else if (left instanceof StringSymbolInter
+                                           && right instanceof WordInter) {
                             if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
                                 right.decrease(0.5);
                             }
@@ -1339,12 +1384,9 @@ public class SigReducer
                           Inter right)
     {
         // Special overlap case between a stem and a standard-size note head
-        if ((left instanceof StemInter
-                     && right instanceof HeadInter
-                     && !right.getShape().isSmall())
-                    || (right instanceof StemInter
-                                && left instanceof HeadInter
-                                && !left.getShape().isSmall())) {
+        if ((left instanceof StemInter && right instanceof HeadInter && !right.getShape().isSmall())
+                    || (right instanceof StemInter && left instanceof HeadInter && !left.getShape()
+                        .isSmall())) {
             return;
         }
 
@@ -2090,6 +2132,9 @@ public class SigReducer
         public int checkConsistencies ()
         {
             int modifs = 0;
+
+            modifs += checkRomans();
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkStemEndingHeads();
             deleted.addAll(contextualizeAndPurge());

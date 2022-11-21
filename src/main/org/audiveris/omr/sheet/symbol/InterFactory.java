@@ -270,7 +270,7 @@ public class InterFactory
      * Create proper inter instance(s) for provided evaluated glyph.
      * <p>
      * This method addresses only the symbols handled via a classifier.
-     * In current OMR design, this does not address:
+     * In current OMR design, this does <b>not</b> address:
      * <ul>
      * <li>Brace
      * <li>Bracket
@@ -376,7 +376,10 @@ public class InterFactory
             // They can also be used for measure number located above a multiple rest
             // around measure center.
             final MeasureNumberInter number = MeasureNumberInter.createValidAdded(
-                    glyph, shape, grade, closestStaff);
+                    glyph,
+                    shape,
+                    grade,
+                    closestStaff);
             if (number != null) {
                 return number;
             } else {
@@ -450,10 +453,8 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(ProcessingSwitch.articulations)
-                    ? ArticulationInter.createValidAdded(glyph, shape, grade, system,
-                                                         systemHeadChords)
-                    : null;
+            return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
+                    .createValidAdded(glyph, shape, grade, system, systemHeadChords) : null;
 
         // Markers
         case CODA:
@@ -524,18 +525,20 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(ProcessingSwitch.fingerings)
-                    ? new FingeringInter(glyph, shape, grade)
-                    : null;
+            return switches.getValue(ProcessingSwitch.fingerings) ? new FingeringInter(
+                    glyph,
+                    shape,
+                    grade) : null;
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(ProcessingSwitch.pluckings)
-                    ? new PluckingInter(glyph, shape, grade)
-                    : null;
+            return switches.getValue(ProcessingSwitch.pluckings) ? new PluckingInter(
+                    glyph,
+                    shape,
+                    grade) : null;
 
         // Romans
         case ROMAN_I:
@@ -550,8 +553,7 @@ public class InterFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return switches.getValue(ProcessingSwitch.frets)
-                    ? new FretInter(glyph, shape, grade)
+            return switches.getValue(ProcessingSwitch.frets) ? new FretInter(glyph, shape, grade)
                     : null;
 
         // Others
@@ -584,9 +586,12 @@ public class InterFactory
             }
         }
 
-        Collections.sort(complexes, (d1, d2) -> Integer.compare(
-                d2.getSymbolString().length(),
-                d1.getSymbolString().length()) // Sort by decreasing length
+        Collections.sort(
+                complexes,
+                (d1,
+                 d2) -> Integer.compare(
+                         d2.getSymbolString().length(),
+                         d1.getSymbolString().length()) // Sort by decreasing length
         );
 
         for (DynamicsInter complex : complexes) {
@@ -607,9 +612,11 @@ public class InterFactory
     {
         // Retrieve all time inters (outside staff headers)
         final List<Inter> systemTimes = sig.inters(
-                new Class[]{TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-                            TimeCustomInter.class, // User modifiable combo 6/8
-                            TimeNumberInter.class}); // Partial symbol like 6 or 8
+                new Class[]
+                {
+                        TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+                        TimeCustomInter.class, // User modifiable combo 6/8
+                        TimeNumberInter.class }); // Partial symbol like 6 or 8
 
         final List<Inter> headerTimes = new ArrayList<>();
 
@@ -629,7 +636,8 @@ public class InterFactory
 
         // Dispatch these time inters into their containing stack
         final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
-                (s1, s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
+                (s1,
+                 s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
 
         for (Inter inter : systemTimes) {
             final MeasureStack stack = system.getStackAt(inter.getCenter());
@@ -657,7 +665,7 @@ public class InterFactory
                 final Rectangle columnBox = Inters.getBounds(times);
                 final List<Inter> neighbors = sig.inters(
                         (inter) -> inter.getBounds().intersects(columnBox)
-                                           && !(inter instanceof InterEnsemble));
+                                && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 
@@ -774,12 +782,11 @@ public class InterFactory
         // Barlines
         case THIN_BARLINE:
         case THICK_BARLINE:
-
-//            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-//                return new BarlineInter(null, shape, GRADE, null, null);
-//            } else {
+            //            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
+            //                return new BarlineInter(null, shape, GRADE, null, null);
+            //            } else {
             return new StaffBarlineInter(shape, GRADE);
-//            }
+        //            }
 
         case DOUBLE_BARLINE:
         case FINAL_BARLINE:
@@ -897,24 +904,35 @@ public class InterFactory
             return new TimeCustomInter(0, 0, GRADE);
 
         // Noteheads
-        case NOTEHEAD_CROSS:
-        case NOTEHEAD_CROSS_VOID:
-        case WHOLE_NOTE_CROSS:
-        case NOTEHEAD_DIAMOND_FILLED:
-        case NOTEHEAD_DIAMOND_VOID:
-        case WHOLE_NOTE_DIAMOND:
-        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-        case NOTEHEAD_TRIANGLE_DOWN_VOID:
-        case WHOLE_NOTE_TRIANGLE_DOWN:
-        case NOTEHEAD_CIRCLE_X:
-        case WHOLE_NOTE_CIRCLE_X:
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
         case BREVE:
         case WHOLE_NOTE:
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_BLACK:
+
+        case BREVE_SMALL:
         case WHOLE_NOTE_SMALL:
+        case NOTEHEAD_VOID_SMALL:
+        case NOTEHEAD_BLACK_SMALL:
+
+        case BREVE_CROSS:
+        case WHOLE_NOTE_CROSS:
+        case NOTEHEAD_CROSS_VOID:
+        case NOTEHEAD_CROSS:
+
+        case BREVE_DIAMOND:
+        case WHOLE_NOTE_DIAMOND:
+        case NOTEHEAD_DIAMOND_VOID:
+        case NOTEHEAD_DIAMOND_FILLED:
+
+        case BREVE_TRIANGLE_DOWN:
+        case WHOLE_NOTE_TRIANGLE_DOWN:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+
+        case BREVE_CIRCLE_X:
+        case WHOLE_NOTE_CIRCLE_X:
+        case NOTEHEAD_CIRCLE_X_VOID:
+        case NOTEHEAD_CIRCLE_X:
             return new HeadInter(null, shape, GRADE, null, null);
 
         case AUGMENTATION_DOT:

@@ -23,6 +23,7 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -39,42 +40,27 @@ public class NumDenSymbol
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final int[] numCodes;
+    private final int numerator;
 
-    private final int[] denCodes;
+    private final int denominator;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NumDenSymbol object.
      *
      * @param shape       the related shape
-     * @param numerator   the numerator value (not code)
-     * @param denominator the denominator value (not code)
+     * @param family      the musicFont family
+     * @param numerator   the numerator value
+     * @param denominator the denominator value
      */
     public NumDenSymbol (Shape shape,
+                         Family family,
                          int numerator,
                          int denominator)
     {
-        this(shape,
-             Symbols.numberCodes(numerator),
-             Symbols.numberCodes(denominator));
-    }
-
-    /**
-     * Creates a new NumDenSymbol object.
-     *
-     * @param shape    the related shape
-     * @param numCodes the numerator codes
-     * @param denCodes the denominator codes
-     */
-    public NumDenSymbol (Shape shape,
-                         int[] numCodes,
-                         int[] denCodes)
-    {
-
-        super(shape);
-        this.numCodes = numCodes;
-        this.denCodes = denCodes;
+        super(shape, family);
+        this.numerator = numerator;
+        this.denominator = denominator;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -84,10 +70,14 @@ public class NumDenSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams(font, numCodes, denCodes);
+        final MyParams p = new MyParams();
 
-        Rectangle2D numRect = p.numLayout.getBounds();
-        Rectangle2D denRect = p.denLayout.getBounds();
+        p.numLayout = font.layoutNumberByCode(numerator);
+        p.denLayout = font.layoutNumberByCode(denominator);
+        p.dy = 2 * font.getStaffInterline();
+
+        final Rectangle2D numRect = p.numLayout.getBounds();
+        final Rectangle2D denRect = p.denLayout.getBounds();
         p.rect = new Rectangle2D.Double(0,
                                         0,
                                         Math.max(numRect.getWidth(), denRect.getWidth()),
@@ -123,19 +113,10 @@ public class NumDenSymbol
             extends Params
     {
 
-        final double dy;
+        double dy;
 
-        final TextLayout numLayout;
+        TextLayout numLayout;
 
-        final TextLayout denLayout;
-
-        MyParams (MusicFont font,
-                  int[] numCodes,
-                  int[] denCodes)
-        {
-            dy = 2 * font.getStaffInterline();
-            numLayout = font.layout(numCodes);
-            denLayout = font.layout(denCodes);
-        }
+        TextLayout denLayout;
     }
 }

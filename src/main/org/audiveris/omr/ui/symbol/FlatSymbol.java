@@ -22,9 +22,9 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.AlterInter;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -44,13 +44,13 @@ public class FlatSymbol
     /**
      * Creates a new FlatSymbol object.
      *
-     * @param shape the precise shape (FLAT or DOUBLE_FLAT)
-     * @param codes the codes for MusicFont characters
+     * @param shape  the precise shape (FLAT or DOUBLE_FLAT)
+     * @param family the musicFont family
      */
     public FlatSymbol (Shape shape,
-                       int... codes)
+                       Family family)
     {
-        super(shape, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public class FlatSymbol
     protected Params getParams (MusicFont font)
     {
         final Params p = new Params();
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
         p.rect = p.layout.getBounds();
 
         // Offset from area center to flat 'head' center.
@@ -94,8 +94,8 @@ public class FlatSymbol
                           Point2D location,
                           Alignment alignment)
     {
-        final Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-        PointUtil.subtraction(loc, p.offset);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        ///loc = PointUtil.addition(loc, p.offset);
         OmrFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 }

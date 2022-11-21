@@ -45,6 +45,8 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -674,8 +676,7 @@ public class SampleBrowser
     {
         logger.debug("SampleBrowser. 3/ready");
 
-        frame.addWindowListener(
-                new WindowAdapter()
+        frame.addWindowListener(new WindowAdapter()
         {
             @Override
             public void windowClosing (WindowEvent e)
@@ -1097,8 +1098,7 @@ public class SampleBrowser
             setPreferredSize(new Dimension(180, 200));
 
             // To be informed of mouse (de)selections (not programmatic)
-            list.addListSelectionListener(
-                    new ListSelectionListener()
+            list.addListSelectionListener(new ListSelectionListener()
             {
                 @Override
                 public void valueChanged (ListSelectionEvent e)
@@ -1110,8 +1110,7 @@ public class SampleBrowser
             });
 
             // Same action whatever the subclass: select all items
-            selectAll.addActionListener(
-                    new ActionListener()
+            selectAll.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -1121,8 +1120,7 @@ public class SampleBrowser
             });
 
             // Same action whatever the subclass: deselect all items
-            cancelAll.addActionListener(
-                    new ActionListener()
+            cancelAll.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -1242,7 +1240,13 @@ public class SampleBrowser
 
             setFont(list.getFont());
             setText(shape.toString());
-            setIcon(new FixedWidthIcon(shape.getDecoratedSymbol()));
+
+            final ShapeSymbol symbol = shape.getDecoratedSymbol(MusicFont.BACKUP_FAMILY);
+            if (symbol != null) {
+                setIcon(new FixedWidthIcon(symbol));
+            } else {
+                logger.warn("Needed symbol for shape {} in {}", shape, MusicFont.BACKUP_FAMILY);
+            }
 
             return this;
         }

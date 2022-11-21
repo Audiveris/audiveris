@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -45,6 +43,7 @@ import org.audiveris.omr.sheet.ui.ImageView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.ScrollImageView;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -55,6 +54,8 @@ import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -116,6 +117,8 @@ public class SymbolsFilter
      * For not good inters (some "weak" inters have already survived the first REDUCTION step)
      * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
      * thus compete for valuable compounds.
+     * <p>
+     * We also keep 1-letter words, since they might be symbols.
      *
      * @param optionalsMap (output) all weak glyphs gathered per system
      */
@@ -220,15 +223,10 @@ public class SymbolsFilter
                 0.5,
                 "Margin erased above & below staff header area");
 
-        private final Constant.Integer minWordLength = new Constant.Integer(
+        private final Constant.Integer maxSymbolLength = new Constant.Integer(
                 "letter count",
-                4,
-                "Minimum number of chars in a sentence word");
-
-        private final Constant.Integer minSentenceLength = new Constant.Integer(
-                "letter count",
-                10,
-                "Minimum number of chars in a sentence");
+                3,
+                "Maximum number of chars for a word to be checked as a symbol");
     }
 
     //----------------//
@@ -286,8 +284,7 @@ public class SymbolsFilter
          */
         public void eraseInters (Map<SystemInfo, List<Glyph>> weaksMap)
         {
-            final int minWordLength = constants.minWordLength.getValue();
-            final int minSentenceLength = constants.minSentenceLength.getValue();
+            final int maxSymbolLength = constants.maxSymbolLength.getValue();
 
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
@@ -308,28 +305,24 @@ public class SymbolsFilter
                         continue;
                     }
 
+                    // Check short words
+                    if (inter instanceof WordInter word) {
+                        if (word.getValue().length() <= maxSymbolLength) {
+                            continue;
+                        }
+                    }
+
                     // Members are handled via their ensemble
-                    if (inter.getEnsemble() != null) {
+                    // Except for beams and words
+                    if ((inter.getEnsemble() != null)
+                                && !(inter instanceof AbstractBeamInter)
+                                && !(inter instanceof WordInter)) {
                         continue;
                     }
 
-                    // Special case for sentences of only very small words: they are not erased
-                    // since they might be mistaken for text-like symbols
+                    // Sentences are handled via their words
                     if (inter instanceof SentenceInter) {
-                        final SentenceInter sentence = (SentenceInter) inter;
-                        int maxWordLength = 0;
-                        int sentenceLength = 0;
-
-                        for (Inter iw : sentence.getMembers()) {
-                            final WordInter word = (WordInter) iw;
-                            final int wordLength = word.getValue().length();
-                            maxWordLength = Math.max(maxWordLength, wordLength);
-                            sentenceLength += wordLength;
-                        }
-
-                        if ((sentenceLength < minSentenceLength) && (maxWordLength < minWordLength)) {
-                            continue;
-                        }
+                        continue;
                     }
 
                     if (canHide(inter)) {

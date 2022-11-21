@@ -22,8 +22,8 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.math.GeoUtil.center;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -44,17 +44,18 @@ import java.awt.geom.Rectangle2D;
 public class RepeatBarSymbol
         extends ShapeSymbol
 {
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Code for REPEAT_TWO_BARS/REPEAT_FOUR_BARS chosen shape. */
-    private final int code;
-
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Create a <code>RepeatBarSymbol</code> object.
+     *
+     * @param shape  REPEAT_TWO_BARS, REPEAT_FOUR_BARS
+     * @param family the selected MusicFont family
+     */
     public RepeatBarSymbol (Shape shape,
-                            int code)
+                            Family family)
     {
-        super(shape);
-        this.code = code;
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -64,7 +65,9 @@ public class RepeatBarSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams(font, code);
+        MyParams p = new MyParams();
+        p.layout = font.layoutShapeByCode(shape);
+        p.barlineLayout = font.layoutShapeByCode(Shape.THIN_BARLINE);
 
         Rectangle2D repeatRect = p.layout.getBounds();
         Rectangle2D barlineRect = p.barlineLayout.getBounds();
@@ -104,13 +107,6 @@ public class RepeatBarSymbol
         // layout for repeat symbol
         // rect for (repeat + barline) bounds
         //
-        final TextLayout barlineLayout; // For barline
-
-        MyParams (MusicFont font,
-                  int code)
-        {
-            layout = font.layout(code);
-            barlineLayout = font.layout(Symbols.CODE_THIN_BARLINE);
-        }
+        TextLayout barlineLayout; // For barline
     }
 }

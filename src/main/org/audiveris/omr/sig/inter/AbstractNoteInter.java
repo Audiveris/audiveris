@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -36,8 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.util.EnumMap;
-import java.util.Map;
 
 /**
  * Class <code>AbstractNoteInter</code> is an abstract base for all notes interpretations,
@@ -51,12 +48,6 @@ public abstract class AbstractNoteInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractNoteInter.class);
-
-    /** The quarter duration value. */
-    public static final Rational QUARTER_DURATION = new Rational(1, 4);
-
-    /** All shape-based intrinsic durations. */
-    private static final Map<Shape, Rational> shapeDurations = buildShapeDurations();
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
@@ -293,73 +284,5 @@ public abstract class AbstractNoteInter
         }
 
         super.remove(extensive);
-    }
-
-    //------------------//
-    // getShapeDuration //
-    //------------------//
-    /**
-     * Report the duration indicated by the shape of the note or rest
-     * (regardless of any beam, flag, dot or tuplet).
-     *
-     * @param shape the shape of the note / rest
-     * @return the corresponding intrinsic duration
-     */
-    public static Rational getShapeDuration (Shape shape)
-    {
-        return shapeDurations.get(shape);
-    }
-
-    //---------------------//
-    // buildShapeDurations //
-    //---------------------//
-    /**
-     * Populate the map of intrinsic shape durations.
-     *
-     * @return the populated map
-     */
-    private static EnumMap<Shape, Rational> buildShapeDurations ()
-    {
-        EnumMap<Shape, Rational> map = new EnumMap<>(Shape.class);
-
-        map.put(Shape.LONG_REST, new Rational(4, 1)); // 4 measures
-
-        map.put(Shape.BREVE_REST, new Rational(2, 1)); // 2 measures
-        map.put(Shape.BREVE, new Rational(2, 1));
-
-        map.put(Shape.WHOLE_REST, Rational.ONE); // 1 measure, unless partialWholeRests is on
-        map.put(Shape.WHOLE_NOTE, Rational.ONE);
-        map.put(Shape.WHOLE_NOTE_DIAMOND, Rational.ONE);
-        map.put(Shape.WHOLE_NOTE_CROSS, Rational.ONE);
-        map.put(Shape.WHOLE_NOTE_TRIANGLE_DOWN, Rational.ONE);
-        map.put(Shape.WHOLE_NOTE_CIRCLE_X, Rational.ONE);
-
-        map.put(Shape.HALF_REST, new Rational(1, 2));
-        map.put(Shape.NOTEHEAD_VOID, new Rational(1, 2));
-        map.put(Shape.NOTEHEAD_VOID_SMALL, new Rational(1, 2));
-        map.put(Shape.NOTEHEAD_DIAMOND_VOID, new Rational(1, 2));
-        map.put(Shape.NOTEHEAD_CROSS_VOID, new Rational(1, 2));
-        map.put(Shape.NOTEHEAD_TRIANGLE_DOWN_VOID, new Rational(1, 2));
-
-        map.put(Shape.QUARTER_REST, QUARTER_DURATION);
-        map.put(Shape.NOTEHEAD_CROSS, QUARTER_DURATION);
-        map.put(Shape.NOTEHEAD_DIAMOND_FILLED, QUARTER_DURATION);
-        map.put(Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED, QUARTER_DURATION);
-        map.put(Shape.NOTEHEAD_CIRCLE_X, QUARTER_DURATION);
-
-        map.put(Shape.NOTEHEAD_BLACK, QUARTER_DURATION);
-        map.put(Shape.NOTEHEAD_BLACK_SMALL, QUARTER_DURATION);
-
-        map.put(Shape.EIGHTH_REST, new Rational(1, 8));
-
-        map.put(Shape.ONE_16TH_REST, new Rational(1, 16));
-
-        map.put(Shape.ONE_32ND_REST, new Rational(1, 32));
-
-        map.put(Shape.ONE_64TH_REST, new Rational(1, 64));
-
-        map.put(Shape.ONE_128TH_REST, new Rational(1, 128));
-
-        return map;
     }
 }

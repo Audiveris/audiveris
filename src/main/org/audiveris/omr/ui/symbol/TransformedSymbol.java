@@ -22,17 +22,12 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
-import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 
 /**
  * Class <code>TransformedSymbol</code> displays a baseShape symbol with AffineTransform.
- * <p>
- * NOTA: This class is no longer needed since we moved to Bravura font.
- * It is kept only for potential reuse.
  *
  * @author Hervé Bitteur
  */
@@ -41,23 +36,29 @@ public class TransformedSymbol
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Proper transformation */
+    /** The root shape, before transformation. */
+    private final Shape root;
+
+    /** Proper transformation. */
     private final AffineTransform at;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TransformedSymbol object.
      *
-     * @param shape the related shape
-     * @param at    the AffineTransform to apply
-     * @param codes the codes for MusicFont characters
+     * @param shape  the related shape (after transformation)
+     * @param root   the shape used as root (before transformation)
+     * @param at     the AffineTransform to apply
+     * @param family the musicFont family
      */
     public TransformedSymbol (Shape shape,
+                              Shape root,
                               AffineTransform at,
-                              int... codes)
+                              Family family)
     {
 
-        super(shape, codes);
+        super(shape, family);
+        this.root = root;
         this.at = at;
     }
 
@@ -70,22 +71,9 @@ public class TransformedSymbol
     {
         Params p = new Params();
 
-        p.layout = font.layout(getString(), at);
+        p.layout = font.layoutShapeByCode(root, at);
         p.rect = p.layout.getBounds();
 
         return p;
     }
-//
-//    //-------//
-//    // paint //
-//    //-------//
-//    @Override
-//    protected void paint (Graphics2D g,
-//                          Params p,
-//                          Point2D location,
-//                          Alignment alignment)
-//    {
-//        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-//        MusicFont.paint(g, p.layout, loc, TOP_LEFT);
-//    }
 }

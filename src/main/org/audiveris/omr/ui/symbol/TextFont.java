@@ -35,7 +35,7 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class <code>TextFont</code> is meant to simplify the use of text font for pieces of text
- * such as titles, directions, lyrics, etc.
+ * such as titles, directions, lyrics, as well as symbols for fingering, plucking, frets.
  *
  * @author Hervé Bitteur
  */
@@ -48,15 +48,15 @@ public class TextFont
 
     private static final Logger logger = LoggerFactory.getLogger(TextFont.class);
 
-    /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
+    /** Ratio from a 300 DPI scan to font point-size (72 pt/inch). */
     public static final float TO_POINT = 72f / 300f;
 
-    /** The base font used for text entities */
-    public static final TextFont baseTextFont = new TextFont(
-            constants.defaultTextFontSize.getValue());
+    /** Name of the chosen underlying text font. */
+    private static final String TEXT_FONT_NAME = constants.defaultTextFontName.getValue();
 
-    /** Name of the chosen underlying text font */
-    private static final String fontName = constants.defaultTextFontName.getValue();
+    /** The base font used for text entities. */
+    public static final TextFont TEXT_FONT_BASE = new TextFont(
+            constants.defaultTextFontSize.getValue());
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -72,7 +72,7 @@ public class TextFont
                      int style,
                      int size)
     {
-        super(fontName, style, size);
+        super(fontName, null, style, size);
     }
 
     /**
@@ -82,20 +82,20 @@ public class TextFont
      */
     public TextFont (FontInfo info)
     {
-        this(
-                info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
-                (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
-                info.pointsize);
+        this(info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+             (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
+             info.pointsize);
     }
 
     /**
-     * Creates a new TextFont object.
+     * Creates a new TextFont object of provided point size, with default font name
+     * and plain style.
      *
      * @param size the point size of the <code>Font</code>
      */
     public TextFont (float size)
     {
-        super(fontName, Font.PLAIN, size);
+        super(TEXT_FONT_NAME, null, Font.PLAIN, size);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

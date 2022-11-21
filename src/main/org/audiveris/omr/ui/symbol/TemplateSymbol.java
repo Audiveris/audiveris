@@ -24,6 +24,10 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.TemplateFactory;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -39,28 +43,27 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class TemplateSymbol
-        extends BasicSymbol
+        extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(TemplateSymbol.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Template shape. */
-    protected final Shape shape;
-
-    /** Indicate a smaller symbol. */
+    /** Indicates a smaller symbol. */
     protected final boolean isSmall;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TemplateSymbol object.
      *
-     * @param shape shape for the template
-     * @param codes the codes for MusicFont characters
+     * @param shape  shape for the template
+     * @param family the selected MusicFont family
      */
     public TemplateSymbol (Shape shape,
-                           int... codes)
+                           Family family)
     {
-        super(codes);
-        this.shape = shape;
+        super(shape, family);
         isSmall = shape.isSmall();
     }
 
@@ -86,7 +89,23 @@ public class TemplateSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        p.layout = font.layout(getString(), isSmall ? OmrFont.TRANSFORM_SMALL : null);
+
+        ShapeSymbol symbol = font.getSymbol(shape);
+
+        if (symbol == null && font.getBackup() != null) {
+            logger.debug("no symbol in TemplateSymbol for {} in family {} ...",
+                         shape, font.getMusicFamily());
+            font = font.getBackup();
+            symbol = font.getSymbol(shape);
+        }
+
+        if (symbol == null) {
+            logger.warn("no symbol in TemplateSymbol for {} in family {}",
+                        shape, font.getMusicFamily());
+        }
+
+        final Params symParams = symbol.getParams(font);
+        p.layout = symParams.layout;
 
         // Symbol rectangle
         final Rectangle2D rawSym = p.layout.getBounds();
@@ -121,18 +140,13 @@ public class TemplateSymbol
     {
         final MyParams p = (MyParams) params;
 
-        // Background
-        g.setColor(Color.RED);
-        g.fill(p.rect);
-
-        // Naked symbol
         g.setColor(Color.BLACK);
 
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//

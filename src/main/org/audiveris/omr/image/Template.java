@@ -21,19 +21,22 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.TableUtil;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -53,10 +56,13 @@ import java.util.Map.Entry;
  * There are several topics to consider in a template specification:
  * <dl>
  * <dt><b>Base shape</b></dt>
- * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and possibly their small
- * (cue) counterparts</dd>
+ * <dd>As of this writing, there are 24 head shapes, as defined by {@link ShapeSet#Heads}
+ * collection, organized by {@link HeadMotif} values.
+ * Depending upon the various active {@link ProcessingSwitch} values for the sheet at hand,
+ * some shapes can be discarded.
+ * </dd>
  * <dt><b>Size</b></dt>
- * <dd>Either standard size or small size (for cues and grace notes).</dd>
+ * <dd>Standard size vs small size (for cues and grace notes).</dd>
  * <dt><b>Lines and Stems</b></dt>
  * <dd>These regions will be neutralized in the distance table, hence the templates don't have to
  * cope with them.</dd>
@@ -79,11 +85,11 @@ public class Template
     /** Template shape. */
     private final Shape shape;
 
+    /** Font family. */
+    private final Family family;
+
     /** Scaling factor. */
     private final int pointSize;
-
-    /** Collection of key points defined for this template. */
-    private final List<PixelDistance> keyPoints;
 
     /** Template width. (perhaps larger than symbol width) */
     private final int width;
@@ -101,11 +107,15 @@ public class Template
      */
     private final Map<Anchor, Point2D> offsets = new EnumMap<>(Anchor.class);
 
+    /** Collection of key points lazily computed for this template. */
+    private List<PixelDistance> keyPoints;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Template object with a provided set of points.
      *
      * @param shape      the template specified shape
+     * @param family     the music font family
      * @param pointSize  scaling factor
      * @param width      template width
      * @param height     template height
@@ -113,6 +123,7 @@ public class Template
      * @param slimBounds symbol slim bounds WRT template bounds
      */
     public Template (Shape shape,
+                     Family family,
                      int pointSize,
                      int width,
                      int height,
@@ -120,8 +131,9 @@ public class Template
                      Rectangle slimBounds)
     {
         this.shape = shape;
+        this.family = family;
         this.pointSize = pointSize;
-        this.keyPoints = new ArrayList<>(keyPoints);
+        this.keyPoints = keyPoints != null ? new ArrayList<>(keyPoints) : null;
         this.width = width;
         this.height = height;
         this.slimBounds = slimBounds;
@@ -144,7 +156,7 @@ public class Template
             }
         }
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             vals[pix.x][pix.y] = (int) Math.round(pix.d);
         }
 
@@ -200,7 +212,7 @@ public class Template
         double weights = 0; // Sum of weights
         double total = 0; // Sum of weighted distances
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             int nx = ul.x + pix.x;
             int ny = ul.y + pix.y;
 
@@ -213,8 +225,8 @@ public class Template
                     // pix.d < 0 for expected hole, expected negative distance to nearest foreground
                     // pix.d == 0 for expected foreground, 0 distance
                     // pix.d > 0 for expected background, expected distance to nearest foreground
-                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight
-                            : holeWeight);
+                    double weight = (pix.d == 0) ? foreWeight
+                            : ((pix.d > 0) ? backWeight : holeWeight);
                     double expected = (pix.d == 0) ? 0 : 1;
                     double actual = (actualDist == 0) ? 0 : 1;
                     double dist = Math.abs(actual - expected);
@@ -259,7 +271,7 @@ public class Template
         int expectedHoles = 0; // Expected number of white pixels in hole
         int actualHoles = 0; // Actual number of white pixels in hole
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             int nx = ul.x + pix.x;
             int ny = ul.y + pix.y;
 
@@ -327,6 +339,14 @@ public class Template
         return new Rectangle2D.Double(x - offset.getX(), y - offset.getY(), width, height);
     }
 
+    //-----------//
+    // getFamily //
+    //-----------//
+    public Family getFamily ()
+    {
+        return family;
+    }
+
     //---------------------//
     // getForegroundPixels //
     //---------------------//
@@ -344,7 +364,7 @@ public class Template
         final int imgHeight = image.getHeight();
         final List<Point> fores = new ArrayList<>();
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             if (pix.d != 0) {
                 continue;
             }
@@ -438,7 +458,12 @@ public class Template
      */
     public List<PixelDistance> getKeyPoints ()
     {
-        return Collections.unmodifiableList(keyPoints);
+
+        if (keyPoints == null) {
+            keyPoints = TemplateFactory.retrieveKeyPoints(shape, family, pointSize);
+        }
+
+        return keyPoints;
     }
 
     //-----------//
@@ -560,67 +585,6 @@ public class Template
         return width;
     }
 
-    //-----------//
-    // putOffset //
-    //-----------//
-    @Override
-    public final void putOffset (Anchor anchor,
-                                 double dx,
-                                 double dy)
-    {
-        offsets.put(anchor, new Point2D.Double(dx, dy));
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
-
-        sb.append(shape);
-
-        sb.append(" w:").append(width).append(",h:").append(height);
-        sb.append(" keyPoints:").append(keyPoints.size());
-
-        if ((slimBounds.width != width) || (slimBounds.height != height)) {
-            sb.append("\n slim:").append(slimBounds);
-        }
-
-        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
-            final Point2D offset = entry.getValue();
-            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
-        }
-
-        return sb.append("}").toString();
-    }
-
-    //-----------//
-    // upperLeft //
-    //-----------//
-    /**
-     * Report template upper-left location, knowing anchor location.
-     *
-     * @param x      pivot abscissa in image
-     * @param y      pivot ordinate in image
-     * @param anchor chosen anchor
-     * @return template upper-left corner in image
-     */
-    private Point upperLeft (int x,
-                             int y,
-                             Anchor anchor)
-    {
-        // Offset to apply to location?
-        if (anchor != null) {
-            final Point offset = getOffset(anchor);
-
-            return new Point(x - offset.x, y - offset.y);
-        }
-
-        return new Point(x, y);
-    }
-
     //----------//
     // impactOf //
     //----------//
@@ -661,6 +625,17 @@ public class Template
         return constants.maxDistanceLow.getValue();
     }
 
+    //-----------//
+    // putOffset //
+    //-----------//
+    @Override
+    public final void putOffset (Anchor anchor,
+                                 double dx,
+                                 double dy)
+    {
+        offsets.put(anchor, new Point2D.Double(dx, dy));
+    }
+
     /**
      * Report the really bad distance, used to stop any matching test.
      *
@@ -672,6 +647,64 @@ public class Template
     public static double reallyBadDistance ()
     {
         return constants.reallyBadDistance.getValue();
+    }
+
+    //-------------------//
+    // retrieveKeyPoints //
+    //-------------------//
+    private static void retrieveKeyPoints ()
+    {
+        // TO BE IMPLEMENTED...
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
+
+        sb.append(shape);
+
+        sb.append(" w:").append(width).append(",h:").append(height);
+        sb.append(" keyPoints:").append(keyPoints != null ? keyPoints.size() : null);
+
+        if ((slimBounds.width != width) || (slimBounds.height != height)) {
+            sb.append("\n slim:").append(slimBounds);
+        }
+//
+//        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
+//            final Point2D offset = entry.getValue();
+//            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
+//        }
+//
+        return sb.append("}").toString();
+    }
+
+    //-----------//
+    // upperLeft //
+    //-----------//
+    /**
+     * Report template upper-left location, knowing anchor location.
+     *
+     * @param x      pivot abscissa in image
+     * @param y      pivot ordinate in image
+     * @param anchor chosen anchor
+     * @return template upper-left corner in image
+     */
+    private Point upperLeft (int x,
+                             int y,
+                             Anchor anchor)
+    {
+        // Offset to apply to location?
+        if (anchor != null) {
+            final Point offset = getOffset(anchor);
+
+            return new Point(x - offset.x, y - offset.y);
+        }
+
+        return new Point(x, y);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

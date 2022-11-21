@@ -23,6 +23,8 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 
+import java.util.EnumSet;
+
 /**
  * Class <code>ProcessingSwitch</code> is the enumeration of all possible processing
  * switches.
@@ -55,9 +57,7 @@ public enum ProcessingSwitch
     pluckings(ProcessingSwitches.constants.pluckings),
     lyrics(ProcessingSwitches.constants.lyrics),
     lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
-    smallBlackHeads(ProcessingSwitches.constants.smallBlackHeads),
-    smallVoidHeads(ProcessingSwitches.constants.smallVoidHeads),
-    smallWholeHeads(ProcessingSwitches.constants.smallWholeHeads),
+    smallHeads(ProcessingSwitches.constants.smallHeads),
     crossHeads(ProcessingSwitches.constants.crossHeads),
     implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
     sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
@@ -65,8 +65,13 @@ public enum ProcessingSwitch
     oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
     drumNotation(ProcessingSwitches.constants.drumNotation),
     partialWholeRests(ProcessingSwitches.constants.partialWholeRests),
-    multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords);
-    
+    multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords),
+    //
+    // OBSOLETE SWITCHES FOLLOW
+    //
+    smallBlackHeads(null),
+    smallVoidHeads(null),
+    smallWholeHeads(null);
 
     /** Underlying boolean constant. */
     private final Constant.Boolean constant;
@@ -95,4 +100,16 @@ public enum ProcessingSwitch
     {
         return constant;
     }
+
+    /**
+     * The switches currently supported.
+     */
+    public static EnumSet<ProcessingSwitch> supportedValues
+            = EnumSet.range(poorInputMode, multiWholeHeadChords);
+
+    /**
+     * The switches now obsolete.
+     */
+    public static EnumSet<ProcessingSwitch> obsoleteValues
+            = EnumSet.range(smallBlackHeads, smallWholeHeads);
 }

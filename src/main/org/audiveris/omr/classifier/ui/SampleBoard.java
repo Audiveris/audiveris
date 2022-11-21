@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SheetContainer.Descriptor;
@@ -35,12 +32,16 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ApplicationAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Dimension;
 
@@ -166,7 +167,7 @@ public class SampleBoard
 
         if (shape != null) {
             shapeField.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol());
+            shapeIcon.setIcon(shape.getDecoratedSymbol(Family.Bravura));
         } else {
             shapeField.setText("");
             shapeIcon.setIcon(null);

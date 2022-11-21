@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -206,11 +205,13 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(this, (ActionEvent e) -> {
-                JMenuItem source = (JMenuItem) e.getSource();
-                Shape shape = Shape.valueOf(source.getText());
-                selectBest(shape);
-            });
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFontFamily(),
+                                  this,
+                                  (ActionEvent e) -> {
+                                      JMenuItem source = (JMenuItem) e.getSource();
+                                      Shape shape = Shape.valueOf(source.getText());
+                                      selectBest(shape);
+                                  });
         }
     }
 }

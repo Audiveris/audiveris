@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 /**
  * Class <code>KeyFlatSymbol</code> displays a Key Signature symbol.
@@ -36,12 +37,14 @@ public class KeyFlatSymbol
     /**
      * Creates a new KeyFlatSymbol object.
      *
-     * @param key   the key value: -7..-1 for flats
-     * @param shape the related shape
+     * @param key    the key value: -7..-1 for flats
+     * @param shape  the related shape
+     * @param family the selected MusicFont family
      */
     public KeyFlatSymbol (int key,
-                          Shape shape)
+                          Shape shape,
+                          Family family)
     {
-        super(key, shape, Symbols.CODE_FLAT);
+        super(key, shape, family, Shape.FLAT);
     }
 }

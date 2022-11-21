@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -40,10 +38,13 @@ import org.audiveris.omr.sheet.Scale.MusicFontScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.util.Dumping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -247,7 +248,9 @@ public class BlackHeadSizer
         logger.info("Core black head count: {} {}", core.size(), blackHeadScale);
 
         final double w = blackHeadScale.getWidthMean();
-        final MusicFontScale musicFontScale = MusicFont.buildMusicFontScale(w);
+        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFont font = MusicFont.getHeadFont(family, sheet.getScale(), 0);
+        final MusicFontScale musicFontScale = font.buildMusicFontScale(w);
         sheet.getScale().setMusicFontScale(musicFontScale);
         logger.info("{}", musicFontScale);
     }

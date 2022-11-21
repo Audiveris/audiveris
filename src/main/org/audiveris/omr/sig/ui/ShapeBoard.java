@@ -21,18 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.sheet.ProcessingSwitch;
-import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
+import static org.audiveris.omr.glyph.ShapeSet.HeadMotif.*;
+import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.SheetEditor;
@@ -48,8 +45,9 @@ import org.audiveris.omr.ui.dnd.GhostMotionAdapter;
 import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.WrapLayout;
 import org.audiveris.omr.ui.view.RubberPanel;
@@ -59,6 +57,10 @@ import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -78,6 +80,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,18 +98,23 @@ import javax.swing.SwingUtilities;
  * Class <code>ShapeBoard</code> hosts a palette of shapes for insertion and assignment of
  * inter.
  * <p>
- * Shapes are gathered and presented in separate families that are mutually exclusive.
+ * Shapes are gathered and presented in separate sets.
  * <ol>
- * <li>The <b>history</b> panel, always visible, caches the latest shapes actually used.
- * <li>The <b>global</b> panel allows to choose among shape families.
- * It is then dynamically replaced by the selected family panel.
- * <li>A <b>family</b> panel is dedicated to the shapes of the selected family.
- * The user can always quit this family panel and go back to the global panel.
+ * <li>The <b>history</b> panel, always present but perhaps empty, caches the latest shapes
+ * actually used.
+ * <li>The <b>global</b> panel allows to choose among shape sets.
+ * It is then dynamically replaced by the selected set panel.
+ * <li>A <b>set</b> panel is dedicated to the shapes of the selected set.
+ * The user can always quit this set panel and go back to the global panel.
  * </ol>
+ * User gestures:
  * <ul>
- * <li>Direct insertion is performed by drag and drop to the target score view or sheet view</li>
- * <li>Assignment from an existing glyph is performed by a double-click</li>
+ * <li>Direct insertion is performed by<b> drag n' drop</b> from ShapeBoard (history panel or set
+ * panel) to the target location in sheet view</li>
+ * <li>Assignment of the currently selected glyph is performed by a <b>double-click</b> on proper
+ * shape button (in history panel or set panel)</li>
  * </ul>
+ * Keyboard mapping:
  * <p>
  * A few 2-char strings typed by the user trigger the selection of a shape and its assignment.
  *
@@ -150,21 +158,21 @@ public class ShapeBoard
     private InterDnd dnd;
 
     /**
-     * Called-back when a family is selected:
-     * The global panel is replaced by the selected family panel.
+     * Called-back when a set is selected:
+     * The global panel is replaced by the selected set panel.
      */
     private final ActionListener setListener = (ActionEvent e) -> {
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
-        selectFamily(set);
+        selectSet(set);
     };
 
     /**
-     * Called-back when a family panel is closed:
-     * It is replaced by the global panel to allow the selection of another family.
+     * Called-back when a set panel is closed:
+     * It is replaced by the global panel to allow the selection of another set.
      */
     private final ActionListener closeListener = (ActionEvent e) -> {
-        closeFamily();
+        closeSet();
     };
 
     /**
@@ -190,14 +198,14 @@ public class ShapeBoard
     /** The global panel. */
     private final Panel globalPanel;
 
-    /** Map of family panels, indexed by shapeSet. */
-    private final Map<ShapeSet, Panel> familyPanels = new HashMap<>();
+    /** Map of set panels, indexed by shapeSet. */
+    private final Map<ShapeSet, Panel> setPanels = new HashMap<>();
 
     /** History of recently used shapes. */
     private final ShapeHistory shapeHistory;
 
-    /** Current family panel. */
-    private Panel familyPanel;
+    /** Current set panel. */
+    private Panel currentSetPanel;
 
     /** GlassPane. */
     private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
@@ -221,6 +229,9 @@ public class ShapeBoard
 
     /** Cached list of HeadsAndDot shapes, if any. To trigger board update only when needed. */
     private List<Shape> cachedHeads;
+
+    /** Cached font family, if any. To trigger board symbols update only when needed. */
+    private Family cachedFamily;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -305,7 +316,7 @@ public class ShapeBoard
             shapeHistory.panel.setSize(space, 1);
         }
 
-        for (Panel panel : familyPanels.values()) {
+        for (Panel panel : setPanels.values()) {
             if (panel.isVisible()) {
                 panel.setSize(space, 1);
             }
@@ -338,7 +349,7 @@ public class ShapeBoard
     // checkInitial //
     //--------------//
     /**
-     * Check if provided char is the initial of a shape family.
+     * Check if provided char is the initial of a shape set.
      *
      * @param c provided char
      * @return true if OK
@@ -349,17 +360,17 @@ public class ShapeBoard
             return false;
         }
 
-        closeFamily();
+        closeSet();
 
-        // First character (family)
+        // First character (set)
         ShapeSet set = setMap.get(c);
 
         if (set == null) {
             return false;
         }
 
-        logger.debug("family:{}", set.getName());
-        selectFamily(set);
+        logger.debug("set:{}", set.getName());
+        selectSet(set);
 
         return true;
     }
@@ -389,7 +400,7 @@ public class ShapeBoard
                     shapeHistory.setFocus();
                 }
             } else {
-                closeFamily();
+                closeSet();
             }
         }
     }
@@ -461,20 +472,26 @@ public class ShapeBoard
     //------------//
     // addButtons //
     //------------//
+    /**
+     * Add one button for every shape in provided set.
+     *
+     * @param p      the child panel to populate
+     * @param shapes the set shapes
+     */
     private void addButtons (Panel p,
                              List<Shape> shapes)
     {
         for (Shape shape : shapes) {
-            // Preference for decorated symbol
-            ShapeSymbol symbol = Symbols.getSymbol(shape, true);
+            final ShapeSymbol symbol = getDecoratedSymbol(shape);
 
             if (symbol != null) {
                 try {
                     addButton(p, new ShapeButton(symbol));
                 } catch (Exception ex) {
-                    logger.warn("No musical glyph for code: {} shape: {}",
-                                symbol.getHexaString(), shape);
+                    logger.warn("No musical glyph for shape: {}", shape, ex);
                 }
+            } else {
+                logger.warn("Panel. No button symbol for {}", shape);
             }
         }
     }
@@ -491,7 +508,9 @@ public class ShapeBoard
 
         button.addKeyListener(keyListener);
 
-        panel.add(button);
+        if (panel != null) {
+            panel.add(button);
+        }
     }
 
     //-------------//
@@ -508,74 +527,127 @@ public class ShapeBoard
     // buildAllPanels //
     //----------------//
     /**
-     * Build the global panel and populate the catalog of family panels.
+     * Build the global panel and populate the catalog of set panels.
      *
      * @return the global panel
      */
     private Panel buildAllPanels ()
     {
-        Panel panel = new Panel();
+        final Panel panel = new Panel();
         panel.setName("globalPanel");
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
         panel.setBackground(Color.LIGHT_GRAY);
 
+        setPanels.clear();
+
         for (ShapeSet set : ShapeSet.getShapeSets()) {
-            Shape rep = set.getRep();
+            final Shape rep = set.getRep(); // Representative shape for the shape set
 
             if (rep != null) {
-                JButton button = new JButton();
-                button.setIcon(rep.getDecoratedSymbol());
-                button.setName(set.getName());
-                button.addActionListener(setListener);
-                button.setBorderPainted(false);
-                final Character shortcut = reverseSetMap.get(set);
-                button.setToolTipText(set.getName() + standardized(shortcut));
-                panel.add(button);
+                final ShapeSymbol symbol = getDecoratedSymbol(rep);
 
-                // Create the child family Panel
-                final Panel childPanel = buildFamilyPanel(set);
-                familyPanels.put(set, childPanel);
+                if (symbol != null) {
+                    final ShapeButton button = new ShapeButton(symbol);
+                    button.setName(set.getName());
+                    button.addActionListener(setListener);
+                    button.setBorderPainted(false);
+
+                    final Character shortcut = reverseSetMap.get(set);
+                    button.setToolTipText(set.getName() + standardized(shortcut));
+                    panel.add(button);
+
+                    // Create the child set Panel
+                    setPanels.put(set, buildSetPanel(set));
+                } else {
+                    logger.error("GlobalPanel. No button symbol for {}", rep);
+                }
             }
         }
 
         panel.addKeyListener(keyListener);
 
+        cachedFamily = sheet.getStub().getMusicFontFamily();
+
         return panel;
     }
 
-    //------------------//
-    // buildFamilyPanel //
-    //------------------//
+    //-----------------//
+    // updateAllPanels //
+    //-----------------//
+    private void updateAllPanels ()
+    {
+        updatePanel(globalPanel);
+
+        for (Panel setPanel : setPanels.values()) {
+            updatePanel(setPanel);
+        }
+    }
+
+    //-------------//
+    // updatePanel //
+    //-------------//
+    private void updatePanel (Panel panel)
+    {
+        for (Component comp : panel.getComponents()) {
+            if (comp instanceof ShapeButton shapeButton) {
+                shapeButton.update();
+            } else if (comp instanceof Panel p) {
+                updatePanel(p);
+            }
+        }
+    }
+
+    //---------------//
+    // buildSetPanel //
+    //---------------//
     /**
-     * Build the family panel for a given set.
+     * Build the panel for a given set.
      *
      * @param set the given set of shapes
-     * @return the family panel created
+     * @return the set panel created
      */
-    private Panel buildFamilyPanel (ShapeSet set)
+    private Panel buildSetPanel (ShapeSet set)
     {
         final Panel panel = new Panel();
         panel.setName(set.getName());
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
-        // Button to close this family and return to global panel
+        // Button to close this set and return to global panel
         final JButton close = new JButton(BACK);
         close.addActionListener(closeListener);
-        close.setToolTipText("Back to all-families");
+        close.setToolTipText("Back to all-sets");
         close.setBorderPainted(false); // To avoid visual confusion with draggable items
         panel.add(close);
 
-        // Title for this family
+        // Title for this set
         panel.add(new JLabel(set.getName()));
 
         // One button (or more) per filtered shape
         final List<Shape> filtered = filteredShapes(set);
-        addButtons(panel, filtered);
 
         if (set == ShapeSet.HeadsAndDot) {
-            cachedHeads = filtered; // Keep in cache
+            cachedHeads = filtered; // Keep in cache for potential future update
+            new HeadButtons().build(panel, filtered);
+        } else if (set == ShapeSet.Barlines) {
+            new ButtonsTable(8).build(panel, filtered);
+        } else if (set == ShapeSet.ClefsAndShifts) {
+            new ButtonsTable(5).build(panel, filtered);
+        } else if (set == ShapeSet.Dynamics) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Flags) {
+            new ButtonsTable(7).build(panel, filtered);
+        } else if (set == ShapeSet.Rests) {
+            new ButtonsTable(5).build(panel, filtered);
+        } else if (set == ShapeSet.Times) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Romans) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Physicals) {
+            new ButtonsTable(4).build(panel, filtered);
+        } else {
+            addButtons(panel, filtered);
         }
 
         // Specific listener for keyboard
@@ -604,13 +676,13 @@ public class ShapeBoard
         return ShapeSet.getProcessedShapes(sheet, all);
     }
 
-    //-------------//
-    // closeFamily //
-    //-------------//
-    private void closeFamily ()
+    //----------//
+    // closeSet //
+    //----------//
+    private void closeSet ()
     {
-        if (familyPanel != null) {
-            familyPanel.setVisible(false);
+        if (currentSetPanel != null) {
+            currentSetPanel.setVisible(false);
         }
 
         globalPanel.setVisible(true);
@@ -625,16 +697,15 @@ public class ShapeBoard
     private void defineLayout ()
     {
         CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout("pref",
-                                           "pref," + Panel.getFieldInterline() + ",pref");
+        FormLayout layout = new FormLayout("pref", "pref," + Panel.getFieldInterline() + ",pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         getBody().setName("ShapeBody");
 
         builder.add(shapeHistory.panel, cst.xy(1, 1));
         builder.add(globalPanel, cst.xy(1, 3));
 
-        for (Panel sp : familyPanels.values()) {
-            builder.add(sp, cst.xy(1, 3)); // Global panel and all family panels overlap!
+        for (Panel sp : setPanels.values()) {
+            builder.add(sp, cst.xy(1, 3)); // Global panel and all set panels overlap!
             sp.setVisible(false);
         }
     }
@@ -644,40 +715,56 @@ public class ShapeBoard
     //----------------------//
     private BufferedImage getNonDraggableImage (Zoom zoom)
     {
-        int zoomedInterline = (int) Math.rint(zoom.getRatio() * sheet.getScale().getInterline());
+        final int interline = sheet.getScale().getInterline();
+        final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
+        final MusicFont.Family fontFamily = sheet.getStub().getMusicFontFamily();
 
-        return MusicFont.buildImage(Shape.NON_DRAGGABLE, zoomedInterline, true); // Decorated
+        MusicFont font = MusicFont.getBaseFont(fontFamily, zoomedInterline);
+        ShapeSymbol symbol = font.getSymbol(Shape.NON_DRAGGABLE);
+
+        if (symbol == null && font.getBackup() != null) {
+            font = font.getBackup();
+            symbol = font.getSymbol(Shape.NON_DRAGGABLE);
+        }
+
+        if (symbol == null) {
+            return null;
+        }
+
+        symbol = symbol.getDecoratedVersion();
+
+        return symbol.buildImage(font);
     }
 
-    //--------------//
-    // selectFamily //
-    //--------------//
+    //-----------//
+    // selectSet //
+    //-----------//
     /**
-     * Display the family panel dedicated to the provided ShapeSet
+     * Display the set panel dedicated to the provided ShapeSet
      *
      * @param set the provided shape set
      */
-    private void selectFamily (ShapeSet set)
+    private void selectSet (ShapeSet set)
     {
-        selectFamily(familyPanels.get(set));
+        selectSet(setPanels.get(set));
     }
 
-    //--------------//
-    // selectFamily //
-    //--------------//
+    //-----------//
+    // selectSet //
+    //-----------//
     /**
-     * Display the selected family panel.
+     * Display the selected set panel.
      *
-     * @param fPanel the provided family panel
+     * @param fPanel the provided set panel
      */
-    private void selectFamily (Panel fPanel)
+    private void selectSet (Panel fPanel)
     {
         globalPanel.setVisible(false);
 
-        familyPanel = fPanel;
-        familyPanel.setVisible(true);
+        currentSetPanel = fPanel;
+        currentSetPanel.setVisible(true);
         resizeBoard();
-        familyPanel.requestFocusInWindow();
+        currentSetPanel.requestFocusInWindow();
     }
 
     //--------------//
@@ -714,6 +801,42 @@ public class ShapeBoard
         sb.append(')');
 
         return sb.toString().toUpperCase();
+    }
+
+    //--------------------//
+    // getDecoratedSymbol //
+    //--------------------//
+    /**
+     * Report the decorated symbol in standard size for the desired shape,
+     * according to current music font preferences.
+     *
+     * @param shape the desired shape
+     * @return the symbol found, in its decorated version
+     */
+    private ShapeSymbol getDecoratedSymbol (Shape shape)
+    {
+        return shape.getSymbol(sheet.getStub().getMusicFontFamily()).getDecoratedVersion();
+    }
+
+    //------------------------//
+    // getTinyDecoratedSymbol //
+    //------------------------//
+    /**
+     * Report the tiny decorated symbol for the desired shape,
+     * according to current music font preferences.
+     *
+     * @param shape the desired shape
+     * @return the symbol found, in its tiny decorated version
+     */
+    private ShapeSymbol getTinyDecoratedSymbol (Shape shape)
+    {
+        final ShapeSymbol decoSymbol = getDecoratedSymbol(shape);
+
+        if (decoSymbol == null) {
+            return null;
+        }
+
+        return decoSymbol.getTinyVersion();
     }
 
     //---------------//
@@ -778,36 +901,145 @@ public class ShapeBoard
     // update //
     //--------//
     /**
-     * Update the filtered shapes according to current effective values of processing switches.
+     * Update ShapeBoard content.
+     * <ul>
+     * <li>A perhaps new font family for shape buttons.
+     * <li>Perhaps new filtered shapes according to effective processing switches.
+     * </ul>
      */
     @Override
     public void update ()
     {
+        final MusicFont.Family fontFamily = sheet.getStub().getMusicFontFamily();
+
+        if (fontFamily != cachedFamily) {
+            // We can update each shape button icon in situ.
+            shapeHistory.update();
+            updateAllPanels();
+            cachedFamily = fontFamily;
+        }
+
         final ShapeSet headSet = ShapeSet.HeadsAndDot;
         final List<Shape> newHeads = filteredShapes(headSet);
 
         if (!newHeads.equals(cachedHeads)) {
+            // We have to deal with addition / removal of shape buttons
             final boolean isGlobal = globalPanel.isVisible();
-            final String currentFamilyName = isGlobal ? null : familyPanel.getName();
+            final String currentSetName = isGlobal ? null : currentSetPanel.getName();
 
-            familyPanels.put(headSet, buildFamilyPanel(headSet));
+            setPanels.put(headSet, buildSetPanel(headSet));
 
             defineLayout();
 
             if (isGlobal) {
-                closeFamily();
+                closeSet();
             } else {
-                if (!headSet.getName().equals(currentFamilyName)) {
-                    selectFamily(familyPanel);
+                if (!headSet.getName().equals(currentSetName)) {
+                    selectSet(currentSetPanel);
                 } else {
-                    closeFamily();
-                    selectFamily(headSet);
+                    closeSet();
+                    selectSet(headSet);
                 }
             }
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // ButtonsTable //
+    //--------------//
+    /**
+     * Populate a panel with buttons presented in a rectangular table.
+     */
+    public class ButtonsTable
+    {
+
+        protected final int cols;
+
+        protected final Panel table = new Panel();
+
+        protected final CellConstraints cst = new CellConstraints();
+
+        /**
+         * Create the <code>ButtonsTable</code> with a maximum number of columns.
+         *
+         * @param cols the table number of columns
+         */
+        public ButtonsTable (int cols)
+        {
+            this.cols = cols;
+            table.setNoInsets();
+        }
+
+        /**
+         * Build the buttons for provided shapes.
+         *
+         * @param panel  the hosting panel
+         * @param shapes the set shapes, perhaps filtered according to processing switches
+         */
+        public void build (Panel panel,
+                           List<Shape> shapes)
+        {
+            final int rows = (int) Math.ceil((double) shapes.size() / cols);
+            final FormLayout layout = new FormLayout(colSpec(cols), rowSpec(rows));
+            final PanelBuilder builder = new PanelBuilder(layout, table);
+
+            int row = 1;
+            int col = -1;
+
+            for (Shape shape : shapes) {
+                col += 2;
+                if (col > 2 * cols) {
+                    // New line
+                    row += 2;
+                    col = 1;
+                }
+
+                final ShapeSymbol symbol = getDecoratedSymbol(shape);
+
+                if (symbol != null) {
+                    final ShapeButton button = new ShapeButton(symbol);
+                    addButton(null, button);
+                    builder.add(button, cst.xy(col, row));
+                } else {
+                    logger.warn("Panel. No button symbol for {}", shape);
+                }
+            }
+
+            panel.add(table);
+        }
+
+        protected String colSpec (int cols)
+        {
+            final StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < cols; i++) {
+                if (i != 0) {
+                    sb.append(",").append(Panel.getFieldInterval()).append(",");
+                }
+
+                sb.append("pref");
+            }
+
+            return sb.toString();
+        }
+
+        protected String rowSpec (int rows)
+        {
+            final StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < rows; i++) {
+                if (i != 0) {
+                    sb.append(",").append(Panel.getFieldInterline()).append(",");
+                }
+
+                sb.append("pref");
+            }
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -819,6 +1051,142 @@ public class ShapeBoard
                 "shapes",
                 8,
                 "Maximum number of shapes kept in history");
+    }
+
+    //-------------//
+    // HeadButtons //
+    //-------------//
+    /**
+     * The heads panel is organized as a table for better readability.
+     * <p>
+     * We use one row per head motif and one column per head duration,
+     * except for last row which contains augmentation dot and compound notes.
+     *
+     * @param panel  the containing panel
+     * @param shapes he filtered shapes to display
+     */
+    private class HeadButtons
+            extends ButtonsTable
+    {
+
+        public HeadButtons ()
+        {
+            super(5);
+        }
+
+        /**
+         * Build the buttons for heads shape.
+         *
+         * @param panel    the hosting panel
+         * @param filtered the head shapes, filtered according to processing switches
+         */
+        @Override
+        public void build (Panel panel,
+                           List<Shape> filtered)
+        {
+            final int rows = 7;
+            final FormLayout layout = new FormLayout(colSpec(cols), rowSpec(rows));
+            final PanelBuilder builder = new PanelBuilder(layout, table);
+            final EnumSet<HeadMotif> motifs = EnumSet.noneOf(HeadMotif.class);
+
+            for (Shape shape : filtered) {
+                final ShapeSymbol symbol = getTinyDecoratedSymbol(shape);
+                if (symbol == null) {
+                    logger.warn("Panel. No button symbol for {}", shape);
+                    continue;
+                }
+
+                final HeadMotif motif = shape.getHeadMotif();
+                final int row = headRow(motif);
+                final int col;
+                final Rational dur = shape.getNoteDuration();
+                if (dur != null) {
+                    col = headCol(dur);
+
+                    // Add motif label if so needed
+                    if (!motifs.contains(motif)) {
+                        builder.addLabel(motif.name(), cst.xy(1, row));
+                        motifs.add(motif);
+                    }
+                } else {
+                    col = compoundCol(shape);
+                }
+
+                final ShapeButton button = new ShapeButton(symbol);
+                addButton(null, button);
+                builder.add(button, cst.xy(col, row));
+            }
+
+            panel.add(table);
+
+        }
+
+        @Override
+        protected String colSpec (int cols)
+        {
+            final StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < cols; i++) {
+                if (i == 0) {
+                    sb.append("right:35dlu"); // Head motif here (or augmentation dot)
+                } else {
+                    sb.append(",").append(Panel.getFieldInterval()).append(",pref");
+                }
+            }
+
+            return sb.toString();
+        }
+
+        private int compoundCol (Shape shape)
+        {
+            switch (shape) {
+            case AUGMENTATION_DOT: return 1;
+            case QUARTER_NOTE_UP: return 3;
+            case QUARTER_NOTE_DOWN: return 5;
+            case HALF_NOTE_UP: return 7;
+            case HALF_NOTE_DOWN: return 9;
+            }
+
+            logger.warn("compoundCol unhandled head shape: {}", shape);
+            return -1;
+        }
+
+        private int headCol (Rational dur)
+        {
+            if (dur.equals(Rational.QUARTER)) {
+                return 3;
+            }
+            if (dur.equals(Rational.HALF)) {
+                return 5;
+            }
+            if (dur.equals(Rational.ONE)) {
+                return 7;
+            }
+            if (dur.equals(Rational.TWO)) {
+                return 9;
+            }
+
+            return -1; // To please the compiler
+        }
+
+        private int headRow (HeadMotif motif)
+        {
+            if (motif == null) {
+                return 13;
+            }
+
+            switch (motif) {
+            case oval: return 1;
+            case small: return 3;
+            case cross: return 5;
+            case diamond: return 7;
+            case triangle: return 9;
+            case circle: return 11;
+            }
+
+            logger.warn("headRow unhandled head motif: {}", motif);
+            return -1;
+        }
     }
 
     //---------------//
@@ -848,18 +1216,30 @@ public class ShapeBoard
             // Reset the motion adapter
             motionAdapter.reset();
 
-            ShapeButton button = (ShapeButton) e.getSource();
-            Shape shape = button.getShape();
+            final ShapeButton button = (ShapeButton) e.getSource();
+            final Shape shape = button.getShape();
 
-            // Set shape & image
+            // Set shape
             if (shape.isDraggable()) {
                 // Wait for drag to actually begin...
                 action = shape;
-                image = button.symbol.getTinyVersion().getIntrinsicImage();
             } else {
                 action = Shape.NON_DRAGGABLE;
-                image = Shape.NON_DRAGGABLE.getSymbol().getTinyVersion().getIntrinsicImage();
                 ((OmrGlassPane) glassPane).setInterDnd(null);
+            }
+
+            // Set image
+            final MusicFont.Family fontFamily = sheet.getStub().getMusicFontFamily();
+            MusicFont font = MusicFont.getBaseFont(fontFamily, TINY_INTERLINE);
+            ShapeSymbol symbol = font.getSymbol(action);
+
+            if (symbol == null && font.getBackup() != null) {
+                font = font.getBackup();
+                symbol = font.getSymbol(action);
+            }
+
+            if (symbol != null) {
+                image = symbol.buildImage(font);
             }
 
             super.mousePressed(e);
@@ -949,11 +1329,6 @@ public class ShapeBoard
             reset();
         }
 
-        public final void reset ()
-        {
-            prevComponent = new WeakReference<>(null);
-        }
-
         /**
          * In this specific implementation, we update the size of the shape image
          * according to the interline scale and to the display zoom of the sheet view.
@@ -998,7 +1373,7 @@ public class ShapeBoard
                                 dnd = new InterDnd(
                                         InterFactory.createManual(shape, sheet),
                                         sheet,
-                                        button.symbol);
+                                        button.getSymbol());
                             }
 
                             dnd.enteringTarget();
@@ -1032,6 +1407,60 @@ public class ShapeBoard
             } catch (Exception ex) {
                 logger.warn("mouseDragged error: {}", ex.toString(), ex);
             }
+        }
+
+        public final void reset ()
+        {
+            prevComponent = new WeakReference<>(null);
+        }
+    }
+
+    //-------------//
+    // ShapeButton //
+    //-------------//
+    /**
+     * A button dedicated to a shape.
+     */
+    public class ShapeButton
+            extends JButton
+    {
+
+        // Symbol to be passed to DnD, standard size, perhaps decorated
+        private ShapeSymbol decoSymbol;
+
+        /**
+         * Create a button for a shape.
+         *
+         * @param decoSymbol related symbol
+         */
+        public ShapeButton (ShapeSymbol decoSymbol)
+        {
+            this.decoSymbol = decoSymbol;
+
+            setIcon(decoSymbol.getTinyVersion());
+            setName(decoSymbol.getShape().toString());
+
+            final String shortcut = reverseShapeMap.get(decoSymbol.getShape());
+            setToolTipText(decoSymbol.getTip() + standardized(shortcut));
+
+            setBorderPainted(true);
+        }
+
+        public ShapeSymbol getSymbol ()
+        {
+            return decoSymbol;
+        }
+
+        public Shape getShape ()
+        {
+            return decoSymbol.getShape();
+        }
+
+        public void update ()
+        {
+            // Update decoSymbol and icon
+            decoSymbol = getDecoratedSymbol(decoSymbol.getShape());
+            setIcon(decoSymbol.getTinyVersion());
         }
     }
 
@@ -1115,46 +1544,23 @@ public class ShapeBoard
                 }
             }
         }
-    }
-
-    //-------------//
-    // ShapeButton //
-    //-------------//
-    /**
-     * A button dedicated to a shape.
-     */
-    public static class ShapeButton
-            extends JButton
-    {
 
         /**
-         * Precise symbol, since some shapes may exhibit variants.
-         * Example: slur above and slur below.
-         * <p>
-         * This non-decorated symbol will be used at drop time to shape the created inter.
+         * Update each history button according to the new font family.
          */
-        final ShapeSymbol symbol;
-
-        /**
-         * Create a button for a shape.
-         *
-         * @param symbol precise plain (non-decorated) symbol
-         */
-        public ShapeButton (ShapeSymbol symbol)
+        public void update ()
         {
-            this.symbol = symbol;
-            setIcon(symbol.getDecoratedVersion().getTinyVersion());
-            setName(symbol.getShape().toString());
+            for (Component comp : panel.getComponents()) {
+                final ShapeButton button = (ShapeButton) comp;
+                final Shape shape = button.getShape();
+                final ShapeSymbol symbol = getTinyDecoratedSymbol(shape);
 
-            final String shortcut = reverseShapeMap.get(symbol.getShape());
-            setToolTipText(symbol.getTip() + standardized(shortcut));
-
-            setBorderPainted(true);
-        }
-
-        public Shape getShape ()
-        {
-            return symbol.getShape();
+                if (symbol != null) {
+                    button.setIcon(symbol);
+                } else {
+                    logger.warn("History. No button symbol for {}", shape);
+                }
+            }
         }
     }
 }

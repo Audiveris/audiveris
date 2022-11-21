@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -391,15 +392,16 @@ public class TupletGenerator
                                          Shape shape)
     {
         // Tuplet dimension
-        MusicFont font = MusicFont.getBaseFont(scale.getInterline());
-        TextLayout layout = font.layout(shape);
-        Dimension dim = layout.getBounds().getBounds().getSize();
+        final Family family = system.getSheet().getStub().getMusicFontFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, scale.getInterline());
+        final TextLayout layout = font.layoutShapeByCode(shape);
+        final Dimension dim = layout.getBounds().getBounds().getSize();
 
         // Vertical direction from group to tuplet, based on group tails side
-        TreeMap<Integer, List<AbstractChordInter>> dirs = new TreeMap<>();
+        final TreeMap<Integer, List<AbstractChordInter>> dirs = new TreeMap<>();
 
         for (AbstractChordInter ch : group) {
-            int dir = ch.getStemDir();
+            final int dir = ch.getStemDir();
 
             if (dir != 0) {
                 List<AbstractChordInter> chords = dirs.get(dir);
@@ -416,7 +418,7 @@ public class TupletGenerator
         int bestCount = 0;
 
         for (Map.Entry<Integer, List<AbstractChordInter>> entry : dirs.entrySet()) {
-            int count = entry.getValue().size();
+            final int count = entry.getValue().size();
 
             if ((dir == 0) || (bestCount < count)) {
                 dir = entry.getKey();
@@ -429,10 +431,10 @@ public class TupletGenerator
         }
 
         // Tuplet bounds
-        Rectangle box = Entities.getBounds(group);
-        Point center = GeoUtil.center(box);
-        int margin = dim.height / 10; // Small vertical margin between chord tail and tuplet
-        Rectangle tupletBox = new Rectangle(
+        final Rectangle box = Entities.getBounds(group);
+        final Point center = GeoUtil.center(box);
+        final int margin = dim.height / 10; // Small vertical margin between chord tail and tuplet
+        final Rectangle tupletBox = new Rectangle(
                 center.x - (dim.width / 2),
                 center.y + (dir * ((box.height / 2) + margin + ((dir < 0) ? dim.height : 0))),
                 dim.width,

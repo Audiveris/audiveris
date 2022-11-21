@@ -52,7 +52,6 @@ import static org.audiveris.omr.ui.symbol.OctaveShiftSymbol.DEFAULT_HOOK_LENGTH;
 import static org.audiveris.omr.ui.symbol.OctaveShiftSymbol.DEFAULT_LINE_LENGTH;
 import static org.audiveris.omr.ui.symbol.OctaveShiftSymbol.DEFAULT_THICKNESS;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
@@ -368,11 +367,11 @@ public class OctaveShiftInter
                                MusicFont font,
                                Point dropLocation)
     {
-        final OctaveShiftSymbol shiftSymbol = (OctaveShiftSymbol) symbol;
-        final Model model = shiftSymbol.getModel(font, dropLocation);
+        final OctaveShiftSymbol octaveShiftSymbol = (OctaveShiftSymbol) symbol;
+        final Model model = octaveShiftSymbol.getModel(font, dropLocation);
 
         if (line == null) {
-            final TextLayout layout = font.layout(symbol.getString());
+            final TextLayout layout = font.layoutShapeByCode(octaveShiftSymbol.getShape());
             final Rectangle2D symBounds = layout.getBounds();
             valueWidth = symBounds.getWidth();
             valueHeight = symBounds.getHeight();
@@ -844,9 +843,9 @@ public class OctaveShiftInter
     private void computeValueDimensions (Sheet sheet)
     {
         final Scale scale = sheet.getScale();
-        final MusicFont font = MusicFont.getBaseFont(scale.getInterline());
-        final ShapeSymbol symbol = Symbols.getSymbol(shape, false);
-        final TextLayout layout = font.layout(symbol.getString());
+        final MusicFont.Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, scale.getInterline());
+        final TextLayout layout = font.layoutShapeByCode(shape);
         final Rectangle2D symBounds = layout.getBounds();
         valueWidth = symBounds.getWidth();
         valueHeight = symBounds.getHeight();

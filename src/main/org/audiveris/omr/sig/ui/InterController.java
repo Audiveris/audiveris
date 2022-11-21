@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -99,6 +97,8 @@ import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -1608,6 +1608,7 @@ public class InterController
             int option = StaffSelection.getInstance().prompt();
 
             if (option >= 0) {
+                Collections.sort(staves, Staff.byId);
                 staff = staves.get(option);
             }
         }
