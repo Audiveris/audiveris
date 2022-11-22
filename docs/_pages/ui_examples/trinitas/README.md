@@ -253,7 +253,7 @@ In fact, and there are other similar cases in this book, the whole rest is never
 but located as a plain chord in a time slot.
 
 We can visualize the content of first slot,
-using ![](../../assets/images/ModeCombined.png) combined mode and pressing left mouse
+using ![](../../assets/images/ModeCombined.png) combined mode and pressing right mouse
 button near the first slot.
 Chord #3381 is *not* part of this slot:
 
