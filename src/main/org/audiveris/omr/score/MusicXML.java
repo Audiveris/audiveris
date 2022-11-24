@@ -318,13 +318,16 @@ public abstract class MusicXML
         //         wavy-line | mordent | inverted-mordent |
         //         schleifer | tremolo | other-ornament),
         //         accidental-mark*)*)>
+        //      note that inverted-mordent in MusicXML refers to a MORDENT
+        //      and mordent in MusicXML refers to a MORDENT_INVERTED
+	
         ObjectFactory factory = new ObjectFactory();
 
         switch (shape) {
-        case MORDENT_INVERTED:
+        case MORDENT:
             return factory.createOrnamentsInvertedMordent(factory.createMordent());
 
-        case MORDENT:
+        case MORDENT_INVERTED:
             return factory.createOrnamentsMordent(factory.createMordent());
 
         case TR:
