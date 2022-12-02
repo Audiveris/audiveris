@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
 
 import org.slf4j.Logger;

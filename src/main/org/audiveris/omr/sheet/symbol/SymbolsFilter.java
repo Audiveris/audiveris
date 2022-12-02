@@ -137,8 +137,8 @@ public class SymbolsFilter
         buffer.threshold(127);
 
         // Keep a copy on disk?
-        if (constants.keepSymbolsBuffer.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".sym");
+        if (constants.saveSymbolsBuffer.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "symbols");
         }
 
         // Display for visual check?
@@ -215,9 +215,9 @@ public class SymbolsFilter
                 false,
                 "Should we display the symbols image?");
 
-        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
+        private final Constant.Boolean saveSymbolsBuffer = new Constant.Boolean(
                 false,
-                "Should we store symbols image on disk?");
+                "Should we save symbols image on disk?");
 
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,

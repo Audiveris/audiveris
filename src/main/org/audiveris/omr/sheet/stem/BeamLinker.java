@@ -21,12 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
-import java.awt.Point;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.Sections;
@@ -58,19 +58,20 @@ import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.sig.relation.StemPortion;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.StemPortion;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.relation.Support;
-import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
@@ -131,8 +132,7 @@ public class BeamLinker
     private final List<BLinker> allBLinkers = new ArrayList<>();
 
     /** Map of side-based BLinkers. */
-    private final Map<HorizontalSide, BLinker> sideBLinkers
-            = new EnumMap<>(HorizontalSide.class);
+    private final Map<HorizontalSide, BLinker> sideBLinkers = new EnumMap<>(HorizontalSide.class);
 
     /** List of stump-based linkers. */
     private final List<VLinker> stumpLinkers = new ArrayList<>();
@@ -160,6 +160,9 @@ public class BeamLinker
     public BeamLinker (AbstractBeamInter beam,
                        StemsRetriever retriever)
     {
+        if (beam.isVip()) {
+            logger.info("BINGO constructor");
+        }
         this.beam = beam;
         this.median = beam.getMedian();
         this.retriever = retriever;
@@ -181,6 +184,65 @@ public class BeamLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // buildSideStump //
+    //----------------//
+    /**
+     * Try to build a stump on the specified side of the beam.
+     *
+     * @param hSide specified beam side
+     * @return the created stump or null if failed
+     */
+    private Glyph buildSideStump (HorizontalSide hSide)
+    {
+        if (beam.isVip()) {
+            logger.info("VIP {} buildSideStump {}", this, hSide);
+        }
+
+        final Area area = getStumpArea(hSide);
+        final List<Section> sections = new ArrayList<>(
+                Sections.intersectedSections(area, system.getVerticalSections()));
+
+        // Sort by distance of centroid abscissa WRT refPt
+        final int xDir = hSide.direction();
+        final double sideX = (xDir < 0) ? median.getX1() : median.getX2();
+        final double refX = sideX - xDir * params.maxStemThickness / 2.0;
+        Collections.sort(sections, (s1, s2)
+                         -> Double.compare(Math.abs(s1.getAreaCenter().getX() - refX),
+                                           Math.abs(s2.getAreaCenter().getX() - refX)));
+
+        if (sections.isEmpty()) {
+            return null;
+        }
+
+        final SectionCompound compound = new SectionCompound();
+        for (Section s : sections) {
+            compound.addSection(s);
+
+            if (compound.getWidth() > params.maxStemThickness) {
+                compound.removeSection(s);
+                break;
+            }
+        }
+
+        if (compound.getWeight() == 0) {
+            return null; // This can occur when we have a single section, but too wide
+        }
+
+        // Check the stump clearly points out on one vertical side of beam
+        Glyph stumpGlyph = compound.toGlyph(GlyphGroup.STUMP);
+        final Set<VerticalSide> directions = getStumpDirections(stumpGlyph);
+
+        if (directions == null || directions.isEmpty()) {
+            return null;
+        }
+
+        stumpGlyph = system.getSheet().getGlyphIndex().registerOriginal(stumpGlyph);
+        logger.debug("{} {}", this, stumpGlyph);
+
+        return stumpGlyph;
+    }
+
     //------------------//
     // equipOrphanSides //
     //------------------//
@@ -262,9 +324,8 @@ public class BeamLinker
     /**
      * Find out or build a beam linker where the provided stem line hits the beam.
      *
-     *
      * @param sLine stem (theoretical?) line
-     * @return the related VLinker instance
+     * @return the related BLinker instance
      */
     public BLinker findLinker (Line2D sLine)
     {
@@ -289,8 +350,33 @@ public class BeamLinker
             return bestLinker;
         }
 
-        // We have to build a brand new (anchored) linker at xp
+        // We have to build a brand new (anchored) linker at cross point
         return new BLinker(null, /* hSide? */ null, refPt, true);
+    }
+
+    //-------------//
+    // getSeedArea //
+    //-------------//
+    /**
+     * Define the lookup area for suitable stem seeds.
+     *
+     * @return the seed lookup area
+     */
+    private Area getSeedArea ()
+    {
+        // Use beam area, slightly expanded in x and y
+        final double slope = (median.getY2() - median.getY1()) / (median.getX2() - median.getX1());
+        final double dx = params.maxBeamSeedDx;
+        final int profile = Math.max(beam.getProfile(), system.getProfile());
+        final double dy = params.maxBeamSeedDyRatio
+                                  * scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
+        final Path2D path = AreaUtil.horizontalParallelogramPath(
+                new Point2D.Double(median.getX1() - dx, median.getY1() - slope * dx),
+                new Point2D.Double(median.getX2() + dx, median.getY2() + slope * dx),
+                beam.getHeight() + 2 * dy);
+        beam.addAttachment("seed", path);
+
+        return new Area(path);
     }
 
     //-------------------//
@@ -325,6 +411,75 @@ public class BeamLinker
                          -> Double.compare(LineUtil.intersection(vertical, b1.getMedian()).getY(),
                                            LineUtil.intersection(vertical, b2.getMedian()).getY()));
         return beams;
+    }
+
+    //--------------//
+    // getStumpArea //
+    //--------------//
+    /**
+     * Define the lookup area on beam side for suitable stump building.
+     *
+     * @return the stump lookup area
+     */
+    private Area getStumpArea (HorizontalSide hSide)
+    {
+        final int xDir = hSide.direction();
+        final double xSide = (xDir < 0) ? median.getX1() : median.getX2();
+        final double width = params.maxStemThickness;
+        final Point2D innerPt = LineUtil.intersectionAtX(median, xSide - xDir * width);
+        final Path2D path = (xDir < 0)
+                ? AreaUtil.horizontalParallelogramPath(median.getP1(), innerPt, beam.getHeight())
+                : AreaUtil.horizontalParallelogramPath(innerPt, median.getP2(), beam.getHeight());
+        final String tag = "stump-" + ((xDir > 0) ? "R" : "L");
+        beam.addAttachment(tag, path);
+
+        return new Area(path);
+    }
+
+    //--------------------//
+    // getStumpDirections //
+    //--------------------//
+    /**
+     * Determine stump directions (when going away from beam to head).
+     *
+     * @param stump the candidate stump to check
+     * @return null for beam inside group, top, bottom, both or none
+     */
+    private Set<VerticalSide> getStumpDirections (Glyph stump)
+    {
+        if (stump.isVip()) {
+            logger.info("VIP {} getStumpDirections {}", this, stump);
+        }
+
+        final Point2D stumpCenter = stump.getCenter2D();
+        final List<AbstractBeamInter> siblings = getSiblingBeamsAt(stumpCenter);
+        final AbstractBeamInter b1 = siblings.get(0);
+        final AbstractBeamInter b2 = siblings.get(siblings.size() - 1);
+
+        // Beware: we can have beam and beam hook from the same glyph, at end of group
+        // Pure list extrema are not reliable, hence we check underlying glyph
+        final Glyph glyph = beam.getGlyph();
+        if ((beam != b1) && (beam != b2)
+                    && (glyph != b1.getGlyph()) && (glyph != b2.getGlyph())) {
+            return null; // beam is located inside beam group
+        }
+
+        // Look at vertical offsets off of beams
+        final Set<VerticalSide> set = EnumSet.noneOf(VerticalSide.class);
+        final double x = stumpCenter.getX();
+        final Line2D stumpLine = stump.getCenterLine();
+
+        final double dy1 = Math.max(0, LineUtil.yAtX(b1.getBorder(TOP), x) - stumpLine.getY1());
+        if (dy1 >= params.minBeamStumpDy) {
+            set.add(TOP);
+        }
+
+        final double dy2 = Math.max(0, stumpLine.getY2() - LineUtil.yAtX(b2.getBorder(BOTTOM), x));
+        if (dy2 >= params.minBeamStumpDy) {
+            set.add(BOTTOM);
+        }
+
+        return set;
     }
 
     //-----------------//
@@ -368,7 +523,7 @@ public class BeamLinker
             final BLinker bLinker = sideBLinkers.get(hSide);
 
             if (bLinker == null) {
-                logger.info("No BLinker on {} of {}", hSide, this);
+                logger.debug("No BLinker on {} of {}", hSide, this);
                 continue;
             }
 
@@ -431,169 +586,6 @@ public class BeamLinker
                 vLinker.link(Profiles.BEAM_SEED, profile);
             }
         }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("{beam#").append(beam.getId()).append('}').toString();
-    }
-
-    //----------------//
-    // buildSideStump //
-    //----------------//
-    /**
-     * Try to build a stump on the specified side of the beam.
-     *
-     * @param hSide specified beam side
-     * @return the created stump or null if failed
-     */
-    private Glyph buildSideStump (HorizontalSide hSide)
-    {
-        if (beam.isVip()) {
-            logger.info("VIP {} buildSideStump {}", this, hSide);
-        }
-
-        final Area area = getStumpArea(hSide);
-        final List<Section> sections = new ArrayList<>(
-                Sections.intersectedSections(area, system.getVerticalSections()));
-
-        // Sort by distance of centroid abscissa WRT refPt
-        final int xDir = hSide.direction();
-        final double sideX = (xDir < 0) ? median.getX1() : median.getX2();
-        final double refX = sideX - xDir * params.maxStemThickness / 2.0;
-        Collections.sort(sections, (s1, s2)
-                         -> Double.compare(Math.abs(s1.getAreaCenter().getX() - refX),
-                                           Math.abs(s2.getAreaCenter().getX() - refX)));
-
-        if (sections.isEmpty()) {
-            return null;
-        }
-
-        final SectionCompound compound = new SectionCompound();
-        for (Section s : sections) {
-            compound.addSection(s);
-
-            if (compound.getWidth() > params.maxStemThickness) {
-                compound.removeSection(s);
-                break;
-            }
-        }
-
-        if (compound.getWeight() == 0) {
-            return null; // This can occur when we have a single section, but too wide
-        }
-
-        // Check the stump clearly points out on one vertical side of beam
-        Glyph stumpGlyph = compound.toGlyph(GlyphGroup.STUMP);
-        final Set<VerticalSide> directions = getStumpDirections(stumpGlyph);
-
-        if (directions == null || directions.isEmpty()) {
-            return null;
-        }
-
-        stumpGlyph = system.getSheet().getGlyphIndex().registerOriginal(stumpGlyph);
-        logger.debug("{} {}", this, stumpGlyph);
-
-        return stumpGlyph;
-    }
-
-    //-------------//
-    // getSeedArea //
-    //-------------//
-    /**
-     * Define the lookup area for suitable stem seeds.
-     *
-     * @return the seed lookup area
-     */
-    private Area getSeedArea ()
-    {
-        // Use beam area, slightly expanded in x and y
-        final double slope = (median.getY2() - median.getY1()) / (median.getX2() - median.getX1());
-        final double dx = params.maxBeamSeedDx;
-        final int profile = Math.max(beam.getProfile(), system.getProfile());
-        final double dy = params.maxBeamSeedDyRatio
-                                  * scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
-        final Path2D path = AreaUtil.horizontalParallelogramPath(
-                new Point2D.Double(median.getX1() - dx, median.getY1() - slope * dx),
-                new Point2D.Double(median.getX2() + dx, median.getY2() + slope * dx),
-                beam.getHeight() + 2 * dy);
-        beam.addAttachment("seed", path);
-
-        return new Area(path);
-    }
-
-    //--------------//
-    // getStumpArea //
-    //--------------//
-    /**
-     * Define the lookup area on beam side for suitable stump building.
-     *
-     * @return the stump lookup area
-     */
-    private Area getStumpArea (HorizontalSide hSide)
-    {
-        final int xDir = hSide.direction();
-        final double xSide = (xDir < 0) ? median.getX1() : median.getX2();
-        final double width = params.maxStemThickness;
-        final Point2D innerPt = LineUtil.intersectionAtX(median, xSide - xDir * width);
-        final Path2D path = (xDir < 0)
-                ? AreaUtil.horizontalParallelogramPath(median.getP1(), innerPt, beam.getHeight())
-                : AreaUtil.horizontalParallelogramPath(innerPt, median.getP2(), beam.getHeight());
-        final String tag = "s" + ((xDir > 0) ? "R" : "L");
-        beam.addAttachment(tag, path);
-
-        return new Area(path);
-    }
-
-    //--------------------//
-    // getStumpDirections //
-    //--------------------//
-    /**
-     * Determine stump directions (when going away from beam to head).
-     *
-     * @param stump the candidate stump to check
-     * @return null for beam inside group, top, bottom, both or none
-     */
-    private Set<VerticalSide> getStumpDirections (Glyph stump)
-    {
-        if (stump.isVip()) {
-            logger.info("VIP {} getStumpDirections {}", this, stump);
-        }
-
-        final Point2D stumpCenter = stump.getCenter2D();
-        final List<AbstractBeamInter> siblings = getSiblingBeamsAt(stumpCenter);
-        final AbstractBeamInter b1 = siblings.get(0);
-        final AbstractBeamInter b2 = siblings.get(siblings.size() - 1);
-
-        // Beware: we can have beam and beam hook from the same glyph, at end of group
-        // Pure list extrema are not reliable, hence we check underlying glyph
-        final Glyph glyph = beam.getGlyph();
-        if ((beam != b1) && (beam != b2)
-                    && (glyph != b1.getGlyph()) && (glyph != b2.getGlyph())) {
-            return null; // beam is located inside beam group
-        }
-
-        // Look at vertical offsets off of beams
-        final Set<VerticalSide> set = EnumSet.noneOf(VerticalSide.class);
-        final double x = stumpCenter.getX();
-        final Line2D stumpLine = stump.getCenterLine();
-
-        final double dy1 = Math.max(0, LineUtil.yAtX(b1.getBorder(TOP), x) - stumpLine.getY1());
-        if (dy1 >= params.minBeamStumpDy) {
-            set.add(TOP);
-        }
-
-        final double dy2 = Math.max(0, stumpLine.getY2() - LineUtil.yAtX(b2.getBorder(BOTTOM), x));
-        if (dy2 >= params.minBeamStumpDy) {
-            set.add(BOTTOM);
-        }
-
-        return set;
     }
 
     //------------//
@@ -706,10 +698,25 @@ public class BeamLinker
         return list;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{beam#").append(beam.getId()).append('}').toString();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // BLinker //
     //---------//
+    /**
+     * Beam linker to handle connections from a given point of the beam.
+     * <p>
+     * It can handle up to two {@link VLinker} instances, one going up and/or one going down.
+     */
     public class BLinker
             extends StemLinker
     {
@@ -730,8 +737,7 @@ public class BeamLinker
         private boolean isAnchor;
 
         /** Top and bottom linkers. */
-        private final Map<VerticalSide, VLinker> vLinkers = new EnumMap<>(
-                VerticalSide.class);
+        private final Map<VerticalSide, VLinker> vLinkers = new EnumMap<>(VerticalSide.class);
 
         /** Has been successfully linked. */
         private boolean linked;
@@ -769,11 +775,26 @@ public class BeamLinker
 
             if (beam.isVip()) {
                 logger.info("VIP new {}", this);
+                if (StemBuilder.saveConnections()) {
+                    StemBuilder.saveConnection(this, stump, null);
+                }
             }
 
             if (isAnchor) {
                 buildAnchor();
             }
+        }
+
+        //-------------//
+        // buildAnchor //
+        //-------------//
+        private void buildAnchor ()
+        {
+            // Draw a small circle around refPt
+            final double r = scale.getInterline() / 10.0;
+            beam.addAttachment(
+                    "" + id,
+                    new Ellipse2D.Double(refPt.getX() - r, refPt.getY() - r, 2 * r, 2 * r));
         }
 
         //----------------//
@@ -785,40 +806,19 @@ public class BeamLinker
             return vLinkers.values();
         }
 
-        //----------//
-        // isClosed //
-        //----------//
+        //-------//
+        // getId //
+        //-------//
         @Override
-        public boolean isClosed ()
+        public String getId ()
         {
-            return closed;
-        }
+            final StringBuilder sb = new StringBuilder();
+            sb.append("beam#").append(beam.getId())
+                    .append("-Blnk-")
+                    .append(hSide != null ? hSide.name().charAt(0) : 'C')
+                    .append('-').append(id);
 
-        //-----------//
-        // setClosed //
-        //-----------//
-        @Override
-        public void setClosed (boolean closed)
-        {
-            this.closed = closed;
-        }
-
-        //----------//
-        // isLinked //
-        //----------//
-        @Override
-        public boolean isLinked ()
-        {
-            return linked;
-        }
-
-        //-----------//
-        // setLinked //
-        //-----------//
-        @Override
-        public void setLinked (boolean linked)
-        {
-            this.linked = linked;
+            return sb.toString();
         }
 
         //-------------------//
@@ -839,18 +839,6 @@ public class BeamLinker
             return beam;
         }
 
-        //-------------//
-        // buildAnchor //
-        //-------------//
-        private void buildAnchor ()
-        {
-            // Draw a small circle around refPt
-            final double r = scale.getInterline() / 10.0;
-            beam.addAttachment(
-                    "" + id,
-                    new Ellipse2D.Double(refPt.getX() - r, refPt.getY() - r, 2 * r, 2 * r));
-        }
-
         //----------//
         // getStump //
         //----------//
@@ -861,27 +849,21 @@ public class BeamLinker
         }
 
         //----------//
-        // toString //
+        // isClosed //
         //----------//
         @Override
-        public String toString ()
+        public boolean isClosed ()
         {
-            final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
-                    .append("{beam#").append(beam.getId())
-                    .append(' ').append(hSide != null ? hSide.name().charAt(0) : 'C')
-                    .append('-').append(id);
+            return closed;
+        }
 
-            if (isAnchor) {
-                asb.append(" ANCHOR");
-            }
-
-            if (stump != null) {
-                asb.append(' ').append(stump);
-            } else if (refPt != null) {
-                asb.append(" refPt:").append(PointUtil.toString(refPt));
-            }
-
-            return asb.append('}').toString();
+        //----------//
+        // isLinked //
+        //----------//
+        @Override
+        public boolean isLinked ()
+        {
+            return linked;
         }
 
         //------//
@@ -919,6 +901,46 @@ public class BeamLinker
         {
             allBLinkers.add(this);
             return allBLinkers.size();
+        }
+
+        //-----------//
+        // setClosed //
+        //-----------//
+        @Override
+        public void setClosed (boolean closed)
+        {
+            this.closed = closed;
+        }
+
+        //-----------//
+        // setLinked //
+        //-----------//
+        @Override
+        public void setLinked (boolean linked)
+        {
+            this.linked = linked;
+        }
+
+        //----------//
+        // toString //
+        //----------//
+        @Override
+        public String toString ()
+        {
+            final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
+                    .append('{').append(getId());
+
+            if (isAnchor) {
+                asb.append(" ANCHOR");
+            }
+
+            if (stump != null) {
+                asb.append(' ').append(stump);
+            } else if (refPt != null) {
+                asb.append(" refPt:").append(PointUtil.toString(refPt));
+            }
+
+            return asb.append('}').toString();
         }
 
         //---------//
@@ -976,107 +998,6 @@ public class BeamLinker
                 }
             }
 
-            //-------------------//
-            // getReferencePoint //
-            //-------------------//
-            @Override
-            public Point2D getReferencePoint ()
-            {
-                return refPt;
-            }
-
-            //-----------//
-            // getSource //
-            //-----------//
-            @Override
-            public AbstractBeamInter getSource ()
-            {
-                return beam;
-            }
-
-            //----------------//
-            // getHalfLinkers //
-            //----------------//
-            @Override
-            public Collection<? extends StemHalfLinker> getHalfLinkers ()
-            {
-                return Collections.singleton(this);
-            }
-
-            //----------//
-            // toString //
-            //----------//
-            @Override
-            public String toString ()
-            {
-                final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
-                        .append("{beam#").append(beam.getId())
-                        .append(' ')
-                        .append((vSide != null) ? vSide.name().charAt(0) : "")
-                        .append((hSide != null) ? hSide.name().charAt(0) : 'C')
-                        .append('-').append(id);
-
-                if (isAnchor) {
-                    asb.append(" ANCHOR");
-                }
-
-                return asb.append('}').toString();
-            }
-
-            //----------//
-            // isClosed //
-            //----------//
-            @Override
-            public boolean isClosed ()
-            {
-                return closed;
-            }
-
-            //-----------//
-            // setClosed //
-            //-----------//
-            @Override
-            public void setClosed (boolean closed)
-            {
-                BLinker.this.setClosed(closed);
-            }
-
-            //----------//
-            // isLinked //
-            //----------//
-            @Override
-            public boolean isLinked ()
-            {
-                return linked;
-            }
-
-            //-----------//
-            // setLinked //
-            //-----------//
-            @Override
-            public void setLinked (boolean linked)
-            {
-                BLinker.this.setLinked(linked);
-            }
-
-            @Override
-            public Glyph getStump ()
-            {
-                return stump;
-            }
-
-            @Override
-            public Line2D getTheoreticalLine ()
-            {
-                return theoLine;
-            }
-
-            @Override
-            public Area getLookupArea ()
-            {
-                return luArea;
-            }
-
             //---------------//
             // buildGeometry //
             //---------------//
@@ -1091,7 +1012,7 @@ public class BeamLinker
                     luArea = buildLuArea(closer); // This shrinks theoline accordingly
                 }
 
-                beam.addAttachment("t" + id, theoLine);
+                beam.addAttachment("theo-" + id, theoLine);
                 seeds = Glyphs.intersectedGlyphs(neighborSeeds, luArea);
             }
 
@@ -1160,7 +1081,7 @@ public class BeamLinker
 
                 // Compute theoLine
                 theoLine = retriever.getTheoreticalLine(refPt, yLimit);
-                beam.addAttachment("t" + id, theoLine);
+                beam.addAttachment("theo-" + id, theoLine);
 
                 return new Area(lu);
             }
@@ -1321,6 +1242,10 @@ public class BeamLinker
             //-------------//
             private List<CLinker> filterHeads (List<AbstractBeamInter> siblings)
             {
+                if (beam.isVip()) {
+                    logger.info("VIP {} filterHeads", this);
+                }
+
                 // Last beam border before heads
                 final Line2D lastBorder = (yDir > 0)
                         ? siblings.get(siblings.size() - 1).getBorder(BOTTOM)
@@ -1336,13 +1261,16 @@ public class BeamLinker
 
                 final List<CLinker> cLinkers = new ArrayList<>();
 
-                // For void heads
-                final HorizontalSide imposedVoidHeadSide = (yDir < 0) ? LEFT : RIGHT;
+                // Void heads (duration 1/2) can be linked to a beam only on out horizontal side.
+                // To be shared as effective filled value (duration 1/4) on beam side
+                final HorizontalSide imposedVoidHeadHoriSide = (yDir < 0) ? LEFT : RIGHT;
 
                 for (Inter hInter : headCandidates) {
                     final HeadInter head = (HeadInter) hInter;
+                    final Shape headShape = head.getShape();
+
                     // Today, standard beams can't link small heads
-                    if (head.getShape().isSmall()) {
+                    if (headShape.isSmall()) {
                         continue;
                     }
 
@@ -1353,12 +1281,13 @@ public class BeamLinker
                     }
 
                     for (SLinker sLinker : head.getLinker().getSLinkers().values()) {
-                        if (luArea.contains(sLinker.getReferencePoint())) {
-                            // For void shape, check head hSide
-                            if ((head.getShape() != Shape.NOTEHEAD_VOID)
-                                        || (sLinker.getHorizontalSide() == imposedVoidHeadSide)) {
+                        final CLinker cLinker = sLinker.getCornerLinker(vSide.opposite());
+                        if (luArea.contains(cLinker.getReferencePoint())) {
+                            // For void shapes, check head hSide
+                            if (!ShapeSet.HalfHeads.contains(headShape)
+                                        || (cLinker.getHorizontalSide() == imposedVoidHeadHoriSide)) {
                                 // TODO: Check possible relation between head and stem/theo line?
-                                cLinkers.add(sLinker.getCornerLinker(vSide.opposite()));
+                                cLinkers.add(cLinker);
                             }
                         }
                     }
@@ -1398,7 +1327,9 @@ public class BeamLinker
                     final AbstractBeamInter b = (AbstractBeamInter) it.next();
                     final Line2D m = b.getMedian();
 
-                    if (b instanceof BeamHookInter) {
+                    if (!b.isGood()) {
+                        it.remove();
+                    } else if (b instanceof BeamHookInter) {
                         it.remove();
                     } else if (!m.intersectsLine(theoLine)) {
                         it.remove();
@@ -1426,6 +1357,84 @@ public class BeamLinker
                 AbstractBeamInter firstAlien = (AbstractBeamInter) aliens.get(0);
 
                 return firstAlien.getBorder(vSide.opposite());
+            }
+
+            //----------------//
+            // getHalfLinkers //
+            //----------------//
+            @Override
+            public Collection<? extends StemHalfLinker> getHalfLinkers ()
+            {
+                return Collections.singleton(this);
+            }
+
+            //-------//
+            // getId //
+            //-------//
+            @Override
+            public String getId ()
+            {
+                final StringBuilder sb = new StringBuilder();
+                sb.append("beam#").append(beam.getId())
+                        .append("-Vlnk-")
+                        .append((vSide != null) ? vSide.name().charAt(0) : "")
+                        .append((hSide != null) ? hSide.name().charAt(0) : 'C')
+                        .append('-').append(id);
+
+                return sb.toString();
+            }
+
+            //---------------//
+            // getLookupArea //
+            //---------------//
+            @Override
+            public Area getLookupArea ()
+            {
+                return luArea;
+            }
+
+            //-------------------//
+            // getReferencePoint //
+            //-------------------//
+            @Override
+            public Point2D getReferencePoint ()
+            {
+                return refPt;
+            }
+
+            //-----------//
+            // getSource //
+            //-----------//
+            @Override
+            public AbstractBeamInter getSource ()
+            {
+                return beam;
+            }
+
+            //----------//
+            // getStump //
+            //----------//
+            @Override
+            public Glyph getStump ()
+            {
+                return stump;
+            }
+
+            //--------------------//
+            // getTheoreticalLine //
+            //--------------------//
+            @Override
+            public Line2D getTheoreticalLine ()
+            {
+                return theoLine;
+            }
+
+            //-----------------//
+            // getVerticalSide //
+            //-----------------//
+            public VerticalSide getVerticalSide ()
+            {
+                return vSide;
             }
 
             //---------//
@@ -1461,6 +1470,24 @@ public class BeamLinker
                 linkers.addAll(filterHeads(siblings));
 
                 sb = new StemBuilder(retriever, this, seeds, linkers, maxStemProfile);
+            }
+
+            //----------//
+            // isClosed //
+            //----------//
+            @Override
+            public boolean isClosed ()
+            {
+                return closed;
+            }
+
+            //----------//
+            // isLinked //
+            //----------//
+            @Override
+            public boolean isLinked ()
+            {
+                return linked;
             }
 
             //------//
@@ -1536,7 +1563,9 @@ public class BeamLinker
                 final Link bsLink = BeamStemRelation.checkLink(
                         beam, stem, vSide.opposite(), scale, stemProfile);
                 if (bsLink == null) {
-                    logger.info("{} no beam link", this);
+                    if (beam.isVip()) {
+                        logger.info(" VIP {} no beam link", this);
+                    }
                     return false;
                 }
 
@@ -1581,37 +1610,71 @@ public class BeamLinker
                     logger.info("VIP {} linkSiblings with {}", this, stem);
                 }
 
-                final Line2D stemMedian = stem.getMedian();
-                final SIGraph sig = system.getSig();
-                final List<AbstractBeamInter> siblings = getSiblingBeamsAt(refPt);
-                siblings.remove(beam);
+                //                final Line2D stemMedian = stem.getMedian();
+                //                final SIGraph sig = system.getSig();
+                //                final List<AbstractBeamInter> siblings = getSiblingBeamsAt(refPt);
+                //                siblings.remove(beam);
+                //
+                //                for (AbstractBeamInter b : siblings) {
+                //                    if (b.getGlyph() == beam.getGlyph()) {
+                //                        continue;
+                //                    }
+                //
+                //                    if (sig.getRelation(b, stem, BeamStemRelation.class) == null) {
+                //                        final BeamStemRelation r = new BeamStemRelation();
+                //                        final Point2D crossPt = LineUtil.intersection(stemMedian,
+                //                                                                      b.getMedian());
+                //                        r.setExtensionPoint(new Point2D.Double(
+                //                                crossPt.getX(),
+                //                                crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
+                //
+                //                        // Portion depends on x location of stem WRT beam
+                //                        r.setBeamPortion(BeamStemRelation.computeBeamPortion(
+                //                                b, crossPt.getX(), scale));
+                //
+                //                        r.setGrade(relGrade);
+                //                        sig.addEdge(b, stem, r);
+                //
+                //                        final StemLinker sl = sb.getLinkerOf(b);
+                //                        if (sl != null) {
+                //                            sl.setLinked(true);
+                //                        }
+                //                    }
+                //                }
+            }
 
-                for (AbstractBeamInter b : siblings) {
-                    if (b.getGlyph() == beam.getGlyph()) {
-                        continue;
-                    }
+            //-----------//
+            // setClosed //
+            //-----------//
+            @Override
+            public void setClosed (boolean closed)
+            {
+                BLinker.this.setClosed(closed);
+            }
 
-                    if (sig.getRelation(b, stem, BeamStemRelation.class) == null) {
-                        final BeamStemRelation r = new BeamStemRelation();
-                        final Point2D crossPt = LineUtil.intersection(stemMedian,
-                                                                      b.getMedian());
-                        r.setExtensionPoint(new Point2D.Double(
-                                crossPt.getX(),
-                                crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
+            //-----------//
+            // setLinked //
+            //-----------//
+            @Override
+            public void setLinked (boolean linked)
+            {
+                BLinker.this.setLinked(linked);
+            }
 
-                        // Portion depends on x location of stem WRT beam
-                        r.setBeamPortion(BeamStemRelation.computeBeamPortion(
-                                b, crossPt.getX(), scale));
+            //----------//
+            // toString //
+            //----------//
+            @Override
+            public String toString ()
+            {
+                final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
+                        .append('{').append(getId());
 
-                        r.setGrade(relGrade);
-                        sig.addEdge(b, stem, r);
-
-                        final StemLinker sl = sb.getLinkerOf(b);
-                        if (sl != null) {
-                            sl.setLinked(true);
-                        }
-                    }
+                if (isAnchor) {
+                    asb.append(" ANCHOR");
                 }
+
+                return asb.append('}').toString();
             }
         }
     }

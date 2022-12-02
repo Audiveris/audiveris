@@ -49,9 +49,9 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
-import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,20 +103,26 @@ public abstract class PageCleaner
     /** Related sheet. */
     protected final Sheet sheet;
 
-    /** Slightly thicker fonts for music symbols. */
-    protected final MusicFont musicFont;
-
-    protected final MusicFont headMusicFont;
-
-    protected final MusicFont smallMusicFont;
-
-    protected final MusicFont smallHeadMusicFont;
-
     /** Stroke for margin around areas. */
     private final Stroke marginStroke;
 
     /** Slightly thicker stroke for lines. (endings, wedges, slurs) */
     private final Stroke lineStroke;
+
+    /** Preferred font family for sheet at hand. */
+    private final Family family;
+
+    /** Slightly dilated font point size. */
+    private final int dilatedSize;
+
+    /** Slightly dilated font point size for heads. */
+    private final int dilatedHeadSize;
+
+    /** Font point size on small staves, if any. */
+    private final int smallPointSize;
+
+    /** Font point size for heads on small staves, if any. */
+    private final int smallHeadSize;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -135,23 +141,20 @@ public abstract class PageCleaner
         this.sheet = sheet;
 
         final Scale scale = sheet.getScale();
-        final Family family = sheet.getStub().getMusicFontFamily();
+        family = sheet.getStub().getMusicFontFamily();
 
-        // Use music fonts slightly larger (TODO: perhaps only for heads?)
+        // NOTA: To clean items from buffer, we use slightly dilated music fonts
         final int interline = scale.getInterline();
-        int pointSize = MusicFont.getPointSize(interline);
-        musicFont = MusicFont.getPointFont(family, dilated(pointSize), interline);
+        dilatedSize = dilated(MusicFont.getPointSize(interline));
+        dilatedHeadSize = dilated(MusicFont.getHeadPointSize(scale, interline));
 
-        int headPointSize = MusicFont.getHeadPointSize(scale, interline);
-        headMusicFont = MusicFont.getPointFont(family, dilated(headPointSize), interline);
-
+        // TODO: Should we use a similar dilation for small items?
         final Integer smallInterline = scale.getSmallInterline();
-
         if (smallInterline != null) {
-            smallMusicFont = MusicFont.getBaseFont(family, smallInterline);
-            smallHeadMusicFont = MusicFont.getHeadFont(family, scale, smallInterline);
+            smallPointSize = MusicFont.getPointSize(smallInterline);
+            smallHeadSize = MusicFont.getHeadPointSize(scale, smallInterline);
         } else {
-            smallMusicFont = smallHeadMusicFont = null;
+            smallPointSize = smallHeadSize = 0; // To keep compiler happy
         }
 
         // Thickness of margins applied (around areas & lines)
@@ -237,20 +240,18 @@ public abstract class PageCleaner
     @Override
     public void visit (HeadInter head)
     {
+
+        final int size = head.getStaff().isSmall() ? smallHeadSize : dilatedHeadSize;
+        final FontSymbol fs = head.getShape().getFontSymbol(family, size);
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for head {}", head);
+            return;
+        }
+
         final Glyph glyph = head.getGlyph();
         final Point2D center = (glyph != null) ? glyph.getCenter2D() : head.getCenter2D();
-
-        MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
-        ShapeSymbol symbol = font.getSymbol(head.getShape());
-
-        if (symbol == null && font.getBackup() != null) {
-            font = font.getBackup();
-            symbol = font.getSymbol(head.getShape());
-        }
-
-        if (symbol != null) {
-            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
-        }
+        fs.symbol.paintSymbol(g, fs.font, center, Alignment.AREA_CENTER);
     }
 
     /**
@@ -265,21 +266,18 @@ public abstract class PageCleaner
             return;
         }
 
+        final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
+        final int size = isSmall ? smallPointSize : dilatedSize;
+        final FontSymbol fs = inter.getShape().getFontSymbol(family, size);
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for inter {}", inter);
+            return;
+        }
+
         final Glyph glyph = inter.getGlyph();
         final Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
-        final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
-
-        MusicFont font = isSmall ? smallMusicFont : musicFont;
-        ShapeSymbol symbol = font.getSymbol(inter.getShape());
-
-        if (symbol == null && font.getBackup() != null) {
-            font = font.getBackup();
-            symbol = font.getSymbol(inter.getShape());
-        }
-
-        if (symbol != null) {
-            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
-        }
+        fs.symbol.paintSymbol(g, fs.font, center, Alignment.AREA_CENTER);
     }
 
     @Override
@@ -499,6 +497,15 @@ public abstract class PageCleaner
         }
     }
 
+    //---------//
+    // dilated //
+    //---------//
+    /**
+     * Report a slightly dilated value of provided point size
+     *
+     * @param pointSize the provided point size
+     * @return slightly increased point size value
+     */
     private int dilated (int pointSize)
     {
         return (int) Math.rint(pointSize * constants.dilationRatio.getValue());

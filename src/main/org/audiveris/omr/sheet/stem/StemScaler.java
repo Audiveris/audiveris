@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
@@ -51,6 +49,8 @@ import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -246,8 +246,8 @@ public class StemScaler
             ByteProcessor buffer = new ByteProcessor(image);
 
             // Keep a copy on disk?
-            if (constants.keepStemImage.isSet()) {
-                ImageUtil.saveOnDisk(image, sheet.getId() + ".stem");
+            if (constants.saveStemImage.isSet()) {
+                ImageUtil.saveOnDisk(image, sheet.getId(), "stems");
             }
 
             return buffer;
@@ -270,9 +270,9 @@ public class StemScaler
                 false,
                 "Should we print the StopWatch on stem computation?");
 
-        private final Constant.Boolean keepStemImage = new Constant.Boolean(
+        private final Constant.Boolean saveStemImage = new Constant.Boolean(
                 false,
-                "Should we store stem images on disk?");
+                "Should we save stem images on disk?");
 
         private final Constant.Boolean useHeader = new Constant.Boolean(
                 true,

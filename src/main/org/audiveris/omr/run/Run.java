@@ -85,6 +85,19 @@ public class Run
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj instanceof Run that) {
+            return (this.start == that.start) && (this.length == that.length);
+        }
+
+        return false;
+    }
+
     //-----------//
     // getLength //
     //-----------//
@@ -176,18 +189,16 @@ public class Run
         return stopCommon - startCommon + 1;
     }
 
-    //-------------//
-    // isIdentical //
-    //-------------//
-    /**
-     * Field by field comparison
-     *
-     * @param that the other Run to compare with
-     * @return true if identical
-     */
-    public boolean isIdentical (Run that)
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
     {
-        return (this.start == that.start) && (this.length == that.length);
+        int hash = 7;
+        hash = 41 * hash + this.start;
+        hash = 41 * hash + this.length;
+        return hash;
     }
 
     //----------//

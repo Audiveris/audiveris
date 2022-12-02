@@ -30,7 +30,7 @@ import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
@@ -475,27 +475,17 @@ public class Template
         final Point2D offset = offsets.get(anchor);
 
         // We have to round abscissa in symmetrical manner around slim rectangle
-        switch (anchor) {
-        case MIDDLE_LEFT:
-        case LEFT_STEM:
-        case BOTTOM_LEFT_STEM:
-            return new Point(
-                    (int) Math.round(offset.getX() - 0.5 - 0.001),
-                    (int) Math.round(offset.getY() - 0.5));
-
-        case MIDDLE_RIGHT:
-        case RIGHT_STEM:
-        case TOP_RIGHT_STEM:
-            return new Point(
-                    (int) Math.round(offset.getX() - 0.5 + 0.001),
-                    (int) Math.round(offset.getY() - 0.5));
-
-        default:
-        case CENTER:
-            return new Point(
-                    (int) Math.round(offset.getX() - 0.5),
-                    (int) Math.round(offset.getY() - 0.5));
-        }
+        return switch (anchor.hSide()) {
+        case LEFT -> new Point(
+                (int) Math.round(offset.getX() - 0.5 - 0.001),
+                (int) Math.round(offset.getY() - 0.5));
+        default -> new Point(
+                (int) Math.round(offset.getX() - 0.5),
+                (int) Math.round(offset.getY() - 0.5));
+        case RIGHT -> new Point(
+                (int) Math.round(offset.getX() - 0.5 + 0.001),
+                (int) Math.round(offset.getY() - 0.5));
+        };
     }
 
     //-------------//

@@ -25,7 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
 import org.slf4j.Logger;

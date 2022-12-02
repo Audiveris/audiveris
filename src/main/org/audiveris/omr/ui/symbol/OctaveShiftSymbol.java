@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter.Kind;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.BasicStroke;
@@ -49,7 +48,6 @@ import java.awt.geom.Rectangle2D;
  * Note the final hook is not drawn in this symbol but is kept to build a suitable model on demand.
  *
  * @see OctaveShiftInter
- *
  * @author Hervé Bitteur
  */
 public class OctaveShiftSymbol
@@ -69,12 +67,14 @@ public class OctaveShiftSymbol
     public static final Fraction DEFAULT_HOOK_LENGTH = constants.defaultHookLength;
 
     /** Default stroke to paint line and hook. */
-    public static Stroke DEFAULT_STROKE = new BasicStroke((float) DEFAULT_THICKNESS,
-                                                          BasicStroke.CAP_ROUND,
-                                                          BasicStroke.JOIN_ROUND,
-                                                          10.0f,
-                                                          new float[]{8.0f, 8.0f},
-                                                          0.0f);
+    public static Stroke DEFAULT_STROKE = new BasicStroke(
+            (float) DEFAULT_THICKNESS,
+            BasicStroke.CAP_ROUND,
+            BasicStroke.JOIN_ROUND,
+            10.0f,
+            new float[]
+            { 8.0f, 8.0f },
+            0.0f);
 
     //~ Instance fields ----------------------------------------------------------------------------
     // ALTA or BASSA
@@ -182,10 +182,12 @@ public class OctaveShiftSymbol
             // Line (drawn from right to left, to preserve the right end)
             final Stroke oldStroke = g.getStroke();
             g.setStroke(DEFAULT_STROKE);
-            g.draw(new Line2D.Double(
-                    p.model.p2,
-                    new Point2D.Double(p.model.p1.getX() + symBounds.getWidth() / 2,
-                                       p.model.p1.getY())));
+            g.draw(
+                    new Line2D.Double(
+                            p.model.p2,
+                            new Point2D.Double(
+                                    p.model.p1.getX() + symBounds.getWidth() / 2,
+                                    p.model.p1.getY())));
 
             // NOTA: No hook is drawn in symbol
             //

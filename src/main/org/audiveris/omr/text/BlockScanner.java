@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
@@ -30,6 +28,8 @@ import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.util.List;
 
@@ -95,7 +95,7 @@ public class BlockScanner
                 OCR.LayoutMode.SINGLE_BLOCK,
                 language,
                 sheet.getScale().getInterline(),
-                sheet.getId() + "-b" + id);
+                sheet.getId() + "/glyph-" + id);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

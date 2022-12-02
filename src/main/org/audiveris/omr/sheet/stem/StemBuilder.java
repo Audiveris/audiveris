@@ -21,21 +21,26 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
-import java.awt.Point;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
-import org.audiveris.omr.glyph.dynamic.SectionCompound;
+import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.sheet.Profiles;
-import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker.VLinker;
 import org.audiveris.omr.sheet.stem.HeadLinker.SLinker.CLinker;
@@ -47,14 +52,24 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,6 +92,8 @@ import java.util.TreeMap;
 public class StemBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StemBuilder.class);
 
@@ -370,8 +387,8 @@ public class StemBuilder
         for (int i = index - 1; i >= 0; i--) {
             final StemItem ev = items.get(i);
 
-            if (ev instanceof GapItem) {
-                return (GapItem) ev;
+            if (ev instanceof GapItem gapItem) {
+                return gapItem;
             }
         }
 
@@ -544,7 +561,9 @@ public class StemBuilder
     @Override
     public String toString ()
     {
-        return new StringBuilder("sb{").append(getTotalLength()).append(' ').append(items)
+        return new StringBuilder("sb{")
+                ///.append(getTotalLength())         // BINGO uncomment !
+                .append(' ').append(items)
                 .append('}').toString();
     }
 
@@ -582,10 +601,10 @@ public class StemBuilder
                 continue;
             }
 
-            if (linker instanceof StemHalfLinker) {
+            if (linker instanceof StemHalfLinker stemHalfLinker) {
                 final int contrib = (linker.getStump() != null)
                         ? getContrib(linker.getStump().getBounds()) : 0;
-                list.add(new HalfLinkerItem((StemHalfLinker) linker, contrib));
+                list.add(new HalfLinkerItem(stemHalfLinker, contrib));
             } else {
                 list.add(new LinkerItem(linker));
             }
@@ -632,6 +651,59 @@ public class StemBuilder
         }
 
         return list;
+    }
+
+    //-----------------//
+    // filterHeadParts //
+    //-----------------//
+    /**
+     * Check chunks remaining weight when head pixels have been removed.
+     *
+     * @param chunks (input/output) the collection of chunks to filter
+     */
+    private void filterHeadParts (Collection<Glyph> chunks)
+    {
+        final CLinker cLinker = (CLinker) startLinker;
+        final Glyph headGlyph = cLinker.getHead().getGlyph();
+        final Rectangle headBox = headGlyph.getBounds();
+        final int yMin = headBox.y;
+        final int yMax = headBox.y + headBox.height - 1;
+
+        for (Iterator<Glyph> it = chunks.iterator(); it.hasNext();) {
+            final Glyph chunk = it.next();
+            // Check chunk overlaps head vertical range
+            if (GeoUtil.yOverlap(chunk.getBounds(), headBox) <= 0) {
+                continue;
+            }
+
+            int removed = 0;
+            final PointsCollector pc = chunk.getPointsCollector();
+            final int[] xx = pc.getXValues();
+            final int[] yy = pc.getYValues();
+            for (int i = 0, iBreak = yy.length; i < iBreak; i++) {
+                final int y = yy[i];
+                if (y >= yMin && y <= yMax) {
+                    final int x = xx[i];
+                    if (headGlyph.contains(new Point(x, y))) {
+                        removed++;
+                    }
+                }
+            }
+
+            final int weight = chunk.getWeight();
+            final int remain = weight - removed;
+
+            if (cLinker.getHead().isVip()) {
+            }
+
+            if (remain < 15) {
+                if (cLinker.getHead().isVip()) {
+                    logger.info("{} chunk:{} weight:{} removed:{} remain:{}",
+                                cLinker.getId(), chunk, weight, removed, remain);
+                    it.remove();
+                }
+            }
+        }
     }
 
     //-----------------//
@@ -797,10 +869,10 @@ public class StemBuilder
     // lookupChunks //
     //--------------//
     /**
-     * Retrieve chunks of stems from additional compatible sections (not part
-     * of stumps or seeds found in 'allGlyphs' collection) found in the area.
+     * Retrieve chunks of stems from additional compatible sections, not part of stump or seeds,
+     * found in the area.
      * <p>
-     * We have to make sure that these chunks are compatible with the existing stumps and seeds.
+     * We have to make sure that these chunks are compatible with the existing stump and seeds.
      *
      * @param seeds the seeds kept so far
      * @return the ordered list of chunks found
@@ -829,6 +901,12 @@ public class StemBuilder
         }
 
         chunks.removeAll(seeds);
+
+        if (startLinker instanceof CLinker cLinker) {
+            // Check chunk remaining weight when head pixels have been removed
+            filterHeadParts(chunks);
+        }
+
         filterUnaligned(chunks);
 
         final Glyph stump = startLinker.getStump();
@@ -997,6 +1075,10 @@ public class StemBuilder
 
         sortItems(items.subList(1, items.size()));
 
+        if (saveConnections() && startLinker.getSource().isVip()) {
+            saveConnection(startLinker, startGlyph, chunks);
+        }
+
         insertGapEvents(maxStemProfile);
 
         logger.debug("{}", this);
@@ -1053,6 +1135,91 @@ public class StemBuilder
         }
     }
 
+    //----------------//
+    // saveConnection //
+    //----------------//
+    /**
+     * Debugging feature that saves connection image to disk.
+     *
+     * @param linker     the beam or head terminal linker
+     * @param startGlyph the starting glyph or null
+     * @param chunks     list of additional chunks, perhaps empty
+     */
+    public static void saveConnection (StemLinker linker,
+                                       Glyph startGlyph,
+                                       List<Glyph> chunks)
+    {
+        final Inter inter = linker.getSource();
+        final Rectangle bounds = inter.getBounds();
+        final Rectangle box = new Rectangle(bounds);
+        final Sheet sheet = inter.getSig().getSystem().getSheet();
+        final Scale scale = sheet.getScale();
+        box.grow(scale.toPixels(constants.displayHorizontalMargin),
+                 scale.toPixels(constants.displayVerticalMargin));
+
+        // Background
+        final int zoom = (int) Math.rint(constants.displayZoom.getValue());
+        final BufferedImage img = new BufferedImage(zoom * box.width,
+                                                    zoom * box.height,
+                                                    BufferedImage.TYPE_INT_RGB);
+        final Graphics2D g = img.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, img.getWidth(), img.getHeight());
+
+        // img offset WRT sheet origin
+        final Point offset = box.getLocation();
+        final AffineTransform at = AffineTransform.getScaleInstance(zoom, zoom);
+        at.concatenate(AffineTransform.getTranslateInstance(-offset.x, -offset.y));
+        g.setTransform(at);
+
+        // Head glyph
+        g.setColor(Color.BLACK);
+        final Glyph headGlyph = inter.getGlyph();
+        headGlyph.getRunTable().render(g, bounds.getLocation());
+
+        // Head attachments
+        UIUtil.setAbsoluteStroke(g, 1f);
+        inter.renderAttachments(g);
+
+        // Head symbol
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+        final Shape shape = inter.getShape();
+        final Family family = sheet.getStub().getMusicFontFamily();
+        final FontSymbol fs = shape.getFontSymbol(family, scale.getInterline());
+        fs.symbol.paintSymbol(g, fs.font, bounds.getLocation(), TOP_LEFT);
+
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
+
+        // startGlyph?
+        if (startGlyph != null) {
+            g.setColor(Color.RED);
+            startGlyph.getRunTable().render(g, startGlyph.getTopLeft());
+        }
+
+        // Chunks?
+        if (chunks != null) {
+            g.setColor(Color.PINK);
+            for (Glyph chunk : chunks) {
+                chunk.getRunTable().render(g, chunk.getTopLeft());
+            }
+        }
+
+        ImageUtil.saveOnDisk(img, sheet.getStub().getId(), linker.getId());
+    }
+
+    //-----------------//
+    // saveConnections //
+    //-----------------//
+    /**
+     * Report whether we should save connection images to disk for visual inspection.
+     *
+     * @return true if so
+     */
+    public static boolean saveConnections ()
+    {
+        return constants.saveConnections.isSet();
+    }
+
     //-----------//
     // sortItems //
     //-----------//
@@ -1063,12 +1230,18 @@ public class StemBuilder
      */
     private void sortItems (List<? extends StemItem> list)
     {
+//        logger.info("StemBuilder {}", this);
+//        for (StemItem item : list) {
+//            logger.info("   {}", item);
+//        }
         Collections.sort(list, (se1, se2) -> {
                      // Linker pairs are sorted on their refPt ordinate
-                     if ((se1 instanceof LinkerItem) && (se2 instanceof LinkerItem)) {
-                         return yDir * Double.compare(
-                                 ((LinkerItem) se1).linker.getReferencePoint().getY(),
-                                 ((LinkerItem) se2).linker.getReferencePoint().getY());
+                     if (se1 instanceof HalfLinkerItem hl1) {
+                         if (se2 instanceof HalfLinkerItem hl2) {
+                             final Point2D p1 = hl1.linker.getReferencePoint();
+                             final Point2D p2 = hl2.linker.getReferencePoint();
+                             return yDir * Double.compare(p1.getY(), p2.getY());
+                         }
                      }
 
                      // Others are sorted on their line starting ordinate
@@ -1107,5 +1280,29 @@ public class StemBuilder
         }
 
         return null;
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean saveConnections = new Constant.Boolean(
+                false,
+                "(debug) Should we save VIP stem connections to disk?");
+
+        private final Scale.Fraction displayHorizontalMargin = new Scale.Fraction(
+                1.0,
+                "(debug) Horizontal margin around inter in a connection image");
+
+        private final Scale.Fraction displayVerticalMargin = new Scale.Fraction(
+                2.0,
+                "(debug) Vertical margin around inter in a connection image");
+
+        private final Constant.Ratio displayZoom = new Constant.Ratio(
+                20,
+                "(debug) Zoom applied on a connection image");
     }
 }

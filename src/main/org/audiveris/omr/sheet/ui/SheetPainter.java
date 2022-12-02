@@ -77,8 +77,9 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
@@ -580,43 +581,39 @@ public abstract class SheetPainter
                 final Point center = inter.getCenter();
                 final Shape shape = inter.getShape();
                 final Staff staff = inter.getStaff();
+                final FontSymbol fs = shape.getFontSymbol(getMusicFont(staff));
 
-                MusicFont font = getMusicFont(staff);
-                ShapeSymbol symbol = font.getSymbol(shape);
-
-                if (symbol == null && font.getBackup() != null) {
-                    font = font.getBackup();
-                    symbol = font.getSymbol(shape);
+                if (fs.symbol == null) {
+                    logger.warn("No symbol for shared head {}", inter);
+                    return;
                 }
 
-                if (symbol != null) {
-                    final Dimension dim = symbol.getDimension(font);
-                    final int w = dim.width;
-                    final Point2D ref = inter.getRelationCenter(); // Not always the area center
-                    final Line2D line = new Line2D.Double(
-                            ref.getX() - w,
-                            ref.getY(),
-                            ref.getX() + w,
-                            ref.getY());
+                final Dimension dim = fs.symbol.getDimension(fs.font);
+                final int w = dim.width;
+                final Point2D ref = inter.getRelationCenter(); // Not always the area center
+                final Line2D line = new Line2D.Double(
+                        ref.getX() - w,
+                        ref.getY(),
+                        ref.getX() + w,
+                        ref.getY());
 
-                    // Draw each inter half
-                    for (HeadInter h : heads) {
-                        final AbstractChordInter ch = h.getChord();
-                        final int yDir = (ch.getCenter().y > h.getCenter().y) ? (+1) : (-1);
-                        final Path2D p = new Path2D.Double();
-                        p.append(line, false);
-                        p.lineTo(line.getX2(), line.getY2() + (yDir * height));
-                        p.lineTo(line.getX1(), line.getY1() + (yDir * height));
-                        p.closePath();
+                // Draw each inter half
+                for (HeadInter h : heads) {
+                    final AbstractChordInter ch = h.getChord();
+                    final int yDir = (ch.getCenter().y > h.getCenter().y) ? (+1) : (-1);
+                    final Path2D p = new Path2D.Double();
+                    p.append(line, false);
+                    p.lineTo(line.getX2(), line.getY2() + (yDir * height));
+                    p.lineTo(line.getX1(), line.getY1() + (yDir * height));
+                    p.closePath();
 
-                        final java.awt.Shape oldClip = g.getClip();
-                        g.clip(p);
+                    final java.awt.Shape oldClip = g.getClip();
+                    g.clip(p);
 
-                        setColor(ch);
-                        symbol.paintSymbol(g, font, center, AREA_CENTER);
+                    setColor(ch);
+                    fs.symbol.paintSymbol(g, fs.font, center, AREA_CENTER);
 
-                        g.setClip(oldClip);
-                    }
+                    g.setClip(oldClip);
                 }
             }
         }
@@ -770,20 +767,14 @@ public abstract class SheetPainter
                 StemInter stem = (StemInter) sig.getOppositeInter(flag, rels.iterator().next());
                 Point location = new Point(stem.getCenter().x, flag.getCenter().y);
 
-                MusicFont font = getMusicFont(flag.getStaff());
-                ShapeSymbol symbol = font.getSymbol(flag.getShape());
+                final Shape shape = flag.getShape();
+                final FontSymbol fs = shape.getFontSymbol(getMusicFont(flag.getStaff()));
 
-                if (symbol == null && font.getBackup() != null) {
-                    font = font.getBackup();
-                    symbol = font.getSymbol(flag.getShape());
-                }
-
-                if (symbol != null) {
-                    symbol.paintSymbol(g, font, location, MIDDLE_LEFT);
+                if (fs.symbol != null) {
+                    fs.symbol.paintSymbol(g, fs.font, location, MIDDLE_LEFT);
                 } else {
-                    logger.error("No symbol to paint {}", flag);
+                    logger.error("No symbol to paint flag {}", flag);
                 }
-
             }
         }
 
@@ -806,34 +797,31 @@ public abstract class SheetPainter
 
             final Rectangle bx = arpeggiato.getBounds();
             final Point location = new Point(bx.x + (bx.width / 2), bx.y);
+            final Shape shape = arpeggiato.getShape();
+            final FontSymbol fs = shape.getFontSymbol(getMusicFont(arpeggiato.getStaff()));
 
-            MusicFont font = getMusicFont(arpeggiato.getStaff());
-            ShapeSymbol symbol = font.getSymbol(arpeggiato.getShape());
-
-            if (symbol == null && font.getBackup() != null) {
-                font = font.getBackup();
-                symbol = font.getSymbol(arpeggiato.getShape());
+            if (fs.symbol == null) {
+                logger.warn("No symbol to paint for arpeggiato {}", arpeggiato);
+                return;
             }
 
-            if (symbol != null) {
-                Dimension dim = symbol.getDimension(font);
-                bx.grow(dim.width, 0); // To avoid any clipping on x
+            Dimension dim = fs.symbol.getDimension(fs.font);
+            bx.grow(dim.width, 0); // To avoid any clipping on x
 
-                if (clip != null) {
-                    g.setClip(clip.intersection(bx));
-                }
+            if (clip != null) {
+                g.setClip(clip.intersection(bx));
+            }
 
-                // Nb of symbols to draw, one below the other
-                final int nb = (int) Math.ceil((double) bx.height / dim.height);
+            // Nb of symbols to draw, one below the other
+            final int nb = (int) Math.ceil((double) bx.height / dim.height);
 
-                for (int i = 0; i < nb; i++) {
-                    symbol.paintSymbol(g, font, location, TOP_CENTER);
-                    location.y += dim.height;
-                }
+            for (int i = 0; i < nb; i++) {
+                fs.symbol.paintSymbol(g, fs.font, location, TOP_CENTER);
+                location.y += dim.height;
+            }
 
-                if (clip != null) {
-                    g.setClip(clip);
-                }
+            if (clip != null) {
+                g.setClip(clip);
             }
         }
 
@@ -924,7 +912,7 @@ public abstract class SheetPainter
 
             // Lower symbol part?
             if ((kind == BracketInter.BracketKind.BOTTOM)
-                    || (kind == BracketInter.BracketKind.BOTH)) {
+                        || (kind == BracketInter.BracketKind.BOTH)) {
                 final TextLayout lower = font.layoutShapeByCode(Shape.BRACKET_LOWER_SERIF);
 
                 if (lower != null) {
@@ -1026,16 +1014,10 @@ public abstract class SheetPainter
                 final Staff staff = inter.getStaff();
                 setColor(inter);
 
-                MusicFont font = getMusicFont(shape.isHead(), staff);
-                ShapeSymbol symbol = font.getSymbol(shape);
+                final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
 
-                if (symbol == null && font.getBackup() != null) {
-                    font = font.getBackup();
-                    symbol = font.getSymbol(shape);
-                }
-
-                if (symbol != null) {
-                    symbol.paintSymbol(g, font, center, AREA_CENTER);
+                if (fs.symbol != null) {
+                    fs.symbol.paintSymbol(g, fs.font, center, AREA_CENTER);
                 } else {
                     logger.error("No symbol to paint {}", inter);
                 }

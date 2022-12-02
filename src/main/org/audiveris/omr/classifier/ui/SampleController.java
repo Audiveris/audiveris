@@ -30,7 +30,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationAction;

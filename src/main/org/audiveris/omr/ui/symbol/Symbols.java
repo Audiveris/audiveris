@@ -23,8 +23,10 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.OmrFont.TRANSFORM_SMALL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.EnumMap;
 
@@ -38,15 +40,13 @@ import java.util.EnumMap;
  */
 public abstract class Symbols
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Map of plain symbol per shape. */
     protected final EnumMap<Shape, ShapeSymbol> symbolMap = new EnumMap<>(Shape.class);
-
-    //~ Constructors -------------------------------------------------------------------------------
-    protected Symbols ()
-    {
-    }
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
@@ -57,10 +57,7 @@ public abstract class Symbols
     //---------//
     // getCode //
     //---------//
-    public int[] getCode (Shape shape)
-    {
-        return null;
-    }
+    protected abstract int[] getCode (Shape shape);
 
     //-----------//
     // getSymbol //

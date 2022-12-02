@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.Inters.ClassPredicate;
 import org.audiveris.omr.sig.inter.Inters.ClassesPredicate;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Exclusion.ExclusionCause;
 import org.audiveris.omr.sig.relation.Relation;
@@ -125,6 +126,26 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------//
+    // addEdge //
+    //---------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden so that we set a break-point on certain cases.
+     */
+    @Override
+    public boolean addEdge (Inter sourceVertex,
+                            Inter targetVertex,
+                            Relation rel)
+    {
+        if (sourceVertex.isVip() && targetVertex.isVip() && rel instanceof BeamStemRelation) {
+            logger.info("BINGO");
+        }
+        return super.addEdge(sourceVertex, targetVertex, rel);
+    }
+
     //-----------//
     // addVertex //
     //-----------//
@@ -878,10 +899,8 @@ public class SIGraph
             if (inter1.isVip() || inter2.isVip()) {
                 logger.info("VIP support {}", sup.toLongString(this));
             }
-        } catch (IllegalAccessException |
-                 NoSuchMethodException |
-                 InstantiationException |
-                 InvocationTargetException ex) {
+        } catch (IllegalAccessException | NoSuchMethodException | InstantiationException
+                | InvocationTargetException ex) {
             logger.error("Could not instantiate {} {}", supportClass, ex.toString(), ex);
         }
 
@@ -1280,9 +1299,12 @@ public class SIGraph
      */
     public void sortBySource (List<Relation> rels)
     {
-        Collections.sort(rels, (Relation r1, Relation r2)
-                         -> Double.compare(getEdgeSource(r2).getBestGrade(),
-                                           getEdgeSource(r1).getBestGrade()));
+        Collections.sort(
+                rels,
+                (Relation r1,
+                 Relation r2) -> Double.compare(
+                         getEdgeSource(r2).getBestGrade(),
+                         getEdgeSource(r1).getBestGrade()));
     }
 
     //----------//
@@ -1314,8 +1336,7 @@ public class SIGraph
         // Determine which upgrades must be applied
         final SheetStub stub = system.getSheet().getStub();
         final String sheetVersionValue = stub.getVersionValue();
-        final Version sheetVersion = (sheetVersionValue != null)
-                ? new Version(sheetVersionValue)
+        final Version sheetVersion = (sheetVersionValue != null) ? new Version(sheetVersionValue)
                 : stub.getBook().getVersion();
         final List<Version> upgrades = Versions.getUpgrades(sheetVersion);
 
@@ -1549,9 +1570,8 @@ public class SIGraph
         @Override
         public boolean test (Inter inter)
         {
-            return !inter.isRemoved()
-                           && (inter.getStaff() == staff)
-                           && ((classe == null) || classe.isInstance(inter));
+            return !inter.isRemoved() && (inter.getStaff() == staff) && ((classe == null) || classe
+                    .isInstance(inter));
         }
     }
 }

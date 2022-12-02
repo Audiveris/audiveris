@@ -59,7 +59,7 @@ public class CodedSymbol
      * @param codes  the point codes
      */
     public CodedSymbol (Shape shape,
-                        MusicFont.Family family,
+                        Family family,
                         int[] codes)
     {
         super(shape, family);
@@ -104,7 +104,7 @@ public class CodedSymbol
     {
         // Select the font that corresponds to symbol family and thus its code
         if (family != font.getMusicFamily()) {
-            font = MusicFont.getPointFont(family, font.getSize(), font.getStaffInterline());
+            font = MusicFont.getMusicFont(family, font.getSize());
         }
 
         Params p = new Params();

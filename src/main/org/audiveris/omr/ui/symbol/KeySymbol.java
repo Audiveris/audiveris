@@ -25,7 +25,6 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.KeyInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -114,10 +113,11 @@ public abstract class KeySymbol
         // Define global rect as:
         // (x,y): area center wrt staff middle-left
         // (w,h): area dim
-        p.rect.setRect(p.rect.getWidth() / 2,
-                       p.rect.getY() - (KeyInter.getStandardPosition(fifths) * p.stepDy),
-                       p.rect.getWidth(),
-                       p.rect.getHeight());
+        p.rect.setRect(
+                p.rect.getWidth() / 2,
+                p.rect.getY() - (KeyInter.getStandardPosition(fifths) * p.stepDy),
+                p.rect.getWidth(),
+                p.rect.getHeight());
 
         return p;
     }
@@ -135,26 +135,30 @@ public abstract class KeySymbol
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         // Set loc to (x=left side, y=staff mid line)
-        PointUtil.add(loc,
-                      -p.rect.getWidth() / 2,
-                      -KeyInter.getStandardPosition(fifths) * p.stepDy);
+        PointUtil.add(
+                loc,
+                -p.rect.getWidth() / 2,
+                -KeyInter.getStandardPosition(fifths) * p.stepDy);
 
         if (fifths == 0) {
             int pitch = KeyInter.getItemPitch(1, null);
-            MusicFont.paint(g,
-                            p.layout,
-                            new Point2D.Double(loc.getX(), loc.getY() + (pitch * p.stepDy)),
-                            MIDDLE_LEFT);
+            MusicFont.paint(
+                    g,
+                    p.layout,
+                    new Point2D.Double(loc.getX(), loc.getY() + (pitch * p.stepDy)),
+                    MIDDLE_LEFT);
         } else {
             int sign = Integer.signum(fifths);
 
             for (int k = 1; k <= (fifths * sign); k++) {
                 int pitch = KeyInter.getItemPitch(k * sign, null);
-                MusicFont.paint(g,
-                                p.layout,
-                                new Point2D.Double(loc.getX() + ((k - 1) * p.itemDx),
-                                                   loc.getY() + (pitch * p.stepDy)),
-                                MIDDLE_LEFT);
+                MusicFont.paint(
+                        g,
+                        p.layout,
+                        new Point2D.Double(
+                                loc.getX() + ((k - 1) * p.itemDx),
+                                loc.getY() + (pitch * p.stepDy)),
+                        MIDDLE_LEFT);
             }
         }
     }

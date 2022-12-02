@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointsCollector;
@@ -37,6 +35,8 @@ import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -709,7 +709,7 @@ public class Glyph
      *
      * @return a populated point collector
      */
-    private PointsCollector getPointsCollector ()
+    public PointsCollector getPointsCollector ()
     {
         final PointsCollector collector = new PointsCollector(null, getWeight());
         runTable.cumulate(collector, new Point(left, top));

@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
 
 import java.awt.Point;

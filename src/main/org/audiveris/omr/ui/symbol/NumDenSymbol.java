@@ -23,7 +23,6 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -78,10 +77,11 @@ public class NumDenSymbol
 
         final Rectangle2D numRect = p.numLayout.getBounds();
         final Rectangle2D denRect = p.denLayout.getBounds();
-        p.rect = new Rectangle2D.Double(0,
-                                        0,
-                                        Math.max(numRect.getWidth(), denRect.getWidth()),
-                                        p.dy + Math.max(numRect.getHeight(), denRect.getHeight()));
+        p.rect = new Rectangle2D.Double(
+                0,
+                0,
+                Math.max(numRect.getWidth(), denRect.getWidth()),
+                p.dy + Math.max(numRect.getHeight(), denRect.getHeight()));
 
         return p;
     }

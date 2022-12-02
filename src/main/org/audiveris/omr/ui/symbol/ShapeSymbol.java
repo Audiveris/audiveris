@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
 import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
 
@@ -199,9 +198,10 @@ public class ShapeSymbol
 
         // Allocate image of proper size
         Rectangle intRect = p.rect.getBounds();
-        SymbolImage img = new SymbolImage(intRect.width,
-                                          intRect.height,
-                                          PointUtil.rounded(p.offset));
+        SymbolImage img = new SymbolImage(
+                intRect.width,
+                intRect.height,
+                PointUtil.rounded(p.offset));
 
         // Paint the image
         Graphics2D g = (Graphics2D) img.getGraphics();
@@ -398,8 +398,9 @@ public class ShapeSymbol
             return null;
         }
 
-        return new Dimension((int) Math.rint(p.rect.getWidth()),
-                             (int) Math.rint(p.rect.getHeight()));
+        return new Dimension(
+                (int) Math.rint(p.rect.getWidth()),
+                (int) Math.rint(p.rect.getHeight()));
     }
 
     //-----------//
@@ -543,8 +544,8 @@ public class ShapeSymbol
     //-----------------//
     @Override
     public Object getTransferData (DataFlavor flavor)
-            throws UnsupportedFlavorException,
-                   IOException
+        throws UnsupportedFlavorException,
+        IOException
     {
         if (isDataFlavorSupported(flavor)) {
             return this;
@@ -559,7 +560,8 @@ public class ShapeSymbol
     @Override
     public DataFlavor[] getTransferDataFlavors ()
     {
-        return new DataFlavor[]{DATA_FLAVOR};
+        return new DataFlavor[]
+        { DATA_FLAVOR };
     }
 
     //----------//
@@ -715,8 +717,8 @@ public class ShapeSymbol
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("{").append(internals()).append("}").toString();
+        return new StringBuilder(getClass().getSimpleName()).append("{").append(internals()).append(
+                "}").toString();
     }
 
     //-------------//

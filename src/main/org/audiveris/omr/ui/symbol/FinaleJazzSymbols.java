@@ -26,7 +26,6 @@ import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -34,25 +33,19 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>FinaleJazzSymbols</code>
+ * Class <code>FinaleJazzSymbols</code> is a set of symbols meant for Jazz scores.
  *
  * @author Hervé Bitteur
  */
 public class FinaleJazzSymbols
         extends Symbols
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    public FinaleJazzSymbols ()
-    {
-        populateSymbols();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
-    protected MusicFont.Family family ()
+    protected Family family ()
     {
-        return MusicFont.Family.FinaleJazz;
+        return Family.FinaleJazz;
     }
 
     @Override

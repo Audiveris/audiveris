@@ -26,7 +26,7 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Mark;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
-import static org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
+import org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -66,13 +66,13 @@ public class Voice
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
     //~ Enumerations -------------------------------------------------------------------------------
-    //--------//
-    // Family //
-    //--------//
+    //-----------//
+    // VoiceKind //
+    //-----------//
     /**
      * To classify voices (and specifically their ID) according to their "height".
      */
-    public static enum Family
+    public static enum VoiceKind
     {
 
         /** Started in first staff, or chord with upward stem in merged grand staff. */
@@ -174,8 +174,8 @@ public class Voice
     /** The staff in which this voice started. */
     private Staff startingStaff;
 
-    /** The related family. */
-    private Family family;
+    /** The related voice kind. */
+    private VoiceKind kind;
 
     /** The sequence of chords. */
     private List<AbstractChordInter> chords;
@@ -206,9 +206,9 @@ public class Voice
 
         startingStaff = chord.getTopStaff();
 
-        family = measure.inferVoiceFamily(chord);
+        kind = measure.inferVoiceKind(chord);
 
-        id = measure.generateVoiceId(family);
+        id = measure.generateVoiceId(kind);
 
         if (chord.isMeasureRest()) {
             measureRestChord = (RestChordInter) chord;
@@ -290,7 +290,8 @@ public class Voice
                         logger.info("{} {} too long", measure, this);
                         measure.setAbnormal(true);
 
-                        if ((stack.getExcess() == null) || (delta.compareTo(stack.getExcess()) > 0)) {
+                        if ((stack.getExcess() == null) || (delta.compareTo(
+                                stack.getExcess()) > 0)) {
                             stack.setExcess(delta); // For stack
                         }
                     }
@@ -316,8 +317,8 @@ public class Voice
             SlotVoice info = getSlotInfo(slot);
 
             if (info == null) {
-                if ((prevChord != null)
-                            && (prevChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
+                if ((prevChord != null) && (prevChord.getEndTime().compareTo(
+                        slot.getTimeOffset()) > 0)) {
                     putSlotInfo(slot, new SlotVoice(prevChord, ChordStatus.CONTINUE));
                 }
             } else {
@@ -442,17 +443,17 @@ public class Voice
         return voiceDur;
     }
 
-    //-----------//
-    // getFamily //
-    //-----------//
+    //---------//
+    // getKind //
+    //---------//
     /**
-     * Report the family (HIGH, LOW, INFRA) this voice belongs to.
+     * Report the voice kind (HIGH, LOW, INFRA) this voice belongs to.
      *
-     * @return the family
+     * @return the voice kind
      */
-    public Family getFamily ()
+    public VoiceKind getKind ()
     {
-        return family;
+        return kind;
     }
 
     //---------------//

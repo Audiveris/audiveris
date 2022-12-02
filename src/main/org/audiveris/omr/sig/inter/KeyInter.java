@@ -358,14 +358,7 @@ public class KeyInter
         }
 
         if (!isCancel()) {
-            ShapeSymbol symbol = font.getSymbol(shape);
-
-            if (symbol == null && font.getBackup() != null) {
-                font = font.getBackup();
-                symbol = font.getSymbol(shape);
-            }
-
-            return symbol;
+            return shape.getFontSymbol(font).symbol;
         }
 
         KeyInter keyBefore = null;

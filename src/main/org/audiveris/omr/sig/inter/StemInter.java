@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -53,13 +51,15 @@ import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
-import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -223,8 +223,9 @@ public class StemInter
                 }
 
                 if (yAnchor > median.getY1()) {
-                    return new Line2D.Double(new Point2D.Double(median.getX1(), yAnchor),
-                                             median.getP2());
+                    return new Line2D.Double(
+                            new Point2D.Double(median.getX1(), yAnchor),
+                            median.getP2());
                 }
             } else if (dir < 0) {
                 // Stem up, heads are at bottom of stem
@@ -241,8 +242,9 @@ public class StemInter
                 }
 
                 if (yAnchor < median.getY2()) {
-                    return new Line2D.Double(median.getP1(), new Point2D.Double(median.getX2(),
-                                                                                yAnchor));
+                    return new Line2D.Double(
+                            median.getP1(),
+                            new Point2D.Double(median.getX2(), yAnchor));
                 }
             }
         }
@@ -530,11 +532,12 @@ public class StemInter
 
         Collections.sort(heads, Inters.byCenterOrdinate); // Top down
         final int vDir = computeDirection(); // Head to tail
+        final VerticalSide vSide = vDir < 0 ? TOP : BOTTOM;
         final HeadInter lastHead = (vDir < 0) ? heads.get(0) : heads.get(heads.size() - 1);
         final Relation rel = sig.getRelation(lastHead, this, HeadStemRelation.class);
         final HeadStemRelation hsRel = (HeadStemRelation) rel;
         final HorizontalSide headSide = hsRel.getHeadSide();
-        final Point2D refPt = lastHead.getStemReferencePoint(headSide);
+        final Point2D refPt = lastHead.getStemReferencePoint(headSide, vSide.opposite());
         final Point2D stemEnd = (vDir < 0) ? median.getP1() : median.getP2();
 
         return (int) Math.rint(Math.abs(stemEnd.getY() - refPt.getY()));
@@ -722,11 +725,14 @@ public class StemInter
 
         Collections.sort(heads, Inters.byCenterOrdinate);
         final int dir = computeDirection(); // From head to tail
+        final VerticalSide vSide = (dir > 0) ? BOTTOM : TOP;
         final HeadInter head = (dir > 0) ? heads.get(0) : heads.get(heads.size() - 1);
-        final HeadStemRelation rel = (HeadStemRelation) sig.getRelation(head, this,
-                                                                        HeadStemRelation.class);
+        final HeadStemRelation rel = (HeadStemRelation) sig.getRelation(
+                head,
+                this,
+                HeadStemRelation.class);
         final HorizontalSide hSide = rel.getHeadSide();
-        final double yRef = head.getStemReferencePoint(hSide).getY();
+        final double yRef = head.getStemReferencePoint(hSide, vSide).getY();
 
         final Line2D longLine = getReliableLine();
         final Point2D crossPt = LineUtil.intersectionAtY(longLine, yRef);
@@ -754,9 +760,12 @@ public class StemInter
 
         // Sort beams top down
         final int x = getCenter().x;
-        Collections.sort(beams, (AbstractBeamInter b1, AbstractBeamInter b2)
-                         -> Double.compare(LineUtil.yAtX(b1.getMedian(), x),
-                                           LineUtil.yAtX(b2.getMedian(), x)));
+        Collections.sort(
+                beams,
+                (AbstractBeamInter b1,
+                        AbstractBeamInter b2) -> Double.compare(
+                        LineUtil.yAtX(b1.getMedian(), x),
+                        LineUtil.yAtX(b2.getMedian(), x)));
 
         final int dir = computeDirection(); // From head to tail
         final AbstractBeamInter beam = (dir < 0) ? beams.get(0) : beams.get(beams.size() - 1);
@@ -817,7 +826,6 @@ public class StemInter
      *
      * @param system  the containing system
      * @param profile the profile to use
-     *
      * @return collection of links, perhaps empty
      */
     public Collection<Link> lookupBeamLinks (SystemInfo system,
@@ -832,10 +840,10 @@ public class StemInter
         final Rectangle luBox = getBounds();
         luBox.grow(maxBeamOutDx, maxYGap);
 
-        final Set<Inter> beams = new LinkedHashSet<>(system.getSig().inters(
-                (Inter inter) -> !inter.isRemoved()
-                                         && inter instanceof AbstractBeamInter
-                                         && inter.getBounds().intersects(luBox)));
+        final Set<Inter> beams = new LinkedHashSet<>(
+                system.getSig().inters(
+                        (Inter inter) -> !inter.isRemoved() && inter instanceof AbstractBeamInter
+                                                 && inter.getBounds().intersects(luBox)));
 
         // Include also the beams already connected to the stem
         if (sig != null) {
@@ -881,11 +889,11 @@ public class StemInter
         final Rectangle luBox = getBounds();
         luBox.grow(maxHeadOutDx, maxYGap);
 
-        final Set<Inter> heads = new LinkedHashSet<>(system.getSig().inters(
-                (Inter inter) -> !inter.isRemoved()
-                                         && ShapeSet.StemHeads.contains(inter.getShape())
-                                         && inter.getBounds().intersects(luBox)
-                                         && ((HeadInter) inter).getStems().isEmpty()));
+        final Set<Inter> heads = new LinkedHashSet<>(
+                system.getSig().inters(
+                        (Inter inter) -> !inter.isRemoved() && ShapeSet.StemHeads.contains(
+                        inter.getShape()) && inter.getBounds().intersects(luBox)
+                                                 && ((HeadInter) inter).getStems().isEmpty()));
 
         // Include also the heads already connected to the stem
         if (sig != null) {
@@ -946,8 +954,9 @@ public class StemInter
 
             if ((oldTop != null) && (oldBottom != null)) {
                 // These old integer points were min/max points INSIDE the stem
-                setMedian(new Point2D.Double(oldTop.getX() + 0.5, oldTop.getY()),
-                          new Point2D.Double(oldBottom.getX() + 0.5, oldBottom.getY() + 1));
+                setMedian(
+                        new Point2D.Double(oldTop.getX() + 0.5, oldTop.getY()),
+                        new Point2D.Double(oldBottom.getX() + 0.5, oldBottom.getY() + 1));
                 oldTop = oldBottom = null;
                 upgraded = true;
             }

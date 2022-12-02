@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -73,14 +72,16 @@ public class BeamHookSymbol
                 p.model.p1 = new Point2D.Double(r.getWidth() - width, p.model.thickness / 2.0);
                 p.model.p2 = new Point2D.Double(r.getWidth(), (p.model.thickness / 2.0) + absShift);
             } else {
-                p.model.p1 = new Point2D.Double(r.getWidth() - width,
-                                                (p.model.thickness / 2.0) + absShift);
+                p.model.p1 = new Point2D.Double(
+                        r.getWidth() - width,
+                        (p.model.thickness / 2.0) + absShift);
                 p.model.p2 = new Point2D.Double(r.getWidth(), p.model.thickness / 2.0);
             }
 
             // Modify offset to point at center of beam hook
-            p.offset = new Point2D.Double((r.getWidth() - width) / 2,
-                                          ((absShift + p.model.thickness) - r.getHeight()) / 2.0);
+            p.offset = new Point2D.Double(
+                    (r.getWidth() - width) / 2,
+                    ((absShift + p.model.thickness) - r.getHeight()) / 2.0);
         } else {
             if (yShift >= 0) {
                 p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0);
@@ -90,8 +91,9 @@ public class BeamHookSymbol
                 p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0);
             }
 
-            p.rect = new Rectangle((int) Math.ceil(width),
-                                   (int) Math.ceil(p.model.thickness + absShift));
+            p.rect = new Rectangle(
+                    (int) Math.ceil(width),
+                    (int) Math.ceil(p.model.thickness + absShift));
         }
 
         return p;

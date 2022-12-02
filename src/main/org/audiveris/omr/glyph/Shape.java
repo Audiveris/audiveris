@@ -25,8 +25,9 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
@@ -477,8 +478,8 @@ public enum Shape
 
     /** A comparator based on shape name. */
     public static final Comparator<Shape> alphaComparator = (Shape o1,
-                                                             Shape o2) -> o1.name().compareTo(
-                                                                     o2.name());
+            Shape o2) -> o1.name().compareTo(
+            o2.name());
 
     /** Explanation of the glyph shape. */
     private final String description;
@@ -582,7 +583,8 @@ public enum Shape
     public boolean isPercussion ()
     {
         return ShapeSet.HeadsCross.contains(this) || ShapeSet.HeadsDiamond.contains(this)
-                || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(this);
+                       || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(
+                this);
     }
 
     //--------//
@@ -630,7 +632,7 @@ public enum Shape
     /**
      * Check whether the shape is a small note head, meant for cue or grace.
      *
-     * @return true if small (black/void/whole)
+     * @return true if small (black/void/whole/breve)
      */
     public boolean isSmall ()
     {
@@ -731,10 +733,14 @@ public enum Shape
     public int getSlashCount ()
     {
         return switch (this) {
-        case REPEAT_ONE_BAR -> 1;
-        case REPEAT_TWO_BARS -> 2;
-        case REPEAT_FOUR_BARS -> 4;
-        default -> 0;
+            case REPEAT_ONE_BAR ->
+                1;
+            case REPEAT_TWO_BARS ->
+                2;
+            case REPEAT_FOUR_BARS ->
+                4;
+            default ->
+                0;
         };
     }
 
@@ -769,14 +775,61 @@ public enum Shape
      */
     public ShapeSymbol getSymbol (Family family)
     {
-        final MusicFont font = MusicFont.getBaseFont(family, MusicFont.DEFAULT_INTERLINE);
+        return getFontSymbol(family).symbol;
+    }
+
+    //---------------//
+    // getFontSymbol //
+    //---------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font family.
+     * <p>
+     * DEFAULT_INTERLINE is used as staff interline.
+     *
+     * @param family preferred font family
+     * @return a non-null FontSymbol structure, populated by the first compatible family if any
+     */
+    public FontSymbol getFontSymbol (Family family)
+    {
+        return getFontSymbol(family, MusicFont.DEFAULT_INTERLINE);
+    }
+
+    //---------------//
+    // getFontSymbol //
+    //---------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font family
+     * and staff interline.
+     *
+     * @param family    preferred font family
+     * @param interline specified interline value
+     * @return a non-null FontSymbol structure, populated by the first compatible family if any
+     */
+    public FontSymbol getFontSymbol (Family family,
+                                     int interline)
+    {
+        return getFontSymbol(MusicFont.getBaseFont(family, interline));
+    }
+
+    //---------------//
+    // getFontSymbol //
+    //---------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font.
+     *
+     * @param font preferred font
+     * @return a non-null FontSymbol structure, populated by the first compatible font if any
+     */
+    public FontSymbol getFontSymbol (MusicFont font)
+    {
         ShapeSymbol symbol = font.getSymbol(this);
 
-        if (symbol == null && font.getBackup() != null) {
-            symbol = font.getBackup().getSymbol(this);
+        while (symbol == null && font.getBackup() != null) {
+            font = font.getBackup();
+            symbol = font.getSymbol(this);
         }
 
-        return symbol;
+        return new FontSymbol(font, symbol);
     }
 
     //-----------------//
@@ -784,7 +837,8 @@ public enum Shape
     //-----------------//
     /**
      * Report the intrinsic duration of the note shape.
-     * This is the head or rest duration, regardless of any tuplet, beam/flag or augmentation dot.
+     * This is the head or rest duration, regardless of any tuplet, beam/flag or augmentation
+     * dot.
      *
      * @return the duration as a rational value, or null if this shape is not a note shape
      */
@@ -851,23 +905,29 @@ public enum Shape
     //--------------//
     public HeadMotif getHeadMotif ()
     {
-        if (ShapeSet.HeadsOval.contains(this))
+        if (ShapeSet.HeadsOval.contains(this)) {
             return HeadMotif.oval;
+        }
 
-        if (ShapeSet.HeadsOvalSmall.contains(this))
+        if (ShapeSet.HeadsOvalSmall.contains(this)) {
             return HeadMotif.small;
+        }
 
-        if (ShapeSet.HeadsCross.contains(this))
+        if (ShapeSet.HeadsCross.contains(this)) {
             return HeadMotif.cross;
+        }
 
-        if (ShapeSet.HeadsDiamond.contains(this))
+        if (ShapeSet.HeadsDiamond.contains(this)) {
             return HeadMotif.diamond;
+        }
 
-        if (ShapeSet.HeadsTriangle.contains(this))
+        if (ShapeSet.HeadsTriangle.contains(this)) {
             return HeadMotif.triangle;
+        }
 
-        if (ShapeSet.HeadsCircle.contains(this))
+        if (ShapeSet.HeadsCircle.contains(this)) {
             return HeadMotif.circle;
+        }
 
         return null;
     }

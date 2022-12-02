@@ -23,7 +23,6 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -71,10 +70,11 @@ public class RepeatBarSymbol
 
         Rectangle2D repeatRect = p.layout.getBounds();
         Rectangle2D barlineRect = p.barlineLayout.getBounds();
-        p.rect = new Rectangle2D.Double(0,
-                                        0,
-                                        Math.max(repeatRect.getWidth(), barlineRect.getWidth()),
-                                        Math.max(repeatRect.getHeight(), barlineRect.getHeight()));
+        p.rect = new Rectangle2D.Double(
+                0,
+                0,
+                Math.max(repeatRect.getWidth(), barlineRect.getWidth()),
+                Math.max(repeatRect.getHeight(), barlineRect.getHeight()));
 
         return p;
     }

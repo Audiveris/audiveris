@@ -93,7 +93,7 @@ public class TextFont
      *
      * @param size the point size of the <code>Font</code>
      */
-    public TextFont (float size)
+    public TextFont (int size)
     {
         super(TEXT_FONT_NAME, null, Font.PLAIN, size);
     }

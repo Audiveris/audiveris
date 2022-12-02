@@ -45,7 +45,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
@@ -134,7 +134,8 @@ public class SampleBrowser
     private static boolean standAlone = false;
 
     /** Events that can be published on the local sample service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { EntityListEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Repository of training samples. */
@@ -1241,11 +1242,11 @@ public class SampleBrowser
             setFont(list.getFont());
             setText(shape.toString());
 
-            final ShapeSymbol symbol = shape.getDecoratedSymbol(MusicFont.BACKUP_FAMILY);
+            final ShapeSymbol symbol = shape.getDecoratedSymbol(Family.Bravura);
             if (symbol != null) {
                 setIcon(new FixedWidthIcon(symbol));
             } else {
-                logger.warn("Needed symbol for shape {} in {}", shape, MusicFont.BACKUP_FAMILY);
+                logger.warn("Needed symbol for shape {} in {}", shape, Family.Bravura);
             }
 
             return this;

@@ -28,7 +28,6 @@ import static org.audiveris.omr.glyph.Shape.LONG_REST;
 import static org.audiveris.omr.glyph.Shape.WHOLE_REST;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,10 +71,8 @@ public class RestSymbol
     @Override
     protected boolean supportsDecoration ()
     {
-        return (shape == BREVE_REST)
-                       || (shape == LONG_REST)
-                       || (shape == WHOLE_REST)
-                       || (shape == HALF_REST);
+        return (shape == BREVE_REST) || (shape == LONG_REST) || (shape == WHOLE_REST)
+                || (shape == HALF_REST);
     }
 
     //-----------//

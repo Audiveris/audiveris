@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,6 +240,24 @@ public class ShapeSet
             QUARTER_NOTE_DOWN,
             HALF_NOTE_UP,
             HALF_NOTE_DOWN);
+
+    /** All quarter heads (duration: 1/4). */
+    public static final EnumSet<Shape> QuarterHeads = EnumSet.of(
+            NOTEHEAD_BLACK,
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_CROSS,
+            NOTEHEAD_DIAMOND_FILLED,
+            NOTEHEAD_TRIANGLE_DOWN_FILLED,
+            NOTEHEAD_CIRCLE_X);
+
+    /** All half heads (duration: 1/2). */
+    public static final EnumSet<Shape> HalfHeads = EnumSet.of(
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL,
+            NOTEHEAD_CROSS_VOID,
+            NOTEHEAD_DIAMOND_VOID,
+            NOTEHEAD_TRIANGLE_DOWN_VOID,
+            NOTEHEAD_CIRCLE_X_VOID);
 
     /** All heads with a stem. */
     public static final EnumSet<Shape> StemHeads = EnumSet.of(
@@ -511,8 +529,8 @@ public class ShapeSet
             Shape.values()[0],
             LAST_PHYSICAL_SHAPE);
 
-    /** Symbols that can be attached to a stem. */
-    public static final EnumSet<Shape> StemSymbols = EnumSet.copyOf(
+    /** Shapes that can be attached to a stem. */
+    public static final EnumSet<Shape> StemShapes = EnumSet.copyOf(
             shapesOf(StemHeads, Flags.getShapes(), Beams));
 
     /** Pedals */

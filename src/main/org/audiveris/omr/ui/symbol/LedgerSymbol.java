@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -64,10 +63,11 @@ public class LedgerSymbol
         final MyParams p = getParams(font);
         final double width = p.rect.getWidth();
 
-        return new LedgerInter.Model(location.x - width / 2,
-                                     location.y,
-                                     location.x + width / 2,
-                                     location.y);
+        return new LedgerInter.Model(
+                location.x - width / 2,
+                location.y,
+                location.x + width / 2,
+                location.y);
     }
 
     //-----------//

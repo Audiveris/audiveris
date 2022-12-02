@@ -262,8 +262,9 @@ public class TemplateBoard
     /**
      * Check whether the provided shape and anchor values are compatible.
      * <ul>
-     * <li>Whole shapes go with Anchor.MIDDLE_LEFT only.</li>
-     * <li>Head shapes go with Anchor.LEFT_STEM and Anchor.RIGHT_STEM plus Anchor.MIDDLE_LEFT</li>
+     * <li>Stem-less shapes (breve, wholes) go with Anchor.MIDDLE_LEFT only.</li>
+     * <li>Stem shapes (halves, quarters) go with Anchor.LEFT_STEM and Anchor.RIGHT_STEM plus
+     * Anchor.MIDDLE_LEFT</li>
      * </ul>
      *
      * @param shape  provided shape
@@ -273,12 +274,11 @@ public class TemplateBoard
     private boolean areCompatible (Shape shape,
                                    Anchor anchor)
     {
-        return switch (shape) {
-            case BREVE, WHOLE_NOTE, WHOLE_NOTE_CIRCLE_X, WHOLE_NOTE_CROSS, WHOLE_NOTE_DIAMOND, WHOLE_NOTE_SMALL, WHOLE_NOTE_TRIANGLE_DOWN ->
-                anchor == Anchor.MIDDLE_LEFT;
-            default ->
-                true;
-        };
+        if (ShapeSet.StemLessHeads.contains(shape)) {
+            return anchor == Anchor.MIDDLE_LEFT;
+        } else {
+            return true;
+        }
     }
 
     //--------------//

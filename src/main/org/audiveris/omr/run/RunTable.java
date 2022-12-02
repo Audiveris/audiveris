@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.run;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.image.PixelSource;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.math.PointUtil;
@@ -38,6 +36,8 @@ import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -86,15 +86,14 @@ import javax.xml.stream.XMLStreamException;
  * </ul>
  * We can have these various kinds of sequence, where 'F' stands for the length of a foreground run
  * and 'B' for the length of a background run:
- *
- * <pre>
- * null    (for an empty sequence)
- * []      (for an empty sequence as well)
- * [F]     (&gt;0)
- * [FBF]   (perhaps 0BF)
- * [FBFBF] (perhaps 0BFBF)
- * etc...
- * </pre>
+ * <ul>
+ * <li>null (for an empty sequence)
+ * <li>[] (for an empty sequence as well)
+ * <li>[F] (&gt;0)
+ * <li>[FBF] (perhaps 0BF)
+ * <li>[FBFBF] (perhaps 0BFBF)
+ * <li>etc...
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -1310,7 +1309,7 @@ public class RunTable
         while (iter.hasNext()) {
             Run r = iter.next();
 
-            if (r.isIdentical(run)) {
+            if (r.equals(run)) {
                 // We are located on the right run
                 iter.remove();
                 weight = null;

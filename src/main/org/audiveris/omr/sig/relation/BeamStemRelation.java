@@ -268,8 +268,8 @@ public class BeamStemRelation
         // Abscissa
         final double xGap = (portion == BeamPortion.CENTER) ? 0
                 : ((portion == BeamPortion.LEFT)
-                        ? Math.max(0, beamBorder.getX1() - xStem)
-                        : Math.max(0, xStem - beamBorder.getX2()));
+                        ? beamBorder.getX1() - xStem
+                        : xStem - beamBorder.getX2());
 
         // Ordinate
         final double yGap = Math.max(Math.max(0, stemLine.getY1() - crossPt.getY()),

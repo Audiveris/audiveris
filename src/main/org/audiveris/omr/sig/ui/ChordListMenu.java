@@ -1056,7 +1056,7 @@ public class ChordListMenu
             add(noneItem);
 
             // ID items
-            for (int id : chord.getMeasure().inferVoiceFamily(chord).ids()) {
+            for (int id : chord.getMeasure().inferVoiceKind(chord).ids()) {
                 final JMenuItem item = new JRadioButtonMenuItem("" + id);
                 item.setOpaque(true);
                 item.setBackground(new Color(Voices.colorOf(id).getRGB()));

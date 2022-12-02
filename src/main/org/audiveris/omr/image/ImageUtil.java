@@ -32,6 +32,8 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
@@ -272,8 +274,27 @@ public abstract class ImageUtil
     public static void saveOnDisk (BufferedImage image,
                                    String name)
     {
+        saveOnDisk(image, "", name);
+    }
+
+    //------------//
+    // saveOnDisk //
+    //------------//
+    /**
+     * Convenient method to save a BufferedImage to disk,
+     * in a subdirectory of application temp area)
+     *
+     * @param image the image to save
+     * @param dirs  the intermediate sub-directories, perhaps an empty string
+     * @param name  file name, without extension
+     */
+    public static void saveOnDisk (BufferedImage image,
+                                   String dirs,
+                                   String name)
+    {
         try {
-            final File file = WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile();
+            final Path dir = Files.createDirectories(WellKnowns.TEMP_FOLDER.resolve(dirs));
+            final File file = dir.resolve(name + ".png").toFile();
             ImageIO.write(image, "png", file);
             logger.info("Saved {}", file);
         } catch (IOException ex) {

@@ -50,7 +50,7 @@ public class CompoundNoteSymbol
      * @param family the musicFont family
      */
     public CompoundNoteSymbol (Shape shape,
-                               MusicFont.Family family)
+                               Family family)
     {
         super(shape, family);
     }

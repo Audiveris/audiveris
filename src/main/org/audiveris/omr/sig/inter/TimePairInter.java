@@ -25,7 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
@@ -207,7 +207,7 @@ public class TimePairInter
     // getShapeSymbol //
     //----------------//
     @Override
-    public ShapeSymbol getShapeSymbol (MusicFont.Family family)
+    public ShapeSymbol getShapeSymbol (Family family)
     {
         final TimeNumberInter num = getNum();
         final TimeNumberInter den = getDen();

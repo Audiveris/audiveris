@@ -30,8 +30,8 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
-import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -124,9 +124,12 @@ public class HeadStemRelation
         }
 
         if (extensionPoint == null) {
-            Anchor anchor = (headSide == LEFT) ? Anchor.LEFT_STEM : Anchor.RIGHT_STEM;
-            Point2D refPt = head.getStemReferencePoint(anchor);
-            extensionPoint = refPt;
+            // This is questionable: BINGO TODO
+            final VerticalSide vSide = (stem.getCenter().y < head.getCenter().y) ? TOP : BOTTOM;
+            final Anchor anchor = (headSide == LEFT)
+                    ? (vSide == TOP ? Anchor.TOP_LEFT_STEM : Anchor.BOTTOM_LEFT_STEM)
+                    : (vSide == TOP ? Anchor.TOP_RIGHT_STEM : Anchor.RIGHT_STEM);
+            extensionPoint = head.getStemReferencePoint(anchor);
         }
 
         if (isManual() || head.isManual() || stem.isManual()) {
@@ -294,7 +297,7 @@ public class HeadStemRelation
         final int yDir = (headToTail == TOP) ? (-1) : 1;
         final int xDir = -stemLine.relativeCCW(head.getCenter());
         final HorizontalSide hSide = (xDir < 0) ? LEFT : RIGHT;
-        final Point2D refPt = head.getStemReferencePoint(hSide);
+        final Point2D refPt = head.getStemReferencePoint(hSide, headToTail);
         final HeadStemRelation hRel = new HeadStemRelation();
         hRel.setHeadSide(hSide);
 
@@ -626,7 +629,7 @@ public class HeadStemRelation
                 "Value for (target) stem coeff in support formula");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.25,
+                0.1, // was 0.25, BINGO
                 "Maximum horizontal overlap between stem & head");
 
         @SuppressWarnings("unused")

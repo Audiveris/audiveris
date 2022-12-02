@@ -30,16 +30,16 @@ import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.bytedeco.javacpp.*;
 import org.bytedeco.leptonica.PIX;
+import static org.bytedeco.leptonica.global.lept.*;
 import org.bytedeco.tesseract.PageIterator;
 import org.bytedeco.tesseract.ResultIterator;
 import org.bytedeco.tesseract.TessBaseAPI;
-import static org.bytedeco.leptonica.global.lept.*;
 import static org.bytedeco.tesseract.global.tesseract.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -98,7 +98,7 @@ public class TesseractOrder
     private final String label;
 
     /** Should we keep a disk copy of the image?. */
-    private final boolean keepImage;
+    private final boolean saveImage;
 
     /** Language specification. */
     private final String lang;
@@ -121,7 +121,7 @@ public class TesseractOrder
      *
      * @param label         A debugging label (such as sheet name or glyph id)
      * @param serial        A unique id for this order instance
-     * @param keepImage     True to keep a disk copy of the image
+     * @param saveImage     True to keep a disk copy of the image
      * @param lang          The language specification
      * @param segMode       The desired page segmentation mode
      * @param bufferedImage The image to process
@@ -131,7 +131,7 @@ public class TesseractOrder
      */
     public TesseractOrder (String label,
                            int serial,
-                           boolean keepImage,
+                           boolean saveImage,
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
@@ -140,7 +140,7 @@ public class TesseractOrder
     {
         this.label = label;
         this.serial = serial;
-        this.keepImage = keepImage;
+        this.saveImage = saveImage;
         this.lang = lang;
         this.segMode = segMode;
 
@@ -451,15 +451,16 @@ public class TesseractOrder
         buf.put(bytes);
 
         // Should we keep a local copy of this buffer on disk?
-        if (keepImage) {
-            String name = String.format("%03d-", serial) + ((label != null) ? label : "");
-            Path path = WellKnowns.TEMP_FOLDER.resolve(name + ".tif");
+        if (saveImage) {
+            final Path dirPath = WellKnowns.TEMP_FOLDER.resolve(label);
 
-            // Make sure the TEMP directory exists
-            if (!Files.exists(WellKnowns.TEMP_FOLDER)) {
-                Files.createDirectories(WellKnowns.TEMP_FOLDER);
+            // Make sure the target directory exists
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
             }
 
+            final String name = String.format("text-%03d.tif", serial);
+            final Path path = dirPath.resolve(name);
             try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
                 fos.write(bytes);
             } catch (IOException ex) {

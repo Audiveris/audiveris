@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -84,9 +83,10 @@ public class SlurSymbol
         final double h = il;
         p.rect = new Rectangle2D.Double(0, 0, w, h);
 
-        p.model = new SlurInter.Model(above //  /--\ vs \--/
-                ? new CubicCurve2D.Double(0, h, w / 5, 0, 4 * w / 5, 0, w, h)
-                : new CubicCurve2D.Double(0, 0, w / 5, h, 4 * w / 5, h, w, 0));
+        p.model = new SlurInter.Model(
+                above //  /--\ vs \--/
+                        ? new CubicCurve2D.Double(0, h, w / 5, 0, 4 * w / 5, 0, w, h)
+                        : new CubicCurve2D.Double(0, 0, w / 5, h, 4 * w / 5, h, w, 0));
 
         // For a slur symbol, focus center is the middle of side points
         p.offset = new Point2D.Double(0, above ? (h / 2) : (-h / 2));

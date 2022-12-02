@@ -50,7 +50,7 @@ import java.util.Map;
 
 /**
  * Class <code>OmrFont</code> is meant to simplify the use of rendering symbols when using a
- * Text or a Music font.
+ * Text font or a Music font.
  *
  * @author Hervé Bitteur
  */
@@ -85,43 +85,69 @@ public abstract class OmrFont
     /** Needed for font size computation. */
     public static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
-    /** Cache for created fonts. No style, no size. */
-    private static final Map<String, Font> fontCache = new HashMap<>();
+    /**
+     * Cache for all created fonts (music and text), based on name and size.
+     * <p>
+     * Only PLAIN style is cached.
+     * If a different style is desired, the caller must derive it from the cached plain one.
+     */
+    private static final Map<String, Map<Integer, Font>> fontCache = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OmrFont object.
      *
-     * @param fontName  the font name
-     * @param fileName  the file name if any
-     * @param style     generally PLAIN
-     * @param pointSize the point size of the font
+     * @param fontName the font name
+     * @param fileName the file name if any
+     * @param style    generally PLAIN
+     * @param size     the integer point size of the font
      */
     protected OmrFont (String fontName,
                        String fileName,
                        int style,
-                       float pointSize)
+                       int size)
     {
-        super(getFont(fontName, fileName, style, pointSize));
+        this(getFont(fontName, fileName, style, size));
+    }
+
+    protected OmrFont (Font font)
+    {
+        super(font);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // cache //
+    //-------//
+    /**
+     * Cache the provided font into the global font cache.
+     *
+     * @param font the font to cache
+     */
+    protected static void cache (Font font)
+    {
+        Map<Integer, Font> sizeMap = fontCache.get(font.getFamily());
+        if (sizeMap == null) {
+            fontCache.put(font.getFamily(), sizeMap = new HashMap<>());
+        }
+
+        sizeMap.put(font.getSize(), font);
+    }
+
     //------------//
     // createFont //
     //------------//
     /**
      * Create and register the desired font.
      *
-     * @param fontName  font name (e.g. "Finale Jazz")
-     * @param fileName  file name (e.g. "FinaleJazz.otf")
-     * @param style     the desired font style (generally 0 for PLAIN)
-     * @param pointSize the desired point size for this font
+     * @param fontName font name (e.g. "Finale Jazz")
+     * @param fileName file name (e.g. "FinaleJazz.otf")
+     * @param size     the desired size for this font
      * @return the cached or created font
      */
     private static Font createFont (String fontName,
                                     String fileName,
-                                    int style,
-                                    float pointSize)
+                                    int size)
     {
         logger.debug("OmrFont.createFont fontName: {} fileName: {}", fontName, fileName);
 
@@ -133,36 +159,59 @@ public abstract class OmrFont
             }
         }
 
-        Font font;
-
         // First, lookup our own fonts (defined in "res" folder)
-        if (fileName != null)
-        try {
-            final URL url = UriUtil.toURI(WellKnowns.RES_URI, fileName).toURL();
-            logger.debug("Font url={}", url);
+        if (fileName != null) {
+            try {
+                final URL url = UriUtil.toURI(WellKnowns.RES_URI, fileName).toURL();
+                logger.debug("Font url={}", url);
 
-            try (InputStream input = url.openStream()) {
-                logger.debug("Found file {}", fileName);
-                font = Font.createFont(Font.TRUETYPE_FONT, input);
-                fontCache.put(fontName, font);
-                final boolean added = ge.registerFont(font);
-                logger.debug("Created custom font {} added:{}", font, added);
+                try (InputStream input = url.openStream()) {
+                    logger.debug("Found file {}", fileName);
+                    final Font font = Font.createFont(Font.TRUETYPE_FONT, input)
+                            .deriveFont((float) size);
+                    cache(font);
 
-                return font.deriveFont(style, pointSize);
-            } catch (FontFormatException |
-                     IOException ex) {
-                logger.debug("Could not create custom font {} " + ex, fileName);
+                    final boolean added = ge.registerFont(font);
+                    logger.debug("Created custom font {} added:{}", font, added);
+
+                    return font;
+                } catch (FontFormatException |
+                         IOException ex) {
+                    logger.debug("Could not create custom font {} " + ex, fileName);
+                }
+            } catch (MalformedURLException ex) {
+                logger.warn("MalformedURLException", ex);
             }
-        } catch (MalformedURLException ex) {
-            logger.warn("MalformedURLException", ex);
         }
 
         // Finally, try a platform font
-        font = new Font(fontName, style, (int) pointSize);
-        fontCache.put(fontName, font);
+        final Font font = new Font(fontName, Font.PLAIN, size);
+        cache(font);
         logger.debug("Using platform font {}", font.getFamily());
 
         return font;
+    }
+
+    //---------------//
+    // getCachedFont //
+    //---------------//
+    /**
+     * Try to retrieve the font defined by its name and size from the cache.
+     *
+     * @param fontName font name (family name actually)
+     * @param size     desired font size
+     * @return the cached font or null
+     */
+    private static Font getCachedFont (String fontName,
+                                       int size)
+    {
+        final Map<Integer, Font> sizeMap = fontCache.get(fontName);
+
+        if (sizeMap == null) {
+            return null;
+        }
+
+        return sizeMap.get(size);
     }
 
     //---------//
@@ -171,27 +220,26 @@ public abstract class OmrFont
     /**
      * Retrieve the desired font, either from cache or newly created.
      *
-     * @param fontName  font name (e.g. "Finale Jazz")
-     * @param fileName  file name (e.g. "FinaleJazz.otf")
-     * @param style     the desired font style (generally 0 for PLAIN)
-     * @param pointSize the desired point size for this font
+     * @param fontName font name (e.g. "Finale Jazz")
+     * @param fileName (optional) file name (e.g. "FinaleJazz.otf")
+     * @param style    the desired font style (generally 0 for PLAIN)
+     * @param size     the desired size for this font
      * @return the cached or created font
      */
-    private static Font getFont (String fontName,
-                                 String fileName,
-                                 int style,
-                                 float pointSize)
+    protected static Font getFont (String fontName,
+                                   String fileName,
+                                   int style,
+                                   int size)
     {
-        // Font already registered?
-        final Font font = fontCache.get(fontName);
+        Font font = getCachedFont(fontName, size);
 
         if (font != null) {
-            logger.debug("Using cached font {}", fontName);
-
-            return font.deriveFont(style, pointSize);
+            logger.debug("Using cached font {} {}", fontName, size);
+        } else {
+            font = createFont(fontName, fileName, size);
         }
 
-        return createFont(fontName, fileName, style, pointSize);
+        return (style == Font.PLAIN) ? font : font.deriveFont(style);
     }
 
     //----------------//

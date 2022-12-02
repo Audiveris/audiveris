@@ -118,45 +118,45 @@ public class Skeleton
     // +-----+-----+-----+
     //
     /** Delta abscissa, per heading. 0 1 2. 3. 4 . 5 . 6 . 7. 8 */
-    static final int[] dxs = new int[] { 0, 1, 1, 1, 0, -1, -1, -1, 0 };
+    static final int[] dxs = new int[]{0, 1, 1, 1, 0, -1, -1, -1, 0};
 
     /** Delta ordinate, per heading. 0 1. 2. 3. 4. 5. 6 . 7 . 8 */
-    static final int[] dys = new int[] { 0, -1, 0, 1, 1, 1, 0, -1, -1 };
+    static final int[] dys = new int[]{0, -1, 0, 1, 1, 1, 0, -1, -1};
 
     /** Headings to scan, according to last heading. */
-    static final int[][] scans = new int[][] {
-            { 2, 4, 6, 8, 1, 3, 5, 7 }, // 0
-            { 2, 8, 1, 3, 7 }, // 1
-            { 2, 4, 8, 1, 3 }, // 2
-            { 2, 4, 1, 3, 5 }, // 3
-            { 2, 4, 6, 3, 5 }, // 4
-            { 4, 6, 3, 5, 7 }, // 5
-            { 4, 6, 8, 5, 7 }, // 6
-            { 6, 8, 1, 5, 7 }, // 7
-            { 2, 6, 8, 1, 7 } //  8
+    static final int[][] scans = new int[][]{
+        {2, 4, 6, 8, 1, 3, 5, 7}, // 0
+        {2, 8, 1, 3, 7}, // 1
+        {2, 4, 8, 1, 3}, // 2
+        {2, 4, 1, 3, 5}, // 3
+        {2, 4, 6, 3, 5}, // 4
+        {4, 6, 3, 5, 7}, // 5
+        {4, 6, 8, 5, 7}, // 6
+        {6, 8, 1, 5, 7}, // 7
+        {2, 6, 8, 1, 7} //  8
     };
 
     /** Map (Dx,Dy) -> Heading. */
-    static final int[][] deltaToDir = new int[][] {
-            { 7, 6, 5 }, // x:-1, y: -1, 0, +1
-            { 8, 0, 4 }, // x: 0, y: -1, 0, +1
-            { 1, 2, 3 } //  x:+1, y: -1, 0, +1
+    static final int[][] deltaToDir = new int[][]{
+        {7, 6, 5}, // x:-1, y: -1, 0, +1
+        {8, 0, 4}, // x: 0, y: -1, 0, +1
+        {1, 2, 3} //  x:+1, y: -1, 0, +1
     };
 
     /** Vertical headings: south & north. */
-    static final int[] vertDirs = new int[] { 4, 8 };
+    static final int[] vertDirs = new int[]{4, 8};
 
     /** Horizontal headings: east & west. */
-    static final int[] horiDirs = new int[] { 2, 6 };
+    static final int[] horiDirs = new int[]{2, 6};
 
     /** Side headings: verticals + horizontals. */
-    static final int[] sideDirs = new int[] { 2, 4, 6, 8 };
+    static final int[] sideDirs = new int[]{2, 4, 6, 8};
 
     /** Diagonal headings: ne, se, sw, nw. */
-    static final int[] diagDirs = new int[] { 1, 3, 5, 7 };
+    static final int[] diagDirs = new int[]{1, 3, 5, 7};
 
     /** All headings. */
-    static final int[] allDirs = new int[] { 2, 4, 6, 8, 1, 3, 5, 7 };
+    static final int[] allDirs = new int[]{2, 4, 6, 8, 1, 3, 5, 7};
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The skeleton buffer. */
@@ -259,8 +259,8 @@ public class Skeleton
         buffer.threshold(127);
 
         // Keep a copy on disk?
-        if (constants.keepSkeleton.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".skl");
+        if (constants.saveSkeleton.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "skeleton");
         }
 
         buf = buffer;
@@ -278,7 +278,7 @@ public class Skeleton
      */
     public void addVoidArc (Arc arc)
     {
-        for (boolean rev : new boolean[] { true, false }) {
+        for (boolean rev : new boolean[]{true, false}) {
             Point junctionPt = arc.getJunction(rev);
             List<Arc> arcs = voidArcsMap.get(junctionPt);
 
@@ -491,9 +491,9 @@ public class Skeleton
             extends ConstantSet
     {
 
-        private final Constant.Boolean keepSkeleton = new Constant.Boolean(
+        private final Constant.Boolean saveSkeleton = new Constant.Boolean(
                 false,
-                "Should we store skeleton images on disk?");
+                "Should we save skeleton images on disk?");
 
         private final Constant.Boolean useHeader = new Constant.Boolean(
                 true,

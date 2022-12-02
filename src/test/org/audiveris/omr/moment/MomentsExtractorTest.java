@@ -12,7 +12,7 @@ import org.audiveris.omr.moments.MomentsExtractor;
 import org.audiveris.omr.moments.OrthogonalMoments;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import static org.audiveris.omr.ui.symbol.MusicFont.DEFAULT_INTERLINE;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.junit.Ignore;

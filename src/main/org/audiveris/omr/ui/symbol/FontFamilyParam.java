@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.util.param.Param;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -48,7 +47,7 @@ public class FontFamilyParam
 
         @Override
         public Family marshal (FontFamilyParam fp)
-                throws Exception
+            throws Exception
         {
             if (fp == null) {
                 return null;
@@ -59,7 +58,7 @@ public class FontFamilyParam
 
         @Override
         public FontFamilyParam unmarshal (Family value)
-                throws Exception
+            throws Exception
         {
             if (value == null) {
                 return null;

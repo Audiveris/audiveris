@@ -65,6 +65,13 @@ public abstract class StemLinker
     public abstract void setLinked (boolean linked);
 
     /**
+     * Report a unique ID.
+     *
+     * @return linker unique id
+     */
+    public abstract String getId ();
+
+    /**
      * Report the source Inter instance (Head or Beam) the stem is to be linked to.
      *
      * @return the inter instance to connect with stem

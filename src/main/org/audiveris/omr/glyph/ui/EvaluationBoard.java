@@ -38,6 +38,7 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
@@ -83,7 +84,8 @@ public class EvaluationBoard
     private static final Logger logger = LoggerFactory.getLogger(EvaluationBoard.class);
 
     /** Events this board is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]
+    { EntityListEvent.class };
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);
@@ -470,8 +472,7 @@ public class EvaluationBoard
                 final Evaluation.Failure failure = eval.failure;
                 final String text = eval.shape.toString();
                 final String tip = (failure != null) ? failure.toString() : null;
-                final MusicFont.Family family = sheet != null
-                        ? sheet.getStub().getMusicFontFamily()
+                final Family family = sheet != null ? sheet.getStub().getMusicFontFamily()
                         : MusicFont.getDefaultMusicFamily();
 
                 if (isActive) {

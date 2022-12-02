@@ -23,26 +23,19 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 /**
- * Class <code>BravuraSymbols</code>
+ * Class <code>BravuraSymbols</code> is the most complete set of symbols.
  *
  * @author Hervé Bitteur
  */
 public class BravuraSymbols
         extends Symbols
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    public BravuraSymbols ()
-    {
-        populateSymbols();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
-    protected MusicFont.Family family ()
+    protected Family family ()
     {
         return Family.Bravura;
     }

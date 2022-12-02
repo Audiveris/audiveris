@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -53,6 +51,8 @@ import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -181,9 +181,9 @@ public class SheetScanner
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
-        // Keep a copy on disk?
-        if (constants.keepTextsBuffer.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".text");
+        // Save a copy on disk?
+        if (constants.saveTextsBuffer.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "text");
         }
 
         return img;
@@ -205,9 +205,9 @@ public class SheetScanner
                 false,
                 "Should we display the texts image?");
 
-        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(
+        private final Constant.Boolean saveTextsBuffer = new Constant.Boolean(
                 false,
-                "Should we store texts buffer on disk?");
+                "Should we save texts buffer on disk?");
 
         private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(
                 0.25,

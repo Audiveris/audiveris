@@ -46,7 +46,7 @@ import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.Panel;
 
@@ -99,9 +99,10 @@ public class InterBoard
     private final JLabel shapeIcon = new JLabel();
 
     /** Output : grade (intrinsic/contextual). */
-    private final LTextField grade = new LTextField(false,
-                                                    resources.getString("grade.text"),
-                                                    resources.getString("grade.toolTipText"));
+    private final LTextField grade = new LTextField(
+            false,
+            resources.getString("grade.text"),
+            resources.getString("grade.toolTipText"));
 
     /** Output : implicit / manual. */
     private final JLabel specific = new JLabel("");
@@ -110,14 +111,16 @@ public class InterBoard
     private final LLabel shapeName = new LLabel("", resources.getString("shapeName.toolTipText"));
 
     /** Output : lyric verse. */
-    private final LIntegerField verse = new LIntegerField(false,
-                                                          resources.getString("verse.text"),
-                                                          resources.getString("verse.toolTipText"));
+    private final LIntegerField verse = new LIntegerField(
+            false,
+            resources.getString("verse.text"),
+            resources.getString("verse.toolTipText"));
 
     /** Output : voice. */
-    private final LIntegerField voice = new LIntegerField(false,
-                                                          resources.getString("voice.text"),
-                                                          resources.getString("voice.toolTipText"));
+    private final LIntegerField voice = new LIntegerField(
+            false,
+            resources.getString("voice.text"),
+            resources.getString("voice.toolTipText"));
 
     /** Output : lyrics above or below related note line. */
     private final JLabel aboveBelow = new JLabel();
@@ -129,17 +132,20 @@ public class InterBoard
     private final BoardToEnsembleAction toEnsAction = new BoardToEnsembleAction();
 
     /** To set into Edit mode. */
-    private final LCheckBox edit = new LCheckBox(resources.getString("edit.text"),
-                                                 resources.getString("edit.toolTipText"));
+    private final LCheckBox edit = new LCheckBox(
+            resources.getString("edit.text"),
+            resources.getString("edit.toolTipText"));
 
     /** To set Tie aspect for a slur. */
-    private final LCheckBox tie = new LCheckBox(resources.getString("tie.text"),
-                                                resources.getString("tie.toolTipText"));
+    private final LCheckBox tie = new LCheckBox(
+            resources.getString("tie.text"),
+            resources.getString("tie.toolTipText"));
 
     /** Numerator/Denominator of custom time signature. */
-    private final LTextField custom = new LTextField(true,
-                                                     resources.getString("time.text"),
-                                                     resources.getString("time.toolTipText"));
+    private final LTextField custom = new LTextField(
+            true,
+            resources.getString("time.text"),
+            resources.getString("time.toolTipText"));
 
     /** ComboBox for text role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<>(
@@ -265,7 +271,9 @@ public class InterBoard
         int r = 1; // -----------------------------
 
         // Shape Icon (start, spans several rows) + grade + Deassign button
-        builder.add(shapeIcon, cst.xywh(1, r, 1, 7, CellConstraints.CENTER, CellConstraints.CENTER));
+        builder.add(
+                shapeIcon,
+                cst.xywh(1, r, 1, 7, CellConstraints.CENTER, CellConstraints.CENTER));
 
         // Grade
         builder.add(grade.getLabel(), cst.xy(5, r));
@@ -380,7 +388,7 @@ public class InterBoard
             return null;
         }
 
-        final MusicFont.Family family = sheet.getStub().getMusicFontFamily();
+        final Family family = sheet.getStub().getMusicFontFamily();
         final ShapeSymbol symbol = inter.getShapeSymbol(family);
 
         return (symbol != null) ? symbol.getTinyVersion() : null;
@@ -426,9 +434,10 @@ public class InterBoard
 
             specific.setText(inter.isImplicit() ? "IMPLICIT" : (inter.isManual() ? "MANUAL" : ""));
 
-            deassignAction.putValue(Action.NAME, inter.isRemoved()
-                                    ? resources.getString("deassign.Action.deleted")
-                                    : resources.getString("deassign.Action.text"));
+            deassignAction.putValue(
+                    Action.NAME,
+                    inter.isRemoved() ? resources.getString("deassign.Action.deleted")
+                            : resources.getString("deassign.Action.text"));
 
             if (inter instanceof WordInter wordInter) {
                 selfUpdatingText = true;
@@ -497,8 +506,9 @@ public class InterBoard
         grade.setEnabled(inter != null);
         shapeName.setEnabled(inter != null);
         edit.setEnabled((inter != null) && !inter.isRemoved() && inter.isEditable());
-        toEnsAction.setEnabled((inter != null) && !inter.isRemoved() && (inter.getSig() != null)
-                                       && (inter.getEnsemble() != null));
+        toEnsAction.setEnabled(
+                (inter != null) && !inter.isRemoved() && (inter.getSig() != null) && (inter
+                        .getEnsemble() != null));
     }
 
     //--------------------//
@@ -554,8 +564,9 @@ public class InterBoard
         public DeassignAction ()
         {
             super(resources.getString("deassign.Action.text"));
-            this.putValue(Action.SHORT_DESCRIPTION,
-                          resources.getString("deassign.Action.shortDescription"));
+            this.putValue(
+                    Action.SHORT_DESCRIPTION,
+                    resources.getString("deassign.Action.shortDescription"));
         }
 
         @Override
@@ -608,7 +619,10 @@ public class InterBoard
                     final TextRole newRole = roleCombo.getSelectedItem();
 
                     if (newRole != sentence.getRole()) {
-                        logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
+                        logger.debug(
+                                "Sentence=\"{}\" Role={}",
+                                textField.getText().trim(),
+                                newRole);
                         sheet.getInterController().changeSentence(sentence, newRole);
                     }
                 } else if (inter instanceof TimeCustomInter) {
@@ -641,8 +655,9 @@ public class InterBoard
         public BoardToEnsembleAction ()
         {
             super(resources.getString("ToEnsembleAction.text"));
-            putValue(Action.SHORT_DESCRIPTION,
-                     resources.getString("ToEnsembleAction.shortDescription"));
+            putValue(
+                    Action.SHORT_DESCRIPTION,
+                    resources.getString("ToEnsembleAction.shortDescription"));
         }
 
         @Override

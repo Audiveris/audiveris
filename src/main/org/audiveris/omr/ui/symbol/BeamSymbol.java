@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

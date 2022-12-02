@@ -48,8 +48,8 @@ import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -1006,13 +1006,13 @@ public abstract class AbstractInter
         final Family family = sheet.getStub().getMusicFontFamily();
         final MusicFont musicFont = MusicFont.getBaseFont(family, interline);
         final TextLayout layout = musicFont.layoutShapeByCode(getShape());
-        final Rectangle2D bounds = layout.getBounds();
+        final Rectangle2D box = layout.getBounds();
 
         return new Rectangle(
-                center.x - (int) Math.rint(bounds.getWidth() / 2),
-                center.y - (int) Math.rint(bounds.getHeight() / 2),
-                (int) Math.rint(bounds.getWidth()),
-                (int) Math.rint(bounds.getHeight()));
+                center.x - (int) Math.rint(box.getWidth() / 2),
+                center.y - (int) Math.rint(box.getHeight() / 2),
+                (int) Math.rint(box.getWidth()),
+                (int) Math.rint(box.getHeight()));
     }
 
     //------------//
@@ -1242,9 +1242,9 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that)
-                            && that.overlaps(thisMember)
-                            && sig.noSupport(thisMember, that)) {
+                if (thisMember.overlaps(that) && that.overlaps(thisMember) && sig.noSupport(
+                        thisMember,
+                        that)) {
                     return true;
                 }
             }
@@ -1476,8 +1476,7 @@ public abstract class AbstractInter
 
         Collection<Link> unlinks = null;
 
-        ExistingLoop:
-        for (Relation rel : sig.getRelations(this, classes)) {
+        ExistingLoop: for (Relation rel : sig.getRelations(this, classes)) {
             final Inter other = sig.getOppositeInter(this, rel);
 
             for (Link link : links) {
@@ -1671,14 +1670,14 @@ public abstract class AbstractInter
 
         @Override
         public AbstractInter marshal (Inter inter)
-                throws Exception
+            throws Exception
         {
             return (AbstractInter) inter;
         }
 
         @Override
         public Inter unmarshal (AbstractInter abstractInter)
-                throws Exception
+            throws Exception
         {
             return abstractInter;
         }

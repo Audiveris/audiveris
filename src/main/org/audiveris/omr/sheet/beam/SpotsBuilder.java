@@ -39,7 +39,6 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -187,9 +186,9 @@ public class SpotsBuilder
             BufferedImage img = null;
 
             // Store buffer on disk?
-            if (constants.keepBeamSpots.isSet()) {
+            if (constants.saveBeamSpots.isSet()) {
                 img = buffer.getBufferedImage();
-                ImageUtil.saveOnDisk(img, sheet.getId() + ".spots");
+                ImageUtil.saveOnDisk(img, sheet.getId(), "beam-spots");
             }
 
             // Display the gray-level view of all spots
@@ -206,9 +205,9 @@ public class SpotsBuilder
 
             // Save a specific binarized version for HEADS step
             saveHeadRuns((ByteProcessor) buffer.duplicate());
-        } else if (constants.keepCueSpots.isSet()) {
+        } else if (constants.saveCueSpots.isSet()) {
             BufferedImage img = buffer.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spots");
+            ImageUtil.saveOnDisk(img, sheet.getId(), cueId + "-spots");
         }
 
         // Binarize the spots via a global filter (no illumination problem)
@@ -393,9 +392,9 @@ public class SpotsBuilder
         RunTable runs = runFactory.createTable(buffer);
 
         // For visual check
-        if (constants.keepHeadSpots.isSet()) {
+        if (constants.saveHeadSpots.isSet()) {
             BufferedImage img = runs.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".headspots");
+            ImageUtil.saveOnDisk(img, sheet.getId(), "head-spots");
         }
 
         // Save it for future HEADS step
@@ -422,17 +421,17 @@ public class SpotsBuilder
                 false,
                 "Should we print out the stop watch?");
 
-        private final Constant.Boolean keepBeamSpots = new Constant.Boolean(
+        private final Constant.Boolean saveBeamSpots = new Constant.Boolean(
                 false,
-                "Should we store sheet beam spot images on disk?");
+                "Should we save sheet beam spot images on disk?");
 
-        private final Constant.Boolean keepHeadSpots = new Constant.Boolean(
+        private final Constant.Boolean saveHeadSpots = new Constant.Boolean(
                 false,
-                "Should we store sheet head spot images on disk?");
+                "Should we save sheet head spot images on disk?");
 
-        private final Constant.Boolean keepCueSpots = new Constant.Boolean(
+        private final Constant.Boolean saveCueSpots = new Constant.Boolean(
                 false,
-                "Should we store cue spot images on disk?");
+                "Should we save cue spot images on disk?");
 
         private final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
                 0.8,

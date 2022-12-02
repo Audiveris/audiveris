@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubDependent;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 
 import org.jdesktop.application.Action;
 

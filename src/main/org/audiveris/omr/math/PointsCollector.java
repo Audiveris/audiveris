@@ -153,9 +153,9 @@ public class PointsCollector
         return roi;
     }
 
-    //----------//
+    //---------//
     // getSize //
-    //----------//
+    //---------//
     /**
      * Report the current number of points collected.
      *

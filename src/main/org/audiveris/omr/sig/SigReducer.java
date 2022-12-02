@@ -73,6 +73,8 @@ import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
+import static org.audiveris.omr.sig.relation.Exclusion.ExclusionCause.INCOMPATIBLE;
+import static org.audiveris.omr.sig.relation.Exclusion.ExclusionCause.OVERLAP;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -247,17 +249,14 @@ public class SigReducer
         final List<Inter> allHeads = sig.inters(HeadInter.class);
         Collections.sort(allHeads, Inters.byAbscissa);
 
-        // Stem Heads organized by shape:
-        // - Standard oval head shapes (black, void)
-        // - Small version of oval head shapes (black, void)
-        // - Cross and drum head shapes
+        // Stem Heads organized by shape
         final Map<Shape, Set<Inter>> heads = new EnumMap<>(Shape.class);
+
+        // Stem Heads organized by shape intrinsic duration
+        final Map<Rational, Set<Inter>> durs = new LinkedHashMap<>();
 
         // Stem Beams organized by size (standard vs small versions)
         final Map<Size, Set<Inter>> beams = new EnumMap<>(Size.class);
-
-        // Stem Heads organized by intrinsic duration
-        final Map<Rational, Set<Inter>> durs = new LinkedHashMap<>();
 
         for (Inter stem : stems) {
             if (stem.isVip()) {
@@ -270,8 +269,8 @@ public class SigReducer
             }
 
             heads.clear();
-            beams.clear();
             durs.clear();
+            beams.clear();
 
             // Heads intersected by current stem
             final List<Inter> intersectedHeads = intersectedHeads((StemInter) stem, allHeads);
@@ -320,55 +319,24 @@ public class SigReducer
                 sig.insertExclusion(stem, ih, Exclusion.ExclusionCause.OVERLAP);
             }
 
-            // Mutual head exclusion based on head shape
-            // But perhaps the joining stem is the problem, so check the two conflicting heads
-            // are not linked to any other stem than the one at hand.
-            final List<Shape> headShapes = new ArrayList<>(heads.keySet());
-
-            for (int ic = 0; ic < (headShapes.size() - 1); ic++) {
-                final Shape c1 = headShapes.get(ic);
-
-                // Cross and drum head shape appear before the oval-shape heads in Shape enum
-                // They have no exclusion with oval-shape heads on the same stem
-                if (c1.isPercussion()) {
-                    continue;
-                }
-
-                final Set<Inter> set1 = heads.get(c1);
-
-                for (Inter h1 : set1) {
-                    final HeadInter head1 = (HeadInter) h1;
-
-                    if (head1.getStems().size() == 1) {
-                        for (Shape c2 : headShapes.subList(ic + 1, headShapes.size())) {
-                            final Set<Inter> set2 = heads.get(c2);
-
-                            for (Inter h2 : set2) {
-                                final HeadInter head2 = (HeadInter) h2;
-
-                                if (head2.getStems().size() == 1) {
-                                    sig.insertExclusion(
-                                            h1,
-                                            h2,
-                                            Exclusion.ExclusionCause.INCOMPATIBLE);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
+            // Mutual head exclusion between shapes with different DURATION
             // Mutual head support within shapes with same DURATION
-            // (Remember: insertSupport is effective only if no exclusion is already set)
-            for (Set<Inter> set : durs.values()) {
-                final List<Inter> list = new ArrayList<>(set);
+            final List<Set<Inter>> allDurSets = new ArrayList<>(durs.values());
+            for (int is = 0; is < allDurSets.size(); is++) {
+                final Set<Inter> oneDurSet = allDurSets.get(is);
 
-                for (int i = 0; i < list.size(); i++) {
-                    final HeadInter h1 = (HeadInter) list.get(i);
+                // Exclusion with other duration sets
+                for (Set<Inter> otherDurSet : allDurSets.subList(is + 1, allDurSets.size())) {
+                    exclude(oneDurSet, otherDurSet, INCOMPATIBLE);
+                }
 
-                    for (Inter other : list.subList(i + 1, list.size())) {
-                        final HeadInter h2 = (HeadInter) other;
-                        sig.insertSupport(h1, h2, HeadHeadRelation.class);
+                // Support within same duration set
+                final List<Inter> oneDurList = new ArrayList<>(oneDurSet);
+                for (int i = 0; i < oneDurList.size(); i++) {
+                    final Inter head = oneDurList.get(i);
+
+                    for (Inter sameDur : oneDurList.subList(i + 1, oneDurList.size())) {
+                        sig.insertSupport(head, sameDur, HeadHeadRelation.class);
                     }
                 }
             }
@@ -382,30 +350,34 @@ public class SigReducer
 
                 for (Size c2 : beamSizes.subList(ic + 1, beamSizes.size())) {
                     Set<Inter> set2 = beams.get(c2);
-                    exclude(set1, set2);
+                    exclude(set1, set2, INCOMPATIBLE);
                 }
             }
 
             // Head/Beam support or exclusion based on size
             for (Entry<Size, Set<Inter>> entry : beams.entrySet()) {
-                Size size = entry.getKey();
-                Set<Inter> beamSet = entry.getValue();
+                final Size size = entry.getKey();
+                final Set<Inter> beamSet = entry.getValue();
 
                 if (size == Size.SMALL) {
-                    // Small beams exclude standard heads
-                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_VOID}) {
-                        Set<Inter> headSet = heads.get(shape);
+                    // Small beams exclude all but small (oval) heads
+                    for (Entry<Shape, Set<Inter>> headEntry : heads.entrySet()) {
+                        if (!headEntry.getKey().isSmall()) {
+                            final Set<Inter> headSet = entry.getValue();
 
-                        if (headSet != null) {
-                            exclude(beamSet, headSet);
+                            if (headSet != null) {
+                                exclude(beamSet, headSet, INCOMPATIBLE);
+                            }
                         }
                     }
                 } else {
-                    // Standard beams exclude small heads
-                    Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
+                    // Standard beams exclude small (oval) heads
+                    for (Shape small : ShapeSet.HeadsOvalSmall) {
+                        final Set<Inter> smallHeadSet = heads.get(small);
 
-                    if (smallHeadSet != null) {
-                        exclude(beamSet, smallHeadSet);
+                        if (smallHeadSet != null) {
+                            exclude(beamSet, smallHeadSet, INCOMPATIBLE);
+                        }
                     }
                 }
             }
@@ -444,39 +416,40 @@ public class SigReducer
 
         sig.deleteInters(toDelete);
     }
-
-    //------------------//
-    // analyzeHeadStems //
-    //------------------//
-    /**
-     * Check any head has at most one stem on left side and one stem on right side.
-     * If not, the various stems on a same side are mutually exclusive.
-     */
-    private void analyzeHeadStems ()
-    {
-        logger.debug("S#{} analyzeHeadStems", system.getId());
-
-        final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
-
-        for (Inter hi : heads) {
-            HeadInter head = (HeadInter) hi;
-
-            // Retrieve connected stems into left and right sides
-            Map<HorizontalSide, Set<StemInter>> map = head.getSideStems();
-
-            // Check each side
-            for (Entry<HorizontalSide, Set<StemInter>> entry : map.entrySet()) {
-                Set<StemInter> set = entry.getValue();
-
-                if (set.size() > 1) {
-                    //////////////////////////////////////////////////HB sig.insertExclusions(set, Exclusion.ExclusionCause.OVERLAP);
-                    //TODO:
-                    // Instead of stem exclusion, we should disconnect head from some of these stems
-                    // Either all the stems above or all the stems below
-                }
-            }
-        }
-    }
+//
+//    //------------------//
+//    // analyzeHeadStems //
+//    //------------------//
+//    /**
+//     * Check any head has at most one stem on left side and one stem on right side.
+//     * If not, the various stems on a same side are mutually exclusive.
+//     */
+//    private void analyzeHeadStems ()
+//    {
+//        logger.debug("S#{} analyzeHeadStems", system.getId());
+//
+//        final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
+//
+//        for (Inter hi : heads) {
+//            HeadInter head = (HeadInter) hi;
+//
+//            // Retrieve connected stems into left and right sides
+//            Map<HorizontalSide, Set<StemInter>> map = head.getSideStems();
+//
+//            // Check each side
+//            for (Entry<HorizontalSide, Set<StemInter>> entry : map.entrySet()) {
+//                Set<StemInter> set = entry.getValue();
+//
+//                if (set.size() > 1) {
+//                    //////////////////////////////////////////////////HB sig.insertExclusions(set, Exclusion.ExclusionCause.OVERLAP);
+//                    //TODO:
+//                    // Instead of stem exclusion, we should disconnect head from some of these stems
+//                    // Either all the stems above or all the stems below
+//                }
+//            }
+//        }
+//    }
+//
 
     //-------------//
     // checkRomans //
@@ -1234,7 +1207,7 @@ public class SigReducer
                             logger.info("VIP {} preceding {}", note, timeSig);
                         }
 
-                        sig.insertExclusion(note, timeSig, Exclusion.ExclusionCause.INCOMPATIBLE);
+                        sig.insertExclusion(note, timeSig, INCOMPATIBLE);
                     }
                 }
             }
@@ -1349,7 +1322,7 @@ public class SigReducer
                             }
                         }
 
-                        exclude(left, right);
+                        excludeOverlap(left, right);
                     }
                 } else if (rightBox.x > xMax) {
                     break; // Since inters list is sorted by abscissa
@@ -1364,15 +1337,17 @@ public class SigReducer
     /**
      * Insert exclusion between (the members of) the 2 sets.
      *
-     * @param set1 one set
-     * @param set2 the other set
+     * @param set1  one set
+     * @param set2  the other set
+     * @param cause reason for exclusion
      */
     private void exclude (Set<Inter> set1,
-                          Set<Inter> set2)
+                          Set<Inter> set2,
+                          Exclusion.ExclusionCause cause)
     {
         for (Inter i1 : set1) {
             for (Inter i2 : set2) {
-                sig.insertExclusion(i1, i2, Exclusion.ExclusionCause.INCOMPATIBLE);
+                sig.insertExclusion(i1, i2, cause);
             }
         }
     }
@@ -1380,13 +1355,16 @@ public class SigReducer
     //---------//
     // exclude //
     //---------//
-    private void exclude (Inter left,
-                          Inter right)
+    private void excludeOverlap (Inter left,
+                                 Inter right)
     {
         // Special overlap case between a stem and a standard-size note head
-        if ((left instanceof StemInter && right instanceof HeadInter && !right.getShape().isSmall())
-                    || (right instanceof StemInter && left instanceof HeadInter && !left.getShape()
-                        .isSmall())) {
+        if ((left instanceof StemInter
+                     && right instanceof HeadInter
+                     && !right.getShape().isSmall())
+                    || (right instanceof StemInter
+                                && left instanceof HeadInter
+                                && !left.getShape().isSmall())) {
             return;
         }
 
@@ -1394,7 +1372,7 @@ public class SigReducer
         final SIGraph leftSig = left.getSig();
 
         if (leftSig.noSupport(left, right)) {
-            leftSig.insertExclusion(left, right, Exclusion.ExclusionCause.OVERLAP);
+            leftSig.insertExclusion(left, right, OVERLAP);
         }
     }
 

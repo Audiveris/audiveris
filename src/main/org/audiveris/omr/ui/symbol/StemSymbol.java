@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_RIGHT;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;

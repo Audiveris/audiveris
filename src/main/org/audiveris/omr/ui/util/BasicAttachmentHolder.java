@@ -23,8 +23,10 @@ package org.audiveris.omr.ui.util;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.OmrFont;
 
 import java.awt.Color;
@@ -33,6 +35,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,7 +115,6 @@ public class BasicAttachmentHolder
         }
 
         final Color oldColor = g.getColor();
-        g.setColor(Colors.ATTACHMENT);
 
         final double zoom = g.getTransform().getScaleX();
         Font oldFont = null;
@@ -131,16 +133,22 @@ public class BasicAttachmentHolder
         for (Map.Entry<String, Shape> entry : attachments.entrySet()) {
             // Draw shape
             final Shape shape = entry.getValue();
+            g.setColor(Colors.ATTACHMENT);
             g.draw(shape);
 
             if (font != null) {
                 // Draw key
-                final String key = entry.getKey();
-                final Rectangle2D k = new TextLayout(key, font, OmrFont.frc).getBounds();
+                g.setColor(Color.RED);
+                final TextLayout layout = new TextLayout(entry.getKey(), font, OmrFont.frc);
+                final Rectangle2D txt = layout.getBounds();
                 final Rectangle2D s = shape.getBounds2D();
-                g.drawString(key,
-                             (int) Math.rint(s.getX() + (s.getWidth() / 2) - k.getWidth() / 2),
-                             (int) Math.rint(s.getY() + (s.getHeight() / 2) + k.getHeight() / 2));
+
+                // Use a random location above/below center to improve reading
+                // in case of location clashes with other attachments
+                final double dy = (Math.random() - 0.5) * 2 * txt.getHeight();
+                final Point2D center = GeoUtil.center2D(s);
+                final Point2D p = new Point2D.Double(center.getX(), center.getY() + dy);
+                OmrFont.paint(g, layout, p, Alignment.AREA_CENTER);
             }
         }
 

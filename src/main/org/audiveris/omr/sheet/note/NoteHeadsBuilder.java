@@ -66,7 +66,7 @@ import org.audiveris.omr.sig.inter.InterPairPredicate;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -289,12 +289,7 @@ public class NoteHeadsBuilder
             // Remove duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
-            final int duplicates = purge(
-                    ch,
-                    "duplicate",
-                    (h1,
-                            h2) -> h1.isSameAs(h2),
-                    true);
+            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2), true);
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
@@ -302,12 +297,7 @@ public class NoteHeadsBuilder
 
             // Overlaps for current staff are formalized as exclusions
             watch.start("Staff #" + staff.getId() + " overlaps");
-            final int overlaps = purge(
-                    ch,
-                    "overlap",
-                    (h1,
-                            h2) -> h1.overlaps(h2),
-                    false);
+            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2), false);
 
             if (overlaps > 0) {
                 logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
@@ -1932,7 +1922,7 @@ public class NoteHeadsBuilder
                 "How much do we boost stem-less heads (always isolated)");
 
         private final Constant.Ratio crossBoost = new Constant.Ratio(
-                0.1,
+                0.0, // Was 0.1,
                 "How much do we boost cross heads (badly recognized by template matching)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(

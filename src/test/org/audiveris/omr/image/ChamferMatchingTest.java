@@ -23,7 +23,7 @@ package org.audiveris.omr.image;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.TableUtil;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 
 import org.junit.Test;
 

@@ -32,7 +32,7 @@ import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.sheet.rhythm.Voice.Family;
+import org.audiveris.omr.sheet.rhythm.Voice.VoiceKind;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -339,8 +339,7 @@ public class Measure
 
         // Determine precise shape and pitch for measure-long rest (WHOLE_REST or BREVE_REST)
         final Shape restShape = staff.getSystem().getSmallestMeasureRestShape();
-        final double restPitch = (restShape == Shape.WHOLE_REST)
-                ? -1.5
+        final double restPitch = (restShape == Shape.WHOLE_REST) ? -1.5
                 : (restShape == Shape.BREVE_REST ? -1 : 0);
 
         FakeRest measureRest = new FakeRest(staff, restShape, restPitch);
@@ -430,10 +429,8 @@ public class Measure
             boolean upgraded = false;
 
             // Clefs, keys, timeSigs to fill measure
-            List<Inter> measureInters = filter(
-                    sig.inters(new Class[]{ClefInter.class,
-                                           KeyInter.class,
-                                           AbstractTimeInter.class}));
+            List<Inter> measureInters = filter(sig.inters(new Class[]
+            { ClefInter.class, KeyInter.class, AbstractTimeInter.class }));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -541,14 +538,14 @@ public class Measure
     // generateVoiceId //
     //-----------------//
     /**
-     * Generate a new voice ID, based on voice family and current measure voices.
+     * Generate a new voice ID, based on voice kind and current measure voices.
      *
-     * @param family the voice family (HIGH, LOW, INFRA)
+     * @param kind the voice kind (HIGH, LOW, INFRA)
      * @return the generated ID, or -1 if none could be assigned.
      */
-    public int generateVoiceId (Family family)
+    public int generateVoiceId (VoiceKind kind)
     {
-        final int idOffset = family.idOffset();
+        final int idOffset = kind.idOffset();
 
         for (int id = idOffset + 1;; id++) {
             if (getVoiceById(id) == null) {
@@ -1257,14 +1254,14 @@ public class Measure
                 return part.getLeftPartBarline().getStaffBarline(part, staff).getReferenceCenter();
             }
 
-            // No bar, use start of staff
-             {
-                List<LineInfo> lines = staff.getLines();
-                LineInfo midLine = lines.get(lines.size() / 2);
-                int x = staff.getAbscissa(LEFT);
+        // No bar, use start of staff
+        {
+            List<LineInfo> lines = staff.getLines();
+            LineInfo midLine = lines.get(lines.size() / 2);
+            int x = staff.getAbscissa(LEFT);
 
-                return new Point(x, midLine.yAt(x));
-            }
+            return new Point(x, midLine.yAt(x));
+        }
 
         default:
         case RIGHT:
@@ -1274,14 +1271,14 @@ public class Measure
                 return rightBarline.getStaffBarline(part, staff).getReferenceCenter();
             }
 
-            // No bar, use end of staff
-             {
-                List<LineInfo> lines = staff.getLines();
-                LineInfo midLine = lines.get(lines.size() / 2);
-                int x = staff.getAbscissa(RIGHT);
+        // No bar, use end of staff
+        {
+            List<LineInfo> lines = staff.getLines();
+            LineInfo midLine = lines.get(lines.size() / 2);
+            int x = staff.getAbscissa(RIGHT);
 
-                return new Point(x, midLine.yAt(x));
-            }
+            return new Point(x, midLine.yAt(x));
+        }
         }
     }
 
@@ -1535,40 +1532,35 @@ public class Measure
         return true;
     }
 
-    //------------------//
-    // inferVoiceFamily //
-    //------------------//
+    //----------------//
+    // inferVoiceKind //
+    //----------------//
     /**
-     * Infer the voice family for a voice started by the provided chord.
+     * Infer the voice kind for a voice started by the provided chord.
      *
      * @param chord the provided chord (assumed to be the first in voice)
-     * @return the inferred voice family
+     * @return the inferred voice kind
      */
-    public Family inferVoiceFamily (AbstractChordInter chord)
+    public VoiceKind inferVoiceKind (AbstractChordInter chord)
     {
         final Staff startingStaff = chord.getTopStaff();
 
         if (part.isMerged()) {
-            switch (chord.getStemDir()) {
-            case -1:
-                return Family.HIGH;
-
-            case +1:
-                return Family.LOW;
-
-            default:
-                return (startingStaff == part.getFirstStaff()) ? Family.HIGH : Family.LOW;
-            }
+            return switch (chord.getStemDir()) {
+            case -1 -> VoiceKind.HIGH;
+            case +1 -> VoiceKind.LOW;
+            default -> (startingStaff == part.getFirstStaff()) ? VoiceKind.HIGH : VoiceKind.LOW;
+            };
         } else {
             int index = part.getStaves().indexOf(startingStaff);
 
-            if ((index >= 0) && (index < Family.values().length)) {
-                return Family.values()[index];
+            if ((index >= 0) && (index < VoiceKind.values().length)) {
+                return VoiceKind.values()[index];
             }
 
             logger.error("{} Weird staff index {} in part", startingStaff, index);
 
-            return Family.HIGH;
+            return VoiceKind.HIGH;
         }
     }
 
@@ -1774,17 +1766,17 @@ public class Measure
     // renameVoices //
     //--------------//
     /**
-     * Adjust voice ID per family, in line with their order.
+     * Adjust voice ID per kind, in line with their order.
      */
     public void renameVoices ()
     {
-        for (Family family : Family.values()) {
-            int id = family.idOffset();
+        for (VoiceKind kind : VoiceKind.values()) {
+            int id = kind.idOffset();
 
             for (int i = 0; i < voices.size(); i++) {
                 final Voice voice = voices.get(i);
 
-                if (voice.getFamily() == family) {
+                if (voice.getKind() == kind) {
                     voice.setId(++id);
                 }
             }

@@ -72,8 +72,8 @@ public abstract class AbstractSystemStep<C>
     // doSystem //
     //----------//
     /**
-     * Actually perform the step on the given system.
-     * This method must be actually defined for any concrete system step.
+     * Do perform the step on the given system.
+     * This method must be defined for any concrete system step.
      *
      * @param system  the system to process
      * @param context the sheet context
@@ -81,7 +81,7 @@ public abstract class AbstractSystemStep<C>
      */
     public abstract void doSystem (SystemInfo system,
                                    C context)
-            throws StepException;
+        throws StepException;
 
     //------//
     // doit //
@@ -95,7 +95,7 @@ public abstract class AbstractSystemStep<C>
      */
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         // Preliminary actions
         final C context = doProlog(sheet);
@@ -136,7 +136,7 @@ public abstract class AbstractSystemStep<C>
      */
     protected void doEpilog (Sheet sheet,
                              C context)
-            throws StepException
+        throws StepException
     {
         // Empty by default
     }
@@ -152,7 +152,7 @@ public abstract class AbstractSystemStep<C>
      * @throws StepException raised if processing failed
      */
     protected C doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         // Empty by default
         return null;
@@ -175,7 +175,8 @@ public abstract class AbstractSystemStep<C>
             final Collection<Callable<Void>> tasks = new ArrayList<>();
 
             for (final SystemInfo system : sheet.getSystems()) {
-                tasks.add(() -> {
+                tasks.add( () ->
+                {
                     // If run on a separate thread (case of parallel), we have to set/unset log
                     // If not, let's not unset log (it may be needed in following epilog)
                     try {
@@ -183,10 +184,7 @@ public abstract class AbstractSystemStep<C>
                             LogUtil.start(sheet.getStub());
                         }
 
-                        logger.debug(
-                                "{} doSystem #{}",
-                                AbstractSystemStep.this,
-                                system.getId());
+                        logger.debug("{} doSystem #{}", AbstractSystemStep.this, system.getId());
 
                         doSystem(system, context);
                     } catch (StepException ex) {

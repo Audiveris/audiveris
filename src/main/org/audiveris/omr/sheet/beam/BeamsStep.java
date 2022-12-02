@@ -61,9 +61,11 @@ public class BeamsStep
     @Override
     public void doSystem (SystemInfo system,
                           Context context)
-            throws StepException
+        throws StepException
     {
         new BeamsBuilder(system, context.spotLag).buildBeams();
+
+        // Detection of multiple-measure rests, since they resemble a long horizontal beam
         new MultipleRestsBuilder(system).process();
     }
 
@@ -73,14 +75,14 @@ public class BeamsStep
     /**
      * {@inheritDoc}
      * <p>
-     * Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams.
+     * For beams, dispose of BEAM_SPOT glyphs, a glyph may be split into several stuck beams.
      * <p>
-     * (NOTA: the weak references to glyphs may survive as long as a related SpotsController exists)
+     * (NOTA: Weak references to glyphs may survive as long as a related SpotsController exists)
      */
     @Override
     protected void doEpilog (Sheet sheet,
                              Context context)
-            throws StepException
+        throws StepException
     {
         for (SystemInfo system : sheet.getSystems()) {
             system.removeGroupedGlyphs(GlyphGroup.BEAM_SPOT);
@@ -93,8 +95,8 @@ public class BeamsStep
     /**
      * {@inheritDoc}
      * <p>
-     * Perform a closing operation on the whole image with a disk shape as the structure
-     * element to point out concentrations of foreground pixels (meant for beams).
+     * For beams, perform a closing operation on the whole image with a disk shape as the
+     * structure element to point out concentrations of foreground pixels (meant for beams).
      *
      * @return the populated context
      */

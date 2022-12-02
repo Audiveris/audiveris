@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
-
 import org.junit.Test;
 
 import com.itextpdf.awt.PdfGraphics2D;
@@ -75,7 +73,7 @@ public class MusicFontTest
     {
         final List<Range> codes = new ArrayList<>();
         codes.add(new Range(0xE000, 0xF8FF)); // Private Use Area
-        ////codes.add(new Range(0, 0x10FFFF)); // All valid codes?
+        ///codes.add(new Range(0, 0x10FFFF)); // All valid codes? Nearly unusable.
 
         File dir = new File("data/temp");
         dir.mkdirs();
@@ -94,7 +92,7 @@ public class MusicFontTest
 
                 PdfContentByte cb = writer.getDirectContent();
                 Graphics2D g = new PdfGraphics2D(cb, pageWidth, pageHeight);
-                MusicFont musicFont = MusicFont.getPointFont(family, 64, 0);
+                MusicFont musicFont = MusicFont.getMusicFont(family, 64);
                 Font stringFont = g.getFont().deriveFont(24f);
                 Font infoFont = stringFont.deriveFont(15f);
                 String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
@@ -196,9 +194,8 @@ public class MusicFontTest
         @Override
         public String toString ()
         {
-            return new StringBuilder()
-                    .append('[').append(start).append("..").append(stop).append(']')
-                    .toString();
+            return new StringBuilder().append('[').append(start).append("..").append(stop).append(
+                    ']').toString();
         }
     }
 }

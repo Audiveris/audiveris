@@ -21,18 +21,18 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
-import java.awt.Color;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.rhythm.Voice.Family;
+import org.audiveris.omr.sheet.rhythm.Voice.VoiceKind;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -46,10 +46,10 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import org.audiveris.omr.sig.inter.BeamGroupInter;
 
 /**
  * Class <code>Voices</code> connects voices and harmonizes their IDs (and thus colors)
@@ -64,11 +64,15 @@ public abstract class Voices
     private static final Logger logger = LoggerFactory.getLogger(Voices.class);
 
     /** To sort voices by their ID. */
-    public static final Comparator<Voice> byId = (Voice v1, Voice v2)
-            -> Integer.compare(v1.getId(), v2.getId());
+    public static final Comparator<Voice> byId = (Voice v1,
+                                                  Voice v2) -> Integer.compare(
+                                                          v1.getId(),
+                                                          v2.getId());
 
     /** To sort voices by vertical position within their containing measure or stack. */
-    public static final Comparator<Voice> byOrdinate = (Voice v1, Voice v2) -> {
+    public static final Comparator<Voice> byOrdinate = (Voice v1,
+                                                        Voice v2) ->
+    {
         if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
             throw new IllegalArgumentException("Comparing voices in different stacks");
         }
@@ -81,12 +85,12 @@ public abstract class Voices
             return Part.byId.compare(p1, p2);
         }
 
-        // Check voice family
-        Family f1 = v1.getFamily();
-        Family f2 = v2.getFamily();
+        // Check voice kind
+        VoiceKind k1 = v1.getKind();
+        VoiceKind k2 = v2.getKind();
 
-        if (f1 != f2) {
-            return f1.compareTo(f2);
+        if (k1 != k2) {
+            return k1.compareTo(k2);
         }
 
         AbstractChordInter c1 = v1.getFirstChord();
@@ -123,23 +127,24 @@ public abstract class Voices
     /** Sequence of colors for voices. */
     private static final int alpha = 200;
 
-    private static final Color[] voiceColors = new Color[]{
-        /** 1 Purple */
-        new Color(128, 64, 255, alpha),
-        /** 2 Green */
-        new Color(0, 255, 0, alpha),
-        /** 3 Brown */
-        new Color(165, 42, 42, alpha),
-        /** 4 Magenta */
-        new Color(255, 0, 255, alpha),
-        /** 5 Cyan */
-        new Color(0, 255, 255, alpha),
-        /** 6 Orange */
-        new Color(255, 200, 0, alpha),
-        /** 7 Pink */
-        new Color(255, 150, 150, alpha),
-        /** 8 BlueGreen */
-        new Color(0, 128, 128, alpha)};
+    private static final Color[] voiceColors = new Color[]
+    {
+            /** 1 Purple */
+            new Color(128, 64, 255, alpha),
+            /** 2 Green */
+            new Color(0, 255, 0, alpha),
+            /** 3 Brown */
+            new Color(165, 42, 42, alpha),
+            /** 4 Magenta */
+            new Color(255, 0, 255, alpha),
+            /** 5 Cyan */
+            new Color(0, 255, 255, alpha),
+            /** 6 Orange */
+            new Color(255, 200, 0, alpha),
+            /** 7 Pink */
+            new Color(255, 150, 150, alpha),
+            /** 8 BlueGreen */
+            new Color(0, 128, 128, alpha) };
 
     //~ Constructors -------------------------------------------------------------------------------
     // Not meant to be instantiated.
@@ -392,7 +397,8 @@ public abstract class Voices
                         if (ch2 != null) {
                             // BeamGroup-based voice link
                             final BeamGroupInter beamGroup = ch2.getBeamGroup();
-                            if ((beamGroup != null) && beamGroup.getMeasures().contains(prevMeasure)) {
+                            if ((beamGroup != null) && beamGroup.getMeasures().contains(
+                                    prevMeasure)) {
                                 AbstractChordInter prevCh = null;
                                 for (AbstractChordInter ch : beamGroup.getAllChords()) {
                                     if (prevCh != null && ch == ch2) {
@@ -408,9 +414,10 @@ public abstract class Voices
                             }
 
                             // SameVoiceRelation-based or NextInVoiceRelation-based voice links
-                            for (Relation rel : sig.getRelations(ch2,
-                                                                 SameVoiceRelation.class,
-                                                                 NextInVoiceRelation.class)) {
+                            for (Relation rel : sig.getRelations(
+                                    ch2,
+                                    SameVoiceRelation.class,
+                                    NextInVoiceRelation.class)) {
                                 final Inter inter = sig.getOppositeInter(ch2, rel);
                                 final AbstractChordInter ch1 = (AbstractChordInter) inter;
 

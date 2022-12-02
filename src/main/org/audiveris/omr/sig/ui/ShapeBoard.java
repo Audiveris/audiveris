@@ -44,9 +44,10 @@ import org.audiveris.omr.ui.dnd.GhostGlassPane;
 import org.audiveris.omr.ui.dnd.GhostMotionAdapter;
 import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
+import static org.audiveris.omr.ui.symbol.MusicFont.getPointSize;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.WrapLayout;
@@ -161,7 +162,8 @@ public class ShapeBoard
      * Called-back when a set is selected:
      * The global panel is replaced by the selected set panel.
      */
-    private final ActionListener setListener = (ActionEvent e) -> {
+    private final ActionListener setListener = (ActionEvent e)
+            -> {
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
         selectSet(set);
@@ -171,7 +173,8 @@ public class ShapeBoard
      * Called-back when a set panel is closed:
      * It is replaced by the global panel to allow the selection of another set.
      */
-    private final ActionListener closeListener = (ActionEvent e) -> {
+    private final ActionListener closeListener = (ActionEvent e)
+            -> {
         closeSet();
     };
 
@@ -223,7 +226,8 @@ public class ShapeBoard
     private final SheetKeyListener keyListener;
 
     /** When split container is resized, we reshape this board. */
-    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce) -> {
+    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce)
+            -> {
         resizeBoard();
     };
 
@@ -715,25 +719,18 @@ public class ShapeBoard
     //----------------------//
     private BufferedImage getNonDraggableImage (Zoom zoom)
     {
+        final Shape shape = Shape.NON_DRAGGABLE;
+        final Family fontFamily = sheet.getStub().getMusicFontFamily();
         final int interline = sheet.getScale().getInterline();
         final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
-        final MusicFont.Family fontFamily = sheet.getStub().getMusicFontFamily();
+        final FontSymbol fs = shape.getFontSymbol(fontFamily, getPointSize(zoomedInterline));
 
-        MusicFont font = MusicFont.getBaseFont(fontFamily, zoomedInterline);
-        ShapeSymbol symbol = font.getSymbol(Shape.NON_DRAGGABLE);
-
-        if (symbol == null && font.getBackup() != null) {
-            font = font.getBackup();
-            symbol = font.getSymbol(Shape.NON_DRAGGABLE);
-        }
-
-        if (symbol == null) {
+        if (fs.symbol == null) {
+            logger.warn("No symbol for non-draggable shape");
             return null;
         }
 
-        symbol = symbol.getDecoratedVersion();
-
-        return symbol.buildImage(font);
+        return fs.symbol.getDecoratedVersion().buildImage(fs.font);
     }
 
     //-----------//
@@ -811,11 +808,19 @@ public class ShapeBoard
      * according to current music font preferences.
      *
      * @param shape the desired shape
-     * @return the symbol found, in its decorated version
+     * @return the standard symbol found, in its decorated version
      */
     private ShapeSymbol getDecoratedSymbol (Shape shape)
     {
-        return shape.getSymbol(sheet.getStub().getMusicFontFamily()).getDecoratedVersion();
+        final Family family = sheet.getStub().getMusicFontFamily();
+        final FontSymbol fs = shape.getFontSymbol(family);
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for {}", shape);
+            return null;
+        }
+
+        return fs.symbol.getDecoratedVersion();
     }
 
     //------------------------//
@@ -910,7 +915,7 @@ public class ShapeBoard
     @Override
     public void update ()
     {
-        final MusicFont.Family fontFamily = sheet.getStub().getMusicFontFamily();
+        final Family fontFamily = sheet.getStub().getMusicFontFamily();
 
         if (fontFamily != cachedFamily) {
             // We can update each shape button icon in situ.
@@ -1140,11 +1145,16 @@ public class ShapeBoard
         private int compoundCol (Shape shape)
         {
             switch (shape) {
-            case AUGMENTATION_DOT: return 1;
-            case QUARTER_NOTE_UP: return 3;
-            case QUARTER_NOTE_DOWN: return 5;
-            case HALF_NOTE_UP: return 7;
-            case HALF_NOTE_DOWN: return 9;
+            case AUGMENTATION_DOT:
+                return 1;
+            case QUARTER_NOTE_UP:
+                return 3;
+            case QUARTER_NOTE_DOWN:
+                return 5;
+            case HALF_NOTE_UP:
+                return 7;
+            case HALF_NOTE_DOWN:
+                return 9;
             }
 
             logger.warn("compoundCol unhandled head shape: {}", shape);
@@ -1176,12 +1186,18 @@ public class ShapeBoard
             }
 
             switch (motif) {
-            case oval: return 1;
-            case small: return 3;
-            case cross: return 5;
-            case diamond: return 7;
-            case triangle: return 9;
-            case circle: return 11;
+            case oval:
+                return 1;
+            case small:
+                return 3;
+            case cross:
+                return 5;
+            case diamond:
+                return 7;
+            case triangle:
+                return 9;
+            case circle:
+                return 11;
             }
 
             logger.warn("headRow unhandled head motif: {}", motif);
@@ -1229,17 +1245,13 @@ public class ShapeBoard
             }
 
             // Set image
-            final MusicFont.Family fontFamily = sheet.getStub().getMusicFontFamily();
-            MusicFont font = MusicFont.getBaseFont(fontFamily, TINY_INTERLINE);
-            ShapeSymbol symbol = font.getSymbol(action);
+            final Family fontFamily = sheet.getStub().getMusicFontFamily();
+            final FontSymbol fs = shape.getFontSymbol(fontFamily, TINY_INTERLINE);
 
-            if (symbol == null && font.getBackup() != null) {
-                font = font.getBackup();
-                symbol = font.getSymbol(action);
-            }
-
-            if (symbol != null) {
-                image = symbol.buildImage(font);
+            if (fs.symbol != null) {
+                image = fs.symbol.buildImage(fs.font);
+            } else {
+                logger.warn("No symbol for shape {}", shape);
             }
 
             super.mousePressed(e);

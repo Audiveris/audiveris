@@ -38,7 +38,7 @@ import org.audiveris.omr.sheet.Scale.MusicFontScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.util.Dumping;
 
 import org.slf4j.Logger;

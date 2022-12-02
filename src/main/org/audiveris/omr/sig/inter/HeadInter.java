@@ -56,8 +56,8 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.HorizontalSide;
@@ -763,8 +763,10 @@ public class HeadInter
             }
 
             if (dx != null) {
-                final HorizontalSide hSide = (anchor == Anchor.BOTTOM_LEFT_STEM) ? LEFT : RIGHT;
-                final double x = (hSide == LEFT) ? headBox.x - dx : headBox.x + headBox.width + dx;
+                final HorizontalSide hSide = anchor.hSide();
+                final double x = (hSide == LEFT)
+                        ? headBox.x + 0.5 - dx
+                        : headBox.x + headBox.width - 1 + dx;
 
                 return new Point2D.Double(x, ref.getY());
             }
@@ -780,13 +782,30 @@ public class HeadInter
      * Report the reference point for a stem connection.
      *
      * @param hSide horizontal side for stem (LEFT or RIGHT)
-     * @return the reference point
+     * @param vSide vertical side for stem (TOP or BOTTOM)
+     * @return the head-stem reference point
      */
-    public Point2D getStemReferencePoint (HorizontalSide hSide)
+    public Point2D getStemReferencePoint (HorizontalSide hSide,
+                                          VerticalSide vSide)
     {
-        return getStemReferencePoint((hSide == LEFT)
-                ? Anchor.BOTTOM_LEFT_STEM
-                : Anchor.TOP_RIGHT_STEM);
+        final Anchor anchor = switch (hSide) {
+            case LEFT ->
+                switch (vSide) {
+                    case TOP ->
+                        Anchor.TOP_LEFT_STEM;
+                    case BOTTOM ->
+                        Anchor.BOTTOM_LEFT_STEM;
+                };
+            case RIGHT ->
+                switch (vSide) {
+                    case TOP ->
+                        Anchor.TOP_RIGHT_STEM;
+                    case BOTTOM ->
+                        Anchor.BOTTOM_RIGHT_STEM;
+                };
+        };
+
+        return getStemReferencePoint(anchor);
     }
 
     //----------//
@@ -1118,7 +1137,7 @@ public class HeadInter
 
         for (HorizontalSide hSide : HorizontalSide.values()) {
             for (VerticalSide vSide : VerticalSide.values()) {
-                Point refPt = PointUtil.rounded(getStemReferencePoint(stemAnchor(hSide)));
+                Point refPt = PointUtil.rounded(getStemReferencePoint(hSide, vSide));
                 int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
                 int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
                 Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
@@ -1257,28 +1276,6 @@ public class HeadInter
                 box.getCenterY() - (newHeight / 2.0),
                 newWidth,
                 newHeight);
-    }
-
-    //------------//
-    // stemAnchor //
-    //------------//
-    /**
-     * Report the corresponding stem anchor for the desired head side.
-     *
-     * @param hSide horizontal head side
-     * @return stem-based anchor
-     */
-    public static Anchor stemAnchor (HorizontalSide hSide)
-    {
-        if (hSide == LEFT) {
-            return Anchor.BOTTOM_LEFT_STEM;
-        }
-
-        if (hSide == RIGHT) {
-            return Anchor.TOP_RIGHT_STEM;
-        }
-
-        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

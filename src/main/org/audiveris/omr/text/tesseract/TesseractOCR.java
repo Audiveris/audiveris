@@ -31,7 +31,6 @@ import org.audiveris.omr.text.TextWord;
 import org.bytedeco.tesseract.global.tesseract;
 import org.bytedeco.tesseract.StringGenericVector;
 import org.bytedeco.tesseract.TessBaseAPI;
-import static org.bytedeco.tesseract.global.tesseract.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,7 +190,7 @@ public class TesseractOCR
             final TesseractOrder order = new TesseractOrder(
                     label,
                     serial.incrementAndGet(),
-                    constants.keepImages.isSet(),
+                    constants.saveImages.isSet(),
                     languageCode,
                     getMode(layoutMode),
                     bufferedImage);
@@ -354,9 +353,9 @@ public class TesseractOCR
                 true,
                 "Should we use the OCR feature?");
 
-        private final Constant.Boolean keepImages = new Constant.Boolean(
+        private final Constant.Boolean saveImages = new Constant.Boolean(
                 false,
-                "Should we keep the images sent to Tesseract?");
+                "Should we save on disk the images sent to Tesseract?");
 
         //
         //        private final Scale.Fraction maxDashWidth = new Scale.Fraction(

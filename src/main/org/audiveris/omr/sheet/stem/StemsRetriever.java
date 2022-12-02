@@ -24,8 +24,8 @@ package org.audiveris.omr.sheet.stem;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.GlyphGroup;
+import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.AreaUtil;
@@ -61,7 +61,6 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -586,27 +585,28 @@ public class StemsRetriever
         for (Inter hInter : systemHeads) {
             if (ShapeSet.StemHeads.contains(hInter.getShape())) {
                 if (!sig.hasRelation(hInter, HeadStemRelation.class)) {
-                    final Set<HorizontalSide> vSides = undefs.get(hInter);
+                    final Set<HorizontalSide> hSides = undefs.get(hInter);
                     boolean linked = false;
 
-                    if (vSides != null) {
+                    if (hSides != null) {
                         final HeadInter head = (HeadInter) hInter;
                         final Point headCenter = head.getCenter();
 
-                        for (HorizontalSide hSide : vSides) {
+                        for (HorizontalSide hSide : hSides) {
                             final SLinker sl = head.getLinker().getSLinkers().get(hSide);
                             logger.debug("{} undef  {}", head, sl);
-
-                            // If we have a VERTICAL_SEED on side, try a stem link
-                            final Glyph stump = sl.getStump();
-
-                            if (stump != null && stump.isVerticalSeed()) {
-                                final Point stumpCenter = stump.getCenter();
-                                final VerticalSide vSide = stumpCenter.y < headCenter.y
-                                        ? TOP : BOTTOM;
-                                final CLinker cl = sl.getCornerLinker(vSide);
-                                linked |= cl.link(0, 0, true);
-                            }
+                            // BINGO fix this
+//
+//                            // If we have a VERTICAL_SEED on side, try a stem link
+//                            final Glyph stump = sl.getStump();
+//
+//                            if (stump != null && stump.isVerticalSeed()) {
+//                                final Point stumpCenter = stump.getCenter();
+//                                final VerticalSide vSide = stumpCenter.y < headCenter.y
+//                                        ? TOP : BOTTOM;
+//                                final CLinker cl = sl.getCornerLinker(vSide);
+//                                linked |= cl.link(0, 0, true);
+//                            }
                         }
                     }
 
@@ -1142,9 +1142,9 @@ public class StemsRetriever
                 0.25,
                 "Maximum vertical gap between seed & head reference point");
 
-        private final Scale.Fraction stumpAreaDyHalf = new Scale.Fraction(
+        private final Scale.Fraction stumpAreaDy = new Scale.Fraction(
                 0.2,
-                "Half height of stump lookup area");
+                "Height of stump lookup area in head corner");
 
         private final Scale.Fraction stumpAreaDxIn = new Scale.Fraction(
                 0.1,
@@ -1153,6 +1153,10 @@ public class StemsRetriever
         private final Scale.Fraction stumpAreaDxOut = new Scale.Fraction(
                 0.1,
                 "Outside half width of stump lookup area");
+
+        private final Scale.Fraction minHeadStumpDy = new Scale.Fraction(
+                0.5,
+                "Minimum stump length away from head corner reference");
 
         private final Scale.Fraction minLinkerLength = new Scale.Fraction(
                 0.85,
@@ -1189,7 +1193,7 @@ public class StemsRetriever
 
         final int maxHeadSeedDy;
 
-        final int stumpAreaDyHalf;
+        final int stumpAreaDy;
 
         final double stumpAreaDxIn;
 
@@ -1212,6 +1216,8 @@ public class StemsRetriever
         final double maxBeamSeedDx;
 
         final int minBeamStumpDy;
+
+        final int minHeadStumpDy;
 
         final double maxBeamSeedDyRatio;
 
@@ -1257,7 +1263,7 @@ public class StemsRetriever
             maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
             maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(profile));
 
-            stumpAreaDyHalf = scale.toPixels(constants.stumpAreaDyHalf);
+            stumpAreaDy = scale.toPixels(constants.stumpAreaDy);
             stumpAreaDxIn = scale.toPixelsDouble(constants.stumpAreaDxIn);
             stumpAreaDxOut = scale.toPixelsDouble(constants.stumpAreaDxOut);
 
@@ -1274,6 +1280,7 @@ public class StemsRetriever
             minBeamStemsDx = scale.toPixels(constants.minBeamStemsDx);
 
             minBeamStumpDy = scale.toPixels(constants.minBeamStumpDy);
+            minHeadStumpDy = scale.toPixels(constants.minHeadStumpDy);
 
             mainStemThickness = scale.getStemThickness();
             maxStemThickness = scale.getMaxStem();

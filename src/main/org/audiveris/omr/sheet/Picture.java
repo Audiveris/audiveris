@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -44,10 +41,13 @@ import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
+
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -622,13 +622,9 @@ public class Picture
 
         if (src == null) {
             switch (key) {
-            case GRAY:
-                src = buildGraySource(getGrayImage());
+            case GRAY -> src = buildGraySource(getGrayImage());
 
-                break;
-
-            case BINARY:
-
+            case BINARY -> {
                 // Built from binary image, if available
                 BufferedImage image = getImage(ImageKey.BINARY);
 
@@ -651,29 +647,18 @@ public class Picture
                         return null;
                     }
                 }
+            }
 
-                break;
-
-            case GAUSSIAN:
-                // Built from median
+            case GAUSSIAN -> // Built from median
                 src = gaussianFiltered(getSource(SourceKey.MEDIAN));
 
-                break;
-
-            case MEDIAN:
-                // Built from no_staff
+            case MEDIAN -> // Built from no_staff
                 src = medianFiltered(getSource(SourceKey.NO_STAFF));
 
-                break;
-
-            case NO_STAFF:
-                // Built by erasing StaffLines glyphs from binary source
+            case NO_STAFF -> // Built by erasing StaffLines glyphs from binary source
                 src = buildNoStaffBuffer();
 
-                break;
-
-            default:
-                logger.error("Source " + key + " is not yet supported");
+            default -> logger.error("Source " + key + " is not yet supported");
             }
 
             if (src != null) {

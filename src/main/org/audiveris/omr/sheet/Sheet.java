@@ -68,7 +68,7 @@ import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.WeakItemRenderer;

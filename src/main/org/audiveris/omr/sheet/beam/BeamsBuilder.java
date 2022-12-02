@@ -1689,7 +1689,8 @@ public class BeamsBuilder
                 }
             }
 
-            final Point2D refPt = ((HeadInter) head).getStemReferencePoint(hSide);
+            final VerticalSide vSide = globalDir > 0 ? BOTTOM : TOP;
+            final Point2D refPt = ((HeadInter) head).getStemReferencePoint(hSide, vSide);
             final List<BeamGroupInter> beamGroups = HeadLinker.lookupBeamGroups(
                     beams, refPt, globalDir, params.cueMinBeamHeadDy);
             linkStemToCueBeams((StemInter) stem, beamGroups, refPt, globalDir);

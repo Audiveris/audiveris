@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import static org.audiveris.omr.ui.symbol.OctaveShiftSymbol.DEFAULT_HOOK_LENGTH;
@@ -111,7 +112,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @see OctaveShiftChordRelation
  * @see OctaveShiftSymbol
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "octave-shift")
@@ -125,8 +125,10 @@ public class OctaveShiftInter
     private static final Logger logger = LoggerFactory.getLogger(OctaveShiftInter.class);
 
     /** For comparing interpretations by increasing staff id. */
-    public static final Comparator<Inter> byStaffId = (Inter i1, Inter i2)
-            -> Integer.compare(i1.getStaff().getId(), i2.getStaff().getId());
+    public static final Comparator<Inter> byStaffId = (Inter i1,
+                                                       Inter i2) -> Integer.compare(
+                                                               i1.getStaff().getId(),
+                                                               i2.getStaff().getId());
 
     //~ Enumerations -------------------------------------------------------------------------------
     public static enum Kind
@@ -403,8 +405,8 @@ public class OctaveShiftInter
     {
         final double x = line.getX1();
 
-        if ((x >= staff.getAbscissa(HorizontalSide.LEFT)
-                     && (x <= staff.getAbscissa(HorizontalSide.RIGHT)))) {
+        if ((x >= staff.getAbscissa(HorizontalSide.LEFT) && (x <= staff.getAbscissa(
+                HorizontalSide.RIGHT)))) {
             // Vertical direction from ottava sign to staff
             final double y = line.getY1();
             final int toStaff = Integer.signum((int) (staff.getMidLine().yAt(y) - y));
@@ -680,14 +682,10 @@ public class OctaveShiftInter
         final int sign = (kind == Kind.ALTA) ? 1 : -1;
 
         return switch (shape) {
-            case OTTAVA ->
-                sign * 1;
-            case QUINDICESIMA ->
-                sign * 2;
-            case VENTIDUESIMA ->
-                sign * 3;
-            default ->
-                null; // Should not occur!
+        case OTTAVA -> sign * 1;
+        case QUINDICESIMA -> sign * 2;
+        case VENTIDUESIMA -> sign * 3;
+        default -> null; // Should not occur!
         };
     }
 
@@ -702,14 +700,10 @@ public class OctaveShiftInter
     public Integer getValue ()
     {
         return switch (shape) {
-            case OTTAVA ->
-                8;
-            case QUINDICESIMA ->
-                15;
-            case VENTIDUESIMA ->
-                22;
-            default ->
-                null; // Should not occur!
+        case OTTAVA -> 8;
+        case QUINDICESIMA -> 15;
+        case VENTIDUESIMA -> 22;
+        default -> null; // Should not occur!
         };
     }
 
@@ -843,7 +837,7 @@ public class OctaveShiftInter
     private void computeValueDimensions (Sheet sheet)
     {
         final Scale scale = sheet.getScale();
-        final MusicFont.Family family = sheet.getStub().getMusicFontFamily();
+        final Family family = sheet.getStub().getMusicFontFamily();
         final MusicFont font = MusicFont.getBaseFont(family, scale.getInterline());
         final TextLayout layout = font.layoutShapeByCode(shape);
         final Rectangle2D symBounds = layout.getBounds();
@@ -894,10 +888,11 @@ public class OctaveShiftInter
      */
     private Rectangle2D getValueBox ()
     {
-        return new Rectangle2D.Double(line.getX1() - valueWidth / 2.0,
-                                      line.getY1() - valueHeight / 2.0,
-                                      valueWidth,
-                                      valueHeight);
+        return new Rectangle2D.Double(
+                line.getX1() - valueWidth / 2.0,
+                line.getY1() - valueHeight / 2.0,
+                valueWidth,
+                valueHeight);
     }
 
     //-------------//
@@ -962,8 +957,8 @@ public class OctaveShiftInter
             this.kind = kind;
             this.p1 = new Point2D.Double(p1.getX(), p1.getY());
             this.p2 = new Point2D.Double(p2.getX(), p2.getY());
-            this.hookEnd = (hookEnd == null) ? null : new Point2D.Double(hookEnd.getX(),
-                                                                         hookEnd.getY());
+            this.hookEnd = (hookEnd == null) ? null
+                    : new Point2D.Double(hookEnd.getX(), hookEnd.getY());
         }
 
         @Override
@@ -1138,7 +1133,7 @@ public class OctaveShiftInter
         {
             final Staff staff = os.getStaff();
             final Point middle = PointUtil.rounded(PointUtil.middle(os.getLine()));
-            final int mx = middle.x;            // Middle point abscissa
+            final int mx = middle.x; // Middle point abscissa
             final int targetMy = middle.y + dy; // Middle point target ordinate
 
             final int minYGap = scale.toPixels(constants.minGapFromStaff);
@@ -1270,12 +1265,13 @@ public class OctaveShiftInter
 
             // To make all OctaveShiftInter in 'seq' displayed,
             // even those not yet registered in a SIG
-            SwingUtilities.invokeLater(() -> interService.publish(
-                    new EntityListEvent<>(
-                            this,
-                            SelectionHint.ENTITY_TRANSIENT,
-                            MouseMovement.DRAGGING,
-                            seq)));
+            SwingUtilities.invokeLater(
+                    () -> interService.publish(
+                            new EntityListEvent<>(
+                                    this,
+                                    SelectionHint.ENTITY_TRANSIENT,
+                                    MouseMovement.DRAGGING,
+                                    seq)));
         }
 
         /**
@@ -1323,8 +1319,9 @@ public class OctaveShiftInter
             final Triplet triplet = triplets.get(os);
             model.p2.setLocation(x, model.p2.getY());
             model.hookEnd = new Point2D.Double(x, model.p2.getY() + os.getHookLg());
-            triplet.middle.getPoint().setLocation((model.p1.getX() + model.p2.getX()) / 2.0,
-                                                  model.p2.getY());
+            triplet.middle.getPoint().setLocation(
+                    (model.p1.getX() + model.p2.getX()) / 2.0,
+                    model.p2.getY());
             handles.add(triplet.right = new RightHandle(os, model.p2));
 
             selectedHandle = triplet.right;
@@ -1508,9 +1505,13 @@ public class OctaveShiftInter
                         final List<AbstractChordInter> otherChords = prevStaff.getChords();
                         final AbstractChordInter chRight = otherChords.get(otherChords.size() - 1);
                         final OctaveShiftInter nos = new OctaveShiftInter(
-                                os.shape, os.kind,
-                                new Line2D.Double(newPt.x, newPt.y,
-                                                  chRight.getCenterRight().x, newPt.y),
+                                os.shape,
+                                os.kind,
+                                new Line2D.Double(
+                                        newPt.x,
+                                        newPt.y,
+                                        chRight.getCenterRight().x,
+                                        newPt.y),
                                 null);
                         nos.setManual(true);
                         nos.setStaff(prevStaff);
@@ -1689,9 +1690,13 @@ public class OctaveShiftInter
                         final List<AbstractChordInter> otherChords = nextStaff.getChords();
                         final AbstractChordInter chLeft = otherChords.get(0);
                         final OctaveShiftInter nos = new OctaveShiftInter(
-                                os.shape, os.kind,
-                                new Line2D.Double(chLeft.getCenterLeft().x, newPt.y,
-                                                  newPt.x, newPt.y),
+                                os.shape,
+                                os.kind,
+                                new Line2D.Double(
+                                        chLeft.getCenterLeft().x,
+                                        newPt.y,
+                                        newPt.x,
+                                        newPt.y),
                                 new Point2D.Double(newPt.x, newPt.y + os.getHookLg()));
                         nos.setManual(true);
                         nos.setStaff(nextStaff);

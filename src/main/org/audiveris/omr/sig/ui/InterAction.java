@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
 
 import org.slf4j.Logger;
@@ -73,11 +74,14 @@ public class InterAction
     {
         this.inter = inter;
 
-        Shape shape = inter.getShape();
+        final Shape shape = inter.getShape();
         putValue(NAME, (text != null) ? text : inter.toString());
 
         if (shape != null) {
-            putValue(SMALL_ICON, shape.getDecoratedSymbol(MusicFont.getDefaultMusicFamily()));
+            final Family family = (inter.getSig() != null)
+                    ? inter.getSig().getSystem().getSheet().getStub().getMusicFontFamily()
+                    : MusicFont.getDefaultMusicFamily();
+            putValue(SMALL_ICON, shape.getDecoratedSymbol(family));
         }
 
         final String details = inter.getDetails();

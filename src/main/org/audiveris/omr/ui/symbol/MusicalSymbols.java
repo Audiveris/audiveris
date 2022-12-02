@@ -25,25 +25,20 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 
 /**
- * Class <code>MusicalSymbols</code>
+ * Class <code>MusicalSymbols</code> was the first general set of symbols, it can still be used
+ * for template symbols.
  *
  * @author Hervé Bitteur
  */
 public class MusicalSymbols
-        extends BravuraSymbols
+        extends Symbols
 {
-
-    //~ Constructors -------------------------------------------------------------------------------
-    public MusicalSymbols ()
-    {
-        populateSymbols();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
-    protected MusicFont.Family family ()
+    protected Family family ()
     {
-        return MusicFont.Family.MusicalSymbols;
+        return Family.MusicalSymbols;
     }
 
     @Override

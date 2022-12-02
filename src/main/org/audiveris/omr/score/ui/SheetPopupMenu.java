@@ -104,8 +104,8 @@ public class SheetPopupMenu
     {
         // Update interested components
         for (Component component : popup.getComponents()) {
-            if (component instanceof LocationDependent) {
-                ((LocationDependent) component).updateUserLocation(rect);
+            if (component instanceof LocationDependent locationDependent) {
+                locationDependent.updateUserLocation(rect);
             }
         }
 

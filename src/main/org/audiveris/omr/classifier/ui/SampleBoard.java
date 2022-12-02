@@ -32,7 +32,7 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ApplicationAction;

@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 
@@ -111,9 +112,8 @@ public class TimeWholeInter
         // Multi symbol (num / den), such as for shape TIME_FOUR_FOUR
         final Point center = getCenter(); // Use area center
         final TimeRational nd = getTimeRational();
-        final MusicFont.Family family = staff != null
-                ? staff.getSystem().getSheet().getStub().getMusicFontFamily()
-                : MusicFont.getDefaultMusicFamily();
+        final Family family = staff != null ? staff.getSystem().getSheet().getStub()
+                .getMusicFontFamily() : MusicFont.getDefaultMusicFamily();
         MusicFont musicFont = MusicFont.getBaseFont(family, interline);
         NumDenSymbol symbol = new NumDenSymbol(shape, family, nd.num, nd.den);
         Dimension dim = symbol.getDimension(musicFont);

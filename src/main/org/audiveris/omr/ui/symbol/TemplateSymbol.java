@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.TemplateFactory;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
-import org.audiveris.omr.ui.symbol.MusicFont.Family;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * Class <code>TemplateSymbol</code> defines a symbol meant only for template matching.
  * <p>
- * <b>BEWARE:</b>Don't use it for simple display, use a ShapeSymbol of proper shape instead.
+ * <b>BEWARE:</b>Don't use it for simple display, use a {@link ShapeSymbol} of proper shape instead.
  *
  * @author Hervé Bitteur
  */
@@ -92,16 +91,20 @@ public class TemplateSymbol
 
         ShapeSymbol symbol = font.getSymbol(shape);
 
-        if (symbol == null && font.getBackup() != null) {
-            logger.debug("no symbol in TemplateSymbol for {} in family {} ...",
-                         shape, font.getMusicFamily());
+        while (symbol == null && font.getBackup() != null) {
+            logger.debug(
+                    "no symbol in TemplateSymbol for {} in family {} ...",
+                    shape,
+                    font.getMusicFamily());
             font = font.getBackup();
             symbol = font.getSymbol(shape);
         }
 
         if (symbol == null) {
-            logger.warn("no symbol in TemplateSymbol for {} in family {}",
-                        shape, font.getMusicFamily());
+            logger.warn(
+                    "no symbol in TemplateSymbol for {} in family {}",
+                    shape,
+                    font.getMusicFamily());
         }
 
         final Params symParams = symbol.getParams(font);
