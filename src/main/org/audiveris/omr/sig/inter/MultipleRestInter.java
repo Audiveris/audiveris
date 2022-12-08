@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * <img alt="MultipleRest" src="https://en.wikipedia.org/wiki/File:15_bars_multirest.png">
  * <p>
- * For Audiveris, this musical item is constructed by:
+ * For Audiveris, this music item is constructed by:
  * <ul>
  * <li>A MultipleRestInter, which is similar to a horizontal beam
  * <li>Two VerticalSerifInter's, similar to stems, linked by MultipleRestSerifRelation's

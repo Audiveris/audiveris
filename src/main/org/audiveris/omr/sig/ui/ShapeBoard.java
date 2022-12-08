@@ -492,7 +492,7 @@ public class ShapeBoard
                 try {
                     addButton(p, new ShapeButton(symbol));
                 } catch (Exception ex) {
-                    logger.warn("No musical glyph for shape: {}", shape, ex);
+                    logger.warn("No music glyph for shape: {}", shape, ex);
                 }
             } else {
                 logger.warn("Panel. No button symbol for {}", shape);

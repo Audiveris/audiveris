@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -60,6 +58,8 @@ import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -456,9 +456,9 @@ public class TextBuilder
      * Find the index of the breaking line, if any, between upper and lower systems.
      *
      * @param line1 last line of upper staff
-     * @param dy1   ordinate extension of core musical items in upper system
+     * @param dy1   ordinate extension of core music items in upper system
      * @param line2 first line of lower staff
-     * @param dy2   ordinate extension of core musical items in lower system
+     * @param dy2   ordinate extension of core music items in lower system
      * @param lines the sequence of gutter lines to check
      * @return the index of breaking line or -1 if not found
      */

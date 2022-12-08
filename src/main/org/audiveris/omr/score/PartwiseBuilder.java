@@ -29,6 +29,7 @@ import static org.audiveris.omr.glyph.Shape.CODA;
 import static org.audiveris.omr.glyph.Shape.SEGNO;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import static org.audiveris.omr.score.MusicXML.*;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
@@ -254,7 +255,7 @@ public class PartwiseBuilder
     private static final Logger logger = LoggerFactory.getLogger(PartwiseBuilder.class);
 
     /** A future which reflects whether JAXB has been initialized. */
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () -> {
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(() -> {
         try {
             Marshalling.getContext(ScorePartwise.class);
         } catch (JAXBException ex) {
@@ -312,7 +313,9 @@ public class PartwiseBuilder
      * @throws InterruptedException if the thread has been interrupted
      * @throws ExecutionException   if a checked exception was thrown
      */
-    private PartwiseBuilder (Score score) throws InterruptedException, ExecutionException
+    private PartwiseBuilder (Score score)
+            throws InterruptedException,
+                   ExecutionException
     {
         // Make sure the JAXB context is ready
         loading.get();
@@ -517,7 +520,7 @@ public class PartwiseBuilder
                     // NOTA: We consider ALTA is always above staff and BASSA always below
                     direction.setPlacement(
                             os.getKind() == OctaveShiftInter.Kind.ALTA ? AboveBelow.ABOVE
-                                    : AboveBelow.BELOW);
+                            : AboveBelow.BELOW);
                     direction.getDirectionType().add(directionType);
                     current.pmMeasure.getNoteOrBackupOrForward().add(direction);
                 }
@@ -549,18 +552,18 @@ public class PartwiseBuilder
         pmScorePart.setPartName(partName);
         partName.setValue(
                 (logicalPart.getName() != null) ? logicalPart.getName()
-                        : logicalPart.getDefaultName());
+                : logicalPart.getDefaultName());
         PartName partAbbrev = factory.createPartName();
         pmScorePart.setPartAbbreviation(partAbbrev);
         partAbbrev.setValue(
                 (logicalPart.getAbbreviation() != null) ? logicalPart.getAbbreviation()
-                        : partName.getValue());
+                : partName.getValue());
 
-        // Is this a drum part? If so, create drumset and export all midi instruments in xml preamble.
-        boolean isDrumLogicalPart;
-        isDrumLogicalPart = false;
+        // Is this a drum part?
+        boolean isDrumLogicalPart = false;
         final List<SheetStub> scoreStubs = score.getStubs();
-        outermost: for (SheetStub stub : scoreStubs) {
+        outermost:
+        for (SheetStub stub : scoreStubs) {
             final Integer sheetPageId = score.getSheetPageId(stub.getNumber());
             final Sheet sheet = stub.getSheet();
             final Page page = sheet.getPages().get(sheetPageId - 1);
@@ -574,18 +577,19 @@ public class PartwiseBuilder
             }
         }
         if (isDrumLogicalPart) {
-            Drumset drumset = new Drumset();
-            DrumInstrument[] drum = drumset.drum;
-            Map<Integer, ScoreInstrument> instrumentMap = new HashMap<>();
-            for (int i = 0; i < Drumset.DRUM_INSTRUMENTS; i++) {
-                if (drum[i] != null) {
+            // If so, retrieve drumset and export all midi instruments in xml preamble.
+            final DrumSet drumSet = DrumSet.getInstance();
+            final Map<Integer, ScoreInstrument> instrumentMap = new HashMap<>();
+            for (Entry<Integer, DrumInstrument> entry : drumSet.byId.entrySet()) {
+                final DrumInstrument drum = entry.getValue();
+                if (drum != null && drum.headMotif != null && drum.pitchPosition != null) {
                     // Score instrument
                     ScoreInstrument scoreInstrument = new ScoreInstrument();
                     pmScorePart.getScoreInstrument().add(scoreInstrument);
-                    scoreInstrument.setId(pmScorePart.getId() + "-I" + Integer.toString(i + 1));
-                    scoreInstrument.setInstrumentName(drum[i].name);
+                    scoreInstrument.setId(pmScorePart.getId() + "-I" + entry.getKey());
+                    scoreInstrument.setInstrumentName(drum.name);
 
-                    instrumentMap.put(i, scoreInstrument);
+                    instrumentMap.put(entry.getKey(), scoreInstrument);
 
                     // Midi instrument
                     MidiInstrument midiInstrument = factory.createMidiInstrument();
@@ -593,7 +597,7 @@ public class PartwiseBuilder
                     midiInstrument.setId(scoreInstrument);
                     midiInstrument.setMidiChannel(10); // in [1..16] range
                     midiInstrument.setMidiProgram(1);
-                    midiInstrument.setMidiUnpitched(i + 1);
+                    midiInstrument.setMidiUnpitched(entry.getKey());
                     midiInstrument.setVolume(new BigDecimal(score.getVolume()));
                 }
             }
@@ -954,8 +958,11 @@ public class PartwiseBuilder
             try {
                 Method method = classe.getMethod("setStaff", BigInteger.class);
                 method.invoke(obj, new BigInteger("" + (1 + staff.getIndexInPart())));
-            } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
-                    | SecurityException | InvocationTargetException ex) {
+            } catch (IllegalAccessException |
+                     IllegalArgumentException |
+                     NoSuchMethodException |
+                     SecurityException |
+                     InvocationTargetException ex) {
                 ex.printStackTrace();
                 logger.error("Could not setStaff for element {}", classe);
             }
@@ -1056,7 +1063,7 @@ public class PartwiseBuilder
             method.invoke(
                     element.getValue(),
                     (articulation.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                            : AboveBelow.BELOW);
+                    : AboveBelow.BELOW);
 
             // Default-Y
             method = classe.getMethod("setDefaultY", BigDecimal.class);
@@ -1064,8 +1071,11 @@ public class PartwiseBuilder
 
             // Include in Articulations
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
-        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
-                | SecurityException | InvocationTargetException ex) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException ex) {
             logger.warn("Error visiting " + articulation, ex);
         }
     }
@@ -1111,13 +1121,15 @@ public class PartwiseBuilder
             needed |= (partBarline == current.measure.getLeftPartBarline());
             // On left side, with stuff (left repeat, left ending):
             needed |= ((location == RightLeftMiddle.LEFT) && (stack.isRepeat(LEFT)
-                    || (ending != null)));
+                                                                      || (ending != null)));
             // Specific barline on middle location:
             needed |= (location == RightLeftMiddle.MIDDLE);
             // On right side, but with stuff (right repeat, right ending, fermata) or non regular:
-            needed |= ((location == RightLeftMiddle.RIGHT) && (stack.isRepeat(RIGHT)
-                    || (ending != null) || !fermatas.isEmpty() || (style != null
-                            && style != PartBarline.Style.REGULAR)));
+            needed |= (location == RightLeftMiddle.RIGHT)
+                              && (stack.isRepeat(RIGHT)
+                                          || (ending != null)
+                                          || !fermatas.isEmpty()
+                                          || (style != null && style != PartBarline.Style.REGULAR));
 
             if (needed) {
                 try {
@@ -1135,7 +1147,6 @@ public class PartwiseBuilder
                     switch (location) {
                     case LEFT:
                     case MIDDLE:
-
                         // (Left) repeat?
                         if (stack.isRepeat(LEFT)) {
                             Repeat repeat = factory.createRepeat();
@@ -1170,7 +1181,6 @@ public class PartwiseBuilder
                         break;
 
                     case RIGHT:
-
                         // (Right) repeat?
                         if (stack.isRepeat(RIGHT)) {
                             Repeat repeat = factory.createRepeat();
@@ -1297,7 +1307,7 @@ public class PartwiseBuilder
             // Placement
             harmony.setPlacement(
                     (location.getY() < current.note.getCenter().y) ? AboveBelow.ABOVE
-                            : AboveBelow.BELOW);
+                    : AboveBelow.BELOW);
 
             // Staff
             insertStaffId(harmony, staff);
@@ -1417,7 +1427,7 @@ public class PartwiseBuilder
             // Placement
             direction.setPlacement(
                     (location.getY() < current.note.getCenter().y) ? AboveBelow.ABOVE
-                            : AboveBelow.BELOW);
+                    : AboveBelow.BELOW);
 
             // default-y
             pmWords.setDefaultY(yOf(location, staff));
@@ -1527,7 +1537,7 @@ public class PartwiseBuilder
             // Type
             pmFermata.setType(
                     (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
-                            : UprightInverted.INVERTED);
+                    : UprightInverted.INVERTED);
 
             // Everything is now OK
             if (pmBarline != null) {
@@ -1750,7 +1760,7 @@ public class PartwiseBuilder
                 sound.setDacapo(YesNo.YES);
             }
 
-                break;
+            break;
 
             case DAL_SEGNO: {
                 // Example:
@@ -1768,7 +1778,7 @@ public class PartwiseBuilder
                 ///sound.setDalsegno(measureId); // NO, not this measure, but the target measure!
             }
 
-                break;
+            break;
 
             default:
                 logger.warn("Unknown marker shape: {}", marker.getShape());
@@ -2328,52 +2338,38 @@ public class PartwiseBuilder
             // Instrument (for unpitched percussion)
             Shape noteShape = note.getShape();
             if (!noteShape.isRest() && current.isDrumPart) {
-                // Find a midi instrument with the correct pitch and notehead
+                // Find a midi instrument with the correct head motif and pitch
+                HeadMotif motif = noteShape.getHeadMotif();
                 int notePitch = note.getIntegerPitch();
-                Boolean instrumentFound = false;
-                int instId;
-                Shape headShape = null;
 
                 // Special case for circle-x notehead with pitch -5 or 5:
                 // These should be sounded as midi instrument Open Hi-Hat, midi# 46,
                 // having notehead shape NOTEHEAD_CROSS, integer pitch -3.
                 // All other circle-x notes should sound as instrument with ordinary
                 // x head shape at the integer pitch of the note at hand.
-                final HeadMotif motif = noteShape.getHeadMotif();
-                switch (motif) {
-                case circle -> {
-                    headShape = Shape.NOTEHEAD_CROSS;
+                if (motif == HeadMotif.circle) {
+                    motif = HeadMotif.cross;
                     if (notePitch == -5 || notePitch == 5) {
                         notePitch = -3;
                     }
                 }
 
-                case oval, small -> headShape = Shape.NOTEHEAD_BLACK;
-                case cross -> headShape = Shape.NOTEHEAD_CROSS;
-                case diamond -> headShape = Shape.NOTEHEAD_DIAMOND_FILLED;
-                case triangle -> headShape = Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED;
-
-                default -> logger.error("Unsupported head motif {}", motif);
-                }
-
-                for (int i = 0; i < Drumset.DRUM_INSTRUMENTS && !instrumentFound; i++) {
-                    if (current.drum[i] != null) {
-                        if (current.drum[i].integerPitch == notePitch
-                                && current.drum[i].notehead == headShape) {
-                            instId = i;
-                            instrumentFound = true;
-                            Instrument instrument = factory.createInstrument();
-                            instrument.setId(current.instrumentMap.get(instId));
+                Instrument instrument = null;
+                final DrumSet drumSet = DrumSet.getInstance();
+                final Set<DrumInstrument> set = drumSet.byPitch.get(notePitch);
+                if (set != null) {
+                    for (DrumInstrument drum : set) {
+                        if (drum.headMotif == motif) {
+                            instrument = factory.createInstrument();
+                            instrument.setId(current.instrumentMap.get(drum.id));
                             current.pmNote.getInstrument().add(instrument);
+                            break;
                         }
                     }
                 }
 
-                if (!instrumentFound) {
-                    logger.warn(
-                            "No instrument for note integerPitch {} Shape {}",
-                            note.getIntegerPitch(),
-                            note.getShape());
+                if (instrument == null) {
+                    logger.warn("No instrument for note {}", note);
                 }
             }
 
@@ -2518,12 +2514,15 @@ public class PartwiseBuilder
             method.invoke(
                     element.getValue(),
                     (ornament.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                            : AboveBelow.BELOW);
+                    : AboveBelow.BELOW);
             // Everything is OK
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
-        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
-                | SecurityException | InvocationTargetException ex) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException ex) {
             logger.warn("Error visiting " + ornament, ex);
         }
     }
@@ -2624,7 +2623,7 @@ public class PartwiseBuilder
             // Placement
             direction.setPlacement(
                     (refPoint.y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                            : AboveBelow.BELOW);
+                    : AboveBelow.BELOW);
 
             // Everything is OK
             directionType.setPedal(pmPedal);
@@ -2683,7 +2682,7 @@ public class PartwiseBuilder
                 // Let the Marshalling class handle it
                 //
                 // [Encoding]/Supports
-                for (String feature : new String[] { "new-system", "new-page" }) {
+                for (String feature : new String[]{"new-system", "new-page"}) {
                     Supports supports = factory.createSupports();
                     supports.setAttribute(feature);
                     supports.setElement("print");
@@ -2792,7 +2791,7 @@ public class PartwiseBuilder
                 scorePartwise.getIdentification().getRights().add(typedText);
             }
 
-                break;
+            break;
 
             case CreatorArranger:
             case CreatorComposer:
@@ -2825,7 +2824,7 @@ public class PartwiseBuilder
                 scorePartwise.getIdentification().getCreator().add(typedText);
             }
 
-                break;
+            break;
 
             case UnknownRole:
                 break;
@@ -3017,20 +3016,11 @@ public class PartwiseBuilder
 
             if (systemPart != null) {
                 current.isDrumPart = systemPart.isDrumPart();
-                if (current.isDrumPart) {
-                    Drumset drumset = new Drumset();
-                    current.drum = drumset.drum;
-                }
                 processPart(systemPart);
             } else {
                 // Need to build a dummy system Part on-the-fly
                 Part dummyPart = system.getFirstPart().createDummyPart(current.logicalPart.getId());
                 current.isDrumPart = dummyPart.isDrumPart();
-
-                if (current.isDrumPart) {
-                    Drumset drumset = new Drumset();
-                    current.drum = drumset.drum;
-                }
                 processPart(dummyPart);
             }
 
@@ -3114,13 +3104,13 @@ public class PartwiseBuilder
             if (tuplet.getChords().get(0) == current.note.getChord()) {
                 pmTuplet.setPlacement(
                         (tuplet.getCenter().y <= current.note.getCenter().y) ? AboveBelow.ABOVE
-                                : AboveBelow.BELOW);
+                        : AboveBelow.BELOW);
             }
 
             // Type
             pmTuplet.setType(
                     (tuplet.getChords().get(0) == current.note.getChord()) ? StartStop.START
-                            : StartStop.STOP);
+                    : StartStop.STOP);
 
             // Number
             Integer num = tupletNumbers.get(tuplet);
@@ -3184,7 +3174,7 @@ public class PartwiseBuilder
                 // Placement
                 direction.setPlacement(
                         (refPoint.getY() < current.note.getCenter().y) ? AboveBelow.ABOVE
-                                : AboveBelow.BELOW);
+                        : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(refPoint, staff));
@@ -3314,8 +3304,8 @@ public class PartwiseBuilder
      * @throws ExecutionException   if a checked exception was thrown
      */
     public static ScorePartwise build (Score score)
-        throws InterruptedException,
-        ExecutionException
+            throws InterruptedException,
+                   ExecutionException
     {
         Objects.requireNonNull(score, "Trying to export a null score");
 
@@ -3361,7 +3351,7 @@ public class PartwiseBuilder
         return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(
                 left.getSign(),
                 right.getSign()) && Objects.equals(left.getLine(), right.getLine()) && Objects
-                        .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+                .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -3401,8 +3391,6 @@ public class PartwiseBuilder
         LogicalPart logicalPart;
 
         Boolean isDrumPart;
-
-        DrumInstrument[] drum;
 
         // Map midi instrument number to ScoreInstrument for lookup during note export
         // TODO: The map should eventually have a second key, the part number
@@ -3471,74 +3459,6 @@ public class PartwiseBuilder
             pmAttributes = null;
 
             endNote();
-        }
-    }
-
-    //----------------//
-    // DrumInstrument //
-    //----------------//
-    /** Class representing an individual percussion instrument */
-    private class DrumInstrument
-    {
-
-        /** Instrument name */
-        String name;
-
-        /** Notehead shape */
-        Shape notehead;
-
-        /** Staff pitch, 0 = middle line, increasing downwards */
-        int integerPitch;
-
-        private DrumInstrument (String name,
-                                Shape notehead,
-                                int integerPitch)
-        {
-            this.name = name;
-            this.notehead = notehead;
-            this.integerPitch = integerPitch;
-        }
-    }
-
-    //---------//
-    // Drumset //
-    //---------//
-    /** Class representing the standard MuseScore midi drumset */
-    private class Drumset
-    {
-
-        final static int DRUM_INSTRUMENTS = 128;
-
-        /** Array of drum instruments */
-        DrumInstrument[] drum = new DrumInstrument[DRUM_INSTRUMENTS];
-
-        private Drumset ()
-        {
-            this.drum[35] = new DrumInstrument("Acoustic Bass Drum", Shape.NOTEHEAD_BLACK, 3);
-            this.drum[36] = new DrumInstrument("Bass Drum 1", Shape.NOTEHEAD_BLACK, 3);
-            this.drum[37] = new DrumInstrument("Side Stick", Shape.NOTEHEAD_CROSS, -1);
-            this.drum[38] = new DrumInstrument("Acoustic Snare", Shape.NOTEHEAD_BLACK, -1);
-            this.drum[40] = new DrumInstrument("Electric Snare", Shape.NOTEHEAD_BLACK, -1);
-            this.drum[41] = new DrumInstrument("Low Floor Tom", Shape.NOTEHEAD_BLACK, 1);
-            this.drum[42] = new DrumInstrument("Closed Hi-Hat", Shape.NOTEHEAD_CROSS, -5);
-            this.drum[43] = new DrumInstrument("High Floor Tom", Shape.NOTEHEAD_BLACK, 1);
-            this.drum[44] = new DrumInstrument("Pedal Hi-Hat", Shape.NOTEHEAD_CROSS, 5);
-            this.drum[45] = new DrumInstrument("Low Tom", Shape.NOTEHEAD_BLACK, -2);
-            this.drum[46] = new DrumInstrument("Open Hi-Hat", Shape.NOTEHEAD_CROSS, -3);
-            this.drum[47] = new DrumInstrument("Low-Mid Tom", Shape.NOTEHEAD_BLACK, -3);
-            this.drum[48] = new DrumInstrument("Hi-Mid Tom", Shape.NOTEHEAD_BLACK, -4);
-            this.drum[49] = new DrumInstrument("Crash Cymbal 1", Shape.NOTEHEAD_CROSS, -6);
-            this.drum[50] = new DrumInstrument("High Tom", Shape.NOTEHEAD_BLACK, -4);
-            this.drum[51] = new DrumInstrument("Ride Cymbal 1", Shape.NOTEHEAD_CROSS, -4);
-            this.drum[52] = new DrumInstrument("Chinese Cymbal", Shape.NOTEHEAD_CROSS, -7);
-            this.drum[53] = new DrumInstrument("Ride Bell", Shape.NOTEHEAD_DIAMOND_FILLED, -4);
-            this.drum[54] = new DrumInstrument("Tambourine", Shape.NOTEHEAD_DIAMOND_FILLED, -2);
-            this.drum[55] = new DrumInstrument("Splash Cymbal", Shape.NOTEHEAD_CROSS, -7);
-            this.drum[56] = new DrumInstrument("Cowbell", Shape.NOTEHEAD_TRIANGLE_DOWN_FILLED, -3);
-            this.drum[57] = new DrumInstrument("Crash Cymbal 2", Shape.NOTEHEAD_CROSS, -7);
-            this.drum[59] = new DrumInstrument("Ride Cymbal 2", Shape.NOTEHEAD_CROSS, -2);
-            this.drum[63] = new DrumInstrument("Open Hi Conga", Shape.NOTEHEAD_CROSS, 4);
-            this.drum[64] = new DrumInstrument("Low Conga", Shape.NOTEHEAD_CROSS, 2);
         }
     }
 
@@ -3660,7 +3580,7 @@ public class PartwiseBuilder
                             final ClefInter clef = it.next();
 
                             if (measure.isDummy() /// || measure.isTemporary()
-                                    || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
+                                        || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
                                 // Consume this clef
                                 processClef(clef);
                             } else {
@@ -3749,7 +3669,7 @@ public class PartwiseBuilder
                         toTenths(
                                 current.page.getDimension().width - current.system.getLeft()
                                         - current.system.getWidth()).subtract(
-                                                pageHorizontalMargin));
+                                pageHorizontalMargin));
 
                 if (isFirst.system) {
                     // TopSystemDistance

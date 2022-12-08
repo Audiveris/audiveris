@@ -35,7 +35,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 
 /**
- * Class <code>CodedSymbol</code> is a ShapeSymbol built with a sequence of code points.
+ * Class <code>CodedSymbol</code> is a {@link ShapeSymbol} defined by a sequence of code points.
  *
  * @author Hervé Bitteur
  */

@@ -160,9 +160,6 @@ public class BeamLinker
     public BeamLinker (AbstractBeamInter beam,
                        StemsRetriever retriever)
     {
-        if (beam.isVip()) {
-            logger.info("BINGO constructor");
-        }
         this.beam = beam;
         this.median = beam.getMedian();
         this.retriever = retriever;

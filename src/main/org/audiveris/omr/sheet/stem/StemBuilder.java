@@ -562,7 +562,7 @@ public class StemBuilder
     public String toString ()
     {
         return new StringBuilder("sb{")
-                ///.append(getTotalLength())         // BINGO uncomment !
+                .append(getTotalLength())
                 .append(' ').append(items)
                 .append('}').toString();
     }

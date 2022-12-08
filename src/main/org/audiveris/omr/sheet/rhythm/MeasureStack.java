@@ -1800,8 +1800,8 @@ public class MeasureStack
             measure.removeInter(inter);
         }
 
-        if (inter instanceof TupletInter) {
-            stackTuplets.remove(inter);
+        if (inter instanceof TupletInter tupletInter) {
+            stackTuplets.remove(tupletInter);
         }
     }
 

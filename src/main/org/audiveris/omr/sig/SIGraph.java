@@ -33,7 +33,6 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.Inters.ClassPredicate;
 import org.audiveris.omr.sig.inter.Inters.ClassesPredicate;
 import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Exclusion.ExclusionCause;
 import org.audiveris.omr.sig.relation.Relation;
@@ -126,7 +125,6 @@ public class SIGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //---------//
     // addEdge //
     //---------//
@@ -140,9 +138,6 @@ public class SIGraph
                             Inter targetVertex,
                             Relation rel)
     {
-        if (sourceVertex.isVip() && targetVertex.isVip() && rel instanceof BeamStemRelation) {
-            logger.info("BINGO");
-        }
         return super.addEdge(sourceVertex, targetVertex, rel);
     }
 
@@ -899,8 +894,10 @@ public class SIGraph
             if (inter1.isVip() || inter2.isVip()) {
                 logger.info("VIP support {}", sup.toLongString(this));
             }
-        } catch (IllegalAccessException | NoSuchMethodException | InstantiationException
-                | InvocationTargetException ex) {
+        } catch (IllegalAccessException |
+                 NoSuchMethodException |
+                 InstantiationException |
+                 InvocationTargetException ex) {
             logger.error("Could not instantiate {} {}", supportClass, ex.toString(), ex);
         }
 
@@ -1302,9 +1299,9 @@ public class SIGraph
         Collections.sort(
                 rels,
                 (Relation r1,
-                 Relation r2) -> Double.compare(
-                         getEdgeSource(r2).getBestGrade(),
-                         getEdgeSource(r1).getBestGrade()));
+                        Relation r2) -> Double.compare(
+                        getEdgeSource(r2).getBestGrade(),
+                        getEdgeSource(r1).getBestGrade()));
     }
 
     //----------//

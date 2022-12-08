@@ -629,7 +629,7 @@ public class HeadStemRelation
                 "Value for (target) stem coeff in support formula");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.1, // was 0.25, BINGO
+                0.1, // was 0.25
                 "Maximum horizontal overlap between stem & head");
 
         @SuppressWarnings("unused")

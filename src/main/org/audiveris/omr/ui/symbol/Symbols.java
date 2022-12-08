@@ -31,9 +31,20 @@ import org.slf4j.LoggerFactory;
 import java.util.EnumMap;
 
 /**
- * Class <code>Symbols</code> manages all {@link ShapeSymbol} instances, both for the simple
- * symbols and for a few decorated symbols.
+ * Class <code>Symbols</code> manages all {@link ShapeSymbol} instances for a given font family.
  * <p>
+ * A ShapeSymbol can be:
+ * <ul>
+ * <li>A symbol defined via its font code point. See {@link CodedSymbol}.
+ * <li>A symbol built from various components, often to alleviate font undefined symbols.
+ * See {@link SlurSymbol} for example.
+ * </ul>
+ * Beside its plain version, any symbol can appear in:
+ * <ul>
+ * <li>A <b>decorated</b> version which presents a symbol with contextual additions.
+ * See {@link AugmentationSymbol} or {@link RestSymbol} for example.
+ * <li>A <b>tiny</b> version which presents a symbol in reduced size, for its use in UI buttons.
+ * </ul>
  * <img alt="Symbols diagram" src="doc-files/Symbols.png">
  *
  * @author Hervé Bitteur
@@ -45,18 +56,35 @@ public abstract class Symbols
     private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Map of plain symbol per shape. */
+    /**
+     * For the related font family, this is the map of plain symbol per shape.
+     */
     protected final EnumMap<Shape, ShapeSymbol> symbolMap = new EnumMap<>(Shape.class);
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // family //
     //--------//
+    /**
+     * Report the Family enum these symbols definitions are related to.
+     *
+     * @return the family value
+     */
     protected abstract Family family ();
 
     //---------//
     // getCode //
     //---------//
+    /**
+     * Report the code point, if any, defined in font family for the provided music shape.
+     * <p>
+     * From one font family to the other, a given music shape can be undefined or mapped to a
+     * different code.
+     * SMuFL-compliant fonts use the same code (for the music shapes they define).
+     *
+     * @param shape the provided music shape
+     * @return code point or null if not supported
+     */
     protected abstract int[] getCode (Shape shape);
 
     //-----------//

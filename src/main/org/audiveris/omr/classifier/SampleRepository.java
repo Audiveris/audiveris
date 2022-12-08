@@ -37,8 +37,8 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.OmrGui;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.StopWatch;
@@ -84,7 +84,7 @@ import javax.swing.event.ChangeListener;
  * The repository is implemented as a collection of {@link SampleSheet} instances, to ease the
  * addition or removal of sheet samples as a whole.
  * <p>
- * A special kind of samples is provided by the use of a musical font with proper scaling. These
+ * A special kind of samples is provided by the use of a music font with proper scaling. These
  * font-based samples, though being artificial, are considered as part of the training material.
  * There is at most one font-base sample in each font family for every trainable shape,
  * and these sample are always shown in first position among all samples of the same shape.

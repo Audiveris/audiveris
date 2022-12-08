@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.field.IntegerListSpinner;
 import org.audiveris.omr.ui.field.LDoubleField;
@@ -41,6 +37,10 @@ import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -72,7 +72,7 @@ import javax.swing.event.ChangeListener;
  * Class <code>SymbolRipper</code> is a stand-alone utility to generate the
  * textual description of a symbol.
  * <p>
- * Symbol appearance is "ripped" from a musical font.
+ * Symbol appearance is "ripped" from a music font.
  *
  * @author Hervé Bitteur
  */

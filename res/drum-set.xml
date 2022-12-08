@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!--                                 d r u m - s e t . x m l                                     -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+<!--
+    This file, located in Audiveris 'res' folder, defines drum default mapping.
+    The end-user can override entries of this mapping by writing another drum-set.xml file in
+    Audiveris user 'config' folder.
+
+    Such file defines Audiveris entries for general midi percussion keys:
+    All fields are mandatory
+        - id:               assigned MIDI key
+   
+        - name:             name of drum sound
+   
+        - motif:            motif of head shape, regardless of its duration
+                            (oval, cross, diamond, triangle, circle)
+                            null if unknown / ignored
+                       
+        - pitch-position:   head position relative to staff line/space
+                            (0 for middle line, positive downwards)
+                            null if unknown / ignored
+
+    See https://computermusicresource.com/GM.Percussion.KeyMap.html for a complete mapping 
+    of id vs name.
+
+    -->
+
+<drum-set>
+
+    <instrument id="35" name="Acoustic Bass Drum" motif="oval"      pitch-position="3"/>
+    <instrument id="36" name="Bass Drum 1"        motif="oval"      pitch-position="3"/>
+    <instrument id="37" name="Side Stick"         motif="cross"     pitch-position="-1"/>
+    <instrument id="38" name="Acoustic Snare"     motif="oval"      pitch-position="-1"/>
+    
+    <!-- not yet assigned -->
+    <instrument id="39" name="Hand Clap"          motif="null"      pitch-position="null"/>
+    
+    <instrument id="40" name="Electric Snare"     motif="oval"      pitch-position="-1"/>
+    <instrument id="41" name="Low Floor Tom"      motif="oval"      pitch-position="1"/>
+    <instrument id="42" name="Closed Hi-Hat"      motif="cross"     pitch-position="-5"/>
+    <instrument id="43" name="High Floor Tom"     motif="oval"      pitch-position="1"/>
+    <instrument id="44" name="Pedal Hi-Hat"       motif="cross"     pitch-position="5"/>
+    <instrument id="45" name="Low Tom"            motif="oval"      pitch-position="-2"/>
+    <instrument id="46" name="Open Hi-Hat"        motif="cross"     pitch-position="-3"/>
+    <instrument id="47" name="Low-Mid Tom"        motif="oval"      pitch-position="-3"/>
+    <instrument id="48" name="Hi-Mid Tom"         motif="oval"      pitch-position="-4"/>
+    <instrument id="49" name="Crash Cymbal 1"     motif="cross"     pitch-position="-6"/>
+    <instrument id="50" name="High Tom"           motif="oval"      pitch-position="-4"/>
+    <instrument id="51" name="Ride Cymbal 1"      motif="cross"     pitch-position="-4"/>
+    <instrument id="52" name="Chinese Cymbal"     motif="cross"     pitch-position="-7"/>
+    <instrument id="53" name="Ride Bell"          motif="diamond"   pitch-position="-4"/>
+    <instrument id="54" name="Tambourine"         motif="diamond"   pitch-position="-2"/>
+    <instrument id="55" name="Splash Cymbal"      motif="cross"     pitch-position="-7"/>
+    <instrument id="56" name="Cowbell"            motif="triangle"  pitch-position="-3"/>
+    <instrument id="57" name="Crash Cymbal 2"     motif="cross"     pitch-position="-7"/>
+
+    <!-- not yet assigned -->
+    <instrument id="58" name="Vibraslap"          motif="null"      pitch-position="null"/>
+    
+    <instrument id="59" name="Ride Cymbal 2"      motif="cross"     pitch-position="-2"/>
+
+    <!-- not yet assigned -->
+    <instrument id="60" name="Hi Bongo"           motif="null"      pitch-position="null"/>
+    <instrument id="61" name="Low Bongo"          motif="null"      pitch-position="null"/>
+    <instrument id="62" name="Mute Hi Conga"      motif="null"      pitch-position="null"/>
+    
+    <instrument id="63" name="Open Hi Conga"      motif="cross"     pitch-position="4"/>
+    <instrument id="64" name="Low Conga"          motif="cross"     pitch-position="2"/>
+    
+    <!-- not yet assigned -->
+    <instrument id="65" name="High Timbale"       motif="null"      pitch-position="null"/>
+    <instrument id="66" name="Low Timbale"        motif="null"      pitch-position="null"/>
+    <instrument id="67" name="High Agogo"         motif="null"      pitch-position="null"/>
+    <instrument id="68" name="Low Agogo"          motif="null"      pitch-position="null"/>
+    <instrument id="69" name="Cabasa"             motif="null"      pitch-position="null"/>
+    <instrument id="70" name="Maracas"            motif="null"      pitch-position="null"/>
+    <instrument id="71" name="Short Whistle"      motif="null"      pitch-position="null"/>
+    <instrument id="72" name="Long Whistle"       motif="null"      pitch-position="null"/>
+    <instrument id="73" name="Short Guiro"        motif="null"      pitch-position="null"/>
+    <instrument id="74" name="Long Guiro"         motif="null"      pitch-position="null"/>
+    <instrument id="75" name="Claves"             motif="null"      pitch-position="null"/>
+    <instrument id="76" name="Hi Wood Block"      motif="null"      pitch-position="null"/>
+    <instrument id="77" name="Low Wood Block"     motif="null"      pitch-position="null"/>
+    <instrument id="78" name="Mute Cuica"         motif="null"      pitch-position="null"/>
+    <instrument id="79" name="Open Cuica"         motif="null"      pitch-position="null"/>
+    <instrument id="80" name="Mute Triangle"      motif="null"      pitch-position="null"/>
+    <instrument id="81" name="Open Triangle"      motif="null"      pitch-position="null"/>
+
+</drum-set>

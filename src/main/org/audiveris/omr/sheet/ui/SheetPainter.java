@@ -224,7 +224,7 @@ public abstract class SheetPainter
     /**
      * Draw the upper and lower core limits of the system.
      * <p>
-     * This is just for visual inspection of these "real" limits for important musical symbols.
+     * This is just for visual inspection of these "real" limits for important music symbols.
      *
      * @param system the system to be processed
      */

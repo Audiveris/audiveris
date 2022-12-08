@@ -39,6 +39,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 /**
  * Class <code>MusicFont</code> allows the use of proper music font family and size.
@@ -57,6 +58,7 @@ import java.awt.image.BufferedImage;
  * <p>
  * Other families are available, notably {@link Family#FinaleJazz}, which may better fit
  * Jazz-like printed scores.
+ * <p>
  * When a symbol is not directly available in a given family, its backup families if any are
  * transitively searched for the shape at hand.
  * </dd>
@@ -96,7 +98,12 @@ public class MusicFont
             Param.GLOBAL_SCOPE);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Music family this font belongs to. */
+    /**
+     * Music family this font belongs to.
+     * <p>
+     * NOTA: java.awt.Font already has a notion of 'family' in a broader meaning
+     * So, we use here the more specific 'musicFamily' field name.
+     */
     protected final Family musicFamily;
 
     /** Backup font, if any. */
@@ -104,7 +111,7 @@ public class MusicFont
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new MusicFont object.
+     * Creates a new <code>MusicFont</code> object, based on chosen family and size.
      *
      * @param family chosen music font family
      * @param size   the point size of the <code>Font</code>
@@ -120,6 +127,11 @@ public class MusicFont
         }
     }
 
+    /**
+     * Creates a new <code>MusicFont</code> object from a provided font.
+     *
+     * @param font some existing font
+     */
     private MusicFont (Font font)
     {
         super(font);
@@ -135,8 +147,7 @@ public class MusicFont
     // buildImage //
     //------------//
     /**
-     * Build an image from the shape definition in MusicFont, using the
-     * intrinsic scaling of this font.
+     * Build an image from shape definition in font family, using the scaling of this font.
      *
      * @param shape     the desired shape
      * @param decorated true if shape display must use decorations
@@ -145,7 +156,7 @@ public class MusicFont
     public BufferedImage buildImage (Shape shape,
                                      boolean decorated)
     {
-        ShapeSymbol symbol = musicFamily.getSymbols().getSymbol(shape, decorated);
+        final ShapeSymbol symbol = musicFamily.getSymbols().getSymbol(shape, decorated);
 
         if (symbol == null) {
             return null;
@@ -178,7 +189,8 @@ public class MusicFont
      */
     public static boolean checkMusicFont ()
     {
-        MusicFont.populateAllSymbols();
+        populateAllSymbols();
+
         //        if (baseMusicFont.getFamily().equals("Dialog")) {
         //            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME;
         //            logger.error(msg);
@@ -197,37 +209,42 @@ public class MusicFont
     // computePointSize //
     //------------------//
     /**
-     * Compute the point size for the FONT_NAME font that matches the provided size
-     * of typical symbol (NOTEHEAD_BLACK).
+     * Using this font family, compute the point size that best matches the provided size
+     * of typical NOTEHEAD_BLACK symbol.
      *
-     * @param width actual width of black head
-     * @return the corresponding point size with FONT_NAME font
+     * @param width measured width of black head in score
+     * @return the corresponding point size with this font family
      */
     private int computePointSize (double width)
     {
         final Shape shape = Shape.NOTEHEAD_BLACK;
-        final int dv = (int) Math.rint(width * 0.25); // Should be OK
 
-        final int v1 = (int) Math.rint(width * 3.3); // Very rough value to start with
+        // Very rough value to start with
+        final int v1 = (int) Math.rint(width * 3.3);
         final MusicFont font1 = new MusicFont(musicFamily, v1);
         final TextLayout layout1 = font1.layoutShapeByCode(shape);
         final double w1 = layout1.getBounds().getWidth();
 
-        final int v2 = (w1 < width) ? (v1 + dv) : (v1 - dv); // Other value for interpolation
+        // Another value
+        final int dv = (int) Math.rint(width * 0.25); // Should be different enough
+        final int v2 = (w1 < width) ? (v1 + dv) : (v1 - dv);
         final MusicFont font2 = new MusicFont(musicFamily, v2);
         final TextLayout layout2 = font2.layoutShapeByCode(shape);
         final double w2 = layout2.getBounds().getWidth();
 
+        // Interpolation
         final double dw = w2 - w1;
         final int v = (Math.abs(dw) < 0.01) ? v1
                 : (int) Math.rint(v1 + ((v2 - v1) * ((width - w1) / (w2 - w1))));
 
-        // Verification
-        final MusicFont font = new MusicFont(musicFamily, v);
-        final TextLayout layout = font.layoutShapeByCode(shape);
-        final double w = layout.getBounds().getWidth();
-        logger.debug("width:{}", width);
-        logger.debug("v1:{},w1:{} v:{},w:{} v2:{},w2:{}", v1, w1, v, w, v2, w2);
+        {
+            // Just for verification
+            final MusicFont font = new MusicFont(musicFamily, v);
+            final TextLayout layout = font.layoutShapeByCode(shape);
+            final double w = layout.getBounds().getWidth();
+            logger.debug("width:{}", width);
+            logger.debug("v1:{},w1:{} v:{},w:{} v2:{},w2:{}", v1, w1, v, w, v2, w2);
+        }
 
         return v;
     }
@@ -253,6 +270,17 @@ public class MusicFont
         return false;
     }
 
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 5;
+        hash = 29 * hash + Objects.hashCode(this.musicFamily);
+        return hash;
+    }
+
     //-----------//
     // getBackup //
     //-----------//
@@ -270,7 +298,7 @@ public class MusicFont
     // getBaseFont //
     //-------------//
     /**
-     * Report the (cached) music font based on predefined font.
+     * Report the (perhaps cached) music font based on chosen family and staff interline.
      *
      * @param family         chosen family font
      * @param staffInterline real interline value for related staves
@@ -282,17 +310,14 @@ public class MusicFont
         return getMusicFont(family, getPointSize(staffInterline));
     }
 
-    //---------//
-    // getCode //
-    //---------//
-    public int[] getCode (Shape shape)
-    {
-        return musicFamily.getSymbols().getCode(shape);
-    }
-
     //-----------------------//
     // getDefaultMusicFamily //
     //-----------------------//
+    /**
+     * Report the family currently defined as the default music family.
+     *
+     * @return the default music family
+     */
     public static Family getDefaultMusicFamily ()
     {
         return defaultFamilyParam.getValue();
@@ -302,7 +327,7 @@ public class MusicFont
     // getHeadFont //
     //-------------//
     /**
-     * Report the (cached) music font meant for heads.
+     * Report the (perhaps cached) music font specifically sized for heads.
      *
      * @param family         chosen family font
      * @param scale          scaling information for the sheet
@@ -320,7 +345,8 @@ public class MusicFont
     // getHeadPointSize //
     //------------------//
     /**
-     * Compute the proper point size for head rendering.
+     * Compute the proper point size for head rendering, based on global sheet scale
+     * and provided staff interline.
      *
      * @param scale          sheet scaling information
      * @param staffInterline interline for related staff
@@ -353,6 +379,13 @@ public class MusicFont
     //----------------//
     // getMusicFamily //
     //----------------//
+    /**
+     * Report the music family of this MusicFont.
+     * <p>
+     * Not to be mistaken with the inherited {@link Font#getFamily()} method.
+     *
+     * @return font music family
+     */
     public Family getMusicFamily ()
     {
         return musicFamily;
@@ -362,7 +395,7 @@ public class MusicFont
     // getMusicFont //
     //--------------//
     /**
-     * Report the music font properly scaled by point size.
+     * Report the music font for the chosen family and properly scaled by point size.
      *
      * @param family font family
      * @param size   point size value (perhaps different from 4 * staffInterline)
@@ -414,10 +447,10 @@ public class MusicFont
     // getString //
     //-----------//
     /**
-     * Report the String defined by Unicode characters
+     * Report the String defined by the provided Unicode code points.
      *
      * @param codes Unicode code points
-     * @return the resulting String, perhaps null
+     * @return the resulting String, null if code points are null
      */
     public static String getString (int... codes)
     {
@@ -446,7 +479,7 @@ public class MusicFont
     // layoutNumberByCode //
     //--------------------//
     /**
-     * Report the layout that corresponds to a number (sequence of numeral digits).
+     * Report the layout that corresponds to a number (a sequence of numeral digits).
      *
      * @param number the provided number, limited to range [0..999]
      * @return the layout or null
