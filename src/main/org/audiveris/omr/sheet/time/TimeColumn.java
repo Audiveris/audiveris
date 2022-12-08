@@ -174,13 +174,13 @@ public abstract class TimeColumn
         final SIGraph sig = system.getSig();
         final Collection<AbstractTimeInter> times = getTimeInters().values();
         final Rectangle columnBox = Inters.getBounds(times);
-        final List<Inter> neighbors = sig.inters((Inter inter) -> inter.getBounds().intersects(
-                columnBox) && !(inter instanceof InterEnsemble));
+        final List<Inter> neighbors = sig.inters((Inter inter)
+                -> inter.getBounds().intersects(columnBox)
+                           && !(inter instanceof InterEnsemble));
 
         // Let's not consider our own time items as overlapping neighbors
         for (AbstractTimeInter time : times) {
-            if (time instanceof TimePairInter) {
-                TimePairInter pair = (TimePairInter) time;
+            if (time instanceof TimePairInter pair) {
                 neighbors.removeAll(pair.getMembers());
             }
 
@@ -188,11 +188,15 @@ public abstract class TimeColumn
         }
 
         for (AbstractTimeInter time : times) {
+            final double timeGrade = time.getGrade();
+
             for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
                 Inter neighbor = it.next();
 
-                if (neighbor.overlaps(time)) {
-                    logger.debug("Deleting time overlapping {}", neighbor);
+                if (neighbor.overlaps(time) && (neighbor.getGrade() < timeGrade)) {
+                    if (neighbor.isVip()) {
+                        logger.info("VIP Deleting time overlapping {}", neighbor);
+                    }
                     neighbor.remove();
                     it.remove();
                 }

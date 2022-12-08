@@ -663,18 +663,22 @@ public class InterFactory
             if (res != -1) {
                 final Collection<AbstractTimeInter> times = column.getTimeInters().values();
                 final Rectangle columnBox = Inters.getBounds(times);
-                final List<Inter> neighbors = sig.inters(
-                        (inter) -> inter.getBounds().intersects(columnBox)
-                                && !(inter instanceof InterEnsemble));
+                final List<Inter> neighbors = sig.inters((inter)
+                        -> inter.getBounds().intersects(columnBox)
+                           && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 
                 for (AbstractTimeInter time : times) {
+                    final double timeGrade = time.getGrade();
+
                     for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
                         final Inter neighbor = it.next();
 
-                        if (neighbor.overlaps(time)) {
-                            logger.debug("Deleting time overlapping {}", neighbor);
+                        if (neighbor.overlaps(time) && (neighbor.getGrade() < timeGrade)) {
+                            if (neighbor.isVip()) {
+                                logger.info("VIP Deleting time overlapping {}", neighbor);
+                            }
                             neighbor.remove();
                             it.remove();
                         }
