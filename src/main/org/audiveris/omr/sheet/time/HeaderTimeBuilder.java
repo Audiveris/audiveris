@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.time;
 
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.glyph.Glyph;
@@ -50,10 +47,13 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.util.ChartPlotter;
 
-import org.jfree.data.xy.XYSeries;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.jfree.data.xy.XYSeries;
+
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -706,6 +706,10 @@ public class HeaderTimeBuilder
                         inter.setStaff(staff);
                         bestMap.put(shape, inter);
                     }
+                } else {
+                    // Without this break, a wholeshape could be picked up
+                    // Even if there is a (non-wholeshape) better inter
+                    break;
                 }
             }
         }
