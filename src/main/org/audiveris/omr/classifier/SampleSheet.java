@@ -23,6 +23,11 @@ package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.classifier.SheetContainer.Descriptor;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.FLAG_1_UP;
+import static org.audiveris.omr.glyph.Shape.FLAG_2_UP;
+import static org.audiveris.omr.glyph.Shape.FLAG_3_UP;
+import static org.audiveris.omr.glyph.Shape.FLAG_4_UP;
+import static org.audiveris.omr.glyph.Shape.FLAG_5_UP;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
@@ -623,6 +628,32 @@ public class SampleSheet
         private SampleList ()
         {
             name = null;
+        }
+
+        //----------------//
+        // afterUnmarshal //
+        //----------------//
+        /**
+         * Rename the old flag shapes.
+         */
+        @SuppressWarnings("unused")
+        private void afterUnmarshal (Unmarshaller um,
+                                     Object parent)
+        {
+            boolean modified = false;
+
+            for (Sample sample : samples) {
+                final Shape shape = sample.getShape();
+                switch (shape) {
+                case FLAG_1_UP -> modified |= sample.renameShapeAs(Shape.FLAG_1_DOWN);
+                case FLAG_2_UP -> modified |= sample.renameShapeAs(Shape.FLAG_2_DOWN);
+                case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
+                case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
+                case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
+                default -> {
+                }
+                }
+            }
         }
     }
 }

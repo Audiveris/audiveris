@@ -28,7 +28,6 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -293,7 +292,7 @@ public class BeamStemRelation
     // computeBeamPortion //
     //--------------------//
     /**
-     * Determine beam portion where stem is linked.
+     * Determine beam portion where stem is located.
      *
      * @param beam  provided beam
      * @param xStem abscissa of stem connection
@@ -304,20 +303,16 @@ public class BeamStemRelation
                                                   double xStem,
                                                   Scale scale)
     {
-        if (beam instanceof BeamHookInter) {
-            return (beam.getCenter().x < xStem) ? RIGHT : LEFT;
-        } else {
-            int maxDx = scale.toPixels(getXInGapMaximum(0)); // No profile used
-            double left = beam.getMedian().getX1();
-            double right = beam.getMedian().getX2();
+        int maxDx = scale.toPixels(getXInGapMaximum(0)); // No profile used
+        double left = beam.getMedian().getX1();
+        double right = beam.getMedian().getX2();
 
-            if (xStem < (left + maxDx)) {
-                return LEFT;
-            } else if (xStem > (right - maxDx)) {
-                return RIGHT;
-            } else {
-                return CENTER;
-            }
+        if (xStem < (left + maxDx)) {
+            return LEFT;
+        } else if (xStem > (right - maxDx)) {
+            return RIGHT;
+        } else {
+            return CENTER;
         }
     }
 

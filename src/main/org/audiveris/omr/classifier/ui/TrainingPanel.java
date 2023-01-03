@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.TrainingMonitor;
@@ -40,6 +36,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -281,6 +281,7 @@ class TrainingPanel
             if (list == null) {
                 logger.warn("Missing shape: {}", shape);
             } else if (!list.isEmpty()) {
+                logger.info(String.format("%4d %s", list.size(), shape));
                 final int size = list.size();
                 int togo = minCount - size;
                 newSamples.addAll(list);

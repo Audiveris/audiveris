@@ -41,7 +41,7 @@ public class ScopedPanel
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Standard column spec for 4 fields. */
-    private static final String colSpec4 = "12dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:12dlu";
+    private static final String defaultColSpec4 = "12dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:12dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of individual data panes. */
@@ -51,11 +51,13 @@ public class ScopedPanel
     /**
      * Creates a new <code>ScopedPanel</code> object.
      *
-     * @param name  panel name
-     * @param panes contained data panes
+     * @param name    panel name
+     * @param panes   contained data panes
+     * @param colSpec specific column specification
      */
     public ScopedPanel (String name,
-                        List<XactDataPane> panes)
+                        List<XactDataPane> panes,
+                        String colSpec)
     {
         setName(name);
 
@@ -65,7 +67,7 @@ public class ScopedPanel
             }
         }
 
-        defineLayout();
+        defineLayout(colSpec != null ? colSpec : defaultColSpec4);
 
         for (XactDataPane pane : this.panes) {
             // Pane is pre-selected if model has specific data
@@ -74,6 +76,18 @@ public class ScopedPanel
             // Fill pane data
             pane.actionPerformed(null);
         }
+    }
+
+    /**
+     * Creates a new <code>ScopedPanel</code> object, using default column specifications.
+     *
+     * @param name  panel name
+     * @param panes contained data panes
+     */
+    public ScopedPanel (String name,
+                        List<XactDataPane> panes)
+    {
+        this(name, panes, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -106,8 +120,10 @@ public class ScopedPanel
 
     /**
      * Define layout of the pane.
+     *
+     * @param colSpec4 column specification offering 4 field
      */
-    private void defineLayout ()
+    private void defineLayout (String colSpec4)
     {
         // Compute the total number of logical rows
         int logicalRowCount = 0;

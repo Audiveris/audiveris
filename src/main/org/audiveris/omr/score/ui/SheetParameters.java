@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Item;
 import org.audiveris.omr.sheet.Sheet;
@@ -34,6 +31,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -52,6 +52,9 @@ public class SheetParameters
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
+
+    /** Specific column spec for 3 fields: inherit box, item description, int value. */
+    private static final String colSpec3 = "12dlu,1dlu,80dlu,1dlu,right:12dlu";
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
@@ -96,7 +99,7 @@ public class SheetParameters
             sheetPanes.add(new ScaledPane(key, null, ip));
         }
 
-        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes);
+        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes, colSpec3);
 
         initialDisplay();
     }
@@ -215,8 +218,8 @@ public class SheetParameters
         {
             // Draw the specific/inherit box
             builder.add(selBox, cst.xyw(1, r, 1));
-            builder.add(title, cst.xyw(3, r, 3));
-            builder.add(data.getField(), cst.xyw(7, r, 1));
+            builder.add(title, cst.xyw(3, r, 1));
+            builder.add(data.getField(), cst.xyw(5, r, 1));
 
             return r + 2;
         }

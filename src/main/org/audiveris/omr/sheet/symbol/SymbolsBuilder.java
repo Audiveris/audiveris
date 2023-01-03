@@ -356,7 +356,7 @@ public class SymbolsBuilder
     }
 
     //-------------------//
-    // retrieveFineBoxes //
+    // retrieveFineBoxes // BINGO TODO: review WRT GraceChordInter
     //-------------------//
     private void retrieveFineBoxes ()
     {

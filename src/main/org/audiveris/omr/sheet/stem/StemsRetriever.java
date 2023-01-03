@@ -692,17 +692,25 @@ public class StemsRetriever
         systemBeams = sig.inters(AbstractBeamInter.class);
         Collections.sort(systemBeams, Inters.byAbscissa);
 
-        for (Inter b : systemBeams) {
-            AbstractBeamInter beam = (AbstractBeamInter) b;
+        for (Iterator<Inter> it = systemBeams.iterator(); it.hasNext();) {
+            final AbstractBeamInter beam = (AbstractBeamInter) it.next();
 
             if (beam.getLinker() == null) {
-                beam.setLinker(new BeamLinker(beam, this));
+                final BeamLinker bl = new BeamLinker(beam, this);
+
+                if (bl.looksLikeTremolo()) {
+                    // Discard this false beam.
+                    it.remove();
+                    beam.remove();
+                } else {
+                    beam.setLinker(bl);
+                }
             }
         }
 
         // The abscissa-sorted head interpretations for this system
         watch.start("Heads linkers");
-        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        systemHeads = sig.inters(ShapeSet.getTemplateNotesStem(system.getSheet()));
         Collections.sort(systemHeads, Inters.byAbscissa);
 
         for (Inter h : systemHeads) {
@@ -759,7 +767,7 @@ public class StemsRetriever
 
         // Heads second
         watch.start("Heads linking phase 1");
-        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        systemHeads = sig.inters(ShapeSet.getTemplateNotesStem(system.getSheet()));
         Collections.sort(systemHeads, Inters.byReverseGrade);
         final List<HeadInter> unlinkedHeads = new ArrayList<>();
 
@@ -885,7 +893,7 @@ public class StemsRetriever
         ////** Typical abscissa gap among stem/heads along a beam. */
         ///final Integer typicalBeamGap;
         /** The abscissa-sorted head interpretations for this system. */
-        final List<Inter> systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        final List<Inter> systemHeads = sig.inters(ShapeSet.getTemplateNotesStem(system.getSheet()));
 
         public Finalizer ()
         {
@@ -940,7 +948,7 @@ public class StemsRetriever
                         final HeadStemRelation hsRel = (HeadStemRelation) rr;
                         final HeadInter head = (HeadInter) sig.getEdgeSource(hsRel);
 
-                        if (!head.getShape().isSmall()) {
+                        if (!head.getShape().isSmallHead()) {
                             final double grade = 0.5 * (bsRel.getGrade() + hsRel.getGrade());
                             sig.addEdge(beam, head, new BeamHeadRelation(grade, true));
                         }
@@ -1305,122 +1313,3 @@ public class StemsRetriever
         }
     }
 }
-//
-//        //--------------------//
-//        // typicalBeamStemsDx //
-//        //--------------------//
-//        /**
-//         * Try to compute the typical abscissa gap between notes (head/stem) on same beam.
-//         * <p>
-//         * It also checks whether a beam does not have a stem relation too close to another.
-//         * If so, these too close stems are flagged as mutually exclusive.
-//         *
-//         * @param beams system population of beams
-//         * @return the typical abscissa gap, or null is not reliable enough
-//         */
-//        private Integer typicalBeamStemsDx ()
-//        {
-//            final List<Integer> values = new ArrayList<>();
-//            Integer medianValue = null;
-//            int count = 0; // Number of measure gaps
-//
-//            for (Iterator<AbstractBeamInter> it = beams.iterator(); it.hasNext();) {
-//                final AbstractBeamInter beam = it.next();
-//                final boolean beamIsGood = beam.isGood();
-//                final List<BeamStemRelation> rels = new ArrayList<>();
-//
-//                for (Relation rel : sig.edgesOf(beam)) {
-//                    if (rel instanceof BeamStemRelation) {
-//                        rels.add((BeamStemRelation) rel);
-//                    }
-//                }
-//
-//                // Sort on abscissa
-//                final int size = rels.size();
-//                Collections.sort(rels, (BeamStemRelation o1, BeamStemRelation o2) -> Double.compare(
-//                        o1.getExtensionPoint().getX(), o2.getExtensionPoint().getX()));
-//
-//                for (int i = 0; i < size; i++) {
-//                    BeamStemRelation rel = rels.get(i);
-//                    StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-//
-//                    for (BeamStemRelation r : rels.subList(i + 1, size)) {
-//                        final int dx = (int) Math.rint(
-//                                r.getExtensionPoint().getX() - rel.getExtensionPoint().getX());
-//
-//                        if (dx < params.minBeamStemsDx) {
-//                            // If stems are too close to one another, they are mutually exclusive.
-//                            StemInter s = (StemInter) sig.getEdgeTarget(r);
-//                            sig.insertExclusion(stem, s, Cause.INCOMPATIBLE);
-//                        } else {
-//                            if (beamIsGood) {
-//                                count++;
-//                                values.add(dx);
-//                            }
-//
-//                            break;
-//                        }
-//                    }
-//
-//                    if (beamIsGood) {
-//                        // Update max stem length, using only good beams
-//                        maxStemLength = Math.max(maxStemLength, stem.getMedian().getBounds().height);
-//                    }
-//                }
-//
-//                if (!beamIsGood || beam instanceof BeamHookInter) {
-//                    it.remove();
-//                }
-//            }
-//
-//            if (count > 0) {
-//                Collections.sort(values);
-//                medianValue = values.get(count / 2);
-//                logger.debug("{} Median abscissa gap between beam stems: {}", system, medianValue);
-//            }
-//
-//            return medianValue;
-//        }
-//
-//
-//    //-------------------------//
-//    // performMutualExclusions //
-//    //-------------------------//
-//    /**
-//     * Browse the system interpretations to insert mutual exclusions wherever possible.
-//     * This is done for stems.
-//     */
-//    private void performMutualExclusions ()
-//    {
-//        final List<Inter> stems = sig.inters(Shape.STEM);
-//        final int size = stems.size();
-//        int count = 0;
-//
-//        try {
-//            if (size < 2) {
-//                return;
-//            }
-//
-//            Collections.sort(stems, Inters.byAbscissa);
-//
-//            for (int i = 0; i < (size - 1); i++) {
-//                final Inter one = stems.get(i);
-//                final Rectangle oneBox = one.getGlyph().getBounds();
-//                final int xBreak = oneBox.x + oneBox.width;
-//
-//                for (Inter two : stems.subList(i + 1, size)) {
-//                    Rectangle twoBox = two.getGlyph().getBounds();
-//
-//                    // Is there an overlap between stems one & two?
-//                    if (oneBox.intersects(twoBox)) {
-//                        sig.insertExclusion(one, two, Cause.OVERLAP);
-//                        count++;
-//                    } else if (twoBox.x >= xBreak) {
-//                        break;
-//                    }
-//                }
-//            }
-//        } finally {
-//            logger.debug("S#{} stems: {} exclusions: {}", system.getId(), size, count);
-//        }
-//    }

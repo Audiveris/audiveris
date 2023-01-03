@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
+import static org.audiveris.omr.glyph.Shape.PERCUSSION_CLEF;
 import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -56,10 +57,10 @@ import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
+import org.jgrapht.Graphs;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.jgrapht.Graphs;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -1619,6 +1620,23 @@ public class Staff
     {
         header.timeRange.setStop(timeStop);
         header.timeRange.valid = true;
+    }
+
+    //--------//
+    // isDrum //
+    //--------//
+    /**
+     * Report whether this staff is a 5-line unpitched staff.
+     *
+     * @return true if so
+     */
+    public boolean isDrum ()
+    {
+        if (header != null && header.clef != null) {
+            return header.clef.getShape() == PERCUSSION_CLEF;
+        }
+
+        return part.isDrumPart();
     }
 
     //---------//

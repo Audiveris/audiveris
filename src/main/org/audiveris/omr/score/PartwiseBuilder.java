@@ -30,6 +30,7 @@ import static org.audiveris.omr.glyph.Shape.SEGNO;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.DrumSet.DrumInstrument;
+import org.audiveris.omr.score.DrumSet.DrumSound;
 import static org.audiveris.omr.score.MusicXML.*;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
@@ -74,7 +75,7 @@ import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
-import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
@@ -87,7 +88,6 @@ import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
-import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -580,26 +580,23 @@ public class PartwiseBuilder
             // If so, retrieve drumset and export all midi instruments in xml preamble.
             final DrumSet drumSet = DrumSet.getInstance();
             final Map<Integer, ScoreInstrument> instrumentMap = new HashMap<>();
-            for (Entry<Integer, DrumInstrument> entry : drumSet.byId.entrySet()) {
-                final DrumInstrument drum = entry.getValue();
-                if (drum != null && drum.headMotif != null && drum.pitchPosition != null) {
-                    // Score instrument
-                    ScoreInstrument scoreInstrument = new ScoreInstrument();
-                    pmScorePart.getScoreInstrument().add(scoreInstrument);
-                    scoreInstrument.setId(pmScorePart.getId() + "-I" + entry.getKey());
-                    scoreInstrument.setInstrumentName(drum.name);
+            for (DrumSound sound : DrumSound.values()) {
+                // Score instrument
+                ScoreInstrument scoreInstrument = new ScoreInstrument();
+                pmScorePart.getScoreInstrument().add(scoreInstrument);
+                scoreInstrument.setId(pmScorePart.getId() + "-I" + sound.getMidi());
+                scoreInstrument.setInstrumentName(sound.name());
 
-                    instrumentMap.put(entry.getKey(), scoreInstrument);
+                instrumentMap.put(sound.getMidi(), scoreInstrument);
 
-                    // Midi instrument
-                    MidiInstrument midiInstrument = factory.createMidiInstrument();
-                    pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
-                    midiInstrument.setId(scoreInstrument);
-                    midiInstrument.setMidiChannel(10); // in [1..16] range
-                    midiInstrument.setMidiProgram(1);
-                    midiInstrument.setMidiUnpitched(entry.getKey());
-                    midiInstrument.setVolume(new BigDecimal(score.getVolume()));
-                }
+                // Midi instrument
+                MidiInstrument midiInstrument = factory.createMidiInstrument();
+                pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
+                midiInstrument.setId(scoreInstrument);
+                midiInstrument.setMidiChannel(10); // in [1..16] range
+                midiInstrument.setMidiProgram(1);
+                midiInstrument.setMidiUnpitched(sound.getMidi());
+                midiInstrument.setVolume(new BigDecimal(score.getVolume()));
             }
             current.instrumentMap = instrumentMap;
         } else {
@@ -2139,7 +2136,7 @@ public class PartwiseBuilder
     private void processNote (AbstractNoteInter note)
     {
         try {
-            if (note.isVip()) {
+            if (note.isVip() || note.getId() == 0) {
                 logger.info("VIP Visiting {}", note);
             }
 
@@ -2206,26 +2203,17 @@ public class PartwiseBuilder
 
                 current.pmNote.setRest(rest);
             } else {
-                HeadChordInter headChord = (HeadChordInter) chord;
+                final HeadChordInter headChord = (HeadChordInter) chord;
 
                 if (!current.measure.isDummy()) {
                     // Grace?
-                    if (isFirstInChord && note.getShape().isSmall()) {
+                    if (isFirstInChord && note.getShape().isSmallHead()) {
                         Grace grace = factory.createGrace();
                         current.pmNote.setGrace(grace);
 
-                        // Slash? (check the flag)
-                        StemInter stem = headChord.getStem();
-
-                        if (stem != null) {
-                            for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
-                                if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel)
-                                        .getShape()) {
-                                    grace.setSlash(YesNo.YES);
-
-                                    break;
-                                }
-                            }
+                        // Slash?
+                        if (headChord.hasSlash()) {
+                            grace.setSlash(YesNo.YES);
                         }
                     }
                 }
@@ -2352,6 +2340,8 @@ public class PartwiseBuilder
                     if (notePitch == -5 || notePitch == 5) {
                         notePitch = -3;
                     }
+                } else if (motif == HeadMotif.small) {
+                    motif = HeadMotif.oval;
                 }
 
                 Instrument instrument = null;
@@ -2361,7 +2351,7 @@ public class PartwiseBuilder
                     for (DrumInstrument drum : set) {
                         if (drum.headMotif == motif) {
                             instrument = factory.createInstrument();
-                            instrument.setId(current.instrumentMap.get(drum.id));
+                            instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
                             current.pmNote.getInstrument().add(instrument);
                             break;
                         }
@@ -2506,17 +2496,21 @@ public class PartwiseBuilder
         try {
             logger.debug("Visiting {}", ornament);
 
-            JAXBElement<?> element = getOrnamentObject(ornament.getShape());
+            final BigDecimal defaultY = yOf(ornament.getCenter2D(), ornament.getStaff());
+            JAXBElement<?> element = getOrnamentObject(ornament, defaultY);
 
-            // Placement?
-            Class<?> classe = element.getDeclaredType();
-            Method method = classe.getMethod("setPlacement", AboveBelow.class);
-            method.invoke(
-                    element.getValue(),
-                    (ornament.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                    : AboveBelow.BELOW);
-            // Everything is OK
-            // Include in ornaments
+            // For tremolo we use defaultY, while for other ornaments we use relative placement
+            if (!(ornament instanceof TremoloInter)) {
+                // Placement
+                Class<?> classe = element.getDeclaredType();
+                Method method = classe.getMethod("setPlacement", AboveBelow.class);
+                method.invoke(
+                        element.getValue(),
+                        (ornament.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                        : AboveBelow.BELOW);
+            }
+
+            // Include in ornaments collection
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
         } catch (IllegalAccessException |
                  IllegalArgumentException |

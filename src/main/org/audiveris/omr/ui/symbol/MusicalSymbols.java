@@ -24,6 +24,9 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Class <code>MusicalSymbols</code> was the first general set of symbols, it can still be used
  * for template symbols.
@@ -103,15 +106,15 @@ public class MusicalSymbols
         case FERMATA_DOT -> ints(0xF02E);
         case FINAL_BARLINE -> ints(0xF0D3);
         case FLAG_1 -> ints(0xF06A);
-        case FLAG_1_UP -> ints(0xF04A);
+        case FLAG_1_DOWN -> ints(0xF04A);
         case FLAG_2 -> ints(0xF06B);
-        case FLAG_2_UP -> ints(0xF04B);
+        case FLAG_2_DOWN -> ints(0xF04B);
         //        case FLAG_3 -> ints(0xE244);
-        //        case FLAG_3_UP -> ints(0xE245);
+        //        case FLAG_3_DOWN -> ints(0xE245);
         //        case FLAG_4 -> ints(0xE246);
-        //        case FLAG_4_UP -> ints(0xE247);
+        //        case FLAG_4_DOWN -> ints(0xE247);
         //        case FLAG_5 -> ints(0xE248);
-        //        case FLAG_5_UP -> ints(0xE249);
+        //        case FLAG_5_DOWN -> ints(0xE249);
         case FLAT -> ints(0xF062);
         case F_CLEF -> ints(0xF03F);
         ///case F_CLEF_SMALL -> ints(0xE07C);
@@ -119,7 +122,9 @@ public class MusicalSymbols
         ///case F_CLEF_8VB -> ints(0xE064);
 
         case GRACE_NOTE -> ints(0xF03B);
+        case GRACE_NOTE_DOWN -> ints(0xF03A);
         case GRACE_NOTE_SLASH -> ints(0xF0C9);
+        ///case GRACE_NOTE_SLASH_DOWN -> ints(0xF0C9); // Use vertical mirror of GRACE_NOTE_SLASH?
         case G_CLEF -> ints(0xF026);
         //        case G_CLEF_SMALL -> ints(0xE07A);
         //        case G_CLEF_8VA -> ints(0xE053);
@@ -212,6 +217,16 @@ public class MusicalSymbols
 
         default -> null;
         };
+    }
+
+    //---------------//
+    // getCodeRanges //
+    //---------------//
+    @Override
+    public List<CodeRange> getCodeRanges ()
+    {
+        // Range is much smaller than PRIVATE_USE_AREA
+        return Collections.singletonList(new CodeRange(0xF021, 0xF0FF));
     }
 
     //-----------------//

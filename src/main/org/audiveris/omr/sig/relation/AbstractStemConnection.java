@@ -68,8 +68,11 @@ public abstract class AbstractStemConnection
     /**
      * Report the logical connection point, which is defined as the point with maximum
      * extension along the logical stem.
-     * This definition allows to use the extension ordinate to determine the precise stem portion of
-     * the connection.
+     * <p>
+     * This maximal definition allows to use the extension ordinate to determine the precise stem
+     * portion of the connection.
+     * <p>
+     * TODO: provide a picture for better explanation?
      *
      * @return the extension point
      */
@@ -101,7 +104,10 @@ public abstract class AbstractStemConnection
 
         if (extensionPoint != null) {
             sb.append(
-                    String.format(" [x:%.0f,y:%.0f]", extensionPoint.getX(), extensionPoint.getY()));
+                    String.format(
+                            " [x:%.0f,y:%.0f]",
+                            extensionPoint.getX(),
+                            extensionPoint.getY()));
         }
 
         return sb.toString();

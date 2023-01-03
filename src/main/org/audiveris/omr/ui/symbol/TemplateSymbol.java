@@ -63,7 +63,7 @@ public class TemplateSymbol
                            Family family)
     {
         super(shape, family);
-        isSmall = shape.isSmall();
+        isSmall = shape.isSmallHead();
     }
 
     //~ Methods ------------------------------------------------------------------------------------

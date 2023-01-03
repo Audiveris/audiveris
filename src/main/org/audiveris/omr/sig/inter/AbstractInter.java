@@ -923,6 +923,20 @@ public abstract class AbstractInter
         return shape;
     }
 
+    //---------------//
+    // renameShapeAs //
+    //---------------//
+    @Override
+    public boolean renameShapeAs (Shape shape)
+    {
+        if (this.shape != shape) {
+            this.shape = shape;
+            return true;
+        }
+
+        return false;
+    }
+
     //----------------//
     // getShapeString //
     //----------------//
@@ -1476,7 +1490,8 @@ public abstract class AbstractInter
 
         Collection<Link> unlinks = null;
 
-        ExistingLoop: for (Relation rel : sig.getRelations(this, classes)) {
+        ExistingLoop:
+        for (Relation rel : sig.getRelations(this, classes)) {
             final Inter other = sig.getOppositeInter(this, rel);
 
             for (Link link : links) {
@@ -1670,14 +1685,14 @@ public abstract class AbstractInter
 
         @Override
         public AbstractInter marshal (Inter inter)
-            throws Exception
+                throws Exception
         {
             return (AbstractInter) inter;
         }
 
         @Override
         public Inter unmarshal (AbstractInter abstractInter)
-            throws Exception
+                throws Exception
         {
             return abstractInter;
         }

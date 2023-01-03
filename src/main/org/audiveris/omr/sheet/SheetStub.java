@@ -32,6 +32,10 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.sheet.Picture.ImageKey;
 import org.audiveris.omr.sheet.Picture.TableKey;
+import org.audiveris.omr.sheet.Profiles.InputQuality;
+import static org.audiveris.omr.sheet.Profiles.InputQuality.Poor;
+import static org.audiveris.omr.sheet.Profiles.InputQuality.Standard;
+import static org.audiveris.omr.sheet.Profiles.InputQuality.Synthetic;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -41,8 +45,8 @@ import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.FontFamilyParam;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontFamilyParam;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
@@ -168,6 +172,16 @@ public class SheetStub
     @XmlElement(name = "music-font")
     @XmlJavaTypeAdapter(FontFamilyParam.JaxbAdapter.class)
     private FontFamilyParam musicFontFamily;
+
+    /**
+     * Specification of the input quality to use in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book or application
+     * levels.
+     */
+    @XmlElement(name = "input-quality")
+    @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
+    private InputQualityParam inputQuality;
 
     /**
      * This string specifies the dominant language(s) to guide OCR on this sheet.
@@ -447,6 +461,37 @@ public class SheetStub
         return musicFontFamily;
     }
 
+    //-----------------//
+    // getInputQuality //
+    //-----------------//
+    /**
+     * Report the input quality defined at sheet level.
+     *
+     * @return the input quality
+     */
+    public InputQuality getInputQuality ()
+    {
+        return getInputQualityParam().getValue();
+    }
+
+    //----------------------//
+    // getInputQualityParam //
+    //----------------------//
+    /**
+     * Report the input quality param defined at sheet level.
+     *
+     * @return the input quality parameter
+     */
+    public InputQualityParam getInputQualityParam ()
+    {
+        if (inputQuality == null) {
+            inputQuality = new InputQualityParam(this);
+            inputQuality.setParent(book.getInputQuality());
+        }
+
+        return inputQuality;
+    }
+
     //---------//
     // getBook //
     //---------//
@@ -670,13 +715,22 @@ public class SheetStub
     // getProfile //
     //------------//
     /**
-     * Report the processing profile for this stub, based on poor switch.
+     * Report the processing profile for this stub, based on declared input quality.
      *
-     * @return 1 (for poor), 0 (default)
+     * @return STRICT, STANDARD or POOR
      */
     public int getProfile ()
     {
-        return getProcessingSwitches().getValue(ProcessingSwitch.poorInputMode) ? 1 : 0;
+        final InputQuality quality = getInputQuality();
+
+        return switch (quality) {
+            case Synthetic ->
+                Profiles.STRICT;
+            case Standard ->
+                Profiles.STANDARD;
+            case Poor ->
+                Profiles.POOR;
+        };
     }
 
     //----------//
@@ -1309,6 +1363,10 @@ public class SheetStub
 
         if ((musicFontFamily != null) && !musicFontFamily.isSpecific()) {
             musicFontFamily = null;
+        }
+
+        if ((inputQuality != null) && !inputQuality.isSpecific()) {
+            inputQuality = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {

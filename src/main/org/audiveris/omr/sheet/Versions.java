@@ -132,6 +132,17 @@ public abstract class Versions
         }
     };
 
+    /**
+     * New shape names and reordering, implying new glyph classifier file.
+     * <ul>
+     * <li>Additional shape names with no-oval head motif (diamond, triangle, circle, ...)
+     * <li>Addition of grace notes down and small flag down
+     * <li>Renaming of FLAG_x_DOWN as FLAG_x
+     * <li>Renaming of FLAG_x_UP as FLAG_x_DOWN
+     * </ul>
+     */
+    public static final UpgradeVersion DRUM_NOTATION = new UpgradeVersion("5.3-beta");
+
     //
     // NOTA: Add here below any new version for which some upgrade is necessary.
     //
@@ -140,7 +151,7 @@ public abstract class Versions
      * NOTA: This sequence must be manually updated when a new upgrade version is added above.
      */
     public static final List<UpgradeVersion> UPGRADE_VERSIONS = Arrays.asList(
-            INTER_GEOMETRY, INTERLEAVED_RESTS);
+            INTER_GEOMETRY, INTERLEAVED_RESTS, DRUM_NOTATION);
 
     /** Resource injection. Lazily populated on GUI. */
     private static ResourceMap resources;
@@ -355,31 +366,13 @@ public abstract class Versions
         final Frequency frequency = constants.releaseCheckFrequency.getValue();
 
         switch (frequency) {
-        case Always:
-            break;
-
-        case Daily:
-            next.add(Calendar.DAY_OF_MONTH, 1);
-
-            break;
-
-        case Weekly:
-            next.add(Calendar.WEEK_OF_MONTH, 1);
-
-            break;
-
-        case Monthly:
-            next.add(Calendar.MONTH, 1);
-
-            break;
-
-        case Yearly:
-            next.add(Calendar.YEAR, 1);
-
-            break;
-
-        case Never:
-            next = null;
+        case Always -> {
+        }
+        case Daily -> next.add(Calendar.DAY_OF_MONTH, 1);
+        case Weekly -> next.add(Calendar.WEEK_OF_MONTH, 1);
+        case Monthly -> next.add(Calendar.MONTH, 1);
+        case Yearly -> next.add(Calendar.YEAR, 1);
+        case Never -> next = null;
         }
 
         logger.info("Versions. Poll frequency: {}, next poll on: {}",

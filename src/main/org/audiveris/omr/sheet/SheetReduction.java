@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.sheet.rhythm.RhythmsStep;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
@@ -34,7 +35,9 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>SheetReduction</code> works at sheet level to reduce the duplicated inters
@@ -58,6 +61,8 @@ public class SheetReduction
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet to process. */
     private final Sheet sheet;
+
+    private final Set<Inter> removedInters = new LinkedHashSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -87,6 +92,11 @@ public class SheetReduction
             for (SystemInfo systemBelow : neighbors) {
                 checkGutter(systemAbove, systemBelow);
             }
+        }
+
+        // Impact of removed inters on rhythm
+        if (!removedInters.isEmpty()) {
+            new RhythmsStep().impact(removedInters);
         }
     }
 
@@ -155,11 +165,9 @@ public class SheetReduction
                         final double d2 = Math.abs(staff2.distanceTo(inter2.getCenter()));
 
                         if (d1 <= d2) {
-                            logger.debug("Removing lower {}", inter2);
-                            inter2.remove();
+                            remove(inter2);
                         } else {
-                            logger.debug("Removing upper {}", inter1);
-                            inter1.remove();
+                            remove(inter1);
 
                             continue Loop1;
                         }
@@ -199,5 +207,22 @@ public class SheetReduction
         Collections.sort(found, Inters.byCenterAbscissa);
 
         return found;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    private void remove (Inter inter)
+    {
+        logger.debug("Removing {}", inter);
+        final InterEnsemble ens = inter.getEnsemble();
+
+        inter.remove();
+        removedInters.add(inter);
+
+        if (ens != null && ens.isRemoved()) {
+            logger.debug("Removing ensemble {}", inter);
+            removedInters.add(ens);
+        }
     }
 }

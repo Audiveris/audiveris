@@ -116,15 +116,15 @@ public class FinaleJazzSymbols
         case FERMATA_DOT -> ints(0xE044); // ? useful ?
         ///case FINAL_BARLINE -> ints(0xE032);
         case FLAG_1 -> ints(0xE250);
-        case FLAG_1_UP -> ints(0xE251);
+        case FLAG_1_DOWN -> ints(0xE251);
         case FLAG_2 -> ints(0xE242);
-        case FLAG_2_UP -> ints(0xE243);
+        case FLAG_2_DOWN -> ints(0xE243);
         //        case FLAG_3 -> ints(0xE244);
-        //        case FLAG_3_UP -> ints(0xE245);
+        //        case FLAG_3_DOWN -> ints(0xE245);
         //        case FLAG_4 -> ints(0xE246);
-        //        case FLAG_4_UP -> ints(0xE247);
+        //        case FLAG_4_DOWN -> ints(0xE247);
         //        case FLAG_5 -> ints(0xE248);
-        //        case FLAG_5_UP -> ints(0xE249);
+        //        case FLAG_5_DOWN -> ints(0xE249);
         case FLAT -> ints(0xE260);
         case F_CLEF -> ints(0xE062);
         ///case F_CLEF_SMALL -> ints(0xE07C); // Use transformed symbol
@@ -132,7 +132,9 @@ public class FinaleJazzSymbols
         case F_CLEF_8VB -> ints(0xE064);
 
         case GRACE_NOTE -> ints(0xE562);
+        case GRACE_NOTE_DOWN -> ints(0xE563);
         case GRACE_NOTE_SLASH -> ints(0xE560);
+        case GRACE_NOTE_SLASH_DOWN -> ints(0xE561);
         case G_CLEF -> ints(0xE050);
         ///case G_CLEF_SMALL -> ints(0xE07A); // Use transformed symbol
         case G_CLEF_8VA -> ints(0xE053);
@@ -177,6 +179,10 @@ public class FinaleJazzSymbols
         case PEDAL_UP_MARK -> ints(0xE655);
         case PERCUSSION_CLEF -> ints(0xE069);
 
+        case PLAYING_OPEN -> ints(0xE614); // 0xE870 ?
+        case PLAYING_HALF_OPEN -> ints(0xE7F8); // 0xE871 ?
+        case PLAYING_CLOSED -> ints(0xE5E5); // 0xE872 ?
+
         case QUARTER_NOTE_DOWN -> ints(0xE1D6);
         case QUARTER_NOTE_UP -> ints(0xE1D5);
         case QUARTER_REST -> ints(0xE4E5);
@@ -214,6 +220,9 @@ public class FinaleJazzSymbols
         case TIME_TWELVE -> ints(0xE081, 0xE082);
         case TIME_SIXTEEN -> ints(0xE081, 0xE086);
         case TR -> ints(0xE566);
+        case TREMOLO_1 -> ints(0xE220);
+        case TREMOLO_2 -> ints(0xE221);
+        case TREMOLO_3 -> ints(0xE222);
         case TUPLET_SIX -> ints(0xE886);
         case TUPLET_THREE -> ints(0xE883);
         case TURN -> ints(0xE567);
@@ -249,9 +258,9 @@ public class FinaleJazzSymbols
         symbolMap.put(FLAG_4, new FlagsSymbol(FLAG_4, family(), 4));
         symbolMap.put(FLAG_5, new FlagsSymbol(FLAG_5, family(), 5));
 
-        symbolMap.put(FLAG_3_UP, new FlagsUpSymbol(FLAG_3_UP, family(), 3));
-        symbolMap.put(FLAG_4_UP, new FlagsUpSymbol(FLAG_4_UP, family(), 4));
-        symbolMap.put(FLAG_5_UP, new FlagsUpSymbol(FLAG_5_UP, family(), 5));
+        symbolMap.put(FLAG_3_DOWN, new FlagsDownSymbol(FLAG_3_DOWN, family(), 3));
+        symbolMap.put(FLAG_4_DOWN, new FlagsDownSymbol(FLAG_4_DOWN, family(), 4));
+        symbolMap.put(FLAG_5_DOWN, new FlagsDownSymbol(FLAG_5_DOWN, family(), 5));
 
     }
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -260,7 +269,7 @@ public class FinaleJazzSymbols
     // FlagsSymbol //
     //-------------//
     /**
-     * Class <code>FlagsSymbol</code> displays a pack of several flags down.
+     * Class <code>FlagsSymbol</code> displays a pack of several flags up.
      */
     private static class FlagsSymbol
             extends ShapeSymbol
@@ -273,7 +282,7 @@ public class FinaleJazzSymbols
         protected final int fn;
 
         /**
-         * Creates a new FlagsDownSymbol object.
+         * Creates a new FlagsSymbol object.
          *
          * @param shape  the related shape
          * @param family the selected music font family
@@ -310,8 +319,8 @@ public class FinaleJazzSymbols
             p.rect1 = p.flag1.getBounds();
             p.flag2 = font.layoutShapeByCode(Shape.FLAG_2);
             p.rect2 = p.flag2.getBounds();
-            p.dy = (int) Math.rint(p.rect2.getHeight() * dyF2Ratio);
-            p.align = TOP_LEFT;
+            p.dy = -(int) Math.rint(p.rect2.getHeight() * dyF2Ratio);
+            p.align = BOTTOM_LEFT;
 
             return p;
         }
@@ -354,26 +363,26 @@ public class FinaleJazzSymbols
         }
     }
 
-    //---------------//
-    // FlagsUpSymbol //
-    //---------------//
+    //-----------------//
+    // FlagsDownSymbol //
+    //-----------------//
     /**
-     * Class <code>FlagsUpSymbol</code> displays a pack of several flags up
+     * Class <code>FlagsDownSymbol</code> displays a pack of several flags down
      */
-    public class FlagsUpSymbol
+    public class FlagsDownSymbol
             extends FlagsSymbol
     {
 
         /**
-         * Creates a new FlagsUpSymbol object.
+         * Creates a new FlagsDownSymbol object.
          *
          * @param shape     the related shape
          * @param family    the selected music font family
          * @param flagCount the number of flags
          */
-        public FlagsUpSymbol (Shape shape,
-                              Family family,
-                              int flagCount)
+        public FlagsDownSymbol (Shape shape,
+                                Family family,
+                                int flagCount)
         {
             super(shape, family, flagCount);
         }
@@ -383,12 +392,12 @@ public class FinaleJazzSymbols
         {
             MyParams p = new MyParams();
 
-            p.flag1 = font.layoutShapeByCode(Shape.FLAG_1_UP);
+            p.flag1 = font.layoutShapeByCode(Shape.FLAG_1_DOWN);
             p.rect1 = p.flag1.getBounds();
-            p.flag2 = font.layoutShapeByCode(Shape.FLAG_2_UP);
+            p.flag2 = font.layoutShapeByCode(Shape.FLAG_2_DOWN);
             p.rect2 = p.flag2.getBounds();
-            p.dy = -(int) Math.rint(p.rect2.getHeight() * dyF2Ratio);
-            p.align = BOTTOM_LEFT;
+            p.dy = (int) Math.rint(p.rect2.getHeight() * dyF2Ratio);
+            p.align = TOP_LEFT;
 
             return p;
         }

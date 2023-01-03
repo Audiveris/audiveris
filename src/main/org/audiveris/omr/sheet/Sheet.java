@@ -67,8 +67,8 @@ import org.audiveris.omr.ui.ErrorsEditor;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.WeakItemRenderer;
@@ -76,6 +76,7 @@ import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -390,8 +391,18 @@ public class Sheet
                 system.afterReload();
             }
 
+            final Version stubVersion = stub.getVersion();
+
+            // Check version for flag shape names
+            if (stubVersion.compareWithLabelTo(Versions.DRUM_NOTATION) < 0) {
+                if (checkShapesRenamed()) {
+                    stub.setUpgraded(true);
+                    logger.info("Some flag shapes renamed.");
+                }
+            }
+
             // Check version for interleaved rests
-            if (stub.getVersion().compareTo(Versions.INTERLEAVED_RESTS) < 0) {
+            if (stubVersion.compareTo(Versions.INTERLEAVED_RESTS) < 0) {
                 final OmrStep latestStep = stub.getLatestStep();
 
                 if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
@@ -464,6 +475,42 @@ public class Sheet
                 }
             }
         }
+    }
+
+    //--------------------//
+    // checkShapesRenamed //
+    //--------------------//
+    /**
+     * Check whether some old shape names must be fixed.
+     *
+     * @return true if modifications were made
+     */
+    private boolean checkShapesRenamed ()
+    {
+        boolean modified = false;
+
+        for (SystemInfo system : getSystems()) {
+            final SIGraph sig = system.getSig();
+
+            for (Inter inter : sig.vertexSet()) {
+                final Shape shape = inter.getShape();
+                if (shape == null) {
+                    continue;
+                }
+
+                switch (shape) {
+                case FLAG_1_UP -> modified |= inter.renameShapeAs(Shape.FLAG_1_DOWN);
+                case FLAG_2_UP -> modified |= inter.renameShapeAs(Shape.FLAG_2_DOWN);
+                case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
+                case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
+                case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
+                default -> {
+                }
+                }
+            }
+        }
+
+        return modified;
     }
 
     //------------------//

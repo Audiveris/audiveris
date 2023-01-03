@@ -185,6 +185,12 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (GraceChordInter inter)
+    {
+        visit((AbstractChordInter) inter); // Redirection by default
+    }
+
+    @Override
     public void visit (HeadChordInter inter)
     {
         visit((AbstractChordInter) inter); // Redirection by default
@@ -342,6 +348,12 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (TimeWholeInter inter)
     {
+    }
+
+    @Override
+    public void visit (TremoloInter inter)
+    {
+        visit((Inter) inter); // Redirection by default BINGO: to be checked
     }
 
     @Override

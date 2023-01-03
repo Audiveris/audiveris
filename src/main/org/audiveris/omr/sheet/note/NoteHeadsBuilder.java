@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.image.Anchored.Anchor;
 import static org.audiveris.omr.image.Anchored.Anchor.*;
 import org.audiveris.omr.image.ChamferDistance;
@@ -45,6 +46,8 @@ import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.score.DrumSet;
+import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
@@ -85,11 +88,14 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Class <code>NoteHeadsBuilder</code> retrieves the void note heads, the black note heads,
@@ -132,6 +138,9 @@ public class NoteHeadsBuilder
             Shape.BEAM_SMALL,
             Shape.BEAM_HOOK_SMALL,
             Shape.MULTIPLE_REST,
+            Shape.TREMOLO_1,
+            Shape.TREMOLO_2,
+            Shape.TREMOLO_3,
             Shape.VERTICAL_SERIF);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -182,13 +191,13 @@ public class NoteHeadsBuilder
     private final int[] xOffsets;
 
     /** All head templates for this sheet. */
-    private final EnumSet<Shape> sheetTemplateNotes;
+    private final EnumSet<Shape> sheetTemplateNotesAll;
 
     /** All stem head templates for this sheet. */
-    private final EnumSet<Shape> sheetStemTemplateNotes;
+    private final EnumSet<Shape> sheetTemplateNotesStem;
 
-    /** All void head templates for this sheet. */
-    private final EnumSet<Shape> sheetVoidTemplateNotes;
+    /** All hollow head templates for this sheet. */
+    private final EnumSet<Shape> sheetTemplateNotesHollow;
 
     /** Collector for seed-based heads. */
     private final HeadSeedTally tally;
@@ -201,6 +210,12 @@ public class NoteHeadsBuilder
 
     private final Perf rangePerf = new Perf();
 
+    // Debug: Already dumped the head shapes for a standard staff?
+    public Boolean stdDumped;
+
+    // Debug: Already dumped the head shapes per pitch and per kind for a drum staff?
+    public final Map<Integer, Map<String, Boolean>> drumDumped;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new <code>NoteHeadsBuilder</code> object.
@@ -209,24 +224,30 @@ public class NoteHeadsBuilder
      * @param distances   the distance table
      * @param systemSpots spots detected for this system
      * @param tally       (output) data on seed-head distance
+     * @param stdDumped   debug: to avoid repetitive dumps
+     * @param drumDumped  debug: to avoid repetitive dumps
      */
     public NoteHeadsBuilder (SystemInfo system,
                              DistanceTable distances,
                              List<Glyph> systemSpots,
-                             HeadSeedTally tally)
+                             HeadSeedTally tally,
+                             Boolean stdDumped,
+                             Map<Integer, Map<String, Boolean>> drumDumped)
     {
         this.system = system;
         this.distances = distances;
         this.systemSpots = systemSpots;
         this.tally = tally;
+        this.stdDumped = stdDumped;
+        this.drumDumped = drumDumped;
 
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
 
-        sheetTemplateNotes = ShapeSet.getTemplateNotes(sheet);
-        sheetStemTemplateNotes = ShapeSet.getStemTemplateNotes(sheet);
-        sheetVoidTemplateNotes = ShapeSet.getVoidTemplateNotes(sheet);
+        sheetTemplateNotesAll = ShapeSet.getTemplateNotesAll(sheet);
+        sheetTemplateNotesStem = ShapeSet.getTemplateNotesStem(sheet);
+        sheetTemplateNotesHollow = ShapeSet.getTemplateNotesHollow(sheet);
 
         params = new Parameters(scale);
 
@@ -471,6 +492,50 @@ public class NoteHeadsBuilder
         final Rectangle box = template.getSlimBoundsAt(loc.x, loc.y, anchor);
 
         return new HeadInter(box, shape, impacts, staff, pitch);
+    }
+
+    //---------------//
+    // dumpShapeList //
+    //---------------//
+    /**
+     * A debugging utility to list which precise template notes are used, per kind
+     * (and per pitch when on a drum staff).
+     *
+     * @param pitch scanner pitch position (null for a non-drum staff)
+     * @param kind  template collection kind (all, stem, hollow)
+     * @param coll  the collection of template notes
+     */
+    private void dumpShapeList (Integer pitch,
+                                String kind,
+                                Collection<Shape> coll)
+    {
+        if (pitch == null) {
+            // A standard non-drum staff
+            if (!stdDumped) {
+                System.out.println(String.format("Scanner kind: %s", kind));
+                for (Shape shape : coll) {
+                    System.out.println(String.format("    %s", shape));
+                }
+
+                stdDumped = true;
+            }
+        } else {
+            // A pitch line for a drum staff
+            Map<String, Boolean> kindMap = drumDumped.get(pitch);
+            if (kindMap == null) {
+                drumDumped.put(pitch, kindMap = new TreeMap<>());
+            }
+
+            final Boolean dumped = kindMap.get(kind);
+            if (dumped == null || !dumped) {
+                System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
+                for (Shape shape : coll) {
+                    System.out.println(String.format("    %s", shape));
+                }
+
+                kindMap.put(kind, true);
+            }
+        }
     }
 
     //---------------------//
@@ -1163,6 +1228,13 @@ public class NoteHeadsBuilder
         /** Offsets tried around a given ordinate. */
         private final int[] yOffsets;
 
+        /** Shapes relevant only for the scanner line. */
+        private final EnumSet<Shape> scannerTemplateNotesAll;
+
+        private final EnumSet<Shape> scannerTemplateNotesHollow;
+
+        private final EnumSet<Shape> scannerTemplateNotesStem;
+
         /**
          * Create a Scanner.
          *
@@ -1222,7 +1294,72 @@ public class NoteHeadsBuilder
             }
 
             competitors = getCompetitorsSlice(competitorsArea);
+
+            // Determine shapes relevant for this scanner pitch value.
+            final EnumSet<Shape> scannerShapes = buildShapeList();
+
+            scannerTemplateNotesAll = scannerShapes.clone();
+            scannerTemplateNotesAll.retainAll(sheetTemplateNotesAll);
+
+            scannerTemplateNotesStem = scannerShapes.clone();
+            scannerTemplateNotesStem.retainAll(sheetTemplateNotesStem);
+
+            scannerTemplateNotesHollow = scannerShapes.clone();
+            scannerTemplateNotesHollow.retainAll(sheetTemplateNotesHollow);
+
+            if (constants.dumpTemplateNotes.isSet()) {
+                if (!line.getStaff().isDrum()) {
+                    dumpShapeList(null, "all", scannerTemplateNotesAll);
+                    dumpShapeList(null, "stem", scannerTemplateNotesStem);
+                    dumpShapeList(null, "hollow", scannerTemplateNotesHollow);
+                } else {
+                    dumpShapeList(pitch, "all", scannerTemplateNotesAll);
+                    dumpShapeList(pitch, "stem", scannerTemplateNotesStem);
+                    dumpShapeList(pitch, "hollow", scannerTemplateNotesHollow);
+                }
+            }
         }
+
+        //----------------//
+        // buildShapeList //
+        //----------------//
+        private EnumSet<Shape> buildShapeList ()
+        {
+            final Staff staff = line.getStaff();
+            if (!staff.isDrum()) {
+                return sheetTemplateNotesAll;
+            }
+
+            final DrumSet drumSet = DrumSet.getInstance();
+            final Set<DrumInstrument> set = drumSet.byPitch.get(pitch);
+            final EnumSet<Shape> allShapes = EnumSet.noneOf(Shape.class);
+
+            if (set == null) {
+                return allShapes; // Nothing on this pitch value
+            }
+
+            for (DrumInstrument inst : set) {
+                // Motif + Sign (not used at template time)
+                final HeadMotif motif = inst.headMotif;
+                List<Shape> shapes = ShapeSet.getMotifSet(motif);
+                allShapes.addAll(shapes);
+            }
+
+            return allShapes;
+        }
+//
+//        private void dumpShapeList (String kind,
+//                                    Collection<Shape> coll)
+//        {
+//            System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
+//            for (Shape shape : coll) {
+//                System.out.println(String.format("    %s", shape));
+//            }
+//        }
+//
+        //--------//
+        // lookup //
+        //--------//
 
         public List<HeadInter> lookup ()
         {
@@ -1545,7 +1682,7 @@ public class NoteHeadsBuilder
                 return heads;
             }
 
-            // Use the head spots to limit the abscissae to be checked for blacks
+            // Use the head spots to limit the abscissae to be checked for all heads
             boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
@@ -1560,8 +1697,10 @@ public class NoteHeadsBuilder
                 }
 
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft] ? sheetTemplateNotes
-                        : sheetVoidTemplateNotes;
+                final EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft]
+                        ? scannerTemplateNotesAll
+                        : scannerTemplateNotesHollow;
+
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
                     PixelDistance bestLoc = null;
@@ -1675,7 +1814,7 @@ public class NoteHeadsBuilder
                     // For each stem side and for each possible shape,
                     // keep the best match (if acceptable) among all locations tried.
                     ShapeLoop:
-                    for (Shape shape : sheetStemTemplateNotes) {
+                    for (Shape shape : scannerTemplateNotesStem) {
                         PixelDistance bestLoc = null;
 
                         // Brute force: explore the whole rectangle around (x0, y0)
@@ -1881,6 +2020,10 @@ public class NoteHeadsBuilder
             extends ConstantSet
     {
 
+        private final Constant.Boolean dumpTemplateNotes = new Constant.Boolean(
+                false,
+                "Should we dump the template notes for standard and drum staves?");
+
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -1918,7 +2061,7 @@ public class NoteHeadsBuilder
                 "Vertical margin for intercepting stem seed around a target pitch");
 
         private final Constant.Ratio stemLessBoost = new Constant.Ratio(
-                0.38,
+                0, // Was 0.38,
                 "How much do we boost stem-less heads (always isolated)");
 
         private final Constant.Ratio crossBoost = new Constant.Ratio(

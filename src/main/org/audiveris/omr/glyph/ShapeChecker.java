@@ -353,7 +353,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("NotWithinStaffHeight", shapesOf(Clefs, Times.getShapes()))
+        new Checker("NotWithinStaffHeight", shapesOf(Clefs, WholeTimes, Arrays.asList(TIME_CUSTOM)))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -408,18 +408,6 @@ public class ShapeChecker
             {
                 // Percussion clef must be within system header
                 return Math.abs(glyph.getCenter2D().getX()) < system.getFirstStaff().getHeaderStop();
-            }
-        };
-
-        new Checker("NotWithinHeader", PERCUSSION_CLEF)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph)
-            {
-                // Percussion clef must be within system header
-                return Math.abs(glyph.getCenter().x) < system.getFirstStaff().getHeaderStop();
             }
         };
 

@@ -46,7 +46,6 @@ import java.util.EnumSet;
  */
 public enum ProcessingSwitch
 {
-    poorInputMode(ProcessingSwitches.constants.poorInputMode),
     indentations(ProcessingSwitches.constants.indentations),
     bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
     keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
@@ -57,6 +56,7 @@ public enum ProcessingSwitch
     pluckings(ProcessingSwitches.constants.pluckings),
     lyrics(ProcessingSwitches.constants.lyrics),
     lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
+    tremolos(ProcessingSwitches.constants.tremolos),
     smallHeads(ProcessingSwitches.constants.smallHeads),
     crossHeads(ProcessingSwitches.constants.crossHeads),
     implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
@@ -69,6 +69,7 @@ public enum ProcessingSwitch
     //
     // OBSOLETE SWITCHES FOLLOW
     //
+    poorInputMode(null),
     smallBlackHeads(null),
     smallVoidHeads(null),
     smallWholeHeads(null);
@@ -104,12 +105,12 @@ public enum ProcessingSwitch
     /**
      * The switches currently supported.
      */
-    public static EnumSet<ProcessingSwitch> supportedValues
-            = EnumSet.range(poorInputMode, multiWholeHeadChords);
+    public static EnumSet<ProcessingSwitch> supportedSwitches
+            = EnumSet.range(indentations, multiWholeHeadChords);
 
     /**
      * The switches now obsolete.
      */
-    public static EnumSet<ProcessingSwitch> obsoleteValues
-            = EnumSet.range(smallBlackHeads, smallWholeHeads);
+    public static EnumSet<ProcessingSwitch> obsoleteSwitches
+            = EnumSet.range(poorInputMode, smallWholeHeads);
 }

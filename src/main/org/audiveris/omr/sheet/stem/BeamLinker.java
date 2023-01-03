@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphGroup;
@@ -54,6 +56,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -102,6 +105,8 @@ import java.util.Set;
 public class BeamLinker
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BeamLinker.class);
 
@@ -583,6 +588,37 @@ public class BeamLinker
                 vLinker.link(Profiles.BEAM_SEED, profile);
             }
         }
+    }
+
+    //------------------//
+    // looksLikeTremolo //
+    //------------------//
+    /**
+     * Check whether this "beam" may be in fact a tremolo_1.
+     * <ul>
+     * <li>One center stump but no stump on either hSide
+     * <li>Very short beam
+     * <li>Typical tremolo slope, but slope computed on a short "beam" is not reliable at all
+     * </ul>
+     *
+     * @return true if so
+     */
+    public boolean looksLikeTremolo ()
+    {
+        if (beam.isVip()) {
+            logger.info("VIP looksLikeTremolo for {}", beam);
+        }
+
+        // Stumps
+        if (stumps.size() != 1 || !sideStumps.isEmpty()) {
+            return false;
+        }
+
+        // No test on slope
+        //
+        // Width
+        final double beamWidth = median.getX2() - median.getX1();
+        return TremoloInter.isTremoloWidth(beamWidth, scale);
     }
 
     //------------//
@@ -1267,7 +1303,7 @@ public class BeamLinker
                     final Shape headShape = head.getShape();
 
                     // Today, standard beams can't link small heads
-                    if (headShape.isSmall()) {
+                    if (headShape.isSmallHead()) {
                         continue;
                     }
 
@@ -1600,44 +1636,67 @@ public class BeamLinker
             //--------------//
             // linkSiblings //
             //--------------//
+            /**
+             * Extend link to sibling beams.
+             * <p>
+             * Beware: A shorter beam can occur next to a wider beam but only on its heads side.
+             *
+             * @param stem
+             * @param relGrade
+             */
             private void linkSiblings (StemInter stem,
                                        double relGrade)
             {
-                if (stem.isVip()) {
+                if (beam.isVip()) {
                     logger.info("VIP {} linkSiblings with {}", this, stem);
                 }
 
-                //                final Line2D stemMedian = stem.getMedian();
-                //                final SIGraph sig = system.getSig();
-                //                final List<AbstractBeamInter> siblings = getSiblingBeamsAt(refPt);
-                //                siblings.remove(beam);
-                //
-                //                for (AbstractBeamInter b : siblings) {
-                //                    if (b.getGlyph() == beam.getGlyph()) {
-                //                        continue;
-                //                    }
-                //
-                //                    if (sig.getRelation(b, stem, BeamStemRelation.class) == null) {
-                //                        final BeamStemRelation r = new BeamStemRelation();
-                //                        final Point2D crossPt = LineUtil.intersection(stemMedian,
-                //                                                                      b.getMedian());
-                //                        r.setExtensionPoint(new Point2D.Double(
-                //                                crossPt.getX(),
-                //                                crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
-                //
-                //                        // Portion depends on x location of stem WRT beam
-                //                        r.setBeamPortion(BeamStemRelation.computeBeamPortion(
-                //                                b, crossPt.getX(), scale));
-                //
-                //                        r.setGrade(relGrade);
-                //                        sig.addEdge(b, stem, r);
-                //
-                //                        final StemLinker sl = sb.getLinkerOf(b);
-                //                        if (sl != null) {
-                //                            sl.setLinked(true);
-                //                        }
-                //                    }
-                //                }
+                final Line2D stemMedian = stem.getMedian();
+                final Point2D beamPt = LineUtil.intersection(stemMedian, median);
+                final SIGraph sig = system.getSig();
+                final List<AbstractBeamInter> siblings = getSiblingBeamsAt(refPt);
+                siblings.remove(beam);
+                final double beamLength = median.getX2() - median.getX1();
+
+                for (AbstractBeamInter b : siblings) {
+                    if (b.getGlyph() == beam.getGlyph()) {
+                        continue;
+                    }
+
+                    if (sig.getRelation(b, stem, BeamStemRelation.class) == null) {
+                        final BeamStemRelation r = new BeamStemRelation();
+                        final Point2D crossPt = LineUtil.intersection(stemMedian,
+                                                                      b.getMedian());
+
+                        // Check whether sibling b is significantly shorter than base beam
+                        final double bLength = b.getMedian().getX2() - b.getMedian().getX1();
+                        final double ratio = bLength / beamLength;
+                        if (ratio <= constants.maxShorterRatio.getValue()) {
+                            // Validate ordinate of shorter beam WRT base beam
+                            final double dy = crossPt.getY() - beamPt.getY();
+                            if (dy * yDir < 0) {
+                                logger.info("Not linking shorter {}", b);
+                                continue;
+                            }
+                        }
+
+                        r.setExtensionPoint(new Point2D.Double(
+                                crossPt.getX(),
+                                crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
+
+                        // Portion depends on x location of stem WRT beam
+                        r.setBeamPortion(BeamStemRelation.computeBeamPortion(
+                                b, crossPt.getX(), scale));
+
+                        r.setGrade(relGrade);
+                        sig.addEdge(b, stem, r);
+
+                        final StemLinker sl = sb.getLinkerOf(b);
+                        if (sl != null) {
+                            sl.setLinked(true);
+                        }
+                    }
+                }
             }
 
             //-----------//
@@ -1674,5 +1733,17 @@ public class BeamLinker
                 return asb.append('}').toString();
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Ratio maxShorterRatio = new Constant.Ratio(
+                0.8,
+                "Max ratio of base beam length to detect a shorter beam");
     }
 }

@@ -29,6 +29,8 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.proxymusic.AccidentalText;
 import org.audiveris.proxymusic.AccidentalValue;
 import org.audiveris.proxymusic.BarStyle;
@@ -44,11 +46,15 @@ import org.audiveris.proxymusic.RightLeftMiddle;
 import org.audiveris.proxymusic.Step;
 import org.audiveris.proxymusic.StrongAccent;
 import org.audiveris.proxymusic.Syllabic;
+import org.audiveris.proxymusic.Tremolo;
+import org.audiveris.proxymusic.TremoloType;
 import org.audiveris.proxymusic.UpDown;
 import org.audiveris.proxymusic.YesNo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigDecimal;
 
 import javax.xml.bind.JAXBElement;
 
@@ -68,18 +74,18 @@ public abstract class MusicXML
      * <p>
      * NOTA: If this array is modified, check method {@link #getNoteTypeName(Rational) accordingly.
      */
-    private static final String[] noteTypeNames = new String[] {
-            "256th",
-            "128th",
-            "64th",
-            "32nd",
-            "16th",
-            "eighth",
-            "quarter",
-            "half",
-            "whole",
-            "breve",
-            "long" };
+    private static final String[] noteTypeNames = new String[]{
+        "256th",
+        "128th",
+        "64th",
+        "32nd",
+        "16th",
+        "eighth",
+        "quarter",
+        "half",
+        "whole",
+        "breve",
+        "long"};
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -323,42 +329,65 @@ public abstract class MusicXML
     //-------------------//
     // getOrnamentObject //
     //-------------------//
-    public static JAXBElement<?> getOrnamentObject (Shape shape)
+    /**
+     * Report the JAXB element for the provided ornament.
+     *
+     * @param ornament the provided ornament
+     * @param defaultY ornament vertical position (relevant only for tremolo)
+     * @return the populated JAXB element
+     */
+    public static JAXBElement<?> getOrnamentObject (OrnamentInter ornament,
+                                                    BigDecimal defaultY)
     {
         //      (((trill-mark | turn | delayed-turn | shake |
         //         wavy-line | mordent | inverted-mordent |
         //         schleifer | tremolo | other-ornament),
         //         accidental-mark*)*)>
-        //      note that inverted-mordent in MusicXML refers to a MORDENT
-        //      and mordent in MusicXML refers to a MORDENT_INVERTED
-	
-        ObjectFactory factory = new ObjectFactory();
+
+        final ObjectFactory factory = new ObjectFactory();
+        final Shape shape = ornament.getShape();
 
         switch (shape) {
-        case MORDENT:
+        case MORDENT -> {
+            //      note that inverted-mordent in MusicXML refers to a MORDENT
+            //      and mordent in MusicXML refers to a MORDENT_INVERTED
             return factory.createOrnamentsInvertedMordent(factory.createMordent());
+        }
 
-        case MORDENT_INVERTED:
+        case MORDENT_INVERTED -> {
             return factory.createOrnamentsMordent(factory.createMordent());
+        }
 
-        case TR:
+        case TR -> {
             return factory.createOrnamentsTrillMark(factory.createEmptyTrillSound());
+        }
 
-        case TURN:
+        case TURN -> {
             return factory.createOrnamentsTurn(factory.createHorizontalTurn());
+        }
 
-        case TURN_INVERTED:
+        case TURN_INVERTED -> {
             return factory.createOrnamentsInvertedTurn(factory.createHorizontalTurn());
+        }
 
-        case TURN_SLASH: {
+        case TURN_SLASH -> {
             HorizontalTurn horizontalTurn = factory.createHorizontalTurn();
             horizontalTurn.setSlash(YesNo.YES);
 
             return factory.createOrnamentsInvertedTurn(horizontalTurn);
         }
 
-        case TURN_UP:
+        case TURN_UP -> {
             return factory.createOrnamentsVerticalTurn(factory.createEmptyTrillSound());
+        }
+
+        case TREMOLO_1, TREMOLO_2, TREMOLO_3 -> {
+            final Tremolo tremolo = factory.createTremolo();
+            tremolo.setDefaultY(defaultY);
+            tremolo.setType(TremoloType.SINGLE);
+            tremolo.setValue(TremoloInter.getTremoloValue(shape));
+            return factory.createOrnamentsTremolo(tremolo);
+        }
         }
 
         logger.error("Unsupported ornament shape: {}", shape);

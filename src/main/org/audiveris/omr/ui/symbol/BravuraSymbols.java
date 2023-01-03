@@ -108,15 +108,15 @@ public class BravuraSymbols
         case FERMATA_DOT -> ints(0xE044);
         case FINAL_BARLINE -> ints(0xE032);
         case FLAG_1 -> ints(0xE240);
-        case FLAG_1_UP -> ints(0xE241);
+        case FLAG_1_DOWN -> ints(0xE241);
         case FLAG_2 -> ints(0xE242);
-        case FLAG_2_UP -> ints(0xE243);
+        case FLAG_2_DOWN -> ints(0xE243);
         case FLAG_3 -> ints(0xE244);
-        case FLAG_3_UP -> ints(0xE245);
+        case FLAG_3_DOWN -> ints(0xE245);
         case FLAG_4 -> ints(0xE246);
-        case FLAG_4_UP -> ints(0xE247);
+        case FLAG_4_DOWN -> ints(0xE247);
         case FLAG_5 -> ints(0xE248);
-        case FLAG_5_UP -> ints(0xE249);
+        case FLAG_5_DOWN -> ints(0xE249);
         case FLAT -> ints(0xE260);
         case F_CLEF -> ints(0xE062);
         case F_CLEF_SMALL -> ints(0xE07C);
@@ -124,7 +124,9 @@ public class BravuraSymbols
         case F_CLEF_8VB -> ints(0xE064);
 
         case GRACE_NOTE -> ints(0xE562);
+        case GRACE_NOTE_DOWN -> ints(0xE563);
         case GRACE_NOTE_SLASH -> ints(0xE560);
+        case GRACE_NOTE_SLASH_DOWN -> ints(0xE561);
         case G_CLEF -> ints(0xE050);
         case G_CLEF_SMALL -> ints(0xE07A);
         case G_CLEF_8VA -> ints(0xE053);
@@ -169,6 +171,10 @@ public class BravuraSymbols
         case PEDAL_UP_MARK -> ints(0xE655);
         case PERCUSSION_CLEF -> ints(0xE069);
 
+        case PLAYING_OPEN -> ints(0xE7F8);
+        case PLAYING_HALF_OPEN -> ints(0xE7F7);
+        case PLAYING_CLOSED -> ints(0xE7F5);
+
         case QUARTER_NOTE_DOWN -> ints(0xE1D6);
         case QUARTER_NOTE_UP -> ints(0xE1D5);
         case QUARTER_REST -> ints(0xE4E5);
@@ -206,6 +212,9 @@ public class BravuraSymbols
         case TIME_TWELVE -> ints(0xE081, 0xE082);
         case TIME_SIXTEEN -> ints(0xE081, 0xE086);
         case TR -> ints(0xE566);
+        case TREMOLO_1 -> ints(0xE220);
+        case TREMOLO_2 -> ints(0xE221);
+        case TREMOLO_3 -> ints(0xE222);
         case TUPLET_SIX -> ints(0xE886);
         case TUPLET_THREE -> ints(0xE883);
         case TURN -> ints(0xE567);

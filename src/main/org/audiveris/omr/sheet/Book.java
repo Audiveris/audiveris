@@ -39,10 +39,10 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import org.audiveris.omr.sheet.Versions.CheckResult;
-import org.audiveris.omr.sheet.rhythm.Voices;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.SheetStub.SheetInput;
+import org.audiveris.omr.sheet.Versions.CheckResult;
+import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
@@ -195,6 +195,16 @@ public class Book
     @XmlElement(name = "music-font")
     @XmlJavaTypeAdapter(FontFamilyParam.JaxbAdapter.class)
     private FontFamilyParam musicFontFamily;
+
+    /**
+     * Specification of the input quality to use in this book.
+     * <p>
+     * If present, this specification overrides any global specification made at application level,
+     * but can still be overridden at sheet level.
+     */
+    @XmlElement(name = "input-quality")
+    @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
+    private InputQualityParam inputQuality;
 
     /**
      * This string specifies the dominant language(s) for this whole book.
@@ -728,6 +738,24 @@ public class Book
         }
 
         return musicFontFamily;
+    }
+
+    //-----------------//
+    // getInputQuality //
+    //-----------------//
+    /**
+     * Report the input quality defined at book level.
+     *
+     * @return the input quality parameter
+     */
+    public InputQualityParam getInputQuality ()
+    {
+        if (inputQuality == null) {
+            inputQuality = new InputQualityParam(this);
+            inputQuality.setParent(Profiles.defaultQualityParam);
+        }
+
+        return inputQuality;
     }
 
     //-------------//
@@ -1531,7 +1559,7 @@ public class Book
             // Load book internals (just the stubs) out of book.xml
             Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
 
-            try ( InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
+            try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
                 JAXBContext ctx = getJaxbContext();
                 Unmarshaller um = ctx.createUnmarshaller();
                 book = (Book) um.unmarshal(is);
@@ -2426,6 +2454,10 @@ public class Book
 
         if ((musicFontFamily != null) && !musicFontFamily.isSpecific()) {
             musicFontFamily = null;
+        }
+
+        if ((inputQuality != null) && !inputQuality.isSpecific()) {
+            inputQuality = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {

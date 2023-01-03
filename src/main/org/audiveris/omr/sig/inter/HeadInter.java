@@ -176,7 +176,7 @@ public class HeadInter
     }
 
     /** No-arg constructor needed by JAXB. */
-    private HeadInter ()
+    protected HeadInter ()
     {
     }
 

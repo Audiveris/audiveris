@@ -27,6 +27,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -37,6 +38,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamBeamRelation;
 import org.audiveris.omr.sig.relation.BeamRestRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
@@ -66,11 +68,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sig.relation.Containment;
 
 /**
  * Class <code>BeamGroupInter</code> represents a group of related beams.
+ * <p>
+ * Within a group, beams are rather parallel and with no large vertical gap.
  * <p>
  * It is an <code>InterEnsemble</code> linked via <code>Containment</code> relations to its Beam
  * members.
@@ -1601,11 +1603,11 @@ public class BeamGroupInter
                 "(Cue) Minimum horizontal overlap between subsequent beams of a group");
 
         private final Scale.Fraction maxYDistance = new Scale.Fraction(
-                1.5,
+                1.2, // Was 1.5
                 "Maximum vertical distance between subsequent beams of a group");
 
         private final Scale.Fraction cueMaxYDistance = new Scale.Fraction(
-                1.5,
+                1.0, // Was 1.5
                 "(Cue) Maximum vertical distance between subsequent beams of a group");
 
         private final Constant.Double maxSlopeDiff = new Constant.Double(

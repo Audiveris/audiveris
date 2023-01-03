@@ -70,7 +70,9 @@ public class HeadsStep
         new NoteHeadsBuilder(system,
                              context.distanceTable,
                              context.sheetSpots.get(system),
-                             context.tallies.get(system))
+                             context.tallies.get(system),
+                             context.stdDumped,
+                             context.drumDumped)
                 .buildHeads();
     }
 
@@ -130,6 +132,12 @@ public class HeadsStep
 
         /** Seed-head tally per system. */
         public final Map<SystemInfo, HeadSeedTally> tallies;
+
+        // Debug: Already dumped the head shapes for a standard staff?
+        public Boolean stdDumped = false;
+
+        // Debug: Already dumped the head shapes per pitch and per kind for a drum staff?
+        public final Map<Integer, Map<String, Boolean>> drumDumped = new TreeMap<>();
 
         /**
          * Create a Context.

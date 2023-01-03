@@ -22,6 +22,10 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.ui.symbol.Symbols.CodeRange;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class <code>JazzPercSymbols</code> is limited to percussion symbols for Jazz scores.
@@ -167,7 +171,11 @@ public class JazzPercSymbols
         //        case PEDAL_MARK -> ints(0xE650);
         //        case PEDAL_UP_MARK -> ints(0xE655);
         //        case PERCUSSION_CLEF -> ints(0xE069);
-        //
+
+        case PLAYING_OPEN -> ints(0xF06F);
+        case PLAYING_HALF_OPEN -> ints(0xF070);
+        case PLAYING_CLOSED -> ints(0xF02B);
+
         //        case QUARTER_NOTE_DOWN -> ints(0xE1D6);
         //        case QUARTER_NOTE_UP -> ints(0xE1D5);
         //        case QUARTER_REST -> ints(0xE4E5);
@@ -222,6 +230,16 @@ public class JazzPercSymbols
         //
         default -> null;
         };
+    }
+
+    //---------------//
+    // getCodeRanges //
+    //---------------//
+    @Override
+    public List<CodeRange> getCodeRanges ()
+    {
+        // Range is much smaller than PRIVATE_USE_AREA
+        return Collections.singletonList(new CodeRange(0xF021, 0xF0FF));
     }
 
     //-----------------//

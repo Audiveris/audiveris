@@ -1345,7 +1345,7 @@ public class Measure
             final HeadChordInter headChord = it.next();
             final List<Inter> notes = headChord.getMembers();
 
-            if (notes.isEmpty() || notes.get(0).getShape().isSmall()) {
+            if (notes.isEmpty() || notes.get(0).getShape().isSmallHead()) {
                 it.remove();
             }
         }

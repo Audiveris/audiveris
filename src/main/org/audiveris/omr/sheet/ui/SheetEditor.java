@@ -48,7 +48,6 @@ import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Rhythm;
@@ -69,8 +68,8 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -1060,7 +1059,7 @@ public class SheetEditor
 
             Inter first = inters.get(0);
 
-            if (first instanceof InterEnsemble) {
+            if (!first.isEditable()) {
                 return null;
             }
 

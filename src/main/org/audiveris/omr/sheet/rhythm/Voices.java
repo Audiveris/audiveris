@@ -65,14 +65,12 @@ public abstract class Voices
 
     /** To sort voices by their ID. */
     public static final Comparator<Voice> byId = (Voice v1,
-                                                  Voice v2) -> Integer.compare(
-                                                          v1.getId(),
-                                                          v2.getId());
+            Voice v2) -> Integer.compare(
+            v1.getId(),
+            v2.getId());
 
     /** To sort voices by vertical position within their containing measure or stack. */
-    public static final Comparator<Voice> byOrdinate = (Voice v1,
-                                                        Voice v2) ->
-    {
+    public static final Comparator<Voice> byOrdinate = (Voice v1, Voice v2) -> {
         if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
             throw new IllegalArgumentException("Comparing voices in different stacks");
         }
@@ -127,24 +125,23 @@ public abstract class Voices
     /** Sequence of colors for voices. */
     private static final int alpha = 200;
 
-    private static final Color[] voiceColors = new Color[]
-    {
-            /** 1 Purple */
-            new Color(128, 64, 255, alpha),
-            /** 2 Green */
-            new Color(0, 255, 0, alpha),
-            /** 3 Brown */
-            new Color(165, 42, 42, alpha),
-            /** 4 Magenta */
-            new Color(255, 0, 255, alpha),
-            /** 5 Cyan */
-            new Color(0, 255, 255, alpha),
-            /** 6 Orange */
-            new Color(255, 200, 0, alpha),
-            /** 7 Pink */
-            new Color(255, 150, 150, alpha),
-            /** 8 BlueGreen */
-            new Color(0, 128, 128, alpha) };
+    private static final Color[] voiceColors = new Color[]{
+        /** 1 Purple */
+        new Color(128, 64, 255, alpha),
+        /** 2 Green */
+        new Color(0, 255, 0, alpha),
+        /** 3 Brown */
+        new Color(165, 42, 42, alpha),
+        /** 4 Magenta */
+        new Color(255, 0, 255, alpha),
+        /** 5 Cyan */
+        new Color(0, 255, 255, alpha),
+        /** 6 Orange */
+        new Color(255, 200, 0, alpha),
+        /** 7 Pink */
+        new Color(255, 150, 150, alpha),
+        /** 8 BlueGreen */
+        new Color(0, 128, 128, alpha)};
 
     //~ Constructors -------------------------------------------------------------------------------
     // Not meant to be instantiated.
@@ -380,6 +377,12 @@ public abstract class Voices
 
             for (MeasureStack stack : system.getStacks()) {
                 final Measure measure = stack.getMeasureAt(part);
+
+                // BINGO (make a refineMeasure???
+                measure.sortVoices();
+                measure.renameVoices();
+                measure.setCueVoices();
+
                 final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
 
                 for (Voice voice : measureVoices) {

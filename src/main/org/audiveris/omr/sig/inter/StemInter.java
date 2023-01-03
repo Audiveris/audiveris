@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
+import org.audiveris.omr.sig.relation.TremoloStemRelation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -78,6 +79,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>StemInter</code> represents Stem interpretations.
+ * <p>
+ * Main relations around a stem:
+ * <ul>
+ * <li>{@link BeamStemRelation}
+ * <li>{@link FlagStemRelation}
+ * <li>{@link TremoloStemRelation}
+ * <li>{@link HeadStemRelation}
+ * <li>{@link ChordStemRelation} for the containing chord (generally one)
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -150,7 +160,7 @@ public class StemInter
     /**
      * No-arg constructor meant for JAXB.
      */
-    private StemInter ()
+    protected StemInter ()
     {
         super(null, null, 0.0);
     }
@@ -262,6 +272,8 @@ public class StemInter
      * <p>
      * For this, we check what is found on each stem end (is it a tail: beam/flag or is it a head)
      * and use contextual grade to pick up the best reference.
+     * <p>
+     * Potential tremolos don't give orientation information, hence they are not checked.
      *
      * @return the stem direction
      */
@@ -274,43 +286,39 @@ public class StemInter
         sig.sortBySource(links);
 
         for (Relation rel : links) {
-            Inter source = sig.getEdgeSource(rel); // Source is a head, a beam or a flag
+            // Source is a head, a beam, a tremolo or a flag
+            final Inter source = sig.getEdgeSource(rel);
 
             // Retrieve the stem portion for this link
-            if (rel instanceof HeadStemRelation) {
+            if (rel instanceof HeadStemRelation link) {
                 // Head -> Stem
-                final HeadInter head = (HeadInter) source;
-                final Shape shape = head.getShape();
-                HeadStemRelation link = (HeadStemRelation) rel;
-                StemPortion portion = link.getStemPortion(source, stemLine, scale);
+                final Shape headShape = source.getShape();
+                final StemPortion portion = link.getStemPortion(source, stemLine, scale);
 
                 if (portion == STEM_BOTTOM) {
-                    if ((link.getHeadSide() == RIGHT) || shape.isPercussion()) {
+                    if ((link.getHeadSide() == RIGHT) || headShape.isPercussion()) {
                         return -1;
                     }
                 } else if (portion == STEM_TOP) {
-                    if ((link.getHeadSide() == LEFT) || shape.isPercussion()) {
+                    if ((link.getHeadSide() == LEFT) || headShape.isPercussion()) {
                         return 1;
                     }
                 }
-            } else if (rel instanceof BeamStemRelation) {
+            } else if (rel instanceof BeamStemRelation link) {
                 // Beam -> Stem
-                BeamStemRelation link = (BeamStemRelation) rel;
-                StemPortion portion = link.getStemPortion(source, stemLine, scale);
-
+                final StemPortion portion = link.getStemPortion(source, stemLine, scale);
                 return (portion == STEM_TOP) ? (-1) : 1;
-            } else {
+            } else if (rel instanceof FlagStemRelation link) {
                 // Flag -> Stem
-                FlagStemRelation link = (FlagStemRelation) rel;
-                StemPortion portion = link.getStemPortion(source, stemLine, scale);
+                final StemPortion portion = link.getStemPortion(source, stemLine, scale);
 
                 if (portion == STEM_TOP) {
                     return -1;
-                }
-
-                if (portion == STEM_BOTTOM) {
+                } else if (portion == STEM_BOTTOM) {
                     return 1;
                 }
+            } else {
+                // Perhaps a Tremolo -> Stem, to be ignored
             }
         }
 

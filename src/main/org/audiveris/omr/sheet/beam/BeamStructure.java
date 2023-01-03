@@ -59,6 +59,7 @@ import java.util.TreeMap;
 /**
  * Class <code>BeamStructure</code> handles one or several {@link BeamLine} instances,
  * all retrieved from a single glyph.
+ * <p>
  * This is a private working companion of {@link BeamsBuilder}.
  *
  * @author Hervé Bitteur
@@ -122,9 +123,12 @@ public class BeamStructure
     //-------------//
     /**
      * Adjust abscissa of horizontal sides.
-     * Do this only for limits touching left or right side of the glyph.
-     * In practice, if a limit is close to glyph side, it's a full beam, we extend it to glyph side.
-     * Otherwise, it's not a full beam so we leave this side as it is.
+     * <p>
+     * Do this only for limits touching left or right side of the glyph, because in practice:
+     * <ul>
+     * <li>If a limit is close to glyph side, it's a full beam, we extend it to glyph side.
+     * <li>Otherwise, it's not a full beam so we leave this side as it is.
+     * </ul>
      */
     public void adjustSides ()
     {

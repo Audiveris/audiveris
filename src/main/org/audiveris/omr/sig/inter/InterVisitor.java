@@ -86,6 +86,8 @@ public interface InterVisitor
 
     void visit (FretInter inter);
 
+    void visit (GraceChordInter inter);
+
     void visit (HeadChordInter inter);
 
     void visit (HeadInter inter);
@@ -146,6 +148,8 @@ public interface InterVisitor
     void visit (TimePairInter inter);
 
     void visit (TimeWholeInter inter);
+
+    void visit (TremoloInter inter);
 
     void visit (TupletInter inter);
 

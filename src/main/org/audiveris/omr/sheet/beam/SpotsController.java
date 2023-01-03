@@ -166,7 +166,7 @@ public class SpotsController
         @Override
         public void renderItems (Graphics2D g)
         {
-            // (Phase #2) Render sections (on top of rendered spots)
+            // (Phase #2) Render spots sections if any (on top of rendered spots)
             super.render(g);
 
             // (Phase #3) Render spots mean line

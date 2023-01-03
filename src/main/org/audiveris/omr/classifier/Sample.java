@@ -72,7 +72,7 @@ public class Sample
     //
     /** Assigned shape. */
     @XmlAttribute(name = "shape")
-    protected final Shape shape;
+    protected Shape shape;
 
     /** Scaling information. */
     @XmlAttribute(name = "interline")
@@ -225,6 +225,22 @@ public class Sample
     public Shape getShape ()
     {
         return shape;
+    }
+
+    /**
+     * WARNING: This method is reserved for administrative purpose only.
+     *
+     * @param shape new shape for the sample
+     * @return true if shape was actually renamed
+     */
+    public boolean renameShapeAs (Shape shape)
+    {
+        if (this.shape != shape) {
+            this.shape = shape;
+            return true;
+        }
+
+        return false;
     }
 
     @Override

@@ -63,17 +63,18 @@ import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.SystemMergeTask;
-import org.audiveris.omr.sig.ui.TieTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -181,21 +182,18 @@ public class RhythmsStep
         logger.debug("RHYTHMS impact {} {}", opKind, seq);
 
         final SIGraph sig = seq.getSig();
-        Page page = null;
 
         // First, determine what will be impacted
         final Impact impact = new Impact();
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
+            if (task instanceof InterTask interTask) {
                 Inter inter = interTask.getInter();
                 Class classe = inter.getClass();
 
                 if (isImpactedBy(classe, forPage)) {
                     // Reprocess the whole page
-                    impact.onPage = true;
-                    page = inter.getSig().getSystem().getPage();
+                    impact.add(inter.getSig().getSystem().getPage());
                 } else if (isImpactedBy(classe, forStack)) {
                     // Reprocess just the stack
                     Point center = inter.getCenter();
@@ -213,24 +211,21 @@ public class RhythmsStep
                         }
                     }
                 }
-            } else if (task instanceof StackTask) {
+            } else if (task instanceof StackTask stackTask) {
                 // Reprocess the stack
-                MeasureStack stack = ((StackTask) task).getStack();
+                MeasureStack stack = stackTask.getStack();
                 Class classe = stack.getClass();
 
                 if (isImpactedBy(classe, forStack)) {
                     impact.add(stack);
                 }
-            } else if (task instanceof PageTask) {
+            } else if (task instanceof PageTask pageTask) {
                 // Reprocess the page
-                impact.onPage = true;
-                page = ((PageTask) task).getPage();
-            } else if (task instanceof SystemMergeTask) {
+                impact.add(pageTask.getPage());
+            } else if (task instanceof SystemMergeTask systemMergeTask) {
                 // Reprocess the system page
-                impact.onPage = true;
-                page = ((SystemMergeTask) task).getSystem().getPage();
-            } else if (task instanceof RelationTask) {
-                RelationTask relationTask = (RelationTask) task;
+                impact.add(systemMergeTask.getSystem().getPage());
+            } else if (task instanceof RelationTask relationTask) {
                 Relation relation = relationTask.getRelation();
                 Class classe = relation.getClass();
 
@@ -242,17 +237,49 @@ public class RhythmsStep
             }
         }
 
-        if (page == null) {
-            page = sig.getSystem().getPage();
+        // Second, handle each rhythm impact
+        for (Page page : impact.onPages) {
+            new PageRhythm(page).process();
+        }
+
+        for (MeasureStack stack : impact.onStacks) {
+            new PageRhythm(stack.getSystem().getPage()).reprocessStack(stack);
+        }
+    }
+
+    //--------//
+    // impact //
+    //--------//
+    /**
+     * Reprocess rhythms for stacks impacted by the provided inters.
+     *
+     * @param inters the (removed) inters
+     */
+    public void impact (Collection<Inter> inters)
+    {
+        logger.debug("RHYTHMS impact inters: {}", Entities.ids(inters));
+
+        // First, determine what will be impacted
+        final Impact impact = new Impact();
+
+        for (Inter inter : inters) {
+            final Class classe = inter.getClass();
+            final SIGraph sig = inter.getSig();
+
+            if (isImpactedBy(classe, forStack)) {
+                // Reprocess just the stack
+                Point center = inter.getCenter();
+
+                if (center != null) {
+                    MeasureStack stack = sig.getSystem().getStackAt(center);
+                    impact.add(stack);
+                }
+            }
         }
 
         // Second, handle each rhythm impact
-        if (impact.onPage) {
-            new PageRhythm(page).process();
-        } else {
-            for (MeasureStack stack : impact.onStacks) {
-                new PageRhythm(page).reprocessStack(stack);
-            }
+        for (MeasureStack stack : impact.onStacks) {
+            new PageRhythm(stack.getSystem().getPage()).reprocessStack(stack);
         }
     }
 
@@ -272,19 +299,15 @@ public class RhythmsStep
     private static class Impact
     {
 
-        boolean onPage = false;
+        final Set<Page> onPages = new LinkedHashSet<>();
 
-        Set<MeasureStack> onStacks = new LinkedHashSet<>();
+        final Set<MeasureStack> onStacks = new LinkedHashSet<>();
 
-        @Override
-        public String toString ()
+        public void add (Page page)
         {
-            StringBuilder sb = new StringBuilder("RhythmsImpact{");
-            sb.append("page:").append(onPage);
-            sb.append(" stacks:").append(onStacks);
-            sb.append("}");
-
-            return sb.toString();
+            if (page != null) {
+                onPages.add(page);
+            }
         }
 
         public void add (MeasureStack stack)
@@ -292,6 +315,15 @@ public class RhythmsStep
             if (stack != null) {
                 onStacks.add(stack);
             }
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder("RhythmsImpact{")
+                    .append("pages:").append(onPages)
+                    .append(" stacks:").append(onStacks)
+                    .append("}").toString();
         }
     }
 }

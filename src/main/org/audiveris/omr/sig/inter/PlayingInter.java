@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    O r n a m e n t I n t e r                                   //
+//                                     P l a y i n g I n t e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -24,11 +24,12 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
+import org.audiveris.omr.sig.relation.HeadPlayingRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -44,56 +45,37 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>OrnamentInter</code> represents an ornament interpretation.
- * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED)
+ * Class <code>PlayingInter</code> represents a percussion playing sign.
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "ornament")
-public class OrnamentInter
+@XmlRootElement(name = "playing")
+public class PlayingInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlayingInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new OrnamentInter object.
+     * Creates a new <code>PlayingInter</code> object.
      *
      * @param glyph underlying glyph
-     * @param shape TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED
-     *              (or tremolos)
+     * @param shape PLAYING_OPEN, PLAYING_HALF_OPEN or PLAYING_CLOSED
      * @param grade evaluation value
      */
-    public OrnamentInter (Glyph glyph,
-                          Shape shape,
-                          Double grade)
+    public PlayingInter (Glyph glyph,
+                         Shape shape,
+                         Double grade)
     {
-        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
-    }
-
-    /**
-     * Creates a new OrnamentInter object.
-     *
-     * @param glyph  underlying glyph
-     * @param bounds object bounds
-     * @param shape  TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED
-     *               (or tremolos)
-     * @param grade  evaluation value
-     */
-    public OrnamentInter (Glyph glyph,
-                          Rectangle bounds,
-                          Shape shape,
-                          Double grade)
-    {
-        super(glyph, bounds, shape, grade);
+        super(glyph, null, shape, grade);
     }
 
     /**
      * No-arg constructor meant for JAXB.
      */
-    protected OrnamentInter ()
+    private PlayingInter ()
     {
     }
 
@@ -113,8 +95,8 @@ public class OrnamentInter
     @Override
     public boolean checkAbnormal ()
     {
-        // Check if a chord is connected
-        setAbnormal(!sig.hasRelation(this, ChordOrnamentRelation.class));
+        // Check if a drum head  (TBD: or chord?) is connected
+        setAbnormal(!sig.hasRelation(this, HeadPlayingRelation.class));
 
         return isAbnormal();
     }
@@ -126,10 +108,10 @@ public class OrnamentInter
     public Staff getStaff ()
     {
         if (staff == null) {
-            for (Relation rel : sig.getRelations(this, ChordOrnamentRelation.class)) {
-                HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(this, rel);
+            for (Relation rel : sig.getRelations(this, HeadPlayingRelation.class)) {
+                final HeadInter head = (HeadInter) sig.getOppositeInter(this, rel);
 
-                return staff = chord.getStaff();
+                return staff = head.getStaff();
             }
         }
 
@@ -142,8 +124,8 @@ public class OrnamentInter
     @Override
     public Voice getVoice ()
     {
-        for (Relation rel : sig.getRelations(this, ChordOrnamentRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
+        for (Relation rel : sig.getRelations(this, HeadPlayingRelation.class)) {
+            return sig.getOppositeInter(this, rel).getEnsemble().getVoice();
         }
 
         return null;
@@ -171,14 +153,14 @@ public class OrnamentInter
     public Collection<Link> searchUnlinks (SystemInfo system,
                                            Collection<Link> links)
     {
-        return searchObsoletelinks(links, ChordOrnamentRelation.class);
+        return searchObsoletelinks(links, HeadPlayingRelation.class);
     }
 
     //------------//
     // lookupLink //
     //------------//
     /**
-     * Try to detect a link between this ornament instance and a HeadChord nearby.
+     * Try to detect a link between this playing instance and a HeadChord nearby.
      *
      * @param systemHeadChords abscissa-ordered collection of head chords in system
      * @param profile          desired profile level
@@ -193,11 +175,11 @@ public class OrnamentInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(ChordOrnamentRelation.getXOutGapMaximum(profile));
-        final int maxDy = scale.toPixels(ChordOrnamentRelation.getYGapMaximum(profile));
-        final Rectangle ornamentBox = getBounds();
-        final Point ornamentCenter = getCenter();
-        final Rectangle luBox = new Rectangle(ornamentCenter);
+        final int maxDx = scale.toPixels(HeadPlayingRelation.getXOutGapMaximum(profile));
+        final int maxDy = scale.toPixels(HeadPlayingRelation.getYGapMaximum(profile));
+        final Rectangle playingBox = getBounds();
+        final Point playingCenter = getCenter();
+        final Rectangle luBox = new Rectangle(playingCenter);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> chords = Inters.intersectedInters(
@@ -209,38 +191,43 @@ public class OrnamentInter
             return null;
         }
 
-        ChordOrnamentRelation bestRel = null;
-        Inter bestChord = null;
+        HeadPlayingRelation bestRel = null;
+        HeadChordInter bestChord = null;
         double bestYGap = Double.MAX_VALUE;
 
         for (Inter chord : chords) {
             Rectangle chordBox = chord.getBounds();
 
-            // The ornament cannot intersect the chord
-            if (chordBox.intersects(ornamentBox)) {
+            // The playing sign cannot intersect the chord
+            if (chordBox.intersects(playingBox)) {
                 continue;
             }
 
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (ornamentCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
-            double xGap = Math.abs(center.x - ornamentCenter.x);
-            double yGap = Math.abs(yRef - ornamentCenter.y);
-            ChordOrnamentRelation rel = new ChordOrnamentRelation();
+            int yRef = (playingCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
+            double xGap = Math.abs(center.x - playingCenter.x);
+            double yGap = Math.abs(yRef - playingCenter.y);
+            HeadPlayingRelation rel = new HeadPlayingRelation();
             rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > yGap)) {
                     bestRel = rel;
-                    bestChord = chord;
+                    bestChord = (HeadChordInter) chord;
                     bestYGap = yGap;
                 }
             }
         }
 
         if (bestRel != null) {
-            return new Link(bestChord, bestRel, false);
+            // Choose preferred head in chord, according to vertical relative positions
+            final List<? extends Inter> notes = bestChord.getNotes(); // Always bottom up
+            final Inter bestHead = (playingCenter.y < GeoUtil.center(bestChord.getBounds()).y)
+                    ? notes.get(notes.size() - 1) : notes.get(0);
+
+            return new Link(bestHead, bestRel, false);
         }
 
         return null;
@@ -250,33 +237,33 @@ public class OrnamentInter
     // createValidAdded //
     //------------------//
     /**
-     * (Try to) create and add a valid OrnamentInter.
+     * (Try to) create and add a valid PlayingInter.
      *
      * @param glyph            underlying glyph
      * @param shape            detected shape
      * @param grade            assigned grade
      * @param system           containing system
      * @param systemHeadChords system head chords, ordered by abscissa
-     * @return the created ornament or null
+     * @return the created playing sign or null
      */
-    public static OrnamentInter createValidAdded (Glyph glyph,
-                                                  Shape shape,
-                                                  double grade,
-                                                  SystemInfo system,
-                                                  List<Inter> systemHeadChords)
+    public static PlayingInter createValidAdded (Glyph glyph,
+                                                 Shape shape,
+                                                 double grade,
+                                                 SystemInfo system,
+                                                 List<Inter> systemHeadChords)
     {
         if (glyph.isVip()) {
-            logger.info("VIP OrnamentInter create {} as {}", glyph, shape);
+            logger.info("VIP PlayingInter create {} as {}", glyph, shape);
         }
 
-        OrnamentInter orn = new OrnamentInter(glyph, shape, grade);
-        Link link = orn.lookupLink(systemHeadChords, system.getProfile());
+        PlayingInter playing = new PlayingInter(glyph, shape, grade);
+        Link link = playing.lookupLink(systemHeadChords, system.getProfile());
 
         if (link != null) {
-            system.getSig().addVertex(orn);
-            link.applyTo(orn);
+            system.getSig().addVertex(playing);
+            link.applyTo(playing);
 
-            return orn;
+            return playing;
         }
 
         return null;

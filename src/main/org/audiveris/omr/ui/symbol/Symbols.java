@@ -28,7 +28,9 @@ import static org.audiveris.omr.ui.symbol.OmrFont.TRANSFORM_SMALL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 
 /**
  * Class <code>Symbols</code> manages all {@link ShapeSymbol} instances for a given font family.
@@ -54,6 +56,8 @@ public abstract class Symbols
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
+
+    public static final CodeRange PRIVATE_USE_AREA = new CodeRange(0xE000, 0xF8FF);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
@@ -86,6 +90,20 @@ public abstract class Symbols
      * @return code point or null if not supported
      */
     protected abstract int[] getCode (Shape shape);
+
+    //---------------//
+    // getCodeRanges //
+    //---------------//
+    /**
+     * Report the ranges of usable codes in a given font family.
+     *
+     * @return a list of CodeRange instances
+     */
+    public List<CodeRange> getCodeRanges ()
+    {
+        // Just the typical Private Use Area
+        return Collections.singletonList(PRIVATE_USE_AREA);
+    }
 
     //-----------//
     // getSymbol //
@@ -242,19 +260,27 @@ public abstract class Symbols
 
         symbolMap.put(STEM, new StemSymbol(family()));
 
+        symbolMap.put(TREMOLO_1, new TremoloSymbol(TREMOLO_1, family()));
+        symbolMap.put(TREMOLO_2, new TremoloSymbol(TREMOLO_2, family()));
+        symbolMap.put(TREMOLO_3, new TremoloSymbol(TREMOLO_3, family()));
+
         // Small symbols
         mapSmall(NOTEHEAD_BLACK_SMALL, NOTEHEAD_BLACK);
         mapSmall(NOTEHEAD_VOID_SMALL, NOTEHEAD_VOID);
         mapSmall(WHOLE_NOTE_SMALL, WHOLE_NOTE);
         mapSmall(BREVE_SMALL, BREVE);
         mapSmall(SMALL_FLAG, FLAG_1);
+        mapSmall(SMALL_FLAG_DOWN, FLAG_1_DOWN);
 
         // Specific symbols
         symbolMap.put(BRACE, new BraceSymbol(family()));
         symbolMap.put(ENDING, new EndingSymbol(false, family()));
         symbolMap.put(ENDING_WRL, new EndingSymbol(true, family()));
 
-        symbolMap.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(family()));
+        symbolMap.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(SMALL_FLAG_SLASH, family()));
+        symbolMap.put(
+                SMALL_FLAG_SLASH_DOWN,
+                new SlashedFlagSymbol(SMALL_FLAG_SLASH_DOWN, family()));
 
         symbolMap.put(FLAT, new FlatSymbol(FLAT, family()));
         symbolMap.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, family()));
@@ -336,5 +362,34 @@ public abstract class Symbols
         mapNumDen(TIME_TWELVE_EIGHT, 12, 8);
         mapNumDen(TIME_TWO_FOUR, 2, 4);
         mapNumDen(TIME_TWO_TWO, 2, 2);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // CodeRange //
+    //-----------//
+    /**
+     * This class defines the range of usable codes for font symbols.
+     */
+    public static class CodeRange
+    {
+
+        final int start;
+
+        final int stop;
+
+        public CodeRange (int start,
+                          int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder().append('[').append(start).append("..").append(stop).append(
+                    ']').toString();
+        }
     }
 }

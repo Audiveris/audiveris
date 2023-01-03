@@ -35,8 +35,8 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
@@ -582,6 +582,14 @@ public interface Inter
      * @param extensive option to forward removal to containing ensemble if any
      */
     void remove (boolean extensive);
+
+    /**
+     * WARNING: This method is reserved for administrative purpose only.
+     *
+     * @param shape new shape for the inter
+     * @return true if shape was actually renamed
+     */
+    boolean renameShapeAs (Shape shape);
 
     /**
      * Look for potential partners around this inter instance.

@@ -60,6 +60,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -73,6 +74,7 @@ import org.audiveris.omr.sig.inter.MeasureNumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
@@ -84,6 +86,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
@@ -405,13 +408,15 @@ public class InterFactory
         case FLAG_3:
         case FLAG_4:
         case FLAG_5:
-        case FLAG_1_UP:
-        case FLAG_2_UP:
-        case FLAG_3_UP:
-        case FLAG_4_UP:
-        case FLAG_5_UP:
+        case FLAG_1_DOWN:
+        case FLAG_2_DOWN:
+        case FLAG_3_DOWN:
+        case FLAG_4_DOWN:
+        case FLAG_5_DOWN:
         case SMALL_FLAG:
+        case SMALL_FLAG_DOWN:
         case SMALL_FLAG_SLASH:
+        case SMALL_FLAG_SLASH_DOWN:
             return AbstractFlagInter.createValidAdded(glyph, shape, grade, system, systemStems); // Glyph is checked
 
         // Rests
@@ -497,9 +502,14 @@ public class InterFactory
         case DIMINUENDO:
             return new WedgeInter(glyph, shape, grade);
 
-        // Ornaments (TODO: Really handle GRACE_NOTE and GRACE_NOTE_SLASH)
-        case GRACE_NOTE_SLASH:
+        // Grace notes
         case GRACE_NOTE:
+        case GRACE_NOTE_DOWN:
+        case GRACE_NOTE_SLASH:
+        case GRACE_NOTE_SLASH_DOWN:
+            return GraceChordInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
+
+        // Ornaments
         case TR:
         case TURN:
         case TURN_INVERTED:
@@ -508,6 +518,17 @@ public class InterFactory
         case MORDENT:
         case MORDENT_INVERTED:
             return OrnamentInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
+
+        // Tremolos
+        case TREMOLO_1:
+        case TREMOLO_2:
+        case TREMOLO_3:
+            return switches.getValue(ProcessingSwitch.tremolos) ? TremoloInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemStems) : null;
 
         // Plucked techniques
         case ARPEGGIATO:
@@ -556,9 +577,21 @@ public class InterFactory
             return switches.getValue(ProcessingSwitch.frets) ? new FretInter(glyph, shape, grade)
                     : null;
 
+        // Playings
+        case PLAYING_OPEN:
+        case PLAYING_HALF_OPEN:
+        case PLAYING_CLOSED:
+            // Check potential link with proper drum note
+            return switches.getValue(ProcessingSwitch.drumNotation) ? PlayingInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords) : null;
+
         // Others
         default:
-            logger.debug("No support yet for {} glyph#{}", shape, glyph.getId());
+            logger.info("No support yet for {} glyph#{}", shape, glyph.getId());
 
             return null;
         }
@@ -589,9 +622,9 @@ public class InterFactory
         Collections.sort(
                 complexes,
                 (d1,
-                 d2) -> Integer.compare(
-                         d2.getSymbolString().length(),
-                         d1.getSymbolString().length()) // Sort by decreasing length
+                        d2) -> Integer.compare(
+                        d2.getSymbolString().length(),
+                        d1.getSymbolString().length()) // Sort by decreasing length
         );
 
         for (DynamicsInter complex : complexes) {
@@ -611,12 +644,10 @@ public class InterFactory
     private void handleTimes ()
     {
         // Retrieve all time inters (outside staff headers)
-        final List<Inter> systemTimes = sig.inters(
-                new Class[]
-                {
-                        TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-                        TimeCustomInter.class, // User modifiable combo 6/8
-                        TimeNumberInter.class }); // Partial symbol like 6 or 8
+        final List<Inter> systemTimes = sig.inters(new Class[]{
+            TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+            TimeCustomInter.class, // User modifiable combo 6/8
+            TimeNumberInter.class}); // Partial symbol like 6 or 8
 
         final List<Inter> headerTimes = new ArrayList<>();
 
@@ -637,7 +668,7 @@ public class InterFactory
         // Dispatch these time inters into their containing stack
         final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
                 (s1,
-                 s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
+                        s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
 
         for (Inter inter : systemTimes) {
             final MeasureStack stack = system.getStackAt(inter.getCenter());
@@ -663,9 +694,9 @@ public class InterFactory
             if (res != -1) {
                 final Collection<AbstractTimeInter> times = column.getTimeInters().values();
                 final Rectangle columnBox = Inters.getBounds(times);
-                final List<Inter> neighbors = sig.inters((inter)
-                        -> inter.getBounds().intersects(columnBox)
-                           && !(inter instanceof InterEnsemble));
+                final List<Inter> neighbors = sig.inters(
+                        (inter) -> inter.getBounds().intersects(columnBox)
+                                           && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 
@@ -955,15 +986,17 @@ public class InterFactory
         case FLAG_3:
         case FLAG_4:
         case FLAG_5:
-        case FLAG_1_UP:
-        case FLAG_2_UP:
-        case FLAG_3_UP:
-        case FLAG_4_UP:
-        case FLAG_5_UP:
+        case FLAG_1_DOWN:
+        case FLAG_2_DOWN:
+        case FLAG_3_DOWN:
+        case FLAG_4_DOWN:
+        case FLAG_5_DOWN:
             return new FlagInter(null, shape, GRADE);
 
         case SMALL_FLAG:
+        case SMALL_FLAG_DOWN:
         case SMALL_FLAG_SLASH:
+        case SMALL_FLAG_SLASH_DOWN:
             return new SmallFlagInter(null, shape, GRADE);
 
         // Rests
@@ -1038,9 +1071,14 @@ public class InterFactory
         case DIMINUENDO:
             return new WedgeInter(null, shape, GRADE); // ?
 
-        // Ornaments
-        case GRACE_NOTE_SLASH:
+        // Graces
         case GRACE_NOTE:
+        case GRACE_NOTE_DOWN:
+        case GRACE_NOTE_SLASH:
+        case GRACE_NOTE_SLASH_DOWN:
+            return new GraceChordInter(null, shape, GRADE);
+
+        // Ornaments
         case TR:
         case TURN:
         case TURN_INVERTED:
@@ -1049,6 +1087,12 @@ public class InterFactory
         case MORDENT:
         case MORDENT_INVERTED:
             return new OrnamentInter(null, shape, GRADE); // No visit
+
+        // Tremolos
+        case TREMOLO_1:
+        case TREMOLO_2:
+        case TREMOLO_3:
+            return new TremoloInter(shape, GRADE);
 
         // Plucked techniques
         case ARPEGGIATO:
@@ -1089,6 +1133,12 @@ public class InterFactory
         case ROMAN_XI:
         case ROMAN_XII:
             return new FretInter(null, shape, GRADE); // No visit
+
+        // Playings
+        case PLAYING_OPEN:
+        case PLAYING_HALF_OPEN:
+        case PLAYING_CLOSED:
+            return new PlayingInter(null, shape, GRADE);
 
         // Others
         default:

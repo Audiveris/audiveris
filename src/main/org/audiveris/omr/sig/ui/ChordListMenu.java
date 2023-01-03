@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.awt.Color;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -37,9 +36,9 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
@@ -55,6 +54,7 @@ import org.audiveris.omr.util.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -670,8 +670,7 @@ public class ChordListMenu
             return (AbstractChordInter) inter;
         }
 
-        if (inter instanceof AbstractNoteInter) {
-            AbstractNoteInter note = (AbstractNoteInter) inter;
+        if (inter instanceof AbstractNoteInter note) {
             AbstractChordInter chord = note.getChord();
 
             if ((chord != null) && !(chord instanceof SmallChordInter)) {

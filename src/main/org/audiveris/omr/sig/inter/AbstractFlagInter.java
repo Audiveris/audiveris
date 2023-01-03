@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
-import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
+import static org.audiveris.omr.glyph.ShapeSet.SmallFlagsUp;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -244,9 +244,9 @@ public abstract class AbstractFlagInter
         final Scale scale = system.getSheet().getScale();
         final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(profile));
 
-        // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
-        final boolean isFlagUp = FlagsUp.contains(shape);
-        final boolean isSmall = SmallFlags.contains(shape);
+        // Look for stems nearby, using the highest (for up) or lowest (for down) third of height
+        final boolean isFlagUp = FlagsUp.contains(shape) || SmallFlagsUp.contains(shape);
+        final boolean isSmall = shape.isSmallFlag();
         final int stemWidth = system.getSheet().getScale().getMaxStem();
         final Rectangle flagBox = getBounds();
         final int footHeight = (int) Math.rint(flagBox.height / 2.5);
@@ -254,10 +254,10 @@ public abstract class AbstractFlagInter
         // We need a flag ref point to compute x and y distances to stem
         final Point refPt = new Point(
                 flagBox.x,
-                isFlagUp ? ((flagBox.y + flagBox.height) - footHeight) : (flagBox.y + footHeight));
-        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY)
-                : (flagBox.y + maxStemFlagGapY);
-        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2)) : (refPt.y - (footHeight / 2));
+                isFlagUp ? (flagBox.y + footHeight) : ((flagBox.y + flagBox.height) - footHeight));
+        final int y = isFlagUp ? (flagBox.y + maxStemFlagGapY)
+                : ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY);
+        final int midFootY = isFlagUp ? (refPt.y - (footHeight / 2)) : (refPt.y + (footHeight / 2));
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
         final Rectangle luBox = new Rectangle(
@@ -302,26 +302,26 @@ public abstract class AbstractFlagInter
                         LineUtil.intersectionAtY(
                                 start,
                                 stop,
-                                isFlagUp ? ((flagBox.y + flagBox.height) - 1) : flagBox.y));
+                                isFlagUp ? flagBox.y : ((flagBox.y + flagBox.height) - 1)));
 
                 // Check consistency between flag direction and vertical position on stem
                 // As well as stem direction as indicated by heads on stem
                 double midStemY = (start.getY() + stop.getY()) / 2;
 
                 if (isFlagUp) {
-                    if (midFootY <= midStemY) {
-                        continue;
-                    }
-
-                    if (stem.computeDirection() == -1) {
-                        continue;
-                    }
-                } else {
                     if (midFootY >= midStemY) {
                         continue;
                     }
 
                     if (stem.computeDirection() == 1) {
+                        continue;
+                    }
+                } else {
+                    if (midFootY <= midStemY) {
+                        continue;
+                    }
+
+                    if (stem.computeDirection() == -1) {
                         continue;
                     }
                 }
@@ -356,7 +356,7 @@ public abstract class AbstractFlagInter
                                                       SystemInfo system,
                                                       List<Inter> systemStems)
     {
-        final AbstractFlagInter flag = SmallFlags.contains(shape)
+        final AbstractFlagInter flag = shape.isSmallFlag()
                 ? new SmallFlagInter(glyph, shape, grade)
                 : new FlagInter(glyph, shape, grade);
         final Link link = flag.lookupLink(systemStems, system.getProfile());
@@ -384,25 +384,27 @@ public abstract class AbstractFlagInter
     {
         switch (shape) {
         case FLAG_1:
-        case FLAG_1_UP:
+        case FLAG_1_DOWN:
         case SMALL_FLAG:
+        case SMALL_FLAG_DOWN:
         case SMALL_FLAG_SLASH:
+        case SMALL_FLAG_SLASH_DOWN:
             return 1;
 
         case FLAG_2:
-        case FLAG_2_UP:
+        case FLAG_2_DOWN:
             return 2;
 
         case FLAG_3:
-        case FLAG_3_UP:
+        case FLAG_3_DOWN:
             return 3;
 
         case FLAG_4:
-        case FLAG_4_UP:
+        case FLAG_4_DOWN:
             return 4;
 
         case FLAG_5:
-        case FLAG_5_UP:
+        case FLAG_5_DOWN:
             return 5;
         }
 

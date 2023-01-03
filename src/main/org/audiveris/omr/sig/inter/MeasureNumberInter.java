@@ -200,6 +200,10 @@ public class MeasureNumberInter
         }
 
         final Staff theStaff = system.getStaffAtOrBelow(center);
+        if (theStaff == null) {
+            return null;
+        }
+
         final double pitch = theStaff.pitchPositionOf(center);
         if (Math.abs(pitch) > constants.maxAbsolutePitch.getValue()) {
             return null;

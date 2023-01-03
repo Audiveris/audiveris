@@ -310,7 +310,7 @@ public class ChordsBuilder
                 chord.addMember(head);
             } else {
                 // Create a brand-new stem-based chord
-                boolean isSmall = head.getShape().isSmall();
+                boolean isSmall = head.getShape().isSmallHead();
                 chord = isSmall ? new SmallChordInter(null) : new HeadChordInter(null);
                 sig.addVertex(chord);
                 chord.setStem(stem);

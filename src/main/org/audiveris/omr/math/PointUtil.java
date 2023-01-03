@@ -39,10 +39,12 @@ public abstract class PointUtil
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare points on abscissa. */
-    public static final Comparator<Point> byAbscissa = (p1, p2) -> Integer.compare(p1.x, p2.x);
+    public static final Comparator<Point> byAbscissa = (p1,
+                                                        p2) -> Integer.compare(p1.x, p2.x);
 
     /** To compare points on ordinate. */
-    public static final Comparator<Point> byOrdinate = (p1, p2) -> Integer.compare(p1.y, p2.y);
+    public static final Comparator<Point> byOrdinate = (p1,
+                                                        p2) -> Integer.compare(p1.y, p2.y);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -254,7 +256,7 @@ public abstract class PointUtil
     // subtraction //
     //-------------//
     /**
-     * Report the vector which represent p2 - p1.
+     * Report the vector from p2 to p1 (that is p1 - p2).
      *
      * @param p1 a vector
      * @param p2 another vector
@@ -270,7 +272,7 @@ public abstract class PointUtil
     // subtraction //
     //-------------//
     /**
-     * Report the vector which represent p2 - p1.
+     * Report the vector from p2 to p1 (that is p1 - p2).
      *
      * @param p1 a vector
      * @param p2 another vector
@@ -335,5 +337,39 @@ public abstract class PointUtil
         }
 
         return String.format("[%d,%df]", p.x, p.y);
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Translate the provided Point2D along the (dx, dy) vector.
+     *
+     * @param point the point to translate
+     * @param dx    translation in abscissa
+     * @param dy    translation in ordinate
+     */
+    public static void translate (Point2D point,
+                                  double dx,
+                                  double dy)
+    {
+        point.setLocation(point.getX() + dx, point.getY() + dy);
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Translate the provided Point along the (dx, dy) vector.
+     *
+     * @param point the point to translate
+     * @param dx    translation in abscissa
+     * @param dy    translation in ordinate
+     */
+    public static void translate (Point point,
+                                  int dx,
+                                  int dy)
+    {
+        point.setLocation(point.x + dx, point.y + dy);
     }
 }

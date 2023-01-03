@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.ui.symbol.Symbols.CodeRange;
+
 import org.junit.Test;
 
 import com.itextpdf.awt.PdfGraphics2D;
@@ -36,12 +38,10 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Class <code>MusicFontTest</code> generates a PDF file with all symbols
- * from current MusicFont.
+ * Class <code>MusicFontTest</code> generates a PDF file for each known font family,
+ * with all non-degenerated symbols from each font.
  *
  * @author Hervé Bitteur
  */
@@ -71,10 +71,6 @@ public class MusicFontTest
     public void textPrintout ()
             throws Exception
     {
-        final List<Range> codes = new ArrayList<>();
-        codes.add(new Range(0xE000, 0xF8FF)); // Private Use Area
-        ///codes.add(new Range(0, 0x10FFFF)); // All valid codes? Nearly unusable.
-
         File dir = new File("data/temp");
         dir.mkdirs();
 
@@ -98,7 +94,7 @@ public class MusicFontTest
                 String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
                 int n = -1;
 
-                for (Range range : codes) {
+                for (CodeRange range : family.getSymbols().getCodeRanges()) {
                     for (int i = range.start; i <= range.stop; i++) {
                         TextLayout layout = musicFont.layout(MusicFont.getString(i));
                         Rectangle2D r = layout.getBounds();
@@ -174,28 +170,6 @@ public class MusicFontTest
                 g.dispose();
                 document.close();
             }
-        }
-    }
-
-    private static class Range
-    {
-
-        final int start;
-
-        final int stop;
-
-        public Range (int start,
-                      int stop)
-        {
-            this.start = start;
-            this.stop = stop;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return new StringBuilder().append('[').append(start).append("..").append(stop).append(
-                    ']').toString();
         }
     }
 }

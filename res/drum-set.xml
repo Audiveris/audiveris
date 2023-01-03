@@ -7,87 +7,131 @@
 
 <!--
     This file, located in Audiveris 'res' folder, defines drum default mapping.
-    The end-user can override entries of this mapping by writing another drum-set.xml file in
-    Audiveris user 'config' folder.
+    The end-user can override part or whole of this mapping by writing a specific drum-set.xml file
+    located in Audiveris user 'config' folder.
 
-    Such file defines Audiveris entries for general midi percussion keys:
-    All fields are mandatory
-        - id:               assigned MIDI key
-   
-        - name:             name of drum sound
-   
-        - motif:            motif of head shape, regardless of its duration
-                            (oval, cross, diamond, triangle, circle)
-                            null if unknown / ignored
+    Such file defines Audiveris entries for general midi percussion keys.
+    It is written as a list of entries for a sound map organized as:
+    key:    a tuple (pitch-position, motif, [sign])
+    value:  the corresponding sound value
                        
-        - pitch-position:   head position relative to staff line/space
-                            (0 for middle line, positive downwards)
-                            null if unknown / ignored
+    - pitch-position:   (Mandatory)
+                        head position relative to staff line/space
+                        (0 for middle line, positive downwards)
 
-    See https://computermusicresource.com/GM.Percussion.KeyMap.html for a complete mapping 
-    of id vs name.
+    - motif:            (Mandatory)
+                        motif of head shape, regardless of its duration
+                        (oval, small, cross, diamond, triangle, circle)
 
+    - sign:             (Optional, default value is null)
+                        percussion playing technique
+                        (PLAYING_OPEN, PLAYING_HALF_OPEN, PLAYING_CLOSED)
+
+    - sound:            (Mandatory)
+                        name of drum sound
+                        The name must contain no space, no dash, just underscores.
+                        A null sound value removes the entry at (pitch-position,motif,sign) tuple
+                        For a comprehensive list on sound names, please refer to
+                        https://computermusicresource.com/GM.Percussion.KeyMap.html 
+                  
     -->
 
 <drum-set>
-
-    <instrument id="35" name="Acoustic Bass Drum" motif="oval"      pitch-position="3"/>
-    <instrument id="36" name="Bass Drum 1"        motif="oval"      pitch-position="3"/>
-    <instrument id="37" name="Side Stick"         motif="cross"     pitch-position="-1"/>
-    <instrument id="38" name="Acoustic Snare"     motif="oval"      pitch-position="-1"/>
     
-    <!-- not yet assigned -->
-    <instrument id="39" name="Hand Clap"          motif="null"      pitch-position="null"/>
+    <!-- -8 -->
+    <entry pitch-position="-8" motif="cross"   sound="Splash_Cymbal"/>
+    <entry pitch-position="-8" motif="circle"  sound="Chinese_Cymbal"/>
     
-    <instrument id="40" name="Electric Snare"     motif="oval"      pitch-position="-1"/>
-    <instrument id="41" name="Low Floor Tom"      motif="oval"      pitch-position="1"/>
-    <instrument id="42" name="Closed Hi-Hat"      motif="cross"     pitch-position="-5"/>
-    <instrument id="43" name="High Floor Tom"     motif="oval"      pitch-position="1"/>
-    <instrument id="44" name="Pedal Hi-Hat"       motif="cross"     pitch-position="5"/>
-    <instrument id="45" name="Low Tom"            motif="oval"      pitch-position="-2"/>
-    <instrument id="46" name="Open Hi-Hat"        motif="cross"     pitch-position="-3"/>
-    <instrument id="47" name="Low-Mid Tom"        motif="oval"      pitch-position="-3"/>
-    <instrument id="48" name="Hi-Mid Tom"         motif="oval"      pitch-position="-4"/>
-    <instrument id="49" name="Crash Cymbal 1"     motif="cross"     pitch-position="-6"/>
-    <instrument id="50" name="High Tom"           motif="oval"      pitch-position="-4"/>
-    <instrument id="51" name="Ride Cymbal 1"      motif="cross"     pitch-position="-4"/>
-    <instrument id="52" name="Chinese Cymbal"     motif="cross"     pitch-position="-7"/>
-    <instrument id="53" name="Ride Bell"          motif="diamond"   pitch-position="-4"/>
-    <instrument id="54" name="Tambourine"         motif="diamond"   pitch-position="-2"/>
-    <instrument id="55" name="Splash Cymbal"      motif="cross"     pitch-position="-7"/>
-    <instrument id="56" name="Cowbell"            motif="triangle"  pitch-position="-3"/>
-    <instrument id="57" name="Crash Cymbal 2"     motif="cross"     pitch-position="-7"/>
-
-    <!-- not yet assigned -->
-    <instrument id="58" name="Vibraslap"          motif="null"      pitch-position="null"/>
+    <!-- -7 -->
+    <entry pitch-position="-7" motif="cross"   sound="Crash_Cymbal_2"/>
+    <entry pitch-position="-7" motif="circle"  sound="Crash_Cymbal_2"/>
     
-    <instrument id="59" name="Ride Cymbal 2"      motif="cross"     pitch-position="-2"/>
-
-    <!-- not yet assigned -->
-    <instrument id="60" name="Hi Bongo"           motif="null"      pitch-position="null"/>
-    <instrument id="61" name="Low Bongo"          motif="null"      pitch-position="null"/>
-    <instrument id="62" name="Mute Hi Conga"      motif="null"      pitch-position="null"/>
+    <!-- -6 -->
+    <entry pitch-position="-6" motif="cross"   sound="Crash_Cymbal_1"/>
+    <entry pitch-position="-6" motif="circle"  sound="Crash_Cymbal_1"/>
+    <entry pitch-position="-6" motif="diamond" sound="Crash_Cymbal_1"/>
     
-    <instrument id="63" name="Open Hi Conga"      motif="cross"     pitch-position="4"/>
-    <instrument id="64" name="Low Conga"          motif="cross"     pitch-position="2"/>
+    <!-- -5 -->
+    <entry pitch-position="-5" motif="cross"    sign="PLAYING_OPEN"   sound="Open_Hi_Hat"/>
+    <entry pitch-position="-5" motif="cross"    sign="PLAYING_CLOSED" sound="Closed_Hi_Hat"/>   
+    <entry pitch-position="-5" motif="circle"   sound="Open_Hi_Hat"/>
     
-    <!-- not yet assigned -->
-    <instrument id="65" name="High Timbale"       motif="null"      pitch-position="null"/>
-    <instrument id="66" name="Low Timbale"        motif="null"      pitch-position="null"/>
-    <instrument id="67" name="High Agogo"         motif="null"      pitch-position="null"/>
-    <instrument id="68" name="Low Agogo"          motif="null"      pitch-position="null"/>
-    <instrument id="69" name="Cabasa"             motif="null"      pitch-position="null"/>
-    <instrument id="70" name="Maracas"            motif="null"      pitch-position="null"/>
-    <instrument id="71" name="Short Whistle"      motif="null"      pitch-position="null"/>
-    <instrument id="72" name="Long Whistle"       motif="null"      pitch-position="null"/>
-    <instrument id="73" name="Short Guiro"        motif="null"      pitch-position="null"/>
-    <instrument id="74" name="Long Guiro"         motif="null"      pitch-position="null"/>
-    <instrument id="75" name="Claves"             motif="null"      pitch-position="null"/>
-    <instrument id="76" name="Hi Wood Block"      motif="null"      pitch-position="null"/>
-    <instrument id="77" name="Low Wood Block"     motif="null"      pitch-position="null"/>
-    <instrument id="78" name="Mute Cuica"         motif="null"      pitch-position="null"/>
-    <instrument id="79" name="Open Cuica"         motif="null"      pitch-position="null"/>
-    <instrument id="80" name="Mute Triangle"      motif="null"      pitch-position="null"/>
-    <instrument id="81" name="Open Triangle"      motif="null"      pitch-position="null"/>
-
+    <!-- -4 -->
+    <entry pitch-position="-4" motif="oval"     sound="High_Tom"/>
+    <entry pitch-position="-4" motif="oval"     sound="Hand_Clap"/> <!-- Conflict -->
+    <entry pitch-position="-4" motif="cross"    sound="Ride_Cymbal_1"/>
+    <entry pitch-position="-4" motif="circle"   sound="Ride_Cymbal_1"/>
+    <entry pitch-position="-4" motif="circle"   sound="Vibraslap"/>  <!-- Conflict -->
+    <entry pitch-position="-4" motif="diamond"  sound="Ride_Bell"/> <!-- Or Ride_Cymbal_1 or 2 -->
+    
+    <!-- -3 -->
+    <entry pitch-position="-3" motif="oval"     sound="Hi_Mid_Tom"/>
+    <entry pitch-position="-3" motif="cross"    sound="Open_Hi_Hat"/>
+    <entry pitch-position="-3" motif="circle"   sound="Open_Hi_Hat"/>
+    <entry pitch-position="-3" motif="triangle" sound="Cowbell"/>
+    
+    <!-- -2 -->
+    <entry pitch-position="-2" motif="oval"     sound="Low_Mid_Tom"/>
+    <entry pitch-position="-2" motif="triangle" sound="Cowbell"/>
+    <entry pitch-position="-2" motif="diamond"  sound="Tambourine"/>
+    <entry pitch-position="-2" motif="cross"    sound="Ride_Cymbal_2"/>
+    <entry pitch-position="-2" motif="circle"   sound="Ride_Cymbal_2"/>
+    
+    <!-- -1 -->
+    <entry pitch-position="-1" motif="oval"     sound="Acoustic_Snare"/>
+    <entry pitch-position="-1" motif="small"    sound="Acoustic_Snare"/>
+    <entry pitch-position="-1" motif="oval"     sound="Electric_Snare"/> <!-- Conflict -->
+    <entry pitch-position="-1" motif="cross"    sound="Side_Stick"/>
+    <entry pitch-position="-1" motif="circle"   sound="Side_Stick"/>
+    
+    <!-- 0 -->
+    <entry pitch-position="0" motif="oval"      sound="Low_Tom"/>
+    
+    <!-- 1 -->
+    <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/> <!-- Conflict -->
+    
+    <!-- 2 -->
+    <entry pitch-position="1" motif="oval"      sound="Low_Floor_Tom"/>
+    <entry pitch-position="2" motif="cross"     sound="Low_Conga"/>
+    <entry pitch-position="2" motif="circle"    sound="Low_Conga"/>
+    
+    <!-- 3 -->
+    <entry pitch-position="3" motif="oval"      sound="Bass_Drum_1"/>     
+    
+    <!-- 4 -->
+    <entry pitch-position="4" motif="oval"      sound="Acoustic_Bass_Drum"/>
+    <entry pitch-position="4" motif="cross"     sound="Open_Hi_Conga"/>
+    <entry pitch-position="4" motif="circle"    sound="Open_Hi_Conga"/>
+    
+    <!-- 5 -->
+    <!-- w/ open sign -> foot splash -->
+    <entry pitch-position="5" motif="cross"     sound="Pedal_Hi_Hat"/>
+    <entry pitch-position="5" motif="circle"    sound="Open_Hi_Hat"/>
+    
+<!--
+    Here below is the list of not yet assigned sounds
+    To actually assign one sound, replace the "null" values by actual pitch-position and motif
+    -->
+    <entry pitch-position="null" motif="null" sound="Hand_Clap"/>
+    <entry pitch-position="null" motif="null" sound="Hi_Bongo"/>
+    <entry pitch-position="null" motif="null" sound="Low_Bongo"/>
+    <entry pitch-position="null" motif="null" sound="Mute_Hi_Conga"/>
+    <entry pitch-position="null" motif="null" sound="High_Timbale"/>
+    <entry pitch-position="null" motif="null" sound="Low_Timbale"/>
+    <entry pitch-position="null" motif="null" sound="High_Agogo"/>
+    <entry pitch-position="null" motif="null" sound="Low_Agogo"/>
+    <entry pitch-position="null" motif="null" sound="Cabasa"/>
+    <entry pitch-position="null" motif="null" sound="Maracas"/>
+    <entry pitch-position="null" motif="null" sound="Short_Whistle"/>
+    <entry pitch-position="null" motif="null" sound="Long_Whistle"/>
+    <entry pitch-position="null" motif="null" sound="Short_Guiro"/>
+    <entry pitch-position="null" motif="null" sound="Long_Guiro"/>
+    <entry pitch-position="null" motif="null" sound="Claves"/>
+    <entry pitch-position="null" motif="null" sound="Hi_Wood_Block"/>
+    <entry pitch-position="null" motif="null" sound="Low_Wood_Block"/>
+    <entry pitch-position="null" motif="null" sound="Mute_Cuica"/>
+    <entry pitch-position="null" motif="null" sound="Open_Cuica"/>
+    <entry pitch-position="null" motif="null" sound="Mute_Triangle"/>
+    <entry pitch-position="null" motif="null" sound="Open_Triangle"/>
+    
 </drum-set>

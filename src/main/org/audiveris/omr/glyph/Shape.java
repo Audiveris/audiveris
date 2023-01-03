@@ -185,22 +185,32 @@ public enum Shape
     //
     // Flags ---
     //
-    FLAG_1("Single flag down"),
-    FLAG_1_UP("Single flag up"),
-    FLAG_2("Double flag down"),
-    FLAG_2_UP("Double flag up"),
-    FLAG_3("Triple flag down"),
-    FLAG_3_UP("Triple flag up"),
-    FLAG_4("Quadruple flag down"),
-    FLAG_4_UP("Quadruple flag up"),
-    FLAG_5("Quintuple flag down"),
-    FLAG_5_UP("Quintuple flag up"),
+    FLAG_1("Single flag"),
+    FLAG_1_DOWN("Single flag down"),
+    FLAG_2("Double flag"),
+    FLAG_2_DOWN("Double flag down"),
+    FLAG_3("Triple flag"),
+    FLAG_3_DOWN("Triple flag down"),
+    FLAG_4("Quadruple flag"),
+    FLAG_4_DOWN("Quadruple flag down"),
+    FLAG_5("Quintuple flag"),
+    FLAG_5_DOWN("Quintuple flag down"),
 
     //
     // Small Flags
     //
     SMALL_FLAG("Flag for grace note"),
+    SMALL_FLAG_DOWN("Flag for grace note down"),
     SMALL_FLAG_SLASH("Slashed flag for grace note"),
+    SMALL_FLAG_SLASH_DOWN("Slashed flag for grace note down"),
+
+    //
+    // Grace notes ---
+    //
+    GRACE_NOTE("Grace Note with no slash"),
+    GRACE_NOTE_DOWN("Grace Note down with no slash"),
+    GRACE_NOTE_SLASH("Grace Note with a Slash"),
+    GRACE_NOTE_SLASH_DOWN("Grace Note down with a Slash"),
 
     //
     // Articulations ---
@@ -292,6 +302,20 @@ public enum Shape
     PLUCK_I("Plucking index/indicio/index"),
     PLUCK_M("Plucking majeur/medio/middle"),
     PLUCK_A("Plucking annulaire/anular/ring"),
+
+    //
+    // Percussion playing technique ---
+    //
+    PLAYING_OPEN("Pict open: o"),
+    PLAYING_HALF_OPEN("Pict half-open: ø"),
+    PLAYING_CLOSED("Pict closed: +"),
+
+    //
+    // Tremolos
+    //
+    TREMOLO_1("Single tremolo"),
+    TREMOLO_2("Double tremolo"),
+    TREMOLO_3("Triple tremolo"),
 
     //
     // Miscellaneous ---
@@ -443,12 +467,6 @@ public enum Shape
     VERTICAL_SERIF("Vertical serif"),
 
     //
-    // Ornaments ---
-    //
-    GRACE_NOTE_SLASH("Grace Note with a Slash"),
-    GRACE_NOTE("Grace Note with no slash"),
-
-    //
     // Full fermatas ---
     //
     FERMATA("Fermata with dot"),
@@ -465,7 +483,16 @@ public enum Shape
     MEASURE_NUMBER("Measure number in a multiple rest"),
     BRACKET_UPPER_SERIF("Top serif of a bracket"),
     BRACKET_LOWER_SERIF("Bottom serif of a bracket"),
-    STAFF_LINES("5-line staff");
+    STAFF_LINES("5-line staff"),
+
+    //
+    // Obsolete, kept for backward compatibility ---
+    //
+    FLAG_1_UP("OBSOLETE Single flag up"),
+    FLAG_2_UP("OBSOLETE Double flag up"),
+    FLAG_3_UP("OBSOLETE Triple flag up"),
+    FLAG_4_UP("OBSOLETE Quadruple flag up"),
+    FLAG_5_UP("OBSOLETE Quintuple flag up");
 
     // =============================================================================================
     // This is the end of shape enumeration
@@ -544,6 +571,19 @@ public enum Shape
                 name() + ".color", // Name
                 Constant.Color.encodeColor((color != null) ? color : Color.BLACK),
                 "Color for shape " + name());
+    }
+
+    //---------//
+    // isGrace //
+    //---------//
+    /**
+     * Check whether the shape is a grace
+     *
+     * @return true if grace
+     */
+    public boolean isGrace ()
+    {
+        return ShapeSet.Graces.contains(this);
     }
 
     //--------//
@@ -626,15 +666,28 @@ public enum Shape
         return (this == FLAT) || ShapeSet.FlatKeys.contains(this);
     }
 
-    //---------//
-    // isSmall //
-    //---------//
+    //-------------//
+    // isSmallFlag //
+    //-------------//
+    /**
+     * Check whether the shape is a small flag, meant for cue or grace.
+     *
+     * @return true if small flag
+     */
+    public boolean isSmallFlag ()
+    {
+        return ShapeSet.SmallFlagsUp.contains(this) || ShapeSet.SmallFlagsDown.contains(this);
+    }
+
+    //-------------//
+    // isSmallHead //
+    //-------------//
     /**
      * Check whether the shape is a small note head, meant for cue or grace.
      *
      * @return true if small (black/void/whole/breve)
      */
-    public boolean isSmall ()
+    public boolean isSmallHead ()
     {
         return ShapeSet.HeadsOvalSmall.contains(this);
     }

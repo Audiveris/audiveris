@@ -210,15 +210,15 @@ public abstract class OmrShapeMapping
         map.put(Shape.ONE_64TH_REST, OmrShape.rest64th);
         map.put(Shape.ONE_128TH_REST, OmrShape.rest128th);
         map.put(Shape.FLAG_1, OmrShape.flag8thUp);
-        map.put(Shape.FLAG_1_UP, OmrShape.flag8thDown);
         map.put(Shape.FLAG_2, OmrShape.flag16thUp);
-        map.put(Shape.FLAG_2_UP, OmrShape.flag16thDown);
         map.put(Shape.FLAG_3, OmrShape.flag32ndUp);
-        map.put(Shape.FLAG_3_UP, OmrShape.flag32ndDown);
         map.put(Shape.FLAG_4, OmrShape.flag64thUp);
-        map.put(Shape.FLAG_4_UP, OmrShape.flag64thDown);
         map.put(Shape.FLAG_5, OmrShape.flag128thUp);
-        map.put(Shape.FLAG_5_UP, OmrShape.flag128thDown);
+        map.put(Shape.FLAG_1_DOWN, OmrShape.flag8thDown);
+        map.put(Shape.FLAG_2_DOWN, OmrShape.flag16thDown);
+        map.put(Shape.FLAG_3_DOWN, OmrShape.flag32ndDown);
+        map.put(Shape.FLAG_4_DOWN, OmrShape.flag64thDown);
+        map.put(Shape.FLAG_5_DOWN, OmrShape.flag128thDown);
         map.put(Shape.SMALL_FLAG, OmrShape.flag8thUpSmall);
         //        map.put(Shape.FLAG_SLASH_SMALL, OmrShape.none);
         map.put(Shape.BREVE, OmrShape.noteheadDoubleWhole);
@@ -325,8 +325,10 @@ public abstract class OmrShapeMapping
         map.put(Shape.STEM, OmrShape.stem);
         //        map.put(Shape.KEY_FLAT_1, OmrShape.keyFlat);
         //        map.put(Shape.KEY_SHARP_1, OmrShape.keySharp);
-        map.put(Shape.GRACE_NOTE_SLASH, OmrShape.graceNoteAcciaccaturaStemUp);
         map.put(Shape.GRACE_NOTE, OmrShape.graceNoteAppoggiaturaStemUp);
+        map.put(Shape.GRACE_NOTE_DOWN, OmrShape.graceNoteAppoggiaturaStemDown);
+        map.put(Shape.GRACE_NOTE_SLASH, OmrShape.graceNoteAcciaccaturaStemUp);
+        map.put(Shape.GRACE_NOTE_SLASH_DOWN, OmrShape.graceNoteAcciaccaturaStemDown);
         map.put(Shape.FERMATA, OmrShape.fermataAbove);
         map.put(Shape.FERMATA_BELOW, OmrShape.fermataBelow);
 

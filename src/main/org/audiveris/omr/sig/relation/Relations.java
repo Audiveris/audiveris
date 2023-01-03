@@ -38,6 +38,7 @@ import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -45,6 +46,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -53,6 +55,7 @@ import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 
@@ -316,12 +319,14 @@ public abstract class Relations
 
         map(HeadChordInter.class, ChordArpeggiatoRelation.class, ArpeggiatoInter.class);
         map(HeadChordInter.class, ChordArticulationRelation.class, ArticulationInter.class);
+        map(HeadChordInter.class, ChordGraceRelation.class, GraceChordInter.class);
         map(HeadChordInter.class, ChordNameRelation.class, ChordNameInter.class);
         map(HeadChordInter.class, ChordOrnamentRelation.class, OrnamentInter.class);
         map(HeadChordInter.class, ChordSentenceRelation.class, SentenceInter.class);
         map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
         map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);
 
+        map(HeadInter.class, HeadPlayingRelation.class, PlayingInter.class);
         map(HeadInter.class, HeadStemRelation.class, StemInter.class);
 
         map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class); // Old
@@ -333,6 +338,7 @@ public abstract class Relations
         map(SlurInter.class, SlurHeadRelation.class, HeadInter.class);
 
         map(TimeNumberInter.class, TimeTopBottomRelation.class, TimeNumberInter.class);
+        map(TremoloInter.class, TremoloStemRelation.class, StemInter.class);
     }
 
     private static Set<Class<? extends Relation>> getSet (

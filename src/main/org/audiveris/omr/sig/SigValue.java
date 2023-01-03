@@ -50,6 +50,9 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenHeadInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenStemInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -64,6 +67,7 @@ import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -81,6 +85,7 @@ import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -96,6 +101,7 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
+import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
@@ -115,6 +121,7 @@ import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
+import org.audiveris.omr.sig.relation.HeadPlayingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
@@ -134,6 +141,7 @@ import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
+import org.audiveris.omr.sig.relation.TremoloStemRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,8 +208,11 @@ public class SigValue
         @XmlElementRef(type = FingeringInter.class),
         @XmlElementRef(type = FlagInter.class),
         @XmlElementRef(type = FretInter.class),
+        @XmlElementRef(type = GraceChordInter.class),
         @XmlElementRef(type = HeadChordInter.class),
         @XmlElementRef(type = HeadInter.class),
+        @XmlElementRef(type = HiddenHeadInter.class),
+        @XmlElementRef(type = HiddenStemInter.class),
         @XmlElementRef(type = KeyAlterInter.class),
         @XmlElementRef(type = KeyInter.class),
         @XmlElementRef(type = LedgerInter.class),
@@ -213,6 +224,7 @@ public class SigValue
         @XmlElementRef(type = OctaveShiftInter.class),
         @XmlElementRef(type = OrnamentInter.class),
         @XmlElementRef(type = PedalInter.class),
+        @XmlElementRef(type = PlayingInter.class),
         @XmlElementRef(type = PluckingInter.class),
         @XmlElementRef(type = RepeatDotInter.class),
         @XmlElementRef(type = RestChordInter.class),
@@ -230,6 +242,7 @@ public class SigValue
         @XmlElementRef(type = TimeNumberInter.class),
         @XmlElementRef(type = TimePairInter.class),
         @XmlElementRef(type = TimeWholeInter.class),
+        @XmlElementRef(type = TremoloInter.class),
         @XmlElementRef(type = TupletInter.class),
         @XmlElementRef(type = VerticalSerifInter.class),
         @XmlElementRef(type = WedgeInter.class),
@@ -383,6 +396,7 @@ public class SigValue
             @XmlElementRef(type = ChordArpeggiatoRelation.class),
             @XmlElementRef(type = ChordArticulationRelation.class),
             @XmlElementRef(type = ChordDynamicsRelation.class),
+            @XmlElementRef(type = ChordGraceRelation.class),
             @XmlElementRef(type = ChordNameRelation.class),
             @XmlElementRef(type = ChordOrnamentRelation.class),
             @XmlElementRef(type = ChordPedalRelation.class),
@@ -402,6 +416,7 @@ public class SigValue
             @XmlElementRef(type = FermataChordRelation.class),
             @XmlElementRef(type = FlagStemRelation.class),
             @XmlElementRef(type = HeadHeadRelation.class),
+            @XmlElementRef(type = HeadPlayingRelation.class),
             @XmlElementRef(type = HeadStemRelation.class),
             @XmlElementRef(type = KeyAltersRelation.class),
             @XmlElementRef(type = MarkerBarRelation.class),
@@ -419,7 +434,8 @@ public class SigValue
             @XmlElementRef(type = SeparateVoiceRelation.class),
             @XmlElementRef(type = SlurHeadRelation.class),
             @XmlElementRef(type = StemAlignmentRelation.class),
-            @XmlElementRef(type = TimeTopBottomRelation.class)})
+            @XmlElementRef(type = TimeTopBottomRelation.class),
+            @XmlElementRef(type = TremoloStemRelation.class)})
         public Relation relation;
 
         /**

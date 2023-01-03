@@ -21,11 +21,18 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.Shape;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>SmallChordInter</code> is a chord composed of small heads,
- * typically (slashed) Acciaccatura and (un-slashed) Appoggiatura.
+ * Class <code>SmallChordInter</code> is a general head chord composed of <b>small</b> heads.
+ * <p>
+ * For specific grace structures (acciaccatura and appoggiatura) we use sub-class
+ * {@link GraceChordInter}.
+ *
+ * @see GraceChordInter
  *
  * @author Hervé Bitteur
  */
@@ -46,9 +53,23 @@ public class SmallChordInter
     }
 
     /**
+     * Protected constructor meant for GraceChordInter from a glyph recognized as a grace note.
+     *
+     * @param glyph underlying glyph
+     * @param shape GRACE_NOTE, GRACE_NOTE_DOWN, GRACE_NOTE_SLASH or GRACE_NOTE_SLASH_DOWN
+     * @param grade evaluation value
+     */
+    protected SmallChordInter (Glyph glyph,
+                               Shape shape,
+                               Double grade)
+    {
+        super(glyph, shape, grade);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
-    private SmallChordInter ()
+    protected SmallChordInter ()
     {
     }
 

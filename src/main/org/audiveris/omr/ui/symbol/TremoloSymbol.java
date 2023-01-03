@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                S la s h e d F l a g S y m b o l                                //
+//                                    T r e m o l o S y m b o l                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -22,32 +22,35 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
-import java.awt.BasicStroke;
+import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.awt.geom.Line2D;
+import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>SlashedFlagSymbol</code> displays a SMALL_FLAG_SLASH or SMALL_FLAG_SLASH_DOWN.
+ * Class <code>TremoloSymbol</code> implements a multiple-tremolo symbol.
  *
  * @author Hervé Bitteur
  */
-public class SlashedFlagSymbol
-        extends ShapeSymbol
+public class TremoloSymbol
+        extends DecorableSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>SmallFlagSymbol</code> object.
+     * Create a <code>TremoloSymbol</code> standard size with no decoration.
      *
-     * @param shape  the precise shape (SMALL_FLAG_SLASH or SMALL_FLAG_SLASH_DOWN)
-     * @param family the MusicFont family
+     * @param shape  TREMOLO_1, TREMOLO_2, TREMOLO_3
+     * @param family the musicFont family
      */
-    public SlashedFlagSymbol (Shape shape,
-                              Family family)
+    public TremoloSymbol (Shape shape,
+                          Family family)
     {
         super(shape, family);
     }
@@ -59,13 +62,22 @@ public class SlashedFlagSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
+        final MyParams p = new MyParams();
 
-        final Shape flagShape = shape == Shape.SMALL_FLAG_SLASH ? Shape.FLAG_1 : Shape.FLAG_1_DOWN;
-        p.layout = font.layoutShapeByCode(flagShape, OmrFont.TRANSFORM_SMALL);
+        // Tremolo layout
+        p.layout = font.layoutShapeByCode(shape);
+        final Rectangle2D rTrem = p.layout.getBounds(); // Tremolo bounds
 
-        p.rect = p.layout.getBounds();
-        p.stroke = new BasicStroke(Math.max(1f, (float) p.rect.getWidth() / 10f));
+        if (isDecorated) {
+            // Stem layout
+            p.stemLayout = font.layoutShapeByCode(Shape.STEM);
+            final Rectangle2D rStem = p.stemLayout.getBounds(); // Stem bounds (not centered)
+            GeoUtil.translate2D(rStem, 0, rStem.getHeight() / 2); // Stem bounds centered
+
+            p.rect = rTrem.createUnion(rStem);
+        } else {
+            p.rect = rTrem;
+        }
 
         return p;
     }
@@ -79,25 +91,22 @@ public class SlashedFlagSymbol
                           Point2D location,
                           Alignment alignment)
     {
-        MyParams p = (MyParams) params;
-        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-        MusicFont.paint(g, p.layout, loc, AREA_CENTER);
+        final MyParams p = (MyParams) params;
 
-        final boolean isUp = shape == Shape.SMALL_FLAG_SLASH;
-        Stroke oldStroke = g.getStroke();
-        g.setStroke(p.stroke);
-        g.draw(isUp
-                ? new Line2D.Double(
-                        loc.getX() - (p.rect.getWidth() / 2),
-                        loc.getY() + (p.rect.getHeight() / 5),
-                        loc.getX() + (p.rect.getWidth() / 2),
-                        loc.getY() - (p.rect.getHeight() / 5))
-                : new Line2D.Double(
-                        loc.getX() - (p.rect.getWidth() / 2),
-                        loc.getY() - (p.rect.getHeight() / 5),
-                        loc.getX() + (p.rect.getWidth() / 2),
-                        loc.getY() + (p.rect.getHeight() / 5)));
-        g.setStroke(oldStroke);
+        Point2D loc;
+
+        if (isDecorated) {
+            // Decorating stem
+            loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
+            final Composite oldComposite = g.getComposite();
+            g.setComposite(decoComposite);
+            MusicFont.paint(g, p.stemLayout, loc, BOTTOM_CENTER);
+            g.setComposite(oldComposite);
+        }
+
+        // Tremolo
+        loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -108,6 +117,11 @@ public class SlashedFlagSymbol
             extends Params
     {
 
-        Stroke stroke;
+        // offset: if decorated, offset of symbol center vs decorated image center: null
+        // layout: tremolo layout
+        // rect:   global image (tremolo + stem if decorated, tremolo alone if not)
+        //
+        // Layout for decorating stem
+        TextLayout stemLayout;
     }
 }

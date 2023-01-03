@@ -76,9 +76,9 @@ public class FlagStemRelation
         final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
-            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
-        } else {
             return (extensionPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+        } else {
+            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
         }
     }
 

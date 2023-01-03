@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -53,6 +51,8 @@ import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -250,10 +250,10 @@ public class SpotsBuilder
     {
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
-        logger.debug(
-                "Spots retrieval beam: {}, diameter: {} ...",
-                String.format("%.1f", beam),
-                String.format("%.1f", diameter));
+        logger.debug("Spots retrieval beam: {}, diameter: {}, radius: {} ...",
+                     String.format("%.1f", beam),
+                     String.format("%.1f", diameter),
+                     String.format("%.1f", radius));
 
         final int[] seOffset = {0, 0};
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);

@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
@@ -44,6 +45,7 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
@@ -403,13 +405,28 @@ public class SymbolsLinker
             }
 
             try {
+                // Check direct relation: chord -> grace
+                for (Relation rel : sig.getRelations(smallChord, ChordGraceRelation.class)) {
+                    final HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(smallChord,
+                                                                                       rel);
+                    final Voice voice = chord.getVoice();
+
+                    if (voice != null) {
+                        smallChord.setVoice(voice);
+                        logger.debug("{} assigned {}", smallChord, voice);
+
+                        continue SmallLoop;
+                    }
+                }
+
+                // Check indirect relation: chord-head -> slur -> grace-head
                 for (Inter interNote : smallChord.getNotes()) {
                     for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
-                        SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                        HeadInter head = slur.getHead(HorizontalSide.RIGHT);
+                        final SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                        final HeadInter head = slur.getHead(HorizontalSide.RIGHT);
 
                         if (head != null) {
-                            Voice voice = head.getVoice();
+                            final Voice voice = head.getVoice();
 
                             if (voice != null) {
                                 smallChord.setVoice(voice);

@@ -21,9 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
@@ -98,6 +100,20 @@ public class HeadChordInter
     public HeadChordInter (Double grade)
     {
         super(grade);
+    }
+
+    /**
+     * Protected constructor meant for SmallChordInter based on grace note.
+     *
+     * @param glyph
+     * @param shape
+     * @param grade
+     */
+    protected HeadChordInter (Glyph glyph,
+                              Shape shape,
+                              Double grade)
+    {
+        super(glyph, shape, grade);
     }
 
     /**
@@ -286,17 +302,29 @@ public class HeadChordInter
     //---------------//
     /**
      * Report the grace chord, if any, which is linked on left side of this chord.
+     * <p>
+     * This method assumes there is either:
+     * <ul>
+     * <li>a direct chord-grace relation between the two chords, or
+     * <li>a slur between one chord head and the grace head.
+     * </ul>
      *
      * @return the linked grace chord if any
      */
     public SmallChordInter getGraceChord ()
     {
+        // Direct
+        for (Relation rel : sig.getRelations(this, ChordGraceRelation.class)) {
+            return (SmallChordInter) sig.getOppositeInter(this, rel);
+        }
+
+        // Slur
         for (Inter interNote : getNotes()) {
             for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
                 SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
                 HeadInter head = slur.getHead(HorizontalSide.LEFT);
 
-                if ((head != null) && head.getShape().isSmall()) {
+                if ((head != null) && head.getShape().isSmallHead()) {
                     return (SmallChordInter) head.getChord();
                 }
             }
@@ -483,6 +511,29 @@ public class HeadChordInter
         } else {
             return Integer.signum(getTailLocation().y - getHeadLocation().y);
         }
+    }
+
+    //----------//
+    // hasSlash //
+    //----------//
+    /**
+     * Report whether this chord has a slashed stem.
+     *
+     * @return true if so.
+     */
+    public boolean hasSlash ()
+    {
+        final StemInter stem = getStem();
+
+        if (stem != null) {
+            for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
+                if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel).getShape()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //-----------//

@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.EndingInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
@@ -953,6 +954,16 @@ public abstract class SheetPainter
             if (ending.getRightLeg() != null) {
                 g.draw(ending.getRightLeg());
             }
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (GraceChordInter grace)
+        {
+            visit((Inter) grace); // Paint grace shape
+            super.visit(grace); // Paint chord
         }
 
         //-------//

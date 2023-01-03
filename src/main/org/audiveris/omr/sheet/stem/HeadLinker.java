@@ -223,8 +223,7 @@ public class HeadLinker
             logger.info("VIP {} inspectCLinkers", this);
         }
 
-        // Maximum possible stemProfile
-        final int stemProfile = isRatherGood(head) ? Profiles.RATHER_GOOD_HEAD : Profiles.POOR;
+        final int stemProfile = system.getSheet().getStub().getProfile();
 
         // Look for targets in all corners
         for (HeadCorner corner : HeadCorner.values()) {
@@ -503,6 +502,7 @@ public class HeadLinker
 //        ImageUtil.saveOnDisk(img, sheet.getStub().getId(), "head#" + head.getId());
 //    }
 //
+
     //----------//
     // toString //
     //----------//
@@ -992,7 +992,7 @@ public class HeadLinker
 
                             // TODO: perhaps intersecting theoLine is too strict?
                             if (median.intersectsLine(theoLine)) {
-                                if (head.getShape().isSmall()) {
+                                if (head.getShape().isSmallHead()) {
                                     // Exclude beam, stop just before group
                                     AbstractBeamInter b = (AbstractBeamInter) beams.get(0);
                                     final Line2D border = b.getBorder(vSide.opposite());

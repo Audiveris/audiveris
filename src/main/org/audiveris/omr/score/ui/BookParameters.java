@@ -28,6 +28,8 @@ import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.Profiles;
+import org.audiveris.omr.sheet.Profiles.InputQuality;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -167,6 +169,8 @@ public class BookParameters
 
         defaultPanes.add(new FontPane(null, MusicFont.defaultFamilyParam));
 
+        defaultPanes.add(new QualityPane(null, Profiles.defaultQualityParam));
+
         TextPane defaultTextPane = createTextPane(null, Language.ocrDefaultLanguages);
 
         if (defaultTextPane != null) {
@@ -175,7 +179,7 @@ public class BookParameters
 
         ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
 
-        for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
+        for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
             SwitchPane switchPane = new SwitchPane(key, null, defaultSwitches.getParam(key));
             defaultPanes.add(switchPane);
         }
@@ -202,6 +206,11 @@ public class BookParameters
                             (FontPane) defaultPanel.getPane(FontPane.class),
                             book.getMusicFontFamily()));
 
+            bookPanes.add(
+                    new QualityPane(
+                            (QualityPane) defaultPanel.getPane(QualityPane.class),
+                            book.getInputQuality()));
+
             TextPane bookTextPane = createTextPane(
                     (TextPane) defaultPanel.getPane(TextPane.class),
                     book.getOcrLanguages());
@@ -210,7 +219,7 @@ public class BookParameters
                 bookPanes.add(bookTextPane);
             }
 
-            for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
                 Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
                 bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
             }
@@ -234,6 +243,11 @@ public class BookParameters
                                     (FontPane) bookPanel.getPane(FontPane.class),
                                     s.getMusicFontFamilyParam()));
 
+                    sheetPanes.add(
+                            new QualityPane(
+                                    (QualityPane) bookPanel.getPane(QualityPane.class),
+                                    s.getInputQualityParam()));
+
                     TextPane sheetTextPane = createTextPane(
                             (TextPane) bookPanel.getPane(TextPane.class),
                             s.getOcrLanguages());
@@ -242,7 +256,7 @@ public class BookParameters
                         sheetPanes.add(sheetTextPane);
                     }
 
-                    for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
+                    for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
                         Param<Boolean> bp = s.getProcessingSwitches().getParam(key);
                         sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
@@ -392,7 +406,8 @@ public class BookParameters
         // Refresh the new current panel
         ScopedPanel panel = (ScopedPanel) component.getSelectedComponent();
 
-        PaneLoop: for (XactDataPane pane : panel.getPanes()) {
+        PaneLoop:
+        for (XactDataPane pane : panel.getPanes()) {
             if (!pane.isSelected()) {
                 // Use the first parent with any specific value
                 XactDataPane highestPane = pane;
@@ -907,287 +922,58 @@ public class BookParameters
             familyCombo.setEnabled(bool);
         }
     }
-}
-//
-//    //-----------//
-//    // Tempopane //
-//    //-----------//
-//    /**
-//     * Pane to set the dominant tempo value.
-//     * Scope can be: default, score.
-//     */
-//    private class TempoPane
-//            extends Pane<Integer>
-//    {
-//
-//        // Tempo value
-//        private final SpinData tempo = new SpinData(
-//                "Quarters/Min",
-//                "Tempo in quarters per minute",
-//                new SpinnerNumberModel(20, 20, 400, 1));
-//
-//        public TempoPane (Score score,
-//                          Pane parent,
-//                          Param<Integer> model)
-//        {
-//            super("Tempo", score, null, parent, model);
-//        }
-//
-//        @Override
-//        public int defineLayout (PanelBuilder builder,
-//                                 CellConstraints cst,
-//                                 int r)
-//        {
-//            r = super.defineLayout(builder, cst, r);
-//
-//            return tempo.defineLayout(builder, cst, r);
-//        }
-//
-//        @Override
-//        public boolean isValid ()
-//        {
-//            task.setTempo(read());
-//
-//            return true;
-//        }
-//
-//        @Override
-//        protected void display (Integer content)
-//        {
-//            tempo.spinner.setValue(content);
-//        }
-//
-//        @Override
-//        protected Integer read ()
-//        {
-//            commitSpinners();
-//
-//            return (int) tempo.spinner.getValue();
-//        }
-//
-//        @Override
-//        protected void setEnabled (boolean bool)
-//        {
-//            tempo.setEnabled(bool);
-//        }
-//
-//        private void commitSpinners ()
-//        {
-//            try {
-//                tempo.spinner.commitEdit();
-//            } catch (ParseException ignored) {
-//            }
-//        }
-//    }
-///TempoPane defaultTempoPane = new TempoPane(null, null, Tempo.defaultTempo);
-//            // Tempo: depends on page
-//            panes.add(new TempoPane(book, defaultTempoPane, book.getTempoParam()));
-//
-//            // Parts: depends on score
-//            if (book.getPartList() != null) {
-//                // Part by part information
-//                panes.add(new PartsPane(book));
-//            }
-//
-//    //-----------//
-//    // PartsPane //
-//    //-----------//
-//    /**
-//     * Pane to define the details for every part of the score.
-//     * Scope can be: score.
-//     */
-//    private class PartsPane
-//            extends Pane<List<PartData>>
-//    {
-//
-//        /** All score part panes */
-//        private final List<PartPanel> partPanels = new ArrayList<>();
-//
-//        public PartsPane (Score score)
-//        {
-//            super("Parts", score, null, null, score.getPartsParam());
-//        }
-//
-//        @Override
-//        public int defineLayout (PanelBuilder builder,
-//                                 CellConstraints cst,
-//                                 int r)
-//        {
-//            r = super.defineLayout(builder, cst, r);
-//
-//            for (LogicalPart logicalPart : book.getPartList()) {
-//                PartPanel partPanel = new PartPanel(logicalPart);
-//                r = partPanel.defineLayout(builder, cst, r);
-//                partPanels.add(partPanel);
-//                builder.add(partPanel, cst.xy(1, r));
-//                r += 2;
-//            }
-//
-//            return r;
-//        }
-//
-//        @Override
-//        public int getLogicalRowCount ()
-//        {
-//            return 2 + (PartPanel.logicalRowCount * book.getPartList().size());
-//        }
-//
-//        @Override
-//        public boolean isValid ()
-//        {
-//            // Each score part
-//            for (PartPanel partPanel : partPanels) {
-//                if (!partPanel.checkPart()) {
-//                    return false;
-//                }
-//            }
-//
-//            return true;
-//        }
-//
-//        @Override
-//        protected void display (List<PartData> content)
-//        {
-//            for (int i = 0; i < content.size(); i++) {
-//                PartPanel partPanel = partPanels.get(i);
-//                PartData partData = content.get(i);
-//                partPanel.display(partData);
-//            }
-//        }
-//
-//        @Override
-//        protected List<PartData> read ()
-//        {
-//            List<PartData> data = new ArrayList<>();
-//
-//            for (PartPanel partPanel : partPanels) {
-//                data.add(partPanel.getData());
-//            }
-//
-//            return data;
-//        }
-//
-//        @Override
-//        protected void setEnabled (boolean bool)
-//        {
-//            for (PartPanel partPanel : partPanels) {
-//                partPanel.setItemsEnabled(bool);
-//            }
-//        }
-//    }
 
-//    //-----------//
-//    // PartPanel //
-//    //-----------//
-//    /**
-//     * Panel for details of one score part.
-//     */
-//    private static class PartPanel
-//            extends Panel
-//    {
-//
-//        public static final int logicalRowCount = 3;
-//
-//        //
-//        private final JLabel label;
-//
-//        /** Id of the part */
-//        private final LTextField id = new LTextField("Id", "Id of the score part");
-//
-//        /** Name of the part */
-//        private final LTextField name = new LTextField(true, "Name", "Name for the score part");
-//
-//        /** Midi Instrument */
-//        private final JLabel midiLabel = new JLabel("Midi");
-//
-//        private final JComboBox<String> midiBox = new JComboBox<String>(
-//                MidiAbstractions.getProgramNames());
-//
-//        public PartPanel (LogicalPart part)
-//        {
-//            label = new JLabel("Part #" + part.getId());
-//
-//            // Let's impose the id!
-//            id.setText(part.getPid());
-//        }
-//
-//        public boolean checkPart ()
-//        {
-//            // Part name
-//            if (name.getText().trim().length() == 0) {
-//                logger.warn("Please supply a non empty part name");
-//
-//                return false;
-//            } else {
-//                return true;
-//            }
-//        }
-//
-//        public PartData getData ()
-//        {
-//            return new PartData(name.getText(), midiBox.getSelectedIndex() + 1);
-//        }
-//
-//        private int defineLayout (PanelBuilder builder,
-//                                  CellConstraints cst,
-//                                  int r)
-//        {
-//            builder.add(label, cst.xyw(5, r, 7));
-//
-//            r += 2; // --
-//
-//            builder.add(id.getLabel(), cst.xy(5, r));
-//            builder.add(id.getField(), cst.xy(7, r));
-//
-//            builder.add(name.getLabel(), cst.xy(9, r));
-//            builder.add(name.getField(), cst.xy(11, r));
-//
-//            r += 2; // --
-//
-//            builder.add(midiLabel, cst.xy(5, r));
-//            builder.add(midiBox, cst.xyw(7, r, 5));
-//
-//            return r;
-//        }
-//
-//        private void display (PartData partData)
-//        {
-//            // Setting for part name
-//            name.setText(partData.name);
-//
-//            // Setting for part midi program
-//            midiBox.setSelectedIndex(partData.program - 1);
-//        }
-//
-//        private void setItemsEnabled (boolean sel)
-//        {
-//            label.setEnabled(sel);
-//            id.setEnabled(sel);
-//            name.setEnabled(sel);
-//            midiLabel.setEnabled(sel);
-//            midiBox.setEnabled(sel);
-//        }
-//    }
-//
-//
-//    //--------------//
-//    // ParallelPane //
-//    //--------------//
-//    /**
-//     * Should we use defaultParallelism as much as possible.
-//     * Scope can be: default.
-//     */
-//    private static class ParallelPane
-//            extends BooleanPane
-//    {
-//
-//        public ParallelPane ()
-//        {
-//            super(
-//                    "Parallelism",
-//                    null,
-//                    "Allowed",
-//                    "Should we use parallelism whenever possible",
-//                    OmrExecutors.defaultParallelism);
-//        }
-//    }
+    //-------------//
+    // QualityPane //
+    //------------//
+    /**
+     * Pane to set the input image quality.
+     * Scope can be: default, book, sheet.
+     */
+    private static class QualityPane
+            extends XactDataPane<InputQuality>
+    {
+
+        /** ComboBox for image quality. */
+        private final JComboBox<InputQuality> qualityCombo = new JComboBox<>(InputQuality.values());
+
+        QualityPane (QualityPane parent,
+                     Param<InputQuality> model)
+        {
+            super(resources.getString("QualityPane.title"), parent, model);
+
+            qualityCombo.setToolTipText(resources.getString("QualityPane.qualityCombo.toolTipText"));
+            qualityCombo.addActionListener(this);
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            builder.add(qualityCombo, cst.xyw(5, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (InputQuality quality)
+        {
+            qualityCombo.setSelectedItem(quality);
+        }
+
+        @Override
+        protected InputQuality read ()
+        {
+            return qualityCombo.getItemAt(qualityCombo.getSelectedIndex());
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            qualityCombo.setEnabled(bool);
+        }
+    }
+}

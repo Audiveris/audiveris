@@ -362,7 +362,7 @@ public class SigReducer
                 if (size == Size.SMALL) {
                     // Small beams exclude all but small (oval) heads
                     for (Entry<Shape, Set<Inter>> headEntry : heads.entrySet()) {
-                        if (!headEntry.getKey().isSmall()) {
+                        if (!headEntry.getKey().isSmallHead()) {
                             final Set<Inter> headSet = entry.getValue();
 
                             if (headSet != null) {
@@ -1361,10 +1361,10 @@ public class SigReducer
         // Special overlap case between a stem and a standard-size note head
         if ((left instanceof StemInter
                      && right instanceof HeadInter
-                     && !right.getShape().isSmall())
+                     && !right.getShape().isSmallHead())
                     || (right instanceof StemInter
                                 && left instanceof HeadInter
-                                && !left.getShape().isSmall())) {
+                                && !left.getShape().isSmallHead())) {
             return;
         }
 

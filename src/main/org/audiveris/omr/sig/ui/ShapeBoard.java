@@ -162,8 +162,8 @@ public class ShapeBoard
      * Called-back when a set is selected:
      * The global panel is replaced by the selected set panel.
      */
-    private final ActionListener setListener = (ActionEvent e)
-            -> {
+    private final ActionListener setListener = (ActionEvent e) ->
+    {
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
         selectSet(set);
@@ -173,8 +173,8 @@ public class ShapeBoard
      * Called-back when a set panel is closed:
      * It is replaced by the global panel to allow the selection of another set.
      */
-    private final ActionListener closeListener = (ActionEvent e)
-            -> {
+    private final ActionListener closeListener = (ActionEvent e) ->
+    {
         closeSet();
     };
 
@@ -226,8 +226,8 @@ public class ShapeBoard
     private final SheetKeyListener keyListener;
 
     /** When split container is resized, we reshape this board. */
-    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce)
-            -> {
+    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce) ->
+    {
         resizeBoard();
     };
 
@@ -421,7 +421,7 @@ public class ShapeBoard
         shapeMap.put("" + c + 'n', Shape.NATURAL);
         shapeMap.put("" + c + 's', Shape.SHARP);
 
-        setMap.put(c = 'b', ShapeSet.BeamsAndTuplets);
+        setMap.put(c = 'b', ShapeSet.BeamsEtc);
         shapeMap.put("" + c + 'f', Shape.BEAM);
         shapeMap.put("" + c + 'h', Shape.BEAM_HOOK);
         shapeMap.put("" + c + '3', Shape.TUPLET_THREE);
@@ -432,8 +432,8 @@ public class ShapeBoard
         shapeMap.put("" + c + 'f', Shape.DYNAMICS_F);
 
         setMap.put(c = 'f', ShapeSet.Flags);
-        shapeMap.put("" + c + 'u', Shape.FLAG_1_UP);
-        shapeMap.put("" + c + 'd', Shape.FLAG_1);
+        shapeMap.put("" + c + 'u', Shape.FLAG_1);
+        shapeMap.put("" + c + 'd', Shape.FLAG_1_DOWN);
 
         setMap.put(c = 'h', ShapeSet.HeadsAndDot);
         shapeMap.put("" + c + 'w', Shape.WHOLE_NOTE);
@@ -1065,7 +1065,7 @@ public class ShapeBoard
      * The heads panel is organized as a table for better readability.
      * <p>
      * We use one row per head motif and one column per head duration,
-     * except for last row which contains augmentation dot and compound notes.
+     * except for last two rows dedicated to augmentation dot plus compound notes then playing signs
      *
      * @param panel  the containing panel
      * @param shapes he filtered shapes to display
@@ -1076,7 +1076,7 @@ public class ShapeBoard
 
         public HeadButtons ()
         {
-            super(5);
+            super(5); // Room for 5 columns (1 motif, 4 durations)
         }
 
         /**
@@ -1089,7 +1089,7 @@ public class ShapeBoard
         public void build (Panel panel,
                            List<Shape> filtered)
         {
-            final int rows = 7;
+            final int rows = 8; // A maximum of 8 rows
             final FormLayout layout = new FormLayout(colSpec(cols), rowSpec(rows));
             final PanelBuilder builder = new PanelBuilder(layout, table);
             final EnumSet<HeadMotif> motifs = EnumSet.noneOf(HeadMotif.class);
@@ -1102,19 +1102,25 @@ public class ShapeBoard
                 }
 
                 final HeadMotif motif = shape.getHeadMotif();
-                final int row = headRow(motif);
+                final int row = headRow(motif, shape);
                 final int col;
                 final Rational dur = shape.getNoteDuration();
                 if (dur != null) {
+                    // It's a real head
                     col = headCol(dur);
 
-                    // Add motif label if so needed
+                    // Add motif label if still needed
                     if (!motifs.contains(motif)) {
                         builder.addLabel(motif.name(), cst.xy(1, row));
                         motifs.add(motif);
                     }
                 } else {
-                    col = compoundCol(shape);
+                    col = shapeCol(shape);
+
+                    // Add a label for the row of playings
+                    if (shape == Shape.PLAYING_OPEN) {
+                        builder.addLabel("sign", cst.xy(1, row));
+                    }
                 }
 
                 final ShapeButton button = new ShapeButton(symbol);
@@ -1123,7 +1129,6 @@ public class ShapeBoard
             }
 
             panel.add(table);
-
         }
 
         @Override
@@ -1142,23 +1147,21 @@ public class ShapeBoard
             return sb.toString();
         }
 
-        private int compoundCol (Shape shape)
+        private int shapeCol (Shape shape)
         {
-            switch (shape) {
-            case AUGMENTATION_DOT:
-                return 1;
-            case QUARTER_NOTE_UP:
-                return 3;
-            case QUARTER_NOTE_DOWN:
-                return 5;
-            case HALF_NOTE_UP:
-                return 7;
-            case HALF_NOTE_DOWN:
-                return 9;
-            }
+            return switch (shape) {
+            case AUGMENTATION_DOT -> 1;
+            case QUARTER_NOTE_UP -> 3;
+            case QUARTER_NOTE_DOWN -> 5;
+            case HALF_NOTE_UP -> 7;
+            case HALF_NOTE_DOWN -> 9;
 
-            logger.warn("compoundCol unhandled head shape: {}", shape);
-            return -1;
+            case PLAYING_OPEN -> 3;
+            case PLAYING_HALF_OPEN -> 5;
+            case PLAYING_CLOSED -> 7;
+
+            default -> throw new IllegalArgumentException("No shapeCol for " + shape);
+            };
         }
 
         private int headCol (Rational dur)
@@ -1179,29 +1182,26 @@ public class ShapeBoard
             return -1; // To please the compiler
         }
 
-        private int headRow (HeadMotif motif)
+        private int headRow (HeadMotif motif,
+                             Shape shape)
         {
             if (motif == null) {
-                return 13;
+                if (ShapeSet.Playings.contains(shape)) {
+                    return 15;
+                } else {
+                    return 13;
+                }
             }
 
-            switch (motif) {
-            case oval:
-                return 1;
-            case small:
-                return 3;
-            case cross:
-                return 5;
-            case diamond:
-                return 7;
-            case triangle:
-                return 9;
-            case circle:
-                return 11;
-            }
-
-            logger.warn("headRow unhandled head motif: {}", motif);
-            return -1;
+            return switch (motif) {
+            case oval -> 1;
+            case small -> 3;
+            case cross -> 5;
+            case diamond -> 7;
+            case triangle -> 9;
+            case circle -> 11;
+            default -> throw new IllegalArgumentException("No headRow for head motif " + motif);
+            };
         }
     }
 
@@ -1513,9 +1513,8 @@ public class ShapeBoard
         {
             if (!SwingUtilities.isEventDispatchThread()) {
                 try {
-                    SwingUtilities.invokeAndWait(() -> add(shape));
-                } catch (InterruptedException |
-                         InvocationTargetException ex) {
+                    SwingUtilities.invokeAndWait( () -> add(shape));
+                } catch (InterruptedException | InvocationTargetException ex) {
                     logger.warn("invokeAndWait error", ex);
                 }
             } else {

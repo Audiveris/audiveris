@@ -133,7 +133,7 @@ public class ProcessingSwitches
                                  Object scope)
     {
         // Complete the map, link each switch to parent switch, set provided scope
-        for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
+        for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
             Param<Boolean> param = getParam(key);
 
             if (param == null) {
@@ -214,7 +214,7 @@ public class ProcessingSwitches
 
                 ProcessingSwitch ps = entry.key;
                 if (entry.value != null) {
-                    if (ProcessingSwitch.obsoleteValues.contains(ps)) {
+                    if (ProcessingSwitch.obsoleteSwitches.contains(ps)) {
                         // Today this means a small head flag
                         // We consider the small black flag applies for all
                         // and we ignore the others (void and whole)
@@ -222,8 +222,7 @@ public class ProcessingSwitches
                             logger.info("Processing switch '{}' converted to 'smallHeads'", ps);
                             ps = ProcessingSwitch.smallHeads;
                         } else {
-                            logger.info("Processing switch '{}' ignored, please use 'smallHeads'",
-                                        ps);
+                            logger.info("Processing switch '{}' ignored", ps);
                             continue;
                         }
                     }
@@ -235,7 +234,7 @@ public class ProcessingSwitches
             }
 
             // Then fill empty entries
-            for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
                 if (switches.map.get(key) == null) {
                     switches.map.put(key, new Param<>(null)); // IDEM
                 }
@@ -331,6 +330,10 @@ public class ProcessingSwitches
                 false,
                 "Support for lyrics even located above staff");
 
+        final Constant.Boolean tremolos = new Constant.Boolean(
+                false,
+                "Support for tremolos");
+
         final Constant.Boolean smallHeads = new Constant.Boolean(
                 false,
                 "Support for small heads");
@@ -377,7 +380,7 @@ public class ProcessingSwitches
 
         DefaultSwitches ()
         {
-            for (ProcessingSwitch key : ProcessingSwitch.supportedValues) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
                 map.put(key, new ConstantBasedParam<>(key.getConstant(), GLOBAL_SCOPE));
             }
         }

@@ -21,6 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.param.ConstantBasedParam;
+import org.audiveris.omr.util.param.Param;
+
 /**
  * Class <code>Profiles</code> gathers all defined profile levels.
  *
@@ -29,6 +34,8 @@ package org.audiveris.omr.sheet;
 public abstract class Profiles
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     /** Strict case: no gap allowed. */
     public static final int STRICT = 0;
@@ -54,9 +61,42 @@ public abstract class Profiles
     /** Maximum defined profile value. */
     public static final int MAX_VALUE = 4;
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Enum <code>InputQuality</code> describes input quality.
+     */
+    public static enum InputQuality
+    {
+        /** The highest quality, no gaps allowed. */
+        Synthetic,
+        /** The standard quality, small gaps allowed. */
+        Standard,
+        /** The lowest quality, use a hierarchy of gap profiles. */
+        Poor;
+    }
+
+    /** Default input quality. */
+    public static final Param<InputQuality> defaultQualityParam = new ConstantBasedParam<>(
+            constants.defaultQuality,
+            Param.GLOBAL_SCOPE);
+
     //~ Constructors -------------------------------------------------------------------------------
     private Profiles ()
     {
         // Not meant to be instantiated
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Enum<InputQuality> defaultQuality = new Constant.Enum<>(
+                InputQuality.class,
+                InputQuality.Standard,
+                "Default quality for input image");
     }
 }

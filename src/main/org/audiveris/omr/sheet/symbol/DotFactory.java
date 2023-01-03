@@ -174,8 +174,7 @@ public class DotFactory
      */
     public void lateDotChecks ()
     {
-        // Sort dots carefully
-        Collections.sort(dots, Dot.comparator);
+        Collections.sort(dots, Dot.byAbscissa);
 
         // Run all late checks
         lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
@@ -722,27 +721,10 @@ public class DotFactory
     {
 
         /**
-         * Very specific sorting of dots.
-         * <p>
-         * If the 2 dots overlap vertically, return left one first.
-         * Otherwise, return top one first.
-         *
-         * @param that the other dot
-         * @return order sign
+         * Sorting dots by left abscissa.
          */
-        public static final Comparator<Dot> comparator = (Dot d1, Dot d2) -> {
-            if (d1 == d2) {
-                return 0;
-            }
-
-            final Rectangle b1 = d1.getBounds();
-            final Rectangle b2 = d2.getBounds();
-
-            if (GeoUtil.yOverlap(b1, b2) > 0) {
-                return Integer.compare(b1.x, b2.x);
-            } else {
-                return Integer.compare(b1.y, b2.y);
-            }
+        public static final Comparator<Dot> byAbscissa = (Dot d1, Dot d2) -> {
+            return Integer.compare(d1.getBounds().x, d2.getBounds().x);
         };
 
         public abstract int getAnnotationId ();
@@ -832,6 +814,7 @@ public class DotFactory
         {
             StringBuilder sb = new StringBuilder("GlyphDot{");
             sb.append("glyph#").append(glyph.getId());
+            sb.append(" ").append(getBounds());
             sb.append(" ").append(eval);
             sb.append("}");
 

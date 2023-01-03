@@ -147,7 +147,7 @@ public class BeamsBuilder
     /** Input image. */
     private ByteProcessor pixelFilter;
 
-    /** Lag of glyph sections. */
+    /** Lag of spot glyph sections. */
     private final Lag spotLag;
 
     /** Sheet bounding box. */
@@ -196,7 +196,7 @@ public class BeamsBuilder
         // Cache input image
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
-        // First, retrieve beam candidates from spots
+        // First, retrieve candidates from spots
         sortedBeamSpots = system.getGroupedGlyphs(GlyphGroup.BEAM_SPOT);
         Collections.sort(sortedBeamSpots, Glyphs.byFullOrdinate);
 
@@ -303,16 +303,16 @@ public class BeamsBuilder
     /**
      * Check the provided glyph as a beam candidate.
      *
-     * @param glyph      the glyph to check
-     * @param isCue      true for a cue beam candidate
-     * @param itemParams specific parameters for desired height
-     * @param beams      (output) to be appended by created beam inters
+     * @param glyph       the glyph to check
+     * @param isCue       true for a cue beam candidate
+     * @param itemParams  specific parameters for desired height
+     * @param createdCues (output) it non null, to be appended by created cue inters
      * @return the failure description if not successful, null otherwise
      */
     private String checkBeamGlyph (Glyph glyph,
                                    boolean isCue,
                                    ItemParameters itemParams,
-                                   List<Inter> beams)
+                                   List<Inter> createdCues)
     {
         final Rectangle box = glyph.getBounds();
         final Line2D glyphLine = glyph.getCenterLine();
@@ -358,7 +358,7 @@ public class BeamsBuilder
         final double structWidth = structure.getWidth();
 
         if (structWidth < itemParams.minBeamWidthLow) {
-            return "too narrow borders";
+            return "too narrow width";
         }
 
         // Check that all lines of the glyph are rather parallel
@@ -383,7 +383,7 @@ public class BeamsBuilder
             List<Inter> cues = createSmallBeamInters(structure, distImpact);
 
             if (!cues.isEmpty()) {
-                beams.addAll(cues);
+                createdCues.addAll(cues);
 
                 return null;
             } else {
@@ -1875,22 +1875,22 @@ public class BeamsBuilder
             List<Glyph> glyphs = getCueGlyphs();
 
             // Retrieve beams from candidate glyphs
-            List<Inter> beams = new ArrayList<>();
+            final List<Inter> beams = new ArrayList<>();
             for (Glyph glyph : glyphs) {
                 glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
                 spots.add(glyph);
-                List<Inter> glyphBeams = new ArrayList<>();
-                final String failure = checkBeamGlyph(glyph, true, itemParams, glyphBeams);
+                final List<Inter> createdCues = new ArrayList<>();
+                final String failure = checkBeamGlyph(glyph, true, itemParams, createdCues);
                 if (failure != null) {
                     if (glyph.isVip()) {
                         logger.info("VIP cue#{} {}", glyph.getId(), failure);
                     }
                 } else {
                     if (glyph.isVip()) {
-                        logger.debug("{} -> {}", glyph.idString(), glyphBeams);
+                        logger.debug("{} -> {}", glyph.idString(), createdCues);
                     }
 
-                    beams.addAll(glyphBeams);
+                    beams.addAll(createdCues);
                 }
             }
 
@@ -1969,7 +1969,7 @@ public class BeamsBuilder
             extends ConstantSet
     {
 
-        // Item parameters
+        // Item parameters (for beam/hook)
         //----------------
         private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
                 1.0,

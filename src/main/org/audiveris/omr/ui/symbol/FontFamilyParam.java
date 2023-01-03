@@ -33,8 +33,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class FontFamilyParam
         extends Param<Family>
 {
-
     //~ Constructors -------------------------------------------------------------------------------
+
     public FontFamilyParam (Object scope)
     {
         super(scope);
@@ -47,7 +47,7 @@ public class FontFamilyParam
 
         @Override
         public Family marshal (FontFamilyParam fp)
-            throws Exception
+                throws Exception
         {
             if (fp == null) {
                 return null;
@@ -58,7 +58,7 @@ public class FontFamilyParam
 
         @Override
         public FontFamilyParam unmarshal (Family value)
-            throws Exception
+                throws Exception
         {
             if (value == null) {
                 return null;

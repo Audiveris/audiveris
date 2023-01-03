@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
@@ -108,6 +109,9 @@ public class LinksStep
         // Reduction
         watch.start("reduceLinks");
         new SigReducer(system, false).reduceLinks();
+
+        // Aggregate tremolos whenever needed
+        TremoloInter.aggregateTremolos(system);
 
         // Complete each measure with clef(s) and key if any
         new MeasureFiller(system).process();

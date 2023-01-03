@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
@@ -127,6 +128,7 @@ public abstract class AbstractStep
             FingeringInter.class,
             FlagInter.class,
             FretInter.class,
+            GraceChordInter.class,
             HeadChordInter.class,
             HeadInter.class,
             KeyAlterInter.class,

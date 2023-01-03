@@ -140,7 +140,7 @@ public class TemplateBoard
 
         // Shape spinner
         shapeSpinner = new JSpinner(
-                new SpinnerListModel(new ArrayList<>(ShapeSet.getTemplateNotes(sheet))));
+                new SpinnerListModel(new ArrayList<>(ShapeSet.getTemplateNotesAll(sheet))));
         shapeSpinner.addChangeListener(this);
         shapeSpinner.setName("shapeSpinner");
         shapeSpinner.setToolTipText("Selection of template shape");
