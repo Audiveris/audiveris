@@ -23,7 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.relation.MultipleRestNumberRelation;
+import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.HorizontalSide;
@@ -42,13 +42,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  * For Audiveris, this music item is constructed by:
  * <ul>
  * <li>A MultipleRestInter, which is similar to a horizontal beam
- * <li>Two VerticalSerifInter's, similar to stems, linked by MultipleRestSerifRelation's
- * <li>A MeasureNumberInter, similar to a time number, linked by a MultipleRestNumberRelation
+ * <li>Two {@link VerticalSerifInter} instances, similar to stems, linked by
+ * {@link MultipleRestSerifRelation}
+ * <li>A {@link MeasureCountInter}, similar to a time number, linked by a
+ * {@link MultipleRestCountRelation}
  * </ul>
  *
  * @see VerticalSerifInter
- * @see MeasureNumberInter
- *
+ * @see MeasureCountInter
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "multiple-rest")
@@ -58,7 +59,7 @@ public class MultipleRestInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new MultipleRestInter object.
+     * Creates a new <code>MultipleRestInter</code> object.
      *
      * @param grade  evaluation grade
      * @param median median beam line
@@ -72,7 +73,7 @@ public class MultipleRestInter
     }
 
     /**
-     * Creates manually a new MultipleRestInter ghost object.
+     * Creates manually a new <code>MultipleRestInter</code> ghost object.
      *
      * @param grade quality grade
      */
@@ -129,18 +130,18 @@ public class MultipleRestInter
         return isAbnormal();
     }
 
-    //------------------//
-    // getMeasureNumber //
-    //------------------//
+    //-----------------//
+    // getMeasureCount //
+    //-----------------//
     /**
-     * Report the measure number related to this multiple measure rest.
+     * Report the measure count related to this multiple measure rest.
      *
-     * @return the related MeasureNumberInter or null
+     * @return the related MeasureCountInter or null
      */
-    public MeasureNumberInter getMeasureNumber ()
+    public MeasureCountInter getMeasureCount ()
     {
-        for (Relation rel : getSig().getRelations(this, MultipleRestNumberRelation.class)) {
-            return (MeasureNumberInter) getSig().getOppositeInter(this, rel);
+        for (Relation rel : getSig().getRelations(this, MultipleRestCountRelation.class)) {
+            return (MeasureCountInter) getSig().getOppositeInter(this, rel);
         }
 
         return null;

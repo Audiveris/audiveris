@@ -360,8 +360,7 @@ public class ShapeSet
 
     /** All non-draggable shapes. */
     public static final EnumSet<Shape> Undraggables = EnumSet.of(
-            NON_DRAGGABLE,
-            PartialTimes.toArray(Shape[]::new));
+            NON_DRAGGABLE);
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.

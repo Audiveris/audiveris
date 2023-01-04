@@ -32,7 +32,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.util.HorizontalSide;
 
@@ -271,7 +271,7 @@ public class MeasureFixer
             stack.resetSpecial();
 
             // Multiple measure rest in this stack?
-            final Integer multipleRestCount = stack.getMultipleMeasureNumber(multipleRests);
+            final Integer multipleRestCount = stack.getMultipleMeasureCount(multipleRests);
             if (multipleRestCount != null) {
                 logger.debug("multiple measure rest: {}", multipleRestCount);
                 stack.setMultiRest();

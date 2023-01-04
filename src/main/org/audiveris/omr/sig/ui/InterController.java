@@ -323,14 +323,22 @@ public class InterController
                 final SIGraph sig = system.getSig();
 
                 switch (newRole) {
-                case Lyrics -> {
+                case Lyrics ->
+                {
                     // Convert to LyricItem words, all within a single LyricLine sentence
                     final WrappedBoolean cancel = new WrappedBoolean(false);
                     final LyricLineInter line = new LyricLineInter(
-                            sentence.getBounds(), sentence.getGrade(), sentence.getMeanFont());
+                            sentence.getBounds(),
+                            sentence.getGrade(),
+                            sentence.getMeanFont());
                     line.setManual(true);
                     line.setStaff(staff);
-                    seq.add(new AdditionTask(sig, line, line.getBounds(), line.searchLinks(system)));
+                    seq.add(
+                            new AdditionTask(
+                                    sig,
+                                    line,
+                                    line.getBounds(),
+                                    line.searchLinks(system)));
 
                     for (Inter inter : sentence.getMembers()) {
                         if (!(inter instanceof LyricItemInter)) {
@@ -339,9 +347,13 @@ public class InterController
                             final LyricItemInter item = new LyricItemInter(orgWord);
                             item.setManual(true);
                             item.setStaff(staff);
-                            seq.add(new AdditionTask(
-                                    sig, item, item.getBounds(),
-                                    Arrays.asList(new Link(line, new Containment(), false))));
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            item,
+                                            item.getBounds(),
+                                            Arrays.asList(
+                                                    new Link(line, new Containment(), false))));
 
                             for (Link link : item.searchLinks(system)) {
                                 // Link from chord to syllable
@@ -364,7 +376,8 @@ public class InterController
                     }
                 }
 
-                case ChordName -> {
+                case ChordName ->
+                {
                     // Convert to ChordName words, each within its own sentence
                     final WrappedBoolean cancel = new WrappedBoolean(false);
 
@@ -375,9 +388,13 @@ public class InterController
                             ChordNameInter cn = new ChordNameInter(orgWord);
                             cn.setManual(true);
                             cn.setStaff(staff);
-                            seq.add(new AdditionTask(
-                                    sig, cn, cn.getBounds(),
-                                    Arrays.asList(new Link(sentence, new Containment(), false))));
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            cn,
+                                            cn.getBounds(),
+                                            Arrays.asList(
+                                                    new Link(sentence, new Containment(), false))));
 
                             if (cancel.isSet()) {
                                 seq.setCancelled(true);
@@ -395,18 +412,26 @@ public class InterController
                     }
                 }
 
-                default -> {
+                default ->
+                {
                     // Convert to SentenceInter if so needed
                     final SentenceInter finalSentence;
 
                     if (sentence.getClass() != SentenceInter.class) {
                         // Create a basic SentenceInter
                         finalSentence = new SentenceInter(
-                                sentence.getBounds(), 1.0, sentence.getMeanFont(), newRole);
+                                sentence.getBounds(),
+                                1.0,
+                                sentence.getMeanFont(),
+                                newRole);
                         finalSentence.setManual(true);
                         finalSentence.setStaff(staff);
-                        seq.add(new AdditionTask(sig, finalSentence, finalSentence.getBounds(),
-                                                 finalSentence.searchLinks(system)));
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        finalSentence,
+                                        finalSentence.getBounds(),
+                                        finalSentence.searchLinks(system)));
                     } else {
                         finalSentence = sentence;
                     }
@@ -419,9 +444,16 @@ public class InterController
                             WordInter word = new WordInter(orgWord, Shape.TEXT);
                             word.setManual(true);
                             word.setStaff(staff);
-                            seq.add(new AdditionTask(
-                                    sig, word, word.getBounds(),
-                                    Arrays.asList(new Link(finalSentence, new Containment(), false))));
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            word,
+                                            word.getBounds(),
+                                            Arrays.asList(
+                                                    new Link(
+                                                            finalSentence,
+                                                            new Containment(),
+                                                            false))));
 
                             // Remove the original word
                             seq.add(new RemovalTask(orgWord));
@@ -456,8 +488,8 @@ public class InterController
      * <p>
      * We must detect the following replacements:
      * <ul>
-     * <li> Plain sentence to Lyric or ChordName
-     * <li> Lyric or ChordName to Plain sentence
+     * <li>Plain sentence to Lyric or ChordName
+     * <li>Lyric or ChordName to Plain sentence
      * </ul>
      *
      * @param sentence the sentence whose role is about to be changed
@@ -481,9 +513,8 @@ public class InterController
             return;
         }
 
-        if (sentence instanceof LyricLineInter
-                    || newRole == TextRole.Lyrics
-                    || newRole == TextRole.ChordName) {
+        if (sentence instanceof LyricLineInter || newRole == TextRole.Lyrics
+                || newRole == TextRole.ChordName) {
             logger.debug("Completing edition of {}", editedInter);
             objectEditor.endProcess();
         }
@@ -618,7 +649,8 @@ public class InterController
             {
                 switch (kind) {
                 default:
-                case SLUR_CONNECTION: {
+                case SLUR_CONNECTION:
+                {
                     final Page page = one.getSig().getSystem().getPage();
                     final SlurInter s1 = (SlurInter) one;
                     final SlurInter s2 = (SlurInter) two;
@@ -729,7 +761,13 @@ public class InterController
 
                 // Remove conflicting relations if any
                 final boolean sourceIsNew = pair.source != source;
-                removeConflictingRelations(seq, sig, sourceIsNew, pair.source, pair.target, relation);
+                removeConflictingRelations(
+                        seq,
+                        sig,
+                        sourceIsNew,
+                        pair.source,
+                        pair.target,
+                        relation);
 
                 // Finally, add relation
                 seq.add(new LinkTask(sig, pair.source, pair.target, relation));
@@ -762,8 +800,13 @@ public class InterController
 
                     // Remove conflicting relations if any
                     final boolean sourceIsNew = pair.source != str.source;
-                    removeConflictingRelations(seq, sig, sourceIsNew, pair.source, pair.target,
-                                               str.relation);
+                    removeConflictingRelations(
+                            seq,
+                            sig,
+                            sourceIsNew,
+                            pair.source,
+                            pair.target,
+                            str.relation);
                 }
 
                 // Finally, add relation
@@ -847,8 +890,10 @@ public class InterController
 
                     // Transfer original stem relations (beam, flag) to the compound stem
                     for (StemInter st : stems) {
-                        for (Relation rel : sig.getRelations(st, BeamStemRelation.class,
-                                                             FlagStemRelation.class)) {
+                        for (Relation rel : sig.getRelations(
+                                st,
+                                BeamStemRelation.class,
+                                FlagStemRelation.class)) {
                             Inter target = sig.getEdgeTarget(rel);
                             Inter other = sig.getOppositeInter(st, rel);
                             newStemLinks.add(new Link(other, rel.duplicate(), other == target));
@@ -917,8 +962,12 @@ public class InterController
                     double width = (upBar.getWidth() + downBar.getWidth()) * 0.5;
                     BarConnectorInter connector = new BarConnectorInter(shape, 1.0, median, width);
                     SIGraph sig = system.getSig();
-                    seq.add(new AdditionTask(
-                            sig, connector, connector.getBounds(), Collections.emptySet()));
+                    seq.add(
+                            new AdditionTask(
+                                    sig,
+                                    connector,
+                                    connector.getBounds(),
+                                    Collections.emptySet()));
 
                     // Link up & down bars
                     seq.add(new LinkTask(sig, upBar, downBar, new BarConnectionRelation()));
@@ -953,8 +1002,8 @@ public class InterController
 
         Collections.sort(stems, Inters.byCenterOrdinate);
 
-        Glyph stemGlyph = glyphs.isEmpty() ? null : sheet.getGlyphIndex().registerOriginal(
-                GlyphFactory.buildGlyph(glyphs));
+        Glyph stemGlyph = glyphs.isEmpty() ? null
+                : sheet.getGlyphIndex().registerOriginal(GlyphFactory.buildGlyph(glyphs));
         StemInter stemInter = new StemInter(stemGlyph, 1.0);
         stemInter.setManual(true);
 
@@ -1167,8 +1216,10 @@ public class InterController
 
                         // Transfer original stem relations (beams, flags) to proper sub-stem
                         if ((yDir == -1 && i == 1) || (yDir == 1 && i == 0)) {
-                            for (Relation rel : sig.getRelations(stem, BeamStemRelation.class,
-                                                                 FlagStemRelation.class)) {
+                            for (Relation rel : sig.getRelations(
+                                    stem,
+                                    BeamStemRelation.class,
+                                    FlagStemRelation.class)) {
                                 Inter target = sig.getEdgeTarget(rel);
                                 Inter other = sig.getOppositeInter(stem, rel);
                                 Relation dup = rel.duplicate();
@@ -1445,7 +1496,9 @@ public class InterController
                 final boolean lyrics = shape == Shape.LYRICS;
                 final TextBuilder textBuilder = new TextBuilder(system, lyrics);
                 final List<TextLine> lines = textBuilder.processGlyph(
-                        buffer, relativeLines, glyph.getTopLeft());
+                        buffer,
+                        relativeLines,
+                        glyph.getTopLeft());
 
                 // Generate the sequence of word/line Inter additions
                 for (TextLine line : lines) {
@@ -1464,11 +1517,9 @@ public class InterController
                     for (TextWord textWord : line.getWords()) {
                         logger.debug("word {}", textWord);
 
-                        final WordInter word = lyrics
-                                ? new LyricItemInter(textWord)
-                                : ((role == TextRole.ChordName)
-                                        ? ChordNameInter.createValid(textWord)
-                                        : new WordInter(textWord));
+                        final WordInter word = lyrics ? new LyricItemInter(textWord)
+                                : ((role == TextRole.ChordName) ? ChordNameInter.createValid(
+                                        textWord) : new WordInter(textWord));
 
                         if (sentence != null) {
                             staff = sentence.getStaff();
@@ -1545,10 +1596,8 @@ public class InterController
             throw new IllegalStateException("No staff for " + center);
         }
 
-        if ((staves.size() == 1)
-                    || ghost instanceof BraceInter
-                    || ghost instanceof BarlineInter
-                    || ghost instanceof StaffBarlineInter) {
+        if ((staves.size() == 1) || ghost instanceof BraceInter || ghost instanceof BarlineInter
+                || ghost instanceof StaffBarlineInter) {
             // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
@@ -1560,14 +1609,15 @@ public class InterController
 
         if (!(ghost instanceof OctaveShiftInter)) {
             // Sort the 2 staves by increasing distance from glyph center
-            Collections.sort(staves, (s1, s2) -> Double.compare(s1.distanceTo(center),
-                                                                s2.distanceTo(center)));
+            Collections.sort(
+                    staves,
+                    (s1,
+                     s2) -> Double.compare(s1.distanceTo(center), s2.distanceTo(center)));
 
             if (constants.useStaffLink.isSet()) {
                 // Try to use link
                 SystemInfo prevSystem = null;
-                StaffLoop:
-                for (Staff stf : staves) {
+                StaffLoop: for (Staff stf : staves) {
                     system = stf.getSystem();
 
                     if (system != prevSystem) {
@@ -1702,9 +1752,11 @@ public class InterController
             }
 
             if (extension != null) {
-                seq.add(new DisconnectTask((side == RIGHT) ? slur : extension,
-                                           (side == RIGHT) ? extension : slur,
-                                           ConnectionTask.Kind.SLUR_CONNECTION));
+                seq.add(
+                        new DisconnectTask(
+                                (side == RIGHT) ? slur : extension,
+                                (side == RIGHT) ? extension : slur,
+                                ConnectionTask.Kind.SLUR_CONNECTION));
             }
         }
 
@@ -1732,8 +1784,10 @@ public class InterController
                     final HeadInter mirror = (HeadInter) target.getMirror();
 
                     if (mirror != null) {
-                        final Relation mirrorRel = sig.getRelation(source, mirror,
-                                                                   relation.getClass());
+                        final Relation mirrorRel = sig.getRelation(
+                                source,
+                                mirror,
+                                relation.getClass());
                         if (mirrorRel != null) {
                             toRemove.remove(mirrorRel);
                         }

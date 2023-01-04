@@ -37,6 +37,8 @@ import org.audiveris.omr.sheet.time.TimeColumn;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
+import org.audiveris.omr.sig.inter.AbstractNumberInter;
+import org.audiveris.omr.sig.inter.AbstractNumberInter.NumberInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -70,7 +72,6 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
-import org.audiveris.omr.sig.inter.MeasureNumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -376,18 +377,9 @@ public class InterFactory
         case TIME_SIXTEEN:
             // NOTA: These shapes are generally used for time number as part as a time signature
             // A time number is located on position -2 or +2 , at beginning of measure.
-            // They can also be used for measure number located above a multiple rest
-            // around measure center.
-            final MeasureNumberInter number = MeasureNumberInter.createValidAdded(
-                    glyph,
-                    shape,
-                    grade,
-                    closestStaff);
-            if (number != null) {
-                return number;
-            } else {
-                return TimeNumberInter.create(glyph, shape, grade, closestStaff); // Staff is OK
-            }
+            // They can also be used for a measure count located above a multiple rest
+            // or a simile mark.
+            return AbstractNumberInter.create(glyph, shape, grade, closestStaff);
 
         case COMMON_TIME:
         case CUT_TIME:
@@ -442,7 +434,8 @@ public class InterFactory
         case NATURAL:
         case SHARP:
         case DOUBLE_SHARP:
-        case DOUBLE_FLAT: {
+        case DOUBLE_FLAT:
+        {
             // Staff is very questionable!
             AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
@@ -465,7 +458,8 @@ public class InterFactory
         case CODA:
         case SEGNO:
         case DAL_SEGNO:
-        case DA_CAPO: {
+        case DA_CAPO:
+        {
             MarkerInter marker = MarkerInter.create(glyph, shape, grade, closestStaff); // OK
 
             sig.addVertex(marker);
@@ -622,9 +616,9 @@ public class InterFactory
         Collections.sort(
                 complexes,
                 (d1,
-                        d2) -> Integer.compare(
-                        d2.getSymbolString().length(),
-                        d1.getSymbolString().length()) // Sort by decreasing length
+                 d2) -> Integer.compare(
+                         d2.getSymbolString().length(),
+                         d1.getSymbolString().length()) // Sort by decreasing length
         );
 
         for (DynamicsInter complex : complexes) {
@@ -644,10 +638,11 @@ public class InterFactory
     private void handleTimes ()
     {
         // Retrieve all time inters (outside staff headers)
-        final List<Inter> systemTimes = sig.inters(new Class[]{
-            TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-            TimeCustomInter.class, // User modifiable combo 6/8
-            TimeNumberInter.class}); // Partial symbol like 6 or 8
+        final List<Inter> systemTimes = sig.inters(new Class[]
+        {
+                TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+                TimeCustomInter.class, // User modifiable combo 6/8
+                TimeNumberInter.class }); // Partial symbol like 6 or 8
 
         final List<Inter> headerTimes = new ArrayList<>();
 
@@ -668,7 +663,7 @@ public class InterFactory
         // Dispatch these time inters into their containing stack
         final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
                 (s1,
-                        s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
+                 s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
 
         for (Inter inter : systemTimes) {
             final MeasureStack stack = system.getStackAt(inter.getCenter());
@@ -696,7 +691,7 @@ public class InterFactory
                 final Rectangle columnBox = Inters.getBounds(times);
                 final List<Inter> neighbors = sig.inters(
                         (inter) -> inter.getBounds().intersects(columnBox)
-                                           && !(inter instanceof InterEnsemble));
+                                && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 
@@ -920,7 +915,7 @@ public class InterFactory
         case TIME_NINE:
         case TIME_TWELVE:
         case TIME_SIXTEEN:
-            return new TimeNumberInter(null, shape, GRADE, null); // No visit
+            return new NumberInter(null, shape, GRADE);
 
         case COMMON_TIME:
         case CUT_TIME:

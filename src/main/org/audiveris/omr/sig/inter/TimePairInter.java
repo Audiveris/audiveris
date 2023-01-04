@@ -46,7 +46,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class <code>TimePairInter</code> is a time signature composed of two halves
  * (num and den).
  * <p>
- * It is an Inter ensemble composed of 2 TimeNumberInter instances, one for top, one for bottom.
+ * It is an Inter ensemble composed of 2 {@link TimeNumberInter} instances, one for the top,
+ * and one for the bottom.
  *
  * @author Hervé Bitteur
  */
@@ -62,13 +63,13 @@ public class TimePairInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * (Private) constructor.
+     * Creates a new <code>TimePairInter</code> object.
      *
-     * @param timeRational
-     * @param grade
+     * @param timeRational num/den literal value
+     * @param grade        quality grade
      */
-    private TimePairInter (TimeRational timeRational,
-                           Double grade)
+    public TimePairInter (TimeRational timeRational,
+                          Double grade)
     {
         super(null, null, timeRational, grade);
     }
@@ -106,6 +107,36 @@ public class TimePairInter
         }
 
         EnsembleHelper.addMember(this, member);
+    }
+
+    //-------------//
+    // createAdded //
+    //-------------//
+    /**
+     * Create and add a <code>TimePairInter</code> object from its two halves.
+     *
+     * @param num numerator: non-null, registered in sig
+     * @param den denominator: non-null, registered in sig
+     * @return the created instance, already added to sig
+     */
+    public static TimePairInter createAdded (TimeNumberInter num,
+                                             TimeNumberInter den)
+    {
+        final TimePairInter pair = new TimePairInter(null, null);
+        final SIGraph sig = num.getSig();
+        sig.addVertex(pair);
+        pair.addMember(num);
+        pair.addMember(den);
+
+        // Safer
+        pair.getBounds();
+        pair.setStaff(num.getStaff());
+
+        if (pair.isVip()) {
+            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
+        }
+
+        return pair;
     }
 
     //-----------//
@@ -298,35 +329,5 @@ public class TimePairInter
         inter.setStaff(targetStaff);
 
         return inter;
-    }
-
-    //-------------//
-    // createAdded //
-    //-------------//
-    /**
-     * Create and add a <code>TimePairInter</code> object from its two halves.
-     *
-     * @param num numerator: non-null, registered in sig
-     * @param den denominator: non-null, registered in sig
-     * @return the created instance, already added to sig
-     */
-    public static TimePairInter createAdded (TimeNumberInter num,
-                                             TimeNumberInter den)
-    {
-        TimePairInter pair = new TimePairInter(null, null);
-        SIGraph sig = num.getSig();
-        sig.addVertex(pair);
-        pair.addMember(num);
-        pair.addMember(den);
-
-        // Safer
-        pair.getBounds();
-        pair.setStaff(num.getStaff());
-
-        if (pair.isVip()) {
-            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
-        }
-
-        return pair;
     }
 }

@@ -36,7 +36,7 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
@@ -605,9 +605,8 @@ public class MeasureStack
             }
 
             // Precise abscissa limits
-            if ((measure != null)
-                        && (measure.getAbscissa(LEFT, staff) <= center.x)
-                        && (center.x <= measure.getAbscissa(RIGHT, staff))) {
+            if ((measure != null) && (measure.getAbscissa(LEFT, staff) <= center.x)
+                    && (center.x <= measure.getAbscissa(RIGHT, staff))) {
                 kept.add(inter);
             }
         }
@@ -992,29 +991,29 @@ public class MeasureStack
         return measures;
     }
 
-    //--------------------------//
-    // getMultipleMeasureNumber //
-    //--------------------------//
+    //-------------------------//
+    // getMultipleMeasureCount //
+    //-------------------------//
     /**
      * Report the count of measures indicated by a multiple rest if any.
      *
      * @return the count of measures if found or null
      */
-    public Integer getMultipleMeasureNumber ()
+    public Integer getMultipleMeasureCount ()
     {
-        return getMultipleMeasureNumber(system.getSig().inters(MultipleRestInter.class));
+        return getMultipleMeasureCount(system.getSig().inters(MultipleRestInter.class));
     }
 
-    //--------------------------//
-    // getMultipleMeasureNumber //
-    //--------------------------//
+    //-------------------------//
+    // getMultipleMeasureCount //
+    //-------------------------//
     /**
      * Report the count of measures indicated by a multiple rest if any.
      *
      * @param multipleRests all multiple rests in this system
      * @return the count of measures if found or null
      */
-    public Integer getMultipleMeasureNumber (Collection<Inter> multipleRests)
+    public Integer getMultipleMeasureCount (Collection<Inter> multipleRests)
     {
         if (multipleRests.isEmpty()) {
             return null;
@@ -1025,13 +1024,13 @@ public class MeasureStack
 
             if ((center.x >= left) && (center.x <= right)) {
                 final MultipleRestInter multipleRest = (MultipleRestInter) mri;
-                final MeasureNumberInter measureNumber = multipleRest.getMeasureNumber();
+                final MeasureCountInter measureCount = multipleRest.getMeasureCount();
 
-                if (measureNumber == null) {
+                if (measureCount == null) {
                     return null;
                 }
 
-                return measureNumber.getValue();
+                return measureCount.getValue();
             }
         }
 
@@ -1070,7 +1069,7 @@ public class MeasureStack
     {
         if (id != null) {
             return ((special == SpecialMeasure.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + id
-                           + (isCautionary() ? CAUTIONARY_SUFFIX : "");
+                    + (isCautionary() ? CAUTIONARY_SUFFIX : "");
         }
 
         // No id defined yet
@@ -1169,7 +1168,7 @@ public class MeasureStack
         }
 
         return ((special == SpecialMeasure.SECOND_HALF) ? SECOND_HALF_PREFIX : "")
-                       + (pageMeasureIdOffset + id);
+                + (pageMeasureIdOffset + id);
     }
 
     //----------//

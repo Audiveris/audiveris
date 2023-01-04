@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                            T i m e T o p B o t t o m R e l a t i o n                           //
+//                        M u l t i p l e R e s t C o u n t R e l a t i o n                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,54 +21,19 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.sig.inter.TimeNumberInter;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>TimeTopBottomRelation</code> represents the relation between a top
- * {@link TimeNumberInter} and a bottom {@link TimeNumberInter} in a time signature.
+ * Class <code>MultipleRestCountRelation</code> implements the link between
+ * a multiple rest and the count of measures.
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "time-top-bottom")
-public class TimeTopBottomRelation
+@XmlRootElement(name = "multiple-rest-count")
+public class MultipleRestCountRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
-
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new <code>TimeTopBottomRelation</code> object.
-     */
-    public TimeTopBottomRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.numberSupportCoeff.getValue();
-    }
-
-    //----------------//
-    // getTargetCoeff //
-    //----------------//
-    @Override
-    protected double getTargetCoeff ()
-    {
-        return constants.numberSupportCoeff.getValue();
-    }
 
     //----------------//
     // isSingleSource //
@@ -86,19 +51,5 @@ public class TimeTopBottomRelation
     public boolean isSingleTarget ()
     {
         return true;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Ratio numberSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for (source/target) number coeff in support formula");
     }
 }

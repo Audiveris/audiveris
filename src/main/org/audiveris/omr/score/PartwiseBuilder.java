@@ -2084,7 +2084,7 @@ public class PartwiseBuilder
      */
     private void insertMultipleRest (MeasureStack stack)
     {
-        final Integer count = stack.getMultipleMeasureNumber(current.multipleRests);
+        final Integer count = stack.getMultipleMeasureCount(current.multipleRests);
 
         if (count != null) {
             // Measure duration

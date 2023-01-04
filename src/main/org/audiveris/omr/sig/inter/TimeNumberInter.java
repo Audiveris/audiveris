@@ -62,7 +62,7 @@ public class TimeNumberInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new TimeNumberInter object.
+     * Creates a new <code>TimeNumberInter</code> object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -97,41 +97,9 @@ public class TimeNumberInter
         visitor.visit(this);
     }
 
-    //-----------//
-    // getEditor //
-    //-----------//
-    @Override
-    public InterEditor getEditor ()
-    {
-        return new HorizontalEditor(this);
-    }
-
-    //---------//
-    // getSide //
-    //---------//
-    /**
-     * Report vertical position with respect to the staff time signature.
-     *
-     * @return TOP or BOTTOM
-     */
-    public VerticalSide getSide ()
-    {
-        return side;
-    }
-
-    //---------//
-    // setSide //
-    //---------//
-    /**
-     * Set the vertical position with respect to the staff time signature.
-     *
-     * @param side the side to set
-     */
-    public void setSide (VerticalSide side)
-    {
-        this.side = side;
-    }
-
+    //--------//
+    // create //
+    //--------//
     /**
      * (Try to) create a top or bottom number for time signature.
      *
@@ -149,10 +117,8 @@ public class TimeNumberInter
         // Check pitch of item
         Point centroid = glyph.getCentroid();
         double pitch = staff.pitchPositionOf(centroid);
-        double absPitch = Math.abs(pitch);
 
-        if ((absPitch < constants.minAbsolutePitch.getValue())
-                    || (absPitch > constants.maxAbsolutePitch.getValue())) {
+        if (!isPitchValid(pitch)) {
             return null;
         }
 
@@ -164,6 +130,15 @@ public class TimeNumberInter
         return inter;
     }
 
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new HorizontalEditor(this);
+    }
+
     //----------------//
     // getShapeString //
     //----------------//
@@ -171,6 +146,46 @@ public class TimeNumberInter
     public String getShapeString ()
     {
         return "TIME_" + getValue();
+    }
+
+    //---------//
+    // getSide //
+    //---------//
+    /**
+     * Report vertical position with respect to the staff time signature.
+     *
+     * @return TOP or BOTTOM
+     */
+    public VerticalSide getSide ()
+    {
+        return side;
+    }
+
+    //--------------//
+    // isPitchValid //
+    //--------------//
+    /**
+     * Report whether the provided pitch position is valid for a TimeNumberInter candidate.
+     */
+    public static boolean isPitchValid (double pitch)
+    {
+        double absPitch = Math.abs(pitch);
+
+        return (absPitch >= constants.minAbsolutePitch.getValue())
+                && (absPitch <= constants.maxAbsolutePitch.getValue());
+    }
+
+    //---------//
+    // setSide //
+    //---------//
+    /**
+     * Set the vertical position with respect to the staff time signature.
+     *
+     * @param side the side to set
+     */
+    public void setSide (VerticalSide side)
+    {
+        this.side = side;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

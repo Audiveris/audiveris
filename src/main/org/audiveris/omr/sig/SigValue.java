@@ -62,7 +62,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
-import org.audiveris.omr.sig.inter.MeasureNumberInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
@@ -126,7 +126,7 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 import org.audiveris.omr.sig.relation.MirrorRelation;
-import org.audiveris.omr.sig.relation.MultipleRestNumberRelation;
+import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
@@ -219,7 +219,7 @@ public class SigValue
         @XmlElementRef(type = LyricItemInter.class),
         @XmlElementRef(type = LyricLineInter.class),
         @XmlElementRef(type = MarkerInter.class),
-        @XmlElementRef(type = MeasureNumberInter.class),
+        @XmlElementRef(type = MeasureCountInter.class),
         @XmlElementRef(type = MultipleRestInter.class),
         @XmlElementRef(type = OctaveShiftInter.class),
         @XmlElementRef(type = OrnamentInter.class),
@@ -421,7 +421,7 @@ public class SigValue
             @XmlElementRef(type = KeyAltersRelation.class),
             @XmlElementRef(type = MarkerBarRelation.class),
             @XmlElementRef(type = MirrorRelation.class),
-            @XmlElementRef(type = MultipleRestNumberRelation.class),
+            @XmlElementRef(type = MultipleRestCountRelation.class),
             @XmlElementRef(type = MultipleRestSerifRelation.class),
             @XmlElementRef(type = NextInVoiceRelation.class),
             @XmlElementRef(type = NoExclusion.class),
