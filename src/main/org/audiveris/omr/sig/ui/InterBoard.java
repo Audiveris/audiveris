@@ -23,9 +23,11 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.inter.AbstractNumberInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -141,7 +143,7 @@ public class InterBoard
             resources.getString("tie.text"),
             resources.getString("tie.toolTipText"));
 
-    /** Numerator/Denominator of custom time signature. */
+    /** Value or Numerator/Denominator of custom count or time. */
     private final LTextField custom = new LTextField(
             true,
             resources.getString("time.text"),
@@ -480,6 +482,16 @@ public class InterBoard
                 }
 
                 selfUpdatingText = false;
+            } else if (inter instanceof AbstractNumberInter number) {
+                if (number.getShape() == Shape.NUMBER_CUSTOM) {
+                    selfUpdatingText = true;
+
+                    custom.setText(number.getValue().toString());
+                    custom.setEnabled(true);
+                    custom.setVisible(true);
+
+                    selfUpdatingText = false;
+                }
             } else if (inter instanceof TimeCustomInter timeCustomInter) {
                 selfUpdatingText = true;
 
@@ -624,6 +636,21 @@ public class InterBoard
                                 textField.getText().trim(),
                                 newRole);
                         sheet.getInterController().changeSentence(sentence, newRole);
+                    }
+                } else if (inter instanceof AbstractNumberInter number) {
+                    if (number.getShape() == Shape.NUMBER_CUSTOM) {
+                        try {
+                            // Change custom value?
+                            Integer newValue = Integer.decode(custom.getText());
+
+                            if (!newValue.equals(number.getValue())) {
+                                logger.debug("Custom={}", newValue);
+                                sheet.getInterController().changeNumber(number, newValue);
+                            }
+                        } catch (Exception ex) {
+                            logger.warn("Illegal integer value {}", ex.toString());
+                            custom.getField().requestFocusInWindow();
+                        }
                     }
                 } else if (inter instanceof TimeCustomInter) {
                     TimeCustomInter timeCustom = (TimeCustomInter) inter;

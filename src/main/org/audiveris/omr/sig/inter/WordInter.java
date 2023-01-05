@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -41,6 +42,7 @@ import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.StringUtil;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +60,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Class <code>WordInter</code> represents a text word.
@@ -115,13 +115,14 @@ public class WordInter
     public WordInter (TextWord textWord,
                       Shape shape)
     {
-        this(textWord.getGlyph(),
-             textWord.getBounds(),
-             shape,
-             textWord.getConfidence() * Grades.intrinsicRatio,
-             textWord.getValue(),
-             textWord.getFontInfo(),
-             textWord.getLocation());
+        this(
+                textWord.getGlyph(),
+                textWord.getBounds(),
+                shape,
+                textWord.getConfidence() * Grades.intrinsicRatio,
+                textWord.getValue(),
+                textWord.getFontInfo(),
+                textWord.getLocation());
     }
 
     /**
@@ -134,13 +135,14 @@ public class WordInter
     public WordInter (WordInter word,
                       Shape shape)
     {
-        this(word.getGlyph(),
-             word.getBounds(),
-             shape,
-             1.0,
-             word.getValue(),
-             word.getFontInfo(),
-             PointUtil.rounded(word.getLocation()));
+        this(
+                word.getGlyph(),
+                word.getBounds(),
+                shape,
+                1.0,
+                word.getValue(),
+                word.getFontInfo(),
+                PointUtil.rounded(word.getLocation()));
     }
 
     /**
@@ -247,10 +249,12 @@ public class WordInter
         TextLayout layout = textFont.layout(value);
         Rectangle2D rect = layout.getBounds();
 
-        return new Rectangle(bounds = new Rectangle((int) Math.rint(location.getX()),
-                                                    (int) Math.rint(location.getY() + rect.getY()),
-                                                    (int) Math.rint(rect.getWidth()),
-                                                    (int) Math.rint(rect.getHeight())));
+        return new Rectangle(
+                bounds = new Rectangle(
+                        (int) Math.rint(location.getX()),
+                        (int) Math.rint(location.getY() + rect.getY()),
+                        (int) Math.rint(rect.getWidth()),
+                        (int) Math.rint(rect.getHeight())));
     }
 
     //------------//
@@ -358,20 +362,23 @@ public class WordInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this word
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
 
         // Wrap this word into a new sentence
         SentenceInter sentence = new SentenceInter(TextRole.Direction, 1.0);
         sentence.setManual(true);
         sentence.setStaff(staff);
 
-        tasks.add(new AdditionTask(staff.getSystem().getSig(),
-                                   sentence,
-                                   getBounds(),
-                                   Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(
+                new AdditionTask(
+                        staff.getSystem().getSig(),
+                        sentence,
+                        getBounds(),
+                        Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }

@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,13 +322,10 @@ public class TremoloInter
     public static Shape getTremoloShape (int value)
     {
         return switch (value) {
-            case 1 ->
-                TREMOLO_1;
-            case 2 ->
-                TREMOLO_2;
-            case 3 ->
-                TREMOLO_3;
-            default -> throw new IllegalArgumentException("Unsupported tremolo value " + value);
+        case 1 -> TREMOLO_1;
+        case 2 -> TREMOLO_2;
+        case 3 -> TREMOLO_3;
+        default -> throw new IllegalArgumentException("Unsupported tremolo value " + value);
         };
     }
 
@@ -343,13 +341,10 @@ public class TremoloInter
     public static int getTremoloValue (Shape shape)
     {
         return switch (shape) {
-            case TREMOLO_1 ->
-                1;
-            case TREMOLO_2 ->
-                2;
-            case TREMOLO_3 ->
-                3;
-            default -> throw new IllegalArgumentException("Unsupported tremolo shape " + shape);
+        case TREMOLO_1 -> 1;
+        case TREMOLO_2 -> 2;
+        case TREMOLO_3 -> 3;
+        default -> throw new IllegalArgumentException("Unsupported tremolo shape " + shape);
         };
     }
 
@@ -447,8 +442,7 @@ public class TremoloInter
         final double yShift = Math.abs(tBox.width * 0.5 * constants.slope.getValue());
         final Point center = getCenter();
         final Rectangle luBox = new Rectangle(center.x, center.y, 0, 0);
-        luBox.grow(xOut,
-                   (int) Math.rint(tBox.height * 0.5 - yShift + yGap));
+        luBox.grow(xOut, (int) Math.rint(tBox.height * 0.5 - yShift + yGap));
 
         double bestGrade = Double.MAX_VALUE;
         Relation bestRel = null;
@@ -488,7 +482,8 @@ public class TremoloInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this tremolo
         final SystemInfo system = staff.getSystem();
@@ -551,9 +546,7 @@ public class TremoloInter
             extends ConstantSet
     {
 
-        private final Scale.Fraction width = new Scale.Fraction(
-                1.35,
-                "Typical tremolo width");
+        private final Scale.Fraction width = new Scale.Fraction(1.35, "Typical tremolo width");
 
         private final Scale.Fraction widthMargin = new Scale.Fraction(
                 0.25,

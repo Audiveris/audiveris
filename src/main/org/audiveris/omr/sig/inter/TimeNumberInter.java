@@ -139,15 +139,6 @@ public class TimeNumberInter
         return new HorizontalEditor(this);
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "TIME_" + getValue();
-    }
-
     //---------//
     // getSide //
     //---------//

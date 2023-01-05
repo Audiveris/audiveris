@@ -31,9 +31,9 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
-import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>MeasureCountInter</code> represents a count of measures for a multiple rest,
- linked via a MultipleRestCountRelation.
+ * linked via a MultipleRestCountRelation.
  *
  * @see MultipleRestInter
  * @author Hervé Bitteur
@@ -164,36 +164,18 @@ public class MeasureCountInter
         return number;
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "NUMBER_" + getValue();
-    }
-
     //--------//
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this measure number
         final SystemInfo system = staff.getSystem();
         final List<UITask> tasks = new ArrayList<>();
         final Collection<Link> links = searchLinks(system);
         tasks.add(new AdditionTask(system.getSig(), this, getBounds(), links));
-
-        // Link to a multiple rest?
-        for (Link link : links) {
-            final MultipleRestInter rest = (MultipleRestInter) link.partner;
-            final MultipleRestCountRelation rel = new MultipleRestCountRelation();
-            rel.setManual(true);
-
-            tasks.add(new LinkTask(system.getSig(), rest, this, rel));
-            break;
-        }
 
         return tasks;
     }

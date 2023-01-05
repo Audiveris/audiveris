@@ -88,7 +88,7 @@ public class ShapeSet
      * to indicate the number of measures the rest represents.
      */
     public static final List<Shape> MeasureCounts = Arrays.asList(
-            TIME_ZERO,
+            NUMBER_CUSTOM,
             TIME_ONE,
             TIME_TWO,
             TIME_THREE,
@@ -353,14 +353,10 @@ public class ShapeSet
             PLAYING_CLOSED);
 
     /** Tremolos. */
-    public static final List<Shape> Tremolos = Arrays.asList(
-            TREMOLO_1,
-            TREMOLO_2,
-            TREMOLO_3);
+    public static final List<Shape> Tremolos = Arrays.asList(TREMOLO_1, TREMOLO_2, TREMOLO_3);
 
     /** All non-draggable shapes. */
-    public static final EnumSet<Shape> Undraggables = EnumSet.of(
-            NON_DRAGGABLE);
+    public static final EnumSet<Shape> Undraggables = EnumSet.of(NON_DRAGGABLE);
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
@@ -407,9 +403,10 @@ public class ShapeSet
     public static final ShapeSet BeamsEtc = new ShapeSet(
             BEAM,
             Colors.SCORE_NOTES,
-            shapesOf(Arrays.asList(BEAM, BEAM_HOOK),
-                     Tremolos,
-                     Arrays.asList(TUPLET_THREE, TUPLET_SIX)));
+            shapesOf(
+                    Arrays.asList(BEAM, BEAM_HOOK),
+                    Tremolos,
+                    Arrays.asList(TUPLET_THREE, TUPLET_SIX)));
 
     public static final ShapeSet ClefsAndShifts = new ShapeSet(
             G_CLEF,
@@ -491,7 +488,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             Colors.SCORE_FRAME,
-            shapesOf(shapesOf(PartialTimes, WholeTimes), shapesOf(TIME_CUSTOM)));
+            shapesOf(shapesOf(MeasureCounts), shapesOf(TIME_CUSTOM), shapesOf(WholeTimes)));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
@@ -539,7 +536,7 @@ public class ShapeSet
                             ENDING,
                             ENDING_WRL),
                     constants.addClutterInPhysicals.isSet() ? shapesOf(CLUTTER)
-                    : Collections.emptyList()));
+                            : Collections.emptyList()));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -639,23 +636,12 @@ public class ShapeSet
         }
 
         return switch (motif) {
-            case oval ->
-                HeadsOval;
-
-            case small ->
-                HeadsOvalSmall;
-
-            case cross ->
-                HeadsCross;
-
-            case diamond ->
-                HeadsDiamond;
-
-            case triangle ->
-                HeadsTriangle;
-
-            case circle ->
-                HeadsCircle;
+        case oval -> HeadsOval;
+        case small -> HeadsOvalSmall;
+        case cross -> HeadsCross;
+        case diamond -> HeadsDiamond;
+        case triangle -> HeadsTriangle;
+        case circle -> HeadsCircle;
         };
     }
 

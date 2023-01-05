@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.AbstractInterVisitor;
+import org.audiveris.omr.sig.inter.AbstractNumberInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
@@ -64,7 +65,6 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
-import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -82,6 +82,7 @@ import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
+import org.audiveris.omr.ui.symbol.NumberSymbol;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -783,6 +784,28 @@ public abstract class SheetPainter
         // visit //
         //-------//
         @Override
+        public void visit (AbstractNumberInter inter)
+        {
+            setColor(inter);
+
+            final Staff staff = inter.getStaff();
+            final Rectangle bounds = inter.getBounds();
+
+            if (bounds != null) {
+                final MusicFont font = getMusicFont(staff);
+                final ShapeSymbol symbol = new NumberSymbol(
+                        inter.getShape(),
+                        font.getMusicFamily(),
+                        inter.getValue());
+                final Point2D center = GeoUtil.center2D(bounds);
+                symbol.paintSymbol(g, font, center, AREA_CENTER);
+            }
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
         public void visit (AlterInter inter)
         {
             paintHalf(inter, AlterHeadRelation.class);
@@ -913,7 +936,7 @@ public abstract class SheetPainter
 
             // Lower symbol part?
             if ((kind == BracketInter.BracketKind.BOTTOM)
-                        || (kind == BracketInter.BracketKind.BOTH)) {
+                    || (kind == BracketInter.BracketKind.BOTH)) {
                 final TextLayout lower = font.layoutShapeByCode(Shape.BRACKET_LOWER_SERIF);
 
                 if (lower != null) {
@@ -1245,17 +1268,6 @@ public abstract class SheetPainter
                         inter.getDenominator());
                 final Point2D center = GeoUtil.center2D(bounds);
                 symbol.paintSymbol(g, font, center, AREA_CENTER);
-            }
-        }
-
-        //-------//
-        // visit //
-        //-------//
-        @Override
-        public void visit (TimePairInter pair)
-        {
-            for (Inter member : pair.getMembers()) { // Needs sig, thus it can't be used for ghost.
-                visit(member);
             }
         }
 

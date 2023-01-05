@@ -50,6 +50,11 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (AbstractNumberInter inter)
+    {
+    }
+
+    @Override
     public void visit (AlterInter inter)
     {
         visit((Inter) inter); // Redirection by default
@@ -332,12 +337,6 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (TimeCustomInter inter)
     {
-    }
-
-    @Override
-    public void visit (TimeNumberInter inter)
-    {
-        visit((Inter) inter); // Redirection by default
     }
 
     @Override

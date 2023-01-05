@@ -902,8 +902,8 @@ public class InterFactory
         case KEY_SHARP_7:
             return new KeyInter(GRADE, shape);
 
-        // Time sig
-        case TIME_ZERO:
+        // Custom / predefined number
+        case NUMBER_CUSTOM:
         case TIME_ONE:
         case TIME_TWO:
         case TIME_THREE:
@@ -917,6 +917,7 @@ public class InterFactory
         case TIME_SIXTEEN:
             return new NumberInter(null, shape, GRADE);
 
+        // Predefined whole time
         case COMMON_TIME:
         case CUT_TIME:
         case TIME_FOUR_FOUR:

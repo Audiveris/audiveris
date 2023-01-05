@@ -43,6 +43,7 @@ import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import static org.audiveris.omr.util.StringUtil.*;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,10 +429,11 @@ public class LyricItemInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this lyric item
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
 
         // Look for a containing lyric line
         final Point2D loc = getLocation();
@@ -505,7 +507,11 @@ public class LyricItemInter
                         double dx = Math.abs(chordCenter.x - refX);
 
                         if (dx <= maxDx) {
-                            double d2 = Point2D.distanceSq(refX, refY, chordCenter.x, chordCenter.y);
+                            double d2 = Point2D.distanceSq(
+                                    refX,
+                                    refY,
+                                    chordCenter.x,
+                                    chordCenter.y);
 
                             if (d2 < bestD2) {
                                 bestD2 = d2;
@@ -527,7 +533,11 @@ public class LyricItemInter
                         double dx = Math.abs(chordCenter.x - refX);
 
                         if (dx <= maxDx) {
-                            double d2 = Point2D.distanceSq(refX, refY, chordCenter.x, chordCenter.y);
+                            double d2 = Point2D.distanceSq(
+                                    refX,
+                                    refY,
+                                    chordCenter.x,
+                                    chordCenter.y);
 
                             if (d2 < bestD2) {
                                 bestD2 = d2;

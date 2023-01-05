@@ -58,6 +58,7 @@ import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1314,7 +1315,8 @@ public abstract class AbstractInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         final SystemInfo system = staff.getSystem();
 
@@ -1490,8 +1492,7 @@ public abstract class AbstractInter
 
         Collection<Link> unlinks = null;
 
-        ExistingLoop:
-        for (Relation rel : sig.getRelations(this, classes)) {
+        ExistingLoop: for (Relation rel : sig.getRelations(this, classes)) {
             final Inter other = sig.getOppositeInter(this, rel);
 
             for (Link link : links) {
@@ -1685,14 +1686,14 @@ public abstract class AbstractInter
 
         @Override
         public AbstractInter marshal (Inter inter)
-                throws Exception
+            throws Exception
         {
             return (AbstractInter) inter;
         }
 
         @Override
         public Inter unmarshal (AbstractInter abstractInter)
-                throws Exception
+            throws Exception
         {
             return abstractInter;
         }

@@ -38,6 +38,8 @@ public interface InterVisitor
 
     void visit (AbstractFlagInter inter); // Flag, SmallFlag
 
+    void visit (AbstractNumberInter inter); // Measure count, time number
+
     void visit (AlterInter inter);
 
     void visit (ArpeggiatoInter inter);
@@ -92,7 +94,7 @@ public interface InterVisitor
 
     void visit (HeadInter inter);
 
-    void visit (Inter inter); // Pedal, TimeNumber, Rest, Alter, RepeatDot, Articulation
+    void visit (Inter inter); // Pedal, Rest, Alter, RepeatDot, Articulation
     // AugmentationDot, BreathMark, Caesura, Dynamics
     // FermataArc, FermataDot, Fermata, Fingering, Fret, Marker, Ornament, Plucking, Segment
     // Tuplet
@@ -142,8 +144,6 @@ public interface InterVisitor
     void visit (StemInter inter);
 
     void visit (TimeCustomInter inter);
-
-    void visit (TimeNumberInter inter);
 
     void visit (TimePairInter inter);
 

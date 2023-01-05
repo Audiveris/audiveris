@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,21 +119,23 @@ public class RestInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this rest
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
 
         // Wrap this rest within a rest chord
         final RestChordInter restChord = new RestChordInter(null);
         restChord.setManual(true);
         restChord.setStaff(staff);
 
-        tasks.add(new AdditionTask(
-                staff.getSystem().getSig(),
-                restChord,
-                getBounds(),
-                Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(
+                new AdditionTask(
+                        staff.getSystem().getSig(),
+                        restChord,
+                        getBounds(),
+                        Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }
@@ -183,16 +186,16 @@ public class RestInter
         // All head-chords in staff measure
         final int left = measure.getAbscissa(HorizontalSide.LEFT, restStaff);
         final int right = measure.getAbscissa(HorizontalSide.RIGHT, restStaff);
-        final List<Inter> measureChords
-                = Inters.inters(systemHeadChords, (Inter inter) -> {
-                            if (inter.getStaff() != restStaff) {
-                                return false;
-                            }
+        final List<Inter> measureChords = Inters.inters(systemHeadChords, (Inter inter) ->
+        {
+            if (inter.getStaff() != restStaff) {
+                return false;
+            }
 
-                            final Point center = inter.getCenter();
+            final Point center = inter.getCenter();
 
-                            return (center.x >= left) && (center.x <= right);
-                        });
+            return (center.x >= left) && (center.x <= right);
+        });
 
         for (Inter chord : measureChords) {
             if (fatBox.intersects(chord.getBounds())) {

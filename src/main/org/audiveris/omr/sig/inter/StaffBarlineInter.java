@@ -57,6 +57,7 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -838,17 +839,18 @@ public final class StaffBarlineInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this staffBarline
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
         final SystemInfo system = staff.getSystem();
         final Sheet sheet = system.getSheet();
-//
-//        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-//            return tasks;
-//        }
-//
+        //
+        //        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
+        //            return tasks;
+        //        }
+        //
         // Include a staffBarline per system staff, properly positioned in abscissa
         final Scale scale = sheet.getScale();
         final int lineThickness = scale.getFore();
@@ -884,8 +886,8 @@ public final class StaffBarlineInter
             }
 
             // Staff extension?
-            if ((x > st.getAbscissa(HorizontalSide.RIGHT) + maxDx)
-                        || (x < st.getAbscissa(HorizontalSide.LEFT) - maxDx)) {
+            if ((x > st.getAbscissa(HorizontalSide.RIGHT) + maxDx) || (x < st.getAbscissa(
+                    HorizontalSide.LEFT) - maxDx)) {
                 extStaves.add(st);
             }
         }
@@ -894,7 +896,10 @@ public final class StaffBarlineInter
         if (bars.size() > 1) {
             sheet.getInterIndex().getEntityService().publish(
                     new EntityListEvent<>(
-                            this, SelectionHint.ENTITY_INIT, MouseMovement.PRESSING, bars));
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            bars));
 
             if (!OMR.gui.displayConfirmation(
                     "Do you confirm whole system-height addition?",
@@ -937,10 +942,7 @@ public final class StaffBarlineInter
 
         sheet.getInterIndex().publish(null);
         sheet.getLocationService().publish(
-                new LocationEvent(this,
-                                  SelectionHint.LOCATION_INIT,
-                                  MouseMovement.PRESSING,
-                                  null));
+                new LocationEvent(this, SelectionHint.LOCATION_INIT, MouseMovement.PRESSING, null));
 
         return Collections.emptyList();
     }

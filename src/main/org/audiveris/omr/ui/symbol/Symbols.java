@@ -362,6 +362,9 @@ public abstract class Symbols
         mapNumDen(TIME_TWELVE_EIGHT, 12, 8);
         mapNumDen(TIME_TWO_FOUR, 2, 4);
         mapNumDen(TIME_TWO_TWO, 2, 2);
+
+        // Custom number
+        symbolMap.put(NUMBER_CUSTOM, new NumberSymbol(NUMBER_CUSTOM, family(), 0));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

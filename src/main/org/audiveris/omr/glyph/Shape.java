@@ -478,6 +478,7 @@ public enum Shape
     FORWARD("To indicate a forward"),
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
+    NUMBER_CUSTOM("Number defined by user"),
     TIME_CUSTOM("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
     MEASURE_NUMBER("Measure number in a multiple rest"),
@@ -505,8 +506,8 @@ public enum Shape
 
     /** A comparator based on shape name. */
     public static final Comparator<Shape> alphaComparator = (Shape o1,
-            Shape o2) -> o1.name().compareTo(
-            o2.name());
+                                                             Shape o2) -> o1.name().compareTo(
+                                                                     o2.name());
 
     /** Explanation of the glyph shape. */
     private final String description;
@@ -623,8 +624,7 @@ public enum Shape
     public boolean isPercussion ()
     {
         return ShapeSet.HeadsCross.contains(this) || ShapeSet.HeadsDiamond.contains(this)
-                       || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(
-                this);
+                || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(this);
     }
 
     //--------//
@@ -786,14 +786,10 @@ public enum Shape
     public int getSlashCount ()
     {
         return switch (this) {
-            case REPEAT_ONE_BAR ->
-                1;
-            case REPEAT_TWO_BARS ->
-                2;
-            case REPEAT_FOUR_BARS ->
-                4;
-            default ->
-                0;
+        case REPEAT_ONE_BAR -> 1;
+        case REPEAT_TWO_BARS -> 2;
+        case REPEAT_FOUR_BARS -> 4;
+        default -> 0;
         };
     }
 

@@ -45,6 +45,7 @@ import org.audiveris.omr.sheet.ui.StaffEditionTask;
 import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.AbstractNumberInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -94,6 +95,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,7 +193,7 @@ public class InterController
 
                 // Addition task and other related tasks (additions, links) if any
                 final WrappedBoolean cancel = new WrappedBoolean(false);
-                seq.addAll(inter.preAdd(cancel));
+                seq.addAll(inter.preAdd(cancel, toPublish));
 
                 if (cancel.isSet()) {
                     seq.setCancelled(true);
@@ -205,7 +207,12 @@ public class InterController
                     sheet.getSheetEditor().getShapeBoard().addToHistory(inter.getShape());
                 }
 
-                sheet.getInterIndex().publish(inter);
+                if (toPublish.value != null) {
+                    sheet.getInterIndex().publish(toPublish.value);
+                } else {
+                    sheet.getInterIndex().publish(inter);
+                }
+
                 sheet.getGlyphIndex().publish(null);
             }
         }.execute();
@@ -518,6 +525,35 @@ public class InterController
             logger.debug("Completing edition of {}", editedInter);
             objectEditor.endProcess();
         }
+    }
+
+    //--------------//
+    // changeNumber //
+    //--------------//
+    /**
+     * Change the value of a (custom) number.
+     *
+     * @param custom   the custom count to modify
+     * @param newValue the new count value
+     */
+    @UIThread
+    public void changeNumber (AbstractNumberInter custom,
+                              Integer newValue)
+    {
+        new CtrlTask(DO, "changeNumber")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new NumberValueTask(custom, newValue));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(custom);
+            }
+        }.execute();
     }
 
     //------------//
@@ -1845,6 +1881,8 @@ public class InterController
         protected final String opName; // Descriptive name of user action
 
         protected UITaskList seq = new UITaskList(); // Atomic sequence of tasks
+
+        protected Wrapper<Inter> toPublish = new Wrapper<>(null); // Inter to publish
 
         public CtrlTask (OpKind opKind,
                          String opName,

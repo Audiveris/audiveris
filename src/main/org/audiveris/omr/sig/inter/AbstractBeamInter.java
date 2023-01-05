@@ -22,14 +22,11 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
-import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.Sheet;
@@ -37,6 +34,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.stem.BeamLinker;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
@@ -56,11 +54,11 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
-import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,14 +77,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Abstract class <code>AbstractBeamInter</code> is the basis for {@link BeamInter},
@@ -205,7 +197,10 @@ public abstract class AbstractBeamInter
         boolean left = false;
         boolean right = false;
 
-        for (Relation rel : sig.getRelations(this, BeamStemRelation.class, BeamRestRelation.class)) {
+        for (Relation rel : sig.getRelations(
+                this,
+                BeamStemRelation.class,
+                BeamRestRelation.class)) {
             final BeamPortion portion;
 
             if (rel instanceof BeamStemRelation) {
@@ -541,9 +536,10 @@ public abstract class AbstractBeamInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
 
         // Include the created beam into suitable beam group
         BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem(), null);
@@ -555,10 +551,12 @@ public abstract class AbstractBeamInter
             group.setManual(true);
             group.setStaff(staff);
 
-            tasks.add(new AdditionTask(staff.getSystem().getSig(),
-                                       group,
-                                       getBounds(),
-                                       Arrays.asList(new Link(this, new Containment(), true))));
+            tasks.add(
+                    new AdditionTask(
+                            staff.getSystem().getSig(),
+                            group,
+                            getBounds(),
+                            Arrays.asList(new Link(this, new Containment(), true))));
         }
 
         return tasks;
@@ -603,7 +601,9 @@ public abstract class AbstractBeamInter
 
         // Check for another compatible beam group
         final BeamGroupInter otherGroup = BeamGroupInter.findBeamGroup(
-                this, sig.getSystem(), oldGroup);
+                this,
+                sig.getSystem(),
+                oldGroup);
 
         if (otherGroup != null) {
             if ((oldGroup != null) && oldStillOk) {
@@ -627,10 +627,12 @@ public abstract class AbstractBeamInter
             final BeamGroupInter newGroup = new BeamGroupInter();
             newGroup.setManual(true);
             newGroup.setStaff(staff);
-            tasks.add(new AdditionTask(sig,
-                                       newGroup,
-                                       getBounds(),
-                                       Arrays.asList(new Link(this, new Containment(), true))));
+            tasks.add(
+                    new AdditionTask(
+                            sig,
+                            newGroup,
+                            getBounds(),
+                            Arrays.asList(new Link(this, new Containment(), true))));
         }
 
         return tasks;
@@ -716,8 +718,11 @@ public abstract class AbstractBeamInter
 
         if (upgrades.contains(Versions.INTER_GEOMETRY)) {
             if (median != null) {
-                median.setLine(median.getX1(), median.getY1() + 0.5,
-                               median.getX2() + 1, median.getY2() + 0.5);
+                median.setLine(
+                        median.getX1(),
+                        median.getY1() + 0.5,
+                        median.getX2() + 1,
+                        median.getY2() + 0.5);
                 computeArea();
                 upgraded = true;
             }
@@ -942,12 +947,13 @@ public abstract class AbstractBeamInter
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{
-            "wdth", "minH", "maxH", "core", "belt", "jit"};
+        private static final String[] NAMES = new String[]
+        { "wdth", "minH", "maxH", "core", "belt", "jit" };
 
         private static final int DIST_INDEX = 5;
 
-        private static final double[] WEIGHTS = new double[]{0.5, 1, 1, 2, 2, 2};
+        private static final double[] WEIGHTS = new double[]
+        { 0.5, 1, 1, 2, 2, 2 };
 
         public Impacts (double width,
                         double minHeight,

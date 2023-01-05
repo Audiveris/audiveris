@@ -29,16 +29,20 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.NumberSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -192,6 +196,24 @@ public abstract class AbstractNumberInter
         return null;
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "NUMBER_" + value;
+    }
+
+    //----------------//
+    // getShapeSymbol //
+    //----------------//
+    @Override
+    public ShapeSymbol getShapeSymbol (Family family)
+    {
+        return new NumberSymbol(shape, family, value);
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -218,13 +240,23 @@ public abstract class AbstractNumberInter
     // setValue //
     //----------//
     /**
-     * Set a new integer value to this symbol
+     * Set a new integer value to this inter.
      *
      * @param value the new value
      */
     public void setValue (Integer value)
     {
         this.value = value;
+
+        // Update containing time pair if any
+        if (sig != null) {
+            for (Relation rel : sig.getRelations(this, Containment.class)) {
+                final Inter ens = sig.getEdgeSource(rel);
+                if (ens instanceof TimePairInter pair) {
+                    pair.invalidateCache();
+                }
+            }
+        }
     }
 
     //---------//
@@ -239,7 +271,7 @@ public abstract class AbstractNumberInter
     protected static int valueOf (Shape shape)
     {
         return switch (shape) {
-        case TIME_ZERO -> 0;
+        case NUMBER_CUSTOM, TIME_ZERO -> 0;
         case TIME_ONE -> 1;
         case TIME_TWO -> 2;
         case TIME_THREE -> 3;
@@ -331,8 +363,13 @@ public abstract class AbstractNumberInter
         //--------//
         // preAdd //
         //--------//
+        /**
+         * This is rather tricky, since this temporary NumberInter instance is to be replaced
+         * by an instance of a more relevant class, once the target is known.
+         */
         @Override
-        public List<? extends UITask> preAdd (WrappedBoolean cancel)
+        public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                              Wrapper<Inter> toPublish)
         {
             // Standard addition task for this number
             final SystemInfo system = staff.getSystem();
@@ -349,6 +386,7 @@ public abstract class AbstractNumberInter
                     tn.setManual(true);
                     tn.setStaff(system.getStaffAtOrBelow(getCenter()));
                     tasks.add(new AdditionTask(sig, tn, getBounds(), /* empty */ links));
+                    toPublish.value = tn;
                 }
             } else {
                 final Link link = links.iterator().next();
@@ -357,6 +395,7 @@ public abstract class AbstractNumberInter
                     final MeasureCountInter mn = new MeasureCountInter(glyph, shape, getGrade());
                     mn.setManual(true);
                     mn.setStaff(rest.getStaff());
+                    toPublish.value = mn;
                     tasks.add(new AdditionTask(sig, mn, getBounds(), links));
                 } else if (link.partner instanceof TimeNumberInter other) {
                     // Use a TimeNumberInter
@@ -367,6 +406,7 @@ public abstract class AbstractNumberInter
                             link.outgoing ? TOP : BOTTOM);
                     tn.setManual(true);
                     tn.setStaff(other.getStaff());
+                    toPublish.value = tn;
 
                     tasks.add(new AdditionTask(sig, tn, getBounds(), links));
 

@@ -42,10 +42,11 @@ import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.symbol.CompoundNoteSymbol;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +104,8 @@ public class CompoundNoteInter
         super(glyph, bounds, shape, grade);
 
         head = (HeadInter) InterFactory.createManual(
-                isQuarter() ? NOTEHEAD_BLACK : NOTEHEAD_VOID, null);
+                isQuarter() ? NOTEHEAD_BLACK : NOTEHEAD_VOID,
+                null);
 
         stem = (StemInter) InterFactory.createManual(STEM, null);
     }
@@ -203,7 +205,8 @@ public class CompoundNoteInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         final List<UITask> tasks = new ArrayList<>();
 
@@ -326,10 +329,8 @@ public class CompoundNoteInter
         @Override
         public String toString ()
         {
-            return new StringBuilder("noteModel{")
-                    .append(" box:").append(box)
-                    .append(" headCenter:").append(headCenter)
-                    .append('}').toString();
+            return new StringBuilder("noteModel{").append(" box:").append(box).append(
+                    " headCenter:").append(headCenter).append('}').toString();
         }
     }
 }

@@ -66,6 +66,7 @@ import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -444,9 +445,8 @@ public class HeadInter
 
             if (head == this) {
                 started = true;
-            } else if (started && (head.getStep() == getStep())
-                               && (head.getOctave() == getOctave())
-                               && (head.getStaff() == getStaff())) {
+            } else if (started && (head.getStep() == getStep()) && (head.getOctave() == getOctave())
+                    && (head.getStaff() == getStaff())) {
                 accidental = head.getAccidental();
 
                 if (accidental != null) {
@@ -542,9 +542,7 @@ public class HeadInter
             final double x1 = x - (ledgerLength / 2.0);
             final double x2 = x + (ledgerLength / 2.0);
 
-            for (int p = (lineCount + 1) * dir;
-                    p * dir <= linePitch * dir;
-                    p += 2 * dir) {
+            for (int p = (lineCount + 1) * dir; p * dir <= linePitch * dir; p += 2 * dir) {
                 final int y = (int) Math.rint(staff.pitchToOrdinate(x, p));
 
                 // Check if we already have a suitable ledger available, otherwise create a segment
@@ -573,8 +571,8 @@ public class HeadInter
             final Sheet sheet = staff.getSystem().getSheet();
             final Family family = sheet.getStub().getMusicFontFamily();
 
-            template = TemplateFactory.getInstance()
-                    .getCatalog(family, pointSize).getTemplate(shape);
+            template = TemplateFactory.getInstance().getCatalog(family, pointSize).getTemplate(
+                    shape);
 
             if (template == null) {
                 logger.warn("Null template for {} {}", shape, family);
@@ -764,8 +762,7 @@ public class HeadInter
 
             if (dx != null) {
                 final HorizontalSide hSide = anchor.hSide();
-                final double x = (hSide == LEFT)
-                        ? headBox.x + 0.5 - dx
+                final double x = (hSide == LEFT) ? headBox.x + 0.5 - dx
                         : headBox.x + headBox.width - 1 + dx;
 
                 return new Point2D.Double(x, ref.getY());
@@ -789,20 +786,14 @@ public class HeadInter
                                           VerticalSide vSide)
     {
         final Anchor anchor = switch (hSide) {
-            case LEFT ->
-                switch (vSide) {
-                    case TOP ->
-                        Anchor.TOP_LEFT_STEM;
-                    case BOTTOM ->
-                        Anchor.BOTTOM_LEFT_STEM;
-                };
-            case RIGHT ->
-                switch (vSide) {
-                    case TOP ->
-                        Anchor.TOP_RIGHT_STEM;
-                    case BOTTOM ->
-                        Anchor.BOTTOM_RIGHT_STEM;
-                };
+        case LEFT -> switch (vSide) {
+        case TOP -> Anchor.TOP_LEFT_STEM;
+        case BOTTOM -> Anchor.BOTTOM_LEFT_STEM;
+        };
+        case RIGHT -> switch (vSide) {
+        case TOP -> Anchor.TOP_RIGHT_STEM;
+        case BOTTOM -> Anchor.BOTTOM_RIGHT_STEM;
+        };
         };
 
         return getStemReferencePoint(anchor);
@@ -884,9 +875,8 @@ public class HeadInter
             }
 
             // Check integer pitch distance
-            final Integer dPitch = (this.getStaff() == that.getStaff())
-                    ? Math.abs(this.getIntegerPitch() - thatHead.getIntegerPitch())
-                    : null;
+            final Integer dPitch = (this.getStaff() == that.getStaff()) ? Math.abs(
+                    this.getIntegerPitch() - thatHead.getIntegerPitch()) : null;
 
             if ((dPitch != null) && (dPitch > 1)) {
                 return false;
@@ -926,7 +916,8 @@ public class HeadInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         final List<UITask> tasks = new ArrayList<>();
         final SystemInfo system = staff.getSystem();
@@ -936,8 +927,8 @@ public class HeadInter
         final Collection<Link> links = searchLinks(staff.getSystem());
         tasks.add(new AdditionTask(theSig, this, getBounds(), links));
 
-        if (system.getSheet().getStub().getLatestStep()
-                .compareTo(org.audiveris.omr.step.OmrStep.CHORDS) >= 0) {
+        if (system.getSheet().getStub().getLatestStep().compareTo(
+                org.audiveris.omr.step.OmrStep.CHORDS) >= 0) {
             // If we link head to a stem, create/update the related head chord
             boolean stemFound = false;
 
@@ -950,9 +941,13 @@ public class HeadInter
                     if (stemChords.isEmpty()) {
                         // Create a chord based on stem
                         headChord = new HeadChordInter(null);
-                        tasks.add(new AdditionTask(
-                                theSig, headChord, stem.getBounds(),
-                                Arrays.asList(new Link(stem, new ChordStemRelation(), true))));
+                        tasks.add(
+                                new AdditionTask(
+                                        theSig,
+                                        headChord,
+                                        stem.getBounds(),
+                                        Arrays.asList(
+                                                new Link(stem, new ChordStemRelation(), true))));
                     } else {
                         if (stemChords.size() > 1) {
                             logger.warn("Stem shared by several chords, picked one");
@@ -1141,9 +1136,10 @@ public class HeadInter
                 int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
                 int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
                 Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-                List<Inter> stems = Inters.intersectedInters(candidateStems,
-                                                             GeoOrder.BY_ABSCISSA,
-                                                             luBox);
+                List<Inter> stems = Inters.intersectedInters(
+                        candidateStems,
+                        GeoOrder.BY_ABSCISSA,
+                        luBox);
                 int xDir = hSide.direction();
 
                 for (Inter inter : stems) {
@@ -1286,9 +1282,11 @@ public class HeadInter
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"dist"};
+        private static final String[] NAMES = new String[]
+        { "dist" };
 
-        private static final double[] WEIGHTS = new double[]{1};
+        private static final double[] WEIGHTS = new double[]
+        { 1 };
 
         public Impacts (double dist)
         {
@@ -1426,7 +1424,9 @@ public class HeadInter
             super.render(g);
 
             // Add needed ledgers
-            for (Line2D line : getNeededLedgerSegments(inter.getRelationCenter(), inter.getStaff())) {
+            for (Line2D line : getNeededLedgerSegments(
+                    inter.getRelationCenter(),
+                    inter.getStaff())) {
                 g.setColor(Color.RED);
                 g.draw(line);
             }
@@ -1438,7 +1438,9 @@ public class HeadInter
             Rectangle box = super.getSceneBounds();
 
             // Include needed ledgers if any
-            for (Line2D line : getNeededLedgerSegments(inter.getRelationCenter(), inter.getStaff())) {
+            for (Line2D line : getNeededLedgerSegments(
+                    inter.getRelationCenter(),
+                    inter.getStaff())) {
                 box.add(line.getBounds());
             }
 

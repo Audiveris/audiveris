@@ -42,6 +42,7 @@ import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -545,10 +546,12 @@ public interface Inter
      * Build <b>all</b> the UI tasks to insert this inter: the addition task itself, together with
      * related tasks if any (other additions, links, ...).
      *
-     * @param cancel (output) ability to cancel processing by setting its value to true
+     * @param cancel    (output) ability to cancel processing by setting its value to true
+     * @param toPublish (output) ability to designate a different inter instance to be published
      * @return the sequence of UI tasks
      */
-    List<? extends UITask> preAdd (WrappedBoolean cancel);
+    List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                   Wrapper<Inter> toPublish);
 
     /**
      * Prepare the manual edition of this inter.

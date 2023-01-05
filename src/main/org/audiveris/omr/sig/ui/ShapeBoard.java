@@ -1456,6 +1456,12 @@ public class ShapeBoard
             setToolTipText(decoSymbol.getTip() + standardized(shortcut));
 
             setBorderPainted(true);
+
+            // Display custom shapes with a specific background color
+            final Shape shape = decoSymbol.getShape();
+            if (shape == Shape.NUMBER_CUSTOM || shape == Shape.TIME_CUSTOM) {
+                setBackground(Color.PINK);
+            }
         }
 
         public ShapeSymbol getSymbol ()

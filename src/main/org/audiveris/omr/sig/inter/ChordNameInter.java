@@ -37,6 +37,7 @@ import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.RegexUtil.*;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,13 +130,14 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat = group(ROOT_STEP, STEP_CLASS)
-                                                  + group(ROOT_ALTER, Alter.CLASS) + "?";
+    private static final String rootPat = group(ROOT_STEP, STEP_CLASS) + group(
+            ROOT_ALTER,
+            Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
-    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS)
-                                                  + group(BASS_ALTER, Alter.CLASS)
-                                                  + "?" + ")";
+    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS) + group(
+            BASS_ALTER,
+            Alter.CLASS) + "?" + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
     private static final String majPat = group(MAJ, "(M|[Mm][Aa][Jj]|" + DELTA + ")");
@@ -154,11 +156,11 @@ public class ChordNameInter
 
     /** Pattern for any of the indication alternatives. (except sus) */
     private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat
-                                                  + "|" + hdimPat + ")";
+            + "|" + hdimPat + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
     private static final String parMajPat = "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
-                                                    + "\\))";
+            + "\\))";
 
     /** Pattern for any degree value. 5, 6, 7, 9, 11 or 13 */
     private static final String DEG_CLASS = "(5|6|7|9|11|13)";
@@ -190,15 +192,16 @@ public class ChordNameInter
      * Un-compiled patterns for whole chord symbol.
      * TODO: add a pattern for functions
      */
-    private static final String[] raws = new String[]{
-        rootPat + kindPat + "?" + "(" + parPat + "|" + noParPat + ")" + "?" + bassPat + "?"};
+    private static final String[] raws = new String[]
+    { rootPat + kindPat + "?" + "(" + parPat + "|" + noParPat + ")" + "?" + bassPat + "?" };
 
     /** Compiled patterns for whole chord symbol. */
     private static List<Pattern> patterns;
 
     /** Pattern for one degree. (in a sequence of degrees) */
-    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?"
-                                                 + group(DEG_VALUE, DEG_CLASS);
+    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?" + group(
+            DEG_VALUE,
+            DEG_CLASS);
 
     /** Compiled pattern for one degree. */
     private static final Pattern degPattern = Pattern.compile(degPat);
@@ -228,8 +231,14 @@ public class ChordNameInter
      */
     public ChordNameInter (WordInter w)
     {
-        super(w.getGlyph(), w.getBounds(), Shape.TEXT, w.getGrade(), w.getValue(), w.getFontInfo(),
-              PointUtil.rounded(w.getLocation()));
+        super(
+                w.getGlyph(),
+                w.getBounds(),
+                Shape.TEXT,
+                w.getGrade(),
+                w.getValue(),
+                w.getFontInfo(),
+                PointUtil.rounded(w.getLocation()));
 
         setValue(w.getValue());
     }
@@ -438,7 +447,8 @@ public class ChordNameInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this chord name word
         final SystemInfo system = staff.getSystem();
@@ -450,10 +460,12 @@ public class ChordNameInter
         sentence.setManual(true);
         sentence.setStaff(staff);
 
-        tasks.add(new AdditionTask(staff.getSystem().getSig(),
-                                   sentence,
-                                   getBounds(),
-                                   Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(
+                new AdditionTask(
+                        staff.getSystem().getSig(),
+                        sentence,
+                        getBounds(),
+                        Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }
@@ -539,9 +551,8 @@ public class ChordNameInter
                         getGroup(matcher, BASS_STEP),
                         getGroup(matcher, BASS_ALTER));
 
-                if ((firstDeg != null)
-                            && (kind.type != SUSPENDED_FOURTH)
-                            && (kind.type != SUSPENDED_SECOND)) {
+                if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH)
+                        && (kind.type != SUSPENDED_SECOND)) {
                     // Remove first degree
                     degrees.remove(firstDeg);
                 }
@@ -947,11 +958,9 @@ public class ChordNameInter
             }
 
             // Then check for other combinations
-            final String str = standard(matcher, MIN) + standard(matcher, MAJ)
-                                       + standard(matcher, AUG)
-                                       + standard(matcher, DIM)
-                                       + standard(matcher, HDIM)
-                                       + dominant;
+            final String str = standard(matcher, MIN) + standard(matcher, MAJ) + standard(
+                    matcher,
+                    AUG) + standard(matcher, DIM) + standard(matcher, HDIM) + dominant;
             ChordType type = typeOf(str);
 
             // Special case for Triangle sign => maj7 rather than major
@@ -960,9 +969,8 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            boolean symbol = getGroup(matcher, MAJ).equals(DELTA)
-                                     || getGroup(matcher, MIN).equals("-")
-                                     || getGroup(matcher, AUG).equals("+");
+            boolean symbol = getGroup(matcher, MAJ).equals(DELTA) || getGroup(matcher, MIN).equals(
+                    "-") || getGroup(matcher, AUG).equals("+");
 
             return (type != null) ? new ChordKind(type, kindStr, symbol, parentheses) : null;
         }
