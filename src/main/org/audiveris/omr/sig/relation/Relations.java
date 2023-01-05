@@ -44,6 +44,8 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
@@ -84,11 +86,11 @@ public abstract class Relations
 
     private static final Logger logger = LoggerFactory.getLogger(Relations.class);
 
-    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src
-            = new LinkedHashMap<>();
+    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src =
+            new LinkedHashMap<>();
 
-    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt
-            = new LinkedHashMap<>();
+    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt =
+            new LinkedHashMap<>();
 
     static {
         buildMaps();
@@ -110,8 +112,8 @@ public abstract class Relations
      * @return the list of defined relation classes, perhaps empty
      */
     public static Set<Class<? extends Relation>> definedRelationsBetween (
-            Class<? extends Inter> sourceClass,
-            Class<? extends Inter> targetClass)
+                                                                          Class<? extends Inter> sourceClass,
+                                                                          Class<? extends Inter> targetClass)
     {
         final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Set<Class<? extends Relation>> from = definedRelationsFrom(sourceClass);
@@ -133,7 +135,7 @@ public abstract class Relations
      * @return the list of defined relation classes, perhaps empty
      */
     public static Set<Class<? extends Relation>> definedRelationsFrom (
-            Class<? extends Inter> sourceClass)
+                                                                       Class<? extends Inter> sourceClass)
     {
         Objects.requireNonNull(sourceClass, "Source class is null");
 
@@ -168,7 +170,7 @@ public abstract class Relations
      * @return the list of defined relation classes, perhaps empty
      */
     public static Set<Class<? extends Relation>> definedRelationsTo (
-            Class<? extends Inter> targetClass)
+                                                                     Class<? extends Inter> targetClass)
     {
         Objects.requireNonNull(targetClass, "Target class is null");
 
@@ -332,6 +334,8 @@ public abstract class Relations
         map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class); // Old
         map(MarkerInter.class, MarkerBarRelation.class, StaffBarlineInter.class);
 
+        map(MultipleRestInter.class, MultipleRestCountRelation.class, MeasureCountInter.class);
+
         map(RepeatDotInter.class, RepeatDotBarRelation.class, BarlineInter.class);
         map(RepeatDotInter.class, RepeatDotPairRelation.class, RepeatDotInter.class);
 
@@ -342,8 +346,8 @@ public abstract class Relations
     }
 
     private static Set<Class<? extends Relation>> getSet (
-            Map<Class<? extends Inter>, Set<Class<? extends Relation>>> map,
-            Class<? extends Inter> classe)
+                                                          Map<Class<? extends Inter>, Set<Class<? extends Relation>>> map,
+                                                          Class<? extends Inter> classe)
     {
         Set<Class<? extends Relation>> set = map.get(classe);
 

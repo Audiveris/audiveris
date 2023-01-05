@@ -643,7 +643,7 @@ public class ShapeBoard
         } else if (set == ShapeSet.Flags) {
             new ButtonsTable(7).build(panel, filtered);
         } else if (set == ShapeSet.Rests) {
-            new ButtonsTable(5).build(panel, filtered);
+            new ButtonsTable(6).build(panel, filtered);
         } else if (set == ShapeSet.Times) {
             new ButtonsTable(6).build(panel, filtered);
         } else if (set == ShapeSet.Romans) {

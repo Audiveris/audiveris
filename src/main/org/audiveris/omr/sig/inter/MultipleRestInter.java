@@ -22,13 +22,25 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.ui.ObjectEditor.Handle;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -56,6 +68,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MultipleRestInter
         extends AbstractHorizontalInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(MultipleRestInter.class);
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -70,6 +86,7 @@ public class MultipleRestInter
                               double height)
     {
         super(Shape.MULTIPLE_REST, grade, median, height);
+        setAbnormal(true);
     }
 
     /**
@@ -80,6 +97,7 @@ public class MultipleRestInter
     public MultipleRestInter (Double grade)
     {
         super(Shape.MULTIPLE_REST, grade);
+        setAbnormal(true);
     }
 
     /**
@@ -104,30 +122,70 @@ public class MultipleRestInter
     // checkAbnormal //
     //---------------//
     /**
-     * Check if this multiple rest is connected to a vertical serif on each side.
+     * Check if this multiple rest is connected to a measure count.
      *
      * @return true if abnormal
      */
     @Override
     public boolean checkAbnormal ()
     {
-        boolean left = false;
-        boolean right = false;
+        //        boolean left = false;
+        //        boolean right = false;
+        //
+        //        for (Relation rel : sig.getRelations(this, MultipleRestSerifRelation.class)) {
+        //            final MultipleRestSerifRelation msRel = (MultipleRestSerifRelation) rel;
+        //            final HorizontalSide restSide = msRel.getRestSide();
+        //
+        //            if (restSide == HorizontalSide.LEFT) {
+        //                left = true;
+        //            } else if (restSide == HorizontalSide.RIGHT) {
+        //                right = true;
+        //            }
+        //        }
+        //
+        //        setAbnormal(!left || !right);
+        //
 
-        for (Relation rel : sig.getRelations(this, MultipleRestSerifRelation.class)) {
-            final MultipleRestSerifRelation msRel = (MultipleRestSerifRelation) rel;
-            final HorizontalSide restSide = msRel.getRestSide();
+        setAbnormal(!sig.hasRelation(this, MultipleRestCountRelation.class));
 
-            if (restSide == HorizontalSide.LEFT) {
-                left = true;
-            } else if (restSide == HorizontalSide.RIGHT) {
-                right = true;
+        return isAbnormal();
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
+    {
+        // First call needed to get bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation);
+
+        // If within staff height, we snap ordinate to target pitch 0 (middle line)
+        if (staff != null) {
+            final Point center = getCenter();
+
+            if (staff.contains(center)) {
+                final double y = staff.pitchToOrdinate(center.getX(), 0);
+                dropLocation.y = (int) Math.rint(y);
+
+                // Final call with refined dropLocation
+                super.deriveFrom(symbol, sheet, font, dropLocation);
             }
         }
 
-        setAbnormal(!left || !right);
+        return true;
+    }
 
-        return isAbnormal();
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
     }
 
     //-----------------//
@@ -145,5 +203,171 @@ public class MultipleRestInter
         }
 
         return null;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        super.setBounds(bounds);
+
+        if (bounds != null) {
+            median = new Line2D.Double(
+                    bounds.x,
+                    bounds.y + 0.5 * bounds.height,
+                    bounds.x + bounds.width,
+                    bounds.y + 0.5 * bounds.height);
+
+            height = 0.3 * bounds.height; // Very approximate, but needed for a non-null area
+            computeArea();
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a multipleRest.
+     * <p>
+     * There are 3 handles:
+     * <ul>
+     * <li>Left handle, extending horizontally
+     * <li>Middle handle, moving the whole rest horizontally
+     * <li>Right handle, extending horizontally
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        private final Model originalModel;
+
+        private final Model model;
+
+        public Editor (MultipleRestInter rest)
+        {
+            super(rest);
+
+            originalModel = new Model(rest.median);
+            model = new Model(rest.median);
+
+            final Point2D middle = PointUtil.middle(model.p1, model.p2);
+
+            // Move left, only horizontally
+            handles.add(new Handle(model.p1)
+            {
+                @Override
+                public boolean move (int dx,
+                                     int dy)
+                {
+                    if (dx == 0) {
+                        return false;
+                    }
+
+                    PointUtil.add(model.p1, dx, 0);
+                    PointUtil.add(middle, dx / 2.0, 0);
+
+                    return true;
+                }
+            });
+
+            // Global move, only horizontally
+            handles.add(selectedHandle = new Handle(middle)
+            {
+                @Override
+                public boolean move (int dx,
+                                     int dy)
+                {
+                    if (dx == 0) {
+                        return false;
+                    }
+
+                    for (Handle handle : handles) {
+                        PointUtil.add(handle.getPoint(), dx, 0);
+                    }
+
+                    return true;
+                }
+            });
+
+            // Move right, only horizontally
+            handles.add(new Handle(model.p2)
+            {
+                @Override
+                public boolean move (int dx,
+                                     int dy)
+                {
+                    if (dx == 0) {
+                        return false;
+                    }
+
+                    PointUtil.add(middle, dx / 2.0, 0);
+                    PointUtil.add(model.p2, dx, 0);
+
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected void doit ()
+        {
+            final MultipleRestInter rest = (MultipleRestInter) object;
+            rest.median.setLine(model.p1, model.p2);
+            rest.computeArea(); // Set bounds also
+
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            final MultipleRestInter rest = (MultipleRestInter) object;
+            rest.median.setLine(originalModel.p1, originalModel.p2);
+            rest.computeArea(); // Set bounds also
+
+            super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        // Left point of median line
+        public final Point2D p1;
+
+        // Right point of median line
+        public final Point2D p2;
+
+        public Model (double x1,
+                      double y1,
+                      double x2,
+                      double y2)
+        {
+            p1 = new Point2D.Double(x1, y1);
+            p2 = new Point2D.Double(x2, y2);
+        }
+
+        public Model (Line2D line)
+        {
+            p1 = line.getP1();
+            p2 = line.getP2();
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
+        }
     }
 }

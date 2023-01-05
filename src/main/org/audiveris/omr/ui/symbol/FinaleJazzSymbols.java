@@ -153,6 +153,10 @@ public class FinaleJazzSymbols
 
         case MORDENT -> ints(0xE56C);
         case MORDENT_INVERTED -> ints(0xE56D); // With bar
+        case MULTIPLE_REST -> ints(0xE4EE);
+        case MULTIPLE_REST_LEFT -> ints(0xE4EF);
+        case MULTIPLE_REST_MIDDLE -> ints(0xE4F0);
+        case MULTIPLE_REST_RIGHT -> ints(0xE4F1);
 
         case NATURAL -> ints(0xE261);
         ///case NON_DRAGGABLE -> ints(0xEA94, 0xEA93);

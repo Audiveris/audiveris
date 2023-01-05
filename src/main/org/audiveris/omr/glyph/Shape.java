@@ -402,10 +402,13 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    MULTIPLE_REST("Multiple measure rest"),
     SLUR("Slur above or below notes"),
     SLUR_ABOVE("Slur above notes"),
     SLUR_BELOW("Slur below notes"),
+    MULTIPLE_REST("Multiple measure rest"),
+    MULTIPLE_REST_LEFT("Multiple measure rest left"),
+    MULTIPLE_REST_MIDDLE("Multiple measure rest middle"),
+    MULTIPLE_REST_RIGHT("Multiple measure rest right"),
 
     //
     // Key signatures ---
@@ -481,7 +484,6 @@ public enum Shape
     NUMBER_CUSTOM("Number defined by user"),
     TIME_CUSTOM("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
-    MEASURE_NUMBER("Measure number in a multiple rest"),
     BRACKET_UPPER_SERIF("Top serif of a bracket"),
     BRACKET_LOWER_SERIF("Bottom serif of a bracket"),
     STAFF_LINES("5-line staff"),

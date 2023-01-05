@@ -45,7 +45,6 @@ import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,7 +184,9 @@ public class MultipleRestsBuilder
 
             // Create multiple rest
             final MultipleRestInter multipleRest = new MultipleRestInter(
-                    beam.getGrade(), beam.getMedian(), beam.getHeight());
+                    beam.getGrade(),
+                    beam.getMedian(),
+                    beam.getHeight());
             sig.addVertex(multipleRest);
             multipleRest.setStaff(system.getStaffAtOrAbove(beam.getCenter()));
 
@@ -196,8 +197,11 @@ public class MultipleRestsBuilder
                 final Filament filament = filamentBuilder.buildFilament(peak, 0, allSections);
                 final Glyph glyph = glyphIndex.registerOriginal(filament.toGlyph(null));
                 final double x = peak.getStart() + (peak.getWidth() / 2d);
-                final Line2D median = new Line2D.Double(x, peak.getTop() - halfLine + 0.5,
-                                                        x, peak.getBottom() + halfLine + 0.5);
+                final Line2D median = new Line2D.Double(
+                        x,
+                        peak.getTop() - halfLine + 0.5,
+                        x,
+                        peak.getBottom() + halfLine + 0.5);
                 final VerticalSerifInter serif = new VerticalSerifInter(
                         glyph,
                         peak.getImpacts(),
@@ -271,8 +275,8 @@ public class MultipleRestsBuilder
 
         for (Lag lag : Arrays.asList(vLag, hLag)) {
             for (Section section : lag.getEntities()) {
-                if ((section.getLength(HORIZONTAL) <= maxWidth)
-                            && section.getBounds().intersects(systemBox)) {
+                if ((section.getLength(HORIZONTAL) <= maxWidth) && section.getBounds().intersects(
+                        systemBox)) {
                     sections.add(section);
                 }
             }

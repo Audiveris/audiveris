@@ -249,6 +249,15 @@ public class MusicFont
         return v;
     }
 
+    //------------//
+    // deriveFont //
+    //------------//
+    @Override
+    public MusicFont deriveFont (float size)
+    {
+        return new MusicFont(super.deriveFont(size));
+    }
+
     //--------//
     // equals //
     //--------//

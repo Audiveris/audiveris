@@ -51,7 +51,7 @@ import javax.swing.JMenuItem;
 
 /**
  * Class <code>ShapeSet</code> defines a set of related shapes, for example the "Rests" set
- * gathers all rest shapes from MULTI_REST down to ONE_128TH_REST.
+ * gathers all rest shapes from MULTIPLE_REST down to ONE_128TH_REST.
  * <p>
  * It handles additional properties over a simple EnumSet, especially assigned colors and its
  * automatic insertion in shape menus and palette hierarchy.
@@ -474,6 +474,7 @@ public class ShapeSet
             QUARTER_REST,
             Colors.SCORE_NOTES,
             shapesOf(
+                    MULTIPLE_REST,
                     LONG_REST,
                     BREVE_REST,
                     WHOLE_REST,

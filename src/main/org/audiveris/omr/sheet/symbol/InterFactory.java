@@ -72,6 +72,7 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -996,6 +997,9 @@ public class InterFactory
             return new SmallFlagInter(null, shape, GRADE);
 
         // Rests
+        case MULTIPLE_REST:
+            return new MultipleRestInter(GRADE);
+
         case LONG_REST:
         case BREVE_REST:
         case WHOLE_REST:

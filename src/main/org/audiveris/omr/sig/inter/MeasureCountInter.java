@@ -112,20 +112,16 @@ public class MeasureCountInter
         visitor.visit(this);
     }
 
-    //------------//
-    // searchRest //
-    //------------//
-    /**
-     * Look for a multiple rest compatible with provided number location.
-     *
-     * @param point location of measure number
-     * @param staff target staff
-     * @return the multiple rest found or null
-     */
-    public static MultipleRestInter searchRest (Point point,
-                                                Staff staff)
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
     {
-        return null;
+        // Check if this measure count is connected to a multiple rest
+        setAbnormal(!sig.hasRelation(this, MultipleRestCountRelation.class));
+
+        return isAbnormal();
     }
 
     //------------------//
@@ -162,33 +158,6 @@ public class MeasureCountInter
         sig.addEdge(multipleRest, number, link.relation);
 
         return number;
-    }
-
-    //--------//
-    // preAdd //
-    //--------//
-    @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel,
-                                          Wrapper<Inter> toPublish)
-    {
-        // Standard addition task for this measure number
-        final SystemInfo system = staff.getSystem();
-        final List<UITask> tasks = new ArrayList<>();
-        final Collection<Link> links = searchLinks(system);
-        tasks.add(new AdditionTask(system.getSig(), this, getBounds(), links));
-
-        return tasks;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final Link link = lookupLink(getCenter(), system);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
 
     //------------//
@@ -231,6 +200,49 @@ public class MeasureCountInter
             }
         }
 
+        return null;
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
+    {
+        // Standard addition task for this measure number
+        final SystemInfo system = staff.getSystem();
+        final List<UITask> tasks = new ArrayList<>();
+        final Collection<Link> links = searchLinks(system);
+        tasks.add(new AdditionTask(system.getSig(), this, getBounds(), links));
+
+        return tasks;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final Link link = lookupLink(getCenter(), system);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //------------//
+    // searchRest //
+    //------------//
+    /**
+     * Look for a multiple rest compatible with provided number location.
+     *
+     * @param point location of measure number
+     * @param staff target staff
+     * @return the multiple rest found or null
+     */
+    public static MultipleRestInter searchRest (Point point,
+                                                Staff staff)
+    {
         return null;
     }
 

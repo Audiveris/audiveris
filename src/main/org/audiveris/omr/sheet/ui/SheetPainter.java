@@ -792,12 +792,17 @@ public abstract class SheetPainter
             final Rectangle bounds = inter.getBounds();
 
             if (bounds != null) {
-                final MusicFont font = getMusicFont(staff);
+                MusicFont font = getMusicFont(staff);
                 final ShapeSymbol symbol = new NumberSymbol(
                         inter.getShape(),
                         font.getMusicFamily(),
                         inter.getValue());
                 final Point2D center = GeoUtil.center2D(bounds);
+
+                // Adapt symbol to actual bounds, which can be much larger than standard symbol
+                final Dimension dim = symbol.getDimension(font);
+                final float ratio = bounds.height / (float) dim.getHeight();
+                font = font.deriveFont(ratio * font.getSize());
                 symbol.paintSymbol(g, font, center, AREA_CENTER);
             }
         }
@@ -1151,7 +1156,29 @@ public abstract class SheetPainter
         public void visit (MultipleRestInter rest)
         {
             setColor(rest);
-            g.fill(rest.getArea());
+
+            final MusicFont font = getMusicFont();
+            final Line2D median = rest.getMedian();
+
+            // Left
+            final TextLayout left = font.layoutShapeByCode(Shape.MULTIPLE_REST_LEFT);
+            OmrFont.paint(g, left, median.getP1(), MIDDLE_LEFT);
+
+            // Right
+            final TextLayout right = font.layoutShapeByCode(Shape.MULTIPLE_REST_RIGHT);
+            OmrFont.paint(g, right, median.getP2(), MIDDLE_RIGHT);
+
+            // Middle
+            final TextLayout middle = font.layoutShapeByCode(Shape.MULTIPLE_REST_MIDDLE);
+            g.fill(
+                    AreaUtil.horizontalParallelogram(
+                            new Point2D.Double(
+                                    median.getX1() + left.getBounds().getWidth() / 2,
+                                    median.getY1()),
+                            new Point2D.Double(
+                                    median.getX2() - right.getBounds().getWidth() / 2,
+                                    median.getY2()),
+                            middle.getBounds().getHeight()));
         }
 
         //-------//
@@ -1286,8 +1313,10 @@ public abstract class SheetPainter
         @Override
         public void visit (VerticalSerifInter serif)
         {
-            setColor(serif);
-            g.fill(serif.getArea());
+            // We don't display the vertical serifs
+            // because the MultipleRestInter already displays the left & right portions
+            //            setColor(serif);
+            //            g.fill(serif.getArea());
         }
 
         //-------//
