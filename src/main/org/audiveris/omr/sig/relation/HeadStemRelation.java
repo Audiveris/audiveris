@@ -71,6 +71,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <li>STEM_TOP on head LEFT side
  * <li>STEM_BOTTOM on head RIGHT side
  * </ul>
+ *
  * <pre>
  *    |
  *    |
@@ -124,10 +125,9 @@ public class HeadStemRelation
         }
 
         if (extensionPoint == null) {
-            // This is questionable: BINGO TODO
             final VerticalSide vSide = (stem.getCenter().y < head.getCenter().y) ? TOP : BOTTOM;
-            final Anchor anchor = (headSide == LEFT)
-                    ? (vSide == TOP ? Anchor.TOP_LEFT_STEM : Anchor.BOTTOM_LEFT_STEM)
+            final Anchor anchor = (headSide == LEFT) ? (vSide == TOP ? Anchor.TOP_LEFT_STEM
+                    : Anchor.BOTTOM_LEFT_STEM)
                     : (vSide == TOP ? Anchor.TOP_RIGHT_STEM : Anchor.RIGHT_STEM);
             extensionPoint = head.getStemReferencePoint(anchor);
         }
@@ -246,8 +246,8 @@ public class HeadStemRelation
      */
     public boolean isInvading ()
     {
-        return (dy <= constants.maxInvadingDy.getValue())
-                       && (dx <= constants.maxInvadingDx.getValue());
+        return (dy <= constants.maxInvadingDy.getValue()) && (dx <= constants.maxInvadingDx
+                .getValue());
     }
 
     //----------------//
@@ -308,8 +308,7 @@ public class HeadStemRelation
 
         if (stump != null) {
             final Rectangle stumpBox = stump.getBounds();
-            final double overlap = (yDir > 0)
-                    ? stumpBox.y + stumpBox.height - stemLine.getY1()
+            final double overlap = (yDir > 0) ? stumpBox.y + stumpBox.height - stemLine.getY1()
                     : stemLine.getY2() - stumpBox.y;
             yGap = Math.abs(Math.min(overlap, 0));
         } else {
@@ -327,9 +326,10 @@ public class HeadStemRelation
         if (hRel.getGrade() >= hRel.getMinGrade()) {
             // Beware: extension must be the maximum y extension in head y range
             final Rectangle headBox = head.getBounds();
-            hRel.setExtensionPoint(new Point2D.Double(
-                    xStem,
-                    (yDir > 0) ? headBox.y : ((headBox.y + headBox.height) - 1)));
+            hRel.setExtensionPoint(
+                    new Point2D.Double(
+                            xStem,
+                            (yDir > 0) ? headBox.y : ((headBox.y + headBox.height) - 1)));
 
             return hRel;
         }
@@ -393,8 +393,8 @@ public class HeadStemRelation
         }
 
         // If resulting chords are not compatible, move head to stemChord
-        if ((stemChords.isEmpty() && (headChord.getStem() != null))
-                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
+                && !stemChords.contains(headChord))) {
             // Extract head from headChord
             tasks.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
 
@@ -629,7 +629,7 @@ public class HeadStemRelation
                 "Value for (target) stem coeff in support formula");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.1, // was 0.25
+                0.2,
                 "Maximum horizontal overlap between stem & head");
 
         @SuppressWarnings("unused")
