@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.classifier.GlyphDescriptor;
 import org.audiveris.omr.classifier.ImgGlyphDescriptor;
 import org.audiveris.omr.classifier.MixGlyphDescriptor;
@@ -40,6 +36,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -312,7 +312,7 @@ class SelectionPanel
 
         private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
                 "samples",
-                100,
+                150,
                 "Maximum sample count per shape for training");
 
         private final Constant.Integer minShapeSampleCount = new Constant.Integer(
@@ -348,7 +348,8 @@ class SelectionPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(() -> {
+            executor.execute( () ->
+            {
                 trains = null;
                 tests = null;
 
