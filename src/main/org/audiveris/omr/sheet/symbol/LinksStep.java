@@ -99,7 +99,7 @@ public class LinksStep
     @Override
     public void doSystem (SystemInfo system,
                           Void context)
-            throws StepException
+        throws StepException
     {
         StopWatch watch = new StopWatch("LinksStep doSystem #" + system.getId());
 
@@ -108,7 +108,7 @@ public class LinksStep
 
         // Reduction
         watch.start("reduceLinks");
-        new SigReducer(system, false).reduceLinks();
+        new SigReducer(system, true).reduceLinks();
 
         // Aggregate tremolos whenever needed
         TremoloInter.aggregateTremolos(system);
@@ -187,7 +187,7 @@ public class LinksStep
     @Override
     protected void doEpilog (Sheet sheet,
                              Void context)
-            throws StepException
+        throws StepException
     {
         // Check for ties in same staff, now that head alterations and clef changes are available
         for (SystemInfo system : sheet.getSystems()) {
