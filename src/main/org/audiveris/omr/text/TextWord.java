@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Navigable;
@@ -66,7 +67,11 @@ public class TextWord
     private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
     /** Abnormal characters. */
-    private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
+    private static final char[] ABNORMAL_CHARS = new char[]
+    { '\\' };
+
+    /** Regexp for one-letter words. */
+    private static final Pattern ONE_LETTER_WORDS = getOneLetterWordPattern();
 
     /** Regexp for abnormal words. */
     private static final Pattern ABNORMAL_WORDS = getAbnormalWordPattern();
@@ -75,14 +80,19 @@ public class TextWord
     private static final Pattern DASH_WORDS = getDashWordPattern();
 
     /** Comparator based on word size. */
-    public static final Comparator<TextWord> bySize = (TextWord o1, TextWord o2)
-            -> Integer.compare(o1.getValue().length(), o2.getValue().length());
+    public static final Comparator<TextWord> bySize = (TextWord o1,
+                                                       TextWord o2) -> Integer.compare(
+                                                               o1.getValue().length(),
+                                                               o2.getValue().length());
 
     /** Comparator based on word starting abscissa. */
-    public static final Comparator<TextWord> byAbscissa = (TextWord o1, TextWord o2)
-            -> Integer.compare(o1.getBounds().x, o2.getBounds().x);
+    public static final Comparator<TextWord> byAbscissa = (TextWord o1,
+                                                           TextWord o2) -> Integer.compare(
+                                                                   o1.getBounds().x,
+                                                                   o2.getBounds().x);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing TextLine. */
     @Navigable(false)
     private TextLine textLine;
@@ -103,12 +113,11 @@ public class TextWord
     private boolean adjusted;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // TextWord //
-    //----------//
+
     /**
      * Creates a new TextWord object, built from its contained TextChar instances.
      *
+     * @param sheet      the related sheet
      * @param baseline   word baseline
      * @param value      UTF-8 content for this word
      * @param fontInfo   Font information for this word
@@ -116,23 +125,21 @@ public class TextWord
      * @param chars      The sequence of chars descriptors
      * @param textLine   the containing TextLine instance
      */
-    public TextWord (Line2D baseline,
+    public TextWord (Sheet sheet,
+                     Line2D baseline,
                      String value,
                      FontInfo fontInfo,
                      Double confidence,
                      List<TextChar> chars,
                      TextLine textLine)
     {
-        this(boundsOf(chars), value, baseline, confidence, fontInfo, textLine);
+        this(sheet, boundsOf(chars), value, baseline, confidence, fontInfo, textLine);
 
         for (TextChar ch : chars) {
             this.chars.add(ch);
         }
     }
 
-    //----------//
-    // TextWord //
-    //----------//
     /**
      * Creates a new TextWord object, with all OCR information.
      * TextChar instances are meant to be added later, as detailed information
@@ -140,6 +147,7 @@ public class TextWord
      * FontInfo data is directly copied from OCR, however its pointSize is often too low, varying
      * around -10% or -20%, so we have to refine this value, based on word bounds.
      *
+     * @param sheet      the related sheet
      * @param bounds     Bounding box
      * @param value      UTF-8 content for this word
      * @param baseline   word baseline
@@ -147,19 +155,21 @@ public class TextWord
      * @param fontInfo   Font information for this word
      * @param textLine   the containing TextLine instance
      */
-    public TextWord (Rectangle bounds,
+    public TextWord (Sheet sheet,
+                     Rectangle bounds,
                      String value,
                      Line2D baseline,
                      Double confidence,
                      FontInfo fontInfo,
                      TextLine textLine)
     {
-        super(bounds, value, baseline, confidence);
+        super(sheet, bounds, value, baseline, confidence);
         this.textLine = textLine;
         this.fontInfo = fontInfo;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addChar //
     //---------//
@@ -238,8 +248,8 @@ public class TextWord
         double size = TextFont.computeFontSize(value, fontInfo, bounds.getSize());
         double ratio = size / fontInfo.pointsize;
 
-        if (ratio < constants.minFontRatio.getSourceValue()
-                    || ratio > constants.maxFontRatio.getSourceValue()) {
+        if (ratio < constants.minFontRatio.getSourceValue() || ratio > constants.maxFontRatio
+                .getSourceValue()) {
             logger.debug("      abnormal font ratio {} {}", String.format("%.2f", ratio), this);
 
             return false;
@@ -251,47 +261,15 @@ public class TextWord
         return true;
     }
 
-    /**
-     * @return the adjusted
-     */
-    public boolean isAdjusted ()
-    {
-        return adjusted;
-    }
-
-    /**
-     * @param adjusted the adjusted to set
-     */
-    public void setAdjusted (boolean adjusted)
-    {
-        this.adjusted = adjusted;
-    }
-
-    //----------//
-    // isDashed //
-    //----------//
-    /**
-     * Report whether contains a dash-family character.
-     *
-     * @return true if there is a dash in word
-     */
-    public boolean isDashed ()
-    {
-        return DASH_WORDS.matcher(value).matches();
-    }
-
     //---------------//
     // checkValidity //
     //---------------//
     /**
      * Check the provided OCR'ed word.(the word is not modified)
      *
-     * @param scale         scale of containing sheet
-     * @param inSheetHeader true if word is located above first system
      * @return reason for invalidity if any, otherwise null
      */
-    public String checkValidity (Scale scale,
-                                 boolean inSheetHeader)
+    public String checkValidity ()
     {
         // Check for abnormal characters
         for (char ch : ABNORMAL_CHARS) {
@@ -323,61 +301,17 @@ public class TextWord
             }
         }
 
-        //
-        //        final int minWidthForCheck = scale.toPixels(constants.minWidthForCheck);
-        //        final int minHeightForCheck = scale.toPixels(constants.minHeightForCheck);
-        //
-        //        final double minAspectRatio = constants.minAspectRatio.getValue();
-        //        final double maxAspectRatio = constants.maxAspectRatio.getValue();
-        //
-        //        final double minDiagRatio = constants.minDiagRatio.getValue();
-        //        final double maxDiagRatio = constants.maxDiagRatio.getValue();
-        //
-        //        // Check for non-consistent aspect
-        //        // (Applicable only for non-tiny width or height)
-        //        //
-        //        // Warning: a lyric syllable may contain a long horizontal line,
-        //        // that OCR sometimes translates as a too short sequence of '-' or '_' chars
-        //        // So, it's safer to skip test in that case
-        //        if (DASH_WORDS != null) {
-        //            Matcher matcher = DASH_WORDS.matcher(value);
-        //
-        //            if (matcher.matches()) {
-        //                logger.debug("      dash word value {}", this);
-        //
-        //                return null; // OK
-        //            }
-        //        }
-        //
-        //        Rectangle box = getBounds();
-        //
-        //        if ((box.width >= minWidthForCheck) && (box.height >= minHeightForCheck)) {
-        //            Font font = new TextFont(getFontInfo());
-        //            TextLayout layout = new TextLayout(value, font, frc);
-        //            Rectangle2D rect = layout.getBounds();
-        //            double xRatio = box.width / rect.getWidth();
-        //            double yRatio = box.height / rect.getHeight();
-        //            double aRatio = yRatio / xRatio;
-        //
-        //            if ((aRatio < minAspectRatio) || (aRatio > maxAspectRatio)) {
-        //                ///logger.debug("      invalid aspect {} vs [{}-{}] for {}",
-        //                ///             aRatio, minAspectRatio, maxAspectRatio, this);
-        //
-        //                ///return "invalid aspect";
-        //            }
-        //
-        //            // Check size
-        //            double boxDiag = Math.hypot(box.width, box.height);
-        //            double rectDiag = Math.hypot(rect.getWidth(), rect.getHeight());
-        //            double diagRatio = boxDiag / rectDiag;
-        //
-        //            if ((diagRatio < minDiagRatio) || (diagRatio > maxDiagRatio)) {
-        //                ///logger.debug("      invalid diagonal {} vs [{}-{}] for {}",
-        //                ///             diagRatio, minDiagRatio, maxDiagRatio, this);
-        //                ///return "invalid diagonal";
-        //            }
-        //        }
-        //
+        // Check for one-letter word values
+        if (ONE_LETTER_WORDS != null) {
+            Matcher matcher = ONE_LETTER_WORDS.matcher(value);
+
+            if (matcher.matches()) {
+                logger.debug("      one-letter word value {}", this);
+
+                return "one-letter-word-value";
+            }
+        }
+
         return null; // OK
     }
 
@@ -398,12 +332,13 @@ public class TextWord
         String sbValue = sb.toString();
 
         if (!getInternalValue().equals(sbValue)) {
-            logger.debug("      word at {} updated from '{}' [{}]  to '{}' [{}]",
-                         getBounds(),
-                         getInternalValue(),
-                         StringUtil.codesOf(getInternalValue(), false),
-                         sbValue,
-                         StringUtil.codesOf(sbValue, false));
+            logger.debug(
+                    "      word at {} updated from '{}' [{}]  to '{}' [{}]",
+                    getBounds(),
+                    getInternalValue(),
+                    StringUtil.codesOf(getInternalValue(), false),
+                    sbValue,
+                    StringUtil.codesOf(sbValue, false));
             setValue(sbValue);
         }
     }
@@ -418,7 +353,14 @@ public class TextWord
      */
     public TextWord copy ()
     {
-        return new TextWord(getBaseline(), getValue(), fontInfo, getConfidence(), chars, null);
+        return new TextWord(
+                sheet,
+                getBaseline(),
+                getValue(),
+                fontInfo,
+                getConfidence(),
+                chars,
+                null);
     }
 
     //----------//
@@ -458,23 +400,6 @@ public class TextWord
     public Glyph getGlyph ()
     {
         return glyph;
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * Assign the underlying glyph.
-     *
-     * @param glyph the glyph to set
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-
-        if (glyph.isVip()) {
-            setVip(true);
-        }
     }
 
     //------------------//
@@ -523,20 +448,6 @@ public class TextWord
         return preciseFontSize;
     }
 
-    //--------------------//
-    // setPreciseFontSize //
-    //--------------------//
-    /**
-     * Assign a font size.
-     * (to enforce consistent font size across all words of the same sentence)
-     *
-     * @param preciseFontSize the enforced font size, or null
-     */
-    public void setPreciseFontSize (Float preciseFontSize)
-    {
-        this.preciseFontSize = preciseFontSize;
-    }
-
     //-------------//
     // getSubWords //
     //-------------//
@@ -581,6 +492,7 @@ public class TextWord
 
                 // Allocate sub-word
                 TextWord newWord = new TextWord(
+                        sheet,
                         subBase,
                         subValue,
                         getFontInfo(),
@@ -612,6 +524,105 @@ public class TextWord
         return textLine;
     }
 
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Overridden to use glyph manual value, if any, or fall back using initial value.
+     *
+     * @return the value to be used
+     */
+    @Override
+    public String getValue ()
+    {
+        return getInternalValue();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(" ").append(getFontInfo());
+
+        if (glyph != null) {
+            sb.append(" ").append(glyph.idString());
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * @return the adjusted
+     */
+    public boolean isAdjusted ()
+    {
+        return adjusted;
+    }
+
+    //-------------//
+    // isConfident //
+    //-------------//
+    public boolean isConfident ()
+    {
+        return getConfidence() >= constants.lowConfidence.getValue();
+    }
+
+    //----------//
+    // isDashed //
+    //----------//
+    /**
+     * Report whether contains a dash-family character.
+     *
+     * @return true if there is a dash in word
+     */
+    public boolean isDashed ()
+    {
+        return DASH_WORDS.matcher(value).matches();
+    }
+
+    /**
+     * @param adjusted the adjusted to set
+     */
+    public void setAdjusted (boolean adjusted)
+    {
+        this.adjusted = adjusted;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph.
+     *
+     * @param glyph the glyph to set
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+
+        if (glyph.isVip()) {
+            setVip(true);
+        }
+    }
+
+    //--------------------//
+    // setPreciseFontSize //
+    //--------------------//
+    /**
+     * Assign a font size.
+     * (to enforce consistent font size across all words of the same sentence)
+     *
+     * @param preciseFontSize the enforced font size, or null
+     */
+    public void setPreciseFontSize (Float preciseFontSize)
+    {
+        this.preciseFontSize = preciseFontSize;
+    }
+
     //-------------//
     // setTextLine //
     //-------------//
@@ -627,28 +638,6 @@ public class TextWord
         if (isVip() && (textLine != null)) {
             textLine.setVip(true);
         }
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Overridden to use glyph manual value, if any, or fall back using initial value.
-     *
-     * @return the value to be used
-     */
-    @Override
-    public String getValue ()
-    {
-        return getInternalValue();
-    }
-
-    //-------------//
-    // isConfident //
-    //-------------//
-    public boolean isConfident ()
-    {
-        return getConfidence() >= constants.lowConfidence.getValue();
     }
 
     //-----------//
@@ -674,23 +663,6 @@ public class TextWord
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append(" ").append(getFontInfo());
-
-        if (glyph != null) {
-            sb.append(" ").append(glyph.idString());
-        }
-
-        return sb.toString();
-    }
-
     //------------------//
     // createManualWord //
     //------------------//
@@ -699,17 +671,20 @@ public class TextWord
      * <p>
      * TODO: Perhaps we could improve the baseline, according to the precise string value provided.
      *
+     * @param sheet the related sheet
      * @param glyph the underlying glyph
      * @param value the provided string value
      * @return the TextWord created
      */
-    public static TextWord createManualWord (Glyph glyph,
+    public static TextWord createManualWord (Sheet sheet,
+                                             Glyph glyph,
                                              String value)
     {
         Rectangle box = glyph.getBounds();
         int fontSize = (int) Math.rint(
                 TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
         TextWord word = new TextWord(
+                sheet,
                 box,
                 value,
                 new Line2D.Double(box.x, box.y + box.height, box.x + box.width, box.y + box.height),
@@ -720,38 +695,6 @@ public class TextWord
         word.setGlyph(glyph);
 
         return word;
-    }
-
-    //---------//
-    // mergeOf //
-    //---------//
-    /**
-     * Return a word which results from the merge of the provided words.
-     *
-     * @param words the words to merge
-     * @return the compound word
-     */
-    public static TextWord mergeOf (TextWord... words)
-    {
-        List<TextChar> chars = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-
-        for (TextWord word : words) {
-            chars.addAll(word.getChars());
-            sb.append(word.getValue());
-        }
-
-        // Use font info of first word. What else?
-        FontInfo fontInfo = words[0].getFontInfo();
-        TextLine line = words[0].textLine;
-
-        return new TextWord(
-                baselineOf(Arrays.asList(words)),
-                sb.toString(),
-                fontInfo,
-                confidenceOf(Arrays.asList(words)),
-                chars,
-                line);
     }
 
     //------------------------//
@@ -792,7 +735,61 @@ public class TextWord
         }
     }
 
+    //-------------------------//
+    // getOneLetterWordPattern //
+    //-------------------------//
+    /**
+     * Compile the provided regexp to detect one-letter words
+     *
+     * @return the pattern for one-letter words, if successful
+     */
+    private static Pattern getOneLetterWordPattern ()
+    {
+        try {
+            return Pattern.compile(constants.oneLetterWordRegexp.getValue());
+        } catch (PatternSyntaxException pse) {
+            logger.warn("Error in regexp for abnormal one-letterwords", pse);
+
+            return null;
+        }
+    }
+
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * Return a word which results from the merge of the provided words.
+     *
+     * @param words the words to merge
+     * @return the compound word
+     */
+    public static TextWord mergeOf (TextWord... words)
+    {
+        List<TextChar> chars = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+
+        for (TextWord word : words) {
+            chars.addAll(word.getChars());
+            sb.append(word.getValue());
+        }
+
+        // Use font info of first word. What else?
+        FontInfo fontInfo = words[0].getFontInfo();
+        TextLine line = words[0].textLine;
+        Sheet sheet = words[0].getSheet();
+
+        return new TextWord(
+                sheet,
+                baselineOf(Arrays.asList(words)),
+                sb.toString(),
+                fontInfo,
+                confidenceOf(Arrays.asList(words)),
+                chars,
+                line);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -805,8 +802,12 @@ public class TextWord
                 0.30,
                 "Really low confidence to exclude words");
 
+        private final Constant.String oneLetterWordRegexp = new Constant.String(
+                "^[\\W]*[\\w][\\W]*$",
+                "Regular expression to detect one-letter words");
+
         private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[°<>']$",
+                "^[\\W]+$",
                 "Regular expression to detect abnormal words");
 
         private final Constant.String dashWordRegexp = new Constant.String(
@@ -821,31 +822,6 @@ public class TextWord
                 0.5,
                 "Minimum ratio between ocr and glyph font sizes");
 
-        //
-        //        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(
-        //                1.5,
-        //                "Maximum ratio between ocr and glyph diagonals");
-        //
-        //        private final Constant.Ratio minDiagRatio = new Constant.Ratio(
-        //                0.5,
-        //                "Minimum ratio between ocr and glyph diagonals");
-        //
-        //        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(
-        //                0.15,
-        //                "Minimum width to check word aspect");
-        //
-        //        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(
-        //                0.15,
-        //                "Minimum height to check word aspect");
-        //
-        //        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(
-        //                1.75,
-        //                "Maximum ratio between ocr and glyph aspects");
-        //
-        //        private final Constant.Ratio minAspectRatio = new Constant.Ratio(
-        //                0.4,
-        //                "Minimum ratio between ocr and glyph aspects");
-        //
         private final Scale.Fraction standardFontSize = new Scale.Fraction(
                 2.5,
                 "Standard font size");
