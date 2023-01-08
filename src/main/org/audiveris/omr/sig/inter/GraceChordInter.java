@@ -253,7 +253,7 @@ public class GraceChordInter
     {
         final Scale scale = sheet.getScale();
         final Family family = sheet.getStub().getMusicFontFamily();
-        final FontSymbol fs = headShape.getFontSymbol(family, scale.getInterline());
+        final FontSymbol fs = headShape.getFontSymbolByInterline(family, scale.getInterline());
         return fs.symbol.getDimension(fs.font);
     }
 

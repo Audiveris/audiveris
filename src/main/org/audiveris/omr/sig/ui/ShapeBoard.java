@@ -723,7 +723,7 @@ public class ShapeBoard
         final Family fontFamily = sheet.getStub().getMusicFontFamily();
         final int interline = sheet.getScale().getInterline();
         final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
-        final FontSymbol fs = shape.getFontSymbol(fontFamily, getPointSize(zoomedInterline));
+        final FontSymbol fs = shape.getFontSymbolByInterline(fontFamily, getPointSize(zoomedInterline));
 
         if (fs.symbol == null) {
             logger.warn("No symbol for non-draggable shape");
@@ -1246,7 +1246,7 @@ public class ShapeBoard
 
             // Set image
             final Family fontFamily = sheet.getStub().getMusicFontFamily();
-            final FontSymbol fs = shape.getFontSymbol(fontFamily, TINY_INTERLINE);
+            final FontSymbol fs = shape.getFontSymbolByInterline(fontFamily, TINY_INTERLINE);
 
             if (fs.symbol != null) {
                 image = fs.symbol.buildImage(fs.font);

@@ -1185,7 +1185,7 @@ public class StemBuilder
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
         final Shape shape = inter.getShape();
         final Family family = sheet.getStub().getMusicFontFamily();
-        final FontSymbol fs = shape.getFontSymbol(family, scale.getInterline());
+        final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
         fs.symbol.paintSymbol(g, fs.font, bounds.getLocation(), TOP_LEFT);
 
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));

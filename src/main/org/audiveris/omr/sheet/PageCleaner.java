@@ -242,7 +242,7 @@ public abstract class PageCleaner
     {
 
         final int size = head.getStaff().isSmall() ? smallHeadSize : dilatedHeadSize;
-        final FontSymbol fs = head.getShape().getFontSymbol(family, size);
+        final FontSymbol fs = head.getShape().getFontSymbolBySize(family, size);
 
         if (fs.symbol == null) {
             logger.warn("No symbol for head {}", head);
@@ -268,7 +268,7 @@ public abstract class PageCleaner
 
         final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
         final int size = isSmall ? smallPointSize : dilatedSize;
-        final FontSymbol fs = inter.getShape().getFontSymbol(family, size);
+        final FontSymbol fs = inter.getShape().getFontSymbolBySize(family, size);
 
         if (fs.symbol == null) {
             logger.warn("No symbol for inter {}", inter);
@@ -490,10 +490,7 @@ public abstract class PageCleaner
     {
         if (glyph != null) {
             // Use pixels of underlying glyph
-            Color oldColor = g.getColor();
-            g.setColor(Color.WHITE);
             glyph.getRunTable().render(g, glyph.getTopLeft());
-            g.setColor(oldColor);
         }
     }
 

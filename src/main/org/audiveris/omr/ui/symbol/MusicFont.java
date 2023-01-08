@@ -319,6 +319,22 @@ public class MusicFont
         return getMusicFont(family, getPointSize(staffInterline));
     }
 
+    //-------------------//
+    // getBaseFontBySize //
+    //-------------------//
+    /**
+     * Report the (perhaps cached) music font based on chosen family and point size.
+     *
+     * @param family    chosen family font
+     * @param pointSize desired font point size
+     * @return proper scaled music font
+     */
+    public static MusicFont getBaseFontBySize (Family family,
+                                               int pointSize)
+    {
+        return getMusicFont(family, pointSize);
+    }
+
     //-----------------------//
     // getDefaultMusicFamily //
     //-----------------------//

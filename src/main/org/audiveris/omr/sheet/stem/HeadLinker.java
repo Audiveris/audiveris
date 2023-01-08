@@ -1942,7 +1942,7 @@ public class HeadLinker
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
                 final Shape shape = head.getShape();
                 final Family family = system.getSheet().getStub().getMusicFontFamily();
-                final FontSymbol fs = shape.getFontSymbol(family, scale.getInterline());
+                final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
                 fs.symbol.paintSymbol(g, fs.font, bounds.getLocation(), TOP_LEFT);
 
                 final SheetStub stub = system.getSheet().getStub();

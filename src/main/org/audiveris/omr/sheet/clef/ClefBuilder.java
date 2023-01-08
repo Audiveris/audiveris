@@ -460,7 +460,7 @@ public class ClefBuilder
                 final Shape shape = inter.getShape();
                 final int size = MusicFont.getPointSize(sheet.getInterline());
                 final Family family = sheet.getStub().getMusicFontFamily();
-                final FontSymbol fs = shape.getFontSymbol(family, size);
+                final FontSymbol fs = shape.getFontSymbolByInterline(family, size);
 
                 Point symbolCentroid = fs.symbol.getCentroid(clefBox);
                 Point glyphCentroid = inter.getGlyph().getCentroid();
