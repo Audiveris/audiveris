@@ -24,6 +24,7 @@ package org.audiveris.omr.text.tesseract;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextChar;
@@ -91,6 +92,9 @@ public class TesseractOrder
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Containing sheet. */
+    private final Sheet sheet;
+
     /** Serial number for this order. */
     private final int serial;
 
@@ -119,6 +123,7 @@ public class TesseractOrder
     /**
      * Creates a new TesseractOrder object.
      *
+     * @param sheet         the containing sheet
      * @param label         A debugging label (such as sheet name or glyph id)
      * @param serial        A unique id for this order instance
      * @param saveImage     True to keep a disk copy of the image
@@ -129,15 +134,17 @@ public class TesseractOrder
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
      */
-    public TesseractOrder (String label,
+    public TesseractOrder (Sheet sheet,
+                           String label,
                            int serial,
                            boolean saveImage,
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
             throws UnsatisfiedLinkError,
-                   IOException
+                IOException
     {
+        this.sheet = sheet;
         this.label = label;
         this.serial = serial;
         this.saveImage = saveImage;
@@ -362,7 +369,7 @@ public class TesseractOrder
 
                 // Start of line?
                 if (it.IsAtBeginningOf(RIL_TEXTLINE)) {
-                    line = new TextLine();
+                    line = new TextLine(sheet);
                     logger.debug("{} {}", label, line);
                     lines.add(line);
                 }
@@ -379,6 +386,7 @@ public class TesseractOrder
                     }
 
                     word = new TextWord(
+                            sheet,
                             getBoundingBox(it, RIL_WORD),
                             it.GetUTF8Text(RIL_WORD).getString(UTF8),
                             getBaseline(it, RIL_WORD),
@@ -434,7 +442,7 @@ public class TesseractOrder
      * @return a buffer in TIFF format
      */
     private ByteBuffer toTiffBuffer (BufferedImage image)
-            throws IOException
+        throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 

@@ -84,6 +84,7 @@ public class SheetScanner
     private static final Logger logger = LoggerFactory.getLogger(SheetScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -91,6 +92,7 @@ public class SheetScanner
     private ByteProcessor buffer;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TextPageScanner</code> object.
      *
@@ -102,6 +104,7 @@ public class SheetScanner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getBuffer //
     //-----------//
@@ -113,13 +116,50 @@ public class SheetScanner
         return buffer;
     }
 
+    //---------------//
+    // getCleanImage //
+    //---------------//
+    private BufferedImage getCleanImage ()
+    {
+        Picture picture = sheet.getPicture();
+        ByteProcessor buf = picture.getSource(Picture.SourceKey.NO_STAFF);
+
+        BufferedImage img = buf.getBufferedImage();
+        buffer = new ByteProcessor(img);
+
+        TextsCleaner cleaner = new TextsCleaner(buffer, img.createGraphics(), sheet);
+        cleaner.eraseInters();
+
+        // Display for visual check?
+        if (constants.displayTexts.isSet() && (OMR.gui != null)) {
+            sheet.getStub().getAssembly().addViewTab(
+                    "Texts",
+                    new ScrollImageView(sheet, new ImageView(img)
+                    {
+                        @Override
+                        protected void renderItems (Graphics2D g)
+                        {
+                            sheet.renderItems(g); // Apply registered sheet renderers
+                        }
+                    }),
+                    new BoardsPane(new PixelBoard(sheet)));
+        }
+
+        // Save a copy on disk?
+        if (constants.saveTextsBuffer.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "text");
+        }
+
+        return img;
+    }
+
     //-----------//
     // scanSheet //
     //-----------//
     /**
      * Get a clean image of whole sheet and run OCR on it.
      *
-     * @return the list of OCR'ed lines found
+     * @return the list of OCR'ed lines found and filtered
      */
     public List<TextLine> scanSheet ()
     {
@@ -143,7 +183,7 @@ public class SheetScanner
                     constants.whiteMarginAdded.getValue(),
                     OCR.LayoutMode.MULTI_BLOCK,
                     language,
-                    sheet.getScale().getInterline(),
+                    sheet,
                     sheet.getId());
         } finally {
             if (constants.printWatch.isSet()) {
@@ -152,44 +192,8 @@ public class SheetScanner
         }
     }
 
-    //---------------//
-    // getCleanImage //
-    //---------------//
-    private BufferedImage getCleanImage ()
-    {
-        Picture picture = sheet.getPicture();
-        ByteProcessor buf = picture.getSource(Picture.SourceKey.NO_STAFF);
-
-        BufferedImage img = buf.getBufferedImage();
-        buffer = new ByteProcessor(img);
-
-        TextsCleaner cleaner = new TextsCleaner(buffer, img.createGraphics(), sheet);
-        cleaner.eraseInters();
-
-        // Display for visual check?
-        if (constants.displayTexts.isSet() && (OMR.gui != null)) {
-            sheet.getStub().getAssembly().addViewTab(
-                    "Texts",
-                    new ScrollImageView(sheet, new ImageView(img)
-                                {
-                                    @Override
-                                    protected void renderItems (Graphics2D g)
-                                    {
-                                        sheet.renderItems(g); // Apply registered sheet renderers
-                                    }
-                                }),
-                    new BoardsPane(new PixelBoard(sheet)));
-        }
-
-        // Save a copy on disk?
-        if (constants.saveTextsBuffer.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId(), "text");
-        }
-
-        return img;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -249,6 +253,35 @@ public class SheetScanner
         {
             super(buffer, g, sheet);
             params = new Parameters(sheet.getScale());
+        }
+
+        //-------------------//
+        // eraseBorderGlyphs //
+        //-------------------//
+        /**
+         * Erase from text image the glyphs that intersect or touch a staff core area.
+         * <p>
+         * (We also tried to remove too small glyphs, but this led to poor recognition by OCR)
+         *
+         * @param glyphs all the glyph instances in image
+         * @param cores  all staves cores
+         */
+        private void eraseBorderGlyphs (List<Glyph> glyphs,
+                                        List<Area> cores)
+        {
+            for (Glyph glyph : glyphs) {
+                // Check position WRT staves cores
+                Rectangle glyphBox = glyph.getBounds();
+                glyphBox.grow(1, 1); // To catch touching glyphs (on top of intersecting ones)
+
+                for (Area core : cores) {
+                    if (core.intersects(glyphBox)) {
+                        glyph.getRunTable().render(g, glyph.getTopLeft());
+
+                        break;
+                    }
+                }
+            }
         }
 
         //-------------//
@@ -327,35 +360,6 @@ public class SheetScanner
             g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
             g.draw(ledger.getMedian());
             g.setStroke(oldStroke);
-        }
-
-        //-------------------//
-        // eraseBorderGlyphs //
-        //-------------------//
-        /**
-         * Erase from text image the glyphs that intersect or touch a staff core area.
-         * <p>
-         * (We also tried to remove too small glyphs, but this led to poor recognition by OCR)
-         *
-         * @param glyphs all the glyph instances in image
-         * @param cores  all staves cores
-         */
-        private void eraseBorderGlyphs (List<Glyph> glyphs,
-                                        List<Area> cores)
-        {
-            for (Glyph glyph : glyphs) {
-                // Check position WRT staves cores
-                Rectangle glyphBox = glyph.getBounds();
-                glyphBox.grow(1, 1); // To catch touching glyphs (on top of intersecting ones)
-
-                for (Area core : cores) {
-                    if (core.intersects(glyphBox)) {
-                        glyph.getRunTable().render(g, glyph.getTopLeft());
-
-                        break;
-                    }
-                }
-            }
         }
 
         //------------//

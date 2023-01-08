@@ -71,8 +71,9 @@ public class Language
     public static final String SEP_CHAR = "+";
 
     /** Default language specification (such as deu+eng+fra). */
-    public static final Param<String> ocrDefaultLanguages
-            = new ConstantBasedParam<>(constants.defaultSpecification, GLOBAL_SCOPE);
+    public static final Param<String> ocrDefaultLanguages = new ConstantBasedParam<>(
+            constants.defaultSpecification,
+            GLOBAL_SCOPE);
 
     /** Languages file name. */
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
@@ -84,12 +85,14 @@ public class Language
     private static volatile SupportedLanguages supportedLanguages;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private Language ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------------//
     // getSupportedLanguages //
     //-----------------------//
@@ -103,6 +106,19 @@ public class Language
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.String defaultSpecification = new Constant.String(
+                "deu+eng+fra",
+                "OCR language(s)");
+    }
+
     //-----------//
     // ListModel //
     //-----------//
@@ -150,18 +166,6 @@ public class Language
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.String defaultSpecification = new Constant.String(
-                "deu+eng+fra",
-                "OCR language(s)");
-    }
-
     //---------------------//
     // OcrDefaultLanguages //
     //---------------------//
@@ -169,12 +173,12 @@ public class Language
             extends StringParam
     {
 
+        private final Constant.String constant = constants.defaultSpecification;
+
         public OcrDefaultLanguages (Object scope)
         {
             super(scope);
         }
-
-        private final Constant.String constant = constants.defaultSpecification;
 
         @Override
         public String getSourceValue ()
@@ -277,6 +281,20 @@ public class Language
         }
 
         /**
+         * Convert a language specification (DEU+FRA+ITA) to a sequence
+         * of codes [DEU, FRA, ITA].
+         *
+         * @param spec the language specification to parse
+         * @return the sequence of codes.
+         */
+        private List<String> codesOf (String spec)
+        {
+            final String[] tokens = spec.split("\\" + SEP_CHAR);
+
+            return Arrays.asList(tokens);
+        }
+
+        /**
          * Report a string built as: "code (full name)".
          *
          * @param index index in codesList
@@ -316,6 +334,18 @@ public class Language
             }
         }
 
+        /**
+         * Report the full language name mapped to a language code.
+         *
+         * @param code the language code, such as "eng"
+         * @return the corresponding language full name, such as "English",
+         *         or null if unknown
+         */
+        private String nameOf (String code)
+        {
+            return codes.get(code);
+        }
+
         public String specOf (Collection<String> list)
         {
             StringBuilder sb = new StringBuilder();
@@ -333,32 +363,6 @@ public class Language
             } else {
                 return sb.toString();
             }
-        }
-
-        /**
-         * Convert a language specification (DEU+FRA+ITA) to a sequence
-         * of codes [DEU, FRA, ITA].
-         *
-         * @param spec the language specification to parse
-         * @return the sequence of codes.
-         */
-        private List<String> codesOf (String spec)
-        {
-            final String[] tokens = spec.split("\\" + SEP_CHAR);
-
-            return Arrays.asList(tokens);
-        }
-
-        /**
-         * Report the full language name mapped to a language code.
-         *
-         * @param code the language code, such as "eng"
-         * @return the corresponding language full name, such as "English",
-         *         or null if unknown
-         */
-        private String nameOf (String code)
-        {
-            return codes.get(code);
         }
     }
 }

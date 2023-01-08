@@ -46,6 +46,7 @@ public class TextChar
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void setValue (String value)
     {

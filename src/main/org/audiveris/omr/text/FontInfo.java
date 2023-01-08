@@ -44,6 +44,7 @@ public class FontInfo
     private static final char SEPARATOR = '-';
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** True if bold. */
     public final boolean isBold;
 
@@ -69,6 +70,7 @@ public class FontInfo
     public final String fontName;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new FontInfo object.
      *
@@ -121,6 +123,7 @@ public class FontInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getMnemo //
     //----------//
@@ -226,6 +229,7 @@ public class FontInfo
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -238,7 +242,7 @@ public class FontInfo
 
         @Override
         public String marshal (FontInfo info)
-                throws Exception
+            throws Exception
         {
             if (info == null) {
                 logger.warn("Null FontInfo");
@@ -251,7 +255,7 @@ public class FontInfo
 
         @Override
         public FontInfo unmarshal (String mnemo)
-                throws Exception
+            throws Exception
         {
             if (mnemo == null) {
                 logger.warn("Null mnemo");

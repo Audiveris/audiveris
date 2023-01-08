@@ -84,11 +84,14 @@ import java.util.TreeSet;
  * This builder can operate in 3 different modes:
  * <ol>
  * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
- * <br><code>manualLyrics == null;</code>
+ * <br>
+ * <code>manualLyrics == null;</code>
  * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
- * <br><code>manualLyrics == true;</code>
+ * <br>
+ * <code>manualLyrics == true;</code>
  * <li><b>Manual as non-lyrics</b>: Manual mode, for which text role is imposed as non lyrics.
- * <br><code>manualLyrics == false;</code>
+ * <br>
+ * <code>manualLyrics == false;</code>
  * </ol>
  *
  * @author Hervé Bitteur
@@ -102,6 +105,7 @@ public class TextBuilder
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -129,6 +133,7 @@ public class TextBuilder
     private final Map<Pair<Staff>, Pair<List<TextLine>>> gutterMap = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TextBuilder object in engine mode (TEXTS step).
      *
@@ -163,17 +168,6 @@ public class TextBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // adjustLines //
-    //-------------//
-    private void adjustLines (List<TextLine> lines)
-    {
-        for (TextLine line : lines) {
-            for (TextWord word : line.getWords()) {
-                word.adjust(scale);
-            }
-        }
-    }
 
     //----------------//
     // adjustFontSize //
@@ -201,189 +195,15 @@ public class TextBuilder
         }
     }
 
-    //----------------//
-    // isMainlyItalic //
-    //----------------//
-    /**
-     * Check whether the (majority of) line is in italic font.
-     *
-     * @param line the line to check
-     * @return true if mainly italics
-     */
-    public static boolean isMainlyItalic (TextLine line)
+    //-------------//
+    // adjustLines //
+    //-------------//
+    private void adjustLines (List<TextLine> lines)
     {
-        final double minConfidence = TesseractOCR.getInstance().getMinConfidence();
-        int reliableWords = 0;
-        int italicWords = 0;
-
-        for (TextWord word : line.getWords()) {
-            if ((word.getConfidence() >= minConfidence) && (word.getLength() > 1)) {
-                reliableWords++;
-
-                if (word.getFontInfo().isItalic) {
-                    italicWords++;
-                }
+        for (TextLine line : lines) {
+            for (TextWord word : line.getWords()) {
+                word.adjust(scale);
             }
-        }
-
-        // Check for majority among reliable words
-        if (reliableWords != 0) {
-            return (italicWords * 2) >= reliableWords;
-        } else {
-            return false;
-        }
-    }
-
-    //-----------------//
-    // lookupLyricLine //
-    //-----------------//
-    /**
-     * Look for an existing lyric line that a lyric item at provided baseline location
-     * should join.
-     * <p>
-     * This method is called in manual mode only.
-     *
-     * @param baseLocation baseline location for a new text line
-     * @return the lyric line to join, if any
-     */
-    public LyricLineInter lookupLyricLine (Point2D baseLocation)
-    {
-        final double newY = skew.deskewed(baseLocation).getY();
-        final List<LyricLineInter> lines = system.getLyricLines();
-
-        // Find closest line, ordinatewise
-        double bestDy = Double.MAX_VALUE;
-        LyricLineInter bestLine = null;
-
-        for (LyricLineInter line : lines) {
-            final double y = skew.deskewed(line.getLocation()).getY();
-            final double dy = Math.abs(y - newY);
-
-            if (bestDy > dy) {
-                bestDy = dy;
-                bestLine = line;
-            }
-        }
-
-        // Check we are compatible with this closest line
-        if (bestDy <= maxLineDy) {
-            return bestLine;
-        }
-
-        return null;
-    }
-
-    //--------------//
-    // processGlyph //
-    //--------------//
-    /**
-     * Retrieve the glyph lines, among the lines OCR'ed from the glyph buffer.
-     * <p>
-     * This method is called in manual mode only.
-     * Boolean 'manualLyrics' is not null and is either true for lyrics imposed or false for lyrics
-     * forbidden.
-     *
-     * @param buffer     the (glyph) pixel buffer
-     * @param glyphLines the glyph raw OCR lines, relative to buffer origin
-     * @param offset     glyph top left corner (with respect to sheet origin)
-     * @return the final absolute text lines, ready to be inserted in sig
-     */
-    public List<TextLine> processGlyph (ByteProcessor buffer,
-                                        List<TextLine> glyphLines,
-                                        Point offset)
-    {
-        // Pre-assign text role as lyrics?
-        if (isManual() && manualLyrics) {
-            for (TextLine line : glyphLines) {
-                line.setRole(TextRole.Lyrics); // Here, lyrics role is certain!
-            }
-        }
-
-        List<Section> relativeSections = getSections(buffer, glyphLines);
-        mapGlyphs(glyphLines, relativeSections, offset);
-
-        // Translate to absolute coordinates
-        for (TextLine glyphLine : glyphLines) {
-            glyphLine.translate(offset.x, offset.y);
-        }
-
-        glyphLines = recomposeLines(glyphLines);
-
-        return glyphLines;
-    }
-
-    //---------------//
-    // processSystem //
-    //---------------//
-    /**
-     * Retrieve the system-relevant lines, among all the lines OCR'ed at sheet level.
-     * <p>
-     * We may have lines that belong to the system above and lines that belong to the system below.
-     * We try to filter them out immediately.
-     *
-     * @param buffer     the (sheet) pixel buffer
-     * @param sheetLines the sheet raw OCR'ed lines
-     */
-    public void processSystem (ByteProcessor buffer,
-                               List<TextLine> sheetLines)
-    {
-        logger.debug("processSystem #{}", system.getId());
-
-        StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
-        watch.start("retrieveRawLines");
-
-        List<TextLine> rawLines = getSystemRawLines(sheetLines);
-
-        // Gather rawLines into long lines
-        watch.start("longLines");
-
-        List<TextLine> longLines = mergeRawLines(rawLines);
-
-        if (logger.isDebugEnabled()) {
-            dump("longLines", longLines, false);
-        }
-
-        // Discard lines that pertain to a system above or to a system below
-        purgeExternalLines(longLines);
-
-        // Partition lines between parts of the system
-        partitionPartLines(longLines);
-
-        // Assign a role to each long line
-        guessLongRoles(longLines);
-
-        // Assign each lyric line to proper staff
-        mapLyricLines(longLines);
-
-        // Separate additional work on lyric lines and on standard lines
-        watch.start("recomposeLines");
-
-        List<TextLine> lines = recomposeLines(longLines);
-
-        // Retrieve candidate sections (not the usual horizontal or vertical sheet sections)
-        watch.start("getSections");
-
-        List<Section> relSections = getSections(buffer, lines);
-
-        // Map words to section-based glyphs
-        watch.start("mapGlyphs");
-        mapGlyphs(lines, relSections, null);
-
-        // Allocate corresponding inters based on role
-        // - Sentences of Words (or of one ChordName)
-        // - LyricLines of LyricItems
-        watch.start("createInters");
-        createInters();
-
-        watch.start("numberLyricLines()");
-        system.numberLyricLines();
-
-        if (constants.printWatch.isSet()) {
-            watch.print();
-        }
-
-        if (logger.isDebugEnabled()) {
-            dump("Retrieved lines", lines, true);
         }
     }
 
@@ -404,8 +224,7 @@ public class TextBuilder
         for (TextLine line : textLines) {
             final TextRole role = line.getRole();
             final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                    : ((role == TextRole.ChordName)
-                            ? ChordNameInter.create(line)
+                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
                             : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
@@ -423,10 +242,8 @@ public class TextBuilder
 
                 // Link sentence and words
                 for (TextWord word : line.getWords()) {
-                    final WordInter wordInter = (role == TextRole.Lyrics)
-                            ? new LyricItemInter(word)
-                            : ((role == TextRole.ChordName)
-                                    ? ChordNameInter.createValid(word)
+                    final WordInter wordInter = (role == TextRole.Lyrics) ? new LyricItemInter(word)
+                            : ((role == TextRole.ChordName) ? ChordNameInter.createValid(word)
                                     : new WordInter(word));
 
                     if (wordInter != null) {
@@ -511,7 +328,7 @@ public class TextBuilder
             }
         }
 
-        logger.debug("gaps:{} breakIndex:{}", gaps, breakIndex);
+        logger.trace("gaps:{} breakIndex:{}", gaps, breakIndex);
 
         return breakIndex;
     }
@@ -590,7 +407,7 @@ public class TextBuilder
 
         for (TextLine sheetLine : sheetLines) {
             if (areaBounds.intersects(sheetLine.getBounds())) {
-                TextLine line = new TextLine();
+                TextLine line = new TextLine(sheet);
 
                 for (TextWord sheetWord : sheetLine.getWords()) {
                     final Rectangle wordBox = sheetWord.getBounds();
@@ -627,7 +444,7 @@ public class TextBuilder
         for (TextLine line : longLines) {
             guessRole(line);
 
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 logger.info(String.format("long %16s %s", line.getRole(), line));
             }
         }
@@ -665,6 +482,45 @@ public class TextBuilder
         return manualLyrics != null;
     }
 
+    //-----------------//
+    // lookupLyricLine //
+    //-----------------//
+    /**
+     * Look for an existing lyric line that a lyric item at provided baseline location
+     * should join.
+     * <p>
+     * This method is called in manual mode only.
+     *
+     * @param baseLocation baseline location for a new text line
+     * @return the lyric line to join, if any
+     */
+    public LyricLineInter lookupLyricLine (Point2D baseLocation)
+    {
+        final double newY = skew.deskewed(baseLocation).getY();
+        final List<LyricLineInter> lines = system.getLyricLines();
+
+        // Find closest line, ordinatewise
+        double bestDy = Double.MAX_VALUE;
+        LyricLineInter bestLine = null;
+
+        for (LyricLineInter line : lines) {
+            final double y = skew.deskewed(line.getLocation()).getY();
+            final double dy = Math.abs(y - newY);
+
+            if (bestDy > dy) {
+                bestDy = dy;
+                bestLine = line;
+            }
+        }
+
+        // Check we are compatible with this closest line
+        if (bestDy <= maxLineDy) {
+            return bestLine;
+        }
+
+        return null;
+    }
+
     //-----------//
     // mapGlyphs //
     //-----------//
@@ -681,7 +537,7 @@ public class TextBuilder
                             Collection<Section> allSections,
                             Point offset)
     {
-        logger.debug("mapGlyphs");
+        logger.trace("mapGlyphs");
 
         final int dx = (offset != null) ? offset.x : 0;
         final int dy = (offset != null) ? offset.y : 0;
@@ -690,7 +546,7 @@ public class TextBuilder
         final CompoundConstructor constructor = new SectionCompound.Constructor(interline);
 
         for (TextLine line : lines) {
-            logger.debug("  mapping {}", line);
+            logger.trace("  mapping {}", line);
 
             // Browse all words, starting by shorter ones
             List<TextWord> toRemove = new ArrayList<>();
@@ -722,10 +578,10 @@ public class TextBuilder
                     if (word.isVip()) {
                         logger.info("    mapped {}", word);
                     } else {
-                        logger.debug("    mapped {}", word);
+                        logger.trace("    mapped {}", word);
                     }
                 } else if (!word.isAdjusted()) {
-                    logger.debug("No section found for {}", word);
+                    logger.trace("No section found for {}", word);
                     toRemove.add(word);
                 }
             }
@@ -808,15 +664,15 @@ public class TextBuilder
         if (chunks.size() == 1) {
             line = chunks.get(0);
         } else {
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 for (TextLine chunk : chunks) {
-                    logger.debug("   chunk {}", chunk);
+                    logger.trace("   chunk {}", chunk);
                 }
             }
 
             line = mergeLines(chunks);
 
-            if (line.isVip() || logger.isDebugEnabled()) {
+            if (line.isVip() || logger.isTraceEnabled()) {
                 logger.info("      merge result {}", line);
             }
         }
@@ -844,7 +700,7 @@ public class TextBuilder
 
         Collections.sort(words, TextWord.byAbscissa);
 
-        return new TextLine(words);
+        return new TextLine(sheet, words);
     }
 
     //---------------//
@@ -908,7 +764,7 @@ public class TextBuilder
      */
     private List<TextLine> mergeStandardLines (List<TextLine> oldStandards)
     {
-        logger.debug("mergeStandardLines");
+        logger.trace("mergeStandardLines");
         Collections.sort(oldStandards, TextLine.byOrdinate(skew));
 
         for (TextLine current : oldStandards) {
@@ -916,15 +772,13 @@ public class TextBuilder
 
             TextLine candidate = current;
 
-            CandidateLoop:
-            while (true) {
+            CandidateLoop: while (true) {
                 final Rectangle candidateBounds = candidate.getDeskewedCore(skew);
 
                 final Rectangle candidateFatBox = new Rectangle(candidateBounds);
                 candidateFatBox.grow(candidate.selectWordGap(scale), maxLineDy);
 
-                TrunksLoop:
-                for (TextLine trunk : oldStandards) {
+                TrunksLoop: for (TextLine trunk : oldStandards) {
                     if (trunk == current) {
                         break CandidateLoop;
                     }
@@ -940,7 +794,7 @@ public class TextBuilder
                                 continue;
                             }
 
-                            if (candidate.isVip() || trunk.isVip() || logger.isDebugEnabled()) {
+                            if (candidate.isVip() || trunk.isVip() || logger.isTraceEnabled()) {
                                 logger.info("  merging {} into {}", candidate, trunk);
                             }
 
@@ -1015,8 +869,7 @@ public class TextBuilder
             return null;
         }
 
-        return new Pair<>(gutterLines.subList(0, bi),
-                          gutterLines.subList(bi, gutterLines.size()));
+        return new Pair<>(gutterLines.subList(0, bi), gutterLines.subList(bi, gutterLines.size()));
     }
 
     //--------------------//
@@ -1042,6 +895,144 @@ public class TextBuilder
             final Pair<List<TextLine>> linePartitions = partitionLines(staff1, staff2, longLines);
 
             gutterMap.put(staffPair, linePartitions);
+        }
+    }
+
+    //--------------//
+    // processGlyph //
+    //--------------//
+    /**
+     * Retrieve the glyph lines, among the lines OCR'ed from the glyph buffer.
+     * <p>
+     * This method is called in manual mode only.
+     * Boolean 'manualLyrics' is not null and is either true for lyrics imposed or false for lyrics
+     * forbidden.
+     *
+     * @param buffer     the (glyph) pixel buffer
+     * @param glyphLines the glyph raw OCR lines, relative to buffer origin
+     * @param offset     glyph top left corner (with respect to sheet origin)
+     * @return the final absolute text lines, ready to be inserted in sig
+     */
+    public List<TextLine> processGlyph (ByteProcessor buffer,
+                                        List<TextLine> glyphLines,
+                                        Point offset)
+    {
+        // Pre-assign text role as lyrics?
+        if (isManual() && manualLyrics) {
+            for (TextLine line : glyphLines) {
+                line.setRole(TextRole.Lyrics); // Here, lyrics role is certain!
+            }
+        }
+
+        List<Section> relativeSections = getSections(buffer, glyphLines);
+        mapGlyphs(glyphLines, relativeSections, offset);
+
+        // Translate to absolute coordinates
+        for (TextLine glyphLine : glyphLines) {
+            glyphLine.translate(offset.x, offset.y);
+        }
+
+        glyphLines = recomposeLines(glyphLines);
+
+        return glyphLines;
+    }
+
+    //---------------//
+    // processSystem //
+    //---------------//
+    /**
+     * Retrieve the system-relevant lines, among all the lines OCR'ed at sheet level.
+     * <p>
+     * We may have lines that belong to the system above and lines that belong to the system below.
+     * We try to filter them out immediately.
+     *
+     * @param buffer     the (sheet) pixel buffer
+     * @param sheetLines the sheet raw OCR'ed lines
+     */
+    public void processSystem (ByteProcessor buffer,
+                               List<TextLine> sheetLines)
+    {
+        logger.trace("processSystem #{}", system.getId());
+
+        StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
+        watch.start("retrieveRawLines");
+
+        List<TextLine> rawLines = getSystemRawLines(sheetLines);
+
+        // Gather rawLines into long lines
+        watch.start("longLines");
+
+        List<TextLine> longLines = mergeRawLines(rawLines);
+
+        if (logger.isTraceEnabled()) {
+            dump("longLines", longLines, false);
+        }
+
+        // Discard lines that pertain to a system above or to a system below
+        purgeExternalLines(longLines);
+
+        // Partition lines between parts of the system
+        partitionPartLines(longLines);
+
+        // Assign a role to each long line
+        guessLongRoles(longLines);
+
+        // Assign each lyric line to proper staff
+        mapLyricLines(longLines);
+
+        // Separate additional work on lyric lines and on standard lines
+        watch.start("recomposeLines");
+
+        List<TextLine> lines = recomposeLines(longLines);
+
+        // Retrieve candidate sections (not the usual horizontal or vertical sheet sections)
+        watch.start("getSections");
+
+        List<Section> relSections = getSections(buffer, lines);
+
+        // Map words to section-based glyphs
+        watch.start("mapGlyphs");
+        mapGlyphs(lines, relSections, null);
+
+        // Allocate corresponding inters based on role
+        // - Sentences of Words (or of one ChordName)
+        // - LyricLines of LyricItems
+        watch.start("createInters");
+        createInters();
+
+        watch.start("numberLyricLines()");
+        system.numberLyricLines();
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
+        if (logger.isDebugEnabled()) {
+            dump("Retrieved lines", lines, true);
+        }
+    }
+
+    //--------------------//
+    // purgeExternalLines //
+    //--------------------//
+    /**
+     * Purge the provided sequence of long lines of the lines that pertain to system(s)
+     * above or system(s) below the current system.
+     *
+     * @param lines the list of lines to purge
+     */
+    private void purgeExternalLines (List<TextLine> lines)
+    {
+        final SystemManager systemMgr = sheet.getSystemManager();
+
+        for (VerticalSide side : VerticalSide.values()) {
+            for (SystemInfo alien : systemMgr.verticalNeighbors(system, side)) {
+                purgeGutter(
+                        lines,
+                        side,
+                        (side == TOP) ? alien : system, // Upper
+                        (side == TOP) ? system : alien); // Lower
+            }
         }
     }
 
@@ -1076,7 +1067,7 @@ public class TextBuilder
         if (linesPair != null) {
             final List<TextLine> toRemove = (side == TOP) ? linesPair.one : linesPair.two;
 
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 dump("Purged " + side, toRemove, false);
             }
 
@@ -1102,16 +1093,16 @@ public class TextBuilder
             boolean inSheetHeader = (system.getId() == 1) && (origin.getY() < system.getFirstStaff()
                     .getFirstLine().yAt(origin.getX()));
 
-            String reason = line.checkValidity(scale, inSheetHeader);
+            String reason = line.checkValidity(inSheetHeader);
 
             if (reason != null) {
                 line.setProcessed(true);
 
-                if (logger.isDebugEnabled()) {
+                if (logger.isTraceEnabled()) {
                     logger.info("  {} {}", reason, line);
 
                     for (TextWord word : line.getWords()) {
-                        logger.debug("    {}", word);
+                        logger.trace("    {}", word);
                     }
                 }
             } else {
@@ -1120,29 +1111,6 @@ public class TextBuilder
         }
 
         return validLines;
-    }
-
-    //--------------------//
-    // purgeExternalLines //
-    //--------------------//
-    /**
-     * Purge the provided sequence of long lines of the lines that pertain to system(s)
-     * above or system(s) below the current system.
-     *
-     * @param lines the list of lines to purge
-     */
-    private void purgeExternalLines (List<TextLine> lines)
-    {
-        final SystemManager systemMgr = sheet.getSystemManager();
-
-        for (VerticalSide side : VerticalSide.values()) {
-            for (SystemInfo alien : systemMgr.verticalNeighbors(system, side)) {
-                purgeGutter(lines,
-                            side,
-                            (side == TOP) ? alien : system, // Upper
-                            (side == TOP) ? system : alien); // Lower
-            }
-        }
     }
 
     //----------------//
@@ -1162,7 +1130,7 @@ public class TextBuilder
      */
     private List<TextLine> recomposeLines (Collection<TextLine> longLines)
     {
-        logger.debug("System#{} recomposeLines", system.getId());
+        logger.trace("System#{} recomposeLines", system.getId());
 
         // Separate lyrics and standard (perhaps long) lines, based on their roles
         List<TextLine> standards = new ArrayList<>();
@@ -1175,7 +1143,7 @@ public class TextBuilder
                 lyrics = purgeInvalidLines(lyrics);
             }
 
-            logger.debug("splitWords for lyrics");
+            logger.trace("splitWords for lyrics");
 
             for (TextLine line : lyrics) {
                 line.splitWords();
@@ -1196,7 +1164,7 @@ public class TextBuilder
             standards = splitStandardLines(standards);
 
             // Recut standard words
-            logger.debug("recutStandardWords");
+            logger.trace("recutStandardWords");
 
             for (TextLine line : standards) {
                 line.recutStandardWords();
@@ -1286,7 +1254,7 @@ public class TextBuilder
     {
         for (TextLine line : lines) {
             if (line.getValue().trim().isEmpty()) {
-                logger.debug("Empty line {}", line);
+                logger.trace("Empty line {}", line);
                 line.setProcessed(true);
             } else {
                 line.setProcessed(false);
@@ -1301,11 +1269,11 @@ public class TextBuilder
                     standards.add(line);
                 }
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("  raw {}", line);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("  raw {}", line);
 
                     for (TextWord word : line.getWords()) {
-                        logger.debug("    {}", word);
+                        logger.trace("    {}", word);
                     }
                 }
             }
@@ -1324,7 +1292,7 @@ public class TextBuilder
      */
     private List<TextLine> splitStandardLines (List<TextLine> oldStandards)
     {
-        logger.debug("splitStandardLines");
+        logger.trace("splitStandardLines");
         Collections.sort(oldStandards, TextLine.byOrdinate(skew));
 
         final List<TextLine> newStandards = new ArrayList<>();
@@ -1349,10 +1317,10 @@ public class TextBuilder
                         if (gap > maxAbscissaGap) {
                             int splitPos = words.indexOf(word);
                             List<TextWord> lineWords = words.subList(0, splitPos);
-                            TextLine newLine = new TextLine(lineWords);
+                            TextLine newLine = new TextLine(sheet, lineWords);
                             guessRole(newLine);
 
-                            if (line.isVip() || logger.isDebugEnabled()) {
+                            if (line.isVip() || logger.isTraceEnabled()) {
                                 logger.info("  subLine {}", newLine);
                             }
 
@@ -1371,10 +1339,10 @@ public class TextBuilder
 
             // Pending words?
             if (words.size() < line.getWords().size()) {
-                TextLine newLine = new TextLine(words);
+                TextLine newLine = new TextLine(sheet, words);
                 guessRole(newLine);
 
-                if (line.isVip() || logger.isDebugEnabled()) {
+                if (line.isVip() || logger.isTraceEnabled()) {
                     logger.info("  subLine {}", newLine);
                 }
 
@@ -1385,6 +1353,39 @@ public class TextBuilder
         }
 
         return newStandards;
+    }
+
+    //----------------//
+    // isMainlyItalic //
+    //----------------//
+    /**
+     * Check whether the (majority of) line is in italic font.
+     *
+     * @param line the line to check
+     * @return true if mainly italics
+     */
+    public static boolean isMainlyItalic (TextLine line)
+    {
+        final double minConfidence = TesseractOCR.getInstance().getMinConfidence();
+        int reliableWords = 0;
+        int italicWords = 0;
+
+        for (TextWord word : line.getWords()) {
+            if ((word.getConfidence() >= minConfidence) && (word.getLength() > 1)) {
+                reliableWords++;
+
+                if (word.getFontInfo().isItalic) {
+                    italicWords++;
+                }
+            }
+        }
+
+        // Check for majority among reliable words
+        if (reliableWords != 0) {
+            return (italicWords * 2) >= reliableWords;
+        } else {
+            return false;
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -170,7 +170,6 @@ public class KeyColumn
 
             Integer clefStop = staff.getClefStop(); // Not very reliable...
             int browseStart = (clefStop != null) ? (clefStop + 1) : (staff.getHeaderStop() + 1);
-            //            int browseStart = staff.getHeaderStop() + 1;
             builders.put(
                     staff,
                     new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
@@ -238,8 +237,7 @@ public class KeyColumn
 
         // All staves within the same part should have identical key signatures
         // Strategy: pick up the "best" KeyInter and try to replicate it in the other stave(s)
-        PartLoop:
-        for (Part part : system.getParts()) {
+        PartLoop: for (Part part : system.getParts()) {
             List<Staff> staves = part.getStaves();
 
             if (staves.size() > 1) {
@@ -255,8 +253,7 @@ public class KeyColumn
                     do {
                         modified = false;
 
-                        StaffLoop:
-                        for (Staff staff : staves) {
+                        StaffLoop: for (Staff staff : staves) {
                             if (staff == bestStaff) {
                                 bestKeyBuilder.getShapeBuilder(-fifths).destroy();
                             } else {

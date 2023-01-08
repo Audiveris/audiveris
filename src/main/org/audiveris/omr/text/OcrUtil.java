@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR.LayoutMode;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 
@@ -43,12 +44,14 @@ public abstract class OcrUtil
     private static final OCR ocr = TesseractOCR.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private OcrUtil ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // getOcr //
     //--------//
@@ -72,7 +75,7 @@ public abstract class OcrUtil
      * @param margin     amount of white pixels added around the image (can be zero)
      * @param layoutMode MULTI_BLOCK or SINGLE_BLOCK
      * @param language   language specification
-     * @param interline  scaling interline
+     * @param sheet      the related sheet
      * @param label      some label meant for debugging
      * @return the raw lines of text found, with coordinates relative to image origin
      */
@@ -80,7 +83,7 @@ public abstract class OcrUtil
                                        int margin,
                                        LayoutMode layoutMode,
                                        String language,
-                                       int interline,
+                                       Sheet sheet,
                                        String label)
     {
         final int width = image.getWidth();
@@ -108,6 +111,6 @@ public abstract class OcrUtil
             bi = image;
         }
 
-        return ocr.recognize(interline, bi, origin, language, layoutMode, label);
+        return ocr.recognize(sheet, bi, origin, language, layoutMode, label);
     }
 }

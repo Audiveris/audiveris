@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
@@ -35,6 +33,8 @@ import org.audiveris.omr.step.StepException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +71,7 @@ public class TextsStep
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a TextsStep instance.
      */
@@ -79,24 +80,13 @@ public class TextsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
-    {
-        // Process texts at system level
-        new TextBuilder(system).processSystem(context.buffer, context.textLines);
-    }
 
     //----------//
     // doProlog //
     //----------//
     @Override
     protected Context doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         List<TextLine> lines = new ArrayList<>();
 
@@ -116,6 +106,18 @@ public class TextsStep
 
         // Make all this available for system-level processing
         return new Context(scanner.getBuffer(), lines);
+    }
+
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        // Process texts at system level
+        new TextBuilder(system).processSystem(context.buffer, context.textLines);
     }
 
     //--------//
@@ -154,6 +156,7 @@ public class TextsStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//

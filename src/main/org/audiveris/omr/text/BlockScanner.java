@@ -70,6 +70,7 @@ public class BlockScanner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // scanBuffer //
     //------------//
@@ -94,11 +95,12 @@ public class BlockScanner
                 constants.whiteMarginAdded.getValue(),
                 OCR.LayoutMode.SINGLE_BLOCK,
                 language,
-                sheet.getScale().getInterline(),
+                sheet,
                 sheet.getId() + "/glyph-" + id);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

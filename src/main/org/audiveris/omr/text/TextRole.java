@@ -25,8 +25,8 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -81,6 +81,8 @@ public enum TextRole
 
     private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // isCreator //
     //-----------//
@@ -92,7 +94,7 @@ public enum TextRole
     public boolean isCreator ()
     {
         return (this == CreatorArranger) || (this == CreatorComposer) || (this == CreatorLyricist)
-                       || (this == Creator);
+                || (this == Creator);
     }
 
     //-----------//
@@ -174,7 +176,7 @@ public enum TextRole
         // Right aligned with staves (and starts after staff center abscissa) ?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
         boolean rightAligned = (Math.abs(right.x - system.getRight()) <= maxRightDx)
-                                       && (staffMidX <= left.x);
+                && (staffMidX <= left.x);
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -226,7 +228,8 @@ public enum TextRole
                 return ChordName;
             } else {
                 if (lyricsAllowed && hasVowel ///&& lyricCloseAboveStaff
-                            && (switches.getValue(ProcessingSwitch.lyricsAboveStaff)) && (!isMainlyItalic)) {
+                        && (switches.getValue(ProcessingSwitch.lyricsAboveStaff))
+                        && (!isMainlyItalic)) {
                     return Lyrics;
                 } else {
                     return Direction;
@@ -239,14 +242,12 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if (lyricsAllowed
-                               && hasVowel
-                               && !isMainlyItalic
-                               && (switches.getValue(ProcessingSwitch.lyrics)
-                                           || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
-                               && ((partPosition == StaffPosition.BELOW_STAVES)
-                                           || ((partPosition == StaffPosition.ABOVE_STAVES)
-                                                       && switches.getValue(ProcessingSwitch.lyricsAboveStaff)))) {
+            } else if (lyricsAllowed && hasVowel && !isMainlyItalic && (switches.getValue(
+                    ProcessingSwitch.lyrics) || switches.getValue(
+                            ProcessingSwitch.lyricsAboveStaff))
+                    && ((partPosition == StaffPosition.BELOW_STAVES)
+                            || ((partPosition == StaffPosition.ABOVE_STAVES) && switches.getValue(
+                                    ProcessingSwitch.lyricsAboveStaff)))) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -267,9 +268,10 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed && hasVowel && !isMainlyItalic && (switches
-                        .getValue(ProcessingSwitch.lyrics) || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
-                            && (partPosition == StaffPosition.BELOW_STAVES)) {
+                if (lyricsAllowed && hasVowel && !isMainlyItalic && (switches.getValue(
+                        ProcessingSwitch.lyrics) || switches.getValue(
+                                ProcessingSwitch.lyricsAboveStaff))
+                        && (partPosition == StaffPosition.BELOW_STAVES)) {
                     return Lyrics;
                 }
             }
@@ -278,6 +280,8 @@ public enum TextRole
         // Default
         return UnknownRole;
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
     // Constants //

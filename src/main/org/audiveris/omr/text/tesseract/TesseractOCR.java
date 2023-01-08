@@ -24,16 +24,17 @@ package org.audiveris.omr.text.tesseract;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.bytedeco.tesseract.global.tesseract;
-import org.bytedeco.tesseract.StringGenericVector;
-import org.bytedeco.tesseract.TessBaseAPI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bytedeco.tesseract.StringGenericVector;
+import org.bytedeco.tesseract.TessBaseAPI;
+import org.bytedeco.tesseract.global.tesseract;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -71,7 +72,7 @@ public class TesseractOCR
 
     /** Warning message when OCR folder cannot be found. */
     private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-                                                         + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
+            + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The folder where Tesseract OCR material is stored. */
@@ -173,7 +174,7 @@ public class TesseractOCR
     // recognize //
     //-----------//
     @Override
-    public List<TextLine> recognize (int interline,
+    public List<TextLine> recognize (Sheet sheet,
                                      BufferedImage bufferedImage,
                                      Point topLeft,
                                      String languageCode,
@@ -188,6 +189,7 @@ public class TesseractOCR
         try {
             // Allocate a processing order
             final TesseractOrder order = new TesseractOrder(
+                    sheet,
                     label,
                     serial.incrementAndGet(),
                     constants.saveImages.isSet(),
@@ -203,7 +205,8 @@ public class TesseractOCR
                 for (Iterator<TextLine> itLines = lines.iterator(); itLines.hasNext();) {
                     final TextLine line = itLines.next();
 
-                    for (Iterator<TextWord> itWords = line.getWords().iterator(); itWords.hasNext();) {
+                    for (Iterator<TextWord> itWords = line.getWords().iterator(); itWords
+                            .hasNext();) {
                         final TextWord word = itWords.next();
 
                         if (!word.isConfident()) {
@@ -259,18 +262,21 @@ public class TesseractOCR
             return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
         } else if (WellKnowns.LINUX) {
             // Scan common Linux TESSDATA locations
-            final String[] linuxOcrLocations = {
-                "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
-                "/usr/share", // OpenSUSE
-                "/usr/share/tesseract" // Fedora
+            final String[] linuxOcrLocations =
+            {
+                    "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
+                    "/usr/share", // OpenSUSE
+                    "/usr/share/tesseract" // Fedora
             };
 
             return scanOcrLocations(linuxOcrLocations);
         } else if (WellKnowns.MAC_OS_X) {
             // Scan common Macintosh TESSDATA locations
-            final String[] macOcrLocations = {"/opt/local/share", // Macports
-                                              "/usr/local/opt/tesseract/share" // Homebrew
-        };
+            final String[] macOcrLocations =
+            {
+                    "/opt/local/share", // Macports
+                    "/usr/local/opt/tesseract/share" // Homebrew
+            };
 
             return scanOcrLocations(macOcrLocations);
         }
