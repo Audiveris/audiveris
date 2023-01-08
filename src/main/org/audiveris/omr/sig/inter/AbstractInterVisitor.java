@@ -352,7 +352,7 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (TremoloInter inter)
     {
-        visit((Inter) inter); // Redirection by default BINGO: to be checked
+        visit((Inter) inter); // Redirection by default
     }
 
     @Override

@@ -53,8 +53,9 @@ public abstract class AbstractPitchedInter
     private static final Constants constants = new Constants();
 
     /** To order from bottom to top. */
-    public static final Comparator<AbstractPitchedInter> bottomUp
-            = (AbstractPitchedInter p1, AbstractPitchedInter p2) -> {
+    public static final Comparator<AbstractPitchedInter> bottomUp = (AbstractPitchedInter p1,
+                                                                     AbstractPitchedInter p2) ->
+    {
         // Pitch comparison is usable only within the SAME staff
         if ((p1.getStaff() != null) && (p2.getStaff() == p1.getStaff())) {
             return Double.compare(p2.pitch, p1.pitch);
