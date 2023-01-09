@@ -457,15 +457,15 @@ public abstract class SheetPainter
             final Family family = sheet.getStub().getMusicFontFamily();
 
             // Standard (large) size
-            final int large = scale.getInterline();
-            musicFont = MusicFont.getBaseFont(family, large);
-            headMusicFont = MusicFont.getHeadFont(family, scale, large);
+            final int largeInterline = scale.getInterline();
+            musicFont = MusicFont.getBaseFont(family, largeInterline);
+            headMusicFont = MusicFont.getHeadFont(family, scale, largeInterline);
 
             // Smaller size?
-            final Integer small = scale.getSmallInterline();
-            if (small != null) {
-                musicFontSmall = MusicFont.getBaseFont(family, small);
-                headMusicFontSmall = MusicFont.getHeadFont(family, scale, small);
+            final Integer smallInterline = scale.getSmallInterline();
+            if (smallInterline != null) {
+                musicFontSmall = MusicFont.getBaseFont(family, smallInterline);
+                headMusicFontSmall = MusicFont.getHeadFont(family, scale, smallInterline);
             } else {
                 musicFontSmall = null;
                 headMusicFontSmall = null;
@@ -585,12 +585,12 @@ public abstract class SheetPainter
                 final Staff staff = inter.getStaff();
                 final FontSymbol fs = shape.getFontSymbol(getMusicFont(staff));
 
-                if (fs.symbol == null) {
+                if (fs == null) {
                     logger.warn("No symbol for shared head {}", inter);
                     return;
                 }
 
-                final Dimension dim = fs.symbol.getDimension(fs.font);
+                final Dimension dim = fs.getDimension();
                 final int w = dim.width;
                 final Point2D ref = inter.getRelationCenter(); // Not always the area center
                 final Line2D line = new Line2D.Double(
@@ -651,8 +651,8 @@ public abstract class SheetPainter
 
                     final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
 
-                    if (fs.symbol != null) {
-                        fs.symbol.paintSymbol(g, fs.font, center, AREA_CENTER);
+                    if (fs != null) {
+                        fs.paintSymbol(g, center, AREA_CENTER);
                     } else {
                         logger.error("No symbol to paint {}", inter);
                     }
@@ -687,15 +687,15 @@ public abstract class SheetPainter
                     center.getX(),
                     staff.pitchToOrdinate(center.getX(), inter.getPitch()));
 
-            final MusicFont font = getMusicFont(staff);
-            final TextLayout layout = font.layoutShapeByCode(shape);
+            final FontSymbol fs = shape.getFontSymbol(getMusicFont(staff));
 
-            if (layout != null) {
+            if (fs != null) {
+                final TextLayout layout = fs.getLayout();
                 final Rectangle2D box = layout.getBounds();
                 center.setLocation(center.getX(), center.getY() + box.getY() + box.getHeight());
                 OmrFont.paint(g, layout, center, Alignment.BOTTOM_CENTER);
             } else {
-                logger.error("No layout to paint {}", inter);
+                logger.error("No symbol to paint {}", inter);
             }
         }
 
@@ -851,8 +851,8 @@ public abstract class SheetPainter
                 final Shape shape = flag.getShape();
                 final FontSymbol fs = shape.getFontSymbol(getMusicFont(flag.getStaff()));
 
-                if (fs.symbol != null) {
-                    fs.symbol.paintSymbol(g, fs.font, location, MIDDLE_LEFT);
+                if (fs != null) {
+                    fs.paintSymbol(g, location, MIDDLE_LEFT);
                 } else {
                     logger.error("No symbol to paint flag {}", flag);
                 }
@@ -908,12 +908,12 @@ public abstract class SheetPainter
             final Shape shape = arpeggiato.getShape();
             final FontSymbol fs = shape.getFontSymbol(getMusicFont(arpeggiato.getStaff()));
 
-            if (fs.symbol == null) {
+            if (fs == null) {
                 logger.warn("No symbol to paint for arpeggiato {}", arpeggiato);
                 return;
             }
 
-            Dimension dim = fs.symbol.getDimension(fs.font);
+            Dimension dim = fs.getDimension();
             bx.grow(dim.width, 0); // To avoid any clipping on x
 
             if (clip != null) {
@@ -924,7 +924,7 @@ public abstract class SheetPainter
             final int nb = (int) Math.ceil((double) bx.height / dim.height);
 
             for (int i = 0; i < nb; i++) {
-                fs.symbol.paintSymbol(g, fs.font, location, TOP_CENTER);
+                fs.paintSymbol(g, location, TOP_CENTER);
                 location.y += dim.height;
             }
 
@@ -974,10 +974,8 @@ public abstract class SheetPainter
                 setColor(brace);
                 final Staff staff = brace.getStaff();
                 final Point2D center = GeoUtil.center2D(bounds);
-                final MusicFont font = getMusicFont(staff);
-                final TextLayout layout = font.layoutShape(
-                        Shape.BRACE,
-                        new Dimension(bounds.width, bounds.height));
+                final FontSymbol fs = Shape.BRACE.getFontSymbol(getMusicFont(staff));
+                final TextLayout layout = fs.getLayout(new Dimension(bounds.width, bounds.height));
                 OmrFont.paint(g, layout, center, AREA_CENTER);
             }
         }
@@ -1008,26 +1006,24 @@ public abstract class SheetPainter
 
             // Upper symbol part?
             if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
-                final TextLayout upper = font.layoutShapeByCode(Shape.BRACKET_UPPER_SERIF);
-
+                final FontSymbol upper = Shape.BRACKET_UPPER_SERIF.getFontSymbol(font);
                 if (upper != null) {
                     final Point2D topLeft = new Point2D.Double(
                             median.getX1() - (width / 2),
                             median.getY1());
-                    OmrFont.paint(g, upper, topLeft, BOTTOM_LEFT);
+                    upper.paintSymbol(g, topLeft, BOTTOM_LEFT);
                 }
             }
 
             // Lower symbol part?
             if ((kind == BracketInter.BracketKind.BOTTOM)
                     || (kind == BracketInter.BracketKind.BOTH)) {
-                final TextLayout lower = font.layoutShapeByCode(Shape.BRACKET_LOWER_SERIF);
-
+                final FontSymbol lower = Shape.BRACKET_LOWER_SERIF.getFontSymbol(font);
                 if (lower != null) {
                     final Point2D botLeft = new Point2D.Double(
                             median.getX2() - (width / 2),
                             median.getY2());
-                    OmrFont.paint(g, lower, botLeft, TOP_LEFT);
+                    lower.paintSymbol(g, botLeft, TOP_LEFT);
                 }
             }
 
@@ -1196,15 +1192,15 @@ public abstract class SheetPainter
             final Line2D median = rest.getMedian();
 
             // Left
-            final TextLayout left = font.layoutShapeByCode(Shape.MULTIPLE_REST_LEFT);
+            final TextLayout left = Shape.MULTIPLE_REST_LEFT.getFontSymbol(font).getLayout();
             OmrFont.paint(g, left, median.getP1(), MIDDLE_LEFT);
 
             // Right
-            final TextLayout right = font.layoutShapeByCode(Shape.MULTIPLE_REST_RIGHT);
+            final TextLayout right = Shape.MULTIPLE_REST_RIGHT.getFontSymbol(font).getLayout();
             OmrFont.paint(g, right, median.getP2(), MIDDLE_RIGHT);
 
             // Middle
-            final TextLayout middle = font.layoutShapeByCode(Shape.MULTIPLE_REST_MIDDLE);
+            final TextLayout middle = Shape.MULTIPLE_REST_MIDDLE.getFontSymbol(font).getLayout();
             g.fill(
                     AreaUtil.horizontalParallelogram(
                             new Point2D.Double(
@@ -1232,10 +1228,11 @@ public abstract class SheetPainter
             final MusicFont font = getMusicFont(staff);
 
             // Value part
-            final TextLayout layout = font.layoutShapeByCode(os.getShape());
+            final FontSymbol fs = os.getShape().getFontSymbol(font);
+            final TextLayout layout = fs.getLayout();
             final Rectangle2D symBounds = layout.getBounds();
             final Point2D p1 = os.getLine().getP1();
-            OmrFont.paint(g, layout, p1, AREA_CENTER);
+            fs.paintSymbol(g, p1, AREA_CENTER);
 
             // Line (drawn from right to left, to preserve the right corner with hook)
             g.setStroke(OctaveShiftSymbol.DEFAULT_STROKE);

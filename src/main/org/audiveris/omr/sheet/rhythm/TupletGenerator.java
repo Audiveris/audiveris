@@ -35,8 +35,8 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -393,9 +392,8 @@ public class TupletGenerator
     {
         // Tuplet dimension
         final Family family = system.getSheet().getStub().getMusicFontFamily();
-        final MusicFont font = MusicFont.getBaseFont(family, scale.getInterline());
-        final TextLayout layout = font.layoutShapeByCode(shape);
-        final Dimension dim = layout.getBounds().getBounds().getSize();
+        final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
+        final Dimension dim = fs.getDimension();
 
         // Vertical direction from group to tuplet, based on group tails side
         final TreeMap<Integer, List<AbstractChordInter>> dirs = new TreeMap<>();

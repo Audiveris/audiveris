@@ -586,7 +586,7 @@ public class InterFactory
 
         // Others
         default:
-            logger.info("No support yet for {} glyph#{}", shape, glyph.getId());
+            logger.debug("No support yet for {} glyph#{}", shape, glyph.getId());
 
             return null;
         }

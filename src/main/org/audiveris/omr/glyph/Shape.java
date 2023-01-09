@@ -854,7 +854,7 @@ public enum Shape
      *
      * @param family    preferred font family
      * @param interline specified interline value
-     * @return a non-null FontSymbol structure, populated by the first compatible family if any
+     * @return a FontSymbol structure, populated by the first compatible family, or null
      */
     public FontSymbol getFontSymbolByInterline (Family family,
                                                 int interline)
@@ -871,7 +871,7 @@ public enum Shape
      *
      * @param family    preferred font family
      * @param pointSize specified interline value
-     * @return a non-null FontSymbol structure, populated by the first compatible family if any
+     * @return a FontSymbol structure, populated by the first compatible family, or null
      */
     public FontSymbol getFontSymbolBySize (Family family,
                                            int pointSize)
@@ -886,7 +886,7 @@ public enum Shape
      * Report the couple font/symbol for this shape and the provided music font.
      *
      * @param font preferred font
-     * @return a non-null FontSymbol structure, populated by the first compatible font if any
+     * @return a FontSymbol structure, populated by the first compatible font, or null
      */
     public FontSymbol getFontSymbol (MusicFont font)
     {
@@ -896,6 +896,9 @@ public enum Shape
             font = font.getBackup();
             symbol = font.getSymbol(this);
         }
+
+        if (symbol == null)
+            return null;
 
         return new FontSymbol(font, symbol);
     }

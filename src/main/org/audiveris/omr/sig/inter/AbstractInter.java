@@ -49,6 +49,7 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
@@ -1019,8 +1020,8 @@ public abstract class AbstractInter
         final Point center = getCenter(); // Use area center
         final Sheet sheet = staff.getSystem().getSheet();
         final Family family = sheet.getStub().getMusicFontFamily();
-        final MusicFont musicFont = MusicFont.getBaseFont(family, interline);
-        final TextLayout layout = musicFont.layoutShapeByCode(getShape());
+        final FontSymbol fs = getShape().getFontSymbolByInterline(family, interline);
+        final TextLayout layout = fs.getLayout();
         final Rectangle2D box = layout.getBounds();
 
         return new Rectangle(

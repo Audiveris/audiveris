@@ -47,6 +47,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import static org.audiveris.omr.ui.symbol.OctaveShiftSymbol.DEFAULT_HOOK_LENGTH;
@@ -838,8 +839,8 @@ public class OctaveShiftInter
     {
         final Scale scale = sheet.getScale();
         final Family family = sheet.getStub().getMusicFontFamily();
-        final MusicFont font = MusicFont.getBaseFont(family, scale.getInterline());
-        final TextLayout layout = font.layoutShapeByCode(shape);
+        final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
+        final TextLayout layout = fs.getLayout();
         final Rectangle2D symBounds = layout.getBounds();
         valueWidth = symBounds.getWidth();
         valueHeight = symBounds.getHeight();

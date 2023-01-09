@@ -553,20 +553,6 @@ public class MusicFont
     }
 
     //-------------//
-    // layoutShape // Safe, but unused so far!!?
-    //-------------//
-    /**
-     * Build a TextLayout from a Shape, using its corresponding symbol.
-     *
-     * @param shape the shape to be drawn
-     * @return the adjusted TextLayout ready to be drawn
-     */
-    public TextLayout layoutShape (Shape shape)
-    {
-        return layoutShape(shape, null);
-    }
-
-    //-------------//
     // layoutShape // Used when visiting BRACE in SigPainter
     //-------------//
     /**
@@ -596,7 +582,7 @@ public class MusicFont
      * Build a TextLayout from a Shape, using its related font character codes.
      * <p>
      * NOTA: This method bypasses font shape symbols but uses shape codes from this font
-     * (or from its backup font if needed)
+     * (or from its backup font if needed), which may fail.
      *
      * @param shape the shape to be drawn with MusicFont chars
      * @return the TextLayout or null

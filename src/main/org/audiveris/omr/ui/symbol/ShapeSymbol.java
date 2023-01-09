@@ -456,6 +456,20 @@ public class ShapeSymbol
         return getTinyVersion().getWidth();
     }
 
+    //-----------//
+    // getLayout //
+    //-----------//
+    /**
+     * Report this symbol layout when using the provided font.
+     *
+     * @param font the provided font
+     * @return symbol layout
+     */
+    public TextLayout getLayout (MusicFont font)
+    {
+        return getParams(font).layout;
+    }
+
     //----------//
     // getModel //
     //----------//
