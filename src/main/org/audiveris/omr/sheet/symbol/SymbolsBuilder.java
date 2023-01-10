@@ -220,7 +220,7 @@ public class SymbolsBuilder
                 final Inter created = factory.create(eval, glyph, closestStaff);
 
                 if (created != null) {
-                    // Set exclusion with all competitors already created
+                    // Set exclusion with all competitors already created for the same glyph
                     for (Inter other : createdInters) {
                         sig.insertExclusion(other, created, Exclusion.ExclusionCause.OVERLAP);
                     }
@@ -356,16 +356,19 @@ public class SymbolsBuilder
     }
 
     //-------------------//
-    // retrieveFineBoxes // BINGO TODO: review WRT GraceChordInter
+    // retrieveFineBoxes //
     //-------------------//
+    /**
+     * Define a fine box on the right side of every small chord, specifically meant for
+     * detecting a potential small flag there.
+     */
     private void retrieveFineBoxes ()
     {
-        List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
+        final List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
 
         for (Inter inter : smallChords) {
-            // Define a fine box on the right side of the small chord
-            Rectangle box = inter.getBounds();
-            Rectangle fineBox = new Rectangle(
+            final Rectangle box = inter.getBounds();
+            final Rectangle fineBox = new Rectangle(
                     box.x + box.width,
                     box.y,
                     params.smallChordMargin,

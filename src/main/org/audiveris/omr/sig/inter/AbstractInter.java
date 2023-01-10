@@ -867,7 +867,7 @@ public abstract class AbstractInter
     @Override
     public int getProfile ()
     {
-        return isManual() ? Profiles.MANUAL : Profiles.STANDARD;
+        return isManual() ? Profiles.MANUAL : Profiles.STRICT;
     }
 
     //-----------------//

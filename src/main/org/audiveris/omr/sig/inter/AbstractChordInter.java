@@ -82,9 +82,9 @@ public abstract class AbstractChordInter
 
     /** For comparing chords by head location ordinate. */
     public static final Comparator<AbstractChordInter> byHeadOrdinate = (c1,
-            c2) -> Integer.compare(
-            c1.getHeadLocation().y,
-            c2.getHeadLocation().y);
+                                                                         c2) -> Integer.compare(
+                                                                                 c1.getHeadLocation().y,
+                                                                                 c2.getHeadLocation().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -147,7 +147,7 @@ public abstract class AbstractChordInter
                                   Shape shape,
                                   Double grade)
     {
-        super(glyph, glyph.getBounds(), shape, grade);
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
     /**
@@ -352,7 +352,8 @@ public abstract class AbstractChordInter
                     Collections.sort(
                             beams,
                             (AbstractBeamInter b1,
-                                    AbstractBeamInter b2) -> {
+                             AbstractBeamInter b2) ->
+                            {
                                 int x = getCenter().x;
                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);

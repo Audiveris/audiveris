@@ -72,7 +72,9 @@ public class HeadChordInter
      * distance from chord head ordinate.
      * It implements total ordering.
      */
-    public static final Comparator<HeadInter> headComparator = (HeadInter n1, HeadInter n2) -> {
+    public static final Comparator<HeadInter> headComparator = (HeadInter n1,
+                                                                HeadInter n2) ->
+    {
         if (n1 == n2) {
             return 0;
         }
@@ -464,7 +466,7 @@ public class HeadChordInter
     public StemInter getStem ()
     {
         if (isRemoved()) {
-            logger.debug("HeadChord#{} not in sig", id);
+            logger.debug("HeadChord#{} removed", id);
 
             return null;
         }

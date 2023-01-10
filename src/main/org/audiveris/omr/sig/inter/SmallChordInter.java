@@ -23,6 +23,21 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.relation.ChordGraceRelation;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -33,7 +48,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * {@link GraceChordInter}.
  *
  * @see GraceChordInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "small-chord")
@@ -90,5 +104,114 @@ public class SmallChordInter
     public String getShapeString ()
     {
         return "SmallChord";
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordGraceRelation.class)) {
+            AbstractChordInter stdChord = (AbstractChordInter) sig.getOppositeInter(this, rel);
+            return stdChord.getVoice();
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        final HeadInter head = getLeadingNote();
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(system, systemHeadChords, head.getCenter(), profile);
+        return (link != null) ? Arrays.asList(link) : Collections.emptyList();
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this grace instance and a HeadChord on the right.
+     * <p>
+     * Grace head ordinate must be rather close to related chord head ordinate:
+     * <ul>
+     * <li>For melodic staff, delta pitch position = 1
+     * <li>For percussion staff, delta pitch position = 0
+     * </ul>
+     *
+     * @param system           related system
+     * @param systemHeadChords abscissa-ordered collection of head chords in system
+     * @param headCenter       center of grace head
+     * @param profile          desired profile level
+     * @return the link found or null
+     */
+    protected Link lookupLink (SystemInfo system,
+                               List<Inter> systemHeadChords,
+                               Point headCenter,
+                               int profile)
+    {
+        if (staff == null) {
+            staff = system.getClosestStaff(headCenter);
+        }
+
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(ChordGraceRelation.getXOutGapMaximum(profile));
+        final int maxDy = scale.toPixels(ChordGraceRelation.getYGapMaximum(profile));
+        final Rectangle luBox = new Rectangle(headCenter);
+        final boolean isDrum = staff.getPart().isDrumPart();
+        luBox.grow(0, isDrum ? maxDy / 2 : maxDy);
+        luBox.width = maxDx;
+
+        final List<Inter> chords = Inters.intersectedInters(
+                systemHeadChords,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
+
+        if (chords.isEmpty()) {
+            return null;
+        }
+
+        // Choose the chord whose ending head is euclidian-wise closest to grace head center
+        final Rectangle graceBox = getBounds();
+        ChordGraceRelation bestRel = null;
+        Inter bestChord = null;
+        double bestDist = Double.MAX_VALUE;
+
+        for (Inter inter : chords) {
+            final HeadChordInter chord = (HeadChordInter) inter;
+            final Rectangle chordBox = chord.getBounds();
+
+            // The grace cannot intersect the chord
+            if (chordBox.intersects(graceBox)) {
+                continue;
+            }
+
+            final Point hc = chord.getLeadingNote().getCenter(); // Head center
+            final Point vector = PointUtil.subtraction(hc, headCenter); // target -> head center
+
+            final double dist = PointUtil.length(vector);
+            final double xGap = Math.abs(vector.x);
+            final double yGap = Math.abs(vector.y);
+            final ChordGraceRelation rel = new ChordGraceRelation();
+            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
+
+            if (rel.getGrade() >= rel.getMinGrade()) {
+                if ((bestRel == null) || (bestDist > dist)) {
+                    bestRel = rel;
+                    bestChord = chord;
+                    bestDist = dist;
+                }
+            }
+        }
+
+        return (bestRel != null) ? new Link(bestChord, bestRel, false) : null;
     }
 }

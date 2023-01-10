@@ -105,16 +105,16 @@ public class ChordGraceRelation
             extends ConstantSet
     {
 
-        private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(
+        private final Constant.Ratio graceCoeff = new Constant.Ratio(
                 0.5,
-                "Supporting coeff for (target) ornament");
+                "Supporting coeff for (target) grace");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
-                1.0,
-                "Maximum horizontal distance between ornament target & head centers");
+                2.5,
+                "Maximum horizontal distance between grace & head centers");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                1.0,
-                "Maximum vertical distance between ornament target & head centers");
+                1.5,
+                "Maximum vertical distance between grace & head centers");
     }
 }

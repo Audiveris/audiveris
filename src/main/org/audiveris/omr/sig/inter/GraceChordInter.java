@@ -29,18 +29,14 @@ import static org.audiveris.omr.glyph.Shape.GRACE_NOTE_DOWN;
 import static org.audiveris.omr.glyph.Shape.GRACE_NOTE_SLASH;
 import static org.audiveris.omr.glyph.Shape.GRACE_NOTE_SLASH_DOWN;
 import org.audiveris.omr.image.Anchored.Anchor;
-import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 
@@ -50,6 +46,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -81,6 +80,13 @@ public class GraceChordInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GraceChordInter.class);
+
+    /**
+     * Head shape for any grace chord.
+     * TODO: Currently, grace head shape is limited to small oval, but perhaps we should support
+     * other motifs: cross, triangle, ...
+     */
+    private static final Shape HEAD_SHAPE = Shape.NOTEHEAD_BLACK_SMALL;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -126,13 +132,14 @@ public class GraceChordInter
         final HeadInter head = new HiddenHeadInter();
         head.setGrade(getGrade());
 
-        head.shape = getHeadShape();
+        head.shape = HEAD_SHAPE;
         head.staff = staff;
+        final SystemInfo system = staff.getSystem();
+        sig = system.getSig();
         head.sig = sig;
-        final Sheet sheet = sig.getSystem().getSheet();
-        head.bounds = getHeadBounds(getHeadShape(), getBounds(), sheet);
+        head.bounds = getHeadBounds(HEAD_SHAPE, shape, getBounds(), system.getSheet());
         headLocation = GeoUtil.center(head.bounds);
-        final boolean isUp = isUp();
+        final boolean isUp = isUp(shape);
         final Anchor anchor = isUp ? Anchor.TOP_RIGHT_STEM : Anchor.BOTTOM_LEFT_STEM;
         final Point extPt = PointUtil.rounded(head.getStemReferencePoint(anchor));
         tailLocation = new Point(extPt.x, bounds.y + (isUp ? 0 : bounds.height - 1));
@@ -173,11 +180,15 @@ public class GraceChordInter
                                                     List<Inter> systemHeadChords)
     {
         if (glyph.isVip()) {
-            logger.info("VIP GraceChordInter create {} as {}", glyph, shape);
+            logger.info("VIP GraceChordInter createValidAdded {} as {}", glyph, shape);
         }
 
         final GraceChordInter graceChord = new GraceChordInter(glyph, shape, grade);
-        final Link link = graceChord.lookupLink(systemHeadChords, system.getProfile());
+        final Rectangle graceBox = graceChord.getBounds();
+        final Rectangle headBox = getHeadBounds(HEAD_SHAPE, shape, graceBox, system.getSheet());
+        final Point headCenter = GeoUtil.center(headBox);
+        final int profile = system.getProfile();
+        final Link link = graceChord.lookupLink(system, systemHeadChords, headCenter, profile);
 
         if (link != null) {
             system.getSig().addVertex(graceChord);
@@ -210,18 +221,20 @@ public class GraceChordInter
     /**
      * Report the bounds of head, knowing the bounds of whole grace note.
      *
-     * @param headShape the shape of just the grace head
-     * @param graceBox  the bounds of whole grace note (with stem and perhaps slash)
-     * @param sheet     the containing sheet
+     * @param headShape  the shape of just the grace head
+     * @param graceShape the shape for the whole grace note
+     * @param graceBox   the bounds of whole grace note (with stem and perhaps slash)
+     * @param sheet      the containing sheet
      * @return head bounds
      */
-    private Rectangle getHeadBounds (Shape headShape,
-                                     Rectangle graceBox,
-                                     Sheet sheet)
+    private static Rectangle getHeadBounds (Shape headShape,
+                                            Shape graceShape,
+                                            Rectangle graceBox,
+                                            Sheet sheet)
     {
         final Dimension dim = getHeadDimension(headShape, sheet);
 
-        if (isUp()) {
+        if (isUp(graceShape)) {
             // Head is on bottom left corner of whole box
             return new Rectangle(
                     graceBox.x,
@@ -248,29 +261,28 @@ public class GraceChordInter
      * @param sheet     the containing sheet
      * @return head bounds
      */
-    private Dimension getHeadDimension (Shape headShape,
-                                        Sheet sheet)
+    private static Dimension getHeadDimension (Shape headShape,
+                                               Sheet sheet)
     {
         final Scale scale = sheet.getScale();
         final Family family = sheet.getStub().getMusicFontFamily();
         final FontSymbol fs = headShape.getFontSymbolByInterline(family, scale.getInterline());
-        return fs.symbol.getDimension(fs.font);
+        return fs.getDimension();
     }
 
-    //--------------//
-    // getHeadShape //
-    //--------------//
-    /**
-     * Report the head shape of this grace chord.
-     * <p>
-     * TODO: Currently, grace head shape is limited to small oval, but perhaps we should support
-     * other motifs: cross, triangle, ...
-     *
-     * @return head shape
-     */
-    public Shape getHeadShape ()
+    //------------//
+    // getMembers //
+    //------------//
+    @Override
+    public List<Inter> getMembers ()
     {
-        return Shape.NOTEHEAD_BLACK_SMALL;
+        final List<Inter> members = super.getMembers();
+
+        if (members.isEmpty()) {
+            createMembers(); // Lazy creation of (hidden) head and stem
+        }
+
+        return super.getMembers();
     }
 
     //----------------//
@@ -282,22 +294,8 @@ public class GraceChordInter
         if (shape != null) {
             return shape.toString(); // Case of a simple grace note
         } else {
-            return "SmallChord";
+            return "GraceChord";
         }
-    }
-
-    //----------//
-    // getVoice //
-    //----------//
-    @Override
-    public Voice getVoice ()
-    {
-        for (Relation rel : sig.getRelations(this, ChordGraceRelation.class)) {
-            AbstractChordInter stdChord = (AbstractChordInter) sig.getOppositeInter(this, rel);
-            return stdChord.getVoice();
-        }
-
-        return null;
     }
 
     //----------//
@@ -353,7 +351,7 @@ public class GraceChordInter
      *
      * @return true if up
      */
-    public boolean isUp ()
+    public static boolean isUp (Shape shape)
     {
         return switch (shape) {
         case GRACE_NOTE, GRACE_NOTE_SLASH -> true;
@@ -362,94 +360,21 @@ public class GraceChordInter
         };
     }
 
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Try to detect a link between this grace instance and a HeadChord on the right.
-     * <p>
-     * Grace head ordinate must be rather close to related chord head ordinate:
-     * <ul>
-     * <li>For melodic staff, delta pitch position = 1
-     * <li>For percussion staff, delta pitch position = 0
-     * </ul>
-     *
-     * @param systemHeadChords abscissa-ordered collection of head chords in system
-     * @param profile          desired profile level
-     * @return the link found or null
-     */
-    private Link lookupLink (List<Inter> systemHeadChords,
-                             int profile)
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        if (systemHeadChords.isEmpty()) {
-            return null;
-        }
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
-        final Sheet sheet = system.getSheet();
-        final Scale scale = system.getSheet().getScale();
-        final Rectangle graceBox = getBounds();
-        final Rectangle headBox = getHeadBounds(getHeadShape(), graceBox, sheet);
-        final Point ghc = GeoUtil.center(headBox);
+        final Rectangle headBox = getHeadBounds(HEAD_SHAPE, shape, getBounds(), system.getSheet());
+        final Point headCenter = GeoUtil.center(headBox);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(system, systemHeadChords, headCenter, profile);
 
-        if (staff == null) {
-            staff = system.getClosestStaff(ghc);
-        }
-
-        final Point target = new Point(ghc.x + scale.toPixels(constants.sideDx), ghc.y);
-
-        final int maxDx = scale.toPixels(ChordGraceRelation.getXOutGapMaximum(profile));
-        final int maxDy = scale.toPixels(ChordGraceRelation.getYGapMaximum(profile));
-        final Rectangle luBox = new Rectangle(target);
-        final boolean isDrum = staff.getPart().isDrumPart();
-        luBox.grow(maxDx, isDrum ? maxDy / 2 : maxDy);
-
-        final List<Inter> chords = Inters.intersectedInters(
-                systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-
-        if (chords.isEmpty()) {
-            return null;
-        }
-
-        // Choose the chord whose ending head is euclidian-wise closest to grace head center
-        ChordGraceRelation bestRel = null;
-        Inter bestChord = null;
-        double bestDist = Double.MAX_VALUE;
-
-        for (Inter inter : chords) {
-            final HeadChordInter chord = (HeadChordInter) inter;
-            Rectangle chordBox = chord.getBounds();
-
-            // The ornament cannot intersect the chord
-            if (chordBox.intersects(graceBox)) {
-                continue;
-            }
-
-            final Point hc = chord.getLeadingNote().getCenter(); // Head center
-            final Point vector = PointUtil.subtraction(hc, target); // target -> head center
-
-            final double dist = PointUtil.length(vector);
-            double xGap = Math.abs(vector.x);
-            double yGap = Math.abs(vector.y);
-            ChordGraceRelation rel = new ChordGraceRelation();
-            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
-
-            if (rel.getGrade() >= rel.getMinGrade()) {
-                if ((bestRel == null) || (bestDist > dist)) {
-                    bestRel = rel;
-                    bestChord = chord;
-                    bestDist = dist;
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            return new Link(bestChord, bestRel, false);
-        }
-
-        return null;
+        return (link != null) ? Arrays.asList(link) : Collections.emptyList();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

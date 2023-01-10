@@ -27,7 +27,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
-import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
@@ -128,7 +127,8 @@ public class SymbolsLinker
             final Scale scale = system.getSheet().getScale();
 
             switch (role) {
-            case Lyrics -> {
+            case Lyrics ->
+            {
                 // Map each syllable with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
                     final LyricItemInter item = (LyricItemInter) wInter;
@@ -137,7 +137,8 @@ public class SymbolsLinker
                 }
             }
 
-            case Direction -> {
+            case Direction ->
+            {
                 // Map direction with proper chord
                 MeasureStack stack = system.getStackAt(location);
 
@@ -161,14 +162,16 @@ public class SymbolsLinker
                 }
             }
 
-            case PartName -> {
+            case PartName ->
+            {
                 // Assign part name to proper part
                 Staff staff = system.getClosestStaff(sentence.getCenter());
                 Part part = staff.getPart();
                 part.setName(sentence);
             }
 
-            case ChordName -> {
+            case ChordName ->
+            {
                 // Map each word with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
                     WordInter word = (WordInter) wInter;
@@ -191,12 +194,15 @@ public class SymbolsLinker
                 }
             }
 
-            case EndingNumber, EndingText -> {
+            case EndingNumber, EndingText ->
+            {
                 // Look for related ending
                 final Link link = sentence.lookupEndingLink(system);
 
-                if ((link != null) && (null == sig.getRelation(link.partner, sentence,
-                                                               EndingSentenceRelation.class))) {
+                if ((link != null) && (null == sig.getRelation(
+                        link.partner,
+                        sentence,
+                        EndingSentenceRelation.class))) {
                     sig.addEdge(link.partner, sentence, link.relation);
                 }
             }
@@ -250,7 +256,8 @@ public class SymbolsLinker
             }
 
             switch (oldRole) {
-            case Lyrics: {
+            case Lyrics:
+            {
                 for (Inter wInter : sentence.getMembers()) {
                     LyricItemInter item = (LyricItemInter) wInter;
 
@@ -260,26 +267,29 @@ public class SymbolsLinker
                 }
             }
 
-            break;
+                break;
 
-            case Direction: {
+            case Direction:
+            {
                 for (Relation rel : sig.getRelations(sentence, ChordSentenceRelation.class)) {
                     sig.removeEdge(rel);
                 }
             }
 
-            break;
+                break;
 
-            case PartName: {
+            case PartName:
+            {
                 // Look for proper part
                 Staff staff = system.getClosestStaff(sentence.getCenter());
                 Part part = staff.getPart();
                 part.setName(null);
             }
 
-            break;
+                break;
 
-            case ChordName: {
+            case ChordName:
+            {
                 for (Inter wInter : sentence.getMembers()) {
                     for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
                         sig.removeEdge(rel);
@@ -287,16 +297,17 @@ public class SymbolsLinker
                 }
             }
 
-            break;
+                break;
 
             case EndingNumber:
-            case EndingText: {
+            case EndingText:
+            {
                 for (Relation rel : sig.getRelations(sentence, EndingSentenceRelation.class)) {
                     sig.removeEdge(rel);
                 }
             }
 
-            break;
+                break;
 
             default:
             }
@@ -392,12 +403,11 @@ public class SymbolsLinker
     // linkGraces //
     //------------//
     /**
-     * Link grace chords with their standard chord.
+     * Link grace chords at their standard chord with a ChordGraceRelation.
      */
     private void linkGraces ()
     {
-        SmallLoop:
-        for (Inter chordInter : sig.inters(SmallChordInter.class)) {
+        SmallLoop: for (Inter chordInter : sig.inters(SmallChordInter.class)) {
             final SmallChordInter smallChord = (SmallChordInter) chordInter;
 
             if (smallChord.isVip()) {
@@ -405,20 +415,6 @@ public class SymbolsLinker
             }
 
             try {
-                // Check direct relation: chord -> grace
-                for (Relation rel : sig.getRelations(smallChord, ChordGraceRelation.class)) {
-                    final HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(smallChord,
-                                                                                       rel);
-                    final Voice voice = chord.getVoice();
-
-                    if (voice != null) {
-                        smallChord.setVoice(voice);
-                        logger.debug("{} assigned {}", smallChord, voice);
-
-                        continue SmallLoop;
-                    }
-                }
-
                 // Check indirect relation: chord-head -> slur -> grace-head
                 for (Inter interNote : smallChord.getNotes()) {
                     for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
@@ -426,16 +422,18 @@ public class SymbolsLinker
                         final HeadInter head = slur.getHead(HorizontalSide.RIGHT);
 
                         if (head != null) {
-                            final Voice voice = head.getVoice();
-
-                            if (voice != null) {
-                                smallChord.setVoice(voice);
-                                logger.debug("{} assigned {}", smallChord, voice);
-
-                                continue SmallLoop;
-                            }
+                            final HeadChordInter ch = head.getChord();
+                            sig.addEdge(ch, smallChord, new ChordGraceRelation());
+                            continue SmallLoop;
                         }
                     }
+                }
+
+                // No slur, use proximity
+                final Collection<Link> links = smallChord.searchLinks(system);
+                if (!links.isEmpty()) {
+                    final Link link = links.iterator().next();
+                    link.applyTo(smallChord);
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkGraces for {} {}", smallChord, ex.toString(), ex);

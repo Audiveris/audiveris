@@ -32,6 +32,9 @@ import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenHeadInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenStemInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -95,11 +98,17 @@ public class RhythmsStep
     /** Classes that impact just a measure stack. */
     private static final Set<Class<?>> forStack;
 
+    /** (Sub)-classes that do not impact just a measure stack. */
+    private static final Set<Class<?>> whiteForStack;
+
     /** Classes that impact a whole page. */
     private static final Set<Class<?>> forPage;
 
     /** All impacting classes. */
     private static final Set<Class<?>> impactingClasses;
+
+    /** All white classes. */
+    private static final Set<Class<?>> whiteClasses;
 
     static {
         forStack = new HashSet<>();
@@ -114,7 +123,6 @@ public class RhythmsStep
         forStack.add(RestChordInter.class);
         forStack.add(RestInter.class);
         forStack.add(SmallBeamInter.class);
-        forStack.add(SmallChordInter.class);
         forStack.add(SmallFlagInter.class);
         forStack.add(StaffBarlineInter.class);
         forStack.add(StemInter.class);
@@ -131,6 +139,14 @@ public class RhythmsStep
         forStack.add(SameVoiceRelation.class);
         forStack.add(SeparateTimeRelation.class);
         forStack.add(SeparateVoiceRelation.class);
+    }
+    static {
+        whiteForStack = new HashSet<>();
+        // Inters
+        whiteForStack.add(SmallChordInter.class);
+        whiteForStack.add(GraceChordInter.class);
+        whiteForStack.add(HiddenHeadInter.class);
+        whiteForStack.add(HiddenStemInter.class);
     }
 
     static {
@@ -150,6 +166,11 @@ public class RhythmsStep
         impactingClasses.addAll(forPage);
     }
 
+    static {
+        whiteClasses = new HashSet<>();
+        whiteClasses.addAll(whiteForStack);
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new <code>RhythmsStep</code> object.
@@ -164,7 +185,7 @@ public class RhythmsStep
     //------//
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         // Process each page of the sheet
         for (Page page : sheet.getPages()) {
@@ -204,7 +225,7 @@ public class RhythmsStep
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
                             if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
-                                        || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
+                                    || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
                                 // Add next stack as well
                                 impact.add(stack.getNextSibling());
                             }
@@ -289,6 +310,10 @@ public class RhythmsStep
     @Override
     public boolean isImpactedBy (Class<?> classe)
     {
+        // White list first
+        if (isImpactedBy(classe, whiteClasses))
+            return false;
+
         return isImpactedBy(classe, impactingClasses);
     }
 
@@ -320,10 +345,8 @@ public class RhythmsStep
         @Override
         public String toString ()
         {
-            return new StringBuilder("RhythmsImpact{")
-                    .append("pages:").append(onPages)
-                    .append(" stacks:").append(onStacks)
-                    .append("}").toString();
+            return new StringBuilder("RhythmsImpact{").append("pages:").append(onPages).append(
+                    " stacks:").append(onStacks).append("}").toString();
         }
     }
 }
