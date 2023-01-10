@@ -91,7 +91,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <br>
  * <img src="doc-files/EndingWithNoBarlineOnStart.png" alt="Ending with no barline on start">
  * </ul>
- * In compliance with MusicXML spec: <ul>
+ * In compliance with MusicXML spec:
+ * <ul>
  * <li>
  * The <b>number</b> attribute reflects the numeric values of what is under the ending line.
  * Single endings such as "1" or comma-separated multiple endings such as "1,2" may be used.
@@ -105,7 +106,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * The related text (SentenceInter with EndingText role) is linked by a separate
  * EndingSentenceRelation.
  * </ul>
- *
  *
  * @author Hervé Bitteur
  */
@@ -123,10 +123,11 @@ public class EndingInter
     public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent Data
     //----------------
-    //
-    /** Mandatory left leg, defined from top to bottom. */
+
+    /** Optional left leg, defined from top to bottom. */
     @XmlElement(name = "left-leg")
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D leftLeg;
@@ -141,12 +142,17 @@ public class EndingInter
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D rightLeg;
 
+    // Transient Data
+    //---------------
+
+    private String number;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new <code>EndingInter</code> object.
      *
      * @param line     precise line
-     * @param leftLeg  mandatory left leg
+     * @param leftLeg  optional left leg
      * @param rightLeg optional right leg
      * @param bounds   bounding box
      * @param impacts  assignments details
@@ -234,8 +240,10 @@ public class EndingInter
             return true;
         }
 
-        if (leftLeg.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
-            return true;
+        if (leftLeg != null) {
+            if (leftLeg.ptLineDistSq(point) <= ((DEFAULT_THICKNESS * DEFAULT_THICKNESS) / 4)) {
+                return true;
+            }
         }
 
         if (rightLeg != null) {
@@ -253,14 +261,19 @@ public class EndingInter
     @Override
     public Rectangle getBounds ()
     {
-        Rectangle box = line.getBounds().union(leftLeg.getBounds());
+        Rectangle box = line.getBounds();
+
+        if (leftLeg != null) {
+            box = box.union(leftLeg.getBounds());
+        }
 
         if (rightLeg != null) {
             box = box.union(rightLeg.getBounds());
         }
 
-        box.grow((int) Math.ceil(DEFAULT_THICKNESS / 2.0),
-                 (int) Math.ceil(DEFAULT_THICKNESS / 2.0));
+        box.grow(
+                (int) Math.ceil(DEFAULT_THICKNESS / 2.0),
+                (int) Math.ceil(DEFAULT_THICKNESS / 2.0));
 
         return new Rectangle(bounds = box);
     }
@@ -337,6 +350,10 @@ public class EndingInter
      */
     public String getNumber ()
     {
+        if (number != null) {
+            return number;
+        }
+
         for (SentenceInter sentence : getSentences()) {
             TextRole role = sentence.getRole();
             String value = sentence.getValue().trim();
@@ -347,6 +364,14 @@ public class EndingInter
         }
 
         return null;
+    }
+
+    //-----------//
+    // setNumber //
+    //-----------//
+    public void setNumber (String number)
+    {
+        this.number = number;
     }
 
     //-------------------//
@@ -570,6 +595,7 @@ public class EndingInter
      * means far after the starting barline (if any).
      * Perhaps we should consider the staff header in such case.
      *
+     * @param side       ending side
      * @param staff      related staff
      * @param systemBars the collection of StaffBarlines in the containing system
      * @param profile    desired profile level
@@ -600,6 +626,7 @@ public class EndingInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Impacts //
     //---------//
@@ -607,9 +634,11 @@ public class EndingInter
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"straight", "slope", "length"};
+        private static final String[] NAMES = new String[]
+        { "straight", "slope", "length" };
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1};
+        private static final double[] WEIGHTS = new double[]
+        { 1, 1, 1 };
 
         public Impacts (double straight,
                         double slope,
@@ -700,12 +729,15 @@ public class EndingInter
 
             originalModel.topRight = ending.line.getP2();
             model.topRight = ending.line.getP2();
-
-            originalModel.bottomLeft = ending.leftLeg.getP2();
-            model.bottomLeft = ending.leftLeg.getP2();
-
             midTop = PointUtil.middle(ending.line);
-            midLeft = PointUtil.middle(ending.leftLeg);
+
+            if (ending.leftLeg != null) {
+                originalModel.bottomLeft = ending.leftLeg.getP2();
+                model.bottomLeft = ending.leftLeg.getP2();
+                midLeft = PointUtil.middle(ending.leftLeg);
+            } else {
+                midLeft = null;
+            }
 
             if (ending.rightLeg != null) {
                 originalModel.bottomRight = ending.rightLeg.getP2();
@@ -826,7 +858,10 @@ public class EndingInter
             final Inter inter = getInter();
             final EndingInter ending = (EndingInter) inter;
             ending.line.setLine(model.topLeft, model.topRight);
-            ending.leftLeg.setLine(model.topLeft, model.bottomLeft);
+
+            if (ending.leftLeg != null) {
+                ending.leftLeg.setLine(model.topLeft, model.bottomLeft);
+            }
 
             if (ending.rightLeg != null) {
                 ending.rightLeg.setLine(model.topRight, model.bottomRight);
