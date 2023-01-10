@@ -46,6 +46,22 @@ public abstract class GeoUtil
     // center2D //
     //----------//
     /**
+     * Report the center Point2D of the provided line
+     *
+     * @param line the provided line
+     * @return the line center
+     */
+    public static Point2D center2D (Line2D line)
+    {
+        return new Point2D.Double(
+                0.5 * (line.getX1() + line.getX2()),
+                0.5 * (line.getY1() + line.getY2()));
+    }
+
+    //----------//
+    // center2D //
+    //----------//
+    /**
      * Report the center Point2D of the provided rectangle
      *
      * @param rect the provided rectangle
@@ -53,8 +69,9 @@ public abstract class GeoUtil
      */
     public static Point2D center2D (Rectangle2D rect)
     {
-        return new Point2D.Double(rect.getX() + (rect.getWidth() / 2.0),
-                                  rect.getY() + (rect.getHeight() / 2.0));
+        return new Point2D.Double(
+                rect.getX() + (rect.getWidth() / 2.0),
+                rect.getY() + (rect.getHeight() / 2.0));
     }
 
     //-------------//
@@ -72,6 +89,20 @@ public abstract class GeoUtil
                                     double dy)
     {
         rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
+    }
+
+    //--------//
+    // center //
+    //--------//
+    /**
+     * Report the center Point of the provided line
+     *
+     * @param line the provided line
+     * @return the line center
+     */
+    public static Point center (Line2D line)
+    {
+        return PointUtil.rounded(center2D(line));
     }
 
     //--------//

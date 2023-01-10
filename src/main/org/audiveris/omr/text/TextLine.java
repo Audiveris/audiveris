@@ -939,7 +939,7 @@ public class TextLine
                              List<TextLine> lines,
                              boolean withWords)
     {
-        logger.info(title);
+        logger.info("{} {}", title, lines.isEmpty() ? "none" : lines.size());
 
         for (TextLine line : lines) {
             logger.info("   {}", line);

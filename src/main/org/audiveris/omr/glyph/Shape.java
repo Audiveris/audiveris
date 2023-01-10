@@ -826,7 +826,9 @@ public enum Shape
      */
     public ShapeSymbol getSymbol (Family family)
     {
-        return getFontSymbol(family).symbol;
+        final FontSymbol fs = getFontSymbol(family);
+
+        return (fs != null) ? fs.symbol : null;
     }
 
     //---------------//

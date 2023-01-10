@@ -71,13 +71,16 @@ public class TextWord
     { '\\' };
 
     /** Regexp for one-letter words. */
-    private static final Pattern ONE_LETTER_WORDS = getOneLetterWordPattern();
+    private static final Pattern ONE_LETTER_WORDS = compileRegexp(constants.oneLetterWordRegexp);
 
     /** Regexp for abnormal words. */
-    private static final Pattern ABNORMAL_WORDS = getAbnormalWordPattern();
+    private static final Pattern ABNORMAL_WORDS = compileRegexp(constants.abnormalWordRegexp);
 
     /** Regexp for dashed words. */
-    private static final Pattern DASH_WORDS = getDashWordPattern();
+    private static final Pattern DASH_WORDS = compileRegexp(constants.dashWordRegexp);
+
+    /** Regexp for dash-only words. */
+    private static final Pattern DASH_ONLY_WORDS = compileRegexp(constants.dashOnlyWordRegexp);
 
     /** Comparator based on word size. */
     public static final Comparator<TextWord> bySize = (TextWord o1,
@@ -309,6 +312,17 @@ public class TextWord
                 logger.debug("      one-letter word value {}", this);
 
                 return "one-letter-word-value";
+            }
+        }
+
+        // Check for dash-only word values
+        if (DASH_ONLY_WORDS != null) {
+            Matcher matcher = DASH_ONLY_WORDS.matcher(value);
+
+            if (matcher.matches()) {
+                logger.debug("      dash-only word value {}", this);
+
+                return "dash-only-word-value";
             }
         }
 
@@ -657,9 +671,28 @@ public class TextWord
         // Translate word bounds and baseline
         super.translate(dx, dy);
 
-        // Translate contained descriptorrs
+        // Translate contained descriptors
         for (TextChar ch : chars) {
             ch.translate(dx, dy);
+        }
+    }
+
+    //---------------//
+    // compileRegexp //
+    //---------------//
+    /**
+     * Compile the provided regexp into a pattern.
+     *
+     * @param str the regexp constant string to compile
+     * @return the created pattern
+     */
+    private static Pattern compileRegexp (Constant.String str)
+    {
+        try {
+            return Pattern.compile(str.getValue());
+        } catch (PatternSyntaxException pse) {
+            logger.error("Error in regexp {}", str, pse);
+            return null;
         }
     }
 
@@ -695,63 +728,6 @@ public class TextWord
         word.setGlyph(glyph);
 
         return word;
-    }
-
-    //------------------------//
-    // getAbnormalWordPattern //
-    //------------------------//
-    /**
-     * Compile the provided regexp to detect abnormal words
-     *
-     * @return the pattern for abnormal words, if successful
-     */
-    private static Pattern getAbnormalWordPattern ()
-    {
-        try {
-            return Pattern.compile(constants.abnormalWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for abnormal words", pse);
-
-            return null;
-        }
-    }
-
-    //----------------//
-    // getDashPattern //
-    //----------------//
-    /**
-     * Compile the provided regexp to detect words with embedded dashes.
-     *
-     * @return the pattern for dashed words, if successful
-     */
-    private static Pattern getDashWordPattern ()
-    {
-        try {
-            return Pattern.compile(constants.dashWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for dash words", pse);
-
-            return null;
-        }
-    }
-
-    //-------------------------//
-    // getOneLetterWordPattern //
-    //-------------------------//
-    /**
-     * Compile the provided regexp to detect one-letter words
-     *
-     * @return the pattern for one-letter words, if successful
-     */
-    private static Pattern getOneLetterWordPattern ()
-    {
-        try {
-            return Pattern.compile(constants.oneLetterWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for abnormal one-letterwords", pse);
-
-            return null;
-        }
     }
 
     //---------//
@@ -809,6 +785,10 @@ public class TextWord
         private final Constant.String abnormalWordRegexp = new Constant.String(
                 "^[\\W]+$",
                 "Regular expression to detect abnormal words");
+
+        private final Constant.String dashOnlyWordRegexp = new Constant.String(
+                "^[-_\u2014]+$",
+                "Regular expression to detect dash-only words");
 
         private final Constant.String dashWordRegexp = new Constant.String(
                 "^.*[-_\u2014].*$",

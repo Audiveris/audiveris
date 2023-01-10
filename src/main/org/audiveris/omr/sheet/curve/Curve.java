@@ -62,12 +62,16 @@ public abstract class Curve
     private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
     /** Comparison by left abscissa. */
-    public static final Comparator<Curve> byLeftAbscissa = (Curve c1, Curve c2)
-            -> Integer.compare(c1.getEnd(true).x, c2.getEnd(true).x);
+    public static final Comparator<Curve> byLeftAbscissa = (Curve c1,
+                                                            Curve c2) -> Integer.compare(
+                                                                    c1.getEnd(true).x,
+                                                                    c2.getEnd(true).x);
 
     /** Comparison by right abscissa. */
-    public static final Comparator<Curve> byRightAbscissa = (Curve c1, Curve c2)
-            -> Integer.compare(c1.getEnd(false).x, c2.getEnd(false).x);
+    public static final Comparator<Curve> byRightAbscissa = (Curve c1,
+                                                             Curve c2) -> Integer.compare(
+                                                                     c1.getEnd(false).x,
+                                                                     c2.getEnd(false).x);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Unique id. (within containing sheet) */
@@ -401,7 +405,7 @@ public abstract class Curve
     /**
      * Retrieve the underlying glyph of a curve.
      * <p>
-     * This method works with runs rather than predefined sections.
+     * This method is based on runs rather than predefined sections.
      * Based on each point of curve sequence of points, we find the containing vertical run, and
      * check whether the run extrema remain close enough to curve.
      * If not, the run is not considered as part of the curve.
@@ -434,14 +438,13 @@ public abstract class Curve
             final Point point = points.get(index); // Point of curve
             final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
 
+            // @formatter:off
             if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
-                        && ((run.getLength() <= 1)
-                                    || isCloseToCurve(point.x,
-                                                      run.getStop(),
-                                                      maxRunDistance,
-                                                      index))) {
+                && ((run.getLength() <= 1) ||
+                    isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
                 curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
             }
+            // @formatter:on
         }
 
         // Build glyph (TODO: table a bit too high, should be trimmed?)
@@ -575,6 +578,7 @@ public abstract class Curve
      */
     public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
     {
-        return (Curve a1, Curve a2) -> Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+        return (Curve a1,
+                Curve a2) -> Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
     }
 }
