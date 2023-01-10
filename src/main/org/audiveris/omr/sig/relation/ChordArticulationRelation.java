@@ -50,8 +50,8 @@ public class ChordArticulationRelation
 
     private static final Logger logger = LoggerFactory.getLogger(ChordArticulationRelation.class);
 
-    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
-                                                         constants.yWeight.getValue()};
+    private static final double[] WEIGHTS = new double[]
+    { constants.xWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------//
@@ -171,7 +171,7 @@ public class ChordArticulationRelation
                 "Supporting coeff for (target) articulation");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
-                0.75,
+                0.8,
                 "Maximum horizontal gap between articulation center & chord");
 
         @SuppressWarnings("unused")

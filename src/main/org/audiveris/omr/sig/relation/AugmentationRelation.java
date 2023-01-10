@@ -59,8 +59,8 @@ public class AugmentationRelation
 
     private static final Logger logger = LoggerFactory.getLogger(AugmentationRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]
+    { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------//
@@ -206,35 +206,29 @@ public class AugmentationRelation
     {
 
         private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
-                0.5,
+                3,
                 "Supporting coeff for (source) dot");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                1.3,
+                2.0,
                 "Maximum horizontal gap between dot center & note/rest reference point");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                2.0,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(2.0, "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMin = new Scale.Fraction(
                 0.25,
                 "Minimum horizontal gap between dot center & note/rest reference point");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMin_p1 = new Scale.Fraction(
-                0.1,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMin_p1 = new Scale.Fraction(0.1, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between dot center & note/rest reference point");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                1.2,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 0,
