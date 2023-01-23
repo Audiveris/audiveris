@@ -102,7 +102,7 @@ public class TemplateSymbol
 
         if (symbol == null) {
             logger.warn(
-                    "no symbol in TemplateSymbol for {} in family {}",
+                    "TemplateSymbol. No symbol for {} in family {}",
                     shape,
                     font.getMusicFamily());
         }
