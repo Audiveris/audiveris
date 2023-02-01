@@ -42,7 +42,7 @@ public class KeyFlatSymbol
      */
     public KeyFlatSymbol (int key,
                           Shape shape,
-                          Family family)
+                          MusicFamily family)
     {
         super(key, shape, family, Shape.FLAT);
     }

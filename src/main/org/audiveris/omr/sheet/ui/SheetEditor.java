@@ -68,7 +68,7 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -1019,7 +1019,7 @@ public class SheetEditor
             Inter inter = InterFactory.createManual(shape, sheet);
             inter.setStaff(staff);
 
-            final Family family = sheet.getStub().getMusicFontFamily();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
             final int staffInterline = staff.getSpecificInterline();
             final MusicFont font = inter.getShape().isHead()
                     ? MusicFont.getHeadFont(family, sheet.getScale(), staffInterline)

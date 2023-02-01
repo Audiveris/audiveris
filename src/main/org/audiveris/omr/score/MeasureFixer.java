@@ -21,26 +21,21 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class <code>MeasureFixer</code> visits the score hierarchy to fix measures:.
@@ -113,25 +108,6 @@ public class MeasureFixer
         page.setDeltaMeasureId(page.getLastSystem().getLastStack().getIdValue());
     }
 
-    //---------------//
-    // process Score //
-    //---------------//
-    /**
-     * Process the provided score.
-     * <p>
-     * Currently not used.
-     *
-     * @param score the score to process
-     */
-    public void process (Score score)
-    {
-        logger.debug("{} Visiting {}", getClass().getSimpleName(), score);
-
-        for (Page page : score.getPages()) {
-            process(page);
-        }
-    }
-
     //---------------------//
     // getStackTermination //
     //---------------------//
@@ -194,10 +170,8 @@ public class MeasureFixer
     {
         final SystemInfo system = stack.getSystem();
 
-        return (system.getIndexInPage() == 0)
-                       && (stack == system.getFirstStack())
-                       && (stackTermination != null)
-                       && (stackTermination.compareTo(Rational.ZERO) < 0);
+        return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
+                && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
@@ -227,7 +201,8 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevStackTermination == null) || (prevStackTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((prevStackTermination == null) || (prevStackTermination.compareTo(
+                Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -245,8 +220,8 @@ public class MeasureFixer
         }
 
         // Check for an exact duration sum (TODO: is this too strict?)
-        return prevStackTermination.plus(stackTermination).abs()
-                .equals(prevStack.getExpectedDuration());
+        return prevStackTermination.plus(stackTermination).abs().equals(
+                prevStack.getExpectedDuration());
     }
 
     //----------------//
@@ -298,9 +273,9 @@ public class MeasureFixer
 
                 if (stack != system.getLastStack()) {
                     // We will merge with the following stack
-                    setId((lastId != null)
-                            ? (lastId + 1)
-                            : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+                    setId(
+                            (lastId != null) ? (lastId + 1)
+                                    : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 } else {
                     // This is just a cautionary stack at right end of system
                     logger.debug("cautionary");
@@ -313,15 +288,16 @@ public class MeasureFixer
                 }
             } else if (stack.isMultiRest()) {
                 logger.debug("multiple measure rest: {}", multipleRestCount);
-                setId((lastId != null) ? (lastId + 1)
-                        : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+                setId(
+                        (lastId != null) ? (lastId + 1)
+                                : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 lastId += (multipleRestCount - 1);
             } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();
-                setId((lastId != null)
-                        ? (-lastId)
-                        : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
+                setId(
+                        (lastId != null) ? (-lastId)
+                                : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
             } else if (isSecondRepeatHalf()) {
                 logger.debug("secondHalf");
 
@@ -360,9 +336,11 @@ public class MeasureFixer
         }
 
         if (!warnings.isEmpty()) {
-            logger.warn("{} No target duration for measures local IDs {}"
-                                + ", please check time signatures",
-                        system, warnings);
+            logger.warn(
+                    "{} No target duration for measures local IDs {}"
+                            + ", please check time signatures",
+                    system,
+                    warnings);
         }
 
         // For next system

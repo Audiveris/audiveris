@@ -122,6 +122,18 @@ public class FontInfo
                 org.fontName);
     }
 
+    /**
+     * Creates a new FontInfo object, with no attribute set, just point size and font name.
+     *
+     * @param pointsize font size in points
+     * @param fontName  font name
+     */
+    public FontInfo (int pointsize,
+                     String fontName)
+    {
+        this(false, false, false, false, false, false, pointsize, fontName);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
 
     //----------//

@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
@@ -31,6 +28,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -136,18 +136,20 @@ public abstract class XactDataPane<E>
     /**
      * Build the related user interface
      *
-     * @param builder the shared panel builder
-     * @param cst     the cell constraints
-     * @param r       initial row value
+     * @param builder    the shared panel builder
+     * @param cst        the cell constraints
+     * @param titleWidth number of cells for title
+     * @param r          initial row value
      * @return final row value
      */
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,
+                             int titleWidth,
                              int r)
     {
-        // Draw the specific/inherit box + separating line
+        // Draw the specific/inherit box (+ line advance?)
         builder.add(selBox, cst.xyw(1, r, 1));
-        builder.add(title, cst.xyw(3, r, 5));
+        builder.add(title, cst.xyw(3, r, titleWidth));
 
         return r + 2;
     }
@@ -191,10 +193,8 @@ public abstract class XactDataPane<E>
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName())
-                .append(' ').append(title.getText())
-                .append(' ').append(model)
-                .toString();
+        return new StringBuilder(getClass().getSimpleName()).append(' ').append(title.getText())
+                .append(' ').append(model).toString();
     }
 
     /**

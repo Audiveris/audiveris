@@ -39,7 +39,7 @@ public class KeyCancelSymbol
      *
      * @param family the musicFont family
      */
-    public KeyCancelSymbol (Family family)
+    public KeyCancelSymbol (MusicFamily family)
     {
         super(0, Shape.KEY_CANCEL, family, Shape.NATURAL);
     }
@@ -52,7 +52,7 @@ public class KeyCancelSymbol
      * @param family the musicFont family
      */
     public KeyCancelSymbol (int fifths,
-                            Family family)
+                            MusicFamily family)
     {
         super(fifths, Shape.KEY_CANCEL, family, Shape.NATURAL);
     }

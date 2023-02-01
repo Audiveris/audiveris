@@ -39,7 +39,7 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.UIUtil;
 
@@ -200,7 +200,7 @@ public class TemplateView
                 g.setComposite(templateComposite);
 
                 final Scale scale = sheet.getScale();
-                final Family family = sheet.getStub().getMusicFontFamily();
+                final MusicFamily family = sheet.getStub().getMusicFamily();
                 MusicFont musicFont = MusicFont.getHeadFont(family, scale, scale.getInterline());
                 ShapeSymbol symbol = musicFont.getSymbol(template.getShape());
                 final Point2D center = GeoUtil.center2D(slimRect);

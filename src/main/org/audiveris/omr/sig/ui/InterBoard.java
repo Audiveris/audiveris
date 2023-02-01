@@ -48,7 +48,7 @@ import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.Panel;
 
@@ -390,7 +390,7 @@ public class InterBoard
             return null;
         }
 
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final ShapeSymbol symbol = inter.getShapeSymbol(family);
 
         return (symbol != null) ? symbol.getTinyVersion() : null;

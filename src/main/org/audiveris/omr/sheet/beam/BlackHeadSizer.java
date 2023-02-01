@@ -38,7 +38,7 @@ import org.audiveris.omr.sheet.Scale.MusicFontScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Dumping;
 
 import org.slf4j.Logger;
@@ -248,7 +248,7 @@ public class BlackHeadSizer
         logger.info("Core black head count: {} {}", core.size(), blackHeadScale);
 
         final double w = blackHeadScale.getWidthMean();
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final MusicFont font = MusicFont.getHeadFont(family, sheet.getScale(), 0);
         final MusicFontScale musicFontScale = font.buildMusicFontScale(w);
         sheet.getScale().setMusicFontScale(musicFontScale);

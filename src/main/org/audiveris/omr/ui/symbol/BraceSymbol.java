@@ -52,7 +52,7 @@ public class BraceSymbol
      *
      * @param family the MusicFont family
      */
-    public BraceSymbol (Family family)
+    public BraceSymbol (MusicFamily family)
     {
         super(Shape.BRACE, family);
     }

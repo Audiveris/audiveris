@@ -49,7 +49,7 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 
@@ -110,7 +110,7 @@ public abstract class PageCleaner
     private final Stroke lineStroke;
 
     /** Preferred font family for sheet at hand. */
-    private final Family family;
+    private final MusicFamily family;
 
     /** Slightly dilated font point size. */
     private final int dilatedSize;
@@ -141,7 +141,7 @@ public abstract class PageCleaner
         this.sheet = sheet;
 
         final Scale scale = sheet.getScale();
-        family = sheet.getStub().getMusicFontFamily();
+        family = sheet.getStub().getMusicFamily();
 
         // NOTA: To clean items from buffer, we use slightly dilated music fonts
         final int interline = scale.getInterline();

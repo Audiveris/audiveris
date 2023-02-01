@@ -46,7 +46,7 @@ public class NonDraggableSymbol
      *
      * @param family the musicFont family
      */
-    public NonDraggableSymbol (Family family)
+    public NonDraggableSymbol (MusicFamily family)
     {
         super(Shape.NON_DRAGGABLE, family);
     }

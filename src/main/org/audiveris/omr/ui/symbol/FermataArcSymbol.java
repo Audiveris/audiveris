@@ -53,7 +53,7 @@ public class FermataArcSymbol
      * @param family the musicFont family
      */
     public FermataArcSymbol (Shape shape,
-                             Family family)
+                             MusicFamily family)
     {
         super(shape, family);
     }

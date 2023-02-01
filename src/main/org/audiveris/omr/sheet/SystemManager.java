@@ -127,6 +127,7 @@ public class SystemManager
         final ProcessingSwitches switches = stub.getProcessingSwitches();
         final boolean useIndentation = switches.getValue(ProcessingSwitch.indentations);
         Page page = null;
+        PageRef pageRef = null;
 
         // Look at left indentation of (deskewed) systems
         checkIndentations();
@@ -140,7 +141,7 @@ public class SystemManager
                 if (page != null) {
                     // Sheet middle => Score break, finish current page
                     page.setLastSystemId(systId - 1);
-                    page.setSystems(systems);
+                    page.setSystemsFrom(systems);
                 }
 
                 // Start a new page
@@ -150,18 +151,21 @@ public class SystemManager
                                 1 + sheet.getPages().size(),
                                 (systId == 1) ? null : systId));
                 page.setMovementStart(true);
-                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
+                pageRef = new PageRef(stub, page.getId(), true);
+                stub.addPageRef(pageRef);
             } else if (page == null) {
                 // Start first page in sheet
                 sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
-                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), false, null));
+                pageRef = new PageRef(stub, page.getId(), false);
+                stub.addPageRef(pageRef);
             }
 
             system.setPage(page);
+            pageRef.addSystem(system.buildRef());
         }
 
         if (page != null) {
-            page.setSystems(systems);
+            page.setSystemsFrom(systems);
         }
     }
 
@@ -194,13 +198,12 @@ public class SystemManager
         system.setAreaEnd(LEFT, left);
 
         final SystemInfo rightNeighbor = horizontalNeighbor(system, RIGHT);
-        final int right = (rightNeighbor != null)
-                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
+        final int right = (rightNeighbor != null) ? ((system.getRight() + rightNeighbor.getLeft())
+                / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
 
-        PathIterator north = aboves.isEmpty()
-                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(null)
-                : getGlobalLine(aboves, BOTTOM);
+        PathIterator north = aboves.isEmpty() ? new GeoPath(new Line2D.Double(left, 0, right, 0))
+                .getPathIterator(null) : getGlobalLine(aboves, BOTTOM);
 
         PathIterator south = belows.isEmpty() ? new GeoPath(
                 new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
@@ -356,7 +359,7 @@ public class SystemManager
     }
 
     //------------//
-    // setSystems //
+    // setSystemsFrom //
     //------------//
     /**
      * Assign the whole sequence of systems
@@ -613,7 +616,6 @@ public class SystemManager
      *
      * @param system  the system to remove
      * @param pageRef the removed PageRef if any
-     *
      */
     public void unremoveSystem (SystemInfo system,
                                 PageRef pageRef)

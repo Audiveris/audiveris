@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
@@ -52,6 +50,7 @@ import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.util.UserOpt;
 import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
@@ -72,6 +71,8 @@ import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -126,14 +127,6 @@ public class BookActions
     /** Default parameter. */
     public static final Param<Boolean> defaultPromptOnClosingUnsaved = new PromptOnClosingUnsaved();
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    private static enum Opt
-    {
-        OK,
-        Apply,
-        Cancel
-    };
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sub-menu on images history. */
     private final HistoryMenu imageHistoryMenu;
@@ -180,7 +173,7 @@ public class BookActions
         {
             @Override
             protected Void doInBackground ()
-                    throws InterruptedException
+                throws InterruptedException
             {
                 try {
                     LogUtil.start(book);
@@ -214,7 +207,7 @@ public class BookActions
         {
             @Override
             protected Void doInBackground ()
-                    throws InterruptedException
+                throws InterruptedException
             {
                 try {
                     LogUtil.start(sheet.getStub());
@@ -273,7 +266,7 @@ public class BookActions
                 {
                     @Override
                     protected SampleBrowser doInBackground ()
-                            throws Exception
+                        throws Exception
                     {
                         return SampleBrowser.getInstance(book);
                     }
@@ -354,7 +347,8 @@ public class BookActions
             dialog.setContentPane(optionPane);
             dialog.setName("SheetParamsDialog"); // For SAF life cycle
 
-            optionPane.addPropertyChangeListener((PropertyChangeEvent e1) -> {
+            optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) ->
+            {
                 String prop = e1.getPropertyName();
                 if (dialog.isVisible() && (e1.getSource() == optionPane) && (prop.equals(
                         JOptionPane.VALUE_PROPERTY))) {
@@ -728,20 +722,21 @@ public class BookActions
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     null,
-                    new Object[]{Opt.OK, Opt.Apply, Opt.Cancel});
-            optionPane.addPropertyChangeListener(e -> {
-                if (dialog.isVisible()
-                            && (e.getSource() == optionPane)
-                            && (e.getPropertyName().equals(JOptionPane.VALUE_PROPERTY))) {
+                    new Object[]
+                    { UserOpt.OK, UserOpt.Apply, UserOpt.Cancel });
+            optionPane.addPropertyChangeListener(e ->
+            {
+                if (dialog.isVisible() && (e.getSource() == optionPane) && (e.getPropertyName()
+                        .equals(JOptionPane.VALUE_PROPERTY))) {
                     final Object choice = optionPane.getValue();
                     final boolean exit;
 
-                    if (choice == Opt.Cancel) {
+                    if (choice == UserOpt.Cancel) {
                         exit = true;
-                    } else if (choice == Opt.Apply) {
+                    } else if (choice == UserOpt.Apply) {
                         bookParams.commit(book);
                         exit = false;
-                    } else if (choice == Opt.OK) {
+                    } else if (choice == UserOpt.OK) {
                         exit = bookParams.commit(book);
                     } else {
                         exit = false;
@@ -898,9 +893,7 @@ public class BookActions
                 resources.getString("majorImageFiles") + " (" + suffixes + ")",
                 allSuffixes.split("\\s"));
 
-        return selectPath(false,
-                          Paths.get(BookManager.getDefaultImageFolder()),
-                          filter);
+        return selectPath(false, Paths.get(BookManager.getDefaultImageFolder()), filter);
     }
 
     //------------------//
@@ -914,9 +907,7 @@ public class BookActions
                 resources.getString("majorImageFiles") + " (" + suffixes + ")",
                 allSuffixes.split("\\s"));
 
-        return selectPaths(false,
-                           Paths.get(BookManager.getDefaultImageFolder()),
-                           filter);
+        return selectPaths(false, Paths.get(BookManager.getDefaultImageFolder()), filter);
     }
 
     //-----------//
@@ -978,7 +969,8 @@ public class BookActions
         popup.add(title);
         popup.addSeparator();
 
-        final ActionListener listener = (ActionEvent e1) -> {
+        final ActionListener listener = (ActionEvent e1) ->
+        {
             final int index = Integer.decode(e1.getActionCommand()) - 1;
             final Staff staff = staffManager.getStaff(index);
             new StaffProjector(sheet, staff, null).plot();
@@ -1231,9 +1223,8 @@ public class BookActions
         try {
             final Path bookPath = BookManager.getDefaultSavePath(book);
 
-            if ((book.getBookPath() != null)
-                        && (bookPath.toAbsolutePath().equals(book.getBookPath().toAbsolutePath())
-                                    || isTargetConfirmed(bookPath))) {
+            if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(
+                    book.getBookPath().toAbsolutePath()) || isTargetConfirmed(bookPath))) {
                 return new StoreBookTask(book, bookPath);
             }
 
@@ -1412,20 +1403,26 @@ public class BookActions
     public final void updateSheetValidity (SheetStub stub)
     {
         if (stub == null) {
-            toggleValidityAction.putValue(javax.swing.Action.SMALL_ICON, resources.getImageIcon(
-                                          "toggleSheetValidity.Action.icon.true"));
-            toggleValidityAction.putValue(javax.swing.Action.NAME, resources.getString(
-                                          "toggleSheetValidity.Action.text.none"));
-            toggleValidityAction.putValue(javax.swing.Action.SHORT_DESCRIPTION, resources.getString(
-                                          "toggleSheetValidity.Action.shortDescription.none"));
+            toggleValidityAction.putValue(
+                    javax.swing.Action.SMALL_ICON,
+                    resources.getImageIcon("toggleSheetValidity.Action.icon.true"));
+            toggleValidityAction.putValue(
+                    javax.swing.Action.NAME,
+                    resources.getString("toggleSheetValidity.Action.text.none"));
+            toggleValidityAction.putValue(
+                    javax.swing.Action.SHORT_DESCRIPTION,
+                    resources.getString("toggleSheetValidity.Action.shortDescription.none"));
         } else if (stub == StubsController.getCurrentStub()) {
             final boolean isValid = stub.isValid();
-            toggleValidityAction.putValue(javax.swing.Action.SMALL_ICON, resources.getImageIcon(
-                                          "toggleSheetValidity.Action.icon." + isValid));
-            toggleValidityAction.putValue(javax.swing.Action.NAME, resources.getString(
-                                          "toggleSheetValidity.Action.text." + isValid));
-            toggleValidityAction.putValue(javax.swing.Action.SHORT_DESCRIPTION, resources.getString(
-                                          "toggleSheetValidity.Action.shortDescription." + isValid));
+            toggleValidityAction.putValue(
+                    javax.swing.Action.SMALL_ICON,
+                    resources.getImageIcon("toggleSheetValidity.Action.icon." + isValid));
+            toggleValidityAction.putValue(
+                    javax.swing.Action.NAME,
+                    resources.getString("toggleSheetValidity.Action.text." + isValid));
+            toggleValidityAction.putValue(
+                    javax.swing.Action.SHORT_DESCRIPTION,
+                    resources.getString("toggleSheetValidity.Action.shortDescription." + isValid));
         }
     }
 
@@ -1517,7 +1514,7 @@ public class BookActions
             final Path bookPath = book.getBookPath();
 
             if (((bookPath != null) && (defPath.toAbsolutePath().equals(bookPath.toAbsolutePath()))
-                         || isTargetConfirmed(defPath))) {
+                    || isTargetConfirmed(defPath))) {
                 swap = true;
                 logger.info("Processed sheets will be swapped out");
             } else {
@@ -1805,7 +1802,8 @@ public class BookActions
     //--------//
     public static OmrFileFilter filter (String ext)
     {
-        return new OmrFileFilter(ext, new String[]{ext});
+        return new OmrFileFilter(ext, new String[]
+        { ext });
     }
 
     //-----------//
@@ -1819,9 +1817,10 @@ public class BookActions
             return null;
         }
 
-        final String msg = format(resources.getString("resetBookToEnd.pattern"),
-                                  book.getRadix(),
-                                  step);
+        final String msg = format(
+                resources.getString("resetBookToEnd.pattern"),
+                book.getRadix(),
+                step);
 
         if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
             return null;
@@ -1874,12 +1873,11 @@ public class BookActions
     public static Path[] selectBookOrImagePaths (Path startPath)
     {
         final String suffixes = constants.validImageExtensions.getValue();
-        final String allSuffixes = OMR.BOOK_EXTENSION + " " + suffixes
-                                           + " " + suffixes.toUpperCase();
+        final String allSuffixes = OMR.BOOK_EXTENSION + " " + suffixes + " " + suffixes
+                .toUpperCase();
         final OmrFileFilter filter = new OmrFileFilter(
-                resources.getString("bookAnd") + " "
-                        + resources.getString("majorImageFiles")
-                        + " (" + OMR.BOOK_EXTENSION + " " + suffixes + ")",
+                resources.getString("bookAnd") + " " + resources.getString("majorImageFiles") + " ("
+                        + OMR.BOOK_EXTENSION + " " + suffixes + ")",
                 allSuffixes.split("\\s"));
 
         return selectPaths(false, startPath, filter);
@@ -1901,11 +1899,7 @@ public class BookActions
                                    Path startPath,
                                    OmrFileFilter filter)
     {
-        final Path path = UIUtil.pathChooser(
-                save,
-                OMR.gui.getFrame(),
-                startPath,
-                filter);
+        final Path path = UIUtil.pathChooser(save, OMR.gui.getFrame(), startPath, filter);
 
         if (path == null) {
             return null;
@@ -1944,11 +1938,7 @@ public class BookActions
                                       Path startPath,
                                       OmrFileFilter filter)
     {
-        final Path[] paths = UIUtil.pathsChooser(
-                save,
-                OMR.gui.getFrame(),
-                startPath,
-                filter);
+        final Path[] paths = UIUtil.pathsChooser(save, OMR.gui.getFrame(), startPath, filter);
 
         if (paths.length == 0) {
             return paths;
@@ -2094,7 +2084,7 @@ public class BookActions
 
         @Override
         protected Book doInBackground ()
-                throws Exception
+            throws Exception
         {
             Book book = null;
 
@@ -2118,8 +2108,7 @@ public class BookActions
                 controller.displayStubs(book, sheetNumber);
 
                 // Select stub
-                final SheetStub stub = (sheetNumber != null)
-                        ? book.getStub(sheetNumber)
+                final SheetStub stub = (sheetNumber != null) ? book.getStub(sheetNumber)
                         : book.getFirstValidStub();
                 controller.selectAssembly(stub);
             }
@@ -2143,7 +2132,7 @@ public class BookActions
 
         @Override
         protected List<Book> doInBackground ()
-                throws Exception
+            throws Exception
         {
             final List<Book> bookList = new ArrayList<>();
 
@@ -2192,7 +2181,11 @@ public class BookActions
                             }
                         }
                     } catch (Throwable ex) {
-                        logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                        logger.warn(
+                                "Error in {} {}",
+                                getClass().getSimpleName(),
+                                ex.toString(),
+                                ex);
                     }
                 }
             }
@@ -2226,7 +2219,7 @@ public class BookActions
 
         @Override
         protected Book doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 // Actually open the image file
@@ -2282,7 +2275,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(book);
@@ -2318,7 +2311,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(sheet.getStub());
@@ -2349,7 +2342,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(sheet.getStub());
@@ -2385,7 +2378,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             final Book book = stub.getBook();
 
@@ -2498,7 +2491,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(book);
@@ -2536,7 +2529,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(sheet.getStub());
@@ -2591,7 +2584,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws Exception
+            throws Exception
         {
 
             book.resetTo(step);
@@ -2616,7 +2609,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(book);
@@ -2657,7 +2650,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(book);
@@ -2700,7 +2693,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(book);
@@ -2742,7 +2735,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(sheet.getStub());
@@ -2773,7 +2766,7 @@ public class BookActions
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             try {
                 LogUtil.start(book);

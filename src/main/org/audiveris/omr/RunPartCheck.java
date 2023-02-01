@@ -66,7 +66,7 @@ public class RunPartCheck
     @Override
     public void process ()
     {
-        for (SheetStub stub : book.getValidStubs()) {
+        for (SheetStub stub : book.getValidSelectedStubs()) {
             if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
                 logger.info("RunPartCheck. process {}", stub);
 

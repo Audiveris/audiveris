@@ -31,7 +31,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.ui.TemplateView;
 import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
@@ -133,7 +133,7 @@ public class TemplateFactory
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** All catalogs allocated so far, mapped by font family and point size. */
-    private final Map<Family, Map<Integer, Catalog>> catalogs;
+    private final Map<MusicFamily, Map<Integer, Catalog>> catalogs;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -141,7 +141,7 @@ public class TemplateFactory
      */
     private TemplateFactory ()
     {
-        catalogs = new EnumMap<>(Family.class);
+        catalogs = new EnumMap<>(MusicFamily.class);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -155,7 +155,7 @@ public class TemplateFactory
      * @param pointSize provided point size
      * @return the catalog of all templates for the point size value
      */
-    public Catalog getCatalog (Family family,
+    public Catalog getCatalog (MusicFamily family,
                                int pointSize)
     {
         Map<Integer, Catalog> familyCatalogs = catalogs.get(family);
@@ -217,7 +217,7 @@ public class TemplateFactory
 
         final TemplateFactory factory = TemplateFactory.getInstance();
 
-        for (Family family : Family.values()) {
+        for (MusicFamily family : MusicFamily.values()) {
             for (int pointSize = min; pointSize <= max; pointSize++) {
                 factory.getCatalog(family, pointSize);
             }
@@ -656,7 +656,7 @@ public class TemplateFactory
      * @return the brand new template
      */
     private Template buildTemplate (Shape shape,
-                                    Family family,
+                                    MusicFamily family,
                                     int pointSize)
     {
         logger.debug("Building template for {} {} {}", shape, family, pointSize);
@@ -847,7 +847,7 @@ public class TemplateFactory
     // retrieveKeyPoints //
     //-------------------//
     public static List<PixelDistance> retrieveKeyPoints (Shape shape,
-                                                         Family family,
+                                                         MusicFamily family,
                                                          int pointSize)
     {
         final MusicFont font = MusicFont.getMusicFont(family, pointSize);
@@ -863,7 +863,7 @@ public class TemplateFactory
     // retrieveKeyPoints //
     //-------------------//
     private static List<PixelDistance> retrieveKeyPoints (Shape shape,
-                                                          Family family,
+                                                          MusicFamily family,
                                                           int pointSize,
                                                           BufferedImage img,
                                                           Rectangle fatBounds)
@@ -895,7 +895,7 @@ public class TemplateFactory
     {
 
         /** Selected music font family. */
-        final Family family;
+        final MusicFamily family;
 
         /** Point size value for this catalog. */
         final int pointSize;
@@ -909,7 +909,7 @@ public class TemplateFactory
          * @param family    the selected MusicFont family
          * @param pointSize provided pointSize value
          */
-        public Catalog (Family family,
+        public Catalog (MusicFamily family,
                         int pointSize)
         {
             this.family = family;

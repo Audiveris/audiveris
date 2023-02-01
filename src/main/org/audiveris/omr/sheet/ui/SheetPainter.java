@@ -26,6 +26,9 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.score.LogicalPart;
+import org.audiveris.omr.score.PartRef;
+import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -79,17 +82,19 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
-import org.audiveris.omr.ui.symbol.Family;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.NumberSymbol;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -157,12 +162,6 @@ public abstract class SheetPainter
             "Sans Serif",
             Font.PLAIN,
             constants.basicFontSize.getValue());
-
-    /** Font for chord annotations. */
-    protected static final Font chordFont = new Font(
-            "Sans Serif",
-            Font.PLAIN,
-            constants.chordFontSize.getValue());
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet. */
@@ -359,6 +358,9 @@ public abstract class SheetPainter
      */
     public void process ()
     {
+        if (scale == null)
+            return;
+
         sigPainter = getSigPainter();
 
         if (!sheet.getSystems().isEmpty()) {
@@ -371,6 +373,73 @@ public abstract class SheetPainter
                 }
             }
         }
+    }
+
+    //--------------//
+    // processParts //
+    //--------------//
+    /**
+     * For every part in provided system, make sure some part name or abbreviation is printed.
+     *
+     * @param system the containing system
+     */
+    private void processParts (SystemInfo system)
+    {
+        if (!viewParams.isPartNamePainting()) {
+            return;
+        }
+
+        final Color oldColor = g.getColor();
+        g.setColor(Colors.MUSIC_ALONE);
+
+        final int partDx = constants.partDx.getValue();
+        final int partDy = constants.partDy.getValue();
+
+        final Score score = system.getPage().getScore();
+        final double zoom = constants.zoomForPartName.getValue();
+        final AffineTransform fat = AffineTransform.getScaleInstance(zoom, zoom);
+
+        for (Part part : system.getParts()) {
+            if (part.getName() != null)
+                continue; // There is a partName inter, it is displayed by the sig painter
+
+            // Otherwise use info from logical part, if available
+            final LogicalPart logical = part.getLogicalPart();
+            final PartRef partRef = part.getRef();
+
+            if (logical != null) {
+                // First logicap part occurrence displays logical name
+                // The next ones display logical abbreviation if available, otherwise the name
+                final String str;
+                if (score.getFirstOccurrence(logical) == partRef) {
+                    str = logical.getName();
+                } else {
+                    final String abbrev = logical.getAbbreviation();
+                    if ((abbrev != null) && !abbrev.isBlank())
+                        str = abbrev;
+                    else
+                        str = logical.getName();
+                }
+
+                if (str != null) {
+                    final Staff s1 = part.getFirstStaff();
+                    final int x = s1.getAbscissa(HorizontalSide.LEFT);
+                    final LineInfo l1 = s1.getMidLine();
+                    int y = l1.yAt(x - partDx) + partDy;
+
+                    final Staff s2 = part.getLastStaff();
+                    if (s2 != s1) {
+                        final LineInfo l2 = s2.getMidLine();
+                        y = (y + l2.yAt(x - partDx) + partDy) / 2;
+                    }
+
+                    final TextLayout layout = basicLayout(str, fat);
+                    paint(layout, new Point(x - partDx, y), TOP_RIGHT);
+                }
+            }
+        }
+
+        g.setColor(oldColor);
     }
 
     //---------------//
@@ -396,6 +465,9 @@ public abstract class SheetPainter
                 drawPartLimits(system);
             }
 
+            // Parts name/abbreviation if needed
+            processParts(system);
+
             // All interpretations for this system
             sigPainter.process(system.getSig());
         } catch (ConcurrentModificationException ignored) {
@@ -405,6 +477,7 @@ public abstract class SheetPainter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // SigPainter //
     //------------//
@@ -439,6 +512,9 @@ public abstract class SheetPainter
         /** Head shapes, small size. */
         protected final MusicFont headMusicFontSmall;
 
+        /** Textual score items. */
+        protected final TextFont textFont;
+
         /** Global stroke for curves (slur, wedge, ending). */
         protected final Stroke curveStroke;
 
@@ -454,18 +530,20 @@ public abstract class SheetPainter
         public SigPainter ()
         {
             // Determine proper music fonts
-            final Family family = sheet.getStub().getMusicFontFamily();
+            final MusicFamily musicFamily = sheet.getStub().getMusicFamily();
+            final TextFamily textFamily = sheet.getStub().getTextFamily();
 
             // Standard (large) size
             final int largeInterline = scale.getInterline();
-            musicFont = MusicFont.getBaseFont(family, largeInterline);
-            headMusicFont = MusicFont.getHeadFont(family, scale, largeInterline);
+            musicFont = MusicFont.getBaseFont(musicFamily, largeInterline);
+            headMusicFont = MusicFont.getHeadFont(musicFamily, scale, largeInterline);
+            textFont = TextFont.getTextFont(textFamily, largeInterline * 4);
 
             // Smaller size?
             final Integer smallInterline = scale.getSmallInterline();
             if (smallInterline != null) {
-                musicFontSmall = MusicFont.getBaseFont(family, smallInterline);
-                headMusicFontSmall = MusicFont.getHeadFont(family, scale, smallInterline);
+                musicFontSmall = MusicFont.getBaseFont(musicFamily, smallInterline);
+                headMusicFontSmall = MusicFont.getHeadFont(musicFamily, scale, smallInterline);
             } else {
                 musicFontSmall = null;
                 headMusicFontSmall = null;
@@ -536,9 +614,17 @@ public abstract class SheetPainter
         //--------------//
         // getMusicFont //
         //--------------//
-        private MusicFont getMusicFont ()
+        public MusicFont getMusicFont ()
         {
             return getMusicFont(false, false);
+        }
+
+        //-------------//
+        // getTextFont //
+        //-------------//
+        public TextFont getTextFont ()
+        {
+            return textFont;
         }
 
         //-----------//
@@ -703,20 +789,20 @@ public abstract class SheetPainter
         // paintWord //
         //-----------//
         protected void paintWord (WordInter word,
-                                  FontInfo lineMeanFont)
+                                  FontInfo fontInfo)
         {
             if (word.getValue().trim().isEmpty()) {
                 return;
             }
 
-            if (lineMeanFont == null) {
+            if (fontInfo == null) {
                 logger.warn("No font information for {}", word);
 
                 return;
             }
 
-            Font font = new TextFont(lineMeanFont);
             FontRenderContext frc = g.getFontRenderContext();
+            Font font = TextFont.create(textFont, fontInfo);
             TextLayout layout = new TextLayout(word.getValue(), font, frc);
             setColor(word);
 
@@ -783,19 +869,11 @@ public abstract class SheetPainter
                 return;
             }
 
-            // For readability, we need a sufficient zoom ratio
-            final double zoom = g.getTransform().getScaleX();
+            // For readability, we need a sufficient display zoom
+            final double displayZoom = g.getTransform().getScaleX();
 
-            if (zoom < constants.minZoomForChordId.getValue()) {
+            if (displayZoom < constants.minDisplayZoomForChordId.getValue()) {
                 return;
-            }
-
-            Font oldFont = g.getFont();
-
-            if (oldFont != chordFont) {
-                g.setFont(chordFont);
-            } else {
-                oldFont = null;
             }
 
             Color oldColor = g.getColor();
@@ -816,16 +894,13 @@ public abstract class SheetPainter
                 }
             }
 
-            final double z = Math.max(0.5, zoom);
-            final AffineTransform at = AffineTransform.getScaleInstance(0.5 / z, 0.5 / z);
+            final double idZoom = constants.chordIdZoom.getValue();
+            final double z = Math.max(idZoom, displayZoom);
+            final AffineTransform at = AffineTransform.getScaleInstance(idZoom / z, idZoom / z);
             final TextLayout layout = basicLayout(str, at);
             paint(layout, pt, MIDDLE_LEFT);
 
             g.setColor(oldColor);
-
-            if (oldFont != null) {
-                g.setFont(oldFont);
-            }
         }
 
         //-------//
@@ -1390,11 +1465,6 @@ public abstract class SheetPainter
                 30,
                 "Standard font size for annotations");
 
-        private final Constant.Integer chordFontSize = new Constant.Integer(
-                "points",
-                5,
-                "Font size for chord annotations");
-
         private final Constant.Boolean drawPartLimits = new Constant.Boolean(
                 false,
                 "Should we draw part upper and lower core limits");
@@ -1403,8 +1473,26 @@ public abstract class SheetPainter
                 false,
                 "Should the chords voices be appended to ID?");
 
-        private final Constant.Ratio minZoomForChordId = new Constant.Ratio(
+        private final Constant.Ratio minDisplayZoomForChordId = new Constant.Ratio(
                 0.75,
-                "Minimum zoom value to display chords ID");
+                "Minimum display zoom value to display chords ID");
+
+        private final Constant.Ratio chordIdZoom = new Constant.Ratio(
+                0.5,
+                "Zoom applied on font for chords ID");
+
+        private final Constant.Integer partDx = new Constant.Integer(
+                "pixels",
+                40,
+                "Abscissa right offset for part name");
+
+        private final Constant.Integer partDy = new Constant.Integer(
+                "pixels",
+                20,
+                "Ordinate down offset for part name");
+
+        private final Constant.Ratio zoomForPartName = new Constant.Ratio(
+                0.6,
+                "Zoom applied on part names");
     }
 }

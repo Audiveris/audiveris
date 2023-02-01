@@ -314,7 +314,8 @@ public class PartwiseBuilder
      * @throws InterruptedException if the thread has been interrupted
      * @throws ExecutionException   if a checked exception was thrown
      */
-    private PartwiseBuilder (Score score) throws InterruptedException, ExecutionException
+    private PartwiseBuilder (Score score)
+            throws InterruptedException, ExecutionException
     {
         // Make sure the JAXB context is ready
         loading.get();
@@ -467,6 +468,10 @@ public class PartwiseBuilder
                                    HorizontalSide side)
     {
         try {
+            // Exclude chords not in SIG, such as fake chords
+            if (chord.getId() == 0)
+                return;
+
             final SIGraph sig = current.system.getSig();
             final Set<Relation> rels = sig.getRelations(chord, OctaveShiftChordRelation.class);
 
@@ -561,7 +566,8 @@ public class PartwiseBuilder
         // Is this a drum part?
         boolean isDrumLogicalPart = false;
         final List<SheetStub> scoreStubs = score.getStubs();
-        outermost: for (SheetStub stub : scoreStubs) {
+        outermost:
+        for (SheetStub stub : scoreStubs) {
             final Integer sheetPageId = score.getSheetPageId(stub.getNumber());
             final Sheet sheet = stub.getSheet();
             final Page page = sheet.getPages().get(sheetPageId - 1);
@@ -2144,7 +2150,7 @@ public class PartwiseBuilder
     private void processNote (AbstractNoteInter note)
     {
         try {
-            if (note.isVip() || note.getId() == 0) {
+            if (note.isVip()) {
                 logger.info("VIP Visiting {}", note);
             }
 
@@ -3306,8 +3312,7 @@ public class PartwiseBuilder
      * @throws ExecutionException   if a checked exception was thrown
      */
     public static ScorePartwise build (Score score)
-        throws InterruptedException,
-        ExecutionException
+        throws InterruptedException, ExecutionException
     {
         Objects.requireNonNull(score, "Trying to export a null score");
 

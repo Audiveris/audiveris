@@ -38,7 +38,7 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
@@ -472,7 +472,7 @@ public class EvaluationBoard
                 final Evaluation.Failure failure = eval.failure;
                 final String text = eval.shape.toString();
                 final String tip = (failure != null) ? failure.toString() : null;
-                final Family family = sheet != null ? sheet.getStub().getMusicFontFamily()
+                final MusicFamily family = sheet != null ? sheet.getStub().getMusicFamily()
                         : MusicFont.getDefaultMusicFamily();
 
                 if (isActive) {

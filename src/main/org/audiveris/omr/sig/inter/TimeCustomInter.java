@@ -25,7 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -149,7 +149,7 @@ public class TimeCustomInter
     // getShapeSymbol //
     //----------------//
     @Override
-    public ShapeSymbol getShapeSymbol (Family family)
+    public ShapeSymbol getShapeSymbol (MusicFamily family)
     {
         return new NumDenSymbol(shape, family, num, den);
     }
@@ -162,8 +162,8 @@ public class TimeCustomInter
     {
         // Multi symbol (num / den)
         final Point center = getCenter(); // Use area center
-        final Family family = staff != null
-                ? staff.getSystem().getSheet().getStub().getMusicFontFamily()
+        final MusicFamily family = staff != null
+                ? staff.getSystem().getSheet().getStub().getMusicFamily()
                 : MusicFont.getDefaultMusicFamily();
         MusicFont musicFont = MusicFont.getBaseFont(family, interline);
         NumDenSymbol symbol = new NumDenSymbol(shape, family, num, den);

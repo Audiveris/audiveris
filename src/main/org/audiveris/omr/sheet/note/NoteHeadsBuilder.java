@@ -69,7 +69,7 @@ import org.audiveris.omr.sig.inter.InterPairPredicate;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -272,7 +272,7 @@ public class NoteHeadsBuilder
      */
     public void buildHeads ()
     {
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
         systemBarAreas = getSystemBarAreas();
         systemCompetitors = getSystemCompetitors(); // Competitors

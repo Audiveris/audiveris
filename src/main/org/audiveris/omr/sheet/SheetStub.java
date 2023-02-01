@@ -29,6 +29,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.sheet.Picture.ImageKey;
 import org.audiveris.omr.sheet.Picture.TableKey;
@@ -45,8 +46,8 @@ import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.Family;
-import org.audiveris.omr.ui.symbol.FontFamilyParam;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
@@ -111,10 +112,10 @@ public class SheetStub
     public static final Predicate<SheetStub> VALIDITY_CHECK = (SheetStub stub) -> stub.isValid();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * This is the rank of sheet, counted from 1, within the book.
      */
@@ -170,8 +171,18 @@ public class SheetStub
      * levels.
      */
     @XmlElement(name = "music-font")
-    @XmlJavaTypeAdapter(FontFamilyParam.JaxbAdapter.class)
-    private FontFamilyParam musicFontFamily;
+    @XmlJavaTypeAdapter(MusicFamily.MyParam.JaxbAdapter.class)
+    private MusicFamily.MyParam musicFamily;
+
+    /**
+     * Specification of the TextFont family to use in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book or application
+     * levels.
+     */
+    @XmlElement(name = "text-font")
+    @XmlJavaTypeAdapter(TextFamily.MyParam.JaxbAdapter.class)
+    private TextFamily.MyParam textFamily;
 
     /**
      * Specification of the input quality to use in this sheet.
@@ -218,7 +229,7 @@ public class SheetStub
 
     // Transient data
     //---------------
-    //
+
     /** Processing lock. */
     private final Lock lock = new ReentrantLock();
 
@@ -242,6 +253,7 @@ public class SheetStub
     private SheetAssembly assembly;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetStub</code> object.
      *
@@ -287,18 +299,6 @@ public class SheetStub
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // addPageRef //
-    //------------//
-    /**
-     * Add a page reference to this stub.
-     *
-     * @param pageRef the page reference
-     */
-    public void addPageRef (PageRef pageRef)
-    {
-        pageRefs.add(pageRef);
-    }
 
     //------------//
     // addPageRef //
@@ -313,6 +313,85 @@ public class SheetStub
                             PageRef pageRef)
     {
         pageRefs.add(index, pageRef);
+    }
+
+    //------------//
+    // addPageRef //
+    //------------//
+    /**
+     * Add a page reference to this stub.
+     *
+     * @param pageRef the page reference
+     */
+    public void addPageRef (PageRef pageRef)
+    {
+        pageRefs.add(pageRef);
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
+     * All non-persistent members are null.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        initTransients((Book) parent);
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
+            binarizationFilter = null;
+        }
+
+        if ((musicFamily != null) && !musicFamily.isSpecific()) {
+            musicFamily = null;
+        }
+
+        if ((textFamily != null) && !textFamily.isSpecific()) {
+            textFamily = null;
+        }
+
+        if ((inputQuality != null) && !inputQuality.isSpecific()) {
+            inputQuality = null;
+        }
+
+        if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
+            ocrLanguages = null;
+        }
+
+        if ((switches != null) && switches.isEmpty()) {
+            switches = null;
+        }
+    }
+
+    //--------------//
+    // checkSystems //
+    //--------------//
+    /**
+     * Make sure system information exists in SheetStub.
+     */
+    public void checkSystems ()
+    {
+        for (PageRef pageRef : pageRefs) {
+            if (pageRef.getSystems().isEmpty()) {
+                sheet = getSheet(); // Loading...
+                final Page page = sheet.getPages().get(pageRef.getId() - 1);
+
+                for (SystemInfo system : page.getSystems()) {
+                    pageRef.addSystem(system.buildRef());
+                }
+            }
+        }
     }
 
     //---------------//
@@ -360,7 +439,7 @@ public class SheetStub
      */
     public void decideOnRemoval (String msg,
                                  boolean dummy)
-            throws StepException
+        throws StepException
     {
         if (dummy) {
             invalidate();
@@ -386,6 +465,28 @@ public class SheetStub
         }
     }
 
+    //---------//
+    // display //
+    //---------//
+    private void display ()
+    {
+        if (OMR.gui != null) {
+            try {
+                Runnable runnable = () -> StubsController.getInstance().display(
+                        SheetStub.this,
+                        false);
+
+                if (SwingUtilities.isEventDispatchThread()) {
+                    runnable.run();
+                } else {
+                    SwingUtilities.invokeAndWait(runnable);
+                }
+            } catch (InterruptedException | InvocationTargetException ex) {
+                logger.warn("Could not reset {}", ex.toString(), ex);
+            }
+        }
+    }
+
     //------//
     // done //
     //------//
@@ -397,6 +498,94 @@ public class SheetStub
     public final void done (OmrStep step)
     {
         doneSteps.add(step);
+    }
+
+    //-----------//
+    // doOneStep //
+    //-----------//
+    /**
+     * Do just one specified step, synchronously, with display of related UI if any.
+     * <p>
+     * OmrStep duration is guarded by a timeout, so that processing cannot get blocked infinitely.
+     *
+     * @param step the step to perform
+     * @throws Exception
+     */
+    private void doOneStep (final OmrStep step)
+        throws Exception
+    {
+        final int timeout = Main.getSheetStepTimeOut();
+        Future<Void> future = null;
+
+        try {
+            // Make sure sheet is available
+            if (!hasSheet()) {
+                getSheet();
+            }
+
+            // Implement a timeout for this step on the stub
+            future = OmrExecutors.getCachedLowExecutor().submit( () ->
+            {
+                LogUtil.start(SheetStub.this);
+
+                try {
+                    setCurrentStep(step);
+                    setModified(true); // At beginning of processing
+                    sheet.reset(step); // Reset sheet relevant data
+
+                    try {
+                        step.doit(sheet); // Standard processing on an existing sheet
+                        done(step); // Full completion
+                        StepMonitoring.notifyStep(SheetStub.this, step);
+                    } catch (StepPause sp) {
+                        done(step);
+                        StepMonitoring.notifyStep(SheetStub.this, step);
+                        throw sp;
+                    }
+                } finally {
+                    LogUtil.stopStub();
+                }
+
+                return null;
+            });
+
+            future.get(timeout, TimeUnit.SECONDS);
+
+            // At end of each step, save sheet to disk?
+            if ((OMR.gui == null) && Main.getCli().isSave()) {
+                logger.debug("calling storeSheet");
+                storeSheet();
+            }
+        } catch (TimeoutException tex) {
+            logger.warn("Timeout {} seconds for step {}", timeout, step, tex);
+
+            // Signal the on-going step processing to stop (if possible)
+            if (future != null) {
+                future.cancel(true);
+            }
+
+            throw new ProcessingCancellationException(tex);
+        } finally {
+            setCurrentStep(null);
+            StepMonitoring.notifyStep(this, step); // Stop monitoring
+        }
+    }
+
+    //---------//
+    // doReset //
+    //---------//
+    private void doReset ()
+    {
+        doneSteps.clear();
+        pageRefs.clear();
+        invalid = false;
+        sheet = null;
+
+        if (assembly != null) {
+            assembly.reset();
+        }
+
+        setModified(true);
     }
 
     //-------------//
@@ -430,68 +619,6 @@ public class SheetStub
         return binarizationFilter;
     }
 
-    //--------------------//
-    // getMusicFontFamily //
-    //--------------------//
-    /**
-     * Report the music font family defined at sheet level.
-     *
-     * @return the font family
-     */
-    public Family getMusicFontFamily ()
-    {
-        return getMusicFontFamilyParam().getValue();
-    }
-
-    //-------------------------//
-    // getMusicFontFamilyParam //
-    //-------------------------//
-    /**
-     * Report the music font family param defined at sheet level.
-     *
-     * @return the font family parameter
-     */
-    public FontFamilyParam getMusicFontFamilyParam ()
-    {
-        if (musicFontFamily == null) {
-            musicFontFamily = new FontFamilyParam(this);
-            musicFontFamily.setParent(book.getMusicFontFamily());
-        }
-
-        return musicFontFamily;
-    }
-
-    //-----------------//
-    // getInputQuality //
-    //-----------------//
-    /**
-     * Report the input quality defined at sheet level.
-     *
-     * @return the input quality
-     */
-    public InputQuality getInputQuality ()
-    {
-        return getInputQualityParam().getValue();
-    }
-
-    //----------------------//
-    // getInputQualityParam //
-    //----------------------//
-    /**
-     * Report the input quality param defined at sheet level.
-     *
-     * @return the input quality parameter
-     */
-    public InputQualityParam getInputQualityParam ()
-    {
-        if (inputQuality == null) {
-            inputQuality = new InputQualityParam(this);
-            inputQuality.setParent(book.getInputQuality());
-        }
-
-        return inputQuality;
-    }
-
     //---------//
     // getBook //
     //---------//
@@ -516,19 +643,6 @@ public class SheetStub
     public OmrStep getCurrentStep ()
     {
         return currentStep;
-    }
-
-    //----------------//
-    // setCurrentStep //
-    //----------------//
-    /**
-     * Assign the step being performed.
-     *
-     * @param step the current step
-     */
-    public void setCurrentStep (OmrStep step)
-    {
-        currentStep = step;
     }
 
     //-----------------//
@@ -565,21 +679,35 @@ public class SheetStub
         }
     }
 
-    //---------------//
-    // getSheetInput //
-    //---------------//
+    //-----------------//
+    // getInputQuality //
+    //-----------------//
     /**
-     * Report the precise image input for this sheet.
+     * Report the input quality defined at sheet level.
      *
-     * @return the sheetInput
+     * @return the input quality
      */
-    public SheetInput getSheetInput ()
+    public InputQuality getInputQuality ()
     {
-        if (sheetInput == null) {
-            sheetInput = new SheetInput(book.getInputPath(), number);
+        return getInputQualityParam().getValue();
+    }
+
+    //----------------------//
+    // getInputQualityParam //
+    //----------------------//
+    /**
+     * Report the input quality param defined at sheet level.
+     *
+     * @return the input quality parameter
+     */
+    public InputQualityParam getInputQualityParam ()
+    {
+        if (inputQuality == null) {
+            inputQuality = new InputQualityParam(this);
+            inputQuality.setParent(book.getInputQuality());
         }
 
-        return sheetInput;
+        return inputQuality;
     }
 
     //----------------//
@@ -631,6 +759,54 @@ public class SheetStub
     public Lock getLock ()
     {
         return lock;
+    }
+
+    //----------------//
+    // getMusicFamily //
+    //----------------//
+    /**
+     * Report the music family defined at sheet level.
+     *
+     * @return the music font family
+     */
+    public MusicFamily getMusicFamily ()
+    {
+        return getMusicFamilyParam().getValue();
+    }
+
+    //---------------------//
+    // getMusicFamilyParam //
+    //---------------------//
+    /**
+     * Report the music family param defined at sheet level.
+     *
+     * @return the music family parameter
+     */
+    public MusicFamily.MyParam getMusicFamilyParam ()
+    {
+        if (musicFamily == null) {
+            musicFamily = new MusicFamily.MyParam(this);
+            musicFamily.setParent(book.getMusicFamily());
+        }
+
+        return musicFamily;
+    }
+
+    //----------------//
+    // getNeededSteps //
+    //----------------//
+    private EnumSet<OmrStep> getNeededSteps (OmrStep target)
+    {
+        EnumSet<OmrStep> neededSteps = EnumSet.noneOf(OmrStep.class);
+
+        // Add all needed steps
+        for (OmrStep step : EnumSet.range(OmrStep.first(), target)) {
+            if (!isDone(step)) {
+                neededSteps.add(step);
+            }
+        }
+
+        return neededSteps;
     }
 
     //--------//
@@ -724,12 +900,9 @@ public class SheetStub
         final InputQuality quality = getInputQuality();
 
         return switch (quality) {
-            case Synthetic ->
-                Profiles.STRICT;
-            case Standard ->
-                Profiles.STANDARD;
-            case Poor ->
-                Profiles.POOR;
+        case Synthetic -> Profiles.STRICT;
+        case Standard -> Profiles.STANDARD;
+        case Poor -> Profiles.POOR;
         };
     }
 
@@ -778,7 +951,8 @@ public class SheetStub
                 // Open the book file system
                 try {
                     book.getLock().lock();
-                    sheetFile = book.openSheetFolder(number).resolve(Sheet.getSheetFileName(number));
+                    sheetFile = book.openSheetFolder(number).resolve(
+                            Sheet.getSheetFileName(number));
 
                     try (InputStream is = Files.newInputStream(
                             sheetFile,
@@ -798,12 +972,12 @@ public class SheetStub
 
                 if (OMR.gui != null) {
                     StubsController.getInstance().markTab(
-                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
+                            this,
+                            invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
                 }
 
                 logger.info("Loaded {}", sheetFile);
-            } catch (IOException |
-                     JAXBException ex) {
+            } catch (IOException | JAXBException ex) {
                 logger.warn("Error in loading sheet structure " + ex, ex);
                 logger.info("Trying to restart from binary");
                 resetToBinary();
@@ -816,221 +990,110 @@ public class SheetStub
             return sheet;
         }
     }
-//
-//    public Sheet getSheet (SheetStub oldStub)
-//    {
-//        // Copy BINARY.png
-//        final ImageHolder holder = new ImageHolder(ImageKey.BINARY);
-//        holder.storeData(sheetFolder, oldSheetFolder);
-//
-//        if (!oldStub.isDone(OmrStep.LOAD)) {
-//            // LOAD not yet performed: load from book image file
-//            try {
-//                sheet = new Sheet(this, null, false);
-//            } catch (StepException ignored) {
-//                logger.info("Could not load sheet for stub {}", this);
-//            }
-//        } else {
-//            // Load from old sheet
-//            try {
-//                final Path sheetFile;
-//                // Copy from the old book file system
-//                final Book oldBook = oldStub.getBook();
-//                try {
-//                    oldBook.getLock().lock();
-//                    sheetFile = oldBook.openSheetFolder(oldStub.number).resolve(
-//                            Sheet.getSheetFileName(oldStub.number));
-//
-//                    try (InputStream is = Files.newInputStream(
-//                            sheetFile,
-//                            StandardOpenOption.READ)) {
-//                        sheet = Sheet.unmarshal(is);
-//                    }
-//
-//                    sheetFile.getFileSystem().close();
-//                } finally {
-//                    oldBook.getLock().unlock();
-//                }
-//
-//                // Complete sheet reload
-//                sheet.afterReload(this);
-//                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
-////
-////                if (OMR.gui != null) {
-////                    StubsController.getInstance().markTab(
-////                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
-////                }
-//                logger.info("Loaded {}", sheetFile);
-//            } catch (IOException |
-//                     JAXBException ex) {
-//                logger.warn("Error in loading sheet structure " + ex, ex);
-//            }
-//        }
-//
-//        return sheet;
-//    }
-//
+    //
+    //    public Sheet getSheet (SheetStub oldStub)
+    //    {
+    //        // Copy BINARY.png
+    //        final ImageHolder holder = new ImageHolder(ImageKey.BINARY);
+    //        holder.storeData(sheetFolder, oldSheetFolder);
+    //
+    //        if (!oldStub.isDone(OmrStep.LOAD)) {
+    //            // LOAD not yet performed: load from book image file
+    //            try {
+    //                sheet = new Sheet(this, null, false);
+    //            } catch (StepException ignored) {
+    //                logger.info("Could not load sheet for stub {}", this);
+    //            }
+    //        } else {
+    //            // Load from old sheet
+    //            try {
+    //                final Path sheetFile;
+    //                // Copy from the old book file system
+    //                final Book oldBook = oldStub.getBook();
+    //                try {
+    //                    oldBook.getLock().lock();
+    //                    sheetFile = oldBook.openSheetFolder(oldStub.number).resolve(
+    //                            Sheet.getSheetFileName(oldStub.number));
+    //
+    //                    try (InputStream is = Files.newInputStream(
+    //                            sheetFile,
+    //                            StandardOpenOption.READ)) {
+    //                        sheet = Sheet.unmarshal(is);
+    //                    }
+    //
+    //                    sheetFile.getFileSystem().close();
+    //                } finally {
+    //                    oldBook.getLock().unlock();
+    //                }
+    //
+    //                // Complete sheet reload
+    //                sheet.afterReload(this);
+    //                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
+    ////
+    ////                if (OMR.gui != null) {
+    ////                    StubsController.getInstance().markTab(
+    ////                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
+    ////                }
+    //                logger.info("Loaded {}", sheetFile);
+    //            } catch (IOException |
+    //                     JAXBException ex) {
+    //                logger.warn("Error in loading sheet structure " + ex, ex);
+    //            }
+    //        }
+    //
+    //        return sheet;
+    //    }
+    //
     //----------//
     // hasSheet //
     //----------//
 
+    //---------------//
+    // getSheetInput //
+    //---------------//
     /**
-     * Report whether the stub has a sheet in memory
+     * Report the precise image input for this sheet.
      *
-     * @return true if sheet is present in memory
+     * @return the sheetInput
      */
-    public boolean hasSheet ()
+    public SheetInput getSheetInput ()
     {
-        return sheet != null;
-    }
-
-    //------------//
-    // invalidate //
-    //------------//
-    /**
-     * Flag a stub as invalid (containing no music).
-     */
-    public void invalidate ()
-    {
-        invalid = true;
-
-        pageRefs.clear();
-        book.updateScores(this);
-        setModified(true);
-
-        if (OMR.gui != null) {
-            StubsController.getInstance().markTab(this, Colors.SHEET_INVALID);
+        if (sheetInput == null) {
+            sheetInput = new SheetInput(book.getInputPath(), number);
         }
 
-        logger.info("Sheet {} flagged as invalid.", getId());
-    }
-
-    //----------//
-    // validate //
-    //----------//
-    /**
-     * Flag a stub as valid (containing music).
-     */
-    public void validate ()
-    {
-        resetToBinary();
-
-        book.updateScores(this);
-        setModified(true);
-
-        if (OMR.gui != null) {
-            StubsController.getInstance().markTab(this, Colors.SHEET_OK);
-        }
-
-        logger.info("Sheet {} flagged as valid.", getId());
-    }
-
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Report whether the specified step has been performed on this sheet
-     *
-     * @param step the step to check
-     * @return true if already performed
-     */
-    public boolean isDone (OmrStep step)
-    {
-        return doneSteps.contains(step);
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    /**
-     * Has the sheet been modified with respect to its persisted data?.
-     *
-     * @return true if modified
-     */
-    public boolean isModified ()
-    {
-        return modified;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * Set the modified flag.
-     *
-     * @param modified the new flag value
-     */
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
-
-        if (modified) {
-            book.setModified(true);
-            book.setDirty(true);
-        }
-    }
-
-    //------------//
-    // isUpgraded //
-    //------------//
-    /**
-     * Has the sheet been upgraded with respect to its persisted data?.
-     *
-     * @return true if upgraded
-     */
-    public boolean isUpgraded ()
-    {
-        return upgraded;
+        return sheetInput;
     }
 
     //---------------//
-    // setSheetInput //
+    // getTextFamily //
     //---------------//
     /**
-     * Assigns the precise image input for this sheet.
+     * Report the text family defined at sheet level.
      *
-     * @param sheetInput the sheetInput to set
+     * @return the text family
      */
-    public void setSheetInput (SheetInput sheetInput)
+    public TextFamily getTextFamily ()
     {
-        this.sheetInput = new SheetInput(sheetInput);
+        return getTextFamilyParam().getValue();
     }
 
-    //-------------//
-    // setUpgraded //
-    //-------------//
+    //--------------------//
+    // getTextFamilyParam //
+    //--------------------//
     /**
-     * Set the upgraded flag.
+     * Report the text family param defined at sheet level.
      *
-     * @param upgraded the new flag value
+     * @return the text family parameter
      */
-    public void setUpgraded (boolean upgraded)
+    public TextFamily.MyParam getTextFamilyParam ()
     {
-        this.upgraded = upgraded;
-
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(() -> {
-                final StubsController controller = StubsController.getInstance();
-                final SheetStub stub = controller.getSelectedStub();
-
-                if ((stub == SheetStub.this)) {
-                    controller.refresh();
-                }
-            });
+        if (textFamily == null) {
+            textFamily = new TextFamily.MyParam(this);
+            textFamily.setParent(book.getTextFamily());
         }
-    }
 
-    //---------//
-    // isValid //
-    //---------//
-    /**
-     * Report whether this sheet is valid music.
-     *
-     * @return true if valid, false if invalid
-     */
-    public boolean isValid ()
-    {
-        return !invalid;
+        return textFamily;
     }
 
     //------------//
@@ -1064,16 +1127,165 @@ public class SheetStub
     }
 
     //-----------------//
-    // setVersionValue //
+    // grabBinaryTable //
     //-----------------//
-    /**
-     * Set a specific software version for this sheet.
-     *
-     * @param value the version value to set
-     */
-    public void setVersionValue (String value)
+    private RunTable grabBinaryTable ()
     {
-        this.versionValue = value;
+        // Avoid loading sheet just to reset to binary:
+        // If sheet is available, use its picture.getTable()
+        // Otherwise, load binary image from disk and convert to RunTable
+        RunTable binaryTable = null;
+
+        if (hasSheet()) {
+            logger.debug("Sheet#{} getting BINARY from sheet", number);
+            binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
+        }
+
+        if (binaryTable == null) {
+            logger.debug("Sheet#{} loading BINARY image from disk", number);
+            final BufferedImage binaryImg = new ImageHolder(ImageKey.BINARY).getData(this);
+
+            if (binaryImg != null) {
+                logger.debug("Sheet#{} getting BINARY table from image", number);
+                binaryTable = Picture.tableOf(binaryImg);
+            }
+        }
+
+        return binaryTable;
+    }
+
+    /**
+     * Report whether the stub has a sheet in memory
+     *
+     * @return true if sheet is present in memory
+     */
+    public boolean hasSheet ()
+    {
+        return sheet != null;
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param book the containing book
+     */
+    private void initTransients (Book book)
+    {
+        try {
+            LogUtil.start(book);
+
+            logger.trace("{} initTransients", this);
+            this.book = book;
+
+            if (binarizationFilter != null) {
+                binarizationFilter.setParent(book.getBinarizationFilter());
+            }
+
+            if (musicFamily != null) {
+                musicFamily.setParent(book.getMusicFamily());
+            }
+
+            if (textFamily != null) {
+                textFamily.setParent(book.getTextFamily());
+            }
+
+            if (inputQuality != null) {
+                inputQuality.setParent(book.getInputQuality());
+            }
+
+            if (ocrLanguages != null) {
+                ocrLanguages.setParent(book.getOcrLanguages());
+                ocrLanguages.setScope(this);
+            }
+
+            if (switches != null) {
+                switches.setParent(book.getProcessingSwitches(), this);
+            }
+
+            if (OMR.gui != null) {
+                assembly = new SheetAssembly(this);
+            }
+        } finally {
+            LogUtil.stopBook();
+        }
+    }
+
+    //------------//
+    // invalidate //
+    //------------//
+    /**
+     * Flag a stub as invalid (containing no music).
+     */
+    public void invalidate ()
+    {
+        invalid = true;
+
+        pageRefs.clear();
+        book.updateScores(this);
+        setModified(true);
+
+        if (OMR.gui != null) {
+            StubsController.getInstance().markTab(this, Colors.SHEET_INVALID);
+        }
+
+        logger.info("Sheet {} flagged as invalid.", getId());
+    }
+
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Report whether the specified step has been performed on this sheet
+     *
+     * @param step the step to check
+     * @return true if already performed
+     */
+    public boolean isDone (OmrStep step)
+    {
+        return doneSteps.contains(step);
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Has the sheet been modified with respect to its persisted data?.
+     *
+     * @return true if modified
+     */
+    public boolean isModified ()
+    {
+        return modified;
+    }
+
+    //------------//
+    // isUpgraded //
+    //------------//
+    /**
+     * Has the sheet been upgraded with respect to its persisted data?.
+     *
+     * @return true if upgraded
+     */
+    public boolean isUpgraded ()
+    {
+        return upgraded;
+    }
+
+    //---------//
+    // isValid //
+    //---------//
+    /**
+     * Report whether this sheet is valid music.
+     *
+     * @return true if valid, false if invalid
+     */
+    public boolean isValid ()
+    {
+        return !invalid;
     }
 
     //-----------//
@@ -1245,6 +1457,88 @@ public class SheetStub
         }
     }
 
+    //----------------//
+    // setCurrentStep //
+    //----------------//
+    /**
+     * Assign the step being performed.
+     *
+     * @param step the current step
+     */
+    public void setCurrentStep (OmrStep step)
+    {
+        currentStep = step;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Set the modified flag.
+     *
+     * @param modified the new flag value
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+
+        if (modified) {
+            book.setModified(true);
+            book.setDirty(true);
+        }
+    }
+
+    //---------------//
+    // setSheetInput //
+    //---------------//
+    /**
+     * Assigns the precise image input for this sheet.
+     *
+     * @param sheetInput the sheetInput to set
+     */
+    public void setSheetInput (SheetInput sheetInput)
+    {
+        this.sheetInput = new SheetInput(sheetInput);
+    }
+
+    //-------------//
+    // setUpgraded //
+    //-------------//
+    /**
+     * Set the upgraded flag.
+     *
+     * @param upgraded the new flag value
+     */
+    public void setUpgraded (boolean upgraded)
+    {
+        this.upgraded = upgraded;
+
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater( () ->
+            {
+                final StubsController controller = StubsController.getInstance();
+                final SheetStub stub = controller.getSelectedStub();
+
+                if ((stub == SheetStub.this)) {
+                    controller.refresh();
+                }
+            });
+        }
+    }
+
+    //-----------------//
+    // setVersionValue //
+    //-----------------//
+    /**
+     * Set a specific software version for this sheet.
+     *
+     * @param value the version value to set
+     */
+    public void setVersionValue (String value)
+    {
+        this.versionValue = value;
+    }
+
     //------------//
     // storeSheet //
     //------------//
@@ -1254,7 +1548,7 @@ public class SheetStub
      * @throws Exception if storing fails
      */
     public void storeSheet ()
-            throws Exception
+        throws Exception
     {
         if (isModified() || isUpgraded()) {
             final Lock bookLock = book.getLock();
@@ -1297,7 +1591,8 @@ public class SheetStub
             }
 
             if (OMR.gui != null) {
-                SwingUtilities.invokeLater(() -> {
+                SwingUtilities.invokeLater( () ->
+                {
                     // Gray out the related tab
                     StubsController ctrl = StubsController.getInstance();
                     ctrl.markTab(SheetStub.this, Colors.SHEET_NOT_LOADED);
@@ -1336,245 +1631,28 @@ public class SheetStub
         return reachStep(OmrStep.last(), false);
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
+    //----------//
+    // validate //
+    //----------//
     /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent object.
-     * All non-persistent members are null.
+     * Flag a stub as valid (containing music).
      */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
+    public void validate ()
     {
-        initTransients((Book) parent);
-    }
+        resetToBinary();
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
-            binarizationFilter = null;
-        }
-
-        if ((musicFontFamily != null) && !musicFontFamily.isSpecific()) {
-            musicFontFamily = null;
-        }
-
-        if ((inputQuality != null) && !inputQuality.isSpecific()) {
-            inputQuality = null;
-        }
-
-        if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
-            ocrLanguages = null;
-        }
-
-        if ((switches != null) && switches.isEmpty()) {
-            switches = null;
-        }
-    }
-
-    //---------//
-    // display //
-    //---------//
-    private void display ()
-    {
-        if (OMR.gui != null) {
-            try {
-                Runnable runnable = () -> StubsController.getInstance().display(
-                        SheetStub.this, false);
-
-                if (SwingUtilities.isEventDispatchThread()) {
-                    runnable.run();
-                } else {
-                    SwingUtilities.invokeAndWait(runnable);
-                }
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
-                logger.warn("Could not reset {}", ex.toString(), ex);
-            }
-        }
-    }
-
-    //-----------//
-    // doOneStep //
-    //-----------//
-    /**
-     * Do just one specified step, synchronously, with display of related UI if any.
-     * <p>
-     * OmrStep duration is guarded by a timeout, so that processing cannot get blocked infinitely.
-     *
-     * @param step the step to perform
-     * @throws Exception
-     */
-    private void doOneStep (final OmrStep step)
-            throws Exception
-    {
-        final int timeout = Main.getSheetStepTimeOut();
-        Future<Void> future = null;
-
-        try {
-            // Make sure sheet is available
-            if (!hasSheet()) {
-                getSheet();
-            }
-
-            // Implement a timeout for this step on the stub
-            future = OmrExecutors.getCachedLowExecutor().submit(() -> {
-                LogUtil.start(SheetStub.this);
-
-                try {
-                    setCurrentStep(step);
-                    setModified(true); // At beginning of processing
-                    sheet.reset(step); // Reset sheet relevant data
-
-                    try {
-                        step.doit(sheet); // Standard processing on an existing sheet
-                        done(step); // Full completion
-                        StepMonitoring.notifyStep(SheetStub.this, step);
-                    } catch (StepPause sp) {
-                        done(step);
-                        StepMonitoring.notifyStep(SheetStub.this, step);
-                        throw sp;
-                    }
-                } finally {
-                    LogUtil.stopStub();
-                }
-
-                return null;
-            });
-
-            future.get(timeout, TimeUnit.SECONDS);
-
-            // At end of each step, save sheet to disk?
-            if ((OMR.gui == null) && Main.getCli().isSave()) {
-                logger.debug("calling storeSheet");
-                storeSheet();
-            }
-        } catch (TimeoutException tex) {
-            logger.warn("Timeout {} seconds for step {}", timeout, step, tex);
-
-            // Signal the on-going step processing to stop (if possible)
-            if (future != null) {
-                future.cancel(true);
-            }
-
-            throw new ProcessingCancellationException(tex);
-        } finally {
-            setCurrentStep(null);
-            StepMonitoring.notifyStep(this, step); // Stop monitoring
-        }
-    }
-
-    //---------//
-    // doReset //
-    //---------//
-    private void doReset ()
-    {
-        doneSteps.clear();
-        pageRefs.clear();
-        invalid = false;
-        sheet = null;
-
-        if (assembly != null) {
-            assembly.reset();
-        }
-
+        book.updateScores(this);
         setModified(true);
-    }
 
-    //----------------//
-    // getNeededSteps //
-    //----------------//
-    private EnumSet<OmrStep> getNeededSteps (OmrStep target)
-    {
-        EnumSet<OmrStep> neededSteps = EnumSet.noneOf(OmrStep.class);
-
-        // Add all needed steps
-        for (OmrStep step : EnumSet.range(OmrStep.first(), target)) {
-            if (!isDone(step)) {
-                neededSteps.add(step);
-            }
+        if (OMR.gui != null) {
+            StubsController.getInstance().markTab(this, Colors.SHEET_OK);
         }
 
-        return neededSteps;
-    }
-
-    //-----------------//
-    // grabBinaryTable //
-    //-----------------//
-    private RunTable grabBinaryTable ()
-    {
-        // Avoid loading sheet just to reset to binary:
-        // If sheet is available, use its picture.getTable()
-        // Otherwise, load binary image from disk and convert to RunTable
-        RunTable binaryTable = null;
-
-        if (hasSheet()) {
-            logger.debug("Sheet#{} getting BINARY from sheet", number);
-            binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
-        }
-
-        if (binaryTable == null) {
-            logger.debug("Sheet#{} loading BINARY image from disk", number);
-            final BufferedImage binaryImg = new ImageHolder(ImageKey.BINARY).getData(this);
-
-            if (binaryImg != null) {
-                logger.debug("Sheet#{} getting BINARY table from image", number);
-                binaryTable = Picture.tableOf(binaryImg);
-            }
-        }
-
-        return binaryTable;
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * Initialize needed transient members.
-     * (which by definition have not been set by the unmarshalling).
-     *
-     * @param book the containing book
-     */
-    private void initTransients (Book book)
-    {
-        try {
-            LogUtil.start(book);
-
-            logger.trace("{} initTransients", this);
-            this.book = book;
-
-            if (binarizationFilter != null) {
-                binarizationFilter.setParent(book.getBinarizationFilter());
-            }
-
-            if (musicFontFamily != null) {
-                musicFontFamily.setParent(book.getMusicFontFamily());
-            }
-
-            if (ocrLanguages != null) {
-                ocrLanguages.setParent(book.getOcrLanguages());
-                ocrLanguages.setScope(this);
-            }
-
-            if (switches != null) {
-                switches.setParent(book.getProcessingSwitches(), this);
-            }
-
-            if (OMR.gui != null) {
-                assembly = new SheetAssembly(this);
-            }
-        } finally {
-            LogUtil.stopBook();
-        }
+        logger.info("Sheet {} flagged as valid.", getId());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1610,6 +1688,13 @@ public class SheetStub
         @XmlElement(name = "number")
         public final int number;
 
+        /** No-arg constructor needed for JAXB. */
+        private SheetInput ()
+        {
+            path = null;
+            number = 0;
+        }
+
         public SheetInput (Path path,
                            int number)
         {
@@ -1620,13 +1705,6 @@ public class SheetStub
         public SheetInput (SheetInput input)
         {
             this(input.path, input.number);
-        }
-
-        /** No-arg constructor needed for JAXB. */
-        private SheetInput ()
-        {
-            path = null;
-            number = 0;
         }
 
         @Override

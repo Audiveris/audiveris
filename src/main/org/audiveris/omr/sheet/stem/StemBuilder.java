@@ -53,7 +53,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.util.UIUtil;
 
@@ -1184,7 +1184,7 @@ public class StemBuilder
         // Head symbol
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
         final Shape shape = inter.getShape();
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
         fs.symbol.paintSymbol(g, fs.font, bounds.getLocation(), TOP_LEFT);
 

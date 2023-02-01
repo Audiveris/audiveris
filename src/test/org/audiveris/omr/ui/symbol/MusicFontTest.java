@@ -74,7 +74,7 @@ public class MusicFontTest
         File dir = new File("data/temp");
         dir.mkdirs();
 
-        for (Family family : Family.values()) {
+        for (MusicFamily family : MusicFamily.values()) {
             File file = new File(dir, family + ".pdf");
 
             try (FileOutputStream fos = new FileOutputStream(file)) {

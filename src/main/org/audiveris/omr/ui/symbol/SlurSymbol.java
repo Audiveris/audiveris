@@ -51,7 +51,7 @@ public class SlurSymbol
      * @param family the musicFont family
      */
     public SlurSymbol (boolean above,
-                       Family family)
+                       MusicFamily family)
     {
         super(above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, family);
         this.above = above;

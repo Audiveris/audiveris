@@ -52,7 +52,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -459,7 +459,7 @@ public class ClefBuilder
             if (inter.getGlyph() != null) {
                 final Shape shape = inter.getShape();
                 final int size = MusicFont.getPointSize(sheet.getInterline());
-                final Family family = sheet.getStub().getMusicFontFamily();
+                final MusicFamily family = sheet.getStub().getMusicFamily();
                 final FontSymbol fs = shape.getFontSymbolByInterline(family, size);
 
                 Point symbolCentroid = fs.symbol.getCentroid(clefBox);

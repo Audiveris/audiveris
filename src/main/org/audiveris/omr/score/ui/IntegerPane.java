@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.util.param.Param;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * A data pane with just one integer.
@@ -64,11 +64,12 @@ public class IntegerPane
     @Override
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,
+                             int titleWidth,
                              int r)
     {
-        r = super.defineLayout(builder, cst, r);
+        super.defineLayout(builder, cst, titleWidth, r);
         builder.add(data.getLabel(), cst.xyw(3, r, 1));
-        builder.add(data.getField(), cst.xyw(7, r, 1));
+        builder.add(data.getField(), cst.xyw(titleWidth + 4, r, 1));
 
         return r + 2;
     }

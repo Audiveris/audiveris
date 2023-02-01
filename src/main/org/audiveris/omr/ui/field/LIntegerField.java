@@ -33,15 +33,19 @@ public class LIntegerField
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a (constant) integer labeled field
+     * Create an integer labeled field
      *
-     * @param label string to be used as label text
-     * @param tip   related tool tip text
+     * @param editable tells whether the field is editable
+     * @param label    string to be used as label text
+     * @param tip      related tool tip text
+     * @param width    field width in characters
      */
-    public LIntegerField (String label,
-                          String tip)
+    public LIntegerField (boolean editable,
+                          String label,
+                          String tip,
+                          int width)
     {
-        super(true, label, tip);
+        super(editable, label, tip, width);
     }
 
     /**
@@ -56,6 +60,18 @@ public class LIntegerField
                           String tip)
     {
         super(editable, label, tip);
+    }
+
+    /**
+     * Create a (constant) integer labeled field
+     *
+     * @param label string to be used as label text
+     * @param tip   related tool tip text
+     */
+    public LIntegerField (String label,
+                          String tip)
+    {
+        super(true, label, tip);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

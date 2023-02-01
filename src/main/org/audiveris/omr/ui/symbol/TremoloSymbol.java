@@ -50,7 +50,7 @@ public class TremoloSymbol
      * @param family the musicFont family
      */
     public TremoloSymbol (Shape shape,
-                          Family family)
+                          MusicFamily family)
     {
         super(shape, family);
     }

@@ -1711,6 +1711,20 @@ public class Measure
     }
 
     //-------------//
+    // purgeVoices //
+    //-------------//
+    /**
+     * Purge measure voices.
+     */
+    public void purgeVoices ()
+    {
+        for (Iterator<Voice> it = voices.iterator(); it.hasNext();) {
+            if (it.next().getFirstChord() == null)
+                it.remove();
+        }
+    }
+
+    //-------------//
     // removeInter //
     //-------------//
     /**

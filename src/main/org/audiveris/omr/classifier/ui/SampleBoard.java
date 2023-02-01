@@ -32,7 +32,7 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ApplicationAction;
@@ -167,7 +167,7 @@ public class SampleBoard
 
         if (shape != null) {
             shapeField.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol(Family.Bravura));
+            shapeIcon.setIcon(shape.getDecoratedSymbol(MusicFamily.Bravura));
         } else {
             shapeField.setText("");
             shapeIcon.setIcon(null);

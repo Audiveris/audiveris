@@ -37,7 +37,7 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.OmrGui;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.FileUtil;
@@ -1482,7 +1482,7 @@ public class SampleRepository
      * @param shape  the symbol shape
      * @return the sample built, or null if failed
      */
-    private Sample buildSymbolSample (Family family,
+    private Sample buildSymbolSample (MusicFamily family,
                                       Shape shape)
     {
         Sample sample = null;
@@ -1510,7 +1510,7 @@ public class SampleRepository
     private void buildSymbols ()
     {
 
-        for (Family family : Family.values()) {
+        for (MusicFamily family : MusicFamily.values()) {
             final String sheetName = SYMBOLS_PREFIX + family;
             Descriptor desc = sheetContainer.getDescriptor(sheetName);
 

@@ -30,7 +30,7 @@ import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
@@ -86,7 +86,7 @@ public class Template
     private final Shape shape;
 
     /** Font family. */
-    private final Family family;
+    private final MusicFamily family;
 
     /** Scaling factor. */
     private final int pointSize;
@@ -123,7 +123,7 @@ public class Template
      * @param slimBounds symbol slim bounds WRT template bounds
      */
     public Template (Shape shape,
-                     Family family,
+                     MusicFamily family,
                      int pointSize,
                      int width,
                      int height,
@@ -342,7 +342,7 @@ public class Template
     //-----------//
     // getFamily //
     //-----------//
-    public Family getFamily ()
+    public MusicFamily getFamily ()
     {
         return family;
     }

@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -76,8 +76,8 @@ public class InterAction
 
         putValue(NAME, (text != null) ? text : inter.toString());
 
-        final Family family = (inter.getSig() != null) ? inter.getSig().getSystem().getSheet()
-                .getStub().getMusicFontFamily() : MusicFont.getDefaultMusicFamily();
+        final MusicFamily family = (inter.getSig() != null) ? inter.getSig().getSystem().getSheet()
+                .getStub().getMusicFamily() : MusicFont.getDefaultMusicFamily();
         final ShapeSymbol shapeSymbol = inter.getShapeSymbol(family);
         if (shapeSymbol != null) {
             putValue(SMALL_ICON, shapeSymbol);

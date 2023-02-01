@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.relation.Containment;
@@ -77,10 +78,10 @@ public class WordInter
     private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Word text content. */
     @XmlAttribute
     protected String value;
@@ -96,6 +97,7 @@ public class WordInter
     protected Point2D location;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>WordInter</code> object, with TEXT shape.
      *
@@ -196,6 +198,7 @@ public class WordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -311,6 +314,15 @@ public class WordInter
         return location;
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "WORD";
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -322,40 +334,17 @@ public class WordInter
         return value;
     }
 
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Assign a new text value.
-     *
-     * @param value the new value
-     */
-    public void setValue (String value)
-    {
-        this.value = value;
-
-        setBounds(null);
-
-        if (sig != null) {
-            // Update containing sentence
-            Inter sentence = getEnsemble();
-
-            if (sentence != null) {
-                sentence.invalidateCache();
-            }
-        }
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    public void setGlyph (Glyph glyph)
+    protected String internals ()
     {
-        super.setGlyph(glyph);
+        StringBuilder sb = new StringBuilder(super.internals());
 
-        // Location?
-        // FontInfo?
+        sb.append(" \"").append(value).append("\"");
+
+        return sb.toString();
     }
 
     //--------//
@@ -383,58 +372,57 @@ public class WordInter
         return tasks;
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    public void setFontInfo (FontInfo fontInfo)
     {
-        return "WORD";
+        this.fontInfo = fontInfo;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
+    //----------//
+    // setGlyph //
+    //----------//
     @Override
-    protected String internals ()
+    public void setGlyph (Glyph glyph)
     {
-        StringBuilder sb = new StringBuilder(super.internals());
+        super.setGlyph(glyph);
 
-        sb.append(" \"").append(value).append("\"");
+        // Location?
+        // FontInfo?
+    }
 
-        return sb.toString();
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new text value.
+     *
+     * @param value the new value
+     */
+    public void setValue (String value)
+    {
+        this.value = value;
+
+        setBounds(null);
+
+        if (sig != null) {
+            // Update containing sentence
+            final SentenceInter sentence = (SentenceInter) getEnsemble();
+
+            if (sentence != null) {
+                sentence.invalidateCache();
+
+                if (sentence.getRole() == TextRole.PartName) {
+                    // Update partRef name as well
+                    final Part part = sentence.getStaff().getPart();
+                    part.setName(sentence);
+                }
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        public final String value;
-
-        public final Point2D baseLoc;
-
-        public FontInfo fontInfo;
-
-        public Model (String value,
-                      Point2D baseLoc,
-                      FontInfo fontInfo)
-        {
-            this.value = value;
-            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
-            this.fontInfo = fontInfo;
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(baseLoc, dx, dy);
-        }
-    }
 
     //--------//
     // Editor //
@@ -547,6 +535,36 @@ public class WordInter
 
             inter.setBounds(null);
             super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public final String value;
+
+        public final Point2D baseLoc;
+
+        public FontInfo fontInfo;
+
+        public Model (String value,
+                      Point2D baseLoc,
+                      FontInfo fontInfo)
+        {
+            this.value = value;
+            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
+            this.fontInfo = fontInfo;
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(baseLoc, dx, dy);
         }
     }
 }

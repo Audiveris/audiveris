@@ -59,7 +59,7 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
@@ -1941,7 +1941,7 @@ public class HeadLinker
                 // Head symbol
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
                 final Shape shape = head.getShape();
-                final Family family = system.getSheet().getStub().getMusicFontFamily();
+                final MusicFamily family = system.getSheet().getStub().getMusicFamily();
                 final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
                 fs.symbol.paintSymbol(g, fs.font, bounds.getLocation(), TOP_LEFT);
 

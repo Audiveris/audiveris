@@ -129,9 +129,8 @@ public abstract class AbstractEntity
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(getClass().getSimpleName()).append("{").append("#").append(id);
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('#').append(id).append('{');
 
         try {
             sb.append(internals());
@@ -141,7 +140,7 @@ public abstract class AbstractEntity
             sb.append("<invalid-internals>");
         }
 
-        sb.append("}");
+        sb.append('}');
 
         return sb.toString();
     }

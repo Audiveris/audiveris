@@ -26,11 +26,15 @@ import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.TribesMenu;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
@@ -41,33 +45,44 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.ExtractionMenu;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.ChordListMenu;
 import org.audiveris.omr.sig.ui.GlyphListMenu;
 import org.audiveris.omr.sig.ui.InterListMenu;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import static javax.swing.Action.NAME;
+import static javax.swing.Action.SHORT_DESCRIPTION;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 
 /**
  * Class <code>EditorMenu</code> defines the pop-up menu which is linked to the current
  * selection in page editor view.
  * <p>
- * It points to several sub-menus: chords, inters, glyphs, slot, measure, staff, page, extraction
+ * It points to several sub-menus:
+ * chords, inters, glyphs, slot, measure, staff, part, system, page, score, extraction
  *
  * @author Hervé Bitteur
  */
@@ -81,6 +96,7 @@ public class EditorMenu
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the editor page menu.
      *
@@ -94,6 +110,7 @@ public class EditorMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // defineLayout //
     //--------------//
@@ -110,8 +127,10 @@ public class EditorMenu
         addMenu(new SlotMenu());
         addMenu(new MeasureMenu());
         addMenu(new StaffMenu());
-        addMenu(new PageMenu());
+        addMenu(new PartMenu());
         addMenu(new SystemMenu());
+        addMenu(new PageMenu());
+        addMenu(new ScoreMenu());
         addMenu(new ExtractionMenu(sheet));
     }
 
@@ -187,6 +206,7 @@ public class EditorMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -326,8 +346,9 @@ public class EditorMenu
 
             private void update ()
             {
-                setEnabled((stack != null) && (stack != stack.getSystem().getLastStack()) && (sheet
-                        .getStub().getLatestStep().compareTo(OmrStep.MEASURES) >= 0));
+                setEnabled(
+                        (stack != null) && (stack != stack.getSystem().getLastStack()) && (sheet
+                                .getStub().getLatestStep().compareTo(OmrStep.MEASURES) >= 0));
             }
         }
 
@@ -432,6 +453,226 @@ public class EditorMenu
     }
 
     //----------//
+    // PartMenu //
+    //----------//
+    private class PartMenu
+            extends LocationDependentMenu
+    {
+        /** Selected part. */
+        private Part part;
+
+        PartMenu ()
+        {
+            super("Part");
+        }
+
+        @Override
+        public void updateUserLocation (Rectangle rect)
+        {
+            setVisible(false);
+
+            // Make sure we point to a precise part
+            final Point center = GeoUtil.center(rect);
+            final SystemInfo system = getCurrentSystem(center);
+
+            if (system == null)
+                return;
+
+            final List<Staff> staves = system.getStavesAround(center); // 1 or 2 staves
+            part = staves.get(0).getPart();
+
+            if ((staves.size() > 1) && (staves.get(1).getPart() != part))
+                return;
+
+            if (system.getPage().getScore().getLogicalParts() == null) {
+                return;
+            }
+
+            setText("Part #" + (1 + system.getParts().indexOf(part)));
+            removeAll();
+            add(new LogicalMenu(part));
+            setVisible(true);
+        }
+
+        /**
+         * Allows to manually set the logical part that relates to this (physical) part.
+         */
+        private class LogicalMenu
+                extends JMenu
+                implements ActionListener
+        {
+            private final Part part; // Part involved
+
+            private final LogicalPart currentLogical; // Part related logical, if any
+
+            public LogicalMenu (Part part)
+            {
+                this.part = part;
+                currentLogical = part.getLogicalPart();
+
+                setText("Assign logical");
+                setToolTipText("Assign the related logical part");
+
+                final List<LogicalPart> logicals = part.getSystem().getPage().getScore()
+                        .getLogicalParts();
+                for (LogicalPart logical : logicals) {
+                    final JMenuItem item = new JRadioButtonMenuItem(logical.getFullName());
+                    item.setSelected(logical == currentLogical);
+                    item.addActionListener(this);
+                    add(item);
+                }
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                final String prefName = e.getActionCommand();
+                final LogicalPart prefLogical = LogicalPart.valueOf(
+                        prefName,
+                        part.getSystem().getPage().getScore().getLogicalParts());
+
+                if (prefLogical != null) {
+                    logger.info("Mapped {} to {}", part, prefLogical);
+                    part.setLogicalPart(prefLogical, true);
+
+                    sheet.getSheetEditor().refresh();
+                    sheet.getStub().setModified(true);
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // ScoreMenu //
+    //-----------//
+    private class ScoreMenu
+            extends LocationDependentMenu
+    {
+        /** Selected score. */
+        private Score score;
+
+        private final PartsCollation partsCollation = new PartsCollation();
+
+        private final LogicalsEdition logicalsEdition = new LogicalsEdition();
+
+        ScoreMenu ()
+        {
+            super("Score");
+        }
+
+        @Override
+        public void updateUserLocation (Rectangle rect)
+        {
+            final Page page = getCurrentPage(GeoUtil.center2D(rect));
+            score = page.getScore();
+
+            setVisible(score != null);
+
+            if (score == null) {
+                return;
+            }
+
+            setText("Score #" + score.getId());
+
+            removeAll();
+
+            if (score.isLogicalsLocked()) {
+                // Use a banner to signal that logicals are locked
+                final JMenuItem item = new JMenuItem("Logicals are locked");
+                item.setBackground(new Color(200, 255, 0));
+                item.setEnabled(false);
+                add(item);
+                addSeparator();
+            }
+
+            add(new JMenuItem(partsCollation));
+            add(new JMenuItem(logicalsEdition));
+
+            logicalsEdition.update();
+            partsCollation.update();
+        }
+
+        /**
+         * Edits and locks/unlocks the list of logical parts defined in score.
+         */
+        private class LogicalsEdition
+                extends AbstractAction
+        {
+            LogicalsEdition ()
+            {
+                putValue(NAME, "Edit logical parts");
+                putValue(SHORT_DESCRIPTION, "Review the definition of all logical parts in score");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                LogicalPartsEditor editor = score.getLogicalsEditor();
+                if (editor == null) {
+                    score.setLogicalsEditor(editor = new LogicalPartsEditor(score));
+                }
+
+                OmrGui.getApplication().show(editor.getComponent());
+            }
+
+            private void update ()
+            {
+                setEnabled(false);
+
+                // Action enabled only if score exists with logical parts
+                if (score != null) {
+                    final List<LogicalPart> logicals = score.getLogicalParts();
+                    setEnabled(logicals != null && !logicals.isEmpty());
+                }
+            }
+        }
+
+        /**
+         * Collects and combines all (physical) parts in score into logical parts.
+         */
+        private class PartsCollation
+                extends AbstractAction
+        {
+            PartsCollation ()
+            {
+                putValue(NAME, "Collate parts");
+                putValue(SHORT_DESCRIPTION, "Collate all parts in score into logical parts");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                final List<SheetStub> theStubs = score.getBook().getValidSelectedStubs();
+                // Done asynchronously, since some sheets may need to get loaded
+                new VoidTask()
+                {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        new ScoreReduction(score).reduce(theStubs);
+                        return null;
+                    }
+
+                    @Override
+                    protected void succeeded (Void result)
+                    {
+                        final SheetStub currentStub = StubsController.getCurrentStub();
+                        currentStub.getSheet().getSheetEditor().refresh();
+                        currentStub.getBook().setModified(true);
+                    }
+
+                }.execute();
+            }
+
+            private void update ()
+            {
+                setEnabled(score != null);
+            }
+        }
+    }
+
+    //----------//
     // SlotMenu //
     //----------//
     private class SlotMenu
@@ -467,7 +708,7 @@ public class EditorMenu
         }
 
         /**
-         * Dump the chords of the current slot
+         * Dump the chords of the current slot.
          */
         private class DumpSlotChordsAction
                 extends AbstractAction
@@ -487,7 +728,7 @@ public class EditorMenu
         }
 
         /**
-         * Dump the voices of the current slot
+         * Dump the voices of the current slot.
          */
         private class DumpVoicesAction
                 extends AbstractAction
@@ -723,8 +964,10 @@ public class EditorMenu
 
                 if (stacks.size() != stacks2.size()) {
                     OMR.gui.displayWarning(
-                            String.format("Different measure counts %d vs %d",
-                                          stacks.size(), stacks2.size()),
+                            String.format(
+                                    "Different measure counts %d vs %d",
+                                    stacks.size(),
+                                    stacks2.size()),
                             "Incompatible " + system + " & " + system2);
 
                     return;
@@ -758,7 +1001,8 @@ public class EditorMenu
                 }
 
                 if (OMR.gui.displayConfirmation(
-                        "Merge " + system.toLongString() + " with " + system2.toLongString() + "?")) {
+                        "Merge " + system.toLongString() + " with " + system2.toLongString()
+                                + "?")) {
                     sheet.getInterController().mergeSystem(system);
                 }
             }

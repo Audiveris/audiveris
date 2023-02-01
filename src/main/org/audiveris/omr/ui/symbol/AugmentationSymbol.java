@@ -50,7 +50,7 @@ public class AugmentationSymbol
     /**
      * Create a <code>AugmentationSymbol</code> (with decoration?) standard size.
      */
-    public AugmentationSymbol (Family family)
+    public AugmentationSymbol (MusicFamily family)
     {
         super(Shape.AUGMENTATION_DOT, family);
     }

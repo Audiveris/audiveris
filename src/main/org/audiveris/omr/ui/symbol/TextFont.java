@@ -24,6 +24,8 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.text.FontInfo;
+import org.audiveris.omr.util.param.ConstantBasedParam;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +60,11 @@ public class TextFont
     public static final TextFont TEXT_FONT_BASE = new TextFont(
             constants.defaultTextFontSize.getValue());
 
+    /** Default text font family. */
+    public static final Param<TextFamily> defaultTextParam = new ConstantBasedParam<>(
+            constants.defaultTextFamily,
+            Param.GLOBAL_SCOPE);
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextFont object.
@@ -65,14 +72,16 @@ public class TextFont
      * @param fontName the font name. This can be a font face name or a font
      *                 family name, and may represent either a logical font or
      *                 a physical font found in this <code>GraphicsEnvironment</code>.
+     * @param fileName the file name if any
      * @param style    bit-mask style constant for the <code>Font</code>
      * @param size     the point size of the <code>Font</code>
      */
     public TextFont (String fontName,
+                     String fileName,
                      int style,
                      int size)
     {
-        super(fontName, null, style, size);
+        super(fontName, fileName, style, size);
     }
 
     /**
@@ -82,9 +91,11 @@ public class TextFont
      */
     public TextFont (FontInfo info)
     {
-        this(info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
-             (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
-             info.pointsize);
+        this(
+                info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+                null,
+                (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
+                info.pointsize);
     }
 
     /**
@@ -95,10 +106,35 @@ public class TextFont
      */
     public TextFont (int size)
     {
-        super(TEXT_FONT_NAME, null, Font.PLAIN, size);
+        this(TEXT_FONT_NAME, null, Font.PLAIN, size);
+    }
+
+    public TextFont (Font font)
+    {
+        super(font);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Creates a TextFont based on OCR font information.
+     *
+     * @param baseFont base text font
+     * @param info     OCR-based font information
+     * @return the derived TextFont
+     */
+    public static TextFont create (TextFont baseFont,
+                                   FontInfo info)
+    {
+        final int style = (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0);
+        final float size = info.pointsize;
+        final Font font = baseFont.deriveFont(style, size);
+        return new TextFont(font);
+    }
+
     //-----------------//
     // computeFontSize //
     //-----------------//
@@ -157,7 +193,34 @@ public class TextFont
         return fontSize * (width / (float) basicRect.getWidth());
     }
 
+    //------------//
+    // deriveFont //
+    //------------//
+    @Override
+    public TextFont deriveFont (float pointSize)
+    {
+        final Font font = super.deriveFont(pointSize);
+        return new TextFont(font);
+    }
+
+    //-------------//
+    // getTextFont //
+    //-------------//
+    public static TextFont getTextFont (TextFamily family,
+                                        int size)
+    {
+        Font font = getFont(family.getFontName(), family.getFileName(), Font.PLAIN, size);
+
+        if (!(font instanceof TextFont)) {
+            font = new TextFont(font);
+            cacheFont(font);
+        }
+
+        return (TextFont) font;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -165,8 +228,13 @@ public class TextFont
             extends ConstantSet
     {
 
+        private final Constant.Enum<TextFamily> defaultTextFamily = new Constant.Enum<>(
+                TextFamily.class,
+                TextFamily.SansSerif,
+                "Default font family for text");
+
         private final Constant.String defaultTextFontName = new Constant.String(
-                "Serif",
+                "Sans Serif",
                 "Default font name for texts");
 
         private final Constant.Integer defaultTextFontSize = new Constant.Integer(

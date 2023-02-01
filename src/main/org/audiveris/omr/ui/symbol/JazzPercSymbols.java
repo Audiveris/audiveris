@@ -38,9 +38,9 @@ public class JazzPercSymbols
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    protected Family family ()
+    protected MusicFamily family ()
     {
-        return Family.JazzPerc;
+        return MusicFamily.JazzPerc;
     }
 
     @Override

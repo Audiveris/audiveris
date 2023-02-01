@@ -77,7 +77,7 @@ public class RunTablatureCheck
         final Path outDir = book.getInputPath().getParent().resolveSibling("tablatures");
 
         try {
-            for (SheetStub stub : book.getValidStubs()) {
+            for (SheetStub stub : book.getValidSelectedStubs()) {
                 if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
                     if (stub.isDone(OmrStep.GRID)) {
                         final List<Rectangle> areas = new ArrayList<>();
@@ -85,8 +85,10 @@ public class RunTablatureCheck
 
                         for (Staff staff : sheet.getStaffManager().getStaves()) {
                             if (staff.isTablature()) {
-                                logger.info("{} tablature at staff#{}",
-                                            sheet.getId(), staff.getId());
+                                logger.info(
+                                        "{} tablature at staff#{}",
+                                        sheet.getId(),
+                                        staff.getId());
 
                                 Area area = StaffManager.getCoreArea(staff, 0, 0);
                                 Rectangle rect = area.getBounds();
@@ -106,8 +108,7 @@ public class RunTablatureCheck
                     }
                 }
             }
-        } catch (IOException |
-                 JAXBException ex) {
+        } catch (IOException | JAXBException ex) {
             logger.warn("Error exporting tablature areas {}", ex.toString(), ex);
         }
     }

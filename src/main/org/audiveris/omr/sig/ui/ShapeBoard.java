@@ -44,7 +44,7 @@ import org.audiveris.omr.ui.dnd.GhostGlassPane;
 import org.audiveris.omr.ui.dnd.GhostMotionAdapter;
 import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
 import static org.audiveris.omr.ui.symbol.MusicFont.getPointSize;
@@ -235,7 +235,7 @@ public class ShapeBoard
     private List<Shape> cachedHeads;
 
     /** Cached font family, if any. To trigger board symbols update only when needed. */
-    private Family cachedFamily;
+    private MusicFamily cachedFamily;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -571,7 +571,7 @@ public class ShapeBoard
 
         panel.addKeyListener(keyListener);
 
-        cachedFamily = sheet.getStub().getMusicFontFamily();
+        cachedFamily = sheet.getStub().getMusicFamily();
 
         return panel;
     }
@@ -720,7 +720,7 @@ public class ShapeBoard
     private BufferedImage getNonDraggableImage (Zoom zoom)
     {
         final Shape shape = Shape.NON_DRAGGABLE;
-        final Family fontFamily = sheet.getStub().getMusicFontFamily();
+        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
         final int interline = sheet.getScale().getInterline();
         final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
         final FontSymbol fs = shape.getFontSymbolByInterline(fontFamily, getPointSize(zoomedInterline));
@@ -812,7 +812,7 @@ public class ShapeBoard
      */
     private ShapeSymbol getDecoratedSymbol (Shape shape)
     {
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final FontSymbol fs = shape.getFontSymbol(family);
 
         if (fs.symbol == null) {
@@ -915,7 +915,7 @@ public class ShapeBoard
     @Override
     public void update ()
     {
-        final Family fontFamily = sheet.getStub().getMusicFontFamily();
+        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
 
         if (fontFamily != cachedFamily) {
             // We can update each shape button icon in situ.
@@ -1245,7 +1245,7 @@ public class ShapeBoard
             }
 
             // Set image
-            final Family fontFamily = sheet.getStub().getMusicFontFamily();
+            final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
             final FontSymbol fs = shape.getFontSymbolByInterline(fontFamily, TINY_INTERLINE);
 
             if (fs.symbol != null) {

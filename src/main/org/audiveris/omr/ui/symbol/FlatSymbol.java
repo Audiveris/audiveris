@@ -47,7 +47,7 @@ public class FlatSymbol
      * @param family the musicFont family
      */
     public FlatSymbol (Shape shape,
-                       Family family)
+                       MusicFamily family)
     {
         super(shape, family);
     }

@@ -60,7 +60,7 @@ public class TemplateSymbol
      * @param family the selected MusicFont family
      */
     public TemplateSymbol (Shape shape,
-                           Family family)
+                           MusicFamily family)
     {
         super(shape, family);
         isSmall = shape.isSmallHead();

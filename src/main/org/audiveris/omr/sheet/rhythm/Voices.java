@@ -23,9 +23,11 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageNumber;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
-import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -65,12 +67,14 @@ public abstract class Voices
 
     /** To sort voices by their ID. */
     public static final Comparator<Voice> byId = (Voice v1,
-            Voice v2) -> Integer.compare(
-            v1.getId(),
-            v2.getId());
+                                                  Voice v2) -> Integer.compare(
+                                                          v1.getId(),
+                                                          v2.getId());
 
     /** To sort voices by vertical position within their containing measure or stack. */
-    public static final Comparator<Voice> byOrdinate = (Voice v1, Voice v2) -> {
+    public static final Comparator<Voice> byOrdinate = (Voice v1,
+                                                        Voice v2) ->
+    {
         if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
             throw new IllegalArgumentException("Comparing voices in different stacks");
         }
@@ -93,6 +97,7 @@ public abstract class Voices
 
         AbstractChordInter c1 = v1.getFirstChord();
         AbstractChordInter c2 = v2.getFirstChord();
+
         Slot firstSlot1 = c1.getSlot();
         Slot firstSlot2 = c2.getSlot();
 
@@ -125,31 +130,34 @@ public abstract class Voices
     /** Sequence of colors for voices. */
     private static final int alpha = 200;
 
-    private static final Color[] voiceColors = new Color[]{
-        /** 1 Purple */
-        new Color(128, 64, 255, alpha),
-        /** 2 Green */
-        new Color(0, 255, 0, alpha),
-        /** 3 Brown */
-        new Color(165, 42, 42, alpha),
-        /** 4 Magenta */
-        new Color(255, 0, 255, alpha),
-        /** 5 Cyan */
-        new Color(0, 255, 255, alpha),
-        /** 6 Orange */
-        new Color(255, 200, 0, alpha),
-        /** 7 Pink */
-        new Color(255, 150, 150, alpha),
-        /** 8 BlueGreen */
-        new Color(0, 128, 128, alpha)};
+    private static final Color[] voiceColors = new Color[]
+    {
+            /** 1 Purple */
+            new Color(128, 64, 255, alpha),
+            /** 2 Green */
+            new Color(0, 255, 0, alpha),
+            /** 3 Brown */
+            new Color(165, 42, 42, alpha),
+            /** 4 Magenta */
+            new Color(255, 0, 255, alpha),
+            /** 5 Cyan */
+            new Color(0, 255, 255, alpha),
+            /** 6 Orange */
+            new Color(255, 200, 0, alpha),
+            /** 7 Pink */
+            new Color(255, 150, 150, alpha),
+            /** 8 BlueGreen */
+            new Color(0, 128, 128, alpha) };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     // Not meant to be instantiated.
     private Voices ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //---------//
     // colorOf //
     //---------//
@@ -198,7 +206,7 @@ public abstract class Voices
     // refinePage //
     //------------//
     /**
-     * Connect voices within the same logical part across all systems of a page.
+     * Connect voices within the same logical part across all systems of a page/score?.
      *
      * @param page the page to process
      */
@@ -206,27 +214,34 @@ public abstract class Voices
     {
         logger.debug("PageStep.refinePage");
 
-        final SystemInfo firstSystem = page.getFirstSystem();
-
         // Across systems within a single page, the partnering slur is the left extension
         final SlurAdapter systemSlurAdapter = (SlurInter slur) -> slur.getExtension(LEFT);
 
-        for (LogicalPart logicalPart : page.getLogicalParts()) {
-            for (SystemInfo system : page.getSystems()) {
-                Part part = system.getPartById(logicalPart.getId());
+        final Score score = page.getScore();
+        final PageNumber pageNumber = score.getPageNumber(page);
+        final PageRef pageRef = pageNumber.getPageRef(score.getBook());
+        final SystemRef firstSystemRef = pageRef.getSystems().get(0);
 
-                if (part != null) {
-                    if (system != firstSystem) {
-                        // Check tied voices from previous system
-                        final Measure firstMeasure = part.getFirstMeasure();
+        for (LogicalPart logicalPart : page.getScore().getLogicalParts()) {
+            final int logicalId = logicalPart.getId();
 
-                        // A part may have no measure (case of tablature, which are ignored today)
-                        if (firstMeasure != null) {
-                            for (Voice voice : firstMeasure.getVoices()) {
-                                Integer tiedId = getTiedId(voice, systemSlurAdapter);
+            for (SystemRef systemRef : pageRef.getSystems()) {
+                for (PartRef partRef : systemRef.getParts()) {
+                    if (partRef.getLogicalId() == logicalId) {
+                        final Part part = partRef.getRealPart();
 
-                                if ((tiedId != null) && (voice.getId() != tiedId)) {
-                                    part.swapVoiceId(voice.getId(), tiedId);
+                        if (systemRef != firstSystemRef) {
+                            // Check tied voices from previous system
+                            final Measure firstMeasure = part.getFirstMeasure();
+
+                            // A part may have no measure (case of tablature, ignored today)
+                            if (firstMeasure != null) {
+                                for (Voice voice : firstMeasure.getVoices()) {
+                                    Integer tiedId = getTiedId(voice, systemSlurAdapter);
+
+                                    if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                        part.swapVoiceId(voice.getId(), tiedId);
+                                    }
                                 }
                             }
                         }
@@ -251,31 +266,19 @@ public abstract class Voices
     public static int refineScore (Score score,
                                    List<SheetStub> stubs)
     {
-        final Book book = score.getBook();
         int modifs = 0;
         SystemInfo prevSystem = null; // Last system of preceding page, if any
 
-        for (int pageNumber = 1; pageNumber <= score.getPageCount(); pageNumber++) {
-            // Within valid selected stubs?
-            final PageRef ref = score.getPageRefs().get(pageNumber - 1);
-            final SheetStub stub = book.getStub(ref.getSheetNumber());
-
+        for (Page page : score.getPages()) {
+            final SheetStub stub = page.getSheet().getStub();
             if (!stubs.contains(stub)) {
                 prevSystem = null;
                 continue;
             }
 
-            final Page page = score.getPage(pageNumber);
-
             if (prevSystem != null) {
-                for (LogicalPart scorePart : score.getLogicalParts()) {
+                for (LogicalPart logicalPart : score.getLogicalParts()) {
                     // Check tied voices from same logicalPart in previous page
-                    final LogicalPart logicalPart = page.getLogicalPartById(scorePart.getId());
-
-                    if (logicalPart == null) {
-                        continue; // logical part not found in this page
-                    }
-
                     final Part part = page.getFirstSystem().getPartById(logicalPart.getId());
 
                     if (part == null) {
@@ -378,7 +381,7 @@ public abstract class Voices
             for (MeasureStack stack : system.getStacks()) {
                 final Measure measure = stack.getMeasureAt(part);
 
-                // BINGO (make a refineMeasure???
+                measure.purgeVoices();
                 measure.sortVoices();
                 measure.renameVoices();
                 measure.setCueVoices();
@@ -509,6 +512,7 @@ public abstract class Voices
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //-------------//
     // SlurAdapter //
     //-------------//

@@ -53,7 +53,7 @@ public class TransformedSymbol
     public TransformedSymbol (Shape shape,
                               Shape root,
                               AffineTransform at,
-                              Family family)
+                              MusicFamily family)
     {
 
         super(shape, family);

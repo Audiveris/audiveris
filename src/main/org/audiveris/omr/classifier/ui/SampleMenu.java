@@ -28,7 +28,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
 import org.slf4j.Logger;
@@ -158,7 +158,7 @@ public class SampleMenu
 
         private void populate (Set<Shape> shapes)
         {
-            final Family family = sheet.getStub().getMusicFontFamily();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
 
             for (Shape shape : shapes) {
                 final JMenuItem menuItem = new JMenuItem(
@@ -186,7 +186,7 @@ public class SampleMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(sheet.getStub().getMusicFontFamily(), this, (ActionEvent e) ->
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) ->
             {
                 JMenuItem source = (JMenuItem) e.getSource();
                 Shape shape = Shape.valueOf(source.getText());

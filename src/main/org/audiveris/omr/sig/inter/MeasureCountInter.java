@@ -210,7 +210,8 @@ public class MeasureCountInter
     public List<? extends UITask> preAdd (WrappedBoolean cancel,
                                           Wrapper<Inter> toPublish)
     {
-        // Standard addition task for this measure number
+        // We use standard addition task for this measure number
+        // NOTA: We can't use super (AbstractNumberInter) which has a specific behavior
         final SystemInfo system = staff.getSystem();
         final List<UITask> tasks = new ArrayList<>();
         final Collection<Link> links = searchLinks(system);

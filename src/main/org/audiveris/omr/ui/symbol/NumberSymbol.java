@@ -49,7 +49,7 @@ public class NumberSymbol
      * @param value  the number value
      */
     public NumberSymbol (Shape shape,
-                         Family family,
+                         MusicFamily family,
                          int value)
     {
         super(shape, family);

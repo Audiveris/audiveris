@@ -62,7 +62,7 @@ public class RunSmallStaffCheck
     @Override
     public void process ()
     {
-        for (SheetStub stub : book.getValidStubs()) {
+        for (SheetStub stub : book.getValidSelectedStubs()) {
             if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
                 if (stub.isDone(OmrStep.GRID)) {
                     Sheet sheet = stub.getSheet();

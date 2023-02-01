@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import javax.swing.JCheckBox;
 
@@ -73,9 +73,10 @@ public class BooleanPane
     @Override
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,
+                             int titleWidth,
                              int r)
     {
-        r = super.defineLayout(builder, cst, r);
+        super.defineLayout(builder, cst, titleWidth, r); // No advance
         builder.add(bbox, cst.xyw(7, r, 1));
 
         return r + 2;

@@ -485,7 +485,7 @@ public class TremoloInter
     public List<? extends UITask> preAdd (WrappedBoolean cancel,
                                           Wrapper<Inter> toPublish)
     {
-        // Standard addition task for this tremolo
+        // Standard addition task for this tremolo, keeping links apart
         final SystemInfo system = staff.getSystem();
         final List<UITask> tasks = new ArrayList<>();
         final Collection<Link> links = searchLinks(system);

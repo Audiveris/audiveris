@@ -39,8 +39,10 @@ import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.field.SpinnerUtil;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.TextFamily;
+import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
@@ -82,10 +84,10 @@ import javax.swing.event.ListSelectionListener;
  * <ul>
  * <li>Binarization parameters</li>
  * <li>Music font specification</li>
- * <li>Text language specification</li>
+ * <li>Text font specification</li>
+ * <li>Input quality specification</li>
+ * <li>Language specification</li>
  * <li>Support for specific features</li>
- * <!-- TODO
- * <li>Name and instrument related to each score part</li> -->
  * </ul>
  * <div style="float: right;">
  * <img src="doc-files/ScoreParameters-img.png" alt="Score parameters dialog">
@@ -95,8 +97,8 @@ import javax.swing.event.ListSelectionListener;
  * <ul>
  * <li>A panel for the <b>default</b> scope,</li>
  * <li>A panel for current <b>book</b> scope (provided that there is a selected book),</li>
- * <li>And one panel for every <b>sheet</b> scope (provided that the book contains more than a
- * single sheet).</li>
+ * <li>And one panel for every <b>sheet</b> scope (provided that the current book contains more than
+ * a single sheet).</li>
  * </ul>
  * Panel interface:
  * <ul>
@@ -108,10 +110,12 @@ import javax.swing.event.ListSelectionListener;
  * Manually checking the box represents a selection and indicates the intention to modify the
  * pane content (and thus enables the pane fields).
  * <li>
- * Un-checking the box reverts the content to the value it had prior to the selection.
+ * Un-checking the box reverts the content to the value it had prior to the selection, that is the
+ * value inherited from the upper scope.
  * </ul>
  * <p>
- * NOTA: The selected modifications are actually applied only when the user presses the OK button.
+ * NOTA: The selected modifications are actually applied only when the user presses either the OK or
+ * the APPLY button.
  * <p>
  * <img src="doc-files/ScoreParameters.png" alt="Score parameters dialog">
  *
@@ -129,6 +133,7 @@ public class BookParameters
             .getResourceMap(BookParameters.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The swing component of this panel. */
     private final JTabbedPane component = new JTabbedPane();
 
@@ -136,9 +141,10 @@ public class BookParameters
     private final Book book;
 
     /** The panel dedicated to setting of defaults. */
-    private final ScopedPanel defaultPanel;
+    private final TaggedScopedPanel defaultPanel;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a BookParameters object.
      *
@@ -146,45 +152,60 @@ public class BookParameters
      */
     public BookParameters (SheetStub stub)
     {
-        if (stub != null) {
-            this.book = stub.getBook();
-        } else {
-            book = null;
-        }
+        book = (stub != null) ? stub.getBook() : null;
 
         // component.setName("BookParametersPane"); <== NO!
         // NOTA: no name is set to component to avoid SAF to store/restore tab selection
         component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 
         // Allocate all required panels (default / book? / sheets??)
-        final ScopedPanel bookPanel;
-        ScopedPanel sheetPanel = null; // Only for multi-sheet book
+        final TaggedScopedPanel bookPanel;
+        TaggedScopedPanel sheetPanel = null; // Only for multi-sheet book
 
         // Default panel
-        List<XactDataPane> defaultPanes = new ArrayList<>();
+        final List<XactDataPane> defaultPanes = new ArrayList<>();
 
         if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
             defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
         }
 
-        defaultPanes.add(new FontPane(null, MusicFont.defaultFamilyParam));
+        defaultPanes.add(
+                new EnumPane<>(
+                        Tag.MusicFamily,
+                        MusicFamily.values(),
+                        null,
+                        MusicFont.defaultMusicParam));
 
-        defaultPanes.add(new QualityPane(null, Profiles.defaultQualityParam));
+        defaultPanes.add(
+                new EnumPane<>(
+                        Tag.TextFamily,
+                        TextFamily.values(),
+                        null,
+                        TextFont.defaultTextParam));
 
-        TextPane defaultTextPane = createTextPane(null, Language.ocrDefaultLanguages);
+        defaultPanes.add(
+                new EnumPane<>(
+                        Tag.Quality,
+                        InputQuality.values(),
+                        null,
+                        Profiles.defaultQualityParam));
 
-        if (defaultTextPane != null) {
-            defaultPanes.add(defaultTextPane);
+        final LangPane defaultLangPane = createLangPane(null, Language.ocrDefaultLanguages);
+
+        if (defaultLangPane != null) {
+            defaultPanes.add(defaultLangPane);
         }
 
-        ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
+        final ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
 
         for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
             SwitchPane switchPane = new SwitchPane(key, null, defaultSwitches.getParam(key));
             defaultPanes.add(switchPane);
         }
 
-        defaultPanel = new ScopedPanel(resources.getString("defaultTab.toolTipText"), defaultPanes);
+        defaultPanel = new TaggedScopedPanel(
+                resources.getString("defaultTab.toolTipText"),
+                defaultPanes);
         component.addTab(
                 resources.getString("defaultTab.text"),
                 null,
@@ -193,67 +214,91 @@ public class BookParameters
 
         // Book panel?
         if (book != null) {
-            List<XactDataPane> bookPanes = new ArrayList<>();
+            final List<XactDataPane> bookPanes = new ArrayList<>();
             if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
                 bookPanes.add(
                         new FilterPane(
-                                (FilterPane) defaultPanel.getPane(FilterPane.class),
+                                (FilterPane) defaultPanel.getPane(Tag.Filter),
                                 book.getBinarizationFilter()));
             }
 
             bookPanes.add(
-                    new FontPane(
-                            (FontPane) defaultPanel.getPane(FontPane.class),
-                            book.getMusicFontFamily()));
+                    new EnumPane<>(
+                            Tag.MusicFamily,
+                            MusicFamily.values(),
+                            defaultPanel,
+                            book.getMusicFamily()));
 
             bookPanes.add(
-                    new QualityPane(
-                            (QualityPane) defaultPanel.getPane(QualityPane.class),
-                            book.getInputQuality()));
+                    new EnumPane<>(
+                            Tag.TextFamily,
+                            TextFamily.values(),
+                            defaultPanel,
+                            book.getTextFamily()));
 
-            TextPane bookTextPane = createTextPane(
-                    (TextPane) defaultPanel.getPane(TextPane.class),
+            bookPanes.add(
+                    new EnumPane<>(
+                            Tag.Quality,
+                            InputQuality.values(),
+                            defaultPanel,
+                            Profiles.defaultQualityParam));
+
+            final LangPane bookLangPane = createLangPane(
+                    (LangPane) defaultPanel.getPane(Tag.Lang),
                     book.getOcrLanguages());
 
-            if (bookTextPane != null) {
-                bookPanes.add(bookTextPane);
+            if (bookLangPane != null) {
+                bookPanes.add(bookLangPane);
             }
 
             for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-                Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
+                final Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
                 bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
             }
 
-            bookPanel = new ScopedPanel(resources.getString("bookTab.toolTipText"), bookPanes);
+            bookPanel = new TaggedScopedPanel(
+                    resources.getString("bookTab.toolTipText"),
+                    bookPanes);
             component.addTab(book.getRadix(), null, bookPanel, bookPanel.getName());
 
             // Sheets panels?
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
-                    List<XactDataPane> sheetPanes = new ArrayList<>();
+                    final List<XactDataPane> sheetPanes = new ArrayList<>();
                     if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
                         sheetPanes.add(
                                 new FilterPane(
-                                        (FilterPane) bookPanel.getPane(FilterPane.class),
+                                        (FilterPane) bookPanel.getPane(Tag.Filter),
                                         s.getBinarizationFilter()));
                     }
 
                     sheetPanes.add(
-                            new FontPane(
-                                    (FontPane) bookPanel.getPane(FontPane.class),
-                                    s.getMusicFontFamilyParam()));
+                            new EnumPane<>(
+                                    Tag.MusicFamily,
+                                    MusicFamily.values(),
+                                    bookPanel,
+                                    s.getMusicFamilyParam()));
 
                     sheetPanes.add(
-                            new QualityPane(
-                                    (QualityPane) bookPanel.getPane(QualityPane.class),
-                                    s.getInputQualityParam()));
+                            new EnumPane<>(
+                                    Tag.TextFamily,
+                                    TextFamily.values(),
+                                    bookPanel,
+                                    s.getTextFamilyParam()));
 
-                    TextPane sheetTextPane = createTextPane(
-                            (TextPane) bookPanel.getPane(TextPane.class),
+                    sheetPanes.add(
+                            new EnumPane<>(
+                                    Tag.Quality,
+                                    InputQuality.values(),
+                                    bookPanel,
+                                    Profiles.defaultQualityParam));
+
+                    final LangPane sheetLangPane = createLangPane(
+                            (LangPane) bookPanel.getPane(Tag.Lang),
                             s.getOcrLanguages());
 
-                    if (sheetTextPane != null) {
-                        sheetPanes.add(sheetTextPane);
+                    if (sheetLangPane != null) {
+                        sheetPanes.add(sheetLangPane);
                     }
 
                     for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
@@ -261,18 +306,20 @@ public class BookParameters
                         sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
 
-                    ScopedPanel panel = new ScopedPanel(
-                            resources.getString("sheetTab.toolTipText") + s.getNum(),
+                    final TaggedScopedPanel sPanel = new TaggedScopedPanel(
+                            MessageFormat.format(
+                                    resources.getString("sheetTab.toolTipText"),
+                                    s.getNum()),
                             sheetPanes);
-                    String initial = resources.getString("sheetInitialChar");
+                    final String initial = resources.getString("sheetInitialChar");
                     String label = initial + "#" + s.getNumber();
 
                     if (s == stub) {
-                        sheetPanel = panel;
+                        sheetPanel = sPanel;
                         label = "*" + label + "*";
                     }
 
-                    component.addTab(label, null, panel, panel.getName());
+                    component.addTab(label, null, sPanel, sPanel.getName());
                 }
             }
         } else {
@@ -285,11 +332,12 @@ public class BookParameters
                 (sheetPanel != null) ? sheetPanel
                         : ((bookPanel != null) ? bookPanel : defaultPanel));
     }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // commit //
     //--------//
-
     /**
      * Commit the user actions.
      *
@@ -305,7 +353,7 @@ public class BookParameters
 
             // Commit all specific values, if any, to their model object
             for (int tab = 0, tBreak = component.getTabCount(); tab < tBreak; tab++) {
-                final ScopedPanel panel = (ScopedPanel) component.getComponentAt(tab);
+                final TaggedScopedPanel panel = (TaggedScopedPanel) component.getComponentAt(tab);
                 boolean modified = false;
 
                 for (XactDataPane pane : panel.getPanes()) {
@@ -366,6 +414,33 @@ public class BookParameters
         return true;
     }
 
+    //----------------//
+    // createLangPane //
+    //----------------//
+    /**
+     * Factory method to get a LangPane, while handling exception when no OCR is available.
+     *
+     * @param parent parent pane, if any
+     * @param model  underlying model data
+     * @return A usable LangPane instance, or null otherwise
+     */
+    private LangPane createLangPane (LangPane parent,
+                                     Param<String> model)
+    {
+        // The language pane needs Tesseract up & running
+        if (OcrUtil.getOcr().isAvailable()) {
+            try {
+                return new LangPane(parent, model);
+            } catch (Throwable ex) {
+                logger.warn("Error creating language pane", ex);
+            }
+        } else {
+            logger.info("No language pane for lack of OCR.");
+        }
+
+        return null;
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -387,7 +462,7 @@ public class BookParameters
         if (book != null) {
             return MessageFormat.format(resources.getString("bookTitlePattern"), book.getRadix());
         } else {
-            return resources.getString("defaultTitle");
+            return resources.getString("globalTitle");
         }
     }
 
@@ -404,7 +479,7 @@ public class BookParameters
     public void stateChanged (ChangeEvent e)
     {
         // Refresh the new current panel
-        ScopedPanel panel = (ScopedPanel) component.getSelectedComponent();
+        TaggedScopedPanel panel = (TaggedScopedPanel) component.getSelectedComponent();
 
         PaneLoop:
         for (XactDataPane pane : panel.getPanes()) {
@@ -425,37 +500,10 @@ public class BookParameters
                 }
 
                 // No specific data found higher in hierarchy, use source value of highest pane
-                pane.display(highestPane.model.getSourceValue());
+                final Object srcValue = highestPane.model.getSourceValue();
+                pane.display(srcValue);
             }
         }
-    }
-
-    //----------------//
-    // createTextPane //
-    //----------------//
-    /**
-     * Factory method to get a TextPane, while handling exception when
-     * no OCR is available.
-     *
-     * @param parent parent pane, if any
-     * @param model  underlying model data
-     * @return A usable TextPane instance, or null otherwise
-     */
-    private TextPane createTextPane (TextPane parent,
-                                     Param<String> model)
-    {
-        // The language pane needs Tesseract up & running
-        if (OcrUtil.getOcr().isAvailable()) {
-            try {
-                return new TextPane(parent, model);
-            } catch (Throwable ex) {
-                logger.warn("Error creating language pane", ex);
-            }
-        } else {
-            logger.info("No language pane for lack of OCR.");
-        }
-
-        return null;
     }
 
     //---------//
@@ -468,7 +516,7 @@ public class BookParameters
      * @param key   desired key
      * @return corresponding pane
      */
-    private static SwitchPane getPane (ScopedPanel panel,
+    private static SwitchPane getPane (TaggedScopedPanel panel,
                                        ProcessingSwitch key)
     {
         for (XactDataPane pane : panel.getPanes()) {
@@ -483,22 +531,86 @@ public class BookParameters
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //----------//
+    // EnumPane //
+    //----------//
+    /**
+     * Pane to select an enum.
+     */
+    private static class EnumPane<E extends Enum>
+            extends TaggedXactDataPane<E>
+    {
+
+        /** ComboBox for enum. */
+        private final JComboBox<E> enumCombo;
+
+        @SuppressWarnings("unchecked")
+        public EnumPane (Tag tag,
+                         E[] values,
+                         TaggedScopedPanel parentPanel,
+                         Param<E> model)
+        {
+            super(
+                    tag,
+                    resources.getString(tag + "Pane.title"),
+                    (parentPanel != null) ? parentPanel.getPane(tag) : null,
+                    model);
+
+            title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
+
+            enumCombo = new JComboBox<>(values);
+            enumCombo.setToolTipText(resources.getString(tag + "Pane.combo.toolTipText"));
+            enumCombo.addActionListener(this);
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int titleWidth,
+                                 int r)
+        {
+            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
+
+            builder.add(enumCombo, cst.xyw(5, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (E family)
+        {
+            enumCombo.setSelectedItem(family);
+        }
+
+        @Override
+        protected E read ()
+        {
+            return enumCombo.getItemAt(enumCombo.getSelectedIndex());
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            enumCombo.setEnabled(bool);
+        }
+    }
+
     //------------//
     // FilterPane //
     //------------//
     /**
      * Pane to define the pixel binarization parameters.
-     * Scope can be: default, book, sheet.
      */
     private static class FilterPane
-            extends XactDataPane<FilterDescriptor>
+            extends TaggedXactDataPane<FilterDescriptor>
     {
 
         /** ComboBox for filter kind */
         private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
 
         private final JLabel kindLabel = new JLabel(
-                resources.getString("kindLabel.text"),
+                resources.getString("FilterPane.kindLabel.text"),
                 SwingConstants.RIGHT);
 
         // Data for global
@@ -521,7 +633,7 @@ public class BookParameters
         FilterPane (FilterPane parent,
                     Param<FilterDescriptor> model)
         {
-            super(resources.getString("FilterPane.title"), parent, model);
+            super(Tag.Filter, resources.getString("FilterPane.title"), parent, model);
 
             // ComboBox for filter kind
             kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
@@ -541,28 +653,46 @@ public class BookParameters
 
             // Adjust visibility of parameter fields
             switch (readKind()) {
-            case GLOBAL:
+            case GLOBAL ->
+            {
                 localDataMean.setVisible(false);
                 localDataDev.setVisible(false);
                 globalData.setVisible(true);
+            }
 
-                break;
-
-            case ADAPTIVE:
+            case ADAPTIVE ->
+            {
                 globalData.setVisible(false);
                 localDataMean.setVisible(true);
                 localDataDev.setVisible(true);
+            }
+            }
+        }
 
-                break;
+        /** This is needed to read data manually typed in spinners fields. */
+        private void commitSpinners ()
+        {
+            try {
+                switch (readKind()) {
+                case GLOBAL -> globalData.spinner.commitEdit();
+
+                case ADAPTIVE ->
+                {
+                    localDataMean.spinner.commitEdit();
+                    localDataDev.spinner.commitEdit();
+                }
+                }
+            } catch (ParseException ignored) {
             }
         }
 
         @Override
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
+                                 int titleWidth,
                                  int r)
         {
-            r = super.defineLayout(builder, cst, r);
+            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
 
             builder.add(kindLabel, cst.xyw(3, r, 1));
             builder.add(kindCombo, cst.xyw(5, r, 3));
@@ -577,33 +707,31 @@ public class BookParameters
         }
 
         @Override
-        public int getLogicalRowCount ()
-        {
-            return 4;
-        }
-
-        @Override
         protected void display (FilterDescriptor desc)
         {
             FilterKind kind = desc.getKind();
             kindCombo.setSelectedItem(kind);
 
             switch (kind) {
-            case GLOBAL:
+            case GLOBAL ->
+            {
                 GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
                 globalData.spinner.setValue(globalDesc.threshold);
+            }
 
-                break;
-
-            case ADAPTIVE:
+            case ADAPTIVE ->
+            {
                 AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
                 localDataMean.spinner.setValue(localDesc.meanCoeff);
                 localDataDev.spinner.setValue(localDesc.stdDevCoeff);
-
-                break;
-
-            default:
             }
+            }
+        }
+
+        @Override
+        public int getLogicalRowCount ()
+        {
+            return 4;
         }
 
         @Override
@@ -618,6 +746,11 @@ public class BookParameters
                             (double) localDataDev.spinner.getValue());
         }
 
+        private FilterKind readKind ()
+        {
+            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
+        }
+
         @Override
         protected void setEnabled (boolean bool)
         {
@@ -627,32 +760,99 @@ public class BookParameters
             localDataMean.setEnabled(bool);
             localDataDev.setEnabled(bool);
         }
+    }
 
-        /** This is needed to read data manually typed in spinners fields. */
-        private void commitSpinners ()
+    //----------//
+    // LangPane //
+    //----------//
+    /**
+     * Pane to set the dominant text language specification.
+     */
+    private static class LangPane
+            extends TaggedXactDataPane<String>
+            implements ListSelectionListener
+    {
+
+        /** List for choosing elements of language specification. */
+        private final JList<String> langList;
+
+        /** Put the list into a scroll pane. */
+        private final JScrollPane langScroll;
+
+        /** Resulting visible specification. */
+        private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
+
+        /** Underlying language list model. */
+        final Language.ListModel listModel;
+
+        LangPane (LangPane parent,
+                  Param<String> model)
         {
-            try {
-                switch (readKind()) {
-                case GLOBAL:
-                    globalData.spinner.commitEdit();
+            super(Tag.Lang, resources.getString("LangPane.title"), parent, model);
 
-                    break;
+            listModel = new Language.ListModel();
 
-                case ADAPTIVE:
-                    localDataMean.spinner.commitEdit();
-                    localDataDev.spinner.commitEdit();
+            title.setToolTipText(resources.getString("LangPane.toolTipText"));
 
-                    break;
+            langList = new JList<>(listModel);
+            langList.setLayoutOrientation(JList.VERTICAL);
+            langList.setToolTipText(resources.getString("LangPane.langList.toolTipText"));
+            langList.setVisibleRowCount(5);
+            langList.addListSelectionListener(this);
 
-                default:
-                }
-            } catch (ParseException ignored) {
-            }
+            langScroll = new JScrollPane(langList);
+
+            langSpec.setToolTipText(resources.getString("LangPane.langSpec.toolTipText"));
         }
 
-        private FilterKind readKind ()
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int titleWidth,
+                                 int r)
         {
-            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
+            r = super.defineLayout(builder, cst, titleWidth, r); // sel + title, DO advance
+
+            builder.add(langSpec, cst.xyw(1, r, 3));
+            builder.add(langScroll, cst.xyw(5, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (String spec)
+        {
+            int[] indices = listModel.indicesOf(spec);
+
+            if ((indices.length > 0) && (indices[0] != -1)) {
+                // Scroll to first index found?
+                String firstElement = listModel.getElementAt(indices[0]);
+                langList.setSelectedValue(firstElement, true);
+
+                // Flag all selected indices
+                langList.setSelectedIndices(indices);
+            }
+
+            langSpec.setText(spec);
+        }
+
+        @Override
+        protected String read ()
+        {
+            return listModel.specOf(langList.getSelectedValuesList());
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            langList.setEnabled(bool);
+            langSpec.setEnabled(bool);
+        }
+
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            langSpec.setText(read());
         }
     }
 
@@ -711,7 +911,6 @@ public class BookParameters
     //------------//
     /**
      * A pane for one boolean switch.
-     * Scope can be: default, book, sheet.
      */
     private static class SwitchPane
             extends BooleanPane
@@ -735,19 +934,6 @@ public class BookParameters
             } else {
                 super.actionPerformed(e);
             }
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            // Draw the specific/inherit box
-            builder.add(selBox, cst.xyw(1, r, 1));
-            builder.add(title, cst.xyw(3, r, 3));
-            builder.add(bbox, cst.xyw(7, r, 1));
-
-            return r + 2;
         }
 
         public ProcessingSwitch getKey ()
@@ -776,204 +962,65 @@ public class BookParameters
         }
     }
 
-    //----------//
-    // TextPane //
-    //----------//
-    /**
-     * Pane to set the dominant text language specification.
-     * Scope can be: default, book, sheet.
-     */
-    private static class TextPane
-            extends XactDataPane<String>
-            implements ListSelectionListener
+    //-----//
+    // Tag //
+    //-----//
+    /** Category of pane in each scoped panel. */
+    private static enum Tag
     {
+        Filter,
+        MusicFamily,
+        TextFamily,
+        Quality,
+        Lang;
+    }
 
-        /** List for choosing elements of language specification. */
-        private final JList<String> langList;
-
-        /** Put the list into a scroll pane. */
-        private final JScrollPane langScroll;
-
-        /** Resulting visible specification. */
-        private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
-
-        /** Underlying language list model. */
-        final Language.ListModel listModel;
-
-        TextPane (TextPane parent,
-                  Param<String> model)
+    //-------------------//
+    // TaggedScopedPanel //
+    //-------------------//
+    private static class TaggedScopedPanel
+            extends ScopedPanel
+    {
+        public TaggedScopedPanel (String name,
+                                  List<XactDataPane> panes)
         {
-            super(resources.getString("TextPane.title"), parent, model);
-
-            listModel = new Language.ListModel();
-
-            langList = new JList<>(listModel);
-            langList.setLayoutOrientation(JList.VERTICAL);
-            langList.setToolTipText(resources.getString("TextPane.langList.toolTipText"));
-            langList.setVisibleRowCount(5);
-            langList.addListSelectionListener(this);
-
-            langScroll = new JScrollPane(langList);
-
-            langSpec.setToolTipText(resources.getString("TextPane.langSpec.toolTipText"));
+            super(name, panes);
         }
 
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
+        /**
+         * Report the contained pane of proper tag.
+         *
+         * @param tag desired tag
+         * @return the pane found or null
+         */
+        public TaggedXactDataPane getPane (Tag tag)
         {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(langSpec, cst.xyw(1, r, 3));
-            builder.add(langScroll, cst.xyw(5, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        public void valueChanged (ListSelectionEvent e)
-        {
-            langSpec.setText(read());
-        }
-
-        @Override
-        protected void display (String spec)
-        {
-            int[] indices = listModel.indicesOf(spec);
-
-            if ((indices.length > 0) && (indices[0] != -1)) {
-                // Scroll to first index found?
-                String firstElement = listModel.getElementAt(indices[0]);
-                langList.setSelectedValue(firstElement, true);
-
-                // Flag all selected indices
-                langList.setSelectedIndices(indices);
+            for (XactDataPane pane : panes) {
+                if (pane instanceof TaggedXactDataPane tagged) {
+                    if (tagged.tag == tag)
+                        return tagged;
+                }
             }
 
-            langSpec.setText(spec);
-        }
-
-        @Override
-        protected String read ()
-        {
-            return listModel.specOf(langList.getSelectedValuesList());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            langList.setEnabled(bool);
-            langSpec.setEnabled(bool);
+            return null;
         }
     }
 
-    //----------//
-    // FontPane //
-    //----------//
-    /**
-     * Pane to set the music font family.
-     * Scope can be: default, book, sheet.
-     */
-    private static class FontPane
-            extends XactDataPane<Family>
+    //--------------------//
+    // TaggedXactDataPane //
+    //--------------------//
+    private static abstract class TaggedXactDataPane<E>
+            extends XactDataPane<E>
     {
+        public final Tag tag;
 
-        /** ComboBox for font family. */
-        private final JComboBox<Family> familyCombo = new JComboBox<>(Family.values());
-
-        FontPane (FontPane parent,
-                  Param<Family> model)
+        public TaggedXactDataPane (Tag tag,
+                                   String title,
+                                   XactDataPane<E> parent,
+                                   Param<E> model)
         {
-            super(resources.getString("FontPane.title"), parent, model);
-
-            familyCombo.setToolTipText(resources.getString("FontPane.familyCombo.toolTipText"));
-            familyCombo.addActionListener(this);
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            ///builder.add(familyCombo, cst.xyw(3, r, 5));
-            builder.add(familyCombo, cst.xyw(5, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected void display (Family family)
-        {
-            familyCombo.setSelectedItem(family);
-        }
-
-        @Override
-        protected Family read ()
-        {
-            return familyCombo.getItemAt(familyCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            familyCombo.setEnabled(bool);
-        }
-    }
-
-    //-------------//
-    // QualityPane //
-    //------------//
-    /**
-     * Pane to set the input image quality.
-     * Scope can be: default, book, sheet.
-     */
-    private static class QualityPane
-            extends XactDataPane<InputQuality>
-    {
-
-        /** ComboBox for image quality. */
-        private final JComboBox<InputQuality> qualityCombo = new JComboBox<>(InputQuality.values());
-
-        QualityPane (QualityPane parent,
-                     Param<InputQuality> model)
-        {
-            super(resources.getString("QualityPane.title"), parent, model);
-
-            qualityCombo.setToolTipText(resources.getString("QualityPane.qualityCombo.toolTipText"));
-            qualityCombo.addActionListener(this);
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(qualityCombo, cst.xyw(5, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected void display (InputQuality quality)
-        {
-            qualityCombo.setSelectedItem(quality);
-        }
-
-        @Override
-        protected InputQuality read ()
-        {
-            return qualityCombo.getItemAt(qualityCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            qualityCombo.setEnabled(bool);
+            super(title, parent, model);
+            this.tag = tag;
         }
     }
 }

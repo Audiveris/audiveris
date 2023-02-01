@@ -21,7 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import org.audiveris.omr.score.PartConnection.Candidate;
+import org.audiveris.omr.score.PartRef;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.score.PartConnection.ResultEntry;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
@@ -31,11 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Class <code>ScoreReduction</code> reduces the logical parts for a score,
- * based on the merge of Audiveris Page instances.
+ * Class <code>ScoreReduction</code> reduces the logical parts for a score.
  * <p>
  * <b>Features not yet implemented:</b>
  * <ul>
@@ -52,10 +51,12 @@ public class ScoreReduction
     private static final Logger logger = LoggerFactory.getLogger(ScoreReduction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related score. */
     private final Score score;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ScoreReduction object.
      *
@@ -67,23 +68,23 @@ public class ScoreReduction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // reduce //
     //--------//
     /**
-     * Build the score LogicalPart instances by connecting the pages logical parts.
+     * Build the score LogicalPart instances by connecting the pages systems parts.
      *
      * @param stubs valid selected stubs
      * @return the count of modifications done
      */
     public int reduce (List<SheetStub> stubs)
     {
-        final List<List<Candidate>> sequences = buildSequences(score.getPages(stubs));
-
-        // Connect the parts across all pages of the score
-        PartConnection connection = new PartConnection(sequences);
-
-        List<ResultEntry> resultEntries = connection.getResults();
+        final List<List<PartRef>> sequences = buildSequences(score.getPageRefs(stubs));
+        final PartConnection connection = new PartConnection(
+                sequences,
+                score.isLogicalsLocked() ? score.getLogicalParts() : null);
+        final List<ResultEntry> resultEntries = connection.getResults();
 
         if (logger.isDebugEnabled()) {
             connection.dumpResults();
@@ -97,31 +98,21 @@ public class ScoreReduction
     // buildSequences //
     //----------------//
     /**
-     * Build the sequences of part candidates
+     * Build the system-sequences of parts, collected system per system, page per page.
      *
-     * @param pages the sequence of pages
-     * @return the sequences of page LogicalPart candidates
+     * @param pageRefs the sequence of PageRef's
+     * @return the sequences of PartRef's
      */
-    private List<List<Candidate>> buildSequences (List<Page> pages)
+    private List<List<PartRef>> buildSequences (List<PageRef> pageRefs)
     {
-        // Build candidates (here a candidate is a LogicalPart, with affiliated system parts)
-        List<List<Candidate>> sequences = new ArrayList<>();
+        final List<List<PartRef>> sequences = new ArrayList<>();
 
-        for (Page page : pages) {
-            List<Candidate> candidates = new ArrayList<>();
-            List<LogicalPart> partList = page.getLogicalParts();
+        for (PageRef pageRef : pageRefs) {
+            pageRef.getStub().checkSystems(); // For old OMRs
 
-            if (partList != null) {
-                for (LogicalPart logicalPart : partList) {
-                    Candidate candidate = new LogicalPartCandidate(
-                            logicalPart,
-                            page,
-                            page.getSystemPartsById(logicalPart.getId()));
-                    candidates.add(candidate);
-                }
+            for (SystemRef system : pageRef.getSystems()) {
+                sequences.add(system.getParts());
             }
-
-            sequences.add(candidates);
         }
 
         return sequences;
@@ -131,107 +122,41 @@ public class ScoreReduction
     // storeResults //
     //--------------//
     /**
-     * Store the results as the score list of LogicalPart instances
+     * Store the results as the score list of LogicalPart instances.
      *
      * @param resultEntries results from part connection
      * @return true if score part list has really been modified
      */
     private boolean storeResults (List<ResultEntry> resultEntries)
     {
-        List<LogicalPart> partList = new ArrayList<>();
-
+        // Propagate to affiliates
+        boolean modified = false;
         for (ResultEntry entry : resultEntries) {
-            LogicalPart logicalPart = entry.result;
-            partList.add(logicalPart);
-        }
+            final int logId = entry.logical.getId();
 
-        if (!Objects.deepEquals(score.getLogicalParts(), partList)) {
-            score.setLogicalParts(partList);
+            for (PartRef partRef : entry.partRefs) {
+                modified |= partRef.setLogicalId(logId);
 
-            return true;
-        }
-
-        return false;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------------//
-    // LogicalPartCandidate //
-    //----------------------//
-    /**
-     * Wrapping class meant for a (Page) LogicalPart instance candidate.
-     */
-    private static class LogicalPartCandidate
-            implements Candidate
-    {
-
-        private final LogicalPart logicalPart;
-
-        private final Page page;
-
-        private final List<Part> systemParts;
-
-        LogicalPartCandidate (LogicalPart logicalPart,
-                              Page page,
-                              List<Part> systemParts)
-        {
-            this.logicalPart = logicalPart;
-            this.page = page;
-            this.systemParts = systemParts;
-        }
-
-        @Override
-        public String getAbbreviation ()
-        {
-            return logicalPart.getAbbreviation();
-        }
-
-        @Override
-        public List<Integer> getLineCounts ()
-        {
-            return logicalPart.getLineCounts();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return logicalPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return logicalPart.getStaffCount();
-        }
-
-        @Override
-        public void setId (int id)
-        {
-            logicalPart.setId(id);
-
-            for (Part part : systemParts) {
-                part.setId(id);
+                // Update Part immediately if containing sheet is loaded
+                // If not, it will get updated the next time sheet is loaded
+                final SheetStub stub = partRef.getSystem().getPage().getStub();
+                if (stub.hasSheet()) {
+                    final Part part = partRef.getRealPart();
+                    part.setId(logId);
+                }
             }
         }
 
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-
-            sb.append("{");
-
-            sb.append(page);
-
-            sb.append(logicalPart);
-
-            sb.append("}");
-
-            for (Part part : systemParts) {
-                sb.append("\n      ").append(part).append(" in ").append(part.getSystem());
+        if (!score.isLogicalsLocked()) {
+            // (Over-)write score logicals
+            final List<LogicalPart> newLogicals = new ArrayList<>();
+            for (ResultEntry entry : resultEntries) {
+                newLogicals.add(entry.logical);
             }
 
-            return sb.toString();
+            score.setLogicalParts(newLogicals);
         }
+
+        return modified;
     }
 }

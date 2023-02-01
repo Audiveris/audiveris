@@ -25,7 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -804,7 +804,7 @@ public enum Shape
      * @param family the selected MusicFont family
      * @return the shape symbol, with decorations if any, perhaps null
      */
-    public ShapeSymbol getDecoratedSymbol (Family family)
+    public ShapeSymbol getDecoratedSymbol (MusicFamily family)
     {
         final ShapeSymbol symbol = getSymbol(family);
 
@@ -824,7 +824,7 @@ public enum Shape
      * @param family the selected MusicFont family
      * @return the shape symbol, perhaps null
      */
-    public ShapeSymbol getSymbol (Family family)
+    public ShapeSymbol getSymbol (MusicFamily family)
     {
         final FontSymbol fs = getFontSymbol(family);
 
@@ -842,7 +842,7 @@ public enum Shape
      * @param family preferred font family
      * @return a non-null FontSymbol structure, populated by the first compatible family if any
      */
-    public FontSymbol getFontSymbol (Family family)
+    public FontSymbol getFontSymbol (MusicFamily family)
     {
         return getFontSymbolByInterline(family, MusicFont.DEFAULT_INTERLINE);
     }
@@ -858,7 +858,7 @@ public enum Shape
      * @param interline specified interline value
      * @return a FontSymbol structure, populated by the first compatible family, or null
      */
-    public FontSymbol getFontSymbolByInterline (Family family,
+    public FontSymbol getFontSymbolByInterline (MusicFamily family,
                                                 int interline)
     {
         return getFontSymbol(MusicFont.getBaseFont(family, interline));
@@ -875,7 +875,7 @@ public enum Shape
      * @param pointSize specified interline value
      * @return a FontSymbol structure, populated by the first compatible family, or null
      */
-    public FontSymbol getFontSymbolBySize (Family family,
+    public FontSymbol getFontSymbolBySize (MusicFamily family,
                                            int pointSize)
     {
         return getFontSymbol(MusicFont.getBaseFontBySize(family, pointSize));

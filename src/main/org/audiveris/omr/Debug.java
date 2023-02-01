@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubDependent;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 
 import org.jdesktop.application.Action;
 
@@ -134,7 +134,7 @@ public class Debug
     {
         TemplateFactory factory = TemplateFactory.getInstance();
 
-        for (Family family : Family.values()) {
+        for (MusicFamily family : MusicFamily.values()) {
             for (int i = 40; i < 160; i++) {
                 logger.info("Catalog for point size {}", i);
                 factory.getCatalog(family, i);

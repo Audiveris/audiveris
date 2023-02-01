@@ -21,13 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
@@ -50,6 +54,7 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
@@ -85,15 +90,18 @@ public class SheetResultPainter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(SheetResultPainter.class);
 
     /** Abscissa offset, in pixels, for annotation near system. */
-    protected static final int annotationDx = 15;
+    protected static final int annotationDx = constants.annotationDx.getValue();
 
     /** Ordinate offset, in pixels, for annotation near staff or system. */
-    protected static final int annotationDy = 15;
+    protected static final int annotationDy = constants.annotationDy.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** For staff lines. */
     protected Stroke lineStroke;
 
@@ -110,6 +118,7 @@ public class SheetResultPainter
     protected final boolean annotated;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetResultPainter</code> object.
      *
@@ -138,6 +147,7 @@ public class SheetResultPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // drawSlot //
     //----------//
@@ -281,6 +291,49 @@ public class SheetResultPainter
         return new ResultSigPainter();
     }
 
+    //--------------//
+    // processParts //
+    //--------------//
+    /**
+     * For every part in provided system, display the corresponding logical part.
+     *
+     * @param system the containing system
+     */
+    private void processParts (SystemInfo system)
+    {
+
+        final int partDx = constants.partDx.getValue();
+        final int partDy = constants.partDy.getValue();
+
+        final double zoom = constants.zoomForLogicalPart.getValue();
+        final AffineTransform fat = AffineTransform.getScaleInstance(zoom, zoom);
+        final int x = system.getBounds().x;
+
+        for (Part part : system.getParts()) {
+            final LogicalPart logical = part.getLogicalPart();
+
+            if (logical != null) {
+                final String fullName = logical.getFullName();
+
+                if (fullName != null) {
+                    final Staff s1 = part.getFirstStaff();
+                    final LineInfo l1 = s1.getMidLine();
+                    int y = l1.yAt(x + partDx) + partDy;
+
+                    final Staff s2 = part.getLastStaff();
+                    if (s2 != s1) {
+                        final LineInfo l2 = s2.getMidLine();
+                        y = (y + l2.yAt(x + partDx) + partDy) / 2;
+                    }
+
+                    final TextLayout layout = basicLayout(fullName, fat);
+                    ///logger.info("{} {}", fullName, layout.getBounds());
+                    paint(layout, new Point(x + partDx, y), BOTTOM_LEFT);
+                }
+            }
+        }
+    }
+
     //---------------//
     // processSystem //
     //---------------//
@@ -311,18 +364,23 @@ public class SheetResultPainter
         // All inters
         super.processSystem(system);
 
-        // System id annotation
         if (annotated) {
             Color oldColor = g.getColor();
             g.setColor(Colors.ANNOTATION);
 
+            // System id annotation
             Point ul = new Point(
                     system.getBounds().x,
                     system.getTop() + (system.getDeltaY() / 2) + sheet.getScale().getInterline());
 
-            paint(basicLayout("S" + system.getId(), null),
-                  new Point(ul.x + annotationDx, ul.y + annotationDy),
-                  TOP_LEFT);
+            paint(
+                    basicLayout("S#" + system.getId(), null),
+                    new Point(ul.x + annotationDx, ul.y + annotationDy),
+                    TOP_LEFT);
+
+            // Information for every part
+            processParts(system);
+
             g.setColor(oldColor);
         }
 
@@ -382,6 +440,7 @@ public class SheetResultPainter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------------//
     // PdfResultPainter //
     //------------------//
@@ -434,5 +493,37 @@ public class SheetResultPainter
         {
             return coloredVoices;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer annotationDx = new Constant.Integer(
+                "pixels",
+                15,
+                "Abscissa offset for annotation near system");
+
+        private final Constant.Integer annotationDy = new Constant.Integer(
+                "pixels",
+                15,
+                "Ordinate offset for annotation near system");
+
+        private final Constant.Integer partDx = new Constant.Integer(
+                "pixels",
+                50,
+                "Abscissa left offset for logical part annotation");
+
+        private final Constant.Integer partDy = new Constant.Integer(
+                "pixels",
+                -20,
+                "Ordinate down offset for logical part annotation");
+
+        private final Constant.Ratio zoomForLogicalPart = new Constant.Ratio(
+                0.6,
+                "Zoom applied on logical part names");
     }
 }

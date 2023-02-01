@@ -61,7 +61,7 @@ public abstract class KeySymbol
      */
     public KeySymbol (int fifths,
                       Shape shape,
-                      Family family,
+                      MusicFamily family,
                       Shape itemShape)
     {
         super(shape, family);

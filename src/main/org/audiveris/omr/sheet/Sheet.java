@@ -40,6 +40,7 @@ import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
@@ -67,7 +68,7 @@ import org.audiveris.omr.ui.ErrorsEditor;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.ItemRenderer;
@@ -152,18 +153,17 @@ public class Sheet
     public static final String INTERNALS_RADIX = "sheet#";
 
     /** Events that can be published on sheet location service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        LocationEvent.class,
-        PixelEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { LocationEvent.class, PixelEvent.class };
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Every sheet persistent entity (whether it's a Glyph or an Inter instance)
      * is assigned a unique sequential id within the sheet.
@@ -206,7 +206,7 @@ public class Sheet
 
     // Transient data
     //---------------
-    //
+
     /** Corresponding sheet stub. */
     @Navigable(false)
     private SheetStub stub;
@@ -391,6 +391,16 @@ public class Sheet
                 system.afterReload();
             }
 
+            final OmrStep latestStep = stub.getLatestStep();
+
+            if (latestStep.compareTo(OmrStep.GRID) >= 0) {
+                // Old OMRs: complete stub information with SystemRef's if needed
+                stub.checkSystems();
+
+                // Make part id consistent with their corresponding PartRef logical id
+                checkPartIds();
+            }
+
             final Version stubVersion = stub.getVersion();
 
             // Check version for flag shape names
@@ -403,7 +413,6 @@ public class Sheet
 
             // Check version for interleaved rests
             if (stubVersion.compareTo(Versions.INTERLEAVED_RESTS) < 0) {
-                final OmrStep latestStep = stub.getLatestStep();
 
                 if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
                     for (Page page : pages) {
@@ -462,9 +471,7 @@ public class Sheet
             BufferedImage img = runTable.getBufferedImage();
             os = Files.newOutputStream(imgPath, CREATE);
             ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
         } finally {
             if (os != null) {
@@ -472,6 +479,30 @@ public class Sheet
                     os.flush();
                     os.close();
                 } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    //--------------//
+    // checkPartIds //
+    //--------------//
+    /**
+     * Make the id of every Part is consistent with the logical id, if any, defined by their
+     * corresponding PartRef.
+     */
+    private void checkPartIds ()
+    {
+        for (Page page : pages) {
+            for (SystemInfo system : page.getSystems()) {
+                for (Part part : system.getParts()) {
+                    final PartRef partRef = part.getRef();
+                    final Integer logicalId = partRef.getLogicalId();
+
+                    if ((logicalId != null) && (logicalId != part.getId())) {
+                        part.setId(logicalId);
+                        stub.setModified(true);
+                    }
                 }
             }
         }
@@ -504,8 +535,9 @@ public class Sheet
                 case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
                 case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
                 case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
-                default -> {
-                }
+                default ->
+                        {
+                        }
                 }
             }
         }
@@ -523,9 +555,8 @@ public class Sheet
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> createBinaryView());
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> createBinaryView());
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -559,10 +590,10 @@ public class Sheet
 
         // Display sheet picture
         PictureView pictureView = new PictureView(this, SheetTab.GRAY_TAB);
-        stub.getAssembly().addViewTab(SheetTab.GRAY_TAB,
-                                      pictureView,
-                                      new BoardsPane(new PixelBoard(this), new BinarizationBoard(
-                                                     this)));
+        stub.getAssembly().addViewTab(
+                SheetTab.GRAY_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------//
@@ -625,14 +656,13 @@ public class Sheet
     // export //
     //--------//
     /**
-     * Export a single sheet in MusicXML.
+     * Export just a single sheet in MusicXML.
      * <p>
      * The output is structured differently according to whether the sheet contains one or several
      * pages.
      * <ul>
      * <li>A single-page sheet results in one score output.</li>
-     * <li>A multi-page sheet results in one opus output (if useOpus is set) or a series of scores
-     * (is useOpus is not set).</li>
+     * <li>A multi-page sheet results in a series of scores.</li>
      * </ul>
      *
      * @param path sheet export path
@@ -663,7 +693,7 @@ public class Sheet
                 for (PageRef pageRef : stub.getPageRefs()) {
                     final Score score = new Score();
                     score.setBook(book);
-                    score.addPageRef(stub.getNumber(), pageRef);
+                    score.addPageNumber(stub.getNumber(), pageRef);
                     new ScoreReduction(score).reduce(Arrays.asList(stub));
 
                     final int idx = pageRef.getId();
@@ -675,7 +705,7 @@ public class Sheet
                 // Export the sheet single page as a score
                 final Score score = new Score();
                 score.setBook(book);
-                score.addPageRef(stub.getNumber(), stub.getFirstPageRef());
+                score.addPageNumber(stub.getNumber(), stub.getFirstPageRef());
                 new ScoreReduction(score).reduce(Arrays.asList(stub));
 
                 final String scoreName = sheetName;
@@ -958,7 +988,7 @@ public class Sheet
      */
     public final void setImage (BufferedImage image,
                                 boolean adjustImage)
-            throws StepException
+        throws StepException
     {
         try {
             if (picture == null) {
@@ -973,9 +1003,8 @@ public class Sheet
 
             done(OmrStep.LOAD);
         } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + stub.getBook().getInputPath()
-                                 + "\n"
-                                 + ex.getMessage();
+            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
+                    + ex.getMessage();
 
             if (OMR.gui != null) {
                 OMR.gui.displayWarning(msg);
@@ -1123,7 +1152,7 @@ public class Sheet
      */
     public ShapeSymbol getSymbol (Shape shape)
     {
-        final Family family = getStub().getMusicFontFamily();
+        final MusicFamily family = getStub().getMusicFamily();
         final MusicFont font = MusicFont.getBaseFont(family, getScale().getInterline());
 
         return font.getSymbol(shape);
@@ -1234,7 +1263,8 @@ public class Sheet
 
                 if ((shape != null) && (staff != null) && (glyph != null)) {
                     Double pitch = (inter instanceof AbstractPitchedInter)
-                            ? ((AbstractPitchedInter) inter).getPitch() : null;
+                            ? ((AbstractPitchedInter) inter).getPitch()
+                            : null;
                     repository.addSample(
                             inter.getShape(),
                             glyph,
@@ -1289,9 +1319,7 @@ public class Sheet
             stub.setModified(false);
             stub.setUpgraded(false);
             logger.info("Stored {}", structurePath);
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.warn("Error in saving sheet structure " + ex, ex);
         }
     }
@@ -1483,11 +1511,11 @@ public class Sheet
         case LOAD:
             picture = null;
 
-        // Fall-through!
+            // Fall-through!
         case BINARY:
             scale = null;
 
-        // Fall-through!
+            // Fall-through!
         case SCALE:
         case GRID:
             pages.clear();
@@ -1509,7 +1537,7 @@ public class Sheet
 
             if (interController != null) {
                 // To be run on swing thread
-                SwingUtilities.invokeLater(() -> interController.clearHistory());
+                SwingUtilities.invokeLater( () -> interController.clearHistory());
             }
         }
     }
@@ -1540,7 +1568,7 @@ public class Sheet
      * @exception JAXBException raised when unmarshalling goes wrong
      */
     public static Sheet unmarshal (InputStream in)
-            throws JAXBException
+        throws JAXBException
     {
         Unmarshaller um = getJaxbContext().createUnmarshaller();
 
@@ -1558,7 +1586,7 @@ public class Sheet
     // getJaxbContext //
     //----------------//
     public static JAXBContext getJaxbContext ()
-            throws JAXBException
+        throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -1631,14 +1659,14 @@ public class Sheet
 
         @Override
         public GlyphList marshal (ArrayList<Glyph> glyphs)
-                throws Exception
+            throws Exception
         {
             return new GlyphList(glyphs);
         }
 
         @Override
         public ArrayList<Glyph> unmarshal (GlyphList list)
-                throws Exception
+            throws Exception
         {
             return list.glyphs;
         }

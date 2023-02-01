@@ -35,9 +35,9 @@ public class BravuraSymbols
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    protected Family family ()
+    protected MusicFamily family ()
     {
-        return Family.Bravura;
+        return MusicFamily.Bravura;
     }
 
     @Override

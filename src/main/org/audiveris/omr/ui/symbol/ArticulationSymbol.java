@@ -58,7 +58,7 @@ public class ArticulationSymbol
      * @param family the musicFont family
      */
     public ArticulationSymbol (Shape shape,
-                               Family family)
+                               MusicFamily family)
     {
         super(shape, family);
     }

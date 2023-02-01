@@ -94,6 +94,7 @@ public abstract class OmrFont
     private static final Map<String, Map<Integer, Font>> fontCache = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new OmrFont object.
      *
@@ -116,19 +117,23 @@ public abstract class OmrFont
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // cache //
-    //-------//
+
+    //-----------//
+    // cacheFont //
+    //-----------//
     /**
      * Cache the provided font into the global font cache.
      *
      * @param font the font to cache
      */
-    protected static void cache (Font font)
+    protected static void cacheFont (Font font)
     {
-        Map<Integer, Font> sizeMap = fontCache.get(font.getFamily());
+        final String key = font.getName().replaceAll(" ", "");
+        logger.debug("Caching font: {} key:{}", font, key);
+        Map<Integer, Font> sizeMap = fontCache.get(key);
+
         if (sizeMap == null) {
-            fontCache.put(font.getFamily(), sizeMap = new HashMap<>());
+            fontCache.put(key, sizeMap = new HashMap<>());
         }
 
         sizeMap.put(font.getSize(), font);
@@ -149,13 +154,13 @@ public abstract class OmrFont
                                     String fileName,
                                     int size)
     {
-        logger.debug("OmrFont.createFont fontName: {} fileName: {}", fontName, fileName);
+        logger.debug("Creating fontName: {} fileName: {} size: {}", fontName, fileName, size);
 
         final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
         if (logger.isTraceEnabled()) {
             for (String familyName : ge.getAvailableFontFamilyNames()) {
-                logger.info("Font familyName: {}", familyName);
+                logger.trace("Font familyName: {}", familyName);
             }
         }
 
@@ -167,17 +172,16 @@ public abstract class OmrFont
 
                 try (InputStream input = url.openStream()) {
                     logger.debug("Found file {}", fileName);
-                    final Font font = Font.createFont(Font.TRUETYPE_FONT, input)
-                            .deriveFont((float) size);
-                    cache(font);
+                    final Font font = Font.createFont(Font.TRUETYPE_FONT, input).deriveFont(
+                            (float) size);
+                    cacheFont(font);
 
                     final boolean added = ge.registerFont(font);
-                    logger.debug("Created custom font {} added:{}", font, added);
+                    logger.debug("Created custom font: {} added:{}", font, added);
 
                     return font;
-                } catch (FontFormatException |
-                         IOException ex) {
-                    logger.debug("Could not create custom font {} " + ex, fileName);
+                } catch (FontFormatException | IOException ex) {
+                    logger.debug("Could not create custom font: {} " + ex, fileName);
                 }
             } catch (MalformedURLException ex) {
                 logger.warn("MalformedURLException", ex);
@@ -186,8 +190,8 @@ public abstract class OmrFont
 
         // Finally, try a platform font
         final Font font = new Font(fontName, Font.PLAIN, size);
-        cache(font);
-        logger.debug("Using platform font {}", font.getFamily());
+        cacheFont(font);
+        logger.debug("Using platform font: {}", font.getFamily());
 
         return font;
     }
@@ -196,7 +200,7 @@ public abstract class OmrFont
     // getCachedFont //
     //---------------//
     /**
-     * Try to retrieve the font defined by its name and size from the cache.
+     * Try to retrieve the font defined by its name and size from the font cache.
      *
      * @param fontName font name (family name actually)
      * @param size     desired font size
@@ -205,20 +209,46 @@ public abstract class OmrFont
     private static Font getCachedFont (String fontName,
                                        int size)
     {
-        final Map<Integer, Font> sizeMap = fontCache.get(fontName);
+        final String key = fontName.replaceAll(" ", "");
+        final Map<Integer, Font> sizeMap = fontCache.get(key);
 
         if (sizeMap == null) {
+            logger.debug("No sizeMap for {}", key);
             return null;
         }
 
-        return sizeMap.get(size);
+        final Font font = sizeMap.get(size);
+
+        return font;
+    }
+
+    //----------------------//
+    // getCachedFontAnySize //
+    //----------------------//
+    /**
+     * Try to retrieve a font defined by its name, whatever its size, from the font cache.
+     *
+     * @param fontName font name (family name actually)
+     * @return the cached font or null
+     */
+    private static Font getCachedFontAnySize (String fontName)
+    {
+        final String key = fontName.replaceAll(" ", "");
+        final Map<Integer, Font> sizeMap = fontCache.get(key);
+
+        if (sizeMap == null || sizeMap.isEmpty()) {
+            logger.debug("Null or empty sizeMap for {}", key);
+            return null;
+        }
+
+        return sizeMap.entrySet().iterator().next().getValue();
     }
 
     //---------//
     // getFont //
     //---------//
     /**
-     * Retrieve the desired font, either from cache or newly created.
+     * Retrieve the desired font, either from font cache or newly created.
      *
      * @param fontName font name (e.g. "Finale Jazz")
      * @param fileName (optional) file name (e.g. "FinaleJazz.otf")
@@ -234,9 +264,17 @@ public abstract class OmrFont
         Font font = getCachedFont(fontName, size);
 
         if (font != null) {
-            logger.debug("Using cached font {} {}", fontName, size);
+            logger.trace("Using cached font {} {}", fontName, size);
         } else {
-            font = createFont(fontName, fileName, size);
+            // Try to derive from another size
+            final Font any = getCachedFontAnySize(fontName);
+
+            if (any != null)
+                font = any.deriveFont((float) size);
+
+            // We need to create it
+            if (font == null)
+                font = createFont(fontName, fileName, size);
         }
 
         return (style == Font.PLAIN) ? font : font.deriveFont(style);
@@ -247,7 +285,7 @@ public abstract class OmrFont
     //----------------//
     public LineMetrics getLineMetrics (String str)
     {
-        return this.getLineMetrics(str, frc);
+        return getLineMetrics(str, frc);
     }
 
     //--------//
@@ -306,8 +344,10 @@ public abstract class OmrFont
             Point2D toTextOrigin = alignment.toTextOrigin(bounds);
 
             // Draw the symbol
-            layout.draw(g, (float) (location.getX() + toTextOrigin.getX()),
-                        (float) (location.getY() + toTextOrigin.getY()));
+            layout.draw(
+                    g,
+                    (float) (location.getX() + toTextOrigin.getX()),
+                    (float) (location.getY() + toTextOrigin.getY()));
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn("Cannot paint at " + location, ex);
@@ -315,6 +355,7 @@ public abstract class OmrFont
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -150,12 +150,18 @@ public class PictureView
         @Override
         public void render (final Graphics2D g)
         {
-            // Check we have all needed data
-            // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
-            final ViewParameters viewParams = ViewParameters.getInstance();
-            final boolean input = viewParams.isInputPainting();
-            final boolean output = viewParams.isOutputPainting();
-            final boolean voice = viewParams.isVoicePainting();
+            //            // Check we have all needed data
+            //            // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
+            //            final ViewParameters viewParams = ViewParameters.getInstance();
+            //            final boolean input = viewParams.isInputPainting();
+            //            final boolean output = viewParams.isOutputPainting();
+            //            final boolean voice = viewParams.isVoicePainting();
+
+            // For GRAY and BINARY views, there is no point to draw output
+            // Therefore, we just draw the input
+            final boolean input = true;
+            final boolean output = false;
+            final boolean voice = false;
 
             boolean ok = true;
 
@@ -180,7 +186,7 @@ public class PictureView
                 {
                     @Override
                     protected RunTable doInBackground ()
-                            throws Exception
+                        throws Exception
                     {
                         try {
                             LogUtil.start(sheet.getStub());

@@ -59,7 +59,7 @@ public class CodedSymbol
      * @param codes  the point codes
      */
     public CodedSymbol (Shape shape,
-                        Family family,
+                        MusicFamily family,
                         int[] codes)
     {
         super(shape, family);

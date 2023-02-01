@@ -74,7 +74,7 @@ public abstract class Symbols
      *
      * @return the family value
      */
-    protected abstract Family family ();
+    protected abstract MusicFamily family ();
 
     //---------//
     // getCode //

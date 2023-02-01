@@ -51,7 +51,7 @@ public class TextSymbol
      * @param str    the text to draw
      */
     public TextSymbol (Shape shape,
-                       Family family,
+                       MusicFamily family,
                        String str)
     {
         super(shape, family);

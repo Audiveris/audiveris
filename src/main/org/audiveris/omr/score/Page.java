@@ -70,14 +70,15 @@ public class Page
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** This is the rank of this page, counted from 1 in the containing sheet. */
     @XmlAttribute(name = "id")
     private final int id;
 
-    /** Does this page start a movement? */
+    /** Does this page start a movement?. */
     @XmlAttribute(name = "movement-start")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean movementStart;
@@ -99,17 +100,13 @@ public class Page
     @XmlElement(name = "last-time-rational")
     private TimeRational lastTimeRational;
 
-    /** This is the list of LogicalPart's for this page. */
-    @XmlElement(name = "logical-part")
-    private List<LogicalPart> logicalParts;
-
     /** This is the (sub)list of systems for this page, within the sheet systems. */
     @XmlElement(name = "system")
     private List<SystemInfo> systems;
 
     // Transient data
     //---------------
-    //
+
     /** Containing (physical) sheet. */
     @Navigable(false)
     private Sheet sheet;
@@ -128,6 +125,7 @@ public class Page
     private Integer durationDivisor;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Page object.
      *
@@ -154,6 +152,7 @@ public class Page
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -469,54 +468,6 @@ public class Page
         this.lastSystemId = lastSystemId;
     }
 
-    //--------------------//
-    // getLogicalPartById //
-    //--------------------//
-    /**
-     * Report the LogicalPart that corresponds to the provided ID.
-     *
-     * @param id provided ID
-     * @return corresponding LogicalPart or null if not found
-     */
-    public LogicalPart getLogicalPartById (int id)
-    {
-        if (logicalParts != null) {
-            for (LogicalPart log : logicalParts) {
-                if (log.getId() == id) {
-                    return log;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //-----------------//
-    // getLogicalParts //
-    //-----------------//
-    /**
-     * Report the page list of logical parts.
-     *
-     * @return partList the list of parts
-     */
-    public List<LogicalPart> getLogicalParts ()
-    {
-        return logicalParts;
-    }
-
-    //-----------------//
-    // setLogicalParts //
-    //-----------------//
-    /**
-     * Assign a part list valid for the page.
-     *
-     * @param logicalParts the list of logical parts
-     */
-    public void setLogicalParts (List<LogicalPart> logicalParts)
-    {
-        this.logicalParts = logicalParts;
-    }
-
     //-----------------//
     // getMeasureCount //
     //-----------------//
@@ -630,16 +581,16 @@ public class Page
         return systems;
     }
 
-    //------------//
-    // setSystems //
-    //------------//
+    //----------------//
+    // setSystemsFrom //
+    //----------------//
     /**
      * Using IDs of first and last page systems if any, register the proper (sub-)list
      * of systems.
      *
      * @param sheetSystems the sheet whole list of systems
      */
-    public void setSystems (List<SystemInfo> sheetSystems)
+    public void setSystemsFrom (List<SystemInfo> sheetSystems)
     {
         // Define proper indices
         int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
@@ -840,9 +791,8 @@ public class Page
                 for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
-                            final Rational duration = chord.isMeasureRest()
-                                    ? stack.getExpectedDuration()
-                                    : chord.getDuration();
+                            final Rational duration = chord.isMeasureRest() ? stack
+                                    .getExpectedDuration() : chord.getDuration();
 
                             if (duration != null) {
                                 durations.add(duration);

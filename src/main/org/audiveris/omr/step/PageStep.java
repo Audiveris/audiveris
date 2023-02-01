@@ -23,9 +23,11 @@ package org.audiveris.omr.step;
 
 import org.audiveris.omr.score.MeasureFixer;
 import org.audiveris.omr.score.Page;
-import org.audiveris.omr.score.PageReduction;
+import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetReduction;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voices;
@@ -77,6 +79,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -205,7 +208,7 @@ public class PageStep
     //------//
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         // Clean up gutter between systems one under the other
         new SheetReduction(sheet).process();
@@ -358,8 +361,10 @@ public class PageStep
                                 Impact impact)
     {
         if (impact.onParts) {
-            // Connect parts across systems in the page
-            new PageReduction(page).reduce();
+            // Collate parts into logicals
+            final Score score = page.getScore();
+            final List<SheetStub> theStubs = score.getBook().getValidSelectedStubs();
+            new ScoreReduction(score).reduce(theStubs);
         }
 
         if (impact.onMeasures) {

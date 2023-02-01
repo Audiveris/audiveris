@@ -196,7 +196,7 @@ public class TemplateBoard
         if (areCompatible(shape, anchor)) {
             final Scale scale = sheet.getScale();
             final Template template = TemplateFactory.getInstance().getCatalog(
-                    sheet.getStub().getMusicFontFamily(),
+                    sheet.getStub().getMusicFamily(),
                     MusicFont.getHeadPointSize(scale, scale.getInterline())).getTemplate(shape);
             at = new AnchoredTemplate(anchor, template);
         }

@@ -46,7 +46,7 @@ public class StemSymbol
      *
      * @param family the musicFont family
      */
-    public StemSymbol (Family family)
+    public StemSymbol (MusicFamily family)
     {
         super(Shape.STEM, family);
     }

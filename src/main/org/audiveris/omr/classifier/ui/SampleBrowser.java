@@ -45,7 +45,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
@@ -1242,11 +1242,11 @@ public class SampleBrowser
             setFont(list.getFont());
             setText(shape.toString());
 
-            final ShapeSymbol symbol = shape.getDecoratedSymbol(Family.Bravura);
+            final ShapeSymbol symbol = shape.getDecoratedSymbol(MusicFamily.Bravura);
             if (symbol != null) {
                 setIcon(new FixedWidthIcon(symbol));
             } else {
-                logger.warn("Needed symbol for shape {} in {}", shape, Family.Bravura);
+                logger.warn("Needed symbol for shape {} in {}", shape, MusicFamily.Bravura);
             }
 
             return this;

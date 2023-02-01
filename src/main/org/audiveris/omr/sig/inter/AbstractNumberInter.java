@@ -34,7 +34,7 @@ import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumberSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -209,7 +209,7 @@ public abstract class AbstractNumberInter
     // getShapeSymbol //
     //----------------//
     @Override
-    public ShapeSymbol getShapeSymbol (Family family)
+    public ShapeSymbol getShapeSymbol (MusicFamily family)
     {
         return new NumberSymbol(shape, family, value);
     }

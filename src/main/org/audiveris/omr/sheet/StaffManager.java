@@ -61,9 +61,8 @@ import java.util.List;
  * <p>
  * It must be able to correctly handle the sequence of staves even in complex
  * configurations like the following one (referred to as "layout order"):
- * <p>
- * <
- * pre>
+ *
+ * <pre>
  * +-------+
  * | . 1 . |
  * | . 2 . |
@@ -399,18 +398,17 @@ public class StaffManager
      * horizontal side of the current one.
      * <p>
      * On the layout example:
-     * <p>
-     * <
-     * pre>
+     *
+     * <pre>
      * +-------+
-     * | 1 |
-     * | 2 |
+     * | . 1 . |
+     * | . 2 . |
      * +---+---+
      * | 3 | 5 |
      * | 4 | 6 |
      * +---+---+
-     * | 7 |
-     * | 8 |
+     * | . 7 . |
+     * | . 8 . |
      * +-------+
      * - horiNeighbor(1, RIGHT) == null
      * - horiNeighbor(3, RIGHT) == 5
@@ -463,9 +461,9 @@ public class StaffManager
             staves.get(i).setId(i + 1);
         }
 
-//        for (Staff s : staves) {
-//            s.setArea(null);
-//        }
+        //        for (Staff s : staves) {
+        //            s.setArea(null);
+        //        }
     }
 
     //--------//
@@ -527,18 +525,17 @@ public class StaffManager
      * side of the current staff.
      * <p>
      * On the layout example:
-     * <p>
-     * <
-     * pre>
+     *
+     * <pre>
      * +-------+
-     * | 1 |
-     * | 2 |
+     * | . 1 . |
+     * | . 2 . |
      * +---+---+
      * | 3 | 5 |
      * | 4 | 6 |
      * +---+---+
-     * | 7 |
-     * | 8 |
+     * | . 7 . |
+     * | . 8 . |
      * +-------+
      * - vertNeighbors(1, TOP) == []
      * - vertNeighbors(1, BOTTOM) == [2]

@@ -47,7 +47,7 @@ public class SlashedFlagSymbol
      * @param family the MusicFont family
      */
     public SlashedFlagSymbol (Shape shape,
-                              Family family)
+                              MusicFamily family)
     {
         super(shape, family);
     }

@@ -39,9 +39,9 @@ public class MusicalSymbols
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    protected Family family ()
+    protected MusicFamily family ()
     {
-        return Family.MusicalSymbols;
+        return MusicFamily.MusicalSymbols;
     }
 
     @Override

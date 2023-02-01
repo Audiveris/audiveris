@@ -42,7 +42,7 @@ public class KeySharpSymbol
      */
     public KeySharpSymbol (int key,
                            Shape shape,
-                           Family family)
+                           MusicFamily family)
     {
         super(key, shape, family, Shape.SHARP);
     }

@@ -256,7 +256,7 @@ public class SymbolsLinker
             }
 
             switch (oldRole) {
-            case Lyrics:
+            case Lyrics ->
             {
                 for (Inter wInter : sentence.getMembers()) {
                     LyricItemInter item = (LyricItemInter) wInter;
@@ -267,28 +267,22 @@ public class SymbolsLinker
                 }
             }
 
-                break;
-
-            case Direction:
+            case Direction ->
             {
                 for (Relation rel : sig.getRelations(sentence, ChordSentenceRelation.class)) {
                     sig.removeEdge(rel);
                 }
             }
 
-                break;
-
-            case PartName:
+            case PartName ->
             {
                 // Look for proper part
                 Staff staff = system.getClosestStaff(sentence.getCenter());
-                Part part = staff.getPart();
-                part.setName(null);
+                final Part part = staff.getPart();
+                part.setName((SentenceInter) null);
             }
 
-                break;
-
-            case ChordName:
+            case ChordName ->
             {
                 for (Inter wInter : sentence.getMembers()) {
                     for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
@@ -297,19 +291,12 @@ public class SymbolsLinker
                 }
             }
 
-                break;
-
-            case EndingNumber:
-            case EndingText:
+            case EndingNumber, EndingText ->
             {
                 for (Relation rel : sig.getRelations(sentence, EndingSentenceRelation.class)) {
                     sig.removeEdge(rel);
                 }
             }
-
-                break;
-
-            default:
             }
         } catch (Exception ex) {
             logger.warn("Error in unlinkOneSentence for {} {}", sentence, ex.toString(), ex);
@@ -407,7 +394,8 @@ public class SymbolsLinker
      */
     private void linkGraces ()
     {
-        SmallLoop: for (Inter chordInter : sig.inters(SmallChordInter.class)) {
+        SmallLoop:
+        for (Inter chordInter : sig.inters(SmallChordInter.class)) {
             final SmallChordInter smallChord = (SmallChordInter) chordInter;
 
             if (smallChord.isVip()) {

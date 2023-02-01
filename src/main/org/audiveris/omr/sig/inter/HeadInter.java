@@ -56,7 +56,7 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
@@ -569,7 +569,7 @@ public class HeadInter
         if (template == null) {
             final int pointSize = staff.getHeadPointSize();
             final Sheet sheet = staff.getSystem().getSheet();
-            final Family family = sheet.getStub().getMusicFontFamily();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
 
             template = TemplateFactory.getInstance().getCatalog(family, pointSize).getTemplate(
                     shape);

@@ -53,8 +53,8 @@ public class SheetParameters
 
     private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
 
-    /** Specific column spec for 3 fields: inherit box, item description, int value. */
-    private static final String colSpec3 = "12dlu,1dlu,80dlu,1dlu,right:12dlu";
+    // JGoodies column specification:       SelBox     Item             Value
+    private static final String colSpec3 = "10dlu,1dlu,80dlu,1dlu,right:15dlu";
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
@@ -99,7 +99,7 @@ public class SheetParameters
             sheetPanes.add(new ScaledPane(key, null, ip));
         }
 
-        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes, colSpec3);
+        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes, colSpec3, 1);
 
         initialDisplay();
     }
@@ -214,10 +214,14 @@ public class SheetParameters
         @Override
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
+                                 int titleWidth,
                                  int r)
         {
-            // Draw the specific/inherit box
-            builder.add(selBox, cst.xyw(1, r, 1));
+            //            // Draw the specific/inherit box
+            //            builder.add(selBox, cst.xyw(1, r, 1));
+            //            builder.add(title, cst.xyw(3, r, 1));
+            super.defineLayout(builder, cst, 1, r);
+
             builder.add(title, cst.xyw(3, r, 1));
             builder.add(data.getField(), cst.xyw(5, r, 1));
 

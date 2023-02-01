@@ -30,12 +30,12 @@ import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.jdesktop.application.AbstractBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
 
 /**
  * Class <code>StubDependent</code> handles the dependency on current sheet stub availability
@@ -299,7 +299,9 @@ public abstract class StubDependent
 
         if (repetitiveInputSelectable != oldValue) {
             firePropertyChange(
-                    REPETITIVE_INPUT_SELECTABLE, oldValue, this.repetitiveInputSelectable);
+                    REPETITIVE_INPUT_SELECTABLE,
+                    oldValue,
+                    this.repetitiveInputSelectable);
         }
     }
 
@@ -665,7 +667,7 @@ public abstract class StubDependent
     //------------//
     private boolean isBookIdle (Book book)
     {
-        for (SheetStub stub : book.getValidStubs()) {
+        for (SheetStub stub : book.getValidSelectedStubs()) {
             final OmrStep currentStep = stub.getCurrentStep();
 
             if (currentStep != null) {
@@ -682,7 +684,7 @@ public abstract class StubDependent
     private boolean isBookTranscribable (Book book)
     {
         // Book is assumed idle
-        for (SheetStub stub : book.getValidStubs()) {
+        for (SheetStub stub : book.getValidSelectedStubs()) {
             if (!stub.isDone(OmrStep.last())) {
                 return true;
             }

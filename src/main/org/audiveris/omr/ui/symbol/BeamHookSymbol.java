@@ -42,7 +42,7 @@ public class BeamHookSymbol
      *
      * @param family the musicFont family
      */
-    public BeamHookSymbol (Family family)
+    public BeamHookSymbol (MusicFamily family)
     {
         super(Shape.BEAM_HOOK, family);
     }

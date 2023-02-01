@@ -35,7 +35,7 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.util.Entities;
 
@@ -391,7 +391,7 @@ public class TupletGenerator
                                          Shape shape)
     {
         // Tuplet dimension
-        final Family family = system.getSheet().getStub().getMusicFontFamily();
+        final MusicFamily family = system.getSheet().getStub().getMusicFamily();
         final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
         final Dimension dim = fs.getDimension();
 

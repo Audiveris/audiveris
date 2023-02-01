@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                           F a m i l y                                          //
+//                                       T e x t F a m i l y                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,92 +21,123 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.util.param.Param;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+
 /**
- * Enum <code>Family</code> handles the supported music font families.
+ * Class <code>TextFamily</code> handles the collection of supported text font families.
  *
  * @author Hervé Bitteur
  */
-public enum Family
+public enum TextFamily
 {
-    /** Main family. */
-    Bravura("Bravura", "Bravura.otf", null, new BravuraSymbols()),
-    /** Alternate family, some symbols missing. */
-    FinaleJazz("Finale Jazz", "FinaleJazz.otf", Bravura, new FinaleJazzSymbols()),
-    /** Alternate family, for percussion symbols. */
-    JazzPerc("Jazz Perc", "JazzPerc.ttf", FinaleJazz, new JazzPercSymbols()),
-    /** Alternate family, with many missing symbols. */
-    MusicalSymbols("MusicalSymbols", "MusicalSymbols.ttf", Bravura, new MusicalSymbols());
+    /** Standard text family. */
+    SansSerif("Sans Serif", null),
 
-    private static final Logger logger = LoggerFactory.getLogger(Family.class);
+    /** Standard text family. */
+    Serif("Serif", null),
+
+    /** Jazz text family. */
+    FinaleJazzText("Finale Jazz Text", "FinaleJazzText.otf");
+
+    private static final Logger logger = LoggerFactory.getLogger(TextFamily.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** A descriptive name for the font. */
     final String fontName;
 
     /** Precise name of font file, if any. */
     final String fileName;
 
-    /** Another family, if any, used as backup. */
-    final Family backup;
-
-    /** Specific symbols handling for this font. */
-    final Symbols symbols;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a <code> Family</code> instance.
+     * Creates a <code>TextFamily</code> instance.
      *
      * @param fontName (mandatory) Name for the font
      * @param fileName (optional) Related font file name in 'res' folder.
      *                 If null, a platform font will be searched using fontName.
-     * @param backup   (optional) Backup family if any
-     * @param symbols  (mandatory) Implementation of related symbols
      */
-    Family (String fontName,
-            String fileName,
-            Family backup,
-            Symbols symbols)
+    TextFamily (String fontName,
+                String fileName)
     {
         this.fontName = fontName;
         this.fileName = fileName;
-        this.backup = backup;
-        this.symbols = symbols;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    public String getFontName ()
-    {
-        return fontName;
-    }
 
     public String getFileName ()
     {
         return fileName;
     }
 
-    public Family getBackup ()
+    public String getFontName ()
     {
-        return backup;
+        return fontName;
     }
 
-    public Symbols getSymbols ()
+    public static TextFamily valueOfName (String value)
     {
-        return symbols;
-    }
-
-    public static Family valueOfName (String fontName)
-    {
-        for (Family family : Family.values()) {
-            if (family.name().equalsIgnoreCase(fontName)
-                        || family.fontName.equalsIgnoreCase(fontName)) {
+        for (TextFamily family : TextFamily.values()) {
+            if (family.name().equalsIgnoreCase(value) || family.fontName.equalsIgnoreCase(value)) {
                 return family;
             }
         }
 
-        logger.warn("No family for font name {}", fontName);
+        logger.warn("No music family for value: \"{}\"", value);
         return null;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //---------//
+    // MyParam //
+    //---------//
+    /**
+     * Class <code>MyParam</code> is a param on TextFamily.
+     */
+    public static class MyParam
+            extends Param<TextFamily>
+    {
+        public MyParam (Object scope)
+        {
+            super(scope);
+        }
+
+        public static class JaxbAdapter
+                extends XmlAdapter<TextFamily, MyParam>
+        {
+
+            @Override
+            public TextFamily marshal (MyParam fp)
+                throws Exception
+            {
+                if (fp == null) {
+                    return null;
+                }
+
+                return fp.getSpecific();
+            }
+
+            @Override
+            public MyParam unmarshal (TextFamily value)
+                throws Exception
+            {
+                if (value == null) {
+                    return null;
+                }
+
+                final MyParam fp = new MyParam(null);
+                fp.setSpecific(value);
+
+                return fp;
+            }
+        }
     }
 }

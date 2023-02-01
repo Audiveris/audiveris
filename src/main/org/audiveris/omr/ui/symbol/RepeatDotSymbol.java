@@ -51,7 +51,7 @@ public class RepeatDotSymbol
      *
      * @param family the musicFont family
      */
-    public RepeatDotSymbol (Family family)
+    public RepeatDotSymbol (MusicFamily family)
     {
         super(Shape.REPEAT_DOT, family);
     }

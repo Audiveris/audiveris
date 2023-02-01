@@ -43,9 +43,9 @@ public class FinaleJazzSymbols
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    protected Family family ()
+    protected MusicFamily family ()
     {
-        return Family.FinaleJazz;
+        return MusicFamily.FinaleJazz;
     }
 
     @Override
@@ -293,7 +293,7 @@ public class FinaleJazzSymbols
          * @param isIcon true for an icon
          */
         public FlagsSymbol (Shape shape,
-                            Family family,
+                            MusicFamily family,
                             int flagCount)
         {
             super(shape, family);
@@ -385,7 +385,7 @@ public class FinaleJazzSymbols
          * @param flagCount the number of flags
          */
         public FlagsDownSymbol (Shape shape,
-                                Family family,
+                                MusicFamily family,
                                 int flagCount)
         {
             super(shape, family, flagCount);

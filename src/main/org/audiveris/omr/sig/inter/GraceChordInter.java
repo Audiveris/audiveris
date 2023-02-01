@@ -37,7 +37,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 
 import org.slf4j.Logger;
@@ -265,7 +265,7 @@ public class GraceChordInter
                                                Sheet sheet)
     {
         final Scale scale = sheet.getScale();
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final FontSymbol fs = headShape.getFontSymbolByInterline(family, scale.getInterline());
         return fs.getDimension();
     }

@@ -88,7 +88,7 @@ public class OctaveShiftSymbol
      * @param family the musicFont family
      */
     public OctaveShiftSymbol (Shape shape,
-                              Family family)
+                              MusicFamily family)
     {
         this(shape, Kind.ALTA, family);
     }
@@ -102,7 +102,7 @@ public class OctaveShiftSymbol
      */
     public OctaveShiftSymbol (Shape shape,
                               Kind kind,
-                              Family family)
+                              MusicFamily family)
     {
         super(shape, family);
         this.kind = kind;

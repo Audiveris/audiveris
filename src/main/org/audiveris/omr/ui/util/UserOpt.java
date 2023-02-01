@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  F o n t F a m i l y P a r a m                                 //
+//                                          U s e r O p t                                         //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,55 +19,18 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.ui.symbol;
-
-import org.audiveris.omr.util.param.Param;
-
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+package org.audiveris.omr.ui.util;
 
 /**
- * Class <code>FontFamilyParam</code> is a param on MusicFont.Family.
+ * Class <code>UserOpt</code> provides user options.
  *
  * @author Hervé Bitteur
  */
-public class FontFamilyParam
-        extends Param<Family>
+public enum UserOpt
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    public FontFamilyParam (Object scope)
-    {
-        super(scope);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    public static class JaxbAdapter
-            extends XmlAdapter<Family, FontFamilyParam>
-    {
-
-        @Override
-        public Family marshal (FontFamilyParam fp)
-                throws Exception
-        {
-            if (fp == null) {
-                return null;
-            }
-
-            return fp.getSpecific();
-        }
-
-        @Override
-        public FontFamilyParam unmarshal (Family value)
-                throws Exception
-        {
-            if (value == null) {
-                return null;
-            }
-
-            final FontFamilyParam fp = new FontFamilyParam(null);
-            fp.setSpecific(value);
-
-            return fp;
-        }
-    }
+    OK,
+    Commit,
+    Apply,
+    Cancel,
+    Exit;
 }

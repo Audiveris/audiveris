@@ -59,7 +59,7 @@ public class RestSymbol
      * @param family the musicFont family
      */
     public RestSymbol (Shape shape,
-                       Family family)
+                       MusicFamily family)
     {
         super(shape, family);
     }

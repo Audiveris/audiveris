@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
@@ -227,7 +227,7 @@ public class BracketInter
     {
         if (sig != null) {
             final Sheet sheet = sig.getSystem().getSheet();
-            final Family family = sheet.getStub().getMusicFontFamily();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
             final MusicFont font = MusicFont.getBaseFont(family, sheet.getScale().getInterline());
             computeArea(font);
         }

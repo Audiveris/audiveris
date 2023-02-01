@@ -43,12 +43,14 @@ public class LTextField
      * @param editable Specifies whether this field will be editable
      * @param label    the string to be used as label text
      * @param tip      the related tool tip text
+     * @param width    the field width in characters
      */
     public LTextField (boolean editable,
                        String label,
-                       String tip)
+                       String tip,
+                       int width)
     {
-        super(label, tip, new JTextField(FIELD_WIDTH));
+        super(label, tip, new JTextField(width));
 
         JTextField textField = getField();
         textField.setEditable(editable);
@@ -59,6 +61,20 @@ public class LTextField
         }
 
         textField.setHorizontalAlignment(JTextField.CENTER);
+    }
+
+    /**
+     * Creates a new LTextField object.
+     *
+     * @param editable Specifies whether this field will be editable
+     * @param label    the string to be used as label text
+     * @param tip      the related tool tip text
+     */
+    public LTextField (boolean editable,
+                       String label,
+                       String tip)
+    {
+        this(editable, label, tip, FIELD_WIDTH);
     }
 
     //------------//

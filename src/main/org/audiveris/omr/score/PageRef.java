@@ -23,6 +23,11 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Navigable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,7 +37,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class <code>PageRef</code> represents a page reference within a <code>SheetStub</code>.
+ * Class <code>PageRef</code> represents, within a <code>SheetStub</code>, a soft reference
+ * to a page.
  * <p>
  * The hierarchy of Book, SheetStub and PageRef instances always remains in memory,
  * but Sheet and Page instances can be swapped out.
@@ -53,9 +59,9 @@ public class PageRef
 
     // Persistent data
     //----------------
-    //
+
     /**
-     * This is the page number within the containing sheet.
+     * This is the page rank within the containing sheet.
      * <ul>
      * <li>Value is 1 if the sheet contains just 1 page (which is the most frequent case)
      * <li>Value is in [1..n] range if there are n pages in the same sheet
@@ -94,34 +100,48 @@ public class PageRef
      * <p>
      * Knowing this value allows to process rhythm and check measures in the following page,
      * without having to load this one.
-     * <p>
      */
     @XmlElement(name = "last-time-rational")
     private TimeRational lastTimeRational;
 
+    /**
+     * Information about the sequence of systems in this page.
+     */
+    @XmlElement(name = "system")
+    private final List<SystemRef> systems = new ArrayList<>();
+
     // Transient data
     //---------------
-    //
+
+    /**
+     * The rank of its containing sheet within its book.
+     *
+     * @see #afterUnmarshal (Unmarshaller, Object )
+     */
     private int sheetNumber;
 
+    /** Containing sheet stub. */
+    @Navigable(false)
+    private SheetStub stub;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PageRef</code> object.
      *
-     * @param sheetNumber    sheet number within book
-     * @param id             page id within sheet
-     * @param movementStart  is page a movement start?
-     * @param deltaMeasureId increase of measure IDs within the page, or null
+     * @param stub          containing sheet stub
+     * @param id            page id within sheet
+     * @param movementStart is page a movement start?
      */
-    public PageRef (int sheetNumber,
+    public PageRef (SheetStub stub,
                     int id,
-                    boolean movementStart,
-                    Integer deltaMeasureId)
+                    boolean movementStart)
     {
-        this.sheetNumber = sheetNumber;
+        this.stub = stub;
         this.id = id;
-        this.deltaMeasureId = deltaMeasureId;
         this.movementStart = movementStart;
+
+        sheetNumber = stub.getNumber();
     }
 
     /**
@@ -134,6 +154,26 @@ public class PageRef
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        stub = (SheetStub) parent;
+        sheetNumber = stub.getNumber();
+    }
+
+    //-----------//
+    // addSystem //
+    //-----------//
+    public void addSystem (SystemRef system)
+    {
+        systems.add(system);
+    }
+
     //-----------//
     // compareTo //
     //-----------//
@@ -154,11 +194,11 @@ public class PageRef
     @Override
     public boolean equals (Object obj)
     {
-        if (!(obj instanceof PageRef)) {
-            return false;
+        if (obj instanceof PageRef that) {
+            return compareTo(that) == 0;
         }
 
-        return compareTo((PageRef) obj) == 0;
+        return false;
     }
 
     /**
@@ -169,20 +209,28 @@ public class PageRef
         return deltaMeasureId;
     }
 
-    /**
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
-    }
-
+    //-------//
+    // getId //
+    //-------//
     /**
      * @return the id
      */
     public int getId ()
     {
         return id;
+    }
+
+    //----------//
+    // getIndex //
+    //----------//
+    /**
+     * Report index of this page within the containing sheet stub.
+     *
+     * @return index in list of PageRef's
+     */
+    public int getIndex ()
+    {
+        return stub.getPageRefs().indexOf(this);
     }
 
     /**
@@ -193,20 +241,44 @@ public class PageRef
         return lastTimeRational;
     }
 
-    /**
-     * @param lastTimeRational the lastTimeRational value to set
-     */
-    public void setLastTimeRational (TimeRational lastTimeRational)
+    //---------------//
+    // getPageNumber //
+    //---------------//
+    public PageNumber getPageNumber ()
     {
-        this.lastTimeRational = lastTimeRational;
+        return new PageNumber(stub.getNumber(), 1 + stub.getPageRefs().indexOf(this));
     }
 
+    //----------------//
+    // getSheetNumber //
+    //----------------//
     /**
      * @return the sheetNumber
      */
     public int getSheetNumber ()
     {
         return sheetNumber;
+    }
+
+    //---------//
+    // getStub //
+    //---------//
+    public SheetStub getStub ()
+    {
+        return stub;
+    }
+
+    //------------//
+    // getSystems //
+    //------------//
+    /**
+     * Report the systems in this page
+     *
+     * @return the (unmodifiable) list of systems
+     */
+    public List<SystemRef> getSystems ()
+    {
+        return Collections.unmodifiableList(systems);
     }
 
     //----------//
@@ -226,19 +298,64 @@ public class PageRef
     // isMovementStart //
     //-----------------//
     /**
-     * @return the movementStart
+     * Report whether this page starts a movement.
+     *
+     * @return true if so
      */
     public boolean isMovementStart ()
     {
         return movementStart;
     }
 
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Set the increase on measure ID in this page.
+     *
+     * @param deltaMeasureId the delta Measure Id to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
+    }
+
+    //---------------------//
+    // setLastTimeRational //
+    //---------------------//
+    /**
+     * Remember the time rational value at end of this page.
+     *
+     * @param lastTimeRational the last TimeRational value to set
+     */
+    public void setLastTimeRational (TimeRational lastTimeRational)
+    {
+        this.lastTimeRational = lastTimeRational;
+    }
+
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Redefines the sequence of systems in this page.
+     *
+     * @param systems the new sequence of systems
+     */
+    public final void setSystems (List<SystemRef> systems)
+    {
+        this.systems.clear();
+        this.systems.addAll(systems);
+    }
+
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("PageRef{");
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('#').append(getId()).append('{');
         sb.append("sheetNumber:").append(sheetNumber);
-        sb.append(" id:").append(id);
 
         if (isMovementStart()) {
             sb.append(" movementStart");
@@ -252,19 +369,6 @@ public class PageRef
             sb.append(" lastTimeRational:").append(lastTimeRational);
         }
 
-        sb.append('}');
-
-        return sb.toString();
-    }
-
-    //-----------------//
-    // beforeUnmarshal //
-    //-----------------//
-    @SuppressWarnings("unused")
-    private void beforeUnmarshal (Unmarshaller u,
-                                  Object parent)
-    {
-        SheetStub stub = (SheetStub) parent;
-        sheetNumber = stub.getNumber();
+        return sb.append('}').toString();
     }
 }

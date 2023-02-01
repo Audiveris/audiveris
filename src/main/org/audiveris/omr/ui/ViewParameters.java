@@ -65,6 +65,9 @@ public class ViewParameters
     /** Should the marks be painted. */
     public static final String MARK_PAINTING = "markPainting";
 
+    /** Should the part names be painted. */
+    public static final String PART_NAME_PAINTING = "partNamePainting";
+
     /** Should the slots be painted. */
     public static final String SLOT_PAINTING = "slotPainting";
 
@@ -166,8 +169,8 @@ public class ViewParameters
         public Icon getIcon ()
         {
             if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext()
-                        .getResourceMap(ViewParameters.class);
+                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                        ViewParameters.class);
                 String key = getClass().getSimpleName() + "." + this + ".icon";
                 String resourceName = resource.getString(key);
                 icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
@@ -186,6 +189,9 @@ public class ViewParameters
 
     /** Chord Ids painting is chosen to be not persistent. */
     private boolean chordIdsPainting = false;
+
+    /** Part names painting is chosen to be not persistent. */
+    private boolean partNamePainting = false;
 
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
@@ -541,6 +547,24 @@ public class ViewParameters
         firePropertyChange(CHORD_IDS_PAINTING, oldValue, value);
     }
 
+    //--------------------//
+    // isPartNamePainting //
+    //--------------------//
+    public boolean isPartNamePainting ()
+    {
+        return partNamePainting;
+    }
+
+    //---------------------//
+    // setPartNamePainting //
+    //---------------------//
+    public void setPartNamePainting (boolean value)
+    {
+        boolean oldValue = partNamePainting;
+        partNamePainting = value;
+        firePropertyChange(PART_NAME_PAINTING, oldValue, value);
+    }
+
     //-----------------//
     // isVoicePainting //
     //-----------------//
@@ -655,6 +679,19 @@ public class ViewParameters
      */
     @Action(selectedProperty = CHORD_IDS_PAINTING)
     public void toggleChordIds (ActionEvent e)
+    {
+    }
+
+    //----------------//
+    // togglePartName //
+    //----------------//
+    /**
+     * Action that toggles the display of part names
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = PART_NAME_PAINTING)
+    public void togglePartName (ActionEvent e)
     {
     }
 

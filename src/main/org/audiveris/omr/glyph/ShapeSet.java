@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -812,7 +812,7 @@ public class ShapeSet
      * @param top      the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addAllShapes (Family family,
+    public static void addAllShapes (MusicFamily family,
                                      JComponent top,
                                      ActionListener listener)
     {
@@ -845,7 +845,7 @@ public class ShapeSet
      * @param top      the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addSetShapes (Family family,
+    public static void addSetShapes (MusicFamily family,
                                      ShapeSet set,
                                      JComponent top,
                                      ActionListener listener)

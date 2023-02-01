@@ -40,24 +40,26 @@ public class ScopedPanel
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Standard column spec for 4 fields. */
-    private static final String defaultColSpec4 = "12dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:12dlu";
+    // JGoodies column specification:       SelBox     Item1       Item2            Box
+    private static final String colSpec4 = "10dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:10dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of individual data panes. */
-    private final List<XactDataPane> panes = new ArrayList<>();
+    protected final List<XactDataPane> panes = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new <code>ScopedPanel</code> object.
      *
-     * @param name    panel name
-     * @param panes   contained data panes
-     * @param colSpec specific column specification
+     * @param name       panel name
+     * @param panes      contained data panes
+     * @param colSpec    specific column specification
+     * @param titleWidth number of cells for title, either 1 (just Item1) or 3 (Item1,|,Item2)
      */
     public ScopedPanel (String name,
                         List<XactDataPane> panes,
-                        String colSpec)
+                        String colSpec,
+                        int titleWidth)
     {
         setName(name);
 
@@ -67,7 +69,7 @@ public class ScopedPanel
             }
         }
 
-        defineLayout(colSpec != null ? colSpec : defaultColSpec4);
+        defineLayout(colSpec, titleWidth);
 
         for (XactDataPane pane : this.panes) {
             // Pane is pre-selected if model has specific data
@@ -79,7 +81,7 @@ public class ScopedPanel
     }
 
     /**
-     * Creates a new <code>ScopedPanel</code> object, using default column specifications.
+     * Creates a new <code>ScopedPanel</code> object, using default colSpec4.
      *
      * @param name  panel name
      * @param panes contained data panes
@@ -87,26 +89,10 @@ public class ScopedPanel
     public ScopedPanel (String name,
                         List<XactDataPane> panes)
     {
-        this(name, panes, null);
+        this(name, panes, colSpec4, 3);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Report the contained pane of proper class.
-     *
-     * @param classe desired class
-     * @return the pane found or null
-     */
-    public XactDataPane getPane (Class<?> classe)
-    {
-        for (XactDataPane pane : panes) {
-            if (classe.isAssignableFrom(pane.getClass())) {
-                return pane;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Report the contained data panes.
@@ -121,9 +107,11 @@ public class ScopedPanel
     /**
      * Define layout of the pane.
      *
-     * @param colSpec4 column specification offering 4 field
+     * @param colSpec    column specification offering either 3 or 4 logical fields
+     * @param titleWidth number of cells for title
      */
-    private void defineLayout (String colSpec4)
+    private void defineLayout (String colSpec,
+                               int titleWidth)
     {
         // Compute the total number of logical rows
         int logicalRowCount = 0;
@@ -132,13 +120,13 @@ public class ScopedPanel
             logicalRowCount += pane.getLogicalRowCount();
         }
 
-        FormLayout layout = new FormLayout(colSpec4, Panel.makeRows(logicalRowCount));
+        FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cst = new CellConstraints();
         int r = 1;
 
         for (XactDataPane pane : panes) {
-            r = pane.defineLayout(builder, cst, r);
+            r = pane.defineLayout(builder, cst, titleWidth, r);
         }
     }
 }

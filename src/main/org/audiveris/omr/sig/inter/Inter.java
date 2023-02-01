@@ -35,7 +35,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
@@ -359,7 +359,7 @@ public interface Inter
      * @param family the MusicFont family
      * @return shape.getDecoratedSymbol() by default.
      */
-    ShapeSymbol getShapeSymbol (Family family);
+    ShapeSymbol getShapeSymbol (MusicFamily family);
 
     /**
      * Report the sig which hosts this interpretation.

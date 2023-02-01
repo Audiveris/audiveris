@@ -67,7 +67,7 @@ public class BeamSymbol
      *
      * @param family the musicFont family
      */
-    public BeamSymbol (Family family)
+    public BeamSymbol (MusicFamily family)
     {
         this(Shape.BEAM, family);
     }
@@ -79,7 +79,7 @@ public class BeamSymbol
      * @param family the musicFont family
      */
     protected BeamSymbol (Shape shape,
-                          Family family)
+                          MusicFamily family)
     {
         super(shape, family);
     }

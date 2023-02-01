@@ -124,7 +124,7 @@ public class ShapeSymbol
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** MusicFont family. */
-    protected final Family family;
+    protected final MusicFamily family;
 
     /** Related shape. */
     protected final Shape shape;
@@ -158,7 +158,7 @@ public class ShapeSymbol
      * @param family the MusicFont family
      */
     public ShapeSymbol (Shape shape,
-                        Family family)
+                        MusicFamily family)
     {
         this.shape = shape;
         this.family = family;
@@ -406,7 +406,7 @@ public class ShapeSymbol
     //-----------//
     // getFamily //
     //-----------//
-    public Family getFamily ()
+    public MusicFamily getFamily ()
     {
         return family;
     }

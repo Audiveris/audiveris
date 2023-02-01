@@ -52,7 +52,7 @@ public class RepeatBarSymbol
      * @param family the selected MusicFont family
      */
     public RepeatBarSymbol (Shape shape,
-                            Family family)
+                            MusicFamily family)
     {
         super(shape, family);
     }

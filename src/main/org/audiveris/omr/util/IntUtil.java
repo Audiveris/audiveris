@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>IntUtil</code> gathers convenient methods related to Integer handling.
@@ -86,18 +87,8 @@ public abstract class IntUtil
      */
     public static String toCsvString (Collection<Integer> collection)
     {
-        final StringBuilder sb = new StringBuilder();
-        boolean started = false;
-
-        for (Integer i : collection) {
-            if (started) {
-                sb.append(',');
-            }
-
-            sb.append((i == null) ? "null" : i);
-            started = true;
-        }
-
-        return sb.toString();
+        return new StringBuilder().append(
+                collection.stream().map(i -> (i == null) ? "null" : "" + i).collect(
+                        Collectors.joining(","))).toString();
     }
 }

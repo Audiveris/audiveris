@@ -25,6 +25,9 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.LineUtil;
+import static org.audiveris.omr.sheet.ProcessingSwitch.lyrics;
+import static org.audiveris.omr.sheet.ProcessingSwitch.lyricsAboveStaff;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.symbol.OmrFont;
@@ -274,7 +277,7 @@ public class TextWord
      */
     public String checkValidity ()
     {
-        // Check for abnormal characters
+        // Remove word with abnormal characters
         for (char ch : ABNORMAL_CHARS) {
             if (value.indexOf(ch) != -1) {
                 logger.debug("      abnormal char {} in {}", ch, this);
@@ -283,7 +286,7 @@ public class TextWord
             }
         }
 
-        // Check for invalid XML characters
+        // Remove word with invalid XML characters
         WrappedBoolean stripped = new WrappedBoolean(false);
         XmlUtil.stripNonValidXMLCharacters(value, stripped);
 
@@ -293,7 +296,7 @@ public class TextWord
             return "invalid-xml-chars";
         }
 
-        // Check for invalid word values
+        // Remove invalid word
         if (ABNORMAL_WORDS != null) {
             Matcher matcher = ABNORMAL_WORDS.matcher(value);
 
@@ -304,18 +307,21 @@ public class TextWord
             }
         }
 
-        // Check for one-letter word values
+        // Remove one-letter word (except if lyrics switch is set)
         if (ONE_LETTER_WORDS != null) {
-            Matcher matcher = ONE_LETTER_WORDS.matcher(value);
+            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+            if (!switches.getValue(lyrics) && !switches.getValue(lyricsAboveStaff)) {
+                final Matcher matcher = ONE_LETTER_WORDS.matcher(value);
 
-            if (matcher.matches()) {
-                logger.debug("      one-letter word value {}", this);
+                if (matcher.matches()) {
+                    logger.debug("      one-letter word value {}", this);
 
-                return "one-letter-word-value";
+                    return "one-letter-word-value";
+                }
             }
         }
 
-        // Check for dash-only word values
+        // Remove dash-only word
         if (DASH_ONLY_WORDS != null) {
             Matcher matcher = DASH_ONLY_WORDS.matcher(value);
 
@@ -326,7 +332,7 @@ public class TextWord
             }
         }
 
-        return null; // OK
+        return null; // No invalidity detected, word is OK
     }
 
     //------------//

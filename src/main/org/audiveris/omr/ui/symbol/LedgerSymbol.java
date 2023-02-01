@@ -47,7 +47,7 @@ public class LedgerSymbol
      *
      * @param family the musicFont family
      */
-    public LedgerSymbol (Family family)
+    public LedgerSymbol (MusicFamily family)
     {
         super(Shape.LEDGER, family);
     }

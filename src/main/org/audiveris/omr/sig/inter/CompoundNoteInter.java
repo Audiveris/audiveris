@@ -42,7 +42,7 @@ import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.symbol.CompoundNoteSymbol;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -192,7 +192,7 @@ public class CompoundNoteInter
                 center.x,
                 isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
         final Sheet sheet = staff.getSystem().getSheet();
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final MusicFont font = MusicFont.getBaseFont(family, staffInterline);
         final CompoundNoteSymbol symbol = (CompoundNoteSymbol) font.getSymbol(shape);
         deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter);

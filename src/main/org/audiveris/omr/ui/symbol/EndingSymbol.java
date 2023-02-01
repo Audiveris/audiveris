@@ -51,7 +51,7 @@ public class EndingSymbol
      * @param family       the musicFont family
      */
     public EndingSymbol (boolean withRightLeg,
-                         Family family)
+                         MusicFamily family)
     {
         super(withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, family);
         this.withRightLeg = withRightLeg;

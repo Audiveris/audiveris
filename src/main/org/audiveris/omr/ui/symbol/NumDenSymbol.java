@@ -53,7 +53,7 @@ public class NumDenSymbol
      * @param denominator the denominator value
      */
     public NumDenSymbol (Shape shape,
-                         Family family,
+                         MusicFamily family,
                          int numerator,
                          int denominator)
     {

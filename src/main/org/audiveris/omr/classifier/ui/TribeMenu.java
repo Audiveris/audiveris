@@ -205,7 +205,7 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(sheet.getStub().getMusicFontFamily(),
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(),
                                   this,
                                   (ActionEvent e) -> {
                                       JMenuItem source = (JMenuItem) e.getSource();

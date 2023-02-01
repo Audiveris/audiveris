@@ -24,8 +24,11 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.StaffPosition;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -39,8 +42,11 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.text.FontInfo;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
@@ -62,6 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -91,8 +98,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * score, but only after one or several systems played by the piano part.
  * <p>
  * We assume that the configuration of staves within the physical Part instances of the same logical
- * LogicalPart do not vary (in number of staves or in relative positions of staves within the part).
- * However, the part as a whole may appear (or disappear?) from one system to the next.
+ * LogicalPart do not vary (in number of staves, in number of lines in staves or in relative
+ * positions of staves within the part).
+ * <p>
+ * The part, as a whole, may appear (or disappear) from one system to the next.
  * <p>
  * During export to MusicXML, dummy parts (and their contained dummy staves and measures) can be
  * virtually inserted <i>on-the-fly</i> into the structure of page/system/part/measure/staff
@@ -110,8 +119,10 @@ public class Part
     private static final Logger logger = LoggerFactory.getLogger(Part.class);
 
     /** For comparing Part instances according to their id. */
-    public static final Comparator<Part> byId = (Part p1, Part p2)
-            -> Integer.compare(Math.abs(p1.getId()), Math.abs(p2.getId()));
+    public static final Comparator<Part> byId = (Part p1,
+                                                 Part p2) -> Integer.compare(
+                                                         Math.abs(p1.getId()),
+                                                         Math.abs(p2.getId()));
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -123,11 +134,13 @@ public class Part
      * but later set as the ID value of its related logical part.
      * <p>
      * <b>BEWARE</b>, this ID is not to be used as an index!
+     *
+     * @see #getIndex()
      */
     @XmlAttribute(name = "id")
     private int id;
 
-    /** This is the text, if any, that faces this system part in the left margin. */
+    /** This is the text item, if any, that faces this system part in the left margin. */
     @XmlIDREF
     @XmlAttribute(name = "name")
     private SentenceInter name;
@@ -141,10 +154,11 @@ public class Part
     private boolean merged;
 
     /** This is the vertical sequence of staves in this part. */
-    @XmlElementRefs({
-        @XmlElementRef(type = Staff.class),
-        @XmlElementRef(type = OneLineStaff.class),
-        @XmlElementRef(type = Tablature.class)})
+    @XmlElementRefs(
+    {
+            @XmlElementRef(type = Staff.class),
+            @XmlElementRef(type = OneLineStaff.class),
+            @XmlElementRef(type = Tablature.class) })
     private final List<Staff> staves = new ArrayList<>();
 
     /**
@@ -469,7 +483,7 @@ public class Part
             measure.splitBefore(pivotStaff, partBelow);
         }
 
-        int myIndex = system.getParts().indexOf(this);
+        int myIndex = getIndex();
         system.addPart(myIndex + 1, partBelow);
 
         // Part numbering (to be refined)
@@ -595,12 +609,29 @@ public class Part
     //-------//
     /**
      * Report the current id of this part.
+     * <p>
+     * After parts collation, this is the related logical id.
      *
-     * @return the part id
+     * @return the part id, not to be confused with part index.
+     * @see #getIndex()
      */
     public int getId ()
     {
         return id;
+    }
+
+    //----------//
+    // getIndex //
+    //----------//
+    /**
+     * Report the index of this part within the containing system.
+     *
+     * @return index within system, not to be confused with id.
+     * @see #getId()
+     */
+    public int getIndex ()
+    {
+        return system.getParts().indexOf(this);
     }
 
     //-------//
@@ -705,7 +736,47 @@ public class Part
      */
     public LogicalPart getLogicalPart ()
     {
-        return system.getPage().getLogicalPartById(id);
+        final Score score = system.getPage().getScore();
+
+        if (score == null)
+            return null;
+
+        return score.getLogicalPartById(id);
+    }
+
+    //----------------//
+    // setLogicalPart //
+    //----------------//
+    /**
+     * Modify the related logical part.
+     *
+     * @param logicalPart the provided logical part
+     * @param manual      true for a manual operation
+     */
+    public void setLogicalPart (LogicalPart logicalPart,
+                                boolean manual)
+    {
+        // Determine logical id
+        final int logicalId = logicalPart.getId();
+
+        // Update part id
+        setId(logicalId);
+
+        // Update part name accordingly
+        final Boolean isFirst = system.isFirstInScore();
+        if (isFirst != null && isFirst) {
+            setName(logicalPart.getName());
+        } else {
+            final String abbrev = logicalPart.getAbbreviation();
+            setName(abbrev != null ? abbrev : logicalPart.getName());
+        }
+
+        // Update partRef as well
+        final PartRef partRef = getRef();
+        if (partRef != null) {
+            partRef.setLogicalId(logicalId);
+            partRef.setManual(manual);
+        }
     }
 
     //-----------//
@@ -738,8 +809,7 @@ public class Part
     {
         int maxDy = 0;
 
-        final LineInfo line = (side == VerticalSide.TOP)
-                ? getFirstStaff().getFirstLine()
+        final LineInfo line = (side == VerticalSide.TOP) ? getFirstStaff().getFirstLine()
                 : getLastStaff().getLastLine();
         final SIGraph sig = getSystem().getSig();
         final Set<Inter> inters = new HashSet<>();
@@ -829,7 +899,8 @@ public class Part
             return null;
         }
 
-        if ((point.getX() >= staff.getAbscissa(LEFT)) && (point.getX() <= staff.getAbscissa(RIGHT))) {
+        if ((point.getX() >= staff.getAbscissa(LEFT)) && (point.getX() <= staff.getAbscissa(
+                RIGHT))) {
             for (Measure measure : measures) {
                 PartBarline barline = measure.getRightPartBarline();
 
@@ -866,17 +937,102 @@ public class Part
         return (name != null) ? name.getValue() : null;
     }
 
+    //--------//
+    // getRef //
+    //--------//
+    /**
+     * Report the corresponding PartRef in sheet stub.
+     *
+     * @return its PartRef
+     */
+    public PartRef getRef ()
+    {
+        final Page page = system.getPage();
+        final SheetStub stub = page.getSheet().getStub();
+
+        final PageRef pageRef = stub.getPageRefs().get(page.getId() - 1);
+        final List<SystemRef> systemRefs = pageRef.getSystems();
+
+        // For backward compatibility
+        if (systemRefs.isEmpty()) {
+            return null;
+        }
+
+        final SystemRef systemRef = systemRefs.get(system.getId() - 1);
+
+        return systemRef.getParts().get(getIndex());
+    }
+
     //---------//
     // setName //
     //---------//
     /**
-     * Assign a name to this part.
+     * Assign a name item to this part.
      *
-     * @param name the name to set
+     * @param name the name item to set
+     * @see #setName(String)
      */
     public void setName (SentenceInter name)
     {
         this.name = name;
+
+        if (name != null) {
+            // Normalize font info for part name
+            for (Inter inter : name.getMembers()) {
+                final WordInter word = (WordInter) inter;
+                final FontInfo old = word.getFontInfo();
+                word.setFontInfo(new FontInfo(old.pointsize, old.fontName));
+            }
+
+            final FontInfo old = name.getMeanFont();
+            name.setMeanFont(new FontInfo(old.pointsize, old.fontName));
+
+        }
+
+        // Update PartRef as well
+        final PartRef partRef = getRef();
+        if (partRef != null) {
+            partRef.setName(name != null ? name.getValue() : null);
+        }
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name value to this part.
+     * <p>
+     * This is performed by modifying current name sentence, if any, to reflect provided nameValue.
+     *
+     * @param nameValue the name value to set
+     * @see #setName(SentenceInter)
+     */
+    public void setName (String nameValue)
+    {
+        if (name != null) {
+            final List<Inter> members = name.getMembers();
+            if (members.size() == 1) {
+                final WordInter word = (WordInter) members.get(0);
+                word.setValue(nameValue);
+            } else {
+                // Try to map word for word
+                final String[] tokens = nameValue.split(" ");
+                for (int i = 0; i < members.size(); i++) {
+                    final WordInter word = (WordInter) members.get(i);
+                    if (i < tokens.length) {
+                        word.setValue(tokens[i]);
+                    }
+                }
+            }
+
+            // Update PartRef as well
+            final PartRef partRef = getRef();
+            if (partRef != null) {
+                partRef.setName(nameValue);
+            }
+
+            getSystem().getSheet().getStub().setModified(true);
+        }
     }
 
     //--------//
@@ -952,6 +1108,14 @@ public class Part
         }
 
         return selectedSlurs;
+    }
+
+    //---------------//
+    // getStaffCount //
+    //---------------//
+    public int getStaffCount ()
+    {
+        return staves.size();
     }
 
     //-------------------//
@@ -1184,6 +1348,25 @@ public class Part
     }
 
     //------------//
+    // removeName //
+    //------------//
+    /**
+     * Remove the provided PartName sentence.
+     *
+     * @param sentence the provided part name sentence
+     * @return true if actually removed
+     */
+    public boolean removeName (SentenceInter sentence)
+    {
+        if ((name != null) && (name == sentence)) {
+            setName((SentenceInter) null);
+            return true;
+        }
+
+        return false;
+    }
+
+    //------------//
     // removeSLur //
     //------------//
     /**
@@ -1281,32 +1464,22 @@ public class Part
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Part#").append(id);
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('#').append(id).append('{');
+
+        if (name != null) {
+            sb.append("name:").append(name.getValue());
+        }
 
         if (isDummy()) {
             sb.append(" dummy");
         }
 
         sb.append(" staves[");
-
-        boolean first = true;
-
-        for (Staff staff : staves) {
-            if (!first) {
-                sb.append(",");
-            }
-
-            sb.append(staff.getId());
-
-            first = false;
-        }
-
+        sb.append(staves.stream().map(s -> "" + s.getId()).collect(Collectors.joining(",")));
         sb.append("]");
 
-        if (name != null) {
-            sb.append(" name:").append(name.getValue());
-        }
+        sb.append(" lines:[").append(IntUtil.toCsvString(getLineCounts())).append(']');
 
         sb.append("}");
 

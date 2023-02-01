@@ -41,7 +41,7 @@ public class DecorableSymbol
      * @param family the MusicFont family
      */
     public DecorableSymbol (Shape shape,
-                            Family family)
+                            MusicFamily family)
     {
         super(shape, family);
     }

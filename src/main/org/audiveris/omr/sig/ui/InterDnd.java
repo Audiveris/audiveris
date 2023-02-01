@@ -34,7 +34,7 @@ import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.Family;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.HorizontalSide;
@@ -376,7 +376,7 @@ public class InterDnd
     private boolean updateGhost (Point location)
     {
         final int staffInterline = staff.getSpecificInterline();
-        final Family family = sheet.getStub().getMusicFontFamily();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
         final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
                 ? MusicFont.getHeadFont(family, sheet.getScale(), staffInterline)
                 : MusicFont.getBaseFont(family, staffInterline);
