@@ -284,10 +284,6 @@ public class LogicalPartsEditor
     public void lock (ActionEvent e)
     {
         setLocked(!isLocked());
-
-        // Update related button text and icon accordingly
-        lockButton.setText(isLocked() ? LOCKED : UNLOCKED);
-        lockButton.setIcon(isLocked() ? lockedIcon : unlockedIcon);
     }
 
     //----------//
@@ -398,6 +394,7 @@ public class LogicalPartsEditor
             currentStub.getSheet().getSheetEditor().refresh();
         }
 
+        setLocked(true);
         setModified(false);
     }
 
@@ -444,6 +441,10 @@ public class LogicalPartsEditor
 
         if (locked != oldValue) {
             firePropertyChange(LOCKED, oldValue, score.isLogicalsLocked());
+
+            // Update related button text and icon accordingly
+            lockButton.setText(isLocked() ? LOCKED : UNLOCKED);
+            lockButton.setIcon(isLocked() ? lockedIcon : unlockedIcon);
         }
     }
 
