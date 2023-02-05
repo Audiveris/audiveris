@@ -24,7 +24,6 @@ package org.audiveris.omr.score;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -303,9 +302,7 @@ public class Page
     {
         this.lastTimeRational = lastTimeRational;
 
-        SheetStub stub = sheet.getStub();
-        PageRef pageRef = stub.getPageRefs().get(id - 1);
-        pageRef.setLastTimeRational(lastTimeRational);
+        getRef().setLastTimeRational(lastTimeRational);
     }
 
     //-------------------//
@@ -333,9 +330,7 @@ public class Page
     {
         this.deltaMeasureId = deltaMeasureId;
 
-        SheetStub stub = sheet.getStub();
-        PageRef pageRef = stub.getPageRefs().get(id - 1);
-        pageRef.setDeltaMeasureId(deltaMeasureId);
+        getRef().setDeltaMeasureId(deltaMeasureId);
     }
 
     //--------------//
@@ -497,6 +492,19 @@ public class Page
         }
 
         return null;
+    }
+
+    //--------//
+    // getRef //
+    //--------//
+    /**
+     * Report the soft reference to this page.
+     *
+     * @return the corresponding PageRef
+     */
+    public PageRef getRef ()
+    {
+        return sheet.getStub().getPageRefs().get(id - 1);
     }
 
     //----------//

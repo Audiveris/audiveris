@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import ij.process.ByteProcessor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -88,18 +87,12 @@ public class TextsStep
     protected Context doProlog (Sheet sheet)
         throws StepException
     {
-        List<TextLine> lines = new ArrayList<>();
-
         // Launch OCR on the whole sheet
-        SheetScanner scanner = new SheetScanner(sheet);
+        final List<TextLine> lines = new ArrayList<>();
+        final SheetScanner scanner = new SheetScanner(sheet);
 
         if (OcrUtil.getOcr().isAvailable()) {
             lines.addAll(scanner.scanSheet());
-            Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
-
-            if (logger.isDebugEnabled()) {
-                TextLine.dump("Sheet raw OCRed lines:", lines, false);
-            }
         } else {
             logger.warn("TEXTS step: {}", OCR.NO_OCR);
         }

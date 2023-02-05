@@ -379,6 +379,9 @@ public class SheetStub
     //--------------//
     /**
      * Make sure system information exists in SheetStub.
+     * <p>
+     * This is meant to cope with old OMR versions in which SheetStub did not keep info about
+     * systems and parts.
      */
     public void checkSystems ()
     {

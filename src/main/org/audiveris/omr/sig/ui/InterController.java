@@ -1489,7 +1489,7 @@ public class InterController
     // addText //
     //---------//
     /**
-     * Special addition of glyph text
+     * Special addition of glyph text.
      *
      * @param glyph to be OCR'ed to text lines and words
      * @param shape either TEXT or LYRICS
@@ -1501,7 +1501,7 @@ public class InterController
         new CtrlTask(DO, "addText")
         {
             // Recognized sentences
-            private List<Inter> sentences = new ArrayList<>();
+            private final List<Inter> sentences = new ArrayList<>();
 
             @Override
             protected void build ()
@@ -1528,20 +1528,20 @@ public class InterController
                         sheet.getStub().getOcrLanguages().getValue(),
                         glyph.getId());
 
-                // Retrieve absolute lines (and the underlying word glyphs)
-                final boolean lyrics = shape == Shape.LYRICS;
+                // Convert to absolute lines (and the underlying word glyphs)
+                final boolean lyrics = (shape == Shape.LYRICS);
                 final TextBuilder textBuilder = new TextBuilder(system, lyrics);
-                final List<TextLine> lines = textBuilder.processGlyph(
+                final List<TextLine> glyphLines = textBuilder.processGlyph(
                         buffer,
                         relativeLines,
                         glyph.getTopLeft());
 
                 // Generate the sequence of word/line Inter additions
-                for (TextLine line : lines) {
+                for (TextLine line : glyphLines) {
                     logger.debug("line {}", line);
 
                     TextRole role = line.getRole();
-                    Staff staff = null;
+                    Staff staff;
 
                     SentenceInter sentence = null;
 
@@ -1653,7 +1653,8 @@ public class InterController
             if (constants.useStaffLink.isSet()) {
                 // Try to use link
                 SystemInfo prevSystem = null;
-                StaffLoop: for (Staff stf : staves) {
+                StaffLoop:
+                for (Staff stf : staves) {
                     system = stf.getSystem();
 
                     if (system != prevSystem) {
@@ -1835,14 +1836,6 @@ public class InterController
         for (Relation rel : toRemove) {
             seq.add(new UnlinkTask(sig, rel));
         }
-    }
-
-    //-----------------//
-    // staffBarlinesOf //
-    //-----------------//
-    private List<Inter> staffBarlinesOf (Collection<? extends Inter> inters)
-    {
-        return Inters.inters(inters, new Inters.ClassPredicate(StaffBarlineInter.class));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

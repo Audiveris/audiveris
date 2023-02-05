@@ -29,6 +29,7 @@ import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
@@ -583,7 +584,13 @@ public class SystemManager
         if (index == -1) {
             logger.error("Cannot remove unknown {}", system);
         } else {
+            final SystemRef systemRef = system.getRef();
             systems.remove(system);
+
+            final Page page = system.getPage();
+            page.removeSystem(system);
+            final PageRef pageRef = page.getRef();
+            pageRef.removeSystem(systemRef);
 
             // Update ID for each following system
             for (int i = index; i < systems.size(); i++) {
@@ -591,15 +598,10 @@ public class SystemManager
                 s.setId(i + 1);
             }
 
-            final Page page = system.getPage();
-            page.removeSystem(system);
-
             // Remove page?
             if (page.getSystems().isEmpty()) {
-                final SheetStub stub = sheet.getStub();
-                final PageRef pageRef = stub.getPageRefs().get(page.getId() - 1);
                 sheet.removePage(page);
-                stub.removePageRef(pageRef);
+                sheet.getStub().removePageRef(pageRef);
 
                 return pageRef;
             }
@@ -621,8 +623,8 @@ public class SystemManager
                                 PageRef pageRef)
     {
         // Re-insert system in sheet
-        final int index = system.getId() - 1; // Where to re-insert removed system
-        systems.add(index, system);
+        final int indexInSheet = system.getId() - 1;
+        systems.add(indexInSheet, system);
 
         // Re-insert page?
         final Page page = system.getPage();
@@ -636,9 +638,11 @@ public class SystemManager
 
         // Re-insert system into containing page
         page.unremoveSystem(system);
+        final int indexInPage = system.getIndexInPage();
+        page.getRef().unremoveSystem(indexInPage, system.getRef());
 
         // Update ID for each following system
-        for (int i = index + 1; i < systems.size(); i++) {
+        for (int i = indexInSheet + 1; i < systems.size(); i++) {
             SystemInfo s = systems.get(i);
             s.setId(i + 1);
         }

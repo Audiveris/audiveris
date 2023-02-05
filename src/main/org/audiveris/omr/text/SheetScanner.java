@@ -166,25 +166,17 @@ public class SheetScanner
         StopWatch watch = new StopWatch("scanSheet");
 
         try {
-            // Get clean page image
+            // Get clean sheet image
             watch.start("getCleanImage");
-
             final BufferedImage image = getCleanImage(); // This also sets buffer member
 
             // Perform OCR on whole image
-            watch.start("OCR recognize");
-
             final Param<String> textParam = sheet.getStub().getOcrLanguages();
             final String language = textParam.getValue();
             logger.debug("scanSheet lan:{} on {}", language, sheet);
+            watch.start("OCR recognize");
 
-            return OcrUtil.scan(
-                    image,
-                    constants.whiteMarginAdded.getValue(),
-                    OCR.LayoutMode.MULTI_BLOCK,
-                    language,
-                    sheet,
-                    sheet.getId());
+            return OcrUtil.scan(image, OCR.LayoutMode.MULTI_BLOCK, language, sheet, sheet.getId());
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -220,11 +212,6 @@ public class SheetScanner
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.25,
                 "Vertical margin around staff core area");
-
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
-                "pixels",
-                10,
-                "Margin of white pixels added around sheet image");
     }
 
     //--------------//

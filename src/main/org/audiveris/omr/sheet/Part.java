@@ -736,8 +736,11 @@ public class Part
      */
     public LogicalPart getLogicalPart ()
     {
-        final Score score = system.getPage().getScore();
+        final Page page = system.getPage();
+        if (page == null)
+            return null;
 
+        final Score score = page.getScore();
         if (score == null)
             return null;
 

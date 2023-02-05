@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.LineUtil;
+import static org.audiveris.omr.sheet.ProcessingSwitch.chordNames;
 import static org.audiveris.omr.sheet.ProcessingSwitch.lyrics;
 import static org.audiveris.omr.sheet.ProcessingSwitch.lyricsAboveStaff;
 import org.audiveris.omr.sheet.ProcessingSwitches;
@@ -76,14 +77,23 @@ public class TextWord
     /** Regexp for one-letter words. */
     private static final Pattern ONE_LETTER_WORDS = compileRegexp(constants.oneLetterWordRegexp);
 
-    /** Regexp for abnormal words. */
-    private static final Pattern ABNORMAL_WORDS = compileRegexp(constants.abnormalWordRegexp);
+    /** Regexp for normal words. */
+    private static final Pattern NORMAL_WORDS = compileRegexp(constants.normalWordRegexp);
 
-    /** Regexp for dashed words. */
-    private static final Pattern DASH_WORDS = compileRegexp(constants.dashWordRegexp);
+    //    static {
+    //        String regex = constants.normalWordRegexp.getValue();
+    //        logger.info("\"{}\" length: {}", regex, regex.length());
+    //        int i = 0;
+    //        for (char c : regex.toCharArray()) {
+    //            logger.info("   {} {} {} {}", i++, c, (int) c, Integer.toHexString((int) c));
+    //        }
+    //    }
+
+    /** Regexp for words with a dash. */
+    private static final Pattern DASHED_WORDS = compileRegexp(constants.dashedWordRegexp);
 
     /** Regexp for dash-only words. */
-    private static final Pattern DASH_ONLY_WORDS = compileRegexp(constants.dashOnlyWordRegexp);
+    private static final Pattern LONG_DASH_WORDS = compileRegexp(constants.longDashWordRegexp);
 
     /** Comparator based on word size. */
     public static final Comparator<TextWord> bySize = (TextWord o1,
@@ -271,17 +281,22 @@ public class TextWord
     // checkValidity //
     //---------------//
     /**
-     * Check the provided OCR'ed word.(the word is not modified)
+     * Check the provided OCR'ed word (the word is not modified).
      *
      * @return reason for invalidity if any, otherwise null
      */
     public String checkValidity ()
     {
+        // Remove word with too low confidence
+        if (getConfidence() < constants.lowConfidence.getValue()) {
+            logger.debug("      low confident word {}", this);
+            return "low-confident-word";
+        }
+
         // Remove word with abnormal characters
         for (char ch : ABNORMAL_CHARS) {
             if (value.indexOf(ch) != -1) {
                 logger.debug("      abnormal char {} in {}", ch, this);
-
                 return "abnormal-chars";
             }
         }
@@ -292,47 +307,47 @@ public class TextWord
 
         if (stripped.isSet()) {
             logger.debug("      invalid XML chars in {}", this);
-
             return "invalid-xml-chars";
         }
 
-        // Remove invalid word
-        if (ABNORMAL_WORDS != null) {
-            Matcher matcher = ABNORMAL_WORDS.matcher(value);
+        // Remove abnormal word
+        if (NORMAL_WORDS != null) {
+            Matcher matcher = NORMAL_WORDS.matcher(value);
 
-            if (matcher.matches()) {
+            if (!matcher.matches()) {
                 logger.debug("      abnormal word value {}", this);
-
                 return "abnormal-word-value";
             }
         }
 
-        // Remove one-letter word (except if lyrics switch is set)
+        // Remove one-letter word, except in some cases
         if (ONE_LETTER_WORDS != null) {
             final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-            if (!switches.getValue(lyrics) && !switches.getValue(lyricsAboveStaff)) {
+            // @formatter:off
+            if (!switches.getValue(chordNames)
+                && !switches.getValue(lyrics)
+                && !switches.getValue(lyricsAboveStaff)) {
                 final Matcher matcher = ONE_LETTER_WORDS.matcher(value);
 
                 if (matcher.matches()) {
-                    logger.debug("      one-letter word value {}", this);
-
-                    return "one-letter-word-value";
+                    logger.debug("      one-letter word {}", this);
+                    return "one-letter-word";
                 }
             }
+            // @formatter:on
         }
 
-        // Remove dash-only word
-        if (DASH_ONLY_WORDS != null) {
-            Matcher matcher = DASH_ONLY_WORDS.matcher(value);
+        // Remove long dash word (because they might well be ending horizontal lines)
+        if (LONG_DASH_WORDS != null) {
+            Matcher matcher = LONG_DASH_WORDS.matcher(value);
 
             if (matcher.matches()) {
-                logger.debug("      dash-only word value {}", this);
-
-                return "dash-only-word-value";
+                logger.debug("      long dash word {}", this);
+                return "long-dash-word";
             }
         }
 
-        return null; // No invalidity detected, word is OK
+        return null; // No invalidity detected, word is considered as OK
     }
 
     //------------//
@@ -583,25 +598,17 @@ public class TextWord
         return adjusted;
     }
 
-    //-------------//
-    // isConfident //
-    //-------------//
-    public boolean isConfident ()
-    {
-        return getConfidence() >= constants.lowConfidence.getValue();
-    }
-
     //----------//
     // isDashed //
     //----------//
     /**
-     * Report whether contains a dash-family character.
+     * Report whether the word contains a dash-family character.
      *
      * @return true if there is a dash in word
      */
     public boolean isDashed ()
     {
-        return DASH_WORDS.matcher(value).matches();
+        return DASHED_WORDS.matcher(value).matches();
     }
 
     /**
@@ -788,15 +795,23 @@ public class TextWord
                 "^[\\W]*[\\w][\\W]*$",
                 "Regular expression to detect one-letter words");
 
-        private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[\\W]+$",
-                "Regular expression to detect abnormal words");
+        private final Constant.String normalWordRegexp = new Constant.String(
+                "^[" //
+                        + "\\w\\.\\-\\[\\]" // escaped symbols
+                        + "()_:,;?*/!" // simple accepted punctuation
+                        + "\u2014" // — long dash
+                        + "\u0027" // ' standard quote
+                        + "\u2018" // ‘ \ quote
+                        + "\u2019" // ’ / quote
+                        + "\u201c" // “ inverted double quote
+                        + "]+$",
+                "Regular expression to check normal words");
 
-        private final Constant.String dashOnlyWordRegexp = new Constant.String(
-                "^[-_\u2014]+$",
-                "Regular expression to detect dash-only words");
+        private final Constant.String longDashWordRegexp = new Constant.String(
+                "^[-_\u2014]{2,}$",
+                "Regular expression to detect long (2+) dash-only words");
 
-        private final Constant.String dashWordRegexp = new Constant.String(
+        private final Constant.String dashedWordRegexp = new Constant.String(
                 "^.*[-_\u2014].*$",
                 "Regular expression to detect words with embedded dashes");
 

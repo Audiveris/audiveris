@@ -307,6 +307,20 @@ public class PageRef
         return movementStart;
     }
 
+    //--------------//
+    // removeSystem //
+    //--------------//
+    /**
+     * Remove the provided SystemRef
+     *
+     * @param systemRef the systemRef to remove
+     * @return true if removed
+     */
+    public boolean removeSystem (SystemRef systemRef)
+    {
+        return systems.remove(systemRef);
+    }
+
     //-------------------//
     // setDeltaMeasureId //
     //-------------------//
@@ -370,5 +384,21 @@ public class PageRef
         }
 
         return sb.append('}').toString();
+    }
+
+    //----------------//
+    // unremoveSystem //
+    //----------------//
+    /**
+     * Un-remove the provided systemRef into this pageRef.
+     *
+     * @param index     the target index
+     * @param systemRef the systemRef to re-insert
+     * @see #removeSystem
+     */
+    public void unremoveSystem (int index,
+                                SystemRef systemRef)
+    {
+        systems.add(index, systemRef);
     }
 }

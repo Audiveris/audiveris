@@ -407,7 +407,8 @@ public class LogicalPartsEditor
             for (SystemRef systemRef : pageRef.getSystems()) {
                 for (PartRef partRef : systemRef.getParts()) {
                     if (!updated.contains(partRef)) {
-                        if (oldId == partRef.getLogicalId()) {
+                        final Integer logId = partRef.getLogicalId();
+                        if ((logId != null) && (logId == oldId)) {
                             logger.debug(
                                     "{}/ P{} S{} {}/{} new logicalId: {}",
                                     oldId,

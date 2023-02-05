@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.Navigable;
 
@@ -48,8 +46,6 @@ import java.util.List;
 public class BlockScanner
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BlockScanner.class);
 
@@ -77,9 +73,6 @@ public class BlockScanner
     /**
      * Launch the OCR on the provided buffer, to retrieve the TextLine instance(s) with
      * coordinates <b>relative</b> to buffer origin.
-     * <p>
-     * Tesseract OCR generally gives better results if the processed image exhibits white pixels
-     * on the image contour, so here we (transparently) add a white margin around the buffer.
      *
      * @param buffer   the ByteProcessor buffer
      * @param language the probable language spec
@@ -92,25 +85,9 @@ public class BlockScanner
     {
         return OcrUtil.scan(
                 buffer.getBufferedImage(),
-                constants.whiteMarginAdded.getValue(),
                 OCR.LayoutMode.SINGLE_BLOCK,
                 language,
                 sheet,
                 sheet.getId() + "/glyph-" + id);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
-                "pixels",
-                10,
-                "Margin of white pixels added around block image");
     }
 }

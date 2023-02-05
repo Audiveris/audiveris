@@ -386,49 +386,47 @@ public class TextBuilder
         return allSections;
     }
 
-    //-------------------//
-    // getSystemRawLines //
-    //-------------------//
+    //---------------------//
+    // getSystemValidLines //
+    //---------------------//
     /**
      * Among the lines OCR'ed from whole sheet, select the ones that could belong to our
-     * system.
+     * system and considered as valid.
      * <p>
      * Sheet lines are deep-copied to system lines.
      *
-     * @param sheetLines sheet collection of OCR'ed lines
-     * @return the relevant sheet lines
+     * @param sheetLines sheet collection of raw OCR'ed lines
+     * @return the relevant system lines, duly validated
      */
-    private List<TextLine> getSystemRawLines (List<TextLine> sheetLines)
+    private List<TextLine> getSystemValidLines (List<TextLine> sheetLines)
     {
-        List<TextLine> rawLines = new ArrayList<>();
-
+        final List<TextLine> systemLines = new ArrayList<>();
         final Area area = system.getArea();
         final Rectangle areaBounds = area.getBounds();
 
         for (TextLine sheetLine : sheetLines) {
             if (areaBounds.intersects(sheetLine.getBounds())) {
-                TextLine line = new TextLine(sheet);
+                final TextLine line = new TextLine(sheet);
 
                 for (TextWord sheetWord : sheetLine.getWords()) {
                     final Rectangle wordBox = sheetWord.getBounds();
 
                     if (area.contains(wordBox)) {
-                        TextWord word = sheetWord.copy();
-                        line.appendWord(word);
+                        line.appendWord(sheetWord.copy()); // Deep copy
                     }
                 }
 
                 if (!line.getWords().isEmpty()) {
-                    rawLines.add(line);
+                    systemLines.add(line);
                 }
             }
         }
 
-        adjustLines(rawLines);
-        rawLines = purgeInvalidLines(rawLines);
-        Collections.sort(rawLines, TextLine.byOrdinate(skew));
+        adjustLines(systemLines);
+        purgeInvalidLines(systemLines);
+        Collections.sort(systemLines, TextLine.byOrdinate(skew));
 
-        return rawLines;
+        return systemLines;
     }
 
     //----------------//
@@ -772,13 +770,15 @@ public class TextBuilder
 
             TextLine candidate = current;
 
-            CandidateLoop: while (true) {
+            CandidateLoop:
+            while (true) {
                 final Rectangle candidateBounds = candidate.getDeskewedCore(skew);
 
                 final Rectangle candidateFatBox = new Rectangle(candidateBounds);
                 candidateFatBox.grow(candidate.selectWordGap(scale), maxLineDy);
 
-                TrunksLoop: for (TextLine trunk : oldStandards) {
+                TrunksLoop:
+                for (TextLine trunk : oldStandards) {
                     if (trunk == current) {
                         break CandidateLoop;
                     }
@@ -957,12 +957,12 @@ public class TextBuilder
         StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
         watch.start("retrieveRawLines");
 
-        List<TextLine> rawLines = getSystemRawLines(sheetLines);
+        final List<TextLine> validLines = getSystemValidLines(sheetLines);
 
         // Gather rawLines into long lines
         watch.start("longLines");
 
-        List<TextLine> longLines = mergeRawLines(rawLines);
+        final List<TextLine> longLines = mergeRawLines(validLines);
 
         if (logger.isTraceEnabled()) {
             dump("longLines", longLines, false);
@@ -983,12 +983,12 @@ public class TextBuilder
         // Separate additional work on lyric lines and on standard lines
         watch.start("recomposeLines");
 
-        List<TextLine> lines = recomposeLines(longLines);
+        final List<TextLine> lines = recomposeLines(longLines);
 
         // Retrieve candidate sections (not the usual horizontal or vertical sheet sections)
         watch.start("getSections");
 
-        List<Section> relSections = getSections(buffer, lines);
+        final List<Section> relSections = getSections(buffer, lines);
 
         // Map words to section-based glyphs
         watch.start("mapGlyphs");
@@ -1082,13 +1082,11 @@ public class TextBuilder
      * Purge lines whose validity is not confirmed.
      *
      * @param lines the lines to purge
-     * @return the remaining lines
      */
-    private List<TextLine> purgeInvalidLines (List<TextLine> lines)
+    private void purgeInvalidLines (List<TextLine> lines)
     {
-        final List<TextLine> validLines = new ArrayList<>();
-
-        for (TextLine line : lines) {
+        for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
+            final TextLine line = it.next();
             final Point2D origin = line.getBaseline().getP1();
             boolean inSheetHeader = (system.getId() == 1) && (origin.getY() < system.getFirstStaff()
                     .getFirstLine().yAt(origin.getX()));
@@ -1105,12 +1103,10 @@ public class TextBuilder
                         logger.trace("    {}", word);
                     }
                 }
-            } else {
-                validLines.add(line);
+
+                it.remove();
             }
         }
-
-        return validLines;
     }
 
     //----------------//
@@ -1134,13 +1130,13 @@ public class TextBuilder
 
         // Separate lyrics and standard (perhaps long) lines, based on their roles
         List<TextLine> standards = new ArrayList<>();
-        List<TextLine> lyrics = new ArrayList<>();
+        final List<TextLine> lyrics = new ArrayList<>();
         separatePopulations(longLines, standards, lyrics);
 
         // Process lyrics
         if (!lyrics.isEmpty()) {
             if (!isManual()) {
-                lyrics = purgeInvalidLines(lyrics);
+                purgeInvalidLines(lyrics);
             }
 
             logger.trace("splitWords for lyrics");
@@ -1156,7 +1152,7 @@ public class TextBuilder
 
             // Reject invalid standard lines
             if (!isManual()) {
-                standards = purgeInvalidLines(standards);
+                purgeInvalidLines(standards);
             }
 
             // Recut standard lines

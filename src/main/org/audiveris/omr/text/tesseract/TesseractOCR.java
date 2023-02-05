@@ -27,7 +27,6 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.TextLine;
-import org.audiveris.omr.text.TextWord;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -200,27 +198,10 @@ public class TesseractOCR
             // Process the order
             final List<TextLine> lines = order.process();
 
-            // Post-processing: filter out words with too low confidence
-            if (lines != null) {
-                for (Iterator<TextLine> itLines = lines.iterator(); itLines.hasNext();) {
-                    final TextLine line = itLines.next();
-
-                    for (Iterator<TextWord> itWords = line.getWords().iterator(); itWords
-                            .hasNext();) {
-                        final TextWord word = itWords.next();
-
-                        if (!word.isConfident()) {
-                            logger.info("OCR. too low confident {}", word);
-                            itWords.remove();
-                        }
-                    }
-
-                    if (line.getWords().isEmpty()) {
-                        itLines.remove();
-                    } else if (topLeft != null) {
-                        // Translate relative coordinates to absolute ones
-                        line.translate(topLeft.x, topLeft.y);
-                    }
+            if ((topLeft != null) && (lines != null)) {
+                // Translate topLeft-relative coordinates to origin-relative ones
+                for (TextLine line : lines) {
+                    line.translate(topLeft.x, topLeft.y);
                 }
             }
 

@@ -30,9 +30,9 @@ import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.PartRef;
-import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.StaffPosition;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.PartGroup;
 import org.audiveris.omr.sheet.header.StaffHeader;
@@ -166,6 +166,9 @@ public class SystemInfo
 
     /** Assigned page, if any. */
     private Page page;
+
+    /** Its corresponding soft reference. */
+    private SystemRef systemRef;
 
     /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<>();
@@ -316,6 +319,8 @@ public class SystemInfo
     public void afterReload ()
     {
         try {
+            getRef();
+
             // Populate system sig
             sig.afterReload(this);
 
@@ -384,9 +389,8 @@ public class SystemInfo
      */
     public SystemRef buildRef ()
     {
-        final SystemRef systemRef = new SystemRef();
-        final PageRef pageRef = sheet.getStub().getPageRefs().get(page.getId() - 1);
-        systemRef.setPage(pageRef);
+        systemRef = new SystemRef();
+        systemRef.setPage(page.getRef());
 
         for (Part part : getParts()) {
             final PartRef partRef = new PartRef();
@@ -981,6 +985,25 @@ public class SystemInfo
         return getSheet().getStub().getProfile();
     }
 
+    //--------//
+    // getRef //
+    //--------//
+    /**
+     * Report the soft reference to this system.
+     *
+     * @return related SystemRef
+     */
+    public SystemRef getRef ()
+    {
+        if (systemRef == null) {
+            final int systemIndex = getIndexInPage();
+            final PageRef pageRef = page.getRef();
+            systemRef = pageRef.getSystems().get(systemIndex);
+        }
+
+        return systemRef;
+    }
+
     //----------//
     // getRight //
     //----------//
@@ -1467,16 +1490,24 @@ public class SystemInfo
     {
         final List<SystemInfo> systems = sheet.getSystems();
         final SystemInfo systemBelow = systems.get(1 + systems.indexOf(this));
+        final SystemRef ref = getRef();
+        final SystemRef refBelow = systemBelow.getRef();
 
         // Remove systemBelow from sheet structure
-        PageRef removedPageRef = sheet.getSystemManager().removeSystem(systemBelow);
+        // If system removal leads to a page removal, removedPageRef is set to the removed page
+        final PageRef removedPageRef = sheet.getSystemManager().removeSystem(systemBelow);
 
         // parts
         parts.addAll(systemBelow.parts);
-
         for (Part partBelow : systemBelow.parts) {
             partBelow.setSystem(this);
             partBelow.setId(1 + parts.indexOf(partBelow));
+        }
+
+        // partRefs
+        ref.getParts().addAll(refBelow.getParts());
+        for (PartRef partRefBelow : refBelow.getParts()) {
+            partRefBelow.setSystem(ref);
         }
 
         // partGroups
@@ -1835,9 +1866,16 @@ public class SystemInfo
 
         // parts
         parts.removeAll(systemBelow.parts);
-
         for (Part part : systemBelow.parts) {
             part.setSystem(systemBelow);
+        }
+
+        // partRefs
+        final SystemRef ref = getRef();
+        final SystemRef refBelow = systemBelow.getRef();
+        ref.getParts().removeAll(refBelow.getParts());
+        for (PartRef partRef : refBelow.getParts()) {
+            partRef.setSystem(refBelow);
         }
 
         // partGroups
