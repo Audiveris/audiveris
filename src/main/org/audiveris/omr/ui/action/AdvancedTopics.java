@@ -21,15 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.ui.action;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.plugin.PluginsManager;
+import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.util.Panel;
@@ -42,6 +39,10 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -79,6 +80,10 @@ public abstract class AdvancedTopics
 
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,pref,10dlu,pref", "pref");
+
+    private static final FormLayout layout3_2 = new FormLayout(
+            "12dlu,1dlu,pref,10dlu,pref",
+            "pref,pref,pref");
 
     private static final ApplicationContext context = Application.getInstance().getContext();
 
@@ -152,7 +157,7 @@ public abstract class AdvancedTopics
         Panel panel = new Panel();
         panel.setName("AdvancedTopicsPanel");
 
-        FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref");
+        FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref, 1dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout, panel);
         CellConstraints cst = new CellConstraints();
         int r = 1;
@@ -160,6 +165,9 @@ public abstract class AdvancedTopics
 
         r += 2;
         builder.add(new PluginPane(), cst.xy(1, r));
+
+        r += 2;
+        builder.add(new OutputsPane(), cst.xy(1, r));
 
         r += 2;
         builder.add(new AllTopicsPane(), cst.xy(1, r));
@@ -181,8 +189,9 @@ public abstract class AdvancedTopics
         AllTopicsPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(BorderFactory.createTitledBorder(
-                    resource.getString(className + ".titledBorder.text")));
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            resource.getString(className + ".titledBorder.text")));
 
             // Localized values of Topic enum type
             final LabeledEnum<Topic>[] localeTopics = LabeledEnum.values(
@@ -331,6 +340,39 @@ public abstract class AdvancedTopics
         }
     }
 
+    //-------------//
+    // OutputsPane //
+    //-------------//
+    /**
+     * Where should outputs be stored.
+     */
+    private static class OutputsPane
+            extends Panel
+    {
+        final SeparatePane separatePane = new SeparatePane();
+
+        final SiblingPane siblingPane = new SiblingPane(separatePane);
+
+        OutputsPane ()
+        {
+            setInsets(12, 6, 6, 6);
+            final String className = getClass().getSimpleName();
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            resource.getString(className + ".titledBorder.text")));
+
+            // Layout
+            FormLayout layout = new FormLayout("pref", Panel.makeRows(2));
+            PanelBuilder builder = new PanelBuilder(layout, this);
+            CellConstraints cst = new CellConstraints();
+            int r = 1;
+            builder.add(siblingPane, cst.xy(1, r));
+
+            r += 2;
+            builder.add(separatePane, cst.xy(1, r));
+        }
+    }
+
     //------------//
     // PluginPane //
     //------------//
@@ -405,8 +447,7 @@ public abstract class AdvancedTopics
             // Define slider
             slider.setToolTipText(sliderText);
             slider.addChangeListener(this);
-            slider.addMouseListener(
-                    new MouseAdapter()
+            slider.addMouseListener(new MouseAdapter()
             {
                 @Override
                 public void mouseReleased (MouseEvent e)
@@ -503,6 +544,101 @@ public abstract class AdvancedTopics
         {
             JCheckBox box = (JCheckBox) e.getSource();
             topic.set(box.isSelected());
+        }
+    }
+
+    //------------//
+    // OutputPane //
+    //------------//
+    /**
+     * Handling of output switch.
+     */
+    private static abstract class OutputPane
+            extends Panel
+            implements ActionListener
+    {
+
+        final JCheckBox box;
+
+        final JLabel name;
+
+        final JLabel desc;
+
+        OutputPane ()
+        {
+            box = new JCheckBox();
+            box.addActionListener(this);
+
+            final String className = getClass().getSimpleName();
+            name = new JLabel(resource.getString(className + ".text"));
+            desc = new JLabel(resource.getString(className + ".desc"));
+            name.setToolTipText(resource.getString(className + ".toolTipText"));
+
+            // Layout
+            PanelBuilder builder = new PanelBuilder(layout3, this);
+            CellConstraints cst = new CellConstraints();
+            builder.add(box, cst.xy(1, 1));
+            builder.add(name, cst.xy(3, 1));
+            builder.add(desc, cst.xy(5, 1));
+        }
+
+        @Override
+        public void setEnabled (boolean enabled)
+        {
+            super.setEnabled(enabled);
+            box.setEnabled(enabled);
+            name.setEnabled(enabled);
+            desc.setEnabled(enabled);
+        }
+    }
+
+    //-------------//
+    // SiblingPane //
+    //-------------//
+    /**
+     * Handling of sibling switch.
+     */
+    private static class SiblingPane
+            extends OutputPane
+    {
+
+        final SeparatePane separatePane;
+
+        SiblingPane (SeparatePane separatePane)
+        {
+            this.separatePane = separatePane;
+            final boolean isSet = BookManager.useInputBookFolder().isSet();
+            box.setSelected(isSet);
+            separatePane.setEnabled(!isSet);
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final boolean isSet = box.isSelected();
+            BookManager.useInputBookFolder().setValue(isSet);
+            separatePane.setEnabled(!isSet);
+        }
+    }
+
+    //--------------//
+    // SeparatePane //
+    //--------------//
+    /**
+     * Handling of separate switch.
+     */
+    private static class SeparatePane
+            extends OutputPane
+    {
+        SeparatePane ()
+        {
+            box.setSelected(BookManager.useSeparateBookFolders().isSet());
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            BookManager.useSeparateBookFolders().setValue(box.isSelected());
         }
     }
 }

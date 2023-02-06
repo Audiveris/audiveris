@@ -160,8 +160,7 @@ public class BookManager
 
         synchronized (books) {
             // Choose suitable path
-            final Path path = (book.getBookPath() != null)
-                    ? book.getBookPath()
+            final Path path = (book.getBookPath() != null) ? book.getBookPath()
                     : book.getInputPath();
 
             books.put(path.toAbsolutePath(), book);
@@ -355,14 +354,16 @@ public class BookManager
             return book.getBookPath().getParent();
         }
 
-        // Use same folder as input
-        // Or define folder based on global base folder + book radix
-        // Or use global base folder directly
-        final Path bookFolder = constants.useInputBookFolder.isSet()
-                ? book.getInputPath().getParent()
-                : (useSeparateBookFolders()
+        // @formatter:off
+        final Path bookFolder =
+                Main.getCli().getOutputFolder() != null
+                ? Main.getCli().getOutputFolder()
+                : constants.useInputBookFolder.isSet()
+                    ? book.getInputPath().getParent()
+                    : (useSeparateBookFolders().isSet()
                         ? getBaseFolder().resolve(book.getRadix())
                         : getBaseFolder());
+        // @formatter:off
 
         try {
             if (!Files.exists(bookFolder)) {
@@ -519,6 +520,14 @@ public class BookManager
         return getInstance().books.size() > 1;
     }
 
+    //--------------------//
+    // useInputBookFolder //
+    //--------------------//
+    public static Constant.Boolean useInputBookFolder ()
+    {
+        return constants.useInputBookFolder;
+    }
+
     //----------//
     // loadBook //
     //----------//
@@ -605,8 +614,7 @@ public class BookManager
     public synchronized void renameBook (Book book,
                                          Path oldBookPath)
     {
-        final Path oldPath = (oldBookPath != null)
-                ? oldBookPath.toAbsolutePath()
+        final Path oldPath = (oldBookPath != null) ? oldBookPath.toAbsolutePath()
                 : book.getInputPath().toAbsolutePath();
         final Path newPath = book.getBookPath().toAbsolutePath();
 
@@ -651,9 +659,9 @@ public class BookManager
      *
      * @return true for separate folders
      */
-    public static boolean useSeparateBookFolders ()
+    public static Constant.Boolean useSeparateBookFolders ()
     {
-        return constants.useSeparateBookFolders.isSet();
+        return constants.useSeparateBookFolders;
     }
 
     //--------------//
