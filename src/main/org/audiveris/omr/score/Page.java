@@ -420,6 +420,8 @@ public class Page
     }
 
     /**
+     * Report the page id, which is the rank of this page, counted from 1 in containing sheet.
+     *
      * @return the id
      */
     public int getId ()

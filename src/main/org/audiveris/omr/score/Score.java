@@ -819,9 +819,9 @@ public class Score
         }
     }
 
-    //---------------------//
+    //--------------------//
     // needsPartCollation //
-    //---------------------//
+    //--------------------//
     /**
      * Report whether this score needs parts collation.
      *

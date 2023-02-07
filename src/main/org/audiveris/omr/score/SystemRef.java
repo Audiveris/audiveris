@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.Navigable;
 
 import java.util.ArrayList;
@@ -57,46 +58,81 @@ public class SystemRef
 
     /** Containing page. */
     @Navigable(value = false)
-    public PageRef page;
+    public PageRef pageRef;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     //~ Methods ------------------------------------------------------------------------------------
 
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
     @SuppressWarnings(value = "unused")
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
-        page = (PageRef) parent;
+        pageRef = (PageRef) parent;
     }
 
+    //-------//
+    // getId //
+    //-------//
     public int getId ()
     {
-        return 1 + page.getSystems().indexOf(this);
+        return 1 + getIndex();
     }
 
+    //----------//
+    // getIndex //
+    //----------//
+    public int getIndex ()
+    {
+        return pageRef.getSystems().indexOf(this);
+    }
+
+    //---------//
+    // getPage //
+    //---------//
     public PageRef getPage ()
     {
-        return page;
+        return pageRef;
     }
 
+    //----------//
+    // getParts //
+    //----------//
     public List<PartRef> getParts ()
     {
         return parts;
     }
 
-    public void setPage (PageRef page)
+    //---------------//
+    // getRealSystem //
+    //---------------//
+    public SystemInfo getRealSystem ()
     {
-        this.page = page;
+        final Page page = pageRef.getRealPage(); // Avoid loading!
+        return page.getSystems().get(getIndex());
     }
 
+    //---------//
+    // setPage //
+    //---------//
+    public void setPage (PageRef page)
+    {
+        this.pageRef = page;
+    }
+
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
-
-        sb.append(parts.stream().map(p -> p.toString()).collect(Collectors.joining(",")));
-
-        return sb.append('}').toString();
+        // @formatter:off
+        return new StringBuilder(getClass().getSimpleName()).append('{')
+            .append(parts.stream().map(p -> p.toString()).collect(Collectors.joining(",")))
+            .append('}').toString();
+        // @formatter:on
     }
 }

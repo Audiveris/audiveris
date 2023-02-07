@@ -22,8 +22,6 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Jaxb;
@@ -83,7 +81,7 @@ public class PartRef
 
     /** Containing system. */
     @Navigable(value = false)
-    public SystemRef system;
+    public SystemRef systemRef;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -93,12 +91,12 @@ public class PartRef
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
-        system = (SystemRef) parent;
+        systemRef = (SystemRef) parent;
     }
 
     public int getIndex ()
     {
-        return system.getParts().indexOf(this);
+        return systemRef.getParts().indexOf(this);
     }
 
     public List<Integer> getLineCounts ()
@@ -118,14 +116,8 @@ public class PartRef
 
     public Part getRealPart ()
     {
-        final PageRef pageRef = system.getPage();
-        final SheetStub stub = pageRef.getStub();
-        final Sheet sheet = stub.getSheet(); // Avoid loading!
-        final Page page = sheet.getPages().get(pageRef.getId() - 1);
-        final SystemInfo systemInfo = page.getSystems().get(system.getId() - 1);
-        final int partRefIndex = getIndex();
-        final List<Part> parts = systemInfo.getParts();
-        return parts.get(partRefIndex);
+        final SystemInfo systemInfo = systemRef.getRealSystem(); // Perhaps loading...
+        return systemInfo.getParts().get(getIndex());
     }
 
     public int getStaffCount ()
@@ -135,7 +127,7 @@ public class PartRef
 
     public SystemRef getSystem ()
     {
-        return system;
+        return systemRef;
     }
 
     public boolean isManual ()
@@ -165,7 +157,7 @@ public class PartRef
 
     public void setSystem (SystemRef system)
     {
-        this.system = system;
+        this.systemRef = system;
     }
 
     @Override
@@ -192,14 +184,16 @@ public class PartRef
 
     /**
      * Report a fully qualified string of this partRef.
+     *
+     * @return fully qualified string
      */
     public String toQualifiedString ()
     {
         // @formatter:off
         return new StringBuilder()
-            .append("Sheet#").append(system.getPage().getSheetNumber())
-            .append(",Page#").append(system.getPage().getId())
-            .append(",System#").append(system.getId())
+            .append("Sheet#").append(systemRef.getPage().getSheetNumber())
+            .append(",Page#").append(systemRef.getPage().getId())
+            .append(",System#").append(systemRef.getId())
             .append(',').append(this).toString();
         // @formatter:on
     }

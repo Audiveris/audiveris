@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
@@ -247,6 +248,15 @@ public class PageRef
     public PageNumber getPageNumber ()
     {
         return new PageNumber(stub.getNumber(), 1 + stub.getPageRefs().indexOf(this));
+    }
+
+    //-------------//
+    // getRealPage //
+    //-------------//
+    public Page getRealPage ()
+    {
+        final Sheet sheet = stub.getSheet(); // Avoid loading!
+        return sheet.getPages().get(getIndex());
     }
 
     //----------------//

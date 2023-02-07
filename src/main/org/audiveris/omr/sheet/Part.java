@@ -961,7 +961,7 @@ public class Part
             return null;
         }
 
-        final SystemRef systemRef = systemRefs.get(system.getId() - 1);
+        final SystemRef systemRef = system.getRef();
 
         return systemRef.getParts().get(getIndex());
     }

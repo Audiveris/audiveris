@@ -388,7 +388,7 @@ public class SheetStub
         for (PageRef pageRef : pageRefs) {
             if (pageRef.getSystems().isEmpty()) {
                 sheet = getSheet(); // Loading...
-                final Page page = sheet.getPages().get(pageRef.getId() - 1);
+                final Page page = sheet.getPages().get(pageRef.getIndex());
 
                 for (SystemInfo system : page.getSystems()) {
                     pageRef.addSystem(system.buildRef());
