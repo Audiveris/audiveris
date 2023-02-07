@@ -21,9 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import org.audiveris.omr.score.PartRef;
-import org.audiveris.omr.score.SystemRef;
-import org.audiveris.omr.score.PartConnection.ResultEntry;
+import org.audiveris.omr.score.PartCollation.Record;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
 
@@ -69,29 +67,52 @@ public class ScoreReduction
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // reduce //
-    //--------//
+    //--------------//
+    // applyRecords //
+    //--------------//
     /**
-     * Build the score LogicalPart instances by connecting the pages systems parts.
+     * Apply the collation results.
+     * <ol>
+     * <li>Within each record, all the affiliated PartRef's are assigned the LogicalPart id.
+     * <li>If score logicals are not locked, they get replaced by records logicals.
+     * </ol>
      *
-     * @param stubs valid selected stubs
-     * @return the count of modifications done
+     * @param records results from part collation
+     * @return true if PartRef's have really been modified
      */
-    public int reduce (List<SheetStub> stubs)
+    private boolean applyRecords (List<Record> records)
     {
-        final List<List<PartRef>> sequences = buildSequences(score.getPageRefs(stubs));
-        final PartConnection connection = new PartConnection(
-                sequences,
-                score.isLogicalsLocked() ? score.getLogicalParts() : null);
-        final List<ResultEntry> resultEntries = connection.getResults();
+        // Propagate to affiliates
+        boolean anyModified = false;
+        for (Record record : records) {
+            final int logId = record.logical.getId();
 
-        if (logger.isDebugEnabled()) {
-            connection.dumpResults();
+            for (PartRef partRef : record.partRefs) {
+                if (partRef.setLogicalId(logId)) {
+                    anyModified = true;
+
+                    // Update Part immediately if containing sheet is loaded
+                    // If not, it will get updated the next time sheet is loaded
+                    final SheetStub stub = partRef.getSystem().getPage().getStub();
+                    if (stub.hasSheet()) {
+                        final Part part = partRef.getRealPart();
+                        part.setId(logId);
+                    }
+                }
+            }
         }
 
-        // Store the list of LogicalPart instances into score
-        return storeResults(resultEntries) ? 1 : 0;
+        if (!score.isLogicalsLocked()) {
+            // (Over-)write score logicals
+            final List<LogicalPart> newLogicals = new ArrayList<>();
+            for (Record record : records) {
+                newLogicals.add(record.logical);
+            }
+
+            score.setLogicalParts(newLogicals);
+        }
+
+        return anyModified;
     }
 
     //----------------//
@@ -118,45 +139,28 @@ public class ScoreReduction
         return sequences;
     }
 
-    //--------------//
-    // storeResults //
-    //--------------//
+    //--------//
+    // reduce //
+    //--------//
     /**
-     * Store the results as the score list of LogicalPart instances.
+     * Build the score LogicalPart instances by connecting the pages systems parts.
      *
-     * @param resultEntries results from part connection
-     * @return true if score part list has really been modified
+     * @param stubs valid selected stubs
+     * @return the count of modifications done
      */
-    private boolean storeResults (List<ResultEntry> resultEntries)
+    public int reduce (List<SheetStub> stubs)
     {
-        // Propagate to affiliates
-        boolean modified = false;
-        for (ResultEntry entry : resultEntries) {
-            final int logId = entry.logical.getId();
+        final List<List<PartRef>> sequences = buildSequences(score.getPageRefs(stubs));
+        final PartCollation collation = new PartCollation(
+                sequences,
+                score.isLogicalsLocked() ? score.getLogicalParts() : null);
+        final List<Record> records = collation.getRecords();
 
-            for (PartRef partRef : entry.partRefs) {
-                modified |= partRef.setLogicalId(logId);
-
-                // Update Part immediately if containing sheet is loaded
-                // If not, it will get updated the next time sheet is loaded
-                final SheetStub stub = partRef.getSystem().getPage().getStub();
-                if (stub.hasSheet()) {
-                    final Part part = partRef.getRealPart();
-                    part.setId(logId);
-                }
-            }
+        if (logger.isDebugEnabled()) {
+            collation.dumpRecords();
         }
 
-        if (!score.isLogicalsLocked()) {
-            // (Over-)write score logicals
-            final List<LogicalPart> newLogicals = new ArrayList<>();
-            for (ResultEntry entry : resultEntries) {
-                newLogicals.add(entry.logical);
-            }
-
-            score.setLogicalParts(newLogicals);
-        }
-
-        return modified;
+        // Store the list of LogicalPart instances into score
+        return applyRecords(records) ? 1 : 0;
     }
 }

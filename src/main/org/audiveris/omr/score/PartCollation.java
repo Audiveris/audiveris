@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  P a r t C o n n e c t i o n                                   //
+//                                    P a r t C o l l a t i o n                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -33,37 +33,41 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Class <code>PartConnection</code> is in charge of finding the connections of parts across
- * systems (and pages) so that a part always represents the same instrument all along
- * the score.
+ * Class <code>PartCollation</code> is in charge of collecting and combining parts across
+ * systems and pages so that a part always represents the same instrument all along the score.
  * <p>
  * <p>
  * The strategy used to build LogicalPart's out of PartRef's is based on the following assumptions:
  * <ul>
- * <li>For a part of a system to be connected to a part of another system, they must exhibit the
+ * <li>For a part of a system to be combined to a part of another system, they must exhibit the
  * same count of staves and the same count of lines in corresponding staves</li>
  * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
  * partA followed by partB in a system, and partB followed by partA in another system.</li>
- * <li>A part with 2 staves, if any, is used as a pivot to align connections.</li>
+ * <li>A part with 2 staves, if any, is used as a pivot to align collations.</li>
  * <li>Otherwise, since additional parts appear at the top of a system, rather than at the bottom,
- * we process part connections bottom up.</li>
- * <li>When possible, we use the part names (or abbreviations) to help the connection algorithm,
+ * we process part collation bottom up.</li>
+ * <li>When possible, we use the part names (or abbreviations) to help the collation algorithm,
  * but this is questionable for lack of OCR reliability on part names and abbreviations.
  * </ul>
  *
  * @author Hervé Bitteur
  */
-public class PartConnection
+public class PartCollation
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(PartCollation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * The sorted list of resulting parts, each with its affiliated parts.
+     * The sorted list of logical parts, each with its affiliated physical parts.
      */
-    private final List<ResultEntry> resultEntries = new ArrayList<>();
+    private final List<Record> records = new ArrayList<>();
+
+    /**
+     * All logical names.
+     */
+    final Set<String> logicalNames = new LinkedHashSet<>();
 
     /**
      * Are the score LogicalPart's locked?.
@@ -73,42 +77,47 @@ public class PartConnection
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>PartConnection</code> object.
+     * Creates a new <code>PartCollation</code> object.
      *
      * @param sequences the list of sequences of parts
      * @param logicals  the pre-populated list of LogicalPart's, or null if un-locked
      */
-    public PartConnection (List<List<PartRef>> sequences,
-                           List<LogicalPart> logicals)
+    public PartCollation (List<List<PartRef>> sequences,
+                          List<LogicalPart> logicals)
     {
         if (logicals != null) {
             logicalsLocked = true;
 
-            // Allocate the resultEntries
+            // Allocate the records
             for (LogicalPart logical : logicals) {
-                resultEntries.add(new ResultEntry(logical));
+                records.add(new Record(logical));
+
+                final String logicalName = logical.getName();
+                if (logicalName != null) {
+                    logicalNames.add(logicalName);
+                }
             }
         }
 
-        connect(sequences);
+        collate(sequences);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
 
     //-------------//
-    // dumpResults //
+    // dumpRecords //
     //-------------//
     /**
-     * Dump content of connection results.
+     * Dump content of collated records.
      */
-    public void dumpResults ()
+    public void dumpRecords ()
     {
         StringBuilder sb = new StringBuilder();
 
-        for (ResultEntry entry : resultEntries) {
-            sb.append("\n").append(entry.logical);
+        for (Record record : records) {
+            sb.append("\n").append(record.logical);
 
-            for (PartRef partRef : entry.partRefs) {
+            for (PartRef partRef : record.partRefs) {
                 final SystemRef system = partRef.getSystem();
                 final int rank = 1 + system.getParts().indexOf(partRef);
                 final PageRef page = system.getPage();
@@ -124,40 +133,60 @@ public class PartConnection
             }
         }
 
-        logger.info("PartConnection results:{}", sb);
+        logger.info("PartCollation records:{}", sb);
     }
 
-    //------------//
-    // getResults //
-    //------------//
+    //-----------//
+    // getRecord //
+    //-----------//
     /**
-     * Report the connections results.
+     * Report the Record for the provided logical ID.
      *
-     * @return the connection results
+     * @param logicalId the provided logical id
+     * @return the Record found or null
      */
-    public List<ResultEntry> getResults ()
+    private Record getRecord (int logicalId)
     {
-        return resultEntries;
+        for (Record record : records) {
+            if (record.logical.getId() == logicalId)
+                return record;
+        }
+
+        logger.warn("Cannot find logical for id {}", logicalId);
+        return null;
     }
 
-    //----------------//
-    // addResultEntry //
-    //----------------//
+    //------------//
+    // getRecords //
+    //------------//
     /**
-     * Build a new ResultEntry based on provided PartRef and insert it at last position,
-     * according to provided direction, in the list of results.
+     * Report the collation records.
+     *
+     * @return the collation records
+     */
+    public List<Record> getRecords ()
+    {
+        return records;
+    }
+
+    //-----------//
+    // addRecord //
+    //-----------//
+    /**
+     * Build a new Record based on provided PartRef and insert it at last position,
+     * according to provided direction, in the list of records.
      *
      * @param dir     -1 for up, +1 for down
      * @param partRef the provided candidate partRef
-     * @param results (output) the results to be augmented
+     * @param records (output) the records to be augmented
      */
-    private void addResultEntry (int dir,
-                                 PartRef partRef,
-                                 List<ResultEntry> results)
+    private void addRecord (int dir,
+                            PartRef partRef,
+                            List<Record> records)
     {
         // Create a brand new logical part for this candidate part
         final LogicalPart logical = new LogicalPart(
-                0, // This id is irrelevant for the time being
+                0, // This id indicates a just-created logical
                 partRef.getStaffCount(),
                 partRef.getLineCounts());
         logical.setName(partRef.getName());
@@ -165,11 +194,15 @@ public class PartConnection
         logical.setLineCounts(partRef.getLineCounts());
         logger.debug("Created {} from {}", logical, partRef);
 
-        final ResultEntry entry = new ResultEntry(logical);
-        entry.partRefs.add(partRef);
+        final Record record = new Record(logical);
+        record.partRefs.add(partRef);
 
-        // Insert at proper end of results
-        results.add(dir < 0 ? 0 : results.size(), entry);
+        if (logical.getName() != null) {
+            logicalNames.add(logical.getName());
+        }
+
+        // Insert at proper end of records
+        records.add(dir < 0 ? 0 : records.size(), record);
     }
 
     //---------//
@@ -193,17 +226,17 @@ public class PartConnection
     }
 
     //---------//
-    // connect //
+    // collate //
     //---------//
     /**
-     * The heart of the part connection algorithm, when we connect parts across several pages.
+     * The heart of the part collation algorithm, when we collate parts across several pages.
      *
      * @param sequences a list of sequences of candidate parts (one sequence = one system)
      */
-    private void connect (List<List<PartRef>> sequences)
+    private void collate (List<List<PartRef>> sequences)
     {
-        // Two-staff entry found, if any
-        ResultEntry biEntry = null;
+        // Two-staff record found, if any
+        Record biRecord = null;
 
         // Process each sequence of candidate parts in turn
         // One such sequence = one system
@@ -211,39 +244,51 @@ public class PartConnection
             final List<PartRef> sequence = sequences.get(iSeq);
             final int biIndex = biIndex(sequence);
 
+            // Respect manual assignments if any
+            final Set<Record> manuals = new LinkedHashSet<>();
+            for (PartRef partRef : sequence) {
+                if (partRef.isManual()) {
+                    final Record record = getRecord(partRef.getLogicalId());
+                    if (record != null) {
+                        manuals.add(record);
+                        record.partRefs.add(partRef);
+                    }
+                }
+            }
+
             if (iSeq == 0) {
-                dispatch(sequence, resultEntries, +1);
+                dispatch(sequence, records, +1, manuals);
 
                 if (biIndex != -1) {
-                    biEntry = resultEntries.get(biIndex);
+                    biRecord = records.get(biIndex);
                 }
             } else {
-                if ((biEntry != null) && (biIndex != -1)) {
-                    // Align on the biEntry
-                    biEntry.partRefs.add(sequence.get(biIndex));
+                if ((biRecord != null) && (biIndex != -1)) {
+                    // Align on the biRecord
+                    biRecord.partRefs.add(sequence.get(biIndex));
 
-                    // Process parts above biEntry
+                    // Process parts above biRecord
                     dispatch(
                             sequence.subList(0, biIndex),
-                            resultEntries.subList(0, resultEntries.indexOf(biEntry)),
-                            -1);
+                            records.subList(0, records.indexOf(biRecord)),
+                            -1,
+                            manuals);
 
-                    // Process parts below biEntry
+                    // Process parts below biRecord
                     dispatch(
                             sequence.subList(biIndex + 1, sequence.size()),
-                            resultEntries.subList(
-                                    resultEntries.indexOf(biEntry) + 1,
-                                    resultEntries.size()),
-                            +1);
+                            records.subList(records.indexOf(biRecord) + 1, records.size()),
+                            +1,
+                            manuals);
                 } else {
-                    dispatch(sequence, resultEntries, -1);
+                    dispatch(sequence, records, -1, manuals);
                 }
             }
         }
 
         if (!logicalsLocked) {
             // Assign ids to logical parts
-            renumberResults();
+            renumberRecords();
         }
     }
 
@@ -251,28 +296,22 @@ public class PartConnection
     // dispatch //
     //----------//
     /**
-     * Dispatch the list of candidate PartRef's (the parts of a system) to the
-     * current list of logical parts.
+     * Dispatch the list of candidate PartRef's (the parts of a system) to the current list
+     * of records.
      *
-     * @param sequence the (system) candidate parts to dispatch
-     * @param results  (input/output) the current sub-list of logical parts defined so far
+     * @param sequence the (sub-system) candidate parts to dispatch
+     * @param records  the [sub-]list of records available
      * @param dir      -1 or +1 for browsing up or down
+     * @param manuals  records already used by manual assignment
      */
     private void dispatch (List<PartRef> sequence,
-                           List<ResultEntry> results,
-                           int dir)
+                           List<Record> records,
+                           int dir,
+                           Set<Record> manuals)
     {
-        final int ic1 = (dir > 0) ? 0 : (sequence.size() - 1); // Starting index value
-        final int ic2 = (dir > 0) ? sequence.size() : (-1); // Breaking index value
-        int resultIndex = (dir > 0) ? (-1) : results.size(); // Current index in existing results
-
-        // All result names
-        final Set<String> resNames = new LinkedHashSet<>();
-        for (ResultEntry result : results) {
-            final String name = result.logical.getName();
-            if (name != null)
-                resNames.add(name);
-        }
+        final int ic1 = (dir > 0) ? 0 : (sequence.size() - 1); // Starting sequence index value
+        final int ic2 = (dir > 0) ? sequence.size() : (-1); // Breaking sequence index value
+        int recordIndex = (dir > 0) ? (-1) : records.size(); // Current index in defined records
 
         CandidateLoop:
         for (int ic = ic1; ic != ic2; ic += dir) {
@@ -280,12 +319,22 @@ public class PartConnection
             final List<Integer> lineCounts = partRef.getLineCounts();
             logger.debug("\nCandidate {}", partRef.toQualifiedString());
 
-            // Check with logical parts already defined
-            resultIndex += dir;
-            for (; ((dir > 0) && (resultIndex < results.size())) || ((dir < 0)
-                    && (resultIndex >= 0)); resultIndex += dir) {
-                final ResultEntry resultEntry = results.get(resultIndex);
-                final LogicalPart logical = resultEntry.logical;
+            if (partRef.isManual()) {
+                continue CandidateLoop; // Candidate part already assigned manually
+            }
+
+            // Check against defined records
+            recordIndex += dir;
+            RecordLoop:
+            for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
+                    && (recordIndex >= 0)); recordIndex += dir) {
+                final Record record = records.get(recordIndex);
+
+                if (manuals.contains(record)) {
+                    continue RecordLoop; // Candidate part must skip this record
+                }
+
+                final LogicalPart logical = record.logical;
                 logger.debug("  Comparing with {}", logical);
 
                 // Check parts are compatible in terms of staves counts
@@ -314,7 +363,7 @@ public class PartConnection
                 // @formatter:on
 
                 logger.debug("    Success");
-                resultEntry.partRefs.add(partRef);
+                record.partRefs.add(partRef);
 
                 // Use name of affiliate part to define abbreviation of logical?
                 final String resAbbrev = logical.getAbbreviation();
@@ -325,7 +374,7 @@ public class PartConnection
                     if ((affiName != null)
                         && !affiName.equals(resName)
                         && (resName == null || affiName.length() < logical.getName().length())
-                        && !resNames.contains(affiName)) {
+                        && !logicalNames.contains(affiName)) {
                         logical.setAbbreviation(affiName);
                     }
                     // @formatter:on
@@ -334,11 +383,10 @@ public class PartConnection
                 continue CandidateLoop;
             }
 
-            logger.debug("  No more entries available");
+            logger.debug("  No more records available");
 
             if (!logicalsLocked) {
-                // Create a brand new logical part for this candidate
-                addResultEntry(dir, partRef, results);
+                addRecord(dir, partRef, records); // Create a brand new record for this candidate
             } else {
                 logger.warn("  Cannot map {} to any logical", partRef.toQualifiedString());
             }
@@ -346,41 +394,51 @@ public class PartConnection
     }
 
     //-----------------//
-    // renumberResults //
+    // renumberRecords //
     //-----------------//
     /**
-     * Renumber the logical entries.
+     * Renumber the records.
      */
-    private void renumberResults ()
+    private void renumberRecords ()
     {
-        for (int i = 0; i < resultEntries.size(); i++) {
-            final ResultEntry resultEntry = resultEntries.get(i);
+        for (int i = 0; i < records.size(); i++) {
+            final Record record = records.get(i);
             final int id = i + 1;
-            resultEntry.logical.setId(id);
-
-            logger.debug("Final {}", resultEntry.logical);
+            record.logical.setId(id);
+            logger.debug("Final {}", record.logical);
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    //-------------//
-    // ResultEntry //
-    //-------------//
+    //--------//
+    // Record //
+    //--------//
     /**
-     * Entry to gather results related to a single logical part.
+     * Records a LogicalPart with its affiliated (physical) PartRef's.
      */
-    public static class ResultEntry
+    public static class Record
     {
-        /** Resulting logical part. */
+        /** Recording logical part. */
         final LogicalPart logical;
 
         /** Affiliated candidate parts. */
         final List<PartRef> partRefs = new ArrayList<>();
 
-        public ResultEntry (LogicalPart logical)
+        public Record (LogicalPart logical)
         {
             this.logical = logical;
+        }
+
+        @Override
+        public String toString ()
+        {
+            // @formatter:off
+            return new StringBuilder(getClass().getSimpleName()).append('{')
+                    .append(logical)
+                    .append(" affs:").append(partRefs.size())
+                    .append('}').toString();
+            // @formatter:on
         }
     }
 }

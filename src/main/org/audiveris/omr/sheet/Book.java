@@ -2005,8 +2005,10 @@ public class Book
         int modifs = 0;
 
         for (Score score : theScores) {
-            // (re) build the score logical parts
-            modifs += new ScoreReduction(score).reduce(theStubs);
+            // (re) build the score logical parts?
+            if (score.needsPartCollation()) {
+                modifs += new ScoreReduction(score).reduce(theStubs);
+            }
 
             // Voices connection across pages in score
             modifs += Voices.refineScore(score, theStubs);

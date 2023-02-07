@@ -819,6 +819,32 @@ public class Score
         }
     }
 
+    //---------------------//
+    // needsPartCollation //
+    //---------------------//
+    /**
+     * Report whether this score needs parts collation.
+     *
+     * @return true if so
+     */
+    public boolean needsPartCollation ()
+    {
+        for (PageNumber pageNumber : pageNumbers) {
+            final PageRef pageRef = pageNumber.getPageRef(book);
+
+            for (SystemRef systemRef : pageRef.getSystems()) {
+                for (PartRef partRef : systemRef.getParts()) {
+                    if (partRef.getLogicalId() == null) {
+                        logger.info("PartCollation needed in {}", this);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     //------------------------//
     // removeSheetPageNumbers //
     //------------------------//
