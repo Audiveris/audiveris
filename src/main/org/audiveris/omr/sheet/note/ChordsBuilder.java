@@ -23,8 +23,8 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -81,7 +81,9 @@ public class ChordsBuilder
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
 
     /** To sort head-stem relations left to right. */
-    private static final Comparator<Relation> byHeadSide = (Relation o1, Relation o2) -> {
+    private static final Comparator<Relation> byHeadSide = (Relation o1,
+                                                            Relation o2) ->
+    {
         final HorizontalSide s1 = ((HeadStemRelation) o1).getHeadSide();
         final HorizontalSide s2 = ((HeadStemRelation) o2).getHeadSide();
 
@@ -394,6 +396,13 @@ public class ChordsBuilder
             }
 
             if (measure != null) {
+                // Case of chord which have changed of containing measure
+                // while being build head after head
+                final Measure chordMeasure = chord.getMeasure();
+                if ((chordMeasure != null) && (chordMeasure != measure)) {
+                    chordMeasure.removeInter(chord);
+                }
+
                 measure.addInter(chord);
             } else {
                 logger.warn("No containing measure for {}", inter);
