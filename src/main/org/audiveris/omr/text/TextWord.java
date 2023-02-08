@@ -77,17 +77,8 @@ public class TextWord
     /** Regexp for one-letter words. */
     private static final Pattern ONE_LETTER_WORDS = compileRegexp(constants.oneLetterWordRegexp);
 
-    /** Regexp for normal words. */
-    private static final Pattern NORMAL_WORDS = compileRegexp(constants.normalWordRegexp);
-
-    //    static {
-    //        String regex = constants.normalWordRegexp.getValue();
-    //        logger.info("\"{}\" length: {}", regex, regex.length());
-    //        int i = 0;
-    //        for (char c : regex.toCharArray()) {
-    //            logger.info("   {} {} {} {}", i++, c, (int) c, Integer.toHexString((int) c));
-    //        }
-    //    }
+    /** Regexp for abnormal words. */
+    private static final Pattern ABNORMAL_WORDS = compileRegexp(constants.abnormalWordRegexp);
 
     /** Regexp for words with a dash. */
     private static final Pattern DASHED_WORDS = compileRegexp(constants.dashedWordRegexp);
@@ -287,6 +278,10 @@ public class TextWord
      */
     public String checkValidity ()
     {
+        if (isVip()) {
+            logger.info("VIP TextWord.checkValidity {}", this);
+        }
+
         // Remove word with too low confidence
         if (getConfidence() < constants.lowConfidence.getValue()) {
             logger.debug("      low confident word {}", this);
@@ -311,10 +306,10 @@ public class TextWord
         }
 
         // Remove abnormal word
-        if (NORMAL_WORDS != null) {
-            Matcher matcher = NORMAL_WORDS.matcher(value);
+        if (ABNORMAL_WORDS != null) {
+            Matcher matcher = ABNORMAL_WORDS.matcher(value);
 
-            if (!matcher.matches()) {
+            if (matcher.matches()) {
                 logger.debug("      abnormal word value {}", this);
                 return "abnormal-word-value";
             }
@@ -795,17 +790,9 @@ public class TextWord
                 "^[\\W]*[\\w][\\W]*$",
                 "Regular expression to detect one-letter words");
 
-        private final Constant.String normalWordRegexp = new Constant.String(
-                "^[" //
-                        + "\\w\\.\\-\\[\\]" // escaped symbols
-                        + "()_:,;?*/!" // simple accepted punctuation
-                        + "\u2014" // — long dash
-                        + "\u0027" // ' standard quote
-                        + "\u2018" // ‘ \ quote
-                        + "\u2019" // ’ / quote
-                        + "\u201c" // “ inverted double quote
-                        + "]+$",
-                "Regular expression to check normal words");
+        private final Constant.String abnormalWordRegexp = new Constant.String(
+                "^[\\W]+$",
+                "Regular expression to detect abnormal words");
 
         private final Constant.String longDashWordRegexp = new Constant.String(
                 "^[-_\u2014]{2,}$",

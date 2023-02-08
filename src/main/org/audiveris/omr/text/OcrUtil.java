@@ -127,7 +127,7 @@ public abstract class OcrUtil
         Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
 
         if (logger.isDebugEnabled()) {
-            TextLine.dump("Raw OCR'ed lines:", lines, false);
+            TextLine.dump("Raw OCR'ed lines:", lines, constants.dumpWords.isSet());
         }
 
         return lines;
@@ -146,5 +146,9 @@ public abstract class OcrUtil
                 "pixels",
                 10,
                 "Margin of white pixels added around image to OCR");
+
+        private final Constant.Boolean dumpWords = new Constant.Boolean(
+                false,
+                "Should we dump words when we dump lines?");
     }
 }
