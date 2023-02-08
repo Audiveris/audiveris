@@ -759,26 +759,41 @@ public class Part
     public void setLogicalPart (LogicalPart logicalPart,
                                 boolean manual)
     {
-        // Determine logical id
         final int logicalId = logicalPart.getId();
-
-        // Update part id
-        setId(logicalId);
-
-        // Update part name accordingly
-        final Boolean isFirst = system.isFirstInScore();
-        if (isFirst != null && isFirst) {
-            setName(logicalPart.getName());
-        } else {
-            final String abbrev = logicalPart.getAbbreviation();
-            setName(abbrev != null ? abbrev : logicalPart.getName());
-        }
+        setLogicalPart(logicalId, logicalPart);
 
         // Update partRef as well
         final PartRef partRef = getRef();
         if (partRef != null) {
             partRef.setLogicalId(logicalId);
             partRef.setManual(manual);
+        }
+    }
+
+    //----------------//
+    // setLogicalPart //
+    //----------------//
+    /**
+     * Modify the related logical part, using a specific logical id.
+     *
+     * @param logicalId   the new logical Id
+     * @param logicalPart the provided logical part (perhaps with old Id)
+     */
+    public void setLogicalPart (Integer logicalId,
+                                LogicalPart logicalPart)
+    {
+        // Update part id
+        setId(logicalId);
+
+        if (logicalId != null) {
+            // Update part name accordingly
+            final Boolean isFirst = system.isFirstInScore();
+            if (isFirst != null && isFirst) {
+                setName(logicalPart.getName());
+            } else {
+                final String abbrev = logicalPart.getAbbreviation();
+                setName(abbrev != null ? abbrev : logicalPart.getName());
+            }
         }
     }
 

@@ -31,6 +31,7 @@ import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.ui.util.Panel;
@@ -380,7 +381,7 @@ public class LogicalPartsEditor
             final int oldId = old.getId();
             final LogicalPart mod = model.getById(oldId);
             final Integer newId = (mod != null) ? model.getRank(mod) : null;
-            remap(oldId, newId, updated);
+            remap(oldId, newId, mod, updated);
         }
 
         model.renumberLogicals();
@@ -400,10 +401,14 @@ public class LogicalPartsEditor
 
     private void remap (int oldId,
                         Integer newId,
+                        LogicalPart logicalPart,
                         Set<PartRef> updated)
     {
         for (PageNumber pageNumber : score.getPageNumbers()) {
+            final SheetStub stub = score.getStubs().get(pageNumber.sheetNumber - 1);
+            final boolean isLoaded = stub.hasSheet();
             final PageRef pageRef = pageNumber.getPageRef(score.getBook());
+
             for (SystemRef systemRef : pageRef.getSystems()) {
                 for (PartRef partRef : systemRef.getParts()) {
                     if (!updated.contains(partRef)) {
@@ -417,6 +422,10 @@ public class LogicalPartsEditor
                                     partRef.getIndex() + 1,
                                     partRef,
                                     newId);
+                            if (isLoaded) {
+                                final Part part = partRef.getRealPart();
+                                part.setLogicalPart(newId, logicalPart);
+                            }
                             partRef.setLogicalId(newId);
                             updated.add(partRef);
 
