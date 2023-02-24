@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,12 +55,21 @@ public class TimeNumberInter
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     /** Top or bottom. */
     @XmlAttribute
     protected VerticalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimeNumberInter ()
+    {
+        super((Glyph) null, (Shape) null, 0.0);
+    }
+
     /**
      * Creates a new <code>TimeNumberInter</code> object.
      *
@@ -79,15 +88,8 @@ public class TimeNumberInter
         this.side = side;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private TimeNumberInter ()
-    {
-        super((Glyph) null, (Shape) null, 0.0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -96,6 +98,43 @@ public class TimeNumberInter
     {
         visitor.visit(this);
     }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new HorizontalEditor(this);
+    }
+
+    //---------//
+    // getSide //
+    //---------//
+    /**
+     * Report vertical position with respect to the staff time signature.
+     *
+     * @return TOP or BOTTOM
+     */
+    public VerticalSide getSide ()
+    {
+        return side;
+    }
+
+    //---------//
+    // setSide //
+    //---------//
+    /**
+     * Set the vertical position with respect to the staff time signature.
+     *
+     * @param side the side to set
+     */
+    public void setSide (VerticalSide side)
+    {
+        this.side = side;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // create //
@@ -130,28 +169,6 @@ public class TimeNumberInter
         return inter;
     }
 
-    //-----------//
-    // getEditor //
-    //-----------//
-    @Override
-    public InterEditor getEditor ()
-    {
-        return new HorizontalEditor(this);
-    }
-
-    //---------//
-    // getSide //
-    //---------//
-    /**
-     * Report vertical position with respect to the staff time signature.
-     *
-     * @return TOP or BOTTOM
-     */
-    public VerticalSide getSide ()
-    {
-        return side;
-    }
-
     //--------------//
     // isPitchValid //
     //--------------//
@@ -166,20 +183,8 @@ public class TimeNumberInter
                 && (absPitch <= constants.maxAbsolutePitch.getValue());
     }
 
-    //---------//
-    // setSide //
-    //---------//
-    /**
-     * Set the vertical position with respect to the staff time signature.
-     *
-     * @param side the side to set
-     */
-    public void setSide (VerticalSide side)
-    {
-        this.side = side;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

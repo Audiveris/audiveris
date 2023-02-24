@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,7 +54,8 @@ import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Pair;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1351,6 +1352,8 @@ public class TextBuilder
         return newStandards;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // isMainlyItalic //
     //----------------//
@@ -1385,6 +1388,7 @@ public class TextBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

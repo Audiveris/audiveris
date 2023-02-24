@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,6 +23,7 @@ package org.audiveris.omr.image;
 
 import static org.audiveris.omr.image.ChamferDistance.VALUE_TARGET;
 import static org.audiveris.omr.image.ChamferDistance.VALUE_UNKNOWN;
+
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.Table;
 
@@ -57,105 +58,6 @@ public interface DistanceTable
      * @return the normalizing value
      */
     int getNormalizer ();
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Integer //
-    //---------//
-    public static class Integer
-            extends Abstract
-    {
-
-        private final Table.Integer table;
-
-        public Integer (int width,
-                        int height,
-                        int normalizer)
-        {
-            super(normalizer);
-            table = new Table.Integer(width, height);
-        }
-
-        protected Integer (Table.Integer table,
-                           int normalizer)
-        {
-            super(normalizer);
-            this.table = table;
-        }
-
-        @Override
-        public DistanceTable.Integer getCopy (Rectangle roi)
-        {
-            return new DistanceTable.Integer(table.getCopy(roi), normalizer);
-        }
-
-        @Override
-        public DistanceTable.Integer getView (Rectangle roi)
-        {
-            return new DistanceTable.Integer(table.getView(roi), normalizer);
-        }
-
-        @Override
-        public void dump (String title)
-        {
-            table.dump(title);
-        }
-
-        @Override
-        protected final Table getTable ()
-        {
-            return table;
-        }
-    }
-
-    //-------//
-    // Short //
-    //-------//
-    public static class Short
-            extends Abstract
-    {
-
-        private final Table.Short table;
-
-        public Short (int width,
-                      int height,
-                      int normalizer)
-        {
-            super(normalizer);
-            table = new Table.Short(width, height);
-        }
-
-        protected Short (Table.Short table,
-                         int normalizer)
-        {
-            super(normalizer);
-            this.table = table;
-        }
-
-        @Override
-        public DistanceTable.Short getCopy (Rectangle roi)
-        {
-            return new DistanceTable.Short(table.getCopy(roi), normalizer);
-        }
-
-        @Override
-        public DistanceTable.Short getView (Rectangle roi)
-        {
-            return new DistanceTable.Short(table.getView(roi), normalizer);
-        }
-
-        @Override
-        public void dump (String title)
-        {
-            table.dump(title);
-        }
-
-        @Override
-        protected final Table getTable ()
-        {
-            return table;
-        }
-    }
 
     //----------//
     // Abstract //
@@ -213,6 +115,28 @@ public interface DistanceTable
             return img;
         }
 
+        //--------//
+        // getLut //
+        //--------//
+        /**
+         * Built a LUT (biased one cell to make room for VALUE_UNKNOWN==-1)
+         *
+         * @param rawDistMax maximum distance for non-white cell
+         * @return the biased LUT
+         */
+        private int[] getLut (int rawDistMax)
+        {
+            final int[] lut = new int[1 + rawDistMax];
+            lut[1 + VALUE_UNKNOWN] = Colors.DISTANCE_UNKNOWN.getRGB();
+            lut[1 + VALUE_TARGET] = Colors.DISTANCE_TARGET.getRGB();
+
+            for (int i = rawDistMax - 1; i > 0; i--) {
+                lut[1 + i] = Color.WHITE.getRGB();
+            }
+
+            return lut;
+        }
+
         //---------------//
         // getNormalizer //
         //---------------//
@@ -221,6 +145,11 @@ public interface DistanceTable
         {
             return normalizer;
         }
+
+        //----------//
+        // getTable //
+        //----------//
+        protected abstract Table getTable ();
 
         @Override
         public int getValue (int index)
@@ -255,32 +184,105 @@ public interface DistanceTable
         {
             getTable().setValue(x, y, val);
         }
+    }
 
-        //----------//
-        // getTable //
-        //----------//
-        protected abstract Table getTable ();
+    //~ Inner Classes ------------------------------------------------------------------------------
 
-        //--------//
-        // getLut //
-        //--------//
-        /**
-         * Built a LUT (biased one cell to make room for VALUE_UNKNOWN==-1)
-         *
-         * @param rawDistMax maximum distance for non-white cell
-         * @return the biased LUT
-         */
-        private int[] getLut (int rawDistMax)
+    //---------//
+    // Integer //
+    //---------//
+    public static class Integer
+            extends Abstract
+    {
+
+        private final Table.Integer table;
+
+        public Integer (int width,
+                        int height,
+                        int normalizer)
         {
-            final int[] lut = new int[1 + rawDistMax];
-            lut[1 + VALUE_UNKNOWN] = Colors.DISTANCE_UNKNOWN.getRGB();
-            lut[1 + VALUE_TARGET] = Colors.DISTANCE_TARGET.getRGB();
+            super(normalizer);
+            table = new Table.Integer(width, height);
+        }
 
-            for (int i = rawDistMax - 1; i > 0; i--) {
-                lut[1 + i] = Color.WHITE.getRGB();
-            }
+        protected Integer (Table.Integer table,
+                           int normalizer)
+        {
+            super(normalizer);
+            this.table = table;
+        }
 
-            return lut;
+        @Override
+        public void dump (String title)
+        {
+            table.dump(title);
+        }
+
+        @Override
+        public DistanceTable.Integer getCopy (Rectangle roi)
+        {
+            return new DistanceTable.Integer(table.getCopy(roi), normalizer);
+        }
+
+        @Override
+        protected final Table getTable ()
+        {
+            return table;
+        }
+
+        @Override
+        public DistanceTable.Integer getView (Rectangle roi)
+        {
+            return new DistanceTable.Integer(table.getView(roi), normalizer);
+        }
+    }
+
+    //-------//
+    // Short //
+    //-------//
+    public static class Short
+            extends Abstract
+    {
+
+        private final Table.Short table;
+
+        public Short (int width,
+                      int height,
+                      int normalizer)
+        {
+            super(normalizer);
+            table = new Table.Short(width, height);
+        }
+
+        protected Short (Table.Short table,
+                         int normalizer)
+        {
+            super(normalizer);
+            this.table = table;
+        }
+
+        @Override
+        public void dump (String title)
+        {
+            table.dump(title);
+        }
+
+        @Override
+        public DistanceTable.Short getCopy (Rectangle roi)
+        {
+            return new DistanceTable.Short(table.getCopy(roi), normalizer);
+        }
+
+        @Override
+        protected final Table getTable ()
+        {
+            return table;
+        }
+
+        @Override
+        public DistanceTable.Short getView (Rectangle roi)
+        {
+            return new DistanceTable.Short(table.getView(roi), normalizer);
         }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,6 +38,13 @@ public class BarGroupRelation
     private final double xGap;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    // For JAXB
+    private BarGroupRelation ()
+    {
+        this.xGap = 0;
+    }
+
     /**
      * Creates a new BarGroupRelation object.
      *
@@ -48,13 +55,21 @@ public class BarGroupRelation
         this.xGap = xGap;
     }
 
-    // For JAXB
-    private BarGroupRelation ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
     {
-        this.xGap = 0;
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append("@(").append(String.format("%.2f", xGap)).append(")");
+
+        return sb.toString();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -71,18 +86,5 @@ public class BarGroupRelation
     public boolean isSingleTarget ()
     {
         return false;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append("@(").append(String.format("%.2f", xGap)).append(")");
-
-        return sb.toString();
     }
 }

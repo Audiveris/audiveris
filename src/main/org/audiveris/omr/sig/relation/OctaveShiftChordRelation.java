@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <b>OctaveShiftInter</b> and an embraced chord on side of the shift sign.
  *
  * @see OctaveShiftInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "octave-shift-chord")
@@ -48,12 +47,20 @@ public class OctaveShiftChordRelation
 
     // Persistent data
     //----------------
-    //
+
     /** This is the octave shift side (left or right) where the chord is located. */
     @XmlAttribute(name = "side")
     private HorizontalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB and user allocation.
+     */
+    public OctaveShiftChordRelation ()
+    {
+    }
+
     /**
      * Creates a new <code>OctaveShiftChordRelation</code> object.
      *
@@ -64,14 +71,8 @@ public class OctaveShiftChordRelation
         this.side = side;
     }
 
-    /**
-     * No-arg constructor meant for JAXB and user allocation.
-     */
-    public OctaveShiftChordRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//

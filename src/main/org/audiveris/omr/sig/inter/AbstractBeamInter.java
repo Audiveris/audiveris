@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,10 +53,12 @@ import org.audiveris.omr.ui.symbol.BeamSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
 
@@ -108,28 +110,26 @@ public abstract class AbstractBeamInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Transient data
     //---------------
-    //
+
     /** Beam-Stem linker. */
     private BeamLinker linker;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new AbstractBeamInter object.
-     * Note there is no underlying glyph, cleaning will be based on beam area.
+     * Creates a new AbstractBeamInter <b>ghost</b> object.
+     * Median and height must be assigned later
      *
-     * @param shape   BEAM or BEAM_HOOK or BEAM_SMALL
-     * @param impacts the grade details
-     * @param median  median beam line
-     * @param height  beam height
+     * @param shape BEAM or BEAM_HOOK or BEAM_SMALL
+     * @param grade the grade
      */
     protected AbstractBeamInter (Shape shape,
-                                 GradeImpacts impacts,
-                                 Line2D median,
-                                 double height)
+                                 Double grade)
     {
-        super(shape, impacts, median, height);
+        super(shape, grade);
     }
 
     /**
@@ -150,19 +150,24 @@ public abstract class AbstractBeamInter
     }
 
     /**
-     * Creates a new AbstractBeamInter <b>ghost</b> object.
-     * Median and height must be assigned later
+     * Creates a new AbstractBeamInter object.
+     * Note there is no underlying glyph, cleaning will be based on beam area.
      *
-     * @param shape BEAM or BEAM_HOOK or BEAM_SMALL
-     * @param grade the grade
+     * @param shape   BEAM or BEAM_HOOK or BEAM_SMALL
+     * @param impacts the grade details
+     * @param median  median beam line
+     * @param height  beam height
      */
     protected AbstractBeamInter (Shape shape,
-                                 Double grade)
+                                 GradeImpacts impacts,
+                                 Line2D median,
+                                 double height)
     {
-        super(shape, grade);
+        super(shape, impacts, median, height);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -223,30 +228,73 @@ public abstract class AbstractBeamInter
         return isAbnormal();
     }
 
-    //-----------//
-    // getLinker //
-    //-----------//
-    /**
-     * Report the dedicated beam-stem linker.
-     *
-     * @return the linker
-     */
-    public BeamLinker getLinker ()
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
     {
-        return linker;
-    }
+        /*
+         * A beam (or a beam hook) can have its left and/or right sides snapped to existing stems,
+         * which results in beam width which can increase/decrease according to the stems nearby.
+         * <p>
+         * Short beams (like beam hooks) can have their width decrease so much, that both their
+         * left side and their right side may get snapped to the SAME stem, resulting in a width
+         * equal to zero.
+         * Such a zero-wide beam gets invisible, and if the end-user releases the mouse at this
+         * moment, a very weird beam gets created.
+         * To cope with this possibility, we have to make sure that the beam width never gets
+         * lower than a minimum.
+         */
+        final BeamSymbol beamSymbol = (BeamSymbol) symbol;
+        final Model model = beamSymbol.getModel(font, dropLocation);
+        median = new Line2D.Double(model.p1, model.p2);
+        height = model.thickness;
 
-    //-----------//
-    // setLinker //
-    //-----------//
-    /**
-     * Set the dedicated beam-stem linker.
-     *
-     * @param linker the beam-stem linker
-     */
-    public void setLinker (BeamLinker linker)
-    {
-        this.linker = linker;
+        computeArea();
+
+        if (staff != null) {
+            final List<Inter> systemStems = staff.getSystem().getSig().inters(StemInter.class);
+            Collections.sort(systemStems, Inters.byAbscissa);
+
+            // Snap sides?
+            Double left = getSnapAbscissa(LEFT, systemStems);
+            Double right = getSnapAbscissa(RIGHT, systemStems);
+
+            if (left != null && right != null) {
+                // Both sides get snapped, let's avoid beam collapse
+                final double width = right - left;
+                final int minWidth = sheet.getScale().toPixels(constants.minBeamWidth);
+
+                if (width < minWidth) {
+                    // Choose stem side
+                    if (dropLocation.x > 0.5 * (left + right)) {
+                        right = left + minWidth;
+                    } else {
+                        left = right - minWidth;
+                    }
+                }
+            }
+
+            if (left != null) {
+                model.p1.setLocation(left, model.p1.getY());
+            }
+
+            if (right != null) {
+                model.p2.setLocation(right, model.p2.getY());
+            }
+
+            if (left != null || right != null) {
+                median.setLine(model.p1, model.p2);
+                computeArea();
+                dropLocation.setLocation(PointUtil.middle(median));
+            }
+        }
+
+        return true;
     }
 
     //-----------//
@@ -320,21 +368,6 @@ public abstract class AbstractBeamInter
     }
 
     //----------//
-    // setGroup //
-    //----------//
-    /**
-     * Assign the containing BeamGroupInter.
-     *
-     * @param group containing group
-     */
-    public void setGroup (BeamGroupInter group)
-    {
-        if (group != null) {
-            group.addMember(this);
-        }
-    }
-
-    //----------//
     // getHeads //
     //----------//
     /**
@@ -353,6 +386,91 @@ public abstract class AbstractBeamInter
         }
 
         return beamHeads;
+    }
+
+    //-----------//
+    // getLinker //
+    //-----------//
+    /**
+     * Report the dedicated beam-stem linker.
+     *
+     * @return the linker
+     */
+    public BeamLinker getLinker ()
+    {
+        return linker;
+    }
+
+    /**
+     * Define lookup area around the beam for potential stems
+     *
+     * @return the look up area
+     */
+    private Area getLookupArea (Scale scale)
+    {
+        final Line2D top = getBorder(TOP);
+        final Line2D bottom = getBorder(BOTTOM);
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(getProfile()));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(getProfile()));
+
+        final Path2D lu = new Path2D.Double();
+        double xMin = top.getX1() - xOut;
+        double xMax = top.getX2() + xOut;
+        Point2D topLeft = LineUtil.intersectionAtX(top, xMin);
+        lu.moveTo(topLeft.getX(), topLeft.getY() - yGap);
+
+        Point2D topRight = LineUtil.intersectionAtX(top, xMax);
+        lu.lineTo(topRight.getX(), topRight.getY() - yGap);
+
+        Point2D bottomRight = LineUtil.intersectionAtX(bottom, xMax);
+        lu.lineTo(bottomRight.getX(), bottomRight.getY() + yGap);
+
+        Point2D bottomLeft = LineUtil.intersectionAtX(bottom, xMin);
+        lu.lineTo(bottomLeft.getX(), bottomLeft.getY() + yGap);
+        lu.closePath();
+
+        return new Area(lu);
+    }
+
+    //-----------------//
+    // getSnapAbscissa //
+    //-----------------//
+    /**
+     * Report the theoretical abscissa of the provided beam side when correctly aligned
+     * with a suitable stem.
+     * <p>
+     * Required properties: staff or sig, median, height
+     *
+     * @param side        the desired horizontal side
+     * @param systemStems all stems in containing system
+     * @return the proper abscissa if any, null otherwise
+     */
+    private Double getSnapAbscissa (HorizontalSide side,
+                                    List<Inter> systemStems)
+    {
+        final SystemInfo system;
+
+        if (sig != null) {
+            system = sig.getSystem();
+        } else if (staff != null) {
+            system = staff.getSystem();
+        } else {
+            logger.warn("No system nor staff for {}", this);
+
+            return null;
+        }
+
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupSideLink(systemStems, system, side, profile);
+
+        if (link != null) {
+            final StemInter stem = (StemInter) link.partner;
+            final Point2D beamEnd = (side == LEFT) ? median.getP1() : median.getP2();
+
+            return LineUtil.xAtY(stem.getMedian(), beamEnd.getY());
+        }
+
+        return null;
     }
 
     //-----------//
@@ -421,75 +539,6 @@ public abstract class AbstractBeamInter
         return null;
     }
 
-    //------------//
-    // deriveFrom //
-    //------------//
-    @Override
-    public boolean deriveFrom (ShapeSymbol symbol,
-                               Sheet sheet,
-                               MusicFont font,
-                               Point dropLocation)
-    {
-        /*
-         * A beam (or a beam hook) can have its left and/or right sides snapped to existing stems,
-         * which results in beam width which can increase/decrease according to the stems nearby.
-         * <p>
-         * Short beams (like beam hooks) can have their width decrease so much, that both their
-         * left side and their right side may get snapped to the SAME stem, resulting in a width
-         * equal to zero.
-         * Such a zero-wide beam gets invisible, and if the end-user releases the mouse at this
-         * moment, a very weird beam gets created.
-         * To cope with this possibility, we have to make sure that the beam width never gets
-         * lower than a minimum.
-         */
-        final BeamSymbol beamSymbol = (BeamSymbol) symbol;
-        final Model model = beamSymbol.getModel(font, dropLocation);
-        median = new Line2D.Double(model.p1, model.p2);
-        height = model.thickness;
-
-        computeArea();
-
-        if (staff != null) {
-            final List<Inter> systemStems = staff.getSystem().getSig().inters(StemInter.class);
-            Collections.sort(systemStems, Inters.byAbscissa);
-
-            // Snap sides?
-            Double left = getSnapAbscissa(LEFT, systemStems);
-            Double right = getSnapAbscissa(RIGHT, systemStems);
-
-            if (left != null && right != null) {
-                // Both sides get snapped, let's avoid beam collapse
-                final double width = right - left;
-                final int minWidth = sheet.getScale().toPixels(constants.minBeamWidth);
-
-                if (width < minWidth) {
-                    // Choose stem side
-                    if (dropLocation.x > 0.5 * (left + right)) {
-                        right = left + minWidth;
-                    } else {
-                        left = right - minWidth;
-                    }
-                }
-            }
-
-            if (left != null) {
-                model.p1.setLocation(left, model.p1.getY());
-            }
-
-            if (right != null) {
-                model.p2.setLocation(right, model.p2.getY());
-            }
-
-            if (left != null || right != null) {
-                median.setLine(model.p1, model.p2);
-                computeArea();
-                dropLocation.setLocation(PointUtil.middle(median));
-            }
-        }
-
-        return true;
-    }
-
     //-------------------//
     // hasCommonStemWith //
     //-------------------//
@@ -530,6 +579,127 @@ public abstract class AbstractBeamInter
     public boolean isHook ()
     {
         return false;
+    }
+
+    //-------------//
+    // lookupLinks //
+    //-------------//
+    /**
+     * Look up for potential Beam-Stem links around this Beam instance.
+     *
+     * @param systemStems all stems in system, sorted by abscissa
+     * @param system      containing system
+     * @param profile     desired profile level
+     * @return the potential links
+     */
+    public Collection<Link> lookupLinks (List<Inter> systemStems,
+                                         SystemInfo system,
+                                         int profile)
+    {
+        if (systemStems.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        if (isVip()) {
+            logger.info("VIP lookupLinks for {}", this);
+        }
+
+        final List<Link> links = new ArrayList<>();
+        final Scale scale = system.getSheet().getScale();
+        final Area luArea = getLookupArea(scale);
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luArea);
+
+        for (Inter inter : stems) {
+            StemInter stem = (StemInter) inter;
+            Point2D stemMiddle = PointUtil.middle(stem.getMedian());
+            VerticalSide vSide = (median.relativeCCW(stemMiddle) > 0) ? TOP : BOTTOM;
+            int prof = Math.max(profile, stem.getProfile());
+            Link link = BeamStemRelation.checkLink(this, stem, vSide, scale, prof);
+
+            if (link != null) {
+                links.add(link);
+            }
+        }
+
+        return links;
+    }
+
+    //----------------//
+    // lookupSideLink //
+    //----------------//
+    /**
+     * Lookup for a potential Beam-Stem link on the desired horizontal side of this beam
+     *
+     * @param systemStems all stems in system, sorted by abscissa
+     * @param system      containing system
+     * @param side        the desired horizontal side
+     * @param profile     desired profile level
+     * @return the best potential link if any, null otherwise
+     */
+    private Link lookupSideLink (List<Inter> systemStems,
+                                 SystemInfo system,
+                                 HorizontalSide side,
+                                 int profile)
+    {
+        if (systemStems.isEmpty()) {
+            return null;
+        }
+
+        if (isVip()) {
+            logger.info("VIP lookupSideLink for {} on {}", this, side);
+        }
+
+        final Line2D top = getBorder(VerticalSide.TOP);
+        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
+        final Scale scale = system.getSheet().getScale();
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(profile));
+        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(profile));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
+
+        Link bestLink = null;
+        double bestGrade = Double.MAX_VALUE;
+
+        final Rectangle luBox = new Rectangle(-1, -1); // "Non-existent" rectangle
+
+        if (side == HorizontalSide.LEFT) {
+            Point iTop = PointUtil.rounded(top.getP1());
+            luBox.add(iTop.x - xOut, iTop.y - yGap);
+            luBox.add(iTop.x + xIn, iTop.y - yGap);
+
+            Point iBottom = PointUtil.rounded(bottom.getP1());
+            luBox.add(iBottom.x - xOut, iBottom.y + yGap);
+            luBox.add(iBottom.x + xIn, iBottom.y + yGap);
+        } else {
+            Point iTop = PointUtil.rounded(top.getP2());
+            luBox.add(iTop.x - xIn, iTop.y - yGap);
+            luBox.add(iTop.x + xOut, iTop.y - yGap);
+
+            Point iBottom = PointUtil.rounded(bottom.getP2());
+            luBox.add(iBottom.x - xIn, iBottom.y + yGap);
+            luBox.add(iBottom.x + xOut, iBottom.y + yGap);
+        }
+
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luBox);
+
+        for (Inter inter : stems) {
+            final StemInter stem = (StemInter) inter;
+            final int prof = Math.max(profile, stem.getProfile());
+
+            for (VerticalSide vSide : VerticalSide.values()) {
+                Link link = BeamStemRelation.checkLink(this, stem, vSide, scale, prof);
+
+                if (link != null) {
+                    BeamStemRelation rel = (BeamStemRelation) link.relation;
+
+                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
+                        bestLink = link;
+                        bestGrade = rel.getGrade();
+                    }
+                }
+            }
+        }
+
+        return bestLink;
     }
 
     //--------//
@@ -678,6 +848,34 @@ public abstract class AbstractBeamInter
         return searchObsoletelinks(links, BeamStemRelation.class);
     }
 
+    //----------//
+    // setGroup //
+    //----------//
+    /**
+     * Assign the containing BeamGroupInter.
+     *
+     * @param group containing group
+     */
+    public void setGroup (BeamGroupInter group)
+    {
+        if (group != null) {
+            group.addMember(this);
+        }
+    }
+
+    //-----------//
+    // setLinker //
+    //-----------//
+    /**
+     * Set the dedicated beam-stem linker.
+     *
+     * @param linker the beam-stem linker
+     */
+    public void setLinker (BeamLinker linker)
+    {
+        this.linker = linker;
+    }
+
     //---------------//
     // switchToGroup //
     //---------------//
@@ -731,200 +929,8 @@ public abstract class AbstractBeamInter
         return upgraded;
     }
 
-    /**
-     * Define lookup area around the beam for potential stems
-     *
-     * @return the look up area
-     */
-    private Area getLookupArea (Scale scale)
-    {
-        final Line2D top = getBorder(TOP);
-        final Line2D bottom = getBorder(BOTTOM);
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(getProfile()));
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(getProfile()));
-
-        final Path2D lu = new Path2D.Double();
-        double xMin = top.getX1() - xOut;
-        double xMax = top.getX2() + xOut;
-        Point2D topLeft = LineUtil.intersectionAtX(top, xMin);
-        lu.moveTo(topLeft.getX(), topLeft.getY() - yGap);
-
-        Point2D topRight = LineUtil.intersectionAtX(top, xMax);
-        lu.lineTo(topRight.getX(), topRight.getY() - yGap);
-
-        Point2D bottomRight = LineUtil.intersectionAtX(bottom, xMax);
-        lu.lineTo(bottomRight.getX(), bottomRight.getY() + yGap);
-
-        Point2D bottomLeft = LineUtil.intersectionAtX(bottom, xMin);
-        lu.lineTo(bottomLeft.getX(), bottomLeft.getY() + yGap);
-        lu.closePath();
-
-        return new Area(lu);
-    }
-
-    //-------------//
-    // lookupLinks //
-    //-------------//
-    /**
-     * Look up for potential Beam-Stem links around this Beam instance.
-     *
-     * @param systemStems all stems in system, sorted by abscissa
-     * @param system      containing system
-     * @param profile     desired profile level
-     * @return the potential links
-     */
-    public Collection<Link> lookupLinks (List<Inter> systemStems,
-                                         SystemInfo system,
-                                         int profile)
-    {
-        if (systemStems.isEmpty()) {
-            return Collections.emptySet();
-        }
-
-        if (isVip()) {
-            logger.info("VIP lookupLinks for {}", this);
-        }
-
-        final List<Link> links = new ArrayList<>();
-        final Scale scale = system.getSheet().getScale();
-        final Area luArea = getLookupArea(scale);
-        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luArea);
-
-        for (Inter inter : stems) {
-            StemInter stem = (StemInter) inter;
-            Point2D stemMiddle = PointUtil.middle(stem.getMedian());
-            VerticalSide vSide = (median.relativeCCW(stemMiddle) > 0) ? TOP : BOTTOM;
-            int prof = Math.max(profile, stem.getProfile());
-            Link link = BeamStemRelation.checkLink(this, stem, vSide, scale, prof);
-
-            if (link != null) {
-                links.add(link);
-            }
-        }
-
-        return links;
-    }
-
-    //----------------//
-    // lookupSideLink //
-    //----------------//
-    /**
-     * Lookup for a potential Beam-Stem link on the desired horizontal side of this beam
-     *
-     * @param systemStems all stems in system, sorted by abscissa
-     * @param system      containing system
-     * @param side        the desired horizontal side
-     * @param profile     desired profile level
-     * @return the best potential link if any, null otherwise
-     */
-    private Link lookupSideLink (List<Inter> systemStems,
-                                 SystemInfo system,
-                                 HorizontalSide side,
-                                 int profile)
-    {
-        if (systemStems.isEmpty()) {
-            return null;
-        }
-
-        if (isVip()) {
-            logger.info("VIP lookupSideLink for {} on {}", this, side);
-        }
-
-        final Line2D top = getBorder(VerticalSide.TOP);
-        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
-        final Scale scale = system.getSheet().getScale();
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(profile));
-        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(profile));
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
-
-        Link bestLink = null;
-        double bestGrade = Double.MAX_VALUE;
-
-        final Rectangle luBox = new Rectangle(-1, -1); // "Non-existent" rectangle
-
-        if (side == HorizontalSide.LEFT) {
-            Point iTop = PointUtil.rounded(top.getP1());
-            luBox.add(iTop.x - xOut, iTop.y - yGap);
-            luBox.add(iTop.x + xIn, iTop.y - yGap);
-
-            Point iBottom = PointUtil.rounded(bottom.getP1());
-            luBox.add(iBottom.x - xOut, iBottom.y + yGap);
-            luBox.add(iBottom.x + xIn, iBottom.y + yGap);
-        } else {
-            Point iTop = PointUtil.rounded(top.getP2());
-            luBox.add(iTop.x - xIn, iTop.y - yGap);
-            luBox.add(iTop.x + xOut, iTop.y - yGap);
-
-            Point iBottom = PointUtil.rounded(bottom.getP2());
-            luBox.add(iBottom.x - xIn, iBottom.y + yGap);
-            luBox.add(iBottom.x + xOut, iBottom.y + yGap);
-        }
-
-        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luBox);
-
-        for (Inter inter : stems) {
-            final StemInter stem = (StemInter) inter;
-            final int prof = Math.max(profile, stem.getProfile());
-
-            for (VerticalSide vSide : VerticalSide.values()) {
-                Link link = BeamStemRelation.checkLink(this, stem, vSide, scale, prof);
-
-                if (link != null) {
-                    BeamStemRelation rel = (BeamStemRelation) link.relation;
-
-                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
-                        bestLink = link;
-                        bestGrade = rel.getGrade();
-                    }
-                }
-            }
-        }
-
-        return bestLink;
-    }
-
-    //-----------------//
-    // getSnapAbscissa //
-    //-----------------//
-    /**
-     * Report the theoretical abscissa of the provided beam side when correctly aligned
-     * with a suitable stem.
-     * <p>
-     * Required properties: staff or sig, median, height
-     *
-     * @param side        the desired horizontal side
-     * @param systemStems all stems in containing system
-     * @return the proper abscissa if any, null otherwise
-     */
-    private Double getSnapAbscissa (HorizontalSide side,
-                                    List<Inter> systemStems)
-    {
-        final SystemInfo system;
-
-        if (sig != null) {
-            system = sig.getSystem();
-        } else if (staff != null) {
-            system = staff.getSystem();
-        } else {
-            logger.warn("No system nor staff for {}", this);
-
-            return null;
-        }
-
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final Link link = lookupSideLink(systemStems, system, side, profile);
-
-        if (link != null) {
-            final StemInter stem = (StemInter) link.partner;
-            final Point2D beamEnd = (side == LEFT) ? median.getP1() : median.getP2();
-
-            return LineUtil.xAtY(stem.getMedian(), beamEnd.getY());
-        }
-
-        return null;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -935,71 +941,6 @@ public abstract class AbstractBeamInter
         private final Fraction minBeamWidth = new Fraction(
                 0.5,
                 "Minimum width for a beam or beam hook");
-    }
-
-    //---------//
-    // Impacts //
-    //---------//
-    /**
-     * Impacts definition for a beam.
-     */
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]
-        { "wdth", "minH", "maxH", "core", "belt", "jit" };
-
-        private static final int DIST_INDEX = 5;
-
-        private static final double[] WEIGHTS = new double[]
-        { 0.5, 1, 1, 2, 2, 2 };
-
-        public Impacts (double width,
-                        double minHeight,
-                        double maxHeight,
-                        double core,
-                        double belt,
-                        double dist)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, width);
-            setImpact(1, minHeight);
-            setImpact(2, maxHeight);
-            setImpact(3, core);
-            setImpact(4, belt);
-            setImpact(5, dist);
-        }
-
-        public double getDistImpact ()
-        {
-            return getImpact(DIST_INDEX);
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        // Left point of median line
-        public Point2D p1;
-
-        // Right point of median line
-        public Point2D p2;
-
-        // Beam thickness
-        public double thickness;
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
-        }
     }
 
     //--------//
@@ -1158,6 +1099,16 @@ public abstract class AbstractBeamInter
             });
         }
 
+        @Override
+        protected void doit ()
+        {
+            final AbstractBeamInter beam = (AbstractBeamInter) object;
+            beam.median.setLine(model.p1, model.p2);
+            beam.computeArea(); // Set bounds also
+
+            super.doit(); // No more glyph
+        }
+
         private List<Inter> getSystemStems ()
         {
             final AbstractBeamInter beam = (AbstractBeamInter) object;
@@ -1172,16 +1123,6 @@ public abstract class AbstractBeamInter
         }
 
         @Override
-        protected void doit ()
-        {
-            final AbstractBeamInter beam = (AbstractBeamInter) object;
-            beam.median.setLine(model.p1, model.p2);
-            beam.computeArea(); // Set bounds also
-
-            super.doit(); // No more glyph
-        }
-
-        @Override
         public void undo ()
         {
             final AbstractBeamInter beam = (AbstractBeamInter) object;
@@ -1189,6 +1130,71 @@ public abstract class AbstractBeamInter
             beam.computeArea(); // Set bounds also
 
             super.undo();
+        }
+    }
+
+    //---------//
+    // Impacts //
+    //---------//
+    /**
+     * Impacts definition for a beam.
+     */
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]
+        { "wdth", "minH", "maxH", "core", "belt", "jit" };
+
+        private static final int DIST_INDEX = 5;
+
+        private static final double[] WEIGHTS = new double[]
+        { 0.5, 1, 1, 2, 2, 2 };
+
+        public Impacts (double width,
+                        double minHeight,
+                        double maxHeight,
+                        double core,
+                        double belt,
+                        double dist)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, width);
+            setImpact(1, minHeight);
+            setImpact(2, maxHeight);
+            setImpact(3, core);
+            setImpact(4, belt);
+            setImpact(5, dist);
+        }
+
+        public double getDistImpact ()
+        {
+            return getImpact(DIST_INDEX);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        // Left point of median line
+        public Point2D p1;
+
+        // Right point of median line
+        public Point2D p2;
+
+        // Beam thickness
+        public double thickness;
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 }

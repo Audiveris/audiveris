@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -69,6 +69,7 @@ public class Curves
     private static final List<Point> breakPoints = getBreakPoints();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -89,6 +90,7 @@ public class Curves
     private SlursBuilder slursBuilder;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Curves object.
      *
@@ -114,6 +116,7 @@ public class Curves
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // buildCurves //
     //-------------//
@@ -246,6 +249,8 @@ public class Curves
         view.selectPoint(point);
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // getBreakPoints //
     //----------------//
@@ -281,6 +286,7 @@ public class Curves
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.log;
 
+import org.audiveris.omr.OMR;
+
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
-
-import org.audiveris.omr.OMR;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -53,6 +53,7 @@ public class LogGuiAppender
             LOG_MBX_SIZE);
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // append //
     //--------//
@@ -65,6 +66,8 @@ public class LogGuiAppender
             OMR.gui.notifyLog();
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------------//
     // getEventCount //

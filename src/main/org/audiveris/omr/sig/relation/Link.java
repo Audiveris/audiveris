@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,10 +44,15 @@ public class Link
     /**
      * For comparing Link instances by decreasing grade.
      */
-    public static final Comparator<Link> byReverseGrade = (l1, l2) -> Double.compare(
-            ((Support) l2.relation).getGrade(), ((Support) l1.relation).getGrade());
+    public static final Comparator<Link> byReverseGrade = (l1,
+                                                           l2) -> Double.compare(
+                                                                   ((Support) l2.relation)
+                                                                           .getGrade(),
+                                                                   ((Support) l1.relation)
+                                                                           .getGrade());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The other Inter instance, the one to be linked with. */
     public Inter partner;
 
@@ -58,6 +63,7 @@ public class Link
     public final boolean outgoing;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>Link</code> object.
      *
@@ -75,6 +81,7 @@ public class Link
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // applyTo //
     //---------//
@@ -150,6 +157,8 @@ public class Link
 
         return sb.toString();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // bestOf //

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -99,6 +99,56 @@ public class WordInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected WordInter ()
+    {
+        super(null, null, null, (Double) null);
+
+        this.fontInfo = null;
+    }
+
+    /**
+     * Creates a new <code>WordInter</code> object, with all details.
+     *
+     * @param glyph    underlying glyph
+     * @param bounds   bounding box
+     * @param shape    specific shape (TEXT or LYRICS)
+     * @param grade    quality
+     * @param value    text content
+     * @param fontInfo font information
+     * @param location location
+     */
+    public WordInter (Glyph glyph,
+                      Rectangle bounds,
+                      Shape shape,
+                      Double grade,
+                      String value,
+                      FontInfo fontInfo,
+                      Point location)
+    {
+        super(glyph, bounds, shape, grade);
+        this.value = value;
+        this.fontInfo = fontInfo;
+        this.location = location;
+    }
+
+    /**
+     * Creates a new <code>WordInter</code> object meant for manual assignment.
+     *
+     * @param shape specific shape (TEXT or LYRICS)
+     * @param grade inter grade
+     */
+    public WordInter (Shape shape,
+                      Double grade)
+    {
+        super(null, null, shape, grade);
+
+        this.value = "";
+        this.fontInfo = null;
+    }
+
+    /**
      * Creates a new <code>WordInter</code> object, with TEXT shape.
      *
      * @param textWord the OCR'ed text word
@@ -145,56 +195,6 @@ public class WordInter
                 word.getValue(),
                 word.getFontInfo(),
                 PointUtil.rounded(word.getLocation()));
-    }
-
-    /**
-     * Creates a new <code>WordInter</code> object, with all details.
-     *
-     * @param glyph    underlying glyph
-     * @param bounds   bounding box
-     * @param shape    specific shape (TEXT or LYRICS)
-     * @param grade    quality
-     * @param value    text content
-     * @param fontInfo font information
-     * @param location location
-     */
-    public WordInter (Glyph glyph,
-                      Rectangle bounds,
-                      Shape shape,
-                      Double grade,
-                      String value,
-                      FontInfo fontInfo,
-                      Point location)
-    {
-        super(glyph, bounds, shape, grade);
-        this.value = value;
-        this.fontInfo = fontInfo;
-        this.location = location;
-    }
-
-    /**
-     * Creates a new <code>WordInter</code> object meant for manual assignment.
-     *
-     * @param shape specific shape (TEXT or LYRICS)
-     * @param grade inter grade
-     */
-    public WordInter (Shape shape,
-                      Double grade)
-    {
-        super(null, null, shape, grade);
-
-        this.value = "";
-        this.fontInfo = null;
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    protected WordInter ()
-    {
-        super(null, null, null, (Double) null);
-
-        this.fontInfo = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -87,6 +87,15 @@ public class TremoloInter
     private static final Logger logger = LoggerFactory.getLogger(TremoloInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Meant for JAXB.
+     */
+    @SuppressWarnings("unchecked")
+    private TremoloInter ()
+    {
+    }
+
     /**
      * Creates a new TremoloInter object.
      *
@@ -115,15 +124,8 @@ public class TremoloInter
         this(null, null, shape, grade);
     }
 
-    /**
-     * Meant for JAXB.
-     */
-    @SuppressWarnings("unchecked")
-    private TremoloInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -131,60 +133,6 @@ public class TremoloInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //-------------------//
-    // aggregateTremolos //
-    //-------------------//
-    /**
-     * Aggregate tremolos along the same stem.
-     *
-     * @param system the containing system
-     */
-    public static void aggregateTremolos (SystemInfo system)
-    {
-        final SIGraph sig = system.getSig();
-
-        for (Inter inter : sig.inters(StemInter.class)) {
-            final StemInter stem = (StemInter) inter;
-
-            final Set<Relation> tremRels = sig.getRelations(stem, TremoloStemRelation.class);
-            if (tremRels.size() > 1) {
-                // Tremolo aggregation needed
-                final Set<TremoloInter> trems = new LinkedHashSet<>();
-                int count = 0;
-                double totalGrade = 0;
-                Rectangle bounds = null;
-
-                for (Relation rel : tremRels) {
-                    final TremoloInter trem = (TremoloInter) sig.getOppositeInter(stem, rel);
-                    trems.add(trem);
-                    totalGrade += trem.getGrade();
-                    count += trem.getTremoloValue();
-                    if (bounds == null) {
-                        bounds = trem.getBounds();
-                    } else {
-                        bounds = bounds.union(trem.getBounds());
-                    }
-                }
-
-                try {
-                    double grade = totalGrade / trems.size();
-                    final Shape shape = TremoloInter.getTremoloShape(count);
-                    final TremoloInter compound = new TremoloInter(null, bounds, shape, grade);
-                    sig.addVertex(compound);
-                    sig.addEdge(compound, stem, new TremoloStemRelation());
-                    compound.linkAsOrnament(stem);
-
-                    // Clean up
-                    for (TremoloInter trem : trems) {
-                        trem.remove();
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Could not aggregate tremolos around " + stem, ex);
-                }
-            }
-        }
     }
 
     //---------------//
@@ -197,44 +145,6 @@ public class TremoloInter
         setAbnormal(!sig.hasRelation(this, TremoloStemRelation.class));
 
         return isAbnormal();
-    }
-
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add a valid TremoloInter.
-     *
-     * @param glyph       underlying glyph
-     * @param shape       detected shape
-     * @param grade       assigned grade
-     * @param system      containing system
-     * @param systemStems system stems, ordered by abscissa
-     * @return the created tremolo or null
-     */
-    public static TremoloInter createValidAdded (Glyph glyph,
-                                                 Shape shape,
-                                                 double grade,
-                                                 SystemInfo system,
-                                                 List<Inter> systemStems)
-    {
-        if (glyph.isVip()) {
-            logger.info("VIP TremoloInter create {} as {}", glyph, shape);
-        }
-
-        TremoloInter tremolo = new TremoloInter(glyph, glyph.getBounds(), shape, grade);
-        Link link = tremolo.lookupLink(systemStems, system, system.getProfile());
-
-        if (link != null) {
-            final SIGraph sig = system.getSig();
-            sig.addVertex(tremolo);
-            link.applyTo(tremolo);
-            tremolo.linkAsOrnament((StemInter) link.partner);
-
-            return tremolo;
-        }
-
-        return null;
     }
 
     //------------//
@@ -317,38 +227,6 @@ public class TremoloInter
     }
 
     //-----------------//
-    // getTremoloShape //
-    //-----------------//
-    public static Shape getTremoloShape (int value)
-    {
-        return switch (value) {
-        case 1 -> TREMOLO_1;
-        case 2 -> TREMOLO_2;
-        case 3 -> TREMOLO_3;
-        default -> throw new IllegalArgumentException("Unsupported tremolo value " + value);
-        };
-    }
-
-    //-----------------//
-    // getTremoloValue //
-    //-----------------//
-    /**
-     * Report the number of individual tremolo lines that corresponds to the tremolo shape.
-     *
-     * @param shape the given tremolo shape
-     * @return the number of individual lines
-     */
-    public static int getTremoloValue (Shape shape)
-    {
-        return switch (shape) {
-        case TREMOLO_1 -> 1;
-        case TREMOLO_2 -> 2;
-        case TREMOLO_3 -> 3;
-        default -> throw new IllegalArgumentException("Unsupported tremolo shape " + shape);
-        };
-    }
-
-    //-----------------//
     // getTremoloValue //
     //-----------------//
     /**
@@ -374,24 +252,6 @@ public class TremoloInter
         } else {
             return null;
         }
-    }
-
-    //----------------//
-    // isTremoloWidth //
-    //----------------//
-    /**
-     * Report whether the provided width (say of a beam) is close to typical tremolo width.
-     *
-     * @param width the provided width
-     * @param scale scaling information
-     * @return true if so
-     */
-    public static boolean isTremoloWidth (double width,
-                                          Scale scale)
-    {
-        final double typicalWidth = scale.toPixelsDouble(constants.width);
-        final double widthMargin = scale.toPixelsDouble(constants.widthMargin);
-        return !(width < typicalWidth - widthMargin || width > typicalWidth + widthMargin);
     }
 
     //----------------//
@@ -538,7 +398,152 @@ public class TremoloInter
         return searchObsoletelinks(links, TremoloStemRelation.class);
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------//
+    // aggregateTremolos //
+    //-------------------//
+    /**
+     * Aggregate tremolos along the same stem.
+     *
+     * @param system the containing system
+     */
+    public static void aggregateTremolos (SystemInfo system)
+    {
+        final SIGraph sig = system.getSig();
+
+        for (Inter inter : sig.inters(StemInter.class)) {
+            final StemInter stem = (StemInter) inter;
+
+            final Set<Relation> tremRels = sig.getRelations(stem, TremoloStemRelation.class);
+            if (tremRels.size() > 1) {
+                // Tremolo aggregation needed
+                final Set<TremoloInter> trems = new LinkedHashSet<>();
+                int count = 0;
+                double totalGrade = 0;
+                Rectangle bounds = null;
+
+                for (Relation rel : tremRels) {
+                    final TremoloInter trem = (TremoloInter) sig.getOppositeInter(stem, rel);
+                    trems.add(trem);
+                    totalGrade += trem.getGrade();
+                    count += trem.getTremoloValue();
+                    if (bounds == null) {
+                        bounds = trem.getBounds();
+                    } else {
+                        bounds = bounds.union(trem.getBounds());
+                    }
+                }
+
+                try {
+                    double grade = totalGrade / trems.size();
+                    final Shape shape = TremoloInter.getTremoloShape(count);
+                    final TremoloInter compound = new TremoloInter(null, bounds, shape, grade);
+                    sig.addVertex(compound);
+                    sig.addEdge(compound, stem, new TremoloStemRelation());
+                    compound.linkAsOrnament(stem);
+
+                    // Clean up
+                    for (TremoloInter trem : trems) {
+                        trem.remove();
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Could not aggregate tremolos around " + stem, ex);
+                }
+            }
+        }
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a valid TremoloInter.
+     *
+     * @param glyph       underlying glyph
+     * @param shape       detected shape
+     * @param grade       assigned grade
+     * @param system      containing system
+     * @param systemStems system stems, ordered by abscissa
+     * @return the created tremolo or null
+     */
+    public static TremoloInter createValidAdded (Glyph glyph,
+                                                 Shape shape,
+                                                 double grade,
+                                                 SystemInfo system,
+                                                 List<Inter> systemStems)
+    {
+        if (glyph.isVip()) {
+            logger.info("VIP TremoloInter create {} as {}", glyph, shape);
+        }
+
+        TremoloInter tremolo = new TremoloInter(glyph, glyph.getBounds(), shape, grade);
+        Link link = tremolo.lookupLink(systemStems, system, system.getProfile());
+
+        if (link != null) {
+            final SIGraph sig = system.getSig();
+            sig.addVertex(tremolo);
+            link.applyTo(tremolo);
+            tremolo.linkAsOrnament((StemInter) link.partner);
+
+            return tremolo;
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getTremoloShape //
+    //-----------------//
+    public static Shape getTremoloShape (int value)
+    {
+        return switch (value) {
+        case 1 -> TREMOLO_1;
+        case 2 -> TREMOLO_2;
+        case 3 -> TREMOLO_3;
+        default -> throw new IllegalArgumentException("Unsupported tremolo value " + value);
+        };
+    }
+
+    //-----------------//
+    // getTremoloValue //
+    //-----------------//
+    /**
+     * Report the number of individual tremolo lines that corresponds to the tremolo shape.
+     *
+     * @param shape the given tremolo shape
+     * @return the number of individual lines
+     */
+    public static int getTremoloValue (Shape shape)
+    {
+        return switch (shape) {
+        case TREMOLO_1 -> 1;
+        case TREMOLO_2 -> 2;
+        case TREMOLO_3 -> 3;
+        default -> throw new IllegalArgumentException("Unsupported tremolo shape " + shape);
+        };
+    }
+
+    //----------------//
+    // isTremoloWidth //
+    //----------------//
+    /**
+     * Report whether the provided width (say of a beam) is close to typical tremolo width.
+     *
+     * @param width the provided width
+     * @param scale scaling information
+     * @return true if so
+     */
+    public static boolean isTremoloWidth (double width,
+                                          Scale scale)
+    {
+        final double typicalWidth = scale.toPixelsDouble(constants.width);
+        final double widthMargin = scale.toPixelsDouble(constants.widthMargin);
+        return !(width < typicalWidth - widthMargin || width > typicalWidth + widthMargin);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

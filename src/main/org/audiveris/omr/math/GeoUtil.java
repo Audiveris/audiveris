@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,7 +41,36 @@ public abstract class GeoUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // center //
+    //--------//
+    /**
+     * Report the center Point of the provided line
+     *
+     * @param line the provided line
+     * @return the line center
+     */
+    public static Point center (Line2D line)
+    {
+        return PointUtil.rounded(center2D(line));
+    }
+
+    //--------//
+    // center //
+    //--------//
+    /**
+     * Report the center Point of the provided rectangle
+     *
+     * @param rect the provided rectangle
+     * @return the geometric rectangle center
+     */
+    public static Point center (Rectangle rect)
+    {
+        return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+    }
+
     //----------//
     // center2D //
     //----------//
@@ -72,51 +101,6 @@ public abstract class GeoUtil
         return new Point2D.Double(
                 rect.getX() + (rect.getWidth() / 2.0),
                 rect.getY() + (rect.getHeight() / 2.0));
-    }
-
-    //-------------//
-    // translate2D //
-    //-------------//
-    /**
-     * Translate the Rectangle2D according to vector (dx, dy).
-     *
-     * @param rect rectangle to translate
-     * @param dx   abscissa translation
-     * @param dy   ordinate translation
-     */
-    public static void translate2D (Rectangle2D rect,
-                                    double dx,
-                                    double dy)
-    {
-        rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
-    }
-
-    //--------//
-    // center //
-    //--------//
-    /**
-     * Report the center Point of the provided line
-     *
-     * @param line the provided line
-     * @return the line center
-     */
-    public static Point center (Line2D line)
-    {
-        return PointUtil.rounded(center2D(line));
-    }
-
-    //--------//
-    // center //
-    //--------//
-    /**
-     * Report the center Point of the provided rectangle
-     *
-     * @param rect the provided rectangle
-     * @return the geometric rectangle center
-     */
-    public static Point center (Rectangle rect)
-    {
-        return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
     }
 
     //-----//
@@ -210,6 +194,23 @@ public abstract class GeoUtil
         }
 
         return (xOver > 0) || (yOver > 0);
+    }
+
+    //-------------//
+    // translate2D //
+    //-------------//
+    /**
+     * Translate the Rectangle2D according to vector (dx, dy).
+     *
+     * @param rect rectangle to translate
+     * @param dx   abscissa translation
+     * @param dy   ordinate translation
+     */
+    public static void translate2D (Rectangle2D rect,
+                                    double dx,
+                                    double dy)
+    {
+        rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
     }
 
     //----------//

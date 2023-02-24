@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,11 +46,13 @@ public class CompoundFactory
     private static final Logger logger = LoggerFactory.getLogger(CompoundFactory.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private CompoundFactory ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //---------------//
     // buildCompound //
     //---------------//
@@ -88,8 +90,8 @@ public class CompoundFactory
      * @return the created compound
      */
     public static SectionCompound buildCompoundFromParts (
-            Collection<? extends SectionCompound> parts,
-            CompoundConstructor constructor)
+                                                          Collection<? extends SectionCompound> parts,
+                                                          CompoundConstructor constructor)
     {
         if ((parts == null) || parts.isEmpty()) {
             throw new IllegalArgumentException("Building a SectionCompound out of no parts");
@@ -158,6 +160,7 @@ public class CompoundFactory
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //---------------------//
     // CompoundConstructor //
     //---------------------//
@@ -176,6 +179,7 @@ public class CompoundFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // Touching //
     //----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,7 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.SheetStub;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class PartCollation
     private static final Logger logger = LoggerFactory.getLogger(PartCollation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The sorted list of logical parts, each with its affiliated physical parts.
      */
@@ -103,71 +105,6 @@ public class PartCollation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
-    //-------------//
-    // dumpRecords //
-    //-------------//
-    /**
-     * Dump content of collated records.
-     */
-    public void dumpRecords ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        for (Record record : records) {
-            sb.append("\n").append(record.logical);
-
-            for (PartRef partRef : record.partRefs) {
-                final SystemRef system = partRef.getSystem();
-                final int rank = 1 + system.getParts().indexOf(partRef);
-                final PageRef page = system.getPage();
-                final SheetStub stub = page.getStub();
-
-                // @formatter:off
-                sb.append("\n   ").append(partRef)
-                        .append(" rank:").append(rank)
-                        .append(" in ").append(stub)
-                        .append(", Page#").append(page.getId())
-                        .append(", System#").append(system.getId());
-                // @formatter:on
-            }
-        }
-
-        logger.info("PartCollation records:{}", sb);
-    }
-
-    //-----------//
-    // getRecord //
-    //-----------//
-    /**
-     * Report the Record for the provided logical ID.
-     *
-     * @param logicalId the provided logical id
-     * @return the Record found or null
-     */
-    private Record getRecord (int logicalId)
-    {
-        for (Record record : records) {
-            if (record.logical.getId() == logicalId)
-                return record;
-        }
-
-        logger.warn("Cannot find logical for id {}", logicalId);
-        return null;
-    }
-
-    //------------//
-    // getRecords //
-    //------------//
-    /**
-     * Report the collation records.
-     *
-     * @return the collation records
-     */
-    public List<Record> getRecords ()
-    {
-        return records;
-    }
 
     //-----------//
     // addRecord //
@@ -313,8 +250,7 @@ public class PartCollation
         final int ic2 = (dir > 0) ? sequence.size() : (-1); // Breaking sequence index value
         int recordIndex = (dir > 0) ? (-1) : records.size(); // Current index in defined records
 
-        CandidateLoop:
-        for (int ic = ic1; ic != ic2; ic += dir) {
+        CandidateLoop: for (int ic = ic1; ic != ic2; ic += dir) {
             final PartRef partRef = sequence.get(ic);
             final List<Integer> lineCounts = partRef.getLineCounts();
             logger.debug("\nCandidate {}", partRef.toQualifiedString());
@@ -325,8 +261,7 @@ public class PartCollation
 
             // Check against defined records
             recordIndex += dir;
-            RecordLoop:
-            for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
+            RecordLoop: for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
                     && (recordIndex >= 0)); recordIndex += dir) {
                 final Record record = records.get(recordIndex);
 
@@ -391,6 +326,71 @@ public class PartCollation
                 logger.warn("  Cannot map {} to any logical", partRef.toQualifiedString());
             }
         }
+    }
+
+    //-------------//
+    // dumpRecords //
+    //-------------//
+    /**
+     * Dump content of collated records.
+     */
+    public void dumpRecords ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (Record record : records) {
+            sb.append("\n").append(record.logical);
+
+            for (PartRef partRef : record.partRefs) {
+                final SystemRef system = partRef.getSystem();
+                final int rank = 1 + system.getParts().indexOf(partRef);
+                final PageRef page = system.getPage();
+                final SheetStub stub = page.getStub();
+
+                // @formatter:off
+                sb.append("\n   ").append(partRef)
+                        .append(" rank:").append(rank)
+                        .append(" in ").append(stub)
+                        .append(", Page#").append(page.getId())
+                        .append(", System#").append(system.getId());
+                // @formatter:on
+            }
+        }
+
+        logger.info("PartCollation records:{}", sb);
+    }
+
+    //-----------//
+    // getRecord //
+    //-----------//
+    /**
+     * Report the Record for the provided logical ID.
+     *
+     * @param logicalId the provided logical id
+     * @return the Record found or null
+     */
+    private Record getRecord (int logicalId)
+    {
+        for (Record record : records) {
+            if (record.logical.getId() == logicalId)
+                return record;
+        }
+
+        logger.warn("Cannot find logical for id {}", logicalId);
+        return null;
+    }
+
+    //------------//
+    // getRecords //
+    //------------//
+    /**
+     * Report the collation records.
+     *
+     * @return the collation records
+     */
+    public List<Record> getRecords ()
+    {
+        return records;
     }
 
     //-----------------//

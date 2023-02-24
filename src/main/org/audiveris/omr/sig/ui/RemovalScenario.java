@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class RemovalScenario
     private static final Logger logger = LoggerFactory.getLogger(RemovalScenario.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Non-ensemble inters to be removed. */
     LinkedHashSet<Inter> inters = new LinkedHashSet<>();
 
@@ -62,6 +63,7 @@ public class RemovalScenario
     LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an <code>RemovalScenario</code> object.
      */
@@ -70,46 +72,6 @@ public class RemovalScenario
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate the removal scenario.
-     *
-     * @param inters the inters to remove
-     * @param seq    the task sequence to append to
-     */
-    public void populate (Collection<? extends Inter> inters,
-                          UITaskList seq)
-    {
-        for (Inter inter : inters) {
-            if (inter.isRemoved()) {
-                continue;
-            }
-
-            if (inter.isVip()) {
-                logger.info("VIP removeInter {}", inter);
-            }
-
-            // Removals: this inter plus related inters to remove as well
-            WrappedBoolean cancel = seq.isOptionSet(Option.VALIDATED)
-                    ? null
-                    : new WrappedBoolean(false);
-            Set<? extends Inter> toRemove = inter.preRemove(cancel);
-
-            if ((cancel != null) && cancel.isSet()) {
-                seq.setCancelled(true);
-                return;
-            }
-
-            for (Inter item : toRemove) {
-                include(item);
-            }
-        }
-
-        // Now set the removal tasks
-        populateTaskList(seq);
-    }
 
     //---------//
     // include //
@@ -142,6 +104,46 @@ public class RemovalScenario
                 }
             }
         }
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate the removal scenario.
+     *
+     * @param inters the inters to remove
+     * @param seq    the task sequence to append to
+     */
+    public void populate (Collection<? extends Inter> inters,
+                          UITaskList seq)
+    {
+        for (Inter inter : inters) {
+            if (inter.isRemoved()) {
+                continue;
+            }
+
+            if (inter.isVip()) {
+                logger.info("VIP removeInter {}", inter);
+            }
+
+            // Removals: this inter plus related inters to remove as well
+            WrappedBoolean cancel = seq.isOptionSet(Option.VALIDATED) ? null
+                    : new WrappedBoolean(false);
+            Set<? extends Inter> toRemove = inter.preRemove(cancel);
+
+            if ((cancel != null) && cancel.isSet()) {
+                seq.setCancelled(true);
+                return;
+            }
+
+            for (Inter item : toRemove) {
+                include(item);
+            }
+        }
+
+        // Now set the removal tasks
+        populateTaskList(seq);
     }
 
     //------------------//

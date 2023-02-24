@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,14 @@ public class AbstractVerticalConnectorInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected AbstractVerticalConnectorInter ()
+    {
+        super(null, null, (Double) null, null, null);
+    }
+
+    /**
      * Creates a new <code>AbstractVerticalConnectorInter</code> object.
      *
      * @param connection the underlying connection
@@ -73,15 +81,8 @@ public class AbstractVerticalConnectorInter
         super(null, shape, grade, median, width);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    protected AbstractVerticalConnectorInter ()
-    {
-        super(null, null, (Double) null, null, null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // upgradeOldStuff //
     //-----------------//

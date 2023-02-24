@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.jcip.annotations.ThreadSafe;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -38,7 +38,8 @@ import java.util.TreeMap;
  * editing table of the whole set of constants.
  * <p>
  * We recommend to define only one such static ConstantSet per class/unit as a subclass of this
- * (abstract) ConstantSet. </p>
+ * (abstract) ConstantSet.
+ * </p>
  *
  * @author Hervé Bitteur
  */
@@ -52,6 +53,7 @@ public abstract class ConstantSet
     public static final String PROFILE_SUFFIX = "_p";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Name of the containing unit/class */
     private final String unit;
 
@@ -66,6 +68,7 @@ public abstract class ConstantSet
     private volatile SortedMap<String, Constant> map;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * A new ConstantSet instance is created, and registered at the
      * UnitManager singleton, but its map of internal constants will
@@ -83,6 +86,7 @@ public abstract class ConstantSet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // dumpOf //
     //--------//
@@ -112,8 +116,7 @@ public abstract class ConstantSet
                             constant.getName(),
                             constant.getClass().getSimpleName(),
                             (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit()
-                                                                    + ")")
-                            : "",
+                                    + ")") : "",
                             origin,
                             constant.getStringValue(),
                             constant.getDescription()));
@@ -126,10 +129,44 @@ public abstract class ConstantSet
     // getConstant //
     //-------------//
     /**
+     * Report a constant knowing its root in the constant set and a profile level.
+     * <p>
+     * This is safer than to directly call {@link #getConstant(java.lang.String, int)} which may
+     * suffer of typos in provided name.
+     *
+     * @param root    the root constant
+     * @param profile the desired profile level
+     * @return the proper constant, or null if not found
+     */
+    public Constant getConstant (Constant root,
+                                 int profile)
+    {
+        getMap(); // To make sure map is initialized, as well as every constant name
+
+        return getConstant(root.getName(), profile);
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its index in the constant set
+     *
+     * @param i the desired index value
+     * @return the proper constant
+     */
+    public Constant getConstant (int i)
+    {
+        return Collections.list(Collections.enumeration(getMap().values())).get(i);
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
      * Report a constant knowing its name in the constant set
      *
      * @param name the desired name
-     *
      * @return the proper constant, or null if not found
      */
     public Constant getConstant (String name)
@@ -148,7 +185,6 @@ public abstract class ConstantSet
      *
      * @param name    the desired name
      * @param profile the desired profile level
-     *
      * @return the proper constant, or null if not found
      */
     private Constant getConstant (String name,
@@ -169,41 +205,17 @@ public abstract class ConstantSet
         return null;
     }
 
-    //-------------//
-    // getConstant //
-    //-------------//
-    /**
-     * Report a constant knowing its root in the constant set and a profile level.
-     * <p>
-     * This is safer than to directly call {@link #getConstant(java.lang.String, int)} which may
-     * suffer of typos in provided name.
-     *
-     * @param root    the root constant
-     * @param profile the desired profile level
-     *
-     * @return the proper constant, or null if not found
-     */
-    public Constant getConstant (Constant root,
-                                 int profile)
+    //--------//
+    // getMap //
+    //--------//
+    private SortedMap<String, Constant> getMap ()
     {
-        getMap(); // To make sure map is initialized, as well as every constant name
+        if (map == null) {
+            // Initialize map content
+            initMap();
+        }
 
-        return getConstant(root.getName(), profile);
-    }
-
-    //-------------//
-    // getConstant //
-    //-------------//
-    /**
-     * Report a constant knowing its index in the constant set
-     *
-     * @param i the desired index value
-     *
-     * @return the proper constant
-     */
-    public Constant getConstant (int i)
-    {
-        return Collections.list(Collections.enumeration(getMap().values())).get(i);
+        return map;
     }
 
     //---------//
@@ -231,6 +243,54 @@ public abstract class ConstantSet
     public boolean initialize ()
     {
         return getMap() != null;
+    }
+
+    //---------//
+    // initMap //
+    //---------//
+    /**
+     * Now that the enclosed constants of this set have been constructed,
+     * let's assign them their unit and name parameters.
+     */
+    private void initMap ()
+    {
+        SortedMap<String, Constant> tempMap = new TreeMap<>();
+        Class<?> cl = getClass();
+
+        try {
+            // Retrieve values of all fields
+            for (Field field : cl.getDeclaredFields()) {
+                field.setAccessible(true);
+
+                String name = field.getName();
+                Object obj = field.get(this);
+
+                if (obj == null) {
+                    // Not yet allocated, no big deal, we'll get back to it later
+                    ///logger.warn("ConstantSet not fully allocated yet");
+                    return;
+                }
+
+                // Make sure that we have only Constants in this ConstantSet
+                if (obj instanceof Constant) {
+                    Constant constant = (Constant) obj;
+                    constant.setUnitAndName(unit, name);
+                    tempMap.put(name, constant);
+                } else {
+                    logger.error(
+                            "ConstantSet in unit ''{}'' contains a non"
+                                    + " Constant field ''{}'' obj= {}",
+                            unit,
+                            name,
+                            obj);
+                }
+            }
+
+            // Assign the constructed map atomically
+            map = tempMap;
+        } catch (Throwable ex) {
+            logger.warn("Error initializing map of ConstantSet " + this, ex);
+        }
     }
 
     //------//
@@ -274,66 +334,7 @@ public abstract class ConstantSet
         return sb.toString();
     }
 
-    //--------//
-    // getMap //
-    //--------//
-    private SortedMap<String, Constant> getMap ()
-    {
-        if (map == null) {
-            // Initialize map content
-            initMap();
-        }
-
-        return map;
-    }
-
-    //---------//
-    // initMap //
-    //---------//
-    /**
-     * Now that the enclosed constants of this set have been constructed,
-     * let's assign them their unit and name parameters.
-     */
-    private void initMap ()
-    {
-        SortedMap<String, Constant> tempMap = new TreeMap<>();
-        Class<?> cl = getClass();
-
-        try {
-            // Retrieve values of all fields
-            for (Field field : cl.getDeclaredFields()) {
-                field.setAccessible(true);
-
-                String name = field.getName();
-                Object obj = field.get(this);
-
-                if (obj == null) {
-                    // Not yet allocated, no big deal, we'll get back to it later
-                    ///logger.warn("ConstantSet not fully allocated yet");
-                    return;
-                }
-
-                // Make sure that we have only Constants in this ConstantSet
-                if (obj instanceof Constant) {
-                    Constant constant = (Constant) obj;
-                    constant.setUnitAndName(unit, name);
-                    tempMap.put(name, constant);
-                } else {
-                    logger.error(
-                            "ConstantSet in unit ''{}'' contains a non"
-                            + " Constant field ''{}'' obj= {}",
-                            unit,
-                            name,
-                            obj);
-                }
-            }
-
-            // Assign the constructed map atomically
-            map = tempMap;
-        } catch (Throwable ex) {
-            logger.warn("Error initializing map of ConstantSet " + this, ex);
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // suffix //

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,6 +54,7 @@ public class ChordArticulationRelation
     { constants.xWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -62,61 +63,6 @@ public class ChordArticulationRelation
     {
         final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
         articulation.checkAbnormal();
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
-    }
-
-    //----------------//
-    // getYGapMinimum //
-    //----------------//
-    public static Scale.Fraction getYGapMinimum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMin, profile);
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
-
-    //---------//
-    // removed //
-    //---------//
-    @Override
-    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
-    {
-        final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
-
-        if (!articulation.isRemoved()) {
-            articulation.checkAbnormal();
-        }
     }
 
     //---------------//
@@ -158,7 +104,65 @@ public class ChordArticulationRelation
         return getYGapMaximum(profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
+
+        if (!articulation.isRemoved()) {
+            articulation.checkAbnormal();
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
+    }
+
+    //----------------//
+    // getYGapMinimum //
+    //----------------//
+    public static Scale.Fraction getYGapMinimum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMin, profile);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

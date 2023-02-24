@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,15 +44,28 @@ public class FretInter
     /**
      * For comparing FretInter instances by their decreasing length.
      */
-    public static final Comparator<FretInter> byDecreasingLength = (f1, f2)
-            -> Integer.compare(f2.getSymbolString().length(),
-                               f1.getSymbolString().length());
+    public static final Comparator<FretInter> byDecreasingLength = (f1,
+                                                                    f2) -> Integer.compare(
+                                                                            f2.getSymbolString()
+                                                                                    .length(),
+                                                                            f1.getSymbolString()
+                                                                                    .length());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Fret value. */
     private Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FretInter ()
+    {
+        this.value = null;
+    }
+
     /**
      * Creates a new <code>FretInter</code> object.
      *
@@ -68,15 +81,8 @@ public class FretInter
         this.value = valueOf(shape);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private FretInter ()
-    {
-        this.value = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -84,79 +90,6 @@ public class FretInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //-----------------//
-    // getSymbolString //
-    //-----------------//
-    @Override
-    public String getSymbolString ()
-    {
-        return switch (value) {
-            case 1 ->
-                "I";
-            case 2 ->
-                "II";
-            case 3 ->
-                "III";
-            case 4 ->
-                "IV";
-            case 5 ->
-                "V";
-            case 6 ->
-                "VI";
-            case 7 ->
-                "VII";
-            case 8 ->
-                "VIII";
-            case 9 ->
-                "IX";
-            case 10 ->
-                "X";
-            case 11 ->
-                "XI";
-            case 12 ->
-                "XII";
-
-            default ->
-                null;
-        };
-    }
-
-    //---------//
-    // valueOf //
-    //---------//
-    public static Integer valueOf (Shape shape)
-    {
-        return switch (shape) {
-            case ROMAN_I ->
-                1;
-            case ROMAN_II ->
-                2;
-            case ROMAN_III ->
-                3;
-            case ROMAN_IV ->
-                4;
-            case ROMAN_V ->
-                5;
-            case ROMAN_VI ->
-                6;
-            case ROMAN_VII ->
-                7;
-            case ROMAN_VIII ->
-                8;
-            case ROMAN_IX ->
-                9;
-            case ROMAN_X ->
-                10;
-            case ROMAN_XI ->
-                11;
-            case ROMAN_XII ->
-                12;
-
-            default ->
-                null;
-        };
     }
 
     //----------------//
@@ -167,5 +100,54 @@ public class FretInter
                                  Object parent)
     {
         value = valueOf(shape);
+    }
+
+    //-----------------//
+    // getSymbolString //
+    //-----------------//
+    @Override
+    public String getSymbolString ()
+    {
+        return switch (value) {
+        case 1 -> "I";
+        case 2 -> "II";
+        case 3 -> "III";
+        case 4 -> "IV";
+        case 5 -> "V";
+        case 6 -> "VI";
+        case 7 -> "VII";
+        case 8 -> "VIII";
+        case 9 -> "IX";
+        case 10 -> "X";
+        case 11 -> "XI";
+        case 12 -> "XII";
+
+        default -> null;
+        };
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------//
+    // valueOf //
+    //---------//
+    public static Integer valueOf (Shape shape)
+    {
+        return switch (shape) {
+        case ROMAN_I -> 1;
+        case ROMAN_II -> 2;
+        case ROMAN_III -> 3;
+        case ROMAN_IV -> 4;
+        case ROMAN_V -> 5;
+        case ROMAN_VI -> 6;
+        case ROMAN_VII -> 7;
+        case ROMAN_VIII -> 8;
+        case ROMAN_IX -> 9;
+        case ROMAN_X -> 10;
+        case ROMAN_XI -> 11;
+        case ROMAN_XII -> 12;
+
+        default -> null;
+        };
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,14 @@ public class PlayingInter
     private static final Logger logger = LoggerFactory.getLogger(PlayingInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private PlayingInter ()
+    {
+    }
+
     /**
      * Creates a new <code>PlayingInter</code> object.
      *
@@ -72,14 +80,8 @@ public class PlayingInter
         super(glyph, null, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private PlayingInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -129,31 +131,6 @@ public class PlayingInter
         }
 
         return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
-        Link link = lookupLink(systemHeadChords, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, HeadPlayingRelation.class);
     }
 
     //------------//
@@ -225,13 +202,41 @@ public class PlayingInter
             // Choose preferred head in chord, according to vertical relative positions
             final List<? extends Inter> notes = bestChord.getNotes(); // Always bottom up
             final Inter bestHead = (playingCenter.y < GeoUtil.center(bestChord.getBounds()).y)
-                    ? notes.get(notes.size() - 1) : notes.get(0);
+                    ? notes.get(notes.size() - 1)
+                    : notes.get(0);
 
             return new Link(bestHead, bestRel, false);
         }
 
         return null;
     }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, HeadPlayingRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // createValidAdded //

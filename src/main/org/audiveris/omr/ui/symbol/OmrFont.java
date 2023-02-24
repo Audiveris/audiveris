@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -95,6 +95,11 @@ public abstract class OmrFont
 
     //~ Constructors -------------------------------------------------------------------------------
 
+    protected OmrFont (Font font)
+    {
+        super(font);
+    }
+
     /**
      * Creates a new OmrFont object.
      *
@@ -111,12 +116,50 @@ public abstract class OmrFont
         this(getFont(fontName, fileName, style, size));
     }
 
-    protected OmrFont (Font font)
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // getLineMetrics //
+    //----------------//
+    public LineMetrics getLineMetrics (String str)
     {
-        super(font);
+        return getLineMetrics(str, frc);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a String of OmrFont characters.
+     *
+     * @param str the string of proper codes
+     * @return the TextLayout ready to be drawn
+     */
+    public TextLayout layout (String str)
+    {
+        return layout(str, null);
+    }
+
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a String of OmrFont characters,
+     * transformed by the provided AffineTransform if any.
+     *
+     * @param str the string of proper codes
+     * @param fat potential affine transformation
+     * @return the (sized) TextLayout ready to be drawn
+     */
+    public TextLayout layout (String str,
+                              AffineTransform fat)
+    {
+        Font font = (fat == null) ? this : this.deriveFont(fat);
+
+        return new TextLayout(str, font, frc);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------//
     // cacheFont //
@@ -278,47 +321,6 @@ public abstract class OmrFont
         }
 
         return (style == Font.PLAIN) ? font : font.deriveFont(style);
-    }
-
-    //----------------//
-    // getLineMetrics //
-    //----------------//
-    public LineMetrics getLineMetrics (String str)
-    {
-        return getLineMetrics(str, frc);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a String of OmrFont characters,
-     * transformed by the provided AffineTransform if any.
-     *
-     * @param str the string of proper codes
-     * @param fat potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    public TextLayout layout (String str,
-                              AffineTransform fat)
-    {
-        Font font = (fat == null) ? this : this.deriveFont(fat);
-
-        return new TextLayout(str, font, frc);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a String of OmrFont characters.
-     *
-     * @param str the string of proper codes
-     * @return the TextLayout ready to be drawn
-     */
-    public TextLayout layout (String str)
-    {
-        return layout(str, null);
     }
 
     //-------//

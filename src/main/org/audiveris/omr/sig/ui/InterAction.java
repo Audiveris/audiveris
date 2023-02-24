@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
  * Class <code>InterAction</code> is the base for Inter actions, with or without relations.
@@ -49,10 +48,12 @@ public class InterAction
     private static final Logger logger = LoggerFactory.getLogger(InterAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying interpretation. */
     private final Inter inter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new InterAction object.
      *
@@ -91,6 +92,7 @@ public class InterAction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//

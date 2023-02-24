@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -66,22 +66,10 @@ public class TextFont
             Param.GLOBAL_SCOPE);
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new TextFont object.
-     *
-     * @param fontName the font name. This can be a font face name or a font
-     *                 family name, and may represent either a logical font or
-     *                 a physical font found in this <code>GraphicsEnvironment</code>.
-     * @param fileName the file name if any
-     * @param style    bit-mask style constant for the <code>Font</code>
-     * @param size     the point size of the <code>Font</code>
-     */
-    public TextFont (String fontName,
-                     String fileName,
-                     int style,
-                     int size)
+
+    public TextFont (Font font)
     {
-        super(fontName, fileName, style, size);
+        super(font);
     }
 
     /**
@@ -109,31 +97,37 @@ public class TextFont
         this(TEXT_FONT_NAME, null, Font.PLAIN, size);
     }
 
-    public TextFont (Font font)
+    /**
+     * Creates a new TextFont object.
+     *
+     * @param fontName the font name. This can be a font face name or a font
+     *                 family name, and may represent either a logical font or
+     *                 a physical font found in this <code>GraphicsEnvironment</code>.
+     * @param fileName the file name if any
+     * @param style    bit-mask style constant for the <code>Font</code>
+     * @param size     the point size of the <code>Font</code>
+     */
+    public TextFont (String fontName,
+                     String fileName,
+                     int style,
+                     int size)
     {
-        super(font);
+        super(fontName, fileName, style, size);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Creates a TextFont based on OCR font information.
-     *
-     * @param baseFont base text font
-     * @param info     OCR-based font information
-     * @return the derived TextFont
-     */
-    public static TextFont create (TextFont baseFont,
-                                   FontInfo info)
+    //------------//
+    // deriveFont //
+    //------------//
+    @Override
+    public TextFont deriveFont (float pointSize)
     {
-        final int style = (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0);
-        final float size = info.pointsize;
-        final Font font = baseFont.deriveFont(style, size);
+        final Font font = super.deriveFont(pointSize);
         return new TextFont(font);
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------------//
     // computeFontSize //
@@ -193,13 +187,22 @@ public class TextFont
         return fontSize * (width / (float) basicRect.getWidth());
     }
 
-    //------------//
-    // deriveFont //
-    //------------//
-    @Override
-    public TextFont deriveFont (float pointSize)
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Creates a TextFont based on OCR font information.
+     *
+     * @param baseFont base text font
+     * @param info     OCR-based font information
+     * @return the derived TextFont
+     */
+    public static TextFont create (TextFont baseFont,
+                                   FontInfo info)
     {
-        final Font font = super.deriveFont(pointSize);
+        final int style = (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0);
+        final float size = info.pointsize;
+        final Font font = baseFont.deriveFont(style, size);
         return new TextFont(font);
     }
 

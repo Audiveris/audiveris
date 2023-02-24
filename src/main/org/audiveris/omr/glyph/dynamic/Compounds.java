@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,7 +49,8 @@ public abstract class Compounds
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------------//
     // byReverseLength //
     //-----------------//
@@ -61,7 +62,8 @@ public abstract class Compounds
      */
     public static Comparator<SectionCompound> byReverseLength (final Orientation orientation)
     {
-        return (s1, s2) -> s2.getLength(orientation) - s1.getLength(orientation);
+        return (s1,
+                s2) -> s2.getLength(orientation) - s1.getLength(orientation);
     }
 
     //----------------//

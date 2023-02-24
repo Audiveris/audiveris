@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,7 +25,6 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
@@ -125,6 +124,7 @@ public class InterFactory
     private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -160,6 +160,7 @@ public class InterFactory
     private final ProcessingSwitches switches;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new InterFactory object.
      *
@@ -189,6 +190,7 @@ public class InterFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // create //
     //--------//
@@ -212,60 +214,6 @@ public class InterFactory
         }
 
         return inter;
-    }
-
-    //---------------//
-    // getSystemBars //
-    //---------------//
-    /**
-     * Report all system barlines.
-     *
-     * @return all barlines in the containing system
-     */
-    public List<Inter> getSystemBars ()
-    {
-        if (systemBars == null) {
-            systemBars = sig.inters(BarlineInter.class);
-            Collections.sort(systemBars, Inters.byAbscissa);
-        }
-
-        return systemBars;
-    }
-
-    //----------------//
-    // getSystemRests //
-    //----------------//
-    /**
-     * Report all rests in system.
-     *
-     * @return all rests in the containing system
-     */
-    public List<Inter> getSystemRests ()
-    {
-        if (systemRests == null) {
-            systemRests = sig.inters(RestInter.class);
-            Collections.sort(systemRests, Inters.byAbscissa);
-        }
-
-        return systemRests;
-    }
-
-    //------------//
-    // lateChecks //
-    //------------//
-    /**
-     * Perform late checks.
-     */
-    public void lateChecks ()
-    {
-        // Conflicting dot interpretations
-        dotFactory.lateDotChecks();
-
-        // Complex dynamics
-        handleComplexDynamics();
-
-        // Column consistency of Time Signatures in a system
-        handleTimes();
     }
 
     //----------//
@@ -592,6 +540,81 @@ public class InterFactory
         }
     }
 
+    //---------------//
+    // getSystemBars //
+    //---------------//
+    /**
+     * Report all system barlines.
+     *
+     * @return all barlines in the containing system
+     */
+    public List<Inter> getSystemBars ()
+    {
+        if (systemBars == null) {
+            systemBars = sig.inters(BarlineInter.class);
+            Collections.sort(systemBars, Inters.byAbscissa);
+        }
+
+        return systemBars;
+    }
+
+    //-----------------//
+    // getSystemChords //
+    //-----------------//
+    List<Inter> getSystemChords ()
+    {
+        return systemChords;
+    }
+
+    //---------------------//
+    // getSystemHeadChords //
+    //---------------------//
+    List<Inter> getSystemHeadChords ()
+    {
+        return systemHeadChords;
+    }
+
+    //----------------//
+    // getSystemHeads //
+    //----------------//
+    List<Inter> getSystemHeads ()
+    {
+        return systemHeads;
+    }
+
+    //----------------//
+    // getSystemNotes //
+    //----------------//
+    List<Inter> getSystemNotes ()
+    {
+        if (systemNotes == null) {
+            systemNotes = new ArrayList<>(getSystemHeads().size() + getSystemRests().size());
+            systemNotes.addAll(getSystemHeads());
+            systemNotes.addAll(getSystemRests());
+            Collections.sort(systemNotes, Inters.byAbscissa);
+        }
+
+        return systemNotes;
+    }
+
+    //----------------//
+    // getSystemRests //
+    //----------------//
+    /**
+     * Report all rests in system.
+     *
+     * @return all rests in the containing system
+     */
+    public List<Inter> getSystemRests ()
+    {
+        if (systemRests == null) {
+            systemRests = sig.inters(RestInter.class);
+            Collections.sort(systemRests, Inters.byAbscissa);
+        }
+
+        return systemRests;
+    }
+
     //-----------------------//
     // handleComplexDynamics //
     //-----------------------//
@@ -715,44 +738,25 @@ public class InterFactory
         }
     }
 
-    //-----------------//
-    // getSystemChords //
-    //-----------------//
-    List<Inter> getSystemChords ()
+    //------------//
+    // lateChecks //
+    //------------//
+    /**
+     * Perform late checks.
+     */
+    public void lateChecks ()
     {
-        return systemChords;
+        // Conflicting dot interpretations
+        dotFactory.lateDotChecks();
+
+        // Complex dynamics
+        handleComplexDynamics();
+
+        // Column consistency of Time Signatures in a system
+        handleTimes();
     }
 
-    //---------------------//
-    // getSystemHeadChords //
-    //---------------------//
-    List<Inter> getSystemHeadChords ()
-    {
-        return systemHeadChords;
-    }
-
-    //----------------//
-    // getSystemHeads //
-    //----------------//
-    List<Inter> getSystemHeads ()
-    {
-        return systemHeads;
-    }
-
-    //----------------//
-    // getSystemNotes //
-    //----------------//
-    List<Inter> getSystemNotes ()
-    {
-        if (systemNotes == null) {
-            systemNotes = new ArrayList<>(getSystemHeads().size() + getSystemRests().size());
-            systemNotes.addAll(getSystemHeads());
-            systemNotes.addAll(getSystemRests());
-            Collections.sort(systemNotes, Inters.byAbscissa);
-        }
-
-        return systemNotes;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------//
     // createManual //

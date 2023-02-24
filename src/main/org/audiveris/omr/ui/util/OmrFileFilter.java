@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class OmrFileFilter
     private final String[] extensions;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a file filter, with only one file extension to consider
      *
@@ -65,7 +66,8 @@ public class OmrFileFilter
     public OmrFileFilter (String description,
                           String extension)
     {
-        this(description, new String[]{extension});
+        this(description, new String[]
+        { extension });
     }
 
     /**
@@ -79,7 +81,8 @@ public class OmrFileFilter
                           String... extensions)
     {
         if (description == null) {
-            this.description = (extensions.length > 1) ? Arrays.toString(extensions) : extensions[0];
+            this.description = (extensions.length > 1) ? Arrays.toString(extensions)
+                    : extensions[0];
         } else {
             this.description = description;
         }
@@ -88,6 +91,7 @@ public class OmrFileFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//

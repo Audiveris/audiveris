@@ -37,6 +37,7 @@ public class PageTask
     private final Page page;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PageTask</code> object.
      *
@@ -49,6 +50,7 @@ public class PageTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     public Page getPage ()
     {
         return page;

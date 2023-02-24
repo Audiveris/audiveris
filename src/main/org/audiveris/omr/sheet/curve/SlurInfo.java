@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,6 +51,7 @@ public class SlurInfo
     private static final Logger logger = LoggerFactory.getLogger(SlurInfo.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Approximating first side model. */
     protected Model firstModel;
 
@@ -70,6 +71,7 @@ public class SlurInfo
     protected CubicCurve2D curve;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SlurInfo object.
      *
@@ -94,6 +96,7 @@ public class SlurInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // isAbove //
     //---------//

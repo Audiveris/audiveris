@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,15 @@ public class PluckingInter
     private final char letter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private PluckingInter ()
+    {
+        this.letter = 0;
+    }
+
     /**
      * Creates a new <code>PluckingInter</code> object.
      *
@@ -63,15 +72,8 @@ public class PluckingInter
         this.letter = valueOf(shape);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private PluckingInter ()
-    {
-        this.letter = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -99,27 +101,7 @@ public class PluckingInter
         return super.internals() + " " + letter;
     }
 
-    //---------//
-    // valueOf //
-    //---------//
-    private static char valueOf (Shape shape)
-    {
-        switch (shape) {
-        case PLUCK_P:
-            return 'p';
-
-        case PLUCK_I:
-            return 'i';
-
-        case PLUCK_M:
-            return 'm';
-
-        case PLUCK_A:
-            return 'a';
-        }
-
-        throw new IllegalArgumentException("Invalid plucking shape " + shape);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // valueOf //
@@ -141,5 +123,27 @@ public class PluckingInter
         }
 
         throw new IllegalArgumentException("Invalid plucking shape " + omrShape);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static char valueOf (Shape shape)
+    {
+        switch (shape) {
+        case PLUCK_P:
+            return 'p';
+
+        case PLUCK_I:
+            return 'i';
+
+        case PLUCK_M:
+            return 'm';
+
+        case PLUCK_A:
+            return 'a';
+        }
+
+        throw new IllegalArgumentException("Invalid plucking shape " + shape);
     }
 }

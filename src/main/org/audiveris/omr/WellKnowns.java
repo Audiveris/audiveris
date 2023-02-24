@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -99,7 +99,8 @@ public abstract class WellKnowns
     public static final String OS_ARCH = System.getProperty("os.arch");
 
     /** Are we using Windows on 64 bit architecture?. */
-    public static final boolean WINDOWS_64 = WINDOWS && (System.getenv("ProgramFiles(x86)") != null);
+    public static final boolean WINDOWS_64 = WINDOWS && (System.getenv(
+            "ProgramFiles(x86)") != null);
 
     /** File character encoding. */
     public static final String FILE_ENCODING = getFileEncoding();
@@ -130,9 +131,8 @@ public abstract class WellKnowns
     public static final boolean RUNNING_FROM_JAR = runningFromJar();
 
     /** The uri where read-only resources are stored. */
-    public static final URI RES_URI = RUNNING_FROM_JAR
-            ? toURI(WellKnowns.class.getClassLoader().getResource("res"))
-            : Paths.get("res").toUri();
+    public static final URI RES_URI = RUNNING_FROM_JAR ? toURI(
+            WellKnowns.class.getClassLoader().getResource("res")) : Paths.get("res").toUri();
 
     //-------------// read-write area
     // USER CONFIG // Configuration files the user can edit on his own
@@ -200,30 +200,14 @@ public abstract class WellKnowns
         disableMediaLib();
     }
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    private static enum FolderKind
-    {
-        DATA,
-        CONFIG,
-        LOG;
-    }
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private WellKnowns ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // ensureLoaded //
-    //--------------//
-    /**
-     * Make sure this class is loaded.
-     */
-    public static void ensureLoaded ()
-    {
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------//
     // createFolder //
@@ -274,6 +258,16 @@ public abstract class WellKnowns
         if (System.getProperty(KEY) == null) {
             System.setProperty(KEY, "true");
         }
+    }
+
+    //--------------//
+    // ensureLoaded //
+    //--------------//
+    /**
+     * Make sure this class is loaded.
+     */
+    public static void ensureLoaded ()
+    {
     }
 
     //-------------------//
@@ -500,5 +494,14 @@ public abstract class WellKnowns
         case LOG:
             return "XDG_CACHE_HOME";
         }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    private static enum FolderKind
+    {
+        DATA,
+        CONFIG,
+        LOG;
     }
 }

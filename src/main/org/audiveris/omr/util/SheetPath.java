@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -43,6 +43,7 @@ public class SheetPath
     private static final char SHEET_SEPARATOR = '#';
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Path to book .omr file. */
     private final Path bookPath;
 
@@ -50,6 +51,7 @@ public class SheetPath
     private final Integer sheetNumber;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetPath</code> object.
      *
@@ -74,6 +76,7 @@ public class SheetPath
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Getter for book path.
      *
@@ -109,6 +112,8 @@ public class SheetPath
 
         return sb.toString();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // decode //

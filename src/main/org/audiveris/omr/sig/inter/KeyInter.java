@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,9 +29,18 @@ import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
-import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.*;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.A;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.B;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.C;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.D;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.E;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.F;
+import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.G;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.ALTO;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.BASS;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.TENOR;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.TREBLE;
 import org.audiveris.omr.sig.ui.HorizontalEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
@@ -75,33 +84,51 @@ public class KeyInter
     public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<>(ClefKind.class);
 
     /** Sharp keys note steps. */
-    private static final AbstractNoteInter.NoteStep[] SHARP_STEPS
-            = new AbstractNoteInter.NoteStep[]{F, C, G, D, A, E, B};
+    private static final AbstractNoteInter.NoteStep[] SHARP_STEPS = new AbstractNoteInter.NoteStep[]
+    { F, C, G, D, A, E, B };
 
     /** Flat keys note steps. */
-    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS = new AbstractNoteInter.NoteStep[]{
-        B, E, A, D, G, C, F};
+    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS = new AbstractNoteInter.NoteStep[]
+    { B, E, A, D, G, C, F };
 
     static {
-        SHARP_PITCHES_MAP.put(TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
-        SHARP_PITCHES_MAP.put(ALTO, new int[]{-3, 0, -4, -1, 2, -2, 1});
-        SHARP_PITCHES_MAP.put(BASS, new int[]{-2, 1, -3, 0, 3, -1, 2});
-        SHARP_PITCHES_MAP.put(TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
+        SHARP_PITCHES_MAP.put(TREBLE, new int[]
+        { -4, -1, -5, -2, 1, -3, 0 });
+        SHARP_PITCHES_MAP.put(ALTO, new int[]
+        { -3, 0, -4, -1, 2, -2, 1 });
+        SHARP_PITCHES_MAP.put(BASS, new int[]
+        { -2, 1, -3, 0, 3, -1, 2 });
+        SHARP_PITCHES_MAP.put(TENOR, new int[]
+        { 2, -2, 1, -3, 0, -4, -1 });
     }
 
     static {
-        FLAT_PITCHES_MAP.put(TREBLE, new int[]{0, -3, 1, -2, 2, -1, 3});
-        FLAT_PITCHES_MAP.put(ALTO, new int[]{1, -2, 2, -1, 3, 0, 4});
-        FLAT_PITCHES_MAP.put(BASS, new int[]{2, -1, 3, 0, 4, 1, 5});
-        FLAT_PITCHES_MAP.put(TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
+        FLAT_PITCHES_MAP.put(TREBLE, new int[]
+        { 0, -3, 1, -2, 2, -1, 3 });
+        FLAT_PITCHES_MAP.put(ALTO, new int[]
+        { 1, -2, 2, -1, 3, 0, 4 });
+        FLAT_PITCHES_MAP.put(BASS, new int[]
+        { 2, -1, 3, 0, 4, 1, 5 });
+        FLAT_PITCHES_MAP.put(TENOR, new int[]
+        { -1, -4, 0, -3, 1, -2, 2 });
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Numerical value for signature. */
     @XmlAttribute(name = "fifths")
     private Integer fifths;
 
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private KeyInter ()
+    {
+        super(null, null, null, (Double) null, null, null);
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new KeyInter object.
      *
@@ -128,15 +155,8 @@ public class KeyInter
         this.shape = shape;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private KeyInter ()
-    {
-        super(null, null, null, (Double) null, null, null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -258,6 +278,41 @@ public class KeyInter
         return new HorizontalEditor(this);
     }
 
+    //------------------//
+    // getEffectiveClef //
+    //------------------//
+    /**
+     * Report the clef which is effective at this KeyInter location.
+     *
+     * @return the effective clef found, or null
+     */
+    private ClefInter getEffectiveClef ()
+    {
+        if (staff == null) {
+            logger.debug("null staff");
+
+            return null;
+        }
+
+        final Point pt = getCenter();
+
+        if (pt == null) {
+            logger.debug("null pt");
+
+            return null;
+        }
+
+        Measure measure = staff.getPart().getMeasureAt(pt, staff);
+
+        if (measure == null) {
+            logger.debug("null measure");
+
+            return null;
+        }
+
+        return measure.getClefBefore(getCenter(), staff);
+    }
+
     //-----------//
     // getFifths //
     //-----------//
@@ -308,6 +363,49 @@ public class KeyInter
         }
 
         return fifths;
+    }
+
+    //------------//
+    // getMembers //
+    //------------//
+    @Override
+    public List<Inter> getMembers ()
+    {
+        return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "KEY_SIG:" + getFifths();
+    }
+
+    //-----------------//
+    // getSnapOrdinate //
+    //-----------------//
+    /**
+     * Report the theoretical ordinate of key center so that its members are correctly
+     * located on staff.
+     * <p>
+     * Required properties: staff, bounds, fifths, clefKind
+     *
+     * @param fifths   key signature
+     * @param clefKind effective clef kind (TREBLE, ALTO, ...)
+     * @return the proper ordinate if any, null otherwise
+     */
+    private Double getSnapOrdinate (int fifths,
+                                    ClefKind clefKind)
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        double theoPitch = getPosition(fifths, clefKind) - getAreaPitchOffset(shape);
+
+        return staff.pitchToOrdinate(bounds.getCenterX(), theoPitch);
     }
 
     //-----------------//
@@ -379,50 +477,6 @@ public class KeyInter
         return new KeyCancelSymbol(keyBefore.getFifths(), font.getMusicFamily());
     }
 
-    //------------------//
-    // getEffectiveClef //
-    //------------------//
-    /**
-     * Report the clef which is effective at this KeyInter location.
-     *
-     * @return the effective clef found, or null
-     */
-    private ClefInter getEffectiveClef ()
-    {
-        if (staff == null) {
-            logger.debug("null staff");
-
-            return null;
-        }
-
-        final Point pt = getCenter();
-
-        if (pt == null) {
-            logger.debug("null pt");
-
-            return null;
-        }
-
-        Measure measure = staff.getPart().getMeasureAt(pt, staff);
-
-        if (measure == null) {
-            logger.debug("null measure");
-
-            return null;
-        }
-
-        return measure.getClefBefore(getCenter(), staff);
-    }
-
-    //------------//
-    // getMembers //
-    //------------//
-    @Override
-    public List<Inter> getMembers ()
-    {
-        return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
-    }
-
     //-------------------------//
     // imposeWithinStaffLimits //
     //-------------------------//
@@ -430,6 +484,18 @@ public class KeyInter
     public boolean imposeWithinStaffLimits ()
     {
         return true;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" fifths:").append(getFifths());
+
+        return sb.toString();
     }
 
     //-----------------//
@@ -530,15 +596,6 @@ public class KeyInter
         return inter;
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "KEY_SIG:" + getFifths();
-    }
-
     //--------//
     // shrink //
     //--------//
@@ -554,42 +611,7 @@ public class KeyInter
         lastAlter.remove();
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" fifths:").append(getFifths());
-
-        return sb.toString();
-    }
-
-    //-----------------//
-    // getSnapOrdinate //
-    //-----------------//
-    /**
-     * Report the theoretical ordinate of key center so that its members are correctly
-     * located on staff.
-     * <p>
-     * Required properties: staff, bounds, fifths, clefKind
-     *
-     * @param fifths   key signature
-     * @param clefKind effective clef kind (TREBLE, ALTO, ...)
-     * @return the proper ordinate if any, null otherwise
-     */
-    private Double getSnapOrdinate (int fifths,
-                                    ClefKind clefKind)
-    {
-        if (staff == null) {
-            return null;
-        }
-
-        double theoPitch = getPosition(fifths, clefKind) - getAreaPitchOffset(shape);
-
-        return staff.pitchToOrdinate(bounds.getCenterX(), theoPitch);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // createAdded //
@@ -721,21 +743,6 @@ public class KeyInter
         throw new IllegalArgumentException("Illegal key shape " + shape);
     }
 
-    //---------------------//
-    // getStandardPosition //
-    //---------------------//
-    /**
-     * Compute the standard (TREBLE) mean pitch position of the global KeyInter for the
-     * provided fifths value.
-     *
-     * @param fifths the provided fifths signature
-     * @return the corresponding standard mean pitch position of the global sequence of signs
-     */
-    public static double getStandardPosition (int fifths)
-    {
-        return getPosition(fifths, TREBLE);
-    }
-
     //-------------//
     // getPosition //
     //-------------//
@@ -771,6 +778,21 @@ public class KeyInter
         }
 
         return sum / fifths;
+    }
+
+    //---------------------//
+    // getStandardPosition //
+    //---------------------//
+    /**
+     * Compute the standard (TREBLE) mean pitch position of the global KeyInter for the
+     * provided fifths value.
+     *
+     * @param fifths the provided fifths signature
+     * @return the corresponding standard mean pitch position of the global sequence of signs
+     */
+    public static double getStandardPosition (int fifths)
+    {
+        return getPosition(fifths, TREBLE);
     }
 
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,13 +58,20 @@ public class ProcessingSwitches
     private static volatile ProcessingSwitches defaultSwitches;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Map of switches parameters.
      */
     protected final EnumMap<ProcessingSwitch, Param<Boolean>> map = new EnumMap<>(
             ProcessingSwitch.class);
 
+    // Meant for JAXB
+    protected ProcessingSwitches ()
+    {
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>ProcessingSwitches</code> object with its parent.
      *
@@ -79,12 +86,8 @@ public class ProcessingSwitches
         }
     }
 
-    // Meant for JAXB
-    protected ProcessingSwitches ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the parameter for the provided key.
      *
@@ -147,6 +150,8 @@ public class ProcessingSwitches
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Report the top level switches, which provide default values.
      *
@@ -164,6 +169,104 @@ public class ProcessingSwitches
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    static class Constants
+            extends ConstantSet
+    {
+
+        final Constant.Boolean poorInputMode = new Constant.Boolean(false, "Use poor input mode");
+
+        final Constant.Boolean indentations = new Constant.Boolean(
+                true,
+                "Use of system indentation");
+
+        final Constant.Boolean bothSharedHeadDots = new Constant.Boolean(
+                false,
+                "Link augmentation dot to both shared heads");
+
+        final Constant.Boolean keepGrayImages = new Constant.Boolean(
+                false,
+                "Keep loaded gray images");
+
+        final Constant.Boolean articulations = new Constant.Boolean(
+                true,
+                "Support for articulations");
+
+        final Constant.Boolean chordNames = new Constant.Boolean(false, "Support for chord names");
+
+        final Constant.Boolean fingerings = new Constant.Boolean(
+                false,
+                "Support for fingering digits");
+
+        final Constant.Boolean frets = new Constant.Boolean(
+                false,
+                "Support for frets roman digits (I, II, IV...)");
+
+        final Constant.Boolean pluckings = new Constant.Boolean(
+                false,
+                "Support for plucking (p, i, m, a)");
+
+        final Constant.Boolean lyrics = new Constant.Boolean(true, "Support for lyrics");
+
+        final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
+                false,
+                "Support for lyrics even located above staff");
+
+        final Constant.Boolean tremolos = new Constant.Boolean(false, "Support for tremolos");
+
+        final Constant.Boolean smallHeads = new Constant.Boolean(false, "Support for small heads");
+
+        final Constant.Boolean crossHeads = new Constant.Boolean(
+                false,
+                "Support for cross note heads");
+
+        final Constant.Boolean implicitTuplets = new Constant.Boolean(
+                false,
+                "Support for implicit tuplets");
+
+        final Constant.Boolean sixStringTablatures = new Constant.Boolean(
+                false,
+                "Support for guitar tablatures (6 lines)");
+
+        final Constant.Boolean fourStringTablatures = new Constant.Boolean(
+                false,
+                "Support for bass tablatures (4 lines)");
+
+        final Constant.Boolean oneLineStaves = new Constant.Boolean(
+                false,
+                "Support for percussion staves (1 line)");
+
+        final Constant.Boolean drumNotation = new Constant.Boolean(
+                false,
+                "Support for unpitched percussion (5-line) notation");
+
+        final Constant.Boolean partialWholeRests = new Constant.Boolean(
+                false,
+                "Support for partial whole rests");
+
+        final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
+                false,
+                "Support for multi-whole head chords");
+    }
+
+    //-----------------//
+    // DefaultSwitches //
+    //-----------------//
+    private static class DefaultSwitches
+            extends ProcessingSwitches
+    {
+
+        DefaultSwitches ()
+        {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
+                map.put(key, new ConstantBasedParam<>(key.getConstant(), GLOBAL_SCOPE));
+            }
+        }
+    }
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -176,7 +279,7 @@ public class ProcessingSwitches
 
         @Override
         public ProcessingEntries marshal (ProcessingSwitches switches)
-                throws Exception
+            throws Exception
         {
             if (switches == null) {
                 return null;
@@ -200,7 +303,7 @@ public class ProcessingSwitches
 
         @Override
         public ProcessingSwitches unmarshal (ProcessingEntries value)
-                throws Exception
+            throws Exception
         {
             // We need to convert obsolete switches to supported ones
             ProcessingSwitches switches = new ProcessingSwitches();
@@ -271,117 +374,8 @@ public class ProcessingSwitches
             @Override
             public String toString ()
             {
-                return new StringBuilder("MyEntry{")
-                        .append("key:").append(key)
-                        .append(",value:").append(value)
-                        .append('}').toString();
-            }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    static class Constants
-            extends ConstantSet
-    {
-
-        final Constant.Boolean poorInputMode = new Constant.Boolean(
-                false,
-                "Use poor input mode");
-
-        final Constant.Boolean indentations = new Constant.Boolean(
-                true,
-                "Use of system indentation");
-
-        final Constant.Boolean bothSharedHeadDots = new Constant.Boolean(
-                false,
-                "Link augmentation dot to both shared heads");
-
-        final Constant.Boolean keepGrayImages = new Constant.Boolean(
-                false,
-                "Keep loaded gray images");
-
-        final Constant.Boolean articulations = new Constant.Boolean(
-                true,
-                "Support for articulations");
-
-        final Constant.Boolean chordNames = new Constant.Boolean(
-                false,
-                "Support for chord names");
-
-        final Constant.Boolean fingerings = new Constant.Boolean(
-                false,
-                "Support for fingering digits");
-
-        final Constant.Boolean frets = new Constant.Boolean(
-                false,
-                "Support for frets roman digits (I, II, IV...)");
-
-        final Constant.Boolean pluckings = new Constant.Boolean(
-                false,
-                "Support for plucking (p, i, m, a)");
-
-        final Constant.Boolean lyrics = new Constant.Boolean(
-                true,
-                "Support for lyrics");
-
-        final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
-                false,
-                "Support for lyrics even located above staff");
-
-        final Constant.Boolean tremolos = new Constant.Boolean(
-                false,
-                "Support for tremolos");
-
-        final Constant.Boolean smallHeads = new Constant.Boolean(
-                false,
-                "Support for small heads");
-
-        final Constant.Boolean crossHeads = new Constant.Boolean(
-                false,
-                "Support for cross note heads");
-
-        final Constant.Boolean implicitTuplets = new Constant.Boolean(
-                false,
-                "Support for implicit tuplets");
-
-        final Constant.Boolean sixStringTablatures = new Constant.Boolean(
-                false,
-                "Support for guitar tablatures (6 lines)");
-
-        final Constant.Boolean fourStringTablatures = new Constant.Boolean(
-                false,
-                "Support for bass tablatures (4 lines)");
-
-        final Constant.Boolean oneLineStaves = new Constant.Boolean(
-                false,
-                "Support for percussion staves (1 line)");
-
-        final Constant.Boolean drumNotation = new Constant.Boolean(
-                false,
-                "Support for unpitched percussion (5-line) notation");
-
-        final Constant.Boolean partialWholeRests = new Constant.Boolean(
-                false,
-                "Support for partial whole rests");
-
-        final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
-                false,
-                "Support for multi-whole head chords");
-    }
-
-    //-----------------//
-    // DefaultSwitches //
-    //-----------------//
-    private static class DefaultSwitches
-            extends ProcessingSwitches
-    {
-
-        DefaultSwitches ()
-        {
-            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-                map.put(key, new ConstantBasedParam<>(key.getConstant(), GLOBAL_SCOPE));
+                return new StringBuilder("MyEntry{").append("key:").append(key).append(",value:")
+                        .append(value).append('}').toString();
             }
         }
     }

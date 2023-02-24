@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -33,7 +35,6 @@ import org.audiveris.omr.lag.Sections;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Profiles;
@@ -88,6 +89,7 @@ public class EndingsBuilder
     private static final Logger logger = LoggerFactory.getLogger(EndingsBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -99,6 +101,7 @@ public class EndingsBuilder
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new EndingsBuilder object.
      *
@@ -112,6 +115,7 @@ public class EndingsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // buildEndings //
     //--------------//
@@ -157,6 +161,254 @@ public class EndingsBuilder
 
         return sheet.getGlyphIndex().registerOriginal(GlyphFactory.buildGlyph(parts));
     }
+
+    //-------------//
+    // createInter //
+    //-------------//
+    private EndingInter createInter (Staff staff,
+                                     boolean split,
+                                     SegmentInter segment,
+                                     Line2D line,
+                                     Filament leftLeg,
+                                     Filament rightLeg,
+                                     GradeImpacts impacts)
+    {
+        // Create ending inter
+
+        final Line2D leftLine = (leftLeg == null) ? null
+                : new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
+        final Line2D rightLine = (rightLeg == null) ? null
+                : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
+        final EndingInter endingInter = new EndingInter(
+                line,
+                leftLine,
+                rightLine,
+                line.getBounds(),
+                impacts);
+        endingInter.setStaff(staff);
+
+        // Underlying glyph
+        final Glyph lineGlyph = split ? subGlyph(segment, line) : segment.getGlyph();
+        endingInter.setGlyph(buildGlyph(lineGlyph, leftLeg, rightLeg));
+
+        final SIGraph sig = staff.getSystem().getSig();
+        sig.addVertex(endingInter);
+
+        // Ending text?
+        grabSentences(endingInter);
+
+        return endingInter;
+    }
+
+    //--------------//
+    // createInters //
+    //--------------//
+    /**
+     * Try to create ending inter(s) from the provided segment, but with yet no link
+     * attempt for left or right barline.
+     * <p>
+     * Each ending is created perhaps with left leg and perhaps with right leg.
+     * Sentence number is searched for also.
+     *
+     * @param segment the horizontal segment
+     * @param system  the containing system
+     * @return null or the list of created ending inters inserted to SIG,
+     *         with sentence link if possible
+     */
+    private List<EndingInter> createInters (SegmentInter segment,
+                                            SystemInfo system)
+    {
+        final SegmentInfo seg = segment.getInfo();
+        final Point leftEnd = seg.getEnd(true);
+        final Point rightEnd = seg.getEnd(false);
+
+        // Length
+        final double length = seg.getXLength();
+
+        if (length < params.minLengthLow) {
+            return null;
+        }
+
+        // Slope
+        final Line2D line = new Line2D.Double(leftEnd, rightEnd);
+        final double slope = Math.abs(LineUtil.getSlope(line) - sheet.getSkew().getSlope());
+
+        if (slope > params.maxSlope) {
+            return null;
+        }
+
+        // Consider the staff just below the segment
+        final Staff staff = system.getStaffAtOrBelow(leftEnd);
+
+        if (staff == null) {
+            return null;
+        }
+
+        // Check minimum vertical gap with staff below
+        final Point center = segment.getCenter();
+        final double yGap = staff.distanceTo(center);
+
+        if (yGap < params.minGapFromStaff) {
+            return null;
+        }
+
+        // Check with related measure length
+        final Measure measure = staff.getPart().getMeasureAt(center, staff);
+
+        if (measure == null) {
+            return null;
+        }
+
+        // Accept a lower ratio for first measure in system (due to room for clef + key? + time?)
+        final Constant.Ratio minRatio = (measure.getStack() == system.getFirstStack())
+                ? constants.minFirstMeasureRatio
+                : constants.minMeasureRatio;
+
+        if (length < (measure.getWidth() * minRatio.getValue())) {
+            logger.debug("Ending {} too short compared with related {}", segment, measure);
+
+            return null;
+        }
+
+        GradeImpacts segImp = segment.getImpacts();
+        double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
+        GradeImpacts impacts = new EndingInter.Impacts(
+                straight,
+                1 - (slope / params.maxSlope),
+                (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow));
+
+        if (impacts.getGrade() < EndingInter.getMinGrade()) {
+            return null;
+        }
+
+        // Left leg (optional)
+        Filament leftLeg = lookupLeg(seg, seg.getEnd(true), staff);
+
+        // Right leg (optional)
+        Filament rightLeg = lookupLeg(seg, seg.getEnd(false), staff);
+
+        // Middle legs if any (each would split segment line into separate endings)
+        final List<Filament> middleLegs = getMiddleLegs(segment, staff);
+
+        if (middleLegs.isEmpty()) {
+            final EndingInter endingInter = createInter(
+                    staff,
+                    false,
+                    segment,
+                    line,
+                    leftLeg,
+                    rightLeg,
+                    impacts);
+            return Arrays.asList(endingInter);
+        } else {
+            final SIGraph sig = staff.getSystem().getSig();
+            final List<EndingInter> created = new ArrayList<>();
+            Point2D lastPoint = leftEnd;
+            Filament lastLeg = leftLeg;
+            Inter lastCreated = null;
+
+            for (Filament midLeg : middleLegs) {
+                // Define an ending from lastPoint to midLeg
+                final Line2D l = new Line2D.Double(lastPoint, midLeg.getStartPoint());
+                final EndingInter ending = createInter(
+                        staff,
+                        true,
+                        segment,
+                        l,
+                        lastLeg,
+                        midLeg,
+                        impacts);
+                created.add(ending);
+
+                lastPoint = midLeg.getStartPoint();
+                lastLeg = midLeg;
+
+                if (lastCreated != null)
+                    sig.addEdge(lastCreated, ending, new NoExclusion());
+
+                lastCreated = ending;
+            }
+
+            // Terminating one
+            final Line2D l = new Line2D.Double(lastPoint, rightEnd);
+            final EndingInter ending = createInter(
+                    staff,
+                    true,
+                    segment,
+                    l,
+                    lastLeg,
+                    rightLeg,
+                    impacts);
+            created.add(ending);
+            if (lastCreated != null)
+                sig.addEdge(lastCreated, ending, new NoExclusion());
+
+            return created;
+        }
+    }
+
+    //---------------//
+    // getMiddleBars //
+    //---------------//
+    /**
+     * Report the abscissa-ordered sequence of StaffBarlineInter located within segment.
+     *
+     * @param segment the candidate segment
+     * @param staff   the related staff
+     * @return the list of middle bars, perhaps empty
+     */
+    private List<StaffBarlineInter> getMiddleBars (SegmentInter segment,
+                                                   Staff staff)
+    {
+        final List<StaffBarlineInter> found = new ArrayList<>();
+        final SegmentInfo seg = segment.getInfo();
+        final Point leftEnd = seg.getEnd(true);
+        final Point rightEnd = seg.getEnd(false);
+        final SystemInfo system = staff.getSystem();
+        final List<Inter> systemBars = system.getSig().inters(StaffBarlineInter.class);
+
+        for (Inter ib : systemBars) {
+            final StaffBarlineInter sBar = (StaffBarlineInter) ib;
+            final Point2D center = sBar.getReferenceCenter();
+
+            if ((center.getX() > leftEnd.x + params.maxBarShift) && (center.getX() < rightEnd.x
+                    - params.maxBarShift)) {
+                found.add(sBar);
+            }
+        }
+
+        Collections.sort(found, Inters.byCenterAbscissa);
+
+        return found;
+    }
+
+    //---------------//
+    // getMiddleLegs //
+    //---------------//
+    private List<Filament> getMiddleLegs (SegmentInter segment,
+                                          Staff staff)
+    {
+        final List<Filament> found = new ArrayList<>();
+        final SegmentInfo seg = segment.getInfo();
+        final Point leftEnd = seg.getEnd(true);
+        final Point rightEnd = seg.getEnd(false);
+
+        for (StaffBarlineInter sBar : getMiddleBars(segment, staff)) {
+            final Point center = PointUtil.rounded(sBar.getReferenceCenter());
+            final double ratio = (center.x - leftEnd.x) / (double) (rightEnd.x - leftEnd.x);
+            final Point segPt = new Point(
+                    center.x,
+                    (int) Math.rint(leftEnd.y + ratio * (rightEnd.y - leftEnd.y)));
+            final Filament leg = lookupLeg(seg, segPt, staff);
+
+            if (leg != null)
+                found.add(leg);
+        }
+
+        return found;
+
+    }
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //---------------//
     // grabSentences //
@@ -308,191 +560,6 @@ public class EndingsBuilder
         }
     }
 
-    //--------------//
-    // createInters //
-    //--------------//
-    /**
-     * Try to create ending inter(s) from the provided segment, but with yet no link
-     * attempt for left or right barline.
-     * <p>
-     * Each ending is created perhaps with left leg and perhaps with right leg.
-     * Sentence number is searched for also.
-     *
-     * @param segment the horizontal segment
-     * @param system  the containing system
-     * @return null or the list of created ending inters inserted to SIG,
-     *         with sentence link if possible
-     */
-    private List<EndingInter> createInters (SegmentInter segment,
-                                            SystemInfo system)
-    {
-        final SegmentInfo seg = segment.getInfo();
-        final Point leftEnd = seg.getEnd(true);
-        final Point rightEnd = seg.getEnd(false);
-
-        // Length
-        final double length = seg.getXLength();
-
-        if (length < params.minLengthLow) {
-            return null;
-        }
-
-        // Slope
-        final Line2D line = new Line2D.Double(leftEnd, rightEnd);
-        final double slope = Math.abs(LineUtil.getSlope(line) - sheet.getSkew().getSlope());
-
-        if (slope > params.maxSlope) {
-            return null;
-        }
-
-        // Consider the staff just below the segment
-        final Staff staff = system.getStaffAtOrBelow(leftEnd);
-
-        if (staff == null) {
-            return null;
-        }
-
-        // Check minimum vertical gap with staff below
-        final Point center = segment.getCenter();
-        final double yGap = staff.distanceTo(center);
-
-        if (yGap < params.minGapFromStaff) {
-            return null;
-        }
-
-        // Check with related measure length
-        final Measure measure = staff.getPart().getMeasureAt(center, staff);
-
-        if (measure == null) {
-            return null;
-        }
-
-        // Accept a lower ratio for first measure in system (due to room for clef + key? + time?)
-        final Constant.Ratio minRatio = (measure.getStack() == system.getFirstStack())
-                ? constants.minFirstMeasureRatio
-                : constants.minMeasureRatio;
-
-        if (length < (measure.getWidth() * minRatio.getValue())) {
-            logger.debug("Ending {} too short compared with related {}", segment, measure);
-
-            return null;
-        }
-
-        GradeImpacts segImp = segment.getImpacts();
-        double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
-        GradeImpacts impacts = new EndingInter.Impacts(
-                straight,
-                1 - (slope / params.maxSlope),
-                (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow));
-
-        if (impacts.getGrade() < EndingInter.getMinGrade()) {
-            return null;
-        }
-
-        // Left leg (optional)
-        Filament leftLeg = lookupLeg(seg, seg.getEnd(true), staff);
-
-        // Right leg (optional)
-        Filament rightLeg = lookupLeg(seg, seg.getEnd(false), staff);
-
-        // Middle legs if any (each would split segment line into separate endings)
-        final List<Filament> middleLegs = getMiddleLegs(segment, staff);
-
-        if (middleLegs.isEmpty()) {
-            final EndingInter endingInter = createInter(
-                    staff,
-                    false,
-                    segment,
-                    line,
-                    leftLeg,
-                    rightLeg,
-                    impacts);
-            return Arrays.asList(endingInter);
-        } else {
-            final SIGraph sig = staff.getSystem().getSig();
-            final List<EndingInter> created = new ArrayList<>();
-            Point2D lastPoint = leftEnd;
-            Filament lastLeg = leftLeg;
-            Inter lastCreated = null;
-
-            for (Filament midLeg : middleLegs) {
-                // Define an ending from lastPoint to midLeg
-                final Line2D l = new Line2D.Double(lastPoint, midLeg.getStartPoint());
-                final EndingInter ending = createInter(
-                        staff,
-                        true,
-                        segment,
-                        l,
-                        lastLeg,
-                        midLeg,
-                        impacts);
-                created.add(ending);
-
-                lastPoint = midLeg.getStartPoint();
-                lastLeg = midLeg;
-
-                if (lastCreated != null)
-                    sig.addEdge(lastCreated, ending, new NoExclusion());
-
-                lastCreated = ending;
-            }
-
-            // Terminating one
-            final Line2D l = new Line2D.Double(lastPoint, rightEnd);
-            final EndingInter ending = createInter(
-                    staff,
-                    true,
-                    segment,
-                    l,
-                    lastLeg,
-                    rightLeg,
-                    impacts);
-            created.add(ending);
-            if (lastCreated != null)
-                sig.addEdge(lastCreated, ending, new NoExclusion());
-
-            return created;
-        }
-    }
-
-    //-------------//
-    // createInter //
-    //-------------//
-    private EndingInter createInter (Staff staff,
-                                     boolean split,
-                                     SegmentInter segment,
-                                     Line2D line,
-                                     Filament leftLeg,
-                                     Filament rightLeg,
-                                     GradeImpacts impacts)
-    {
-        // Create ending inter
-
-        final Line2D leftLine = (leftLeg == null) ? null
-                : new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
-        final Line2D rightLine = (rightLeg == null) ? null
-                : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
-        final EndingInter endingInter = new EndingInter(
-                line,
-                leftLine,
-                rightLine,
-                line.getBounds(),
-                impacts);
-        endingInter.setStaff(staff);
-
-        // Underlying glyph
-        final Glyph lineGlyph = split ? subGlyph(segment, line) : segment.getGlyph();
-        endingInter.setGlyph(buildGlyph(lineGlyph, leftLeg, rightLeg));
-
-        final SIGraph sig = staff.getSystem().getSig();
-        sig.addVertex(endingInter);
-
-        // Ending text?
-        grabSentences(endingInter);
-
-        return endingInter;
-    }
-
     //----------//
     // subGlyph //
     //----------//
@@ -517,69 +584,6 @@ public class EndingsBuilder
         final Glyph sg = sheet.getGlyphIndex().registerOriginal(new Glyph(x1, bounds.y, t));
         return sg;
     }
-
-    //---------------//
-    // getMiddleBars //
-    //---------------//
-    /**
-     * Report the abscissa-ordered sequence of StaffBarlineInter located within segment.
-     *
-     * @param segment the candidate segment
-     * @param staff   the related staff
-     * @return the list of middle bars, perhaps empty
-     */
-    private List<StaffBarlineInter> getMiddleBars (SegmentInter segment,
-                                                   Staff staff)
-    {
-        final List<StaffBarlineInter> found = new ArrayList<>();
-        final SegmentInfo seg = segment.getInfo();
-        final Point leftEnd = seg.getEnd(true);
-        final Point rightEnd = seg.getEnd(false);
-        final SystemInfo system = staff.getSystem();
-        final List<Inter> systemBars = system.getSig().inters(StaffBarlineInter.class);
-
-        for (Inter ib : systemBars) {
-            final StaffBarlineInter sBar = (StaffBarlineInter) ib;
-            final Point2D center = sBar.getReferenceCenter();
-
-            if ((center.getX() > leftEnd.x + params.maxBarShift) && (center.getX() < rightEnd.x
-                    - params.maxBarShift)) {
-                found.add(sBar);
-            }
-        }
-
-        Collections.sort(found, Inters.byCenterAbscissa);
-
-        return found;
-    }
-
-    //---------------//
-    // getMiddleLegs //
-    //---------------//
-    private List<Filament> getMiddleLegs (SegmentInter segment,
-                                          Staff staff)
-    {
-        final List<Filament> found = new ArrayList<>();
-        final SegmentInfo seg = segment.getInfo();
-        final Point leftEnd = seg.getEnd(true);
-        final Point rightEnd = seg.getEnd(false);
-
-        for (StaffBarlineInter sBar : getMiddleBars(segment, staff)) {
-            final Point center = PointUtil.rounded(sBar.getReferenceCenter());
-            final double ratio = (center.x - leftEnd.x) / (double) (rightEnd.x - leftEnd.x);
-            final Point segPt = new Point(
-                    center.x,
-                    (int) Math.rint(leftEnd.y + ratio * (rightEnd.y - leftEnd.y)));
-            final Filament leg = lookupLeg(seg, segPt, staff);
-
-            if (leg != null)
-                found.add(leg);
-        }
-
-        return found;
-
-    }
-    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
     // Constants //

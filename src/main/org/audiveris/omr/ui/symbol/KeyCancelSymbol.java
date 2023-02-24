@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -35,16 +35,6 @@ public class KeyCancelSymbol
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>KeyCancelSymbol</code> object.
-     *
-     * @param family the musicFont family
-     */
-    public KeyCancelSymbol (MusicFamily family)
-    {
-        super(0, Shape.KEY_CANCEL, family, Shape.NATURAL);
-    }
-
-    /**
      * Creates a KeyCancelSymbol with a count of naturals based on the precise key fifths
      * to cancel.
      *
@@ -55,5 +45,15 @@ public class KeyCancelSymbol
                             MusicFamily family)
     {
         super(fifths, Shape.KEY_CANCEL, family, Shape.NATURAL);
+    }
+
+    /**
+     * Creates a new <code>KeyCancelSymbol</code> object.
+     *
+     * @param family the musicFont family
+     */
+    public KeyCancelSymbol (MusicFamily family)
+    {
+        super(0, Shape.KEY_CANCEL, family, Shape.NATURAL);
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -241,7 +241,28 @@ public abstract class OmrShapes
             dynamicRinforzando1,
             dynamicRinforzando2);
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    private static Map<OmrShape, NumDen> buildComboMap ()
+    {
+        final Map<OmrShape, NumDen> map = new EnumMap<>(OmrShape.class);
+        map.put(OmrShape.timeSig2over4, new NumDen(2, 4));
+        map.put(OmrShape.timeSig2over2, new NumDen(2, 2));
+        map.put(OmrShape.timeSig3over2, new NumDen(3, 2));
+        map.put(OmrShape.timeSig3over4, new NumDen(3, 4));
+        map.put(OmrShape.timeSig3over8, new NumDen(3, 8));
+        map.put(OmrShape.timeSig4over4, new NumDen(4, 4));
+        map.put(OmrShape.timeSig5over4, new NumDen(5, 4));
+        map.put(OmrShape.timeSig5over8, new NumDen(5, 8));
+        map.put(OmrShape.timeSig6over4, new NumDen(6, 4));
+        map.put(OmrShape.timeSig6over8, new NumDen(6, 8));
+        map.put(OmrShape.timeSig7over8, new NumDen(7, 8));
+        map.put(OmrShape.timeSig9over8, new NumDen(9, 8));
+        map.put(OmrShape.timeSig12over8, new NumDen(12, 8));
+
+        return map;
+    }
+
     /**
      * Report the list of OmrShape values, to be used by DL4J.
      *
@@ -317,27 +338,8 @@ public abstract class OmrShapes
         }
     }
 
-    private static Map<OmrShape, NumDen> buildComboMap ()
-    {
-        final Map<OmrShape, NumDen> map = new EnumMap<>(OmrShape.class);
-        map.put(OmrShape.timeSig2over4, new NumDen(2, 4));
-        map.put(OmrShape.timeSig2over2, new NumDen(2, 2));
-        map.put(OmrShape.timeSig3over2, new NumDen(3, 2));
-        map.put(OmrShape.timeSig3over4, new NumDen(3, 4));
-        map.put(OmrShape.timeSig3over8, new NumDen(3, 8));
-        map.put(OmrShape.timeSig4over4, new NumDen(4, 4));
-        map.put(OmrShape.timeSig5over4, new NumDen(5, 4));
-        map.put(OmrShape.timeSig5over8, new NumDen(5, 8));
-        map.put(OmrShape.timeSig6over4, new NumDen(6, 4));
-        map.put(OmrShape.timeSig6over8, new NumDen(6, 8));
-        map.put(OmrShape.timeSig7over8, new NumDen(7, 8));
-        map.put(OmrShape.timeSig9over8, new NumDen(9, 8));
-        map.put(OmrShape.timeSig12over8, new NumDen(12, 8));
-
-        return map;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // NumDen //
     //--------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,9 +31,6 @@ import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.bytedeco.javacpp.*;
 import org.bytedeco.leptonica.PIX;
 import static org.bytedeco.leptonica.global.lept.*;
@@ -41,6 +38,9 @@ import org.bytedeco.tesseract.PageIterator;
 import org.bytedeco.tesseract.ResultIterator;
 import org.bytedeco.tesseract.TessBaseAPI;
 import static org.bytedeco.tesseract.global.tesseract.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -92,6 +92,7 @@ public class TesseractOrder
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing sheet. */
     private final Sheet sheet;
 
@@ -117,9 +118,7 @@ public class TesseractOrder
     private final PIX image;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // TesseractOrder //
-    //----------------//
+
     /**
      * Creates a new TesseractOrder object.
      *
@@ -141,8 +140,7 @@ public class TesseractOrder
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
-            throws UnsatisfiedLinkError,
-                IOException
+            throws UnsatisfiedLinkError, IOException
     {
         this.sheet = sheet;
         this.label = label;
@@ -163,75 +161,6 @@ public class TesseractOrder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Actually allocate a Tesseract API and recognize the image.
-     *
-     * @return the sequence of lines found
-     */
-    public List<TextLine> process ()
-    {
-        if (!OcrUtil.getOcr().isAvailable()) {
-            return Collections.emptyList();
-        }
-
-        try {
-            api = new TessBaseAPI();
-
-            // Init API with proper language
-            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
-
-            if (logger.isDebugEnabled()) {
-                logger.info("ocrFolder: {}", ocrFolder);
-                final File langsDir = ocrFolder.toFile();
-                for (File file : langsDir.listFiles()) {
-                    if (file.toString().endsWith(".traineddata")) {
-                        logger.info("Lang file: {}", file);
-                    }
-                }
-            }
-
-            if (api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY) != 0) {
-                logger.warn("Could not initialize Tesseract with lang {}", lang);
-
-                return finish(null);
-            }
-
-            // Set API image
-            api.SetImage(image);
-
-            // Specify image resolution (experimental)
-            if (constants.typicalImageResolution.getValue() != -1) {
-                api.SetSourceResolution(constants.typicalImageResolution.getValue());
-            }
-
-            // Perform layout analysis according to segmentation mode
-            api.SetPageSegMode(segMode);
-            api.AnalyseLayout();
-
-            // Perform image recognition
-            final int result = api.Recognize(null);
-
-            if (result != 0) {
-                logger.warn("Error in Tesseract recognize, exit code: {}", result);
-
-                return finish(null);
-            }
-
-            // Extract lines
-            return finish(getLines());
-        } catch (UnsatisfiedLinkError ex) {
-            if (!userWarned) {
-                logger.warn("Could not link Tesseract engine", ex);
-                logger.warn("java.library.path=" + System.getProperty("java.library.path"));
-                userWarned = true;
-            }
-
-            throw new RuntimeException(ex);
-        }
-    }
 
     //--------//
     // finish //
@@ -429,6 +358,76 @@ public class TesseractOrder
         }
     }
 
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Actually allocate a Tesseract API and recognize the image.
+     *
+     * @return the sequence of lines found
+     */
+    public List<TextLine> process ()
+    {
+        if (!OcrUtil.getOcr().isAvailable()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            api = new TessBaseAPI();
+
+            // Init API with proper language
+            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
+
+            if (logger.isDebugEnabled()) {
+                logger.info("ocrFolder: {}", ocrFolder);
+                final File langsDir = ocrFolder.toFile();
+                for (File file : langsDir.listFiles()) {
+                    if (file.toString().endsWith(".traineddata")) {
+                        logger.info("Lang file: {}", file);
+                    }
+                }
+            }
+
+            if (api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY) != 0) {
+                logger.warn("Could not initialize Tesseract with lang {}", lang);
+
+                return finish(null);
+            }
+
+            // Set API image
+            api.SetImage(image);
+
+            // Specify image resolution (experimental)
+            if (constants.typicalImageResolution.getValue() != -1) {
+                api.SetSourceResolution(constants.typicalImageResolution.getValue());
+            }
+
+            // Perform layout analysis according to segmentation mode
+            api.SetPageSegMode(segMode);
+            api.AnalyseLayout();
+
+            // Perform image recognition
+            final int result = api.Recognize(null);
+
+            if (result != 0) {
+                logger.warn("Error in Tesseract recognize, exit code: {}", result);
+
+                return finish(null);
+            }
+
+            // Extract lines
+            return finish(getLines());
+        } catch (UnsatisfiedLinkError ex) {
+            if (!userWarned) {
+                logger.warn("Could not link Tesseract engine", ex);
+                logger.warn("java.library.path=" + System.getProperty("java.library.path"));
+                userWarned = true;
+            }
+
+            throw new RuntimeException(ex);
+        }
+    }
+
     //--------------//
     // toTiffBuffer //
     //--------------//
@@ -511,6 +510,7 @@ public class TesseractOrder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

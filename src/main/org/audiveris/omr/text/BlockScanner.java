@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,9 +27,9 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ij.process.ByteProcessor;
-
 import java.util.List;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>BlockScanner</code> launches the OCR on a buffer, typically a glyph buffer,
@@ -50,11 +50,13 @@ public class BlockScanner
     private static final Logger logger = LoggerFactory.getLogger(BlockScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>GlyphScanner</code> object that can work on a glyph or a buffer.
      *

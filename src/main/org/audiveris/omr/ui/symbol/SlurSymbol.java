@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.SlurInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -44,6 +45,7 @@ public class SlurSymbol
     final boolean above;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a SlurSymbol.
      *
@@ -58,6 +60,7 @@ public class SlurSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
@@ -113,6 +116,7 @@ public class SlurSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

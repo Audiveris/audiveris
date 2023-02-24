@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -35,18 +35,8 @@ import java.awt.Point;
  */
 public class Mark
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /** Position relative to an entity. */
-    public static enum Position
-    {
-        /** Mark should be horizontally located <b>before</b> the entity */
-        BEFORE,
-        /** Mark should be horizontally located <b>after</b> the entity */
-        AFTER;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing system */
     @Navigable(false)
     private final SystemInfo system;
@@ -64,6 +54,7 @@ public class Mark
     private final Object data;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new instance of Mark
      *
@@ -87,6 +78,7 @@ public class Mark
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getData //
     //---------//
@@ -150,5 +142,16 @@ public class Mark
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    /** Position relative to an entity. */
+    public static enum Position
+    {
+        /** Mark should be horizontally located <b>before</b> the entity */
+        BEFORE,
+        /** Mark should be horizontally located <b>after</b> the entity */
+        AFTER;
     }
 }

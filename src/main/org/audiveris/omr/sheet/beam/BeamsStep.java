@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,6 +47,7 @@ public class BeamsStep
     private static final Logger logger = LoggerFactory.getLogger(BeamsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BeamsStep object.
      */
@@ -55,19 +56,6 @@ public class BeamsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-        throws StepException
-    {
-        new BeamsBuilder(system, context.spotLag).buildBeams();
-
-        // Detection of multiple-measure rests, since they resemble a long horizontal beam
-        new MultipleRestsBuilder(system).process();
-    }
 
     //----------//
     // doEpilog //
@@ -111,7 +99,22 @@ public class BeamsStep
         return new Context(spotLag);
     }
 
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        new BeamsBuilder(system, context.spotLag).buildBeams();
+
+        // Detection of multiple-measure rests, since they resemble a long horizontal beam
+        new MultipleRestsBuilder(system).process();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//

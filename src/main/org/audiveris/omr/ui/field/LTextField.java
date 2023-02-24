@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,6 +37,21 @@ public class LTextField
     private static final int FIELD_WIDTH = 6;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new LTextField object.
+     *
+     * @param editable Specifies whether this field will be editable
+     * @param label    the string to be used as label text
+     * @param tip      the related tool tip text
+     */
+    public LTextField (boolean editable,
+                       String label,
+                       String tip)
+    {
+        this(editable, label, tip, FIELD_WIDTH);
+    }
+
     /**
      * Creates a new LTextField object.
      *
@@ -64,23 +79,6 @@ public class LTextField
     }
 
     /**
-     * Creates a new LTextField object.
-     *
-     * @param editable Specifies whether this field will be editable
-     * @param label    the string to be used as label text
-     * @param tip      the related tool tip text
-     */
-    public LTextField (boolean editable,
-                       String label,
-                       String tip)
-    {
-        this(editable, label, tip, FIELD_WIDTH);
-    }
-
-    //------------//
-    // LTextField //
-    //------------//
-    /**
      * Creates a new non-editable LTextField object.
      *
      * @param label the string to be used as label text
@@ -93,6 +91,7 @@ public class LTextField
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getText //
     //---------//

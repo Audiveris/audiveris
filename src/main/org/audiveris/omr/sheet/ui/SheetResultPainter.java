@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,11 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
+
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -37,7 +42,6 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.rhythm.Voices;
-import static org.audiveris.omr.sheet.ui.SheetPainter.halfAT;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
@@ -53,12 +57,8 @@ import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
-import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
-import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,6 +206,15 @@ public class SheetResultPainter
     }
 
     //---------------//
+    // getSigPainter //
+    //---------------//
+    @Override
+    protected SigPainter getSigPainter ()
+    {
+        return new ResultSigPainter();
+    }
+
+    //---------------//
     // highlightSlot //
     //---------------//
     /**
@@ -282,15 +291,6 @@ public class SheetResultPainter
         g.setColor(oldColor);
     }
 
-    //---------------//
-    // getSigPainter //
-    //---------------//
-    @Override
-    protected SigPainter getSigPainter ()
-    {
-        return new ResultSigPainter();
-    }
-
     //--------------//
     // processParts //
     //--------------//
@@ -331,6 +331,53 @@ public class SheetResultPainter
                     paint(layout, new Point(x + partDx, y), BOTTOM_LEFT);
                 }
             }
+        }
+    }
+
+    //--------------//
+    // processStack //
+    //--------------//
+    /**
+     * Annotate measure stack with measure id and draw stack slots if so desired.
+     *
+     * @param stack the measure stack to process
+     */
+    private void processStack (MeasureStack stack)
+    {
+        if (annotated) {
+            final Color oldColor = g.getColor();
+
+            // Write the score-based measure id, on first real part only
+            String mid = stack.getPageId();
+
+            g.setColor(Colors.ANNOTATION);
+
+            // Work with top non-dummy staff & measure
+            SystemInfo system = stack.getSystem();
+            Staff staff = system.getFirstStaff();
+            Part topRealPart = staff.getPart();
+            int stackIndex = system.getStacks().indexOf(stack);
+            Measure topRealMeasure = topRealPart.getMeasures().get(stackIndex);
+            int left = topRealMeasure.getAbscissa(HorizontalSide.LEFT, staff);
+            Point loc = new Point(left, staff.getFirstLine().yAt(left) - annotationDy);
+            paint(basicLayout(mid, null), loc, BOTTOM_CENTER);
+
+            // Draw slot vertical lines ?
+            if (viewParams.isSlotPainting() && (stack.getSlots() != null)) {
+                for (Slot slot : stack.getSlots()) {
+                    drawSlot(slot, Colors.SLOT);
+                }
+            }
+
+            //            // Flag for measure excess duration?
+            //            if (measure.getExcess() != null) {
+            //                g.setColor(Color.red);
+            //                g.drawString(
+            //                    "Excess " + Note.quarterValueOf(measure.getExcess()),
+            //                    measure.getLeftX() + 10,
+            //                    measure.getPart().getFirstStaff().getTopLeft().y - 15);
+            //            }
+            g.setColor(oldColor);
         }
     }
 
@@ -392,54 +439,39 @@ public class SheetResultPainter
         }
     }
 
-    //--------------//
-    // processStack //
-    //--------------//
-    /**
-     * Annotate measure stack with measure id and draw stack slots if so desired.
-     *
-     * @param stack the measure stack to process
-     */
-    private void processStack (MeasureStack stack)
-    {
-        if (annotated) {
-            final Color oldColor = g.getColor();
-
-            // Write the score-based measure id, on first real part only
-            String mid = stack.getPageId();
-
-            g.setColor(Colors.ANNOTATION);
-
-            // Work with top non-dummy staff & measure
-            SystemInfo system = stack.getSystem();
-            Staff staff = system.getFirstStaff();
-            Part topRealPart = staff.getPart();
-            int stackIndex = system.getStacks().indexOf(stack);
-            Measure topRealMeasure = topRealPart.getMeasures().get(stackIndex);
-            int left = topRealMeasure.getAbscissa(HorizontalSide.LEFT, staff);
-            Point loc = new Point(left, staff.getFirstLine().yAt(left) - annotationDy);
-            paint(basicLayout(mid, null), loc, BOTTOM_CENTER);
-
-            // Draw slot vertical lines ?
-            if (viewParams.isSlotPainting() && (stack.getSlots() != null)) {
-                for (Slot slot : stack.getSlots()) {
-                    drawSlot(slot, Colors.SLOT);
-                }
-            }
-
-            //            // Flag for measure excess duration?
-            //            if (measure.getExcess() != null) {
-            //                g.setColor(Color.red);
-            //                g.drawString(
-            //                    "Excess " + Note.quarterValueOf(measure.getExcess()),
-            //                    measure.getLeftX() + 10,
-            //                    measure.getPart().getFirstStaff().getTopLeft().y - 15);
-            //            }
-            g.setColor(oldColor);
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer annotationDx = new Constant.Integer(
+                "pixels",
+                15,
+                "Abscissa offset for annotation near system");
+
+        private final Constant.Integer annotationDy = new Constant.Integer(
+                "pixels",
+                15,
+                "Ordinate offset for annotation near system");
+
+        private final Constant.Integer partDx = new Constant.Integer(
+                "pixels",
+                50,
+                "Abscissa left offset for logical part annotation");
+
+        private final Constant.Integer partDy = new Constant.Integer(
+                "pixels",
+                -20,
+                "Ordinate down offset for logical part annotation");
+
+        private final Constant.Ratio zoomForLogicalPart = new Constant.Ratio(
+                0.6,
+                "Zoom applied on logical part names");
+    }
 
     //------------------//
     // PdfResultPainter //
@@ -493,37 +525,5 @@ public class SheetResultPainter
         {
             return coloredVoices;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer annotationDx = new Constant.Integer(
-                "pixels",
-                15,
-                "Abscissa offset for annotation near system");
-
-        private final Constant.Integer annotationDy = new Constant.Integer(
-                "pixels",
-                15,
-                "Ordinate offset for annotation near system");
-
-        private final Constant.Integer partDx = new Constant.Integer(
-                "pixels",
-                50,
-                "Abscissa left offset for logical part annotation");
-
-        private final Constant.Integer partDy = new Constant.Integer(
-                "pixels",
-                -20,
-                "Ordinate down offset for logical part annotation");
-
-        private final Constant.Ratio zoomForLogicalPart = new Constant.Ratio(
-                0.6,
-                "Zoom applied on logical part names");
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -69,6 +69,7 @@ public class PlayList
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The <code>excerpts</code> element is the sequence of (book or image) excerpts
      * as chosen by the user.
@@ -77,11 +78,13 @@ public class PlayList
     public final ArrayList<Excerpt> excerpts = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     public PlayList ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // buildCompound //
     //---------------//
@@ -115,8 +118,7 @@ public class PlayList
                 oldestVersion = Version.minWithLabel(oldestVersion, srcBook.getVersion());
 
                 final int maxId = srcBook.size();
-                final List<Integer> ids = NaturalSpec
-                        .decode(excerpt.specification, false, maxId);
+                final List<Integer> ids = NaturalSpec.decode(excerpt.specification, false, maxId);
 
                 // Two possibilities:
                 // - Image (non-saved) book: we marshal from memory to target zip
@@ -144,9 +146,12 @@ public class PlayList
 
                         if (Files.exists(srcSheetPath)) {
                             final Path tgtSheetPath = tgtRoot.resolve(INTERNALS_RADIX + tgtId);
-                            logger.info("Copying tree from {}{} to {}{}",
-                                        srcBook.getBookPath(), srcSheetPath,
-                                        tgtPath, tgtSheetPath);
+                            logger.info(
+                                    "Copying tree from {}{} to {}{}",
+                                    srcBook.getBookPath(),
+                                    srcSheetPath,
+                                    tgtPath,
+                                    tgtSheetPath);
                             FileUtil.copyTree(srcSheetPath, tgtSheetPath);
 
                             // File sheet#srcId.xml, if any, must be renamed as sheet#tgtId.xml
@@ -196,6 +201,42 @@ public class PlayList
         }
     }
 
+    //-------------//
+    // injectBooks //
+    //-------------//
+    /**
+     * Make sure any Excerpt in this playlist is a duly populated BookExcerpt.
+     */
+    public void injectBooks ()
+    {
+        for (int i = 0; i < excerpts.size(); i++) {
+            final Excerpt excerpt = excerpts.get(i);
+
+            if (excerpt instanceof BookExcerpt) {
+                continue;
+            }
+
+            // Replace excerpt with a populated BookExcerpt
+            Book book = OMR.engine.getBook(excerpt.path);
+
+            if (book == null) {
+                final String ext = FileUtil.getExtension(excerpt.path);
+
+                if (ext.equalsIgnoreCase(OMR.BOOK_EXTENSION)) {
+                    // Book, to be unmarshalled from disk
+                    book = OMR.engine.loadBook(excerpt.path);
+                } else {
+                    // Image file assumed, to be read and wrapped in a book
+                    book = OMR.engine.loadInput(excerpt.path);
+                    book.createStubs();
+                }
+            }
+
+            final BookExcerpt bookExcerpt = BookExcerpt.create(book, excerpt.specification);
+            excerpts.set(i, bookExcerpt);
+        }
+    }
+
     //-------//
     // store //
     //-------//
@@ -236,11 +277,13 @@ public class PlayList
         return sb.append('}').toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // getJaxbContext //
     //----------------//
     public static JAXBContext getJaxbContext ()
-            throws JAXBException
+        throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -248,42 +291,6 @@ public class PlayList
         }
 
         return jaxbContext;
-    }
-
-    //-------------//
-    // injectBooks //
-    //-------------//
-    /**
-     * Make sure any Excerpt in this playlist is a duly populated BookExcerpt.
-     */
-    public void injectBooks ()
-    {
-        for (int i = 0; i < excerpts.size(); i++) {
-            final Excerpt excerpt = excerpts.get(i);
-
-            if (excerpt instanceof BookExcerpt) {
-                continue;
-            }
-
-            // Replace excerpt with a populated BookExcerpt
-            Book book = OMR.engine.getBook(excerpt.path);
-
-            if (book == null) {
-                final String ext = FileUtil.getExtension(excerpt.path);
-
-                if (ext.equalsIgnoreCase(OMR.BOOK_EXTENSION)) {
-                    // Book, to be unmarshalled from disk
-                    book = OMR.engine.loadBook(excerpt.path);
-                } else {
-                    // Image file assumed, to be read and wrapped in a book
-                    book = OMR.engine.loadInput(excerpt.path);
-                    book.createStubs();
-                }
-            }
-
-            final BookExcerpt bookExcerpt = BookExcerpt.create(book, excerpt.specification);
-            excerpts.set(i, bookExcerpt);
-        }
     }
 
     //------//
@@ -308,8 +315,7 @@ public class PlayList
 
                 return playlist;
             }
-        } catch (IOException |
-                 JAXBException ex) {
+        } catch (IOException | JAXBException ex) {
             logger.warn("Error loading playlist " + sourcePath + " " + ex, ex);
 
             return null;
@@ -317,6 +323,92 @@ public class PlayList
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-------------//
+    // BookExcerpt //
+    //-------------//
+    /**
+     * Class <code>BookExcerpt</code> is an Excerpt with its related Book instance,
+     * and augmented of bookId and counts to ease its display.
+     */
+    public static class BookExcerpt
+            extends PlayList.Excerpt
+    {
+
+        /** Containing book. */
+        public final Book book;
+
+        /** Flag to indicate a book created on-the-fly to represent an image file. */
+        public boolean isImage;
+
+        /** Displayed book id. */
+        public final String bookId;
+
+        /** Resulting counts. */
+        public String counts;
+
+        /**
+         * Creates a <code>BookExcerpt</code> initialized with provided sheets
+         * specification.
+         *
+         * @param book          the containing book
+         * @param isImage       true for a book just created upon an image
+         * @param path          book related path
+         * @param specification the sheets specification
+         */
+        public BookExcerpt (Book book,
+                            boolean isImage,
+                            Path path,
+                            String specification)
+        {
+            super(path, specification);
+            this.book = book;
+
+            bookId = path.getFileName().toString();
+            counts = getCounts(specification, book.size());
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder(getClass().getSimpleName()).append('{').append(book.getRadix())
+                    .append(" spec:").append(specification).append('}').toString();
+        }
+
+        /**
+         * Creates a <code>BookExcerpt</code> based on the provided book,
+         * using its defined sheets specification.
+         *
+         * @param book the provided book
+         * @return the book-based excerpt
+         */
+        public static BookExcerpt create (Book book)
+        {
+            return create(book, book.getSheetsSelection());
+        }
+
+        /**
+         * Creates a <code>BookExcerpt</code> based on the provided book,
+         * and the provided sheets specification.
+         *
+         * @param book          the provided book
+         * @param specification the provided sheets specification
+         *                      (which can be different for book own spec)
+         * @return the created book excerpt
+         */
+        public static BookExcerpt create (Book book,
+                                          String specification)
+        {
+            final boolean isImage = book.getBookPath() == null;
+
+            return new BookExcerpt(
+                    book,
+                    isImage,
+                    book.getPath(),
+                    NaturalSpec.normalized(specification, book.size()));
+        }
+    }
+
     //---------//
     // Excerpt //
     //---------//
@@ -375,97 +467,8 @@ public class PlayList
         @Override
         public String toString ()
         {
-            return new StringBuilder(getClass().getSimpleName())
-                    .append('{')
-                    .append(path)
-                    .append(" spec:").append(specification)
-                    .append('}').toString();
-        }
-    }
-
-    //-------------//
-    // BookExcerpt //
-    //-------------//
-    /**
-     * Class <code>BookExcerpt</code> is an Excerpt with its related Book instance,
-     * and augmented of bookId and counts to ease its display.
-     */
-    public static class BookExcerpt
-            extends PlayList.Excerpt
-    {
-
-        /** Containing book. */
-        public final Book book;
-
-        /** Flag to indicate a book created on-the-fly to represent an image file. */
-        public boolean isImage;
-
-        /** Displayed book id. */
-        public final String bookId;
-
-        /** Resulting counts. */
-        public String counts;
-
-        /**
-         * Creates a <code>BookExcerpt</code> initialized with provided sheets
-         * specification.
-         *
-         * @param book          the containing book
-         * @param isImage       true for a book just created upon an image
-         * @param path          book related path
-         * @param specification the sheets specification
-         */
-        public BookExcerpt (Book book,
-                            boolean isImage,
-                            Path path,
-                            String specification)
-        {
-            super(path, specification);
-            this.book = book;
-
-            bookId = path.getFileName().toString();
-            counts = getCounts(specification, book.size());
-        }
-
-        /**
-         * Creates a <code>BookExcerpt</code> based on the provided book,
-         * using its defined sheets specification.
-         *
-         * @param book the provided book
-         * @return the book-based excerpt
-         */
-        public static BookExcerpt create (Book book)
-        {
-            return create(book, book.getSheetsSelection());
-        }
-
-        /**
-         * Creates a <code>BookExcerpt</code> based on the provided book,
-         * and the provided sheets specification.
-         *
-         * @param book          the provided book
-         * @param specification the provided sheets specification
-         *                      (which can be different for book own spec)
-         * @return the created book excerpt
-         */
-        public static BookExcerpt create (Book book,
-                                          String specification)
-        {
-            final boolean isImage = book.getBookPath() == null;
-
-            return new BookExcerpt(book,
-                                   isImage,
-                                   book.getPath(),
-                                   NaturalSpec.normalized(specification, book.size()));
-        }
-
-        @Override
-        public String toString ()
-        {
-            return new StringBuilder(getClass().getSimpleName())
-                    .append('{')
-                    .append(book.getRadix()).append(" spec:").append(specification)
-                    .append('}').toString();
+            return new StringBuilder(getClass().getSimpleName()).append('{').append(path).append(
+                    " spec:").append(specification).append('}').toString();
         }
     }
 }

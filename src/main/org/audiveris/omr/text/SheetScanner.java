@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,8 +52,6 @@ import org.audiveris.omr.util.param.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ij.process.ByteProcessor;
-
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -63,6 +61,8 @@ import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>SheetScanner</code> runs OCR on the whole sheet, where good inters and

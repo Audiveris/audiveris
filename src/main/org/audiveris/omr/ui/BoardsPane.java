@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,7 +23,7 @@ package org.audiveris.omr.ui;
 
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
-import static org.audiveris.omr.ui.util.UIPredicates.*;
+import static org.audiveris.omr.ui.util.UIPredicates.isContextWanted;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -67,6 +67,7 @@ public class BoardsPane
     private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The concrete UI component. */
     private final Panel component;
 
@@ -80,6 +81,17 @@ public class BoardsPane
     private JSplitPane splitContainer;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Create a BoardsPane, with initial boards.
+     *
+     * @param boards the initial collection of boards
+     */
+    public BoardsPane (Board... boards)
+    {
+        this(Arrays.asList(boards));
+    }
+
     /**
      * Create a BoardsPane, with initial boards.
      *
@@ -109,20 +121,8 @@ public class BoardsPane
         defineLayout();
     }
 
-    //------------//
-    // BoardsPane //
-    //------------//
-    /**
-     * Create a BoardsPane, with initial boards.
-     *
-     * @param boards the initial collection of boards
-     */
-    public BoardsPane (Board... boards)
-    {
-        this(Arrays.asList(boards));
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addBoard //
     //----------//
@@ -170,6 +170,46 @@ public class BoardsPane
         }
     }
 
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        // Prepare layout elements
+        final String panelInterline = Panel.getPanelInterline();
+        StringBuilder sbr = null;
+
+        for (Board board : boards) {
+            if (board.isSelected()) {
+                if (sbr != null) {
+                    sbr.append(',').append(panelInterline).append(',');
+                } else {
+                    sbr = new StringBuilder();
+                }
+
+                sbr.append("pref");
+            }
+        }
+
+        if (sbr == null) {
+            return; // No selected boards
+        }
+
+        FormLayout layout = new FormLayout("fill:pref:grow", sbr.toString());
+        PanelBuilder builder = new PanelBuilder(layout, component);
+        CellConstraints cst = new CellConstraints();
+
+        // Now add the desired components, using provided order
+        int r = 1;
+
+        for (Board board : boards) {
+            if (board.isSelected()) {
+                builder.add(board.getComponent(), cst.xy(1, r));
+                r += 2;
+            }
+        }
+    }
+
     //------------//
     // disconnect //
     //------------//
@@ -183,6 +223,20 @@ public class BoardsPane
                 board.disconnect();
             }
         }
+    }
+
+    //----------//
+    // getBoard //
+    //----------//
+    public Board getBoard (String title)
+    {
+        for (Board b : boards) {
+            if (b.getName().equals(title)) {
+                return b;
+            }
+        }
+
+        return null;
     }
 
     //--------------//
@@ -211,20 +265,6 @@ public class BoardsPane
         return name;
     }
 
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign the unique name for this boards pane.
-     *
-     * @param name the assigned name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-        component.setName(name);
-    }
-
     //-------------//
     // removeBoard //
     //-------------//
@@ -251,6 +291,20 @@ public class BoardsPane
         for (Board board : boards) {
             board.resizeBoard();
         }
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign the unique name for this boards pane.
+     *
+     * @param name the assigned name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+        component.setName(name);
     }
 
     //-------------------//
@@ -302,60 +356,6 @@ public class BoardsPane
         return sb.toString();
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        // Prepare layout elements
-        final String panelInterline = Panel.getPanelInterline();
-        StringBuilder sbr = null;
-
-        for (Board board : boards) {
-            if (board.isSelected()) {
-                if (sbr != null) {
-                    sbr.append(',').append(panelInterline).append(',');
-                } else {
-                    sbr = new StringBuilder();
-                }
-
-                sbr.append("pref");
-            }
-        }
-
-        if (sbr == null) {
-            return; // No selected boards
-        }
-
-        FormLayout layout = new FormLayout("fill:pref:grow", sbr.toString());
-        PanelBuilder builder = new PanelBuilder(layout, component);
-        CellConstraints cst = new CellConstraints();
-
-        // Now add the desired components, using provided order
-        int r = 1;
-
-        for (Board board : boards) {
-            if (board.isSelected()) {
-                builder.add(board.getComponent(), cst.xy(1, r));
-                r += 2;
-            }
-        }
-    }
-
-    //----------//
-    // getBoard //
-    //----------//
-    public Board getBoard (String title)
-    {
-        for (Board b : boards) {
-            if (b.getName().equals(title)) {
-                return b;
-            }
-        }
-
-        return null;
-    }
-
     //--------//
     // update //
     //--------//
@@ -386,6 +386,7 @@ public class BoardsPane
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------------//
     // MyMouseAdapter //
     //----------------//

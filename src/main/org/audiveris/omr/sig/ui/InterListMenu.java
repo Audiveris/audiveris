@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,11 +64,13 @@ public class InterListMenu
     private static final Logger logger = LoggerFactory.getLogger(InterListMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final Sheet sheet;
 
     private final InterListener interListener = new InterListener();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>InterListMenu</code> object.
      *
@@ -82,16 +83,6 @@ public class InterListMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // updateUserLocation //
-    //--------------------//
-    @Override
-    public void updateUserLocation (Rectangle rect)
-    {
-        updateMenu(sheet.getInterIndex().getEntityService().getSelectedEntityList());
-
-        super.updateUserLocation(rect);
-    }
 
     //--------------------//
     // insertDeletionItem //
@@ -103,7 +94,8 @@ public class InterListMenu
                 "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
 
         // To delete all listed inters when item is clicked upon
-        item.addActionListener((ActionEvent e) -> {
+        item.addActionListener( (ActionEvent e) ->
+        {
             if (OMR.gui.displayConfirmation(
                     "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
                 sheet.getInterController().removeInters(sysInters);
@@ -111,8 +103,7 @@ public class InterListMenu
         });
 
         // To (re)focus on all the listed inters when moving the mouse on the item
-        item.addMouseListener(
-                new AbstractMouseListener()
+        item.addMouseListener(new AbstractMouseListener()
         {
             @Override
             public void mouseEntered (MouseEvent e)
@@ -198,7 +189,19 @@ public class InterListMenu
         }
     }
 
+    //--------------------//
+    // updateUserLocation //
+    //--------------------//
+    @Override
+    public void updateUserLocation (Rectangle rect)
+    {
+        updateMenu(sheet.getInterIndex().getEntityService().getSelectedEntityList());
+
+        super.updateUserLocation(rect);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // InterListener //
     //---------------//

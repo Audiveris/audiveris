@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,12 +38,10 @@ import javax.xml.stream.XMLStreamWriter;
  * empty element rather than the pair of start + end tags.
  *
  * @author Kohsuke Kawaguchi (the author of the internal Sun implementation of class
- * IndentingXMLStreamWriter in com.sun.xml.internal.txw2.output package, this class was
- * initially derived from)
- *
+ *         IndentingXMLStreamWriter in com.sun.xml.internal.txw2.output package, this class was
+ *         initially derived from)
  * @author Luca Basso Ricci
  * @see <a href="https://stackoverflow.com/a/27158805">Luca article</a>
- *
  * @author Hervé Bitteur (buffering of every element item as a Callable)
  */
 public class CustomXMLStreamWriter
@@ -80,6 +78,7 @@ public class CustomXMLStreamWriter
     protected List<Item> items = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>IndentingXmlStreamWriter</code> object with default indent step of
      * 2 spaces.
@@ -106,20 +105,69 @@ public class CustomXMLStreamWriter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void close ()
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.close();
     }
 
+    //----------//
+    // doIndent //
+    //----------//
+    /**
+     * Insert a new line, followed by proper level of indentation.
+     *
+     * @throws XMLStreamException if anything goes wrong
+     */
+    protected void doIndent ()
+        throws XMLStreamException
+    {
+        if (indentStep != null) {
+            writer.writeCharacters("\n");
+
+            for (int i = 0; i < level; i++) {
+                writer.writeCharacters(indentStep);
+            }
+        }
+    }
+
     @Override
     public void flush ()
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (items.isEmpty()) {
             writer.flush();
+        }
+    }
+
+    //------------//
+    // flushItems //
+    //------------//
+    /**
+     * We finish the saving of current element if any, by flushing the saved items.
+     *
+     * @throws XMLStreamException if anything goes wrong
+     */
+    protected void flushItems ()
+        throws XMLStreamException
+    {
+        if (!items.isEmpty()) {
+            try {
+                // Write 'start' element
+                items.get(1).call(); // At index 1 was saved the 'start' processing
+
+                // Process the saved items
+                for (Item item : items.subList(2, items.size())) {
+                    item.call();
+                }
+            } catch (Exception ex) {
+                throw new XMLStreamException(ex);
+            }
+
+            items.clear();
         }
     }
 
@@ -130,32 +178,85 @@ public class CustomXMLStreamWriter
     }
 
     @Override
-    public void setNamespaceContext (NamespaceContext context)
-            throws XMLStreamException
-    {
-        writer.setNamespaceContext(context);
-    }
-
-    @Override
     public String getPrefix (final String uri)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         return writer.getPrefix(uri);
     }
 
     @Override
     public Object getProperty (final String name)
-            throws IllegalArgumentException
+        throws IllegalArgumentException
     {
         return writer.getProperty(name);
     }
 
+    //---------------//
+    // indentComment //
+    //---------------//
+    /**
+     * Indentation before comment. Always indent.
+     *
+     * @throws XMLStreamException if anything goes wrong
+     */
+    protected void indentComment ()
+        throws XMLStreamException
+    {
+        if (indentStep != null) {
+            doIndent();
+        }
+    }
+
+    //-----------//
+    // indentEnd //
+    //-----------//
+    /**
+     * Indentation before end tag. Indent except on first close.
+     *
+     * @throws XMLStreamException if anything goes wrong
+     */
+    protected void indentEnd ()
+        throws XMLStreamException
+    {
+        if (indentStep != null) {
+            level--;
+
+            if (closing) {
+                doIndent();
+            }
+
+            closing = true;
+        }
+    }
+
+    //-------------//
+    // indentStart //
+    //-------------//
+    /**
+     * Indentation before start tag. Always indent.
+     *
+     * @param localName the local tag name.
+     *                  It can be used by an overriding implementation to decide to include
+     *                  on-the-fly any material such as a specific comment.
+     * @throws XMLStreamException if anything goes wrong
+     */
+    protected void indentStart (final String localName)
+        throws XMLStreamException
+    {
+        if (indentStep != null) {
+            doIndent();
+            level++;
+            closing = false;
+        }
+    }
+
     @Override
     public void setDefaultNamespace (final String uri)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(() -> {
+            items.add( () ->
+            {
                 writer.setDefaultNamespace(uri);
 
                 return null;
@@ -166,12 +267,20 @@ public class CustomXMLStreamWriter
     }
 
     @Override
+    public void setNamespaceContext (NamespaceContext context)
+        throws XMLStreamException
+    {
+        writer.setNamespaceContext(context);
+    }
+
+    @Override
     public void setPrefix (final String prefix,
                            final String uri)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(() -> {
+            items.add( () ->
+            {
                 writer.setPrefix(prefix, uri);
 
                 return null;
@@ -184,10 +293,11 @@ public class CustomXMLStreamWriter
     @Override
     public void writeAttribute (final String localName,
                                 final String value)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(() -> {
+            items.add( () ->
+            {
                 writer.writeAttribute(localName, value);
 
                 return null;
@@ -198,31 +308,14 @@ public class CustomXMLStreamWriter
     }
 
     @Override
-    public void writeAttribute (final String prefix,
-                                final String namespaceURI,
-                                final String localName,
-                                final String value)
-            throws XMLStreamException
-    {
-        if (!items.isEmpty()) {
-            items.add(() -> {
-                writer.writeAttribute(prefix, namespaceURI, localName, value);
-
-                return null;
-            });
-        } else {
-            writer.writeAttribute(prefix, namespaceURI, localName, value);
-        }
-    }
-
-    @Override
     public void writeAttribute (final String namespaceURI,
                                 final String localName,
                                 final String value)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(() -> {
+            items.add( () ->
+            {
                 writer.writeAttribute(namespaceURI, localName, value);
 
                 return null;
@@ -233,8 +326,27 @@ public class CustomXMLStreamWriter
     }
 
     @Override
+    public void writeAttribute (final String prefix,
+                                final String namespaceURI,
+                                final String localName,
+                                final String value)
+        throws XMLStreamException
+    {
+        if (!items.isEmpty()) {
+            items.add( () ->
+            {
+                writer.writeAttribute(prefix, namespaceURI, localName, value);
+
+                return null;
+            });
+        } else {
+            writer.writeAttribute(prefix, namespaceURI, localName, value);
+        }
+    }
+
+    @Override
     public void writeCData (final String data)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!data.isEmpty()) {
             flushItems();
@@ -243,20 +355,10 @@ public class CustomXMLStreamWriter
     }
 
     @Override
-    public void writeCharacters (final String text)
-            throws XMLStreamException
-    {
-        if (!text.isEmpty()) {
-            flushItems();
-            writer.writeCharacters(text);
-        }
-    }
-
-    @Override
     public void writeCharacters (char[] text,
                                  int start,
                                  int len)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (len > 0) {
             flushItems();
@@ -265,8 +367,18 @@ public class CustomXMLStreamWriter
     }
 
     @Override
+    public void writeCharacters (final String text)
+        throws XMLStreamException
+    {
+        if (!text.isEmpty()) {
+            flushItems();
+            writer.writeCharacters(text);
+        }
+    }
+
+    @Override
     public void writeComment (final String data)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         indentComment();
@@ -274,24 +386,32 @@ public class CustomXMLStreamWriter
     }
 
     @Override
+    public void writeDefaultNamespace (final String namespaceURI)
+        throws XMLStreamException
+    {
+        writer.writeDefaultNamespace(namespaceURI);
+    }
+
+    @Override
     public void writeDTD (final String dtd)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeDTD(dtd);
     }
 
     @Override
-    public void writeDefaultNamespace (final String namespaceURI)
-            throws XMLStreamException
+    public void writeEmptyElement (final String localName)
+        throws XMLStreamException
     {
-        writer.writeDefaultNamespace(namespaceURI);
+        flushItems();
+        writer.writeEmptyElement(localName);
     }
 
     @Override
     public void writeEmptyElement (final String namespaceURI,
                                    final String localName)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeEmptyElement(namespaceURI, localName);
@@ -301,23 +421,15 @@ public class CustomXMLStreamWriter
     public void writeEmptyElement (final String prefix,
                                    final String localName,
                                    final String namespaceURI)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeEmptyElement(prefix, localName, namespaceURI);
     }
 
     @Override
-    public void writeEmptyElement (final String localName)
-            throws XMLStreamException
-    {
-        flushItems();
-        writer.writeEmptyElement(localName);
-    }
-
-    @Override
     public void writeEndDocument ()
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeEndDocument();
@@ -325,7 +437,7 @@ public class CustomXMLStreamWriter
 
     @Override
     public void writeEndElement ()
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!items.isEmpty()) {
             try {
@@ -351,7 +463,7 @@ public class CustomXMLStreamWriter
 
     @Override
     public void writeEntityRef (final String name)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeEntityRef(name);
@@ -360,10 +472,11 @@ public class CustomXMLStreamWriter
     @Override
     public void writeNamespace (final String prefix,
                                 final String namespaceURI)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         if (!items.isEmpty()) {
-            items.add(() -> {
+            items.add( () ->
+            {
                 writer.writeNamespace(prefix, namespaceURI);
 
                 return null;
@@ -375,7 +488,7 @@ public class CustomXMLStreamWriter
 
     @Override
     public void writeProcessingInstruction (final String target)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeProcessingInstruction(target);
@@ -384,7 +497,7 @@ public class CustomXMLStreamWriter
     @Override
     public void writeProcessingInstruction (final String target,
                                             final String data)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         writer.writeProcessingInstruction(target, data);
@@ -392,14 +505,14 @@ public class CustomXMLStreamWriter
 
     @Override
     public void writeStartDocument ()
-            throws XMLStreamException
+        throws XMLStreamException
     {
         writer.writeStartDocument();
     }
 
     @Override
     public void writeStartDocument (final String version)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         writer.writeStartDocument(version);
     }
@@ -407,24 +520,26 @@ public class CustomXMLStreamWriter
     @Override
     public void writeStartDocument (final String encoding,
                                     final String version)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         writer.writeStartDocument(encoding, version);
     }
 
     @Override
     public void writeStartElement (final String localName)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         indentStart(localName);
 
-        items.add(() -> {
+        items.add( () ->
+        {
             writer.writeEmptyElement(localName); // Empty saved first
 
             return null;
         });
-        items.add(() -> {
+        items.add( () ->
+        {
             writer.writeStartElement(localName); // Start saved second
 
             return null;
@@ -434,17 +549,19 @@ public class CustomXMLStreamWriter
     @Override
     public void writeStartElement (final String namespaceURI,
                                    final String localName)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         indentStart(localName);
 
-        items.add(() -> {
+        items.add( () ->
+        {
             writer.writeEmptyElement(namespaceURI, localName); // Empty saved first
 
             return null;
         });
-        items.add(() -> {
+        items.add( () ->
+        {
             writer.writeStartElement(namespaceURI, localName); // Start saved second
 
             return null;
@@ -455,131 +572,27 @@ public class CustomXMLStreamWriter
     public void writeStartElement (final String prefix,
                                    final String localName,
                                    final String namespaceURI)
-            throws XMLStreamException
+        throws XMLStreamException
     {
         flushItems();
         indentStart(localName);
 
-        items.add(() -> {
+        items.add( () ->
+        {
             writer.writeEmptyElement(prefix, localName, namespaceURI); // Empty saved first
 
             return null;
         });
-        items.add(() -> {
+        items.add( () ->
+        {
             writer.writeStartElement(prefix, localName, namespaceURI); // Start saved second
 
             return null;
         });
     }
 
-    //------------//
-    // flushItems //
-    //------------//
-    /**
-     * We finish the saving of current element if any, by flushing the saved items.
-     *
-     * @throws XMLStreamException if anything goes wrong
-     */
-    protected void flushItems ()
-            throws XMLStreamException
-    {
-        if (!items.isEmpty()) {
-            try {
-                // Write 'start' element
-                items.get(1).call(); // At index 1 was saved the 'start' processing
-
-                // Process the saved items
-                for (Item item : items.subList(2, items.size())) {
-                    item.call();
-                }
-            } catch (Exception ex) {
-                throw new XMLStreamException(ex);
-            }
-
-            items.clear();
-        }
-    }
-
-    //----------//
-    // doIndent //
-    //----------//
-    /**
-     * Insert a new line, followed by proper level of indentation.
-     *
-     * @throws XMLStreamException if anything goes wrong
-     */
-    protected void doIndent ()
-            throws XMLStreamException
-    {
-        if (indentStep != null) {
-            writer.writeCharacters("\n");
-
-            for (int i = 0; i < level; i++) {
-                writer.writeCharacters(indentStep);
-            }
-        }
-    }
-
-    //---------------//
-    // indentComment //
-    //---------------//
-    /**
-     * Indentation before comment. Always indent.
-     *
-     * @throws XMLStreamException if anything goes wrong
-     */
-    protected void indentComment ()
-            throws XMLStreamException
-    {
-        if (indentStep != null) {
-            doIndent();
-        }
-    }
-
-    //-----------//
-    // indentEnd //
-    //-----------//
-    /**
-     * Indentation before end tag. Indent except on first close.
-     *
-     * @throws XMLStreamException if anything goes wrong
-     */
-    protected void indentEnd ()
-            throws XMLStreamException
-    {
-        if (indentStep != null) {
-            level--;
-
-            if (closing) {
-                doIndent();
-            }
-
-            closing = true;
-        }
-    }
-
-    //-------------//
-    // indentStart //
-    //-------------//
-    /**
-     * Indentation before start tag. Always indent.
-     *
-     * @param localName the local tag name.
-     *                  It can be used by an overriding implementation to decide to include
-     *                  on-the-fly any material such as a specific comment.
-     * @throws XMLStreamException if anything goes wrong
-     */
-    protected void indentStart (final String localName)
-            throws XMLStreamException
-    {
-        if (indentStep != null) {
-            doIndent();
-            level++;
-            closing = false;
-        }
-    }
-
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //------//
     // Item //
     //------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -64,13 +64,20 @@ public class TablatureAreas
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
-    //
+
     @XmlElement(name = "Area")
     @XmlJavaTypeAdapter(RectangleAdapter.class)
     public ArrayList<Rectangle> areas = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /** No-arg constructor needed by JAXB. */
+    private TablatureAreas ()
+    {
+    }
+
     /**
      * Creates a new <code>TablatureAreas</code> object.
      *
@@ -83,12 +90,8 @@ public class TablatureAreas
         }
     }
 
-    /** No-arg constructor needed by JAXB. */
-    private TablatureAreas ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // marshall //
     //----------//
@@ -100,8 +103,7 @@ public class TablatureAreas
      * @throws JAXBException in case of marshalling problem
      */
     public void marshall (Path path)
-            throws IOException,
-                   JAXBException
+        throws IOException, JAXBException
     {
         if (!Files.exists(path.getParent())) {
             Files.createDirectories(path.getParent());
@@ -116,6 +118,22 @@ public class TablatureAreas
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(TablatureAreas.class);
+        }
+
+        return jaxbContext;
+    }
+
     //-----------//
     // unmarshal //
     //-----------//
@@ -128,26 +146,11 @@ public class TablatureAreas
      * @throws JAXBException in case of unmarshalling error
      */
     public static TablatureAreas unmarshal (Path path)
-            throws IOException,
-                   JAXBException
+        throws IOException, JAXBException
     {
         try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
             Unmarshaller um = getJaxbContext().createUnmarshaller();
             return (TablatureAreas) um.unmarshal(is);
         }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(TablatureAreas.class);
-        }
-
-        return jaxbContext;
     }
 }

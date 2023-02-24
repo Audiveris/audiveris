@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,9 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
+
+import static java.awt.RenderingHints.KEY_ANTIALIASING;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
@@ -43,8 +46,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import static java.awt.RenderingHints.KEY_ANTIALIASING;
-import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,6 +68,7 @@ public class PictureView
     private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Link with sheet. */
     private final Sheet sheet;
 
@@ -77,6 +79,7 @@ public class PictureView
     private final SheetTab sheetTab;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>PictureView</code> instance, dedicated to a sheet.
      *
@@ -109,6 +112,7 @@ public class PictureView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // propertyChange //
     //----------------//
@@ -119,6 +123,7 @@ public class PictureView
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // RunTableView //
     //--------------//
@@ -142,6 +147,36 @@ public class PictureView
                     popup.show(this, getZoom().scaled(pt.x), getZoom().scaled(pt.y));
                 }
             }
+        }
+
+        private void doRender (Graphics2D g,
+                               boolean input,
+                               boolean output,
+                               boolean voice,
+                               RunTable table)
+        {
+            final Color oldColor = g.getColor();
+            g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
+
+            if (input) {
+                final Picture picture = sheet.getPicture();
+
+                if (sheetTab == SheetTab.GRAY_TAB) {
+                    final BufferedImage gray = picture.getGrayImage();
+                    g.drawRenderedImage(gray, null);
+                } else if (table != null) {
+                    table.render(g, new Point(0, 0));
+                }
+            }
+
+            // Render the recognized score entities?
+            if (output) {
+                final boolean coloredVoices = input ? false : voice;
+                g.setColor(input ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
+                new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
+            }
+
+            g.setColor(oldColor);
         }
 
         //--------//
@@ -204,36 +239,6 @@ public class PictureView
                     }
                 }.execute();
             }
-        }
-
-        private void doRender (Graphics2D g,
-                               boolean input,
-                               boolean output,
-                               boolean voice,
-                               RunTable table)
-        {
-            final Color oldColor = g.getColor();
-            g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
-
-            if (input) {
-                final Picture picture = sheet.getPicture();
-
-                if (sheetTab == SheetTab.GRAY_TAB) {
-                    final BufferedImage gray = picture.getGrayImage();
-                    g.drawRenderedImage(gray, null);
-                } else if (table != null) {
-                    table.render(g, new Point(0, 0));
-                }
-            }
-
-            // Render the recognized score entities?
-            if (output) {
-                final boolean coloredVoices = input ? false : voice;
-                g.setColor(input ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
-                new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
-            }
-
-            g.setColor(oldColor);
         }
     }
 }

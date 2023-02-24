@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,23 +52,32 @@ public interface MorphoConstants
 
     public static final int RING = 8;
 
-    public static final int[] OFFSET0 = {0, 0};
+    public static final int[] OFFSET0 =
+    { 0, 0 };
 
-    public static final int[] NGRAD = {0, 1};
+    public static final int[] NGRAD =
+    { 0, 1 };
 
-    public static final int[] SGRAD = {0, -1};
+    public static final int[] SGRAD =
+    { 0, -1 };
 
-    public static final int[] WGRAD = {1, 0};
+    public static final int[] WGRAD =
+    { 1, 0 };
 
-    public static final int[] EGRAD = {-1, 0};
+    public static final int[] EGRAD =
+    { -1, 0 };
 
-    public static final int[] NEGRAD = {-1, -1};
+    public static final int[] NEGRAD =
+    { -1, -1 };
 
-    public static final int[] NWGRAD = {1, -1};
+    public static final int[] NWGRAD =
+    { 1, -1 };
 
-    public static final int[] SEGRAD = {-1, -1};
+    public static final int[] SEGRAD =
+    { -1, -1 };
 
-    public static final int[] SWGRAD = {1, 1};
+    public static final int[] SWGRAD =
+    { 1, 1 };
 
     public static final int MAXSIZE = 151;
 

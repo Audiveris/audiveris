@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,10 +44,12 @@ public class SigListener
     private static final Logger logger = LoggerFactory.getLogger(SigListener.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sig. */
     private final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SigListener</code> object.
      *
@@ -59,6 +61,7 @@ public class SigListener
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void edgeAdded (GraphEdgeChangeEvent<Inter, Relation> e)
     {

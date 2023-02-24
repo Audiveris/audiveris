@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
@@ -37,6 +33,10 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,6 +66,7 @@ public class StubsSelection
             .getResourceMap(StubsSelection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related book. */
     private final Book book;
 
@@ -73,6 +74,7 @@ public class StubsSelection
     private final LTextField specField;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StubsSelection</code> object for the provided book.
      *
@@ -88,6 +90,39 @@ public class StubsSelection
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------------//
+    // actionPerformed //
+    //-----------------//
+    @Override
+    public void actionPerformed (ActionEvent e)
+    {
+        logger.info("actionPerformed");
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private JOptionPane defineLayout ()
+    {
+        // Use a panel with one line to enter detailed spec
+        final FormLayout layout = new FormLayout(
+                new StringBuilder() // Columns spec
+                        .append("pref").append(',').append(Panel.getLabelInterval()).append(',')
+                        .append("100dlu").toString(),
+                Panel.makeRows(1)); // Rows spec
+        final CellConstraints cst = new CellConstraints();
+        final Panel panel = new Panel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        panel.setNoInsets();
+
+        builder.add(specField.getLabel(), cst.xy(1, 1));
+        builder.add(specField.getField(), cst.xy(3, 1));
+        specField.getField().setHorizontalAlignment(JTextField.LEFT);
+
+        return new JOptionPane(panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+    }
+
     //---------------//
     // getSheetsSpec //
     //---------------//
@@ -108,7 +143,9 @@ public class StubsSelection
         }
 
         // Prepare prompt dialog
-        final String frameTitle = format(resources.getString("frameTitle.pattern"), book.getRadix());
+        final String frameTitle = format(
+                resources.getString("frameTitle.pattern"),
+                book.getRadix());
         final JOptionPane pane = defineLayout();
 
         // Initial sheets selection, as read from book
@@ -163,39 +200,5 @@ public class StubsSelection
                 logger.warn("{}", ex.toString());
             }
         }
-    }
-
-    //-----------------//
-    // actionPerformed //
-    //-----------------//
-    @Override
-    public void actionPerformed (ActionEvent e)
-    {
-        logger.info("actionPerformed");
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private JOptionPane defineLayout ()
-    {
-        // Use a panel with one line to enter detailed spec
-        final FormLayout layout = new FormLayout(
-                new StringBuilder() // Columns spec
-                        .append("pref").append(',')
-                        .append(Panel.getLabelInterval()).append(',')
-                        .append("100dlu")
-                        .toString(),
-                Panel.makeRows(1)); // Rows spec
-        final CellConstraints cst = new CellConstraints();
-        final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
-        panel.setNoInsets();
-
-        builder.add(specField.getLabel(), cst.xy(1, 1));
-        builder.add(specField.getField(), cst.xy(3, 1));
-        specField.getField().setHorizontalAlignment(JTextField.LEFT);
-
-        return new JOptionPane(panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
     }
 }

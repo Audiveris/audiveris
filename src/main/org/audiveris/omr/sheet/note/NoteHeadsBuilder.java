@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,7 +31,9 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.image.Anchored.Anchor;
-import static org.audiveris.omr.image.Anchored.Anchor.*;
+import static org.audiveris.omr.image.Anchored.Anchor.LEFT_STEM;
+import static org.audiveris.omr.image.Anchored.Anchor.MIDDLE_LEFT;
+import static org.audiveris.omr.image.Anchored.Anchor.RIGHT_STEM;
 import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
@@ -72,7 +74,8 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
@@ -144,6 +147,7 @@ public class NoteHeadsBuilder
             Shape.VERTICAL_SERIF);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -217,6 +221,7 @@ public class NoteHeadsBuilder
     public final Map<Integer, Map<String, Boolean>> drumDumped;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>NoteHeadsBuilder</code> object.
      *
@@ -264,6 +269,52 @@ public class NoteHeadsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------//
+    // aggregateMatches //
+    //------------------//
+    private List<HeadInter> aggregateMatches (List<HeadInter> heads)
+    {
+        // Sort heads by decreasing grade, whatever their shape
+        Collections.sort(heads, Inters.byReverseGrade);
+
+        // Gather matches per close locations
+        // Avoid duplicate locations
+        final List<Aggregate> aggregates = new ArrayList<>();
+
+        for (HeadInter head : heads) {
+            final Point2D loc = head.getCenter2D();
+
+            // Check among already filtered locations for similar location
+            Aggregate aggregate = null;
+
+            for (Aggregate ag : aggregates) {
+                double dx = loc.getX() - ag.point.getX();
+
+                if (Math.abs(dx) <= params.maxTemplateDx) {
+                    aggregate = ag;
+
+                    break;
+                }
+            }
+
+            if (aggregate == null) {
+                aggregate = new Aggregate();
+                aggregates.add(aggregate);
+            }
+
+            aggregate.add(head);
+        }
+
+        List<HeadInter> filtered = new ArrayList<>();
+
+        for (Aggregate ag : aggregates) {
+            filtered.add(ag.getMainInter());
+        }
+
+        return filtered;
+    }
+
     //------------//
     // buildHeads //
     //------------//
@@ -310,7 +361,12 @@ public class NoteHeadsBuilder
             // Remove duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
-            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2), true);
+            final int duplicates = purge(
+                    ch,
+                    "duplicate",
+                    (h1,
+                     h2) -> h1.isSameAs(h2),
+                    true);
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
@@ -318,7 +374,12 @@ public class NoteHeadsBuilder
 
             // Overlaps for current staff are formalized as exclusions
             watch.start("Staff #" + staff.getId() + " overlaps");
-            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2), false);
+            final int overlaps = purge(
+                    ch,
+                    "overlap",
+                    (h1,
+                     h2) -> h1.overlaps(h2),
+                    false);
 
             if (overlaps > 0) {
                 logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
@@ -348,64 +409,6 @@ public class NoteHeadsBuilder
 
         logger.debug("S#{} seeds {}", system.getId(), seedsPerf);
         logger.debug("    range {}", rangePerf);
-    }
-
-    //------------------//
-    // getStemLessBoost //
-    //------------------//
-    /**
-     * Report the boost value for stem-less heads since they can't expect support from stem.
-     *
-     * @return the boost value
-     */
-    public static double getStemLessBoost ()
-    {
-        return constants.stemLessBoost.getValue();
-    }
-
-    //------------------//
-    // aggregateMatches //
-    //------------------//
-    private List<HeadInter> aggregateMatches (List<HeadInter> heads)
-    {
-        // Sort heads by decreasing grade, whatever their shape
-        Collections.sort(heads, Inters.byReverseGrade);
-
-        // Gather matches per close locations
-        // Avoid duplicate locations
-        final List<Aggregate> aggregates = new ArrayList<>();
-
-        for (HeadInter head : heads) {
-            final Point2D loc = head.getCenter2D();
-
-            // Check among already filtered locations for similar location
-            Aggregate aggregate = null;
-
-            for (Aggregate ag : aggregates) {
-                double dx = loc.getX() - ag.point.getX();
-
-                if (Math.abs(dx) <= params.maxTemplateDx) {
-                    aggregate = ag;
-
-                    break;
-                }
-            }
-
-            if (aggregate == null) {
-                aggregate = new Aggregate();
-                aggregates.add(aggregate);
-            }
-
-            aggregate.add(head);
-        }
-
-        List<HeadInter> filtered = new ArrayList<>();
-
-        for (Aggregate ag : aggregates) {
-            filtered.add(ag.getMainInter());
-        }
-
-        return filtered;
     }
 
     //-------------------------//
@@ -667,7 +670,7 @@ public class NoteHeadsBuilder
         final List<Area> areas = new ArrayList<>();
         final List<Inter> inters = sig.inters(
                 inter -> inter.isFrozen() && (inter instanceof BarlineInter
-                                                      || inter instanceof BarConnectorInter));
+                        || inter instanceof BarConnectorInter));
         Collections.sort(inters, Inters.byOrdinate);
 
         for (Inter inter : inters) {
@@ -689,7 +692,8 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getSystemCompetitors ()
     {
-        final List<Inter> comps = sig.inters(inter -> {
+        final List<Inter> comps = sig.inters(inter ->
+        {
             if (!inter.isGood() || !COMPETING_SHAPES.contains(inter.getShape())) {
                 return false;
             }
@@ -839,7 +843,8 @@ public class NoteHeadsBuilder
         // For merged grand staff, don't look further than middle ledger (C4)
         final Part part = staff.getPart();
 
-        for (int dir : new int[]{-1, 1}) {
+        for (int dir : new int[]
+        { -1, 1 }) {
             // Limitation to last ledger in the specific case of merged grand staff
             boolean lookFurther = true;
 
@@ -1015,64 +1020,6 @@ public class NoteHeadsBuilder
         return h2;
     }
 
-    //-----------------//
-    // purgeSmallBeams //
-    //-----------------//
-    /**
-     * During the BEAMS step, some heads may have been mistaken for small beams to be now
-     * purged.
-     * <p>
-     * Note that the areas of non-small beams were protected against creation of heads.
-     */
-    private void purgeSmallBeams ()
-    {
-        final List<Inter> purgedBeams = new ArrayList<>();
-        final List<Inter> purgedHeads = new ArrayList<>();
-        final List<Inter> heads = sig.inters(HeadInter.class);
-        Collections.sort(heads, Inters.byOrdinate);
-
-        final List<Inter> smallBeams = sig.inters(
-                inter -> ShapeSet.Beams.contains(inter.getShape()) && inter
-                .getBounds().width < params.minBeamWidth);
-
-        for (Iterator<Inter> itb = smallBeams.iterator(); itb.hasNext();) {
-            final Inter iBeam = itb.next();
-            sig.computeContextualGrade(iBeam);
-            final Area beamArea = iBeam.getArea();
-            final double beamGrade = iBeam.getContextualGrade();
-            final Rectangle beamBox = iBeam.getBounds();
-            final int beamBottom = beamBox.y + beamBox.height - 1;
-
-            for (Iterator<Inter> ith = heads.iterator(); ith.hasNext();) {
-                Inter iHead = ith.next();
-                final Rectangle headBox = iHead.getBounds();
-
-                if (beamArea.intersects(headBox)) {
-                    if (iHead.getGrade() > beamGrade) {
-                        iBeam.remove();
-                        itb.remove();
-                        purgedBeams.add(iBeam);
-                        break;
-                    } else {
-                        iHead.remove();
-                        ith.remove();
-                        purgedHeads.add(iHead);
-                    }
-                } else if (headBox.y > beamBottom) {
-                    break;
-                }
-            }
-        }
-
-        if (!purgedBeams.isEmpty()) {
-            logger.debug("{} {} beams purged", system, purgedBeams.size());
-        }
-
-        if (!purgedHeads.isEmpty()) {
-            logger.debug("{} {} heads purged", system, purgedHeads.size());
-        }
-    }
-
     //---------------//
     // purgeOverlaps //
     //---------------//
@@ -1127,7 +1074,198 @@ public class NoteHeadsBuilder
         return removed.size();
     }
 
+    //-----------------//
+    // purgeSmallBeams //
+    //-----------------//
+    /**
+     * During the BEAMS step, some heads may have been mistaken for small beams to be now
+     * purged.
+     * <p>
+     * Note that the areas of non-small beams were protected against creation of heads.
+     */
+    private void purgeSmallBeams ()
+    {
+        final List<Inter> purgedBeams = new ArrayList<>();
+        final List<Inter> purgedHeads = new ArrayList<>();
+        final List<Inter> heads = sig.inters(HeadInter.class);
+        Collections.sort(heads, Inters.byOrdinate);
+
+        final List<Inter> smallBeams = sig.inters(
+                inter -> ShapeSet.Beams.contains(inter.getShape()) && inter
+                        .getBounds().width < params.minBeamWidth);
+
+        for (Iterator<Inter> itb = smallBeams.iterator(); itb.hasNext();) {
+            final Inter iBeam = itb.next();
+            sig.computeContextualGrade(iBeam);
+            final Area beamArea = iBeam.getArea();
+            final double beamGrade = iBeam.getContextualGrade();
+            final Rectangle beamBox = iBeam.getBounds();
+            final int beamBottom = beamBox.y + beamBox.height - 1;
+
+            for (Iterator<Inter> ith = heads.iterator(); ith.hasNext();) {
+                Inter iHead = ith.next();
+                final Rectangle headBox = iHead.getBounds();
+
+                if (beamArea.intersects(headBox)) {
+                    if (iHead.getGrade() > beamGrade) {
+                        iBeam.remove();
+                        itb.remove();
+                        purgedBeams.add(iBeam);
+                        break;
+                    } else {
+                        iHead.remove();
+                        ith.remove();
+                        purgedHeads.add(iHead);
+                    }
+                } else if (headBox.y > beamBottom) {
+                    break;
+                }
+            }
+        }
+
+        if (!purgedBeams.isEmpty()) {
+            logger.debug("{} {} beams purged", system, purgedBeams.size());
+        }
+
+        if (!purgedHeads.isEmpty()) {
+            logger.debug("{} {} heads purged", system, purgedHeads.size());
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------------//
+    // getStemLessBoost //
+    //------------------//
+    /**
+     * Report the boost value for stem-less heads since they can't expect support from stem.
+     *
+     * @return the boost value
+     */
+    public static double getStemLessBoost ()
+    {
+        return constants.stemLessBoost.getValue();
+    }
+
     //~ Inner classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Aggregate //
+    //-----------//
+    /**
+     * Describes an aggregate of matches around similar locations.
+     */
+    private static class Aggregate
+    {
+
+        Point2D point;
+
+        List<HeadInter> matches = new ArrayList<>();
+
+        public void add (HeadInter head)
+        {
+            if (point == null) {
+                point = head.getCenter2D();
+            }
+
+            matches.add(head);
+        }
+
+        public HeadInter getMainInter ()
+        {
+            return matches.get(0);
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
+
+            if (point != null) {
+                sb.append(" point:").append(PointUtil.toString(point));
+            }
+
+            sb.append(" ").append(matches.size()).append(" matches: ");
+
+            for (Inter match : matches) {
+                sb.append(match);
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean dumpTemplateNotes = new Constant.Boolean(
+                false,
+                "Should we dump the template notes for standard and drum staves?");
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
+
+        private final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
+        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
+                0.375,
+                "Maximum dx between similar template instances");
+
+        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
+                0,
+                "Extension allowed in y when located on line/ledger");
+
+        private final Scale.Fraction maxOpenDy = new Scale.Fraction(
+                0.2,
+                "Extension allowed in y when located in space");
+
+        private final Constant.Ratio gradeMargin = new Constant.Ratio(
+                0.1,
+                "Grade margin to boost seed-based competitors");
+
+        private final Constant.Ratio minIouHeads = new Constant.Ratio(
+                0.1,
+                "Minimum intersection over union for head overlapping");
+
+        private final Constant.Ratio pitchMargin = new Constant.Ratio(
+                0.75,
+                "Vertical margin for intercepting stem seed around a target pitch");
+
+        private final Constant.Ratio stemLessBoost = new Constant.Ratio(
+                0, // Was 0.38,
+                "How much do we boost stem-less heads (always isolated)");
+
+        private final Constant.Ratio crossBoost = new Constant.Ratio(
+                0.0, // Was 0.1,
+                "How much do we boost cross heads (badly recognized by template matching)");
+
+        private final Scale.Fraction minBeamWidth = new Scale.Fraction(
+                2.5,
+                "Minimum good beam width to exclude heads");
+
+        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Vertical margin around frozen barline or connector");
+
+        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
+                0.2,
+                "Minimum ratio of hole white pixel to reassign Black to Void");
+    }
+
     //---------------//
     // LedgerAdapter //
     //---------------//
@@ -1178,15 +1316,138 @@ public class NoteHeadsBuilder
         }
 
         @Override
+        public double yAt (double x)
+        {
+            return LineUtil.yAtX(left, right, x);
+        }
+
+        @Override
         public int yAt (int x)
         {
             return (int) Math.rint(yAt((double) x));
         }
+    }
+
+    //-------------//
+    // LineAdapter //
+    //-------------//
+    /**
+     * Such adapter is needed to interact with staff LineInfo or ledger glyph line in a
+     * consistent way.
+     */
+    private abstract static class LineAdapter
+    {
+
+        private final Staff staff;
+
+        private final String prefix;
+
+        LineAdapter (Staff staff,
+                     String prefix)
+        {
+            this.staff = staff;
+            this.prefix = prefix;
+        }
+
+        /**
+         * Report the competitors lookup area, according to limits above
+         * and below, defined as ordinate shifts relative to the reference line.
+         *
+         * @param above offset (positive or negative) from line to top limit.
+         * @param below offset (positive or negative) from line to bottom limit.
+         */
+        public abstract Area getArea (double above,
+                                      double below);
+
+        /** Report the abscissa at beginning of line. */
+        public abstract int getLeftAbscissa ();
+
+        /** Needed to allow various attachments on the same staff. */
+        public String getPrefix ()
+        {
+            return prefix;
+        }
+
+        /** Report the abscissa at end of line. */
+        public abstract int getRightAbscissa ();
+
+        public Staff getStaff ()
+        {
+            return staff;
+        }
+
+        /** Report the precise ordinate at provided precise abscissa. */
+        public abstract double yAt (double x);
+
+        /** Report the ordinate at provided abscissa. */
+        public abstract int yAt (int x);
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+
+        final double maxDistanceLow;
+
+        final double reallyBadDistance;
+
+        final int maxTemplateDx;
+
+        final int maxClosedDy;
+
+        final int maxOpenDy;
+
+        final int minBeamWidth;
+
+        final double vBarMargin;
+
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        Parameters (Scale scale)
+        {
+            maxDistanceLow = Template.maxDistanceLow();
+            reallyBadDistance = Template.reallyBadDistance();
+
+            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
+            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
+            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
+            minBeamWidth = scale.toPixels(constants.minBeamWidth);
+
+            vBarMargin = scale.toPixelsDouble(constants.barVerticalMargin);
+        }
+    }
+
+    /**
+     * DEBUG: meant to precisely measure behavior of heads retrieval.
+     */
+    private static class Perf
+    {
+
+        int bars;
+
+        int overlaps;
+
+        int evals;
+
+        int abandons;
 
         @Override
-        public double yAt (double x)
+        public String toString ()
         {
-            return LineUtil.yAtX(left, right, x);
+            return String.format(
+                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
+                    bars,
+                    overlaps,
+                    evals,
+                    abandons);
         }
     }
 
@@ -1320,6 +1581,27 @@ public class NoteHeadsBuilder
             }
         }
 
+        //-------------//
+        // barInvolved //
+        //-------------//
+        /**
+         * Check whether the provided rectangle would intersect area of frozen
+         * barline/connector.
+         *
+         * @param rect provided rectangle
+         * @return true if area hit
+         */
+        private boolean barInvolved (Rectangle rect)
+        {
+            for (Area a : barAreas) {
+                if (a.intersects(rect)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         //----------------//
         // buildShapeList //
         //----------------//
@@ -1347,45 +1629,19 @@ public class NoteHeadsBuilder
 
             return allShapes;
         }
-//
-//        private void dumpShapeList (String kind,
-//                                    Collection<Shape> coll)
-//        {
-//            System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
-//            for (Shape shape : coll) {
-//                System.out.println(String.format("    %s", shape));
-//            }
-//        }
-//
+        //
+        //        private void dumpShapeList (String kind,
+        //                                    Collection<Shape> coll)
+        //        {
+        //            System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
+        //            for (Shape shape : coll) {
+        //                System.out.println(String.format("    %s", shape));
+        //            }
+        //        }
+        //
         //--------//
         // lookup //
         //--------//
-
-        public List<HeadInter> lookup ()
-        {
-            return useSeeds ? lookupSeeds() : lookupRange();
-        }
-
-        //-------------//
-        // barInvolved //
-        //-------------//
-        /**
-         * Check whether the provided rectangle would intersect area of frozen
-         * barline/connector.
-         *
-         * @param rect provided rectangle
-         * @return true if area hit
-         */
-        private boolean barInvolved (Rectangle rect)
-        {
-            for (Area a : barAreas) {
-                if (a.intersects(rect)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         //-----------------//
         // computeYOffsets //
@@ -1650,6 +1906,11 @@ public class NoteHeadsBuilder
             return grade < Grades.minContextualGrade;
         }
 
+        public List<HeadInter> lookup ()
+        {
+            return useSeeds ? lookupSeeds() : lookupRange();
+        }
+
         //-------------//
         // lookupRange //
         //-------------//
@@ -1793,7 +2054,8 @@ public class NoteHeadsBuilder
             final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
 
             // Use one anchor for each horizontal side of the stem seed
-            final Anchor[] anchors = new Anchor[]{LEFT_STEM, RIGHT_STEM};
+            final Anchor[] anchors = new Anchor[]
+            { LEFT_STEM, RIGHT_STEM };
 
             for (Glyph seed : seeds) {
                 if (seed.isVip()) {
@@ -1946,255 +2208,15 @@ public class NoteHeadsBuilder
         }
 
         @Override
-        public int yAt (int x)
-        {
-            return line.yAt(x);
-        }
-
-        @Override
         public double yAt (double x)
         {
             return line.yAt(x);
         }
-    }
-
-    //-------------//
-    // LineAdapter //
-    //-------------//
-    /**
-     * Such adapter is needed to interact with staff LineInfo or ledger glyph line in a
-     * consistent way.
-     */
-    private abstract static class LineAdapter
-    {
-
-        private final Staff staff;
-
-        private final String prefix;
-
-        LineAdapter (Staff staff,
-                     String prefix)
-        {
-            this.staff = staff;
-            this.prefix = prefix;
-        }
-
-        /**
-         * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the reference line.
-         *
-         * @param above offset (positive or negative) from line to top limit.
-         * @param below offset (positive or negative) from line to bottom limit.
-         */
-        public abstract Area getArea (double above,
-                                      double below);
-
-        /** Report the abscissa at beginning of line. */
-        public abstract int getLeftAbscissa ();
-
-        /** Needed to allow various attachments on the same staff. */
-        public String getPrefix ()
-        {
-            return prefix;
-        }
-
-        /** Report the abscissa at end of line. */
-        public abstract int getRightAbscissa ();
-
-        public Staff getStaff ()
-        {
-            return staff;
-        }
-
-        /** Report the ordinate at provided abscissa. */
-        public abstract int yAt (int x);
-
-        /** Report the precise ordinate at provided precise abscissa. */
-        public abstract double yAt (double x);
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean dumpTemplateNotes = new Constant.Boolean(
-                false,
-                "Should we dump the template notes for standard and drum staves?");
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the class parameters?");
-
-        private final Constant.Boolean allowAttachments = new Constant.Boolean(
-                false,
-                "Should we allow staff attachments for created areas?");
-
-        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
-                0.375,
-                "Maximum dx between similar template instances");
-
-        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
-                0,
-                "Extension allowed in y when located on line/ledger");
-
-        private final Scale.Fraction maxOpenDy = new Scale.Fraction(
-                0.2,
-                "Extension allowed in y when located in space");
-
-        private final Constant.Ratio gradeMargin = new Constant.Ratio(
-                0.1,
-                "Grade margin to boost seed-based competitors");
-
-        private final Constant.Ratio minIouHeads = new Constant.Ratio(
-                0.1,
-                "Minimum intersection over union for head overlapping");
-
-        private final Constant.Ratio pitchMargin = new Constant.Ratio(
-                0.75,
-                "Vertical margin for intercepting stem seed around a target pitch");
-
-        private final Constant.Ratio stemLessBoost = new Constant.Ratio(
-                0, // Was 0.38,
-                "How much do we boost stem-less heads (always isolated)");
-
-        private final Constant.Ratio crossBoost = new Constant.Ratio(
-                0.0, // Was 0.1,
-                "How much do we boost cross heads (badly recognized by template matching)");
-
-        private final Scale.Fraction minBeamWidth = new Scale.Fraction(
-                2.5,
-                "Minimum good beam width to exclude heads");
-
-        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Vertical margin around frozen barline or connector");
-
-        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
-                0.2,
-                "Minimum ratio of hole white pixel to reassign Black to Void");
-    }
-
-    //-----------//
-    // Aggregate //
-    //-----------//
-    /**
-     * Describes an aggregate of matches around similar locations.
-     */
-    private static class Aggregate
-    {
-
-        Point2D point;
-
-        List<HeadInter> matches = new ArrayList<>();
-
-        public void add (HeadInter head)
-        {
-            if (point == null) {
-                point = head.getCenter2D();
-            }
-
-            matches.add(head);
-        }
-
-        public HeadInter getMainInter ()
-        {
-            return matches.get(0);
-        }
 
         @Override
-        public String toString ()
+        public int yAt (int x)
         {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-            sb.append("{");
-
-            if (point != null) {
-                sb.append(" point:").append(PointUtil.toString(point));
-            }
-
-            sb.append(" ").append(matches.size()).append(" matches: ");
-
-            for (Inter match : matches) {
-                sb.append(match);
-            }
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class <code>Parameters</code> gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-
-        final double maxDistanceLow;
-
-        final double reallyBadDistance;
-
-        final int maxTemplateDx;
-
-        final int maxClosedDy;
-
-        final int maxOpenDy;
-
-        final int minBeamWidth;
-
-        final double vBarMargin;
-
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        Parameters (Scale scale)
-        {
-            maxDistanceLow = Template.maxDistanceLow();
-            reallyBadDistance = Template.reallyBadDistance();
-
-            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
-            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
-            minBeamWidth = scale.toPixels(constants.minBeamWidth);
-
-            vBarMargin = scale.toPixelsDouble(constants.barVerticalMargin);
-        }
-    }
-
-    /**
-     * DEBUG: meant to precisely measure behavior of heads retrieval.
-     */
-    private static class Perf
-    {
-
-        int bars;
-
-        int overlaps;
-
-        int evals;
-
-        int abandons;
-
-        @Override
-        public String toString ()
-        {
-            return String.format(
-                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
-                    bars,
-                    overlaps,
-                    evals,
-                    abandons);
+            return line.yAt(x);
         }
     }
 }

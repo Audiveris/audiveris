@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,14 +48,21 @@ public class SheetPathHistory
                              Constant.String folderConstant,
                              int maxSize)
     {
-        super(name, constant, folderConstant, maxSize, (s1, s2) -> areEquivalent(s1, s2));
+        super(
+                name,
+                constant,
+                folderConstant,
+                maxSize,
+                (s1,
+                 s2) -> areEquivalent(s1, s2));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
-    protected Path getParent (SheetPath sheetPath)
+    protected SheetPath decode (String string)
     {
-        return sheetPath.getBookPath().toAbsolutePath().getParent();
+        return SheetPath.decode(string);
     }
 
     @Override
@@ -65,10 +72,12 @@ public class SheetPathHistory
     }
 
     @Override
-    protected SheetPath decode (String string)
+    protected Path getParent (SheetPath sheetPath)
     {
-        return SheetPath.decode(string);
+        return sheetPath.getBookPath().toAbsolutePath().getParent();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------------//
     // areEquivalent //

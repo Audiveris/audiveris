@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -106,6 +106,7 @@ public class ScaleBuilder
     private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -135,6 +136,7 @@ public class ScaleBuilder
     private Integer beamGuess;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Constructor to enable scale computation on a given sheet.
      *
@@ -146,41 +148,6 @@ public class ScaleBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // displayChart //
-    //--------------//
-    /**
-     * Display the scale histograms.
-     */
-    public void displayChart ()
-    {
-        if (histoKeeper == null) {
-            try {
-                doRetrieveScale(true); // Dummy retrieval
-            } catch (StepException ignored) {
-            }
-        }
-
-        if (histoKeeper != null) {
-            histoKeeper.writePlot();
-        }
-    }
-
-    //---------------//
-    // retrieveScale //
-    //---------------//
-    /**
-     * Retrieve scale information on sheet.
-     *
-     * @return scale information
-     * @throws StepException raised if some mandatory information cannot be retrieved.
-     *                       For example if no staves are found.
-     */
-    public Scale retrieveScale ()
-            throws StepException
-    {
-        return doRetrieveScale(false);
-    }
 
     //-----------------//
     // checkResolution //
@@ -192,35 +159,26 @@ public class ScaleBuilder
      * @throws StepException if processing must stop on this sheet
      */
     private void checkResolution ()
-            throws StepException
+        throws StepException
     {
         int interline = comboPeak.main;
 
         if (interline == 0) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR
-                            + "Interline value is zero."
-                            + LINE_SEPARATOR
+                    sheet.getId() + LINE_SEPARATOR + "Interline value is zero." + LINE_SEPARATOR
                             + "This sheet does not seem to contain staff lines.",
                     false);
         } else if (interline < constants.minInterline.getValue()) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR
-                            + "With an interline value of "
-                            + interline
-                            + " pixels,"
-                            + LINE_SEPARATOR
-                            + "either this sheet contains no staves,"
+                    sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
+                            + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
                             + LINE_SEPARATOR
                             + "or the picture resolution is too low (try 300 DPI).",
                     false);
         } else if (interline > constants.maxInterline.getValue()) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR
-                            + "Too large interline value: "
-                            + interline
-                            + " pixels"
-                            + LINE_SEPARATOR
+                    sheet.getId() + LINE_SEPARATOR + "Too large interline value: " + interline
+                            + " pixels" + LINE_SEPARATOR
                             + "This sheet does not seem to contain staff lines.",
                     false);
         }
@@ -261,8 +219,13 @@ public class ScaleBuilder
         beamGuess = (int) Math.rint(minHeight + ((maxHeight - minHeight) * beamRatio));
 
         if (verbose) {
-            logger.info(String.format("Beam  guessed height: %2d -- %.2f of [%d..%d] range",
-                                      beamGuess, beamRatio, minHeight, maxHeight));
+            logger.info(
+                    String.format(
+                            "Beam  guessed height: %2d -- %.2f of [%d..%d] range",
+                            beamGuess,
+                            beamRatio,
+                            minHeight,
+                            maxHeight));
         }
 
         // Beam measurement
@@ -280,10 +243,15 @@ public class ScaleBuilder
             final double rangeRatio = (double) (peak - minHeight) / (maxHeight - minHeight);
 
             if (verbose) {
-                logger.info(String.format("Beam measured height: %2d -- %.2f"
-                                                  + " of [%d..%d] range at %d%% of needed quorum",
-                                          peak, rangeRatio, minHeight, maxHeight,
-                                          (int) Math.rint(quorumRatio * 100)));
+                logger.info(
+                        String.format(
+                                "Beam measured height: %2d -- %.2f"
+                                        + " of [%d..%d] range at %d%% of needed quorum",
+                                peak,
+                                rangeRatio,
+                                minHeight,
+                                maxHeight,
+                                (int) Math.rint(quorumRatio * 100)));
             }
 
             // Quorum reached or measured value close to guess?
@@ -295,8 +263,7 @@ public class ScaleBuilder
 
             if ((comboPeak2 != null) && (peaks.size() > 1)) {
                 final int peak2 = peaks.get(1);
-                final double qRatio = (double) histoKeeper.blackFunction.getValue(peak2)
-                                              / quorum;
+                final double qRatio = (double) histoKeeper.blackFunction.getValue(peak2) / quorum;
 
                 if (qRatio >= 1.0) {
                     beamKey2 = peak2;
@@ -306,6 +273,26 @@ public class ScaleBuilder
 
         if ((beamKey == null) && verbose) {
             logger.warn("No reliable beam height found, guessed value: {}", beamGuess);
+        }
+    }
+
+    //--------------//
+    // displayChart //
+    //--------------//
+    /**
+     * Display the scale histograms.
+     */
+    public void displayChart ()
+    {
+        if (histoKeeper == null) {
+            try {
+                doRetrieveScale(true); // Dummy retrieval
+            } catch (StepException ignored) {
+            }
+        }
+
+        if (histoKeeper != null) {
+            histoKeeper.writePlot();
         }
     }
 
@@ -322,7 +309,7 @@ public class ScaleBuilder
      * @throws StepException if processing must stop for this sheet.
      */
     private Scale doRetrieveScale (boolean dummy)
-            throws StepException
+        throws StepException
     {
         final Scale scl = sheet.getScale();
 
@@ -371,12 +358,7 @@ public class ScaleBuilder
             beamScale = new BeamScale(beamGuess, true);
         }
 
-        return new Scale(
-                interlineScale,
-                lineScale,
-                beamScale,
-                smallInterlineScale,
-                smallBeamScale);
+        return new Scale(interlineScale, lineScale, beamScale, smallInterlineScale, smallBeamScale);
     }
 
     //-------------------//
@@ -405,7 +387,24 @@ public class ScaleBuilder
         return new InterlineScale(peak);
     }
 
+    //---------------//
+    // retrieveScale //
+    //---------------//
+    /**
+     * Retrieve scale information on sheet.
+     *
+     * @return scale information
+     * @throws StepException raised if some mandatory information cannot be retrieved.
+     *                       For example if no staves are found.
+     */
+    public Scale retrieveScale ()
+        throws StepException
+    {
+        return doRetrieveScale(false);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -581,6 +580,32 @@ public class ScaleBuilder
             }
         }
 
+        //------------//
+        // checkBlack //
+        //------------//
+        /**
+         * Check we have a significant number of black pixels WRT image size,
+         * otherwise the sheet is mostly blank and contains no music.
+         *
+         * @throws StepException if processing must stop on this sheet
+         */
+        private void checkBlack ()
+            throws StepException
+        {
+            final int blackCount = getBlackCount();
+            final int size = binary.getWidth() * binary.getHeight();
+            final double blackRatio = (double) blackCount / size;
+            logger.debug("blackRatio: {}", blackRatio);
+
+            if (blackRatio < constants.minBlackRatio.getValue()) {
+                sheet.getStub().decideOnRemoval(
+                        sheet.getId() + LINE_SEPARATOR + "Too few black pixels: " + String.format(
+                                "%.4f%%",
+                                100 * blackRatio) + LINE_SEPARATOR + "This sheet is almost blank.",
+                        false);
+            }
+        }
+
         //---------------//
         // getBeamQuorum //
         //---------------//
@@ -598,6 +623,29 @@ public class ScaleBuilder
             return (int) Math.rint(totalArea * ratio);
         }
 
+        //---------------//
+        // getBlackCount //
+        //---------------//
+        /**
+         * Compute the total number of black pixels.
+         * <p>
+         * We use the fact that in 'blackHisto', x represents a black run length and y the number
+         * of occurrences of this run length in the image.
+         *
+         * @return the count of black pixels
+         */
+        private int getBlackCount ()
+        {
+            int total = 0;
+            int xMin = blackFunction.getXMin();
+
+            for (int i = xMin; i <= blackFunction.getXMax(); i++) {
+                total += ((i - xMin) * blackFunction.getValue(i));
+            }
+
+            return total;
+        }
+
         //------------------------//
         // retrieveInterlinePeaks //
         //------------------------//
@@ -608,7 +656,7 @@ public class ScaleBuilder
          * but the chart will still display the (original) peaks found.
          */
         public void retrieveInterlinePeaks ()
-                throws StepException
+            throws StepException
         {
             // Combo peak(s)
             final int area = comboFunction.getArea();
@@ -657,7 +705,7 @@ public class ScaleBuilder
          * Retrieve black peak for line thickness.
          */
         public void retrieveLinePeak ()
-                throws StepException
+            throws StepException
         {
             // Check we have enough foreground material. If not, throw StepException
             checkBlack();
@@ -717,10 +765,10 @@ public class ScaleBuilder
 
             try {
                 final String title = sheet.getId() + " " + blackFinder.name;
-                final String xLabel = "Runs lengths - " + ((scale != null)
-                        ? scale.toString(Info.BLACK) : "NO_SCALE");
+                final String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(
+                        Info.BLACK) : "NO_SCALE");
                 final String yLabel = "Runs counts - total:" + blackFunction.getArea()
-                                              + " - Beam quorum:" + getBeamQuorum();
+                        + " - Beam quorum:" + getBeamQuorum();
                 ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
                 blackFinder.plot(plotter, true, 0, xMax).display(new Point(20, 20));
             } catch (Throwable ex) {
@@ -729,65 +777,14 @@ public class ScaleBuilder
 
             try {
                 final String title = sheet.getId() + " " + comboFinder.name;
-                final String xLabel = "Runs lengths - " + ((scale != null)
-                        ? scale.toString(Info.COMBO) : "NO_SCALE");
+                final String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(
+                        Info.COMBO) : "NO_SCALE");
                 final String yLabel = "Runs counts";
                 ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
                 comboFinder.plot(plotter, true, 0, xMax).display(new Point(80, 80));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting combo", ex);
             }
-        }
-
-        //------------//
-        // checkBlack //
-        //------------//
-        /**
-         * Check we have a significant number of black pixels WRT image size,
-         * otherwise the sheet is mostly blank and contains no music.
-         *
-         * @throws StepException if processing must stop on this sheet
-         */
-        private void checkBlack ()
-                throws StepException
-        {
-            final int blackCount = getBlackCount();
-            final int size = binary.getWidth() * binary.getHeight();
-            final double blackRatio = (double) blackCount / size;
-            logger.debug("blackRatio: {}", blackRatio);
-
-            if (blackRatio < constants.minBlackRatio.getValue()) {
-                sheet.getStub().decideOnRemoval(
-                        sheet.getId() + LINE_SEPARATOR
-                                + "Too few black pixels: "
-                                + String.format("%.4f%%", 100 * blackRatio)
-                                + LINE_SEPARATOR
-                                + "This sheet is almost blank.",
-                        false);
-            }
-        }
-
-        //---------------//
-        // getBlackCount //
-        //---------------//
-        /**
-         * Compute the total number of black pixels.
-         * <p>
-         * We use the fact that in 'blackHisto', x represents a black run length and y the number
-         * of occurrences of this run length in the image.
-         *
-         * @return the count of black pixels
-         */
-        private int getBlackCount ()
-        {
-            int total = 0;
-            int xMin = blackFunction.getXMin();
-
-            for (int i = xMin; i <= blackFunction.getXMax(); i++) {
-                total += ((i - xMin) * blackFunction.getValue(i));
-            }
-
-            return total;
         }
     }
 }

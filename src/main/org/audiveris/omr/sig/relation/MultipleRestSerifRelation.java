@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @see MultipleRestInter
  * @see VerticalSerifInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "multiple-rest-serif")
@@ -57,6 +56,7 @@ public class MultipleRestSerifRelation
     private HorizontalSide restSide;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>MultipleRestSerifRelation</code> object.
      */
@@ -65,6 +65,7 @@ public class MultipleRestSerifRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -76,19 +77,6 @@ public class MultipleRestSerifRelation
 
         final VerticalSerifInter serif = (VerticalSerifInter) e.getEdgeTarget();
         serif.checkAbnormal();
-    }
-
-    //-------------//
-    // setRestSide //
-    //-------------//
-    /**
-     * Set the rest side where serif is connected.
-     *
-     * @param restSide the rest side to set
-     */
-    public void setRestSide (HorizontalSide restSide)
-    {
-        this.restSide = restSide;
     }
 
     //-------------//
@@ -111,6 +99,18 @@ public class MultipleRestSerifRelation
                                        Scale scale)
     {
         return StemPortion.STEM_MIDDLE;
+    }
+
+    @Override
+    protected Scale.Fraction getXOutGapMax (int profile)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected Scale.Fraction getYGapMax (int profile)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //----------------//
@@ -148,15 +148,16 @@ public class MultipleRestSerifRelation
         }
     }
 
-    @Override
-    protected Scale.Fraction getXOutGapMax (int profile)
+    //-------------//
+    // setRestSide //
+    //-------------//
+    /**
+     * Set the rest side where serif is connected.
+     *
+     * @param restSide the rest side to set
+     */
+    public void setRestSide (HorizontalSide restSide)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected Scale.Fraction getYGapMax (int profile)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.restSide = restSide;
     }
 }

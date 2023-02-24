@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ class TaskHistory
     private static final Logger logger = LoggerFactory.getLogger(TaskHistory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** History of action sequences. */
     private final List<UITaskList> sequences = new ArrayList<>();
 
@@ -49,6 +50,7 @@ class TaskHistory
     private int cursor = -1;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Register an action sequence.
      *
@@ -121,10 +123,8 @@ class TaskHistory
     @Override
     public String toString ()
     {
-        return new StringBuilder("TaskHistory{")
-                .append("c:").append(cursor)
-                .append(" ").append(sequences)
-                .append("}").toString();
+        return new StringBuilder("TaskHistory{").append("c:").append(cursor).append(" ").append(
+                sequences).append("}").toString();
     }
 
     /**

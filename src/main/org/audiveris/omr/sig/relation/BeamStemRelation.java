@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,9 +32,12 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
-import static org.audiveris.omr.sig.relation.BeamPortion.*;
+import static org.audiveris.omr.sig.relation.BeamPortion.CENTER;
+import static org.audiveris.omr.sig.relation.BeamPortion.LEFT;
+import static org.audiveris.omr.sig.relation.BeamPortion.RIGHT;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -63,10 +66,11 @@ public class BeamStemRelation
 
     private static final Logger logger = LoggerFactory.getLogger(BeamStemRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]
+    { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The beam-portion attribute indicates on which portion of the beam (center or side)
      * the stem is connected.
@@ -75,6 +79,7 @@ public class BeamStemRelation
     private BeamPortion beamPortion;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BeamStemRelation</code> object.
      */
@@ -83,84 +88,6 @@ public class BeamStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // setBeamPortion //
-    //----------------//
-    /**
-     * Set the beam portion where stem is connected.
-     *
-     * @param beamPortion the beam portion to set
-     */
-    public void setBeamPortion (BeamPortion beamPortion)
-    {
-        this.beamPortion = beamPortion;
-    }
-
-    //----------------//
-    // getBeamPortion //
-    //----------------//
-    /**
-     * @return the beamPortion
-     */
-    public BeamPortion getBeamPortion ()
-    {
-        return beamPortion;
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // getStemPortion //
-    //----------------//
-    @Override
-    public StemPortion getStemPortion (Inter source,
-                                       Line2D stemLine,
-                                       Scale scale)
-    {
-        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
-
-        return (extensionPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
-    }
-
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xInGapMax, profile);
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
-    }
 
     //-------//
     // added //
@@ -199,6 +126,172 @@ public class BeamStemRelation
         beam.checkAbnormal();
     }
 
+    //----------------//
+    // getBeamPortion //
+    //----------------//
+    /**
+     * @return the beamPortion
+     */
+    public BeamPortion getBeamPortion ()
+    {
+        return beamPortion;
+    }
+
+    //---------------//
+    // getOutWeights //
+    //---------------//
+    @Override
+    protected double[] getOutWeights ()
+    {
+        return OUT_WEIGHTS;
+    }
+
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return constants.beamSupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+
+        return (extensionPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    /**
+     * A stem connected on beam side receives a much higher support that a stem connected
+     * on beam center.
+     *
+     * @return support coefficient for connected stem
+     */
+    @Override
+    protected double getTargetCoeff ()
+    {
+        if (beamPortion == BeamPortion.CENTER) {
+            return constants.stemSupportCoeff.getValue();
+        } else {
+            return constants.sideStemSupportCoeff.getValue();
+        }
+    }
+
+    //--------------//
+    // getXInGapMax //
+    //--------------//
+    @Override
+    protected Scale.Fraction getXInGapMax (int profile)
+    {
+        return getXInGapMaximum(profile);
+    }
+
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
+    @Override
+    protected Scale.Fraction getXOutGapMax (int profile)
+    {
+        return getXOutGapMaximum(profile);
+    }
+
+    //------------//
+    // getYGapMax //
+    //------------//
+    @Override
+    protected Scale.Fraction getYGapMax (int profile)
+    {
+        return getYGapMaximum(profile);
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" ").append(beamPortion);
+
+        return sb.toString();
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // If stem has a chord with heads, remove all beam-head relations
+        final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
+        final StemInter stem = (StemInter) e.getEdgeTarget();
+
+        /**
+         * CAVEAT: if a beam (with beam-stem and beam-head relations) is removed,
+         * the graph will automatically remove these relations, so also removing here
+         * the beam-head relation might lead to NPE in graph...
+         */
+        if (!beam.isRemoved()) {
+            if (!stem.isRemoved()) {
+                final SIGraph sig = stem.getSig();
+
+                for (HeadChordInter headChord : stem.getChords()) {
+                    for (Inter inter : headChord.getNotes()) {
+                        HeadInter head = (HeadInter) inter;
+                        sig.removeEdge(beam, head);
+                    }
+
+                    headChord.invalidateCache();
+                }
+            }
+
+            beam.checkAbnormal();
+        }
+    }
+
+    //----------------//
+    // setBeamPortion //
+    //----------------//
+    /**
+     * Set the beam portion where stem is connected.
+     *
+     * @param beamPortion the beam portion to set
+     */
+    public void setBeamPortion (BeamPortion beamPortion)
+    {
+        this.beamPortion = beamPortion;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------//
     // checkLink //
     //-----------//
@@ -222,8 +315,12 @@ public class BeamStemRelation
             logger.info("VIP checkLink {} & {}", beam, stem);
         }
 
-        final BeamStemRelation bRel = checkRelation(beam, stem.getMedian(), headToBeam, scale,
-                                                    profile);
+        final BeamStemRelation bRel = checkRelation(
+                beam,
+                stem.getMedian(),
+                headToBeam,
+                scale,
+                profile);
 
         return (bRel != null) ? new Link(stem, bRel, true) : null;
     }
@@ -266,21 +363,20 @@ public class BeamStemRelation
 
         // Abscissa
         final double xGap = (portion == BeamPortion.CENTER) ? 0
-                : ((portion == BeamPortion.LEFT)
-                        ? beamBorder.getX1() - xStem
+                : ((portion == BeamPortion.LEFT) ? beamBorder.getX1() - xStem
                         : xStem - beamBorder.getX2());
 
         // Ordinate
-        final double yGap = Math.max(Math.max(0, stemLine.getY1() - crossPt.getY()),
-                                     Math.max(0, crossPt.getY() - stemLine.getY2()));
+        final double yGap = Math.max(
+                Math.max(0, stemLine.getY1() - crossPt.getY()),
+                Math.max(0, crossPt.getY() - stemLine.getY2()));
 
         bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
         if (bRel.getGrade() >= bRel.getMinGrade()) {
             // Beware: extension must be the maximum y extension in beam y range
-            bRel.setExtensionPoint(new Point2D.Double(
-                    xStem,
-                    crossPt.getY() + (yDir * (beam.getHeight() - 1))));
+            bRel.setExtensionPoint(
+                    new Point2D.Double(xStem, crossPt.getY() + (yDir * (beam.getHeight() - 1))));
 
             return bRel;
         }
@@ -342,116 +438,32 @@ public class BeamStemRelation
         return LineUtil.intersection(stemMedian, beamBorder);
     }
 
-    //---------//
-    // removed //
-    //---------//
-    @Override
-    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum (int profile)
     {
-        // If stem has a chord with heads, remove all beam-head relations
-        final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
-        final StemInter stem = (StemInter) e.getEdgeTarget();
-
-        /**
-         * CAVEAT: if a beam (with beam-stem and beam-head relations) is removed,
-         * the graph will automatically remove these relations, so also removing here
-         * the beam-head relation might lead to NPE in graph...
-         */
-        if (!beam.isRemoved()) {
-            if (!stem.isRemoved()) {
-                final SIGraph sig = stem.getSig();
-
-                for (HeadChordInter headChord : stem.getChords()) {
-                    for (Inter inter : headChord.getNotes()) {
-                        HeadInter head = (HeadInter) inter;
-                        sig.removeEdge(beam, head);
-                    }
-
-                    headChord.invalidateCache();
-                }
-            }
-
-            beam.checkAbnormal();
-        }
+        return (Scale.Fraction) constants.getConstant(constants.xInGapMax, profile);
     }
 
-    //---------------//
-    // getOutWeights //
-    //---------------//
-    @Override
-    protected double[] getOutWeights ()
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (int profile)
     {
-        return OUT_WEIGHTS;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     //----------------//
-    // getSourceCoeff //
+    // getYGapMaximum //
     //----------------//
-    @Override
-    protected double getSourceCoeff ()
+    public static Scale.Fraction getYGapMaximum (int profile)
     {
-        return constants.beamSupportCoeff.getValue();
-    }
-
-    //----------------//
-    // getTargetCoeff //
-    //----------------//
-    /**
-     * A stem connected on beam side receives a much higher support that a stem connected
-     * on beam center.
-     *
-     * @return support coefficient for connected stem
-     */
-    @Override
-    protected double getTargetCoeff ()
-    {
-        if (beamPortion == BeamPortion.CENTER) {
-            return constants.stemSupportCoeff.getValue();
-        } else {
-            return constants.sideStemSupportCoeff.getValue();
-        }
-    }
-
-    //--------------//
-    // getXInGapMax //
-    //--------------//
-    @Override
-    protected Scale.Fraction getXInGapMax (int profile)
-    {
-        return getXInGapMaximum(profile);
-    }
-
-    //---------------//
-    // getXOutGapMax //
-    //---------------//
-    @Override
-    protected Scale.Fraction getXOutGapMax (int profile)
-    {
-        return getXOutGapMaximum(profile);
-    }
-
-    //------------//
-    // getYGapMax //
-    //------------//
-    @Override
-    protected Scale.Fraction getYGapMax (int profile)
-    {
-        return getYGapMaximum(profile);
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(beamPortion);
-
-        return sb.toString();
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -476,37 +488,27 @@ public class BeamStemRelation
                 "Maximum vertical gap between stem & beam");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                1.2,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p2 = new Scale.Fraction(
-                2.0,
-                "Idem for profile 2");
+        private final Scale.Fraction yGapMax_p2 = new Scale.Fraction(2.0, "Idem for profile 2");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction yGapMax_p3 = new Scale.Fraction(
-                4.0,
-                "Idem for profile 3");
+        private final Scale.Fraction yGapMax_p3 = new Scale.Fraction(4.0, "Idem for profile 3");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal overlap between stem & beam");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
-                0.75,
-                "Idem for profile 1");
+        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(0.75, "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.15,
                 "Maximum horizontal gap between stem & beam");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                0.2,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(0.2, "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,

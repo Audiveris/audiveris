@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,15 +34,19 @@ public class GradedSample
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    public static final Comparator<GradedSample> byReverseGrade
-            = (o1, o2) -> Double.compare(o2.grade, o1.grade);
+    public static final Comparator<GradedSample> byReverseGrade = (o1,
+                                                                   o2) -> Double.compare(
+                                                                           o2.grade,
+                                                                           o1.grade);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     final Sample sample;
 
     final double grade;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     GradedSample (Sample sample,
                   double grade)
     {
@@ -51,6 +55,7 @@ public class GradedSample
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public String toString ()
     {

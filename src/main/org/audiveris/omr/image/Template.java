@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -82,6 +82,7 @@ public class Template
     private static final Logger logger = LoggerFactory.getLogger(Template.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Template shape. */
     private final Shape shape;
 
@@ -111,6 +112,7 @@ public class Template
     private List<PixelDistance> keyPoints;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Template object with a provided set of points.
      *
@@ -140,6 +142,7 @@ public class Template
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // dump //
     //------//
@@ -317,18 +320,6 @@ public class Template
     //-------------//
     // getBoundsAt //
     //-------------//
-    public Rectangle getBoundsAt (int x,
-                                  int y,
-                                  Anchor anchor)
-    {
-        final Point offset = getOffset(anchor);
-
-        return new Rectangle(x - offset.x, y - offset.y, width, height);
-    }
-
-    //-------------//
-    // getBoundsAt //
-    //-------------//
     @Override
     public Rectangle2D getBoundsAt (double x,
                                     double y,
@@ -337,6 +328,18 @@ public class Template
         final Point2D offset = getOffset(anchor);
 
         return new Rectangle2D.Double(x - offset.getX(), y - offset.getY(), width, height);
+    }
+
+    //-------------//
+    // getBoundsAt //
+    //-------------//
+    public Rectangle getBoundsAt (int x,
+                                  int y,
+                                  Anchor anchor)
+    {
+        final Point offset = getOffset(anchor);
+
+        return new Rectangle(x - offset.x, y - offset.y, width, height);
     }
 
     //-----------//
@@ -575,6 +578,69 @@ public class Template
         return width;
     }
 
+    //-----------//
+    // putOffset //
+    //-----------//
+    @Override
+    public final void putOffset (Anchor anchor,
+                                 double dx,
+                                 double dy)
+    {
+        offsets.put(anchor, new Point2D.Double(dx, dy));
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
+
+        sb.append(shape);
+
+        sb.append(" w:").append(width).append(",h:").append(height);
+        sb.append(" keyPoints:").append(keyPoints != null ? keyPoints.size() : null);
+
+        if ((slimBounds.width != width) || (slimBounds.height != height)) {
+            sb.append("\n slim:").append(slimBounds);
+        }
+        //
+        //        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
+        //            final Point2D offset = entry.getValue();
+        //            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
+        //        }
+        //
+        return sb.append("}").toString();
+    }
+
+    //-----------//
+    // upperLeft //
+    //-----------//
+    /**
+     * Report template upper-left location, knowing anchor location.
+     *
+     * @param x      pivot abscissa in image
+     * @param y      pivot ordinate in image
+     * @param anchor chosen anchor
+     * @return template upper-left corner in image
+     */
+    private Point upperLeft (int x,
+                             int y,
+                             Anchor anchor)
+    {
+        // Offset to apply to location?
+        if (anchor != null) {
+            final Point offset = getOffset(anchor);
+
+            return new Point(x - offset.x, y - offset.y);
+        }
+
+        return new Point(x, y);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------//
     // impactOf //
     //----------//
@@ -615,17 +681,6 @@ public class Template
         return constants.maxDistanceLow.getValue();
     }
 
-    //-----------//
-    // putOffset //
-    //-----------//
-    @Override
-    public final void putOffset (Anchor anchor,
-                                 double dx,
-                                 double dy)
-    {
-        offsets.put(anchor, new Point2D.Double(dx, dy));
-    }
-
     /**
      * Report the really bad distance, used to stop any matching test.
      *
@@ -647,57 +702,8 @@ public class Template
         // TO BE IMPLEMENTED...
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
-
-        sb.append(shape);
-
-        sb.append(" w:").append(width).append(",h:").append(height);
-        sb.append(" keyPoints:").append(keyPoints != null ? keyPoints.size() : null);
-
-        if ((slimBounds.width != width) || (slimBounds.height != height)) {
-            sb.append("\n slim:").append(slimBounds);
-        }
-//
-//        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
-//            final Point2D offset = entry.getValue();
-//            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
-//        }
-//
-        return sb.append("}").toString();
-    }
-
-    //-----------//
-    // upperLeft //
-    //-----------//
-    /**
-     * Report template upper-left location, knowing anchor location.
-     *
-     * @param x      pivot abscissa in image
-     * @param y      pivot ordinate in image
-     * @param anchor chosen anchor
-     * @return template upper-left corner in image
-     */
-    private Point upperLeft (int x,
-                             int y,
-                             Anchor anchor)
-    {
-        // Offset to apply to location?
-        if (anchor != null) {
-            final Point offset = getOffset(anchor);
-
-            return new Point(x - offset.x, y - offset.y);
-        }
-
-        return new Point(x, y);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

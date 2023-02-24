@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -106,23 +106,8 @@ public class LogicalPartsEditor
     private static final ResourceMap resources = applicationContext.getResourceMap(
             LogicalPartsEditor.class);
 
-    /** Sequence and description of columns. */
-    private static enum Header
-    {
-        Counts(20),
-        Name(80),
-        Abbrev(30),
-        Midi(20);
-
-        public final int width; // Preferred column width
-
-        Header (int width)
-        {
-            this.width = width;
-        }
-    }
-
     private static final Map<Header, ColumnInfo> infos = new EnumMap<>(Header.class);
+
     static {
         for (Header header : Header.values())
             infos.put(header, new ColumnInfo(header));
@@ -151,10 +136,10 @@ public class LogicalPartsEditor
     /** Icon for status unlocked. */
     private static final Icon unlockedIcon = resources.getIcon("unlockedIcon");
 
-    //~ Instance fields ----------------------------------------------------------------------------
-
     /** The root component. */
     private final JDialog dialog;
+
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The containing score. */
     private final Score score;
@@ -168,9 +153,9 @@ public class LogicalPartsEditor
     /** The button used to lock/unlock the logicals. */
     private JButton lockButton;
 
-    // Properties that govern actions enabled/disabled
-
     private boolean selected = false;
+
+    // Properties that govern actions enabled/disabled
 
     private boolean upEnabled = false;
 
@@ -244,6 +229,117 @@ public class LogicalPartsEditor
         setModified(true);
     }
 
+    //-----------------//
+    // buildButtonPane //
+    //-----------------//
+    /**
+     * Build the whole pane of buttons, one button per declared action.
+     *
+     * @return the button pane
+     */
+    private Panel buildButtonPane ()
+    {
+        final ApplicationActionMap actionMap = applicationContext.getActionMap(this);
+        final Panel buttonPane = new Panel();
+        buttonPane.setInsets(10, 10, 10, 10);
+
+        // NOTA: Changing a name here implies to change the name of the corresponding method
+        final String[] actions = new String[]
+        { "add", "duplicate", "remove", "moveUp", "moveDown", "save", "lock" };
+
+        final StringBuilder rowSpec = new StringBuilder();
+        for (int i = 0; i < actions.length; i++) {
+            if (i != 0) {
+                rowSpec.append(", 2dlu, ");
+            }
+
+            rowSpec.append("pref");
+        }
+
+        final FormLayout layout = new FormLayout("pref", rowSpec.toString());
+        final CellConstraints cst = new CellConstraints();
+        final PanelBuilder builder = new PanelBuilder(layout, buttonPane);
+
+        int r = -1;
+        for (String action : actions) {
+            final JButton button = new JButton(actionMap.get(action));
+
+            // Specific customization for the Lock/Unlock button
+            if (action.equals("lock")) {
+                lockButton = button;
+                lockButton.setText(isLocked() ? LOCKED : UNLOCKED);
+                lockButton.setIcon(isLocked() ? lockedIcon : unlockedIcon);
+            }
+
+            builder.add(button, cst.xy(1, r += 2, "fill,fill"));
+        }
+
+        return buttonPane;
+    }
+
+    private boolean checkDownEnabled ()
+    {
+        final int row = table.getSelectedRow();
+        return (row != -1) && (row < table.getRowCount() - 1);
+    }
+
+    private boolean checkSelected ()
+    {
+        return table.getSelectedRowCount() > 0;
+    }
+
+    private boolean checkUpEnabled ()
+    {
+        return table.getSelectedRow() > 0;
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        dialog.setName("LogicalPartsEditor"); // For SAF life cycle
+
+        // Alternate color for zebra appearance
+        final Color zebraColor = new Color(248, 248, 255);
+        UIManager.put("Table.alternateRowColor", zebraColor);
+
+        // LogicalPart's table
+        JScrollPane scrollPane = new JScrollPane(table);
+        table.setShowGrid(true);
+        table.setRowHeight(30);
+        table.setIntercellSpacing(new Dimension(10, 5));
+        table.setFillsViewportHeight(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Table preferred columns width
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (Header header : Header.values()) {
+            columnModel.getColumn(header.ordinal()).setPreferredWidth(header.width);
+        }
+
+        // Text centered in cells
+        final DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        table.setDefaultRenderer(Object.class, centerRenderer);
+
+        // Buttons
+        final Panel buttonPane = buildButtonPane();
+
+        // Dialog layout
+        dialog.setTitle(
+                MessageFormat.format(
+                        resources.getString("dialog.title"),
+                        score.getId(),
+                        score.getBook().getRadix()));
+        dialog.setLayout(new BorderLayout());
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        dialog.add(buttonPane, BorderLayout.EAST);
+
+        // I18n
+        resources.injectComponents(dialog);
+    }
+
     //-----------//
     // duplicate //
     //-----------//
@@ -271,6 +367,31 @@ public class LogicalPartsEditor
     public JDialog getComponent ()
     {
         return dialog;
+    }
+
+    public boolean isDownEnabled ()
+    {
+        return downEnabled;
+    }
+
+    public boolean isLocked ()
+    {
+        return score.isLogicalsLocked();
+    }
+
+    public boolean isModified ()
+    {
+        return modified;
+    }
+
+    public boolean isSelected ()
+    {
+        return selected;
+    }
+
+    public boolean isUpEnabled ()
+    {
+        return upEnabled;
     }
 
     //------//
@@ -337,6 +458,46 @@ public class LogicalPartsEditor
         setModified(true);
     }
 
+    private void remap (int oldId,
+                        Integer newId,
+                        LogicalPart logicalPart,
+                        Set<PartRef> updated)
+    {
+        for (PageNumber pageNumber : score.getPageNumbers()) {
+            final SheetStub stub = score.getStubs().get(pageNumber.sheetNumber - 1);
+            final boolean isLoaded = stub.hasSheet();
+            final PageRef pageRef = pageNumber.getPageRef(score.getBook());
+
+            for (SystemRef systemRef : pageRef.getSystems()) {
+                for (PartRef partRef : systemRef.getParts()) {
+                    if (!updated.contains(partRef)) {
+                        final Integer logId = partRef.getLogicalId();
+                        if ((logId != null) && (logId == oldId)) {
+                            logger.debug(
+                                    "{}/ P{} S{} {}/{} new logicalId: {}",
+                                    oldId,
+                                    pageNumber.sheetNumber,
+                                    systemRef.getId(),
+                                    partRef.getIndex() + 1,
+                                    partRef,
+                                    newId);
+                            if (isLoaded) {
+                                final Part part = partRef.getRealPart();
+                                part.setLogicalPart(newId, logicalPart);
+                            }
+                            partRef.setLogicalId(newId);
+                            updated.add(partRef);
+
+                            if (newId == null) {
+                                partRef.setManual(false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //--------//
     // remove //
     //--------//
@@ -399,49 +560,14 @@ public class LogicalPartsEditor
         setModified(false);
     }
 
-    private void remap (int oldId,
-                        Integer newId,
-                        LogicalPart logicalPart,
-                        Set<PartRef> updated)
+    public void setDownEnabled (boolean downEnabled)
     {
-        for (PageNumber pageNumber : score.getPageNumbers()) {
-            final SheetStub stub = score.getStubs().get(pageNumber.sheetNumber - 1);
-            final boolean isLoaded = stub.hasSheet();
-            final PageRef pageRef = pageNumber.getPageRef(score.getBook());
+        boolean oldValue = this.downEnabled;
+        this.downEnabled = downEnabled;
 
-            for (SystemRef systemRef : pageRef.getSystems()) {
-                for (PartRef partRef : systemRef.getParts()) {
-                    if (!updated.contains(partRef)) {
-                        final Integer logId = partRef.getLogicalId();
-                        if ((logId != null) && (logId == oldId)) {
-                            logger.debug(
-                                    "{}/ P{} S{} {}/{} new logicalId: {}",
-                                    oldId,
-                                    pageNumber.sheetNumber,
-                                    systemRef.getId(),
-                                    partRef.getIndex() + 1,
-                                    partRef,
-                                    newId);
-                            if (isLoaded) {
-                                final Part part = partRef.getRealPart();
-                                part.setLogicalPart(newId, logicalPart);
-                            }
-                            partRef.setLogicalId(newId);
-                            updated.add(partRef);
-
-                            if (newId == null) {
-                                partRef.setManual(false);
-                            }
-                        }
-                    }
-                }
-            }
+        if (downEnabled != oldValue) {
+            firePropertyChange(DOWN_ENABLED, oldValue, this.downEnabled);
         }
-    }
-
-    public boolean isLocked ()
-    {
-        return score.isLogicalsLocked();
     }
 
     public void setLocked (boolean locked)
@@ -458,11 +584,6 @@ public class LogicalPartsEditor
         }
     }
 
-    public boolean isModified ()
-    {
-        return modified;
-    }
-
     public void setModified (boolean modified)
     {
         boolean oldValue = this.modified;
@@ -471,11 +592,6 @@ public class LogicalPartsEditor
         if (modified != oldValue) {
             firePropertyChange(MODIFIED, oldValue, this.modified);
         }
-    }
-
-    public boolean isSelected ()
-    {
-        return selected;
     }
 
     public void setSelected (boolean selected)
@@ -488,11 +604,6 @@ public class LogicalPartsEditor
         }
     }
 
-    public boolean isUpEnabled ()
-    {
-        return upEnabled;
-    }
-
     public void setUpEnabled (boolean upEnabled)
     {
         boolean oldValue = this.upEnabled;
@@ -501,132 +612,6 @@ public class LogicalPartsEditor
         if (upEnabled != oldValue) {
             firePropertyChange(UP_ENABLED, oldValue, this.upEnabled);
         }
-    }
-
-    public boolean isDownEnabled ()
-    {
-        return downEnabled;
-    }
-
-    public void setDownEnabled (boolean downEnabled)
-    {
-        boolean oldValue = this.downEnabled;
-        this.downEnabled = downEnabled;
-
-        if (downEnabled != oldValue) {
-            firePropertyChange(DOWN_ENABLED, oldValue, this.downEnabled);
-        }
-    }
-
-    private boolean checkDownEnabled ()
-    {
-        final int row = table.getSelectedRow();
-        return (row != -1) && (row < table.getRowCount() - 1);
-    }
-
-    private boolean checkSelected ()
-    {
-        return table.getSelectedRowCount() > 0;
-    }
-
-    private boolean checkUpEnabled ()
-    {
-        return table.getSelectedRow() > 0;
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        dialog.setName("LogicalPartsEditor"); // For SAF life cycle
-
-        // Alternate color for zebra appearance
-        final Color zebraColor = new Color(248, 248, 255);
-        UIManager.put("Table.alternateRowColor", zebraColor);
-
-        // LogicalPart's table
-        JScrollPane scrollPane = new JScrollPane(table);
-        table.setShowGrid(true);
-        table.setRowHeight(30);
-        table.setIntercellSpacing(new Dimension(10, 5));
-        table.setFillsViewportHeight(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Table preferred columns width
-        final TableColumnModel columnModel = table.getColumnModel();
-        for (Header header : Header.values()) {
-            columnModel.getColumn(header.ordinal()).setPreferredWidth(header.width);
-        }
-
-        // Text centered in cells
-        final DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        table.setDefaultRenderer(Object.class, centerRenderer);
-
-        // Buttons
-        final Panel buttonPane = buildButtonPane();
-
-        // Dialog layout
-        dialog.setTitle(
-                MessageFormat.format(
-                        resources.getString("dialog.title"),
-                        score.getId(),
-                        score.getBook().getRadix()));
-        dialog.setLayout(new BorderLayout());
-        dialog.add(scrollPane, BorderLayout.CENTER);
-        dialog.add(buttonPane, BorderLayout.EAST);
-
-        // I18n
-        resources.injectComponents(dialog);
-    }
-
-    //-----------------//
-    // buildButtonPane //
-    //-----------------//
-    /**
-     * Build the whole pane of buttons, one button per declared action.
-     *
-     * @return the button pane
-     */
-    private Panel buildButtonPane ()
-    {
-        final ApplicationActionMap actionMap = applicationContext.getActionMap(this);
-        final Panel buttonPane = new Panel();
-        buttonPane.setInsets(10, 10, 10, 10);
-
-        // NOTA: Changing a name here implies to change the name of the corresponding method
-        final String[] actions = new String[]
-        { "add", "duplicate", "remove", "moveUp", "moveDown", "save", "lock" };
-
-        final StringBuilder rowSpec = new StringBuilder();
-        for (int i = 0; i < actions.length; i++) {
-            if (i != 0) {
-                rowSpec.append(", 2dlu, ");
-            }
-
-            rowSpec.append("pref");
-        }
-
-        final FormLayout layout = new FormLayout("pref", rowSpec.toString());
-        final CellConstraints cst = new CellConstraints();
-        final PanelBuilder builder = new PanelBuilder(layout, buttonPane);
-
-        int r = -1;
-        for (String action : actions) {
-            final JButton button = new JButton(actionMap.get(action));
-
-            // Specific customization for the Lock/Unlock button
-            if (action.equals("lock")) {
-                lockButton = button;
-                lockButton.setText(isLocked() ? LOCKED : UNLOCKED);
-                lockButton.setIcon(isLocked() ? lockedIcon : unlockedIcon);
-            }
-
-            builder.add(button, cst.xy(1, r += 2, "fill,fill"));
-        }
-
-        return buttonPane;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -666,6 +651,22 @@ public class LogicalPartsEditor
                 "count",
                 6,
                 "Maximum staff line count");
+    }
+
+    /** Sequence and description of columns. */
+    private static enum Header
+    {
+        Counts(20),
+        Name(80),
+        Abbrev(30),
+        Midi(20);
+
+        public final int width; // Preferred column width
+
+        Header (int width)
+        {
+            this.width = width;
+        }
     }
 
     //---------//
@@ -713,16 +714,16 @@ public class LogicalPartsEditor
 
         private final List<LogicalPart> logicals = new ArrayList<>(); // Underlying data
 
-        public void add (LogicalPart logical)
-        {
-            add(size(), logical);
-        }
-
         public void add (int row,
                          LogicalPart logical)
         {
             logicals.add(row, logical);
             fireTableRowsInserted(row, row);
+        }
+
+        public void add (LogicalPart logical)
+        {
+            add(size(), logical);
         }
 
         public LogicalPart get (int row)
@@ -746,34 +747,6 @@ public class LogicalPartsEditor
             return null;
         }
 
-        /**
-         * Report what will be the new id (that is the rank) for the provided logical.
-         *
-         * @param logical provided logical
-         * @return its rank in model logicals
-         */
-        public int getRank (LogicalPart logical)
-        {
-            return 1 + logicals.indexOf(logical);
-        }
-
-        public void remove (int row)
-        {
-            logicals.remove(row);
-            fireTableRowsDeleted(row, row);
-        }
-
-        public void set (int row,
-                         LogicalPart logical)
-        {
-            logicals.set(row, logical);
-        }
-
-        public int size ()
-        {
-            return logicals.size();
-        }
-
         @Override
         public int getColumnCount ()
         {
@@ -785,6 +758,17 @@ public class LogicalPartsEditor
         {
             final Header header = Header.values()[col];
             return infos.get(header).text;
+        }
+
+        /**
+         * Report what will be the new id (that is the rank) for the provided logical.
+         *
+         * @param logical provided logical
+         * @return its rank in model logicals
+         */
+        public int getRank (LogicalPart logical)
+        {
+            return 1 + logicals.indexOf(logical);
         }
 
         @Override
@@ -814,6 +798,25 @@ public class LogicalPartsEditor
                                        int col)
         {
             return true;
+        }
+
+        public void remove (int row)
+        {
+            logicals.remove(row);
+            fireTableRowsDeleted(row, row);
+        }
+
+        public void renumberLogicals ()
+        {
+            for (int i = 0; i < logicals.size(); i++) {
+                logicals.get(i).setId(i + 1);
+            }
+        }
+
+        public void set (int row,
+                         LogicalPart logical)
+        {
+            logicals.set(row, logical);
         }
 
         @Override
@@ -898,11 +901,9 @@ public class LogicalPartsEditor
             setModified(true);
         }
 
-        public void renumberLogicals ()
+        public int size ()
         {
-            for (int i = 0; i < logicals.size(); i++) {
-                logicals.get(i).setId(i + 1);
-            }
+            return logicals.size();
         }
     }
 }

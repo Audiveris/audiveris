@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,6 +46,7 @@ public class DynamicSection
     private static final Logger logger = LoggerFactory.getLogger(DynamicSection.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>DynamicSection</code> object.
      *
@@ -57,6 +58,24 @@ public class DynamicSection
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------//
+    // addRun //
+    //--------//
+    /**
+     * Compute incrementally the cached parameters.
+     *
+     * @param run the run to be processed
+     */
+    protected void addRun (Run run)
+    {
+        // Invalidate cached data
+        invalidateCache();
+
+        // Compute contribution of this run
+        computeRunContribution(run);
+    }
+
     //--------//
     // append //
     //--------//
@@ -74,148 +93,6 @@ public class DynamicSection
         addRun(run);
 
         logger.debug("Appended {} to {}", run, this);
-    }
-
-    //-------------//
-    // getCentroid //
-    //-------------//
-    @Override
-    public Point getCentroid ()
-    {
-        if (centroid == null) {
-            centroid = computeCentroid();
-        }
-
-        return centroid;
-    }
-
-    //-------------------//
-    // getOrientedBounds //
-    //-------------------//
-    @Override
-    public Rectangle getOrientedBounds ()
-    {
-        if (orientedBounds == null) {
-            orientedBounds = orientation.oriented(getBounds());
-        }
-
-        return orientedBounds;
-    }
-
-    //-----------------//
-    // getOrientedLine //
-    //-----------------//
-    @Override
-    public Line getOrientedLine ()
-    {
-        if ((orientedLine == null) && (getWeight() > 1)) {
-            orientedLine = computeOrientedLine();
-        }
-
-        return orientedLine;
-    }
-
-    //------------//
-    // getPolygon //
-    //------------//
-    @Override
-    public Polygon getPolygon ()
-    {
-        if (polygon == null) {
-            polygon = computePolygon();
-        }
-
-        return polygon;
-    }
-
-    //-----------//
-    // getWeight //
-    //-----------//
-    @Override
-    public int getWeight ()
-    {
-        if (weight == 0) {
-            computeParameters();
-        }
-
-        return weight;
-    }
-
-    //---------//
-    // prepend //
-    //---------//
-    /**
-     * Add a run at the beginning rather than at the end of the section.
-     *
-     * @param run the new first run
-     */
-    public void prepend (Run run)
-    {
-        run = new Run(run);
-        logger.debug("Prepending {} to {}", run, this);
-
-        firstPos--;
-        runs.add(0, run);
-        addRun(run);
-
-        logger.debug("Prepended {}", this);
-    }
-
-    //-------------//
-    // setFirstPos //
-    //-------------//
-    /**
-     * Set the position of the first run of the section.
-     *
-     * @param firstPos position of the first run, abscissa for a vertical run,
-     *                 ordinate for a horizontal run.
-     */
-    public void setFirstPos (int firstPos)
-    {
-        this.firstPos = firstPos;
-    }
-
-    //-----------//
-    // translate //
-    //-----------//
-    /**
-     * Apply an absolute translation vector to this section.
-     *
-     * @param vector the translation vector
-     */
-    public void translate (Point vector)
-    {
-        // Get the coord/pos equivalent of dx/dy vector
-        Point cp = orientation.oriented(vector);
-        int dc = cp.x;
-        int dp = cp.y;
-
-        // Apply the needed modifications
-        firstPos += dp;
-
-        for (Run run : runs) {
-            run.translate(dc);
-        }
-
-        // Force update
-        invalidateCache();
-    }
-
-    //--------//
-    // addRun //
-    //--------//
-    /**
-     * Compute incrementally the cached parameters.
-     *
-     * @param run the run to be processed
-     */
-    protected void addRun (Run run)
-    {
-        // Invalidate cached data
-        invalidateCache();
-
-        // Compute contribution of this run
-        computeRunContribution(run);
     }
 
     //-----------------//
@@ -309,6 +186,71 @@ public class DynamicSection
         maxRunLength = Math.max(maxRunLength, length);
     }
 
+    //-------------//
+    // getCentroid //
+    //-------------//
+    @Override
+    public Point getCentroid ()
+    {
+        if (centroid == null) {
+            centroid = computeCentroid();
+        }
+
+        return centroid;
+    }
+
+    //-------------------//
+    // getOrientedBounds //
+    //-------------------//
+    @Override
+    public Rectangle getOrientedBounds ()
+    {
+        if (orientedBounds == null) {
+            orientedBounds = orientation.oriented(getBounds());
+        }
+
+        return orientedBounds;
+    }
+
+    //-----------------//
+    // getOrientedLine //
+    //-----------------//
+    @Override
+    public Line getOrientedLine ()
+    {
+        if ((orientedLine == null) && (getWeight() > 1)) {
+            orientedLine = computeOrientedLine();
+        }
+
+        return orientedLine;
+    }
+
+    //------------//
+    // getPolygon //
+    //------------//
+    @Override
+    public Polygon getPolygon ()
+    {
+        if (polygon == null) {
+            polygon = computePolygon();
+        }
+
+        return polygon;
+    }
+
+    //-----------//
+    // getWeight //
+    //-----------//
+    @Override
+    public int getWeight ()
+    {
+        if (weight == 0) {
+            computeParameters();
+        }
+
+        return weight;
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -392,5 +334,65 @@ public class DynamicSection
         }
 
         return index;
+    }
+
+    //---------//
+    // prepend //
+    //---------//
+    /**
+     * Add a run at the beginning rather than at the end of the section.
+     *
+     * @param run the new first run
+     */
+    public void prepend (Run run)
+    {
+        run = new Run(run);
+        logger.debug("Prepending {} to {}", run, this);
+
+        firstPos--;
+        runs.add(0, run);
+        addRun(run);
+
+        logger.debug("Prepended {}", this);
+    }
+
+    //-------------//
+    // setFirstPos //
+    //-------------//
+    /**
+     * Set the position of the first run of the section.
+     *
+     * @param firstPos position of the first run, abscissa for a vertical run,
+     *                 ordinate for a horizontal run.
+     */
+    public void setFirstPos (int firstPos)
+    {
+        this.firstPos = firstPos;
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply an absolute translation vector to this section.
+     *
+     * @param vector the translation vector
+     */
+    public void translate (Point vector)
+    {
+        // Get the coord/pos equivalent of dx/dy vector
+        Point cp = orientation.oriented(vector);
+        int dc = cp.x;
+        int dp = cp.y;
+
+        // Apply the needed modifications
+        firstPos += dp;
+
+        for (Run run : runs) {
+            run.translate(dc);
+        }
+
+        // Force update
+        invalidateCache();
     }
 }

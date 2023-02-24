@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class Mask
     private static final Logger logger = LoggerFactory.getLogger(Mask.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Mask area. */
     private final Area area;
 
@@ -56,6 +57,7 @@ public class Mask
     private int pointCount;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Mask object.
      *
@@ -70,6 +72,7 @@ public class Mask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // apply //
     //-------//
@@ -93,6 +96,31 @@ public class Mask
                 }
             }
         }
+    }
+
+    //-----------------------//
+    // computeRelevantPoints //
+    //-----------------------//
+    private Table.UnsignedByte computeRelevantPoints (Area area)
+    {
+        Table.UnsignedByte table = new Table.UnsignedByte(rect.width, rect.height);
+        Point loc = rect.getLocation();
+        table.fill(PixelFilter.BACKGROUND);
+
+        for (int y = 0; y < rect.height; y++) {
+            int ay = y + loc.y; // Absolute ordinate
+
+            for (int x = 0; x < rect.width; x++) {
+                int ax = x + loc.x; // Absolute abscissa
+
+                if (area.contains(ax, ay)) {
+                    table.setValue(x, y, 0);
+                    pointCount++;
+                }
+            }
+        }
+
+        return table;
     }
 
     //------//
@@ -130,35 +158,11 @@ public class Mask
         return pointCount;
     }
 
-    //-----------------------//
-    // computeRelevantPoints //
-    //-----------------------//
-    private Table.UnsignedByte computeRelevantPoints (Area area)
-    {
-        Table.UnsignedByte table = new Table.UnsignedByte(rect.width, rect.height);
-        Point loc = rect.getLocation();
-        table.fill(PixelFilter.BACKGROUND);
-
-        for (int y = 0; y < rect.height; y++) {
-            int ay = y + loc.y; // Absolute ordinate
-
-            for (int x = 0; x < rect.width; x++) {
-                int ax = x + loc.x; // Absolute abscissa
-
-                if (area.contains(ax, ay)) {
-                    table.setValue(x, y, 0);
-                    pointCount++;
-                }
-            }
-        }
-
-        return table;
-    }
-
     //~ Inner Interfaces ---------------------------------------------------------------------------
-    //---------//
+
+    //-------------//
     // MaskAdapter //
-    //---------//
+    //-------------//
     public static interface MaskAdapter
     {
 

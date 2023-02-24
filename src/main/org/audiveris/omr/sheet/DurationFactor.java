@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class DurationFactor
     public final int actualDen;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new instance of DurationFactor
      *
@@ -61,15 +62,14 @@ public class DurationFactor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // equals //
     //--------//
     @Override
     public boolean equals (Object obj)
     {
-        if (obj instanceof DurationFactor) {
-            DurationFactor that = (DurationFactor) obj;
-
+        if (obj instanceof DurationFactor that) {
             if ((this.actualNum != that.actualNum) || (this.actualDen != that.actualDen)) {
                 return false;
             }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -117,6 +117,21 @@ public class MusicFont
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * Creates a new <code>MusicFont</code> object from a provided font.
+     *
+     * @param font some existing font
+     */
+    private MusicFont (Font font)
+    {
+        super(font);
+        musicFamily = MusicFamily.valueOfName(font.getFamily().replaceAll(" ", ""));
+
+        if (musicFamily.getBackup() != null) {
+            backupFont = MusicFont.getMusicFont(musicFamily.getBackup(), size);
+        }
+    }
+
+    /**
      * Creates a new <code>MusicFont</code> object, based on chosen family and size.
      *
      * @param family chosen music font family
@@ -127,21 +142,6 @@ public class MusicFont
     {
         super(family.getFontName(), family.getFileName(), Font.PLAIN, size);
         musicFamily = family;
-
-        if (musicFamily.getBackup() != null) {
-            backupFont = MusicFont.getMusicFont(musicFamily.getBackup(), size);
-        }
-    }
-
-    /**
-     * Creates a new <code>MusicFont</code> object from a provided font.
-     *
-     * @param font some existing font
-     */
-    private MusicFont (Font font)
-    {
-        super(font);
-        musicFamily = MusicFamily.valueOfName(font.getFamily().replaceAll(" ", ""));
 
         if (musicFamily.getBackup() != null) {
             backupFont = MusicFont.getMusicFont(musicFamily.getBackup(), size);
@@ -481,6 +481,8 @@ public class MusicFont
 
         return layoutShapeByCode(symbol.getShape(), fat);
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // checkMusicFont //

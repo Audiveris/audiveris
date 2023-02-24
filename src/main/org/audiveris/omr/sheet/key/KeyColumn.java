@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -82,23 +82,8 @@ public class KeyColumn
 
     private static final Logger logger = LoggerFactory.getLogger(KeyColumn.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Status of key replication within part. */
-    public enum PartStatus
-    {
-        /** Success. */
-        OK,
-        /** Slice count to be reduced. */
-        SHRINK,
-        /** No clef in staff. */
-        NO_CLEF,
-        /** Replication failed. */
-        NO_REPLICATE,
-        /** No key in part. */
-        DESTROY;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related system. */
     private final SystemInfo system;
 
@@ -112,6 +97,7 @@ public class KeyColumn
     private List<Integer> globalOffsets;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>KeyColumn</code> object.
      *
@@ -124,6 +110,7 @@ public class KeyColumn
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addPlot //
     //---------//
@@ -147,71 +134,6 @@ public class KeyColumn
         KeyInter key = staff.getHeader().key;
 
         return (key != null) ? ("key:" + key.getFifths()) : null;
-    }
-
-    //--------------//
-    // retrieveKeys //
-    //--------------//
-    /**
-     * Retrieve the column of staves keys in this system.
-     *
-     * @param projectionWidth desired width for projection
-     * @return the ending abscissa offset of keys column WRT measure start, or 0 if none
-     */
-    public int retrieveKeys (int projectionWidth)
-    {
-        // Define each staff key-signature area
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                continue;
-            }
-
-            int measStart = staff.getHeaderStart();
-
-            Integer clefStop = staff.getClefStop(); // Not very reliable...
-            int browseStart = (clefStop != null) ? (clefStop + 1) : (staff.getHeaderStop() + 1);
-            builders.put(
-                    staff,
-                    new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
-        }
-
-        // Process each staff to get peaks, slices, alters, trailing space, clef compatibility
-        for (KeyBuilder builder : builders.values()) {
-            builder.process();
-        }
-
-        if (system.isMultiStaff()) {
-            // Check keys alignment across staves at system level
-            if (!checkSystemSlices()) {
-                for (KeyBuilder builder : builders.values()) {
-                    builder.destroyAll();
-                }
-
-                return 0; // No key in system
-            }
-        }
-
-        // Adjust each individual alter pitch, according to best matching key-sig
-        // A staff may have no key-sig while the others have some in the same system
-        for (KeyBuilder builder : builders.values()) {
-            builder.finalizeKey();
-        }
-
-        // Push header key stop
-        int maxKeyOffset = 0;
-
-        for (Staff staff : system.getStaves()) {
-            if (!staff.isTablature()) {
-                int measureStart = staff.getHeaderStart();
-                Integer keyStop = staff.getKeyStop();
-
-                if (keyStop != null) {
-                    maxKeyOffset = Math.max(maxKeyOffset, keyStop - measureStart);
-                }
-            }
-        }
-
-        return maxKeyOffset;
     }
 
     //-------------------//
@@ -320,6 +242,45 @@ public class KeyColumn
         return best;
     }
 
+    //----------------//
+    // getGlobalIndex //
+    //----------------//
+    /**
+     * Determine the corresponding global index for the provided abscissa offset.
+     *
+     * @param offset slice offset
+     * @return the global index, or null
+     */
+    Integer getGlobalIndex (int offset)
+    {
+        Integer bestIndex = null;
+        double bestDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < globalOffsets.size(); i++) {
+            int gOffset = globalOffsets.get(i);
+            double dist = Math.abs(gOffset - offset);
+
+            if (bestDist > dist) {
+                bestDist = dist;
+                bestIndex = i;
+            }
+        }
+
+        if (bestDist <= getMaxSliceDist()) {
+            return bestIndex;
+        } else {
+            return null;
+        }
+    }
+
+    //-----------------//
+    // getGlobalOffset //
+    //-----------------//
+    int getGlobalOffset (int index)
+    {
+        return globalOffsets.get(index);
+    }
+
     //------------------//
     // getGlobalOffsets //
     //------------------//
@@ -406,6 +367,14 @@ public class KeyColumn
     }
 
     //-----------------//
+    // getMaxSliceDist //
+    //-----------------//
+    final int getMaxSliceDist ()
+    {
+        return params.maxSliceDist;
+    }
+
+    //-----------------//
     // printSliceTable //
     //-----------------//
     /**
@@ -428,54 +397,73 @@ public class KeyColumn
         }
     }
 
-    //-----------------//
-    // getMaxSliceDist //
-    //-----------------//
-    final int getMaxSliceDist ()
-    {
-        return params.maxSliceDist;
-    }
-
-    //----------------//
-    // getGlobalIndex //
-    //----------------//
+    //--------------//
+    // retrieveKeys //
+    //--------------//
     /**
-     * Determine the corresponding global index for the provided abscissa offset.
+     * Retrieve the column of staves keys in this system.
      *
-     * @param offset slice offset
-     * @return the global index, or null
+     * @param projectionWidth desired width for projection
+     * @return the ending abscissa offset of keys column WRT measure start, or 0 if none
      */
-    Integer getGlobalIndex (int offset)
+    public int retrieveKeys (int projectionWidth)
     {
-        Integer bestIndex = null;
-        double bestDist = Double.MAX_VALUE;
+        // Define each staff key-signature area
+        for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
 
-        for (int i = 0; i < globalOffsets.size(); i++) {
-            int gOffset = globalOffsets.get(i);
-            double dist = Math.abs(gOffset - offset);
+            int measStart = staff.getHeaderStart();
 
-            if (bestDist > dist) {
-                bestDist = dist;
-                bestIndex = i;
+            Integer clefStop = staff.getClefStop(); // Not very reliable...
+            int browseStart = (clefStop != null) ? (clefStop + 1) : (staff.getHeaderStop() + 1);
+            builders.put(
+                    staff,
+                    new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
+        }
+
+        // Process each staff to get peaks, slices, alters, trailing space, clef compatibility
+        for (KeyBuilder builder : builders.values()) {
+            builder.process();
+        }
+
+        if (system.isMultiStaff()) {
+            // Check keys alignment across staves at system level
+            if (!checkSystemSlices()) {
+                for (KeyBuilder builder : builders.values()) {
+                    builder.destroyAll();
+                }
+
+                return 0; // No key in system
             }
         }
 
-        if (bestDist <= getMaxSliceDist()) {
-            return bestIndex;
-        } else {
-            return null;
+        // Adjust each individual alter pitch, according to best matching key-sig
+        // A staff may have no key-sig while the others have some in the same system
+        for (KeyBuilder builder : builders.values()) {
+            builder.finalizeKey();
         }
-    }
 
-    //-----------------//
-    // getGlobalOffset //
-    //-----------------//
-    int getGlobalOffset (int index)
-    {
-        return globalOffsets.get(index);
+        // Push header key stop
+        int maxKeyOffset = 0;
+
+        for (Staff staff : system.getStaves()) {
+            if (!staff.isTablature()) {
+                int measureStart = staff.getHeaderStart();
+                Integer keyStop = staff.getKeyStop();
+
+                if (keyStop != null) {
+                    maxKeyOffset = Math.max(maxKeyOffset, keyStop - measureStart);
+                }
+            }
+        }
+
+        return maxKeyOffset;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -500,5 +488,22 @@ public class KeyColumn
         {
             maxSliceDist = scale.toPixels(constants.maxSliceDist);
         }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /** Status of key replication within part. */
+    public enum PartStatus
+    {
+        /** Success. */
+        OK,
+        /** Slice count to be reduced. */
+        SHRINK,
+        /** No clef in staff. */
+        NO_CLEF,
+        /** Replication failed. */
+        NO_REPLICATE,
+        /** No key in part. */
+        DESTROY;
     }
 }

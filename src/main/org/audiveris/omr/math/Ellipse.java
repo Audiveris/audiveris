@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,14 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import Jama.EigenvalueDecomposition;
-import Jama.Matrix;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import Jama.EigenvalueDecomposition;
+import Jama.Matrix;
+
 import java.awt.geom.Point2D;
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.atan;
+import static java.lang.Math.sqrt;
 
 /**
  * Class <code>Ellipse</code> implements the direct algorithm of Fitzgibbon
@@ -53,23 +56,24 @@ public final class Ellipse
     private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
     /** Constraint such that 4*A*C - B**2 = 1 */
-    private static final Matrix C1 = new Matrix(new double[][]{
-        {0, 0, 2},
-        {0, -1, 0},
-        {2, 0, 0}
-    });
+    private static final Matrix C1 = new Matrix(new double[][]
+    {
+            { 0, 0, 2 },
+            { 0, -1, 0 },
+            { 2, 0, 0 } });
 
     /** Inverse of Constraint */
-    private static final Matrix C1inv = new Matrix(new double[][]{
-        {0, 0, 0.5},
-        {0, -1, 0},
-        {0.5, 0, 0}
-    });
+    private static final Matrix C1inv = new Matrix(new double[][]
+    {
+            { 0, 0, 0.5 },
+            { 0, -1, 0 },
+            { 0.5, 0, 0 } });
 
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Array of coefficients that define ellipse algebraic equation
      */
@@ -110,6 +114,14 @@ public final class Ellipse
     protected Double minor;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new Ellipse object.
+     */
+    protected Ellipse ()
+    {
+    }
+
     /**
      * Creates a new instance of Ellipse, defined by a set of points
      *
@@ -123,110 +135,7 @@ public final class Ellipse
         computeCharacteristics();
     }
 
-    /**
-     * Creates a new Ellipse object.
-     */
-    protected Ellipse ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getAngle //
-    //----------//
-    /**
-     * Report the angle between the major axis and the abscissae axis
-     *
-     * @return the major axis angle, in radians
-     */
-    public double getAngle ()
-    {
-        if (angle == null) {
-            computeCharacteristics();
-        }
-
-        return angle;
-    }
-
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Report the center of the ellipse, using the same coordinate system as the
-     * defining data points
-     *
-     * @return the ellipse center
-     */
-    public Point2D.Double getCenter ()
-    {
-        if (center == null) {
-            computeCharacteristics();
-        }
-
-        return center;
-    }
-
-    //-----------------//
-    // getCoefficients //
-    //-----------------//
-    /**
-     * Report the coefficients of the ellipse, as defined by the algebraic
-     * equation
-     *
-     * @return the algebraic coefficients, all packed in one array
-     */
-    public double[] getCoefficients ()
-    {
-        return coeffs;
-    }
-
-    //-------------//
-    // getDistance //
-    //-------------//
-    /**
-     * Report the mean algebraic distance between the data points and the
-     * ellipse
-     *
-     * @return the mean algebraic distance
-     */
-    public double getDistance ()
-    {
-        return distance;
-    }
-
-    //----------//
-    // getMajor //
-    //----------//
-    /**
-     * Report the 1/2 length of the major axis
-     *
-     * @return the half major length
-     */
-    public Double getMajor ()
-    {
-        if (major == null) {
-            computeCharacteristics();
-        }
-
-        return major;
-    }
-
-    //----------//
-    // getMinor //
-    //----------//
-    /**
-     * Report the 1/2 length of the minor axis
-     *
-     * @return the half minor length
-     */
-    public Double getMinor ()
-    {
-        if (minor == null) {
-            computeCharacteristics();
-        }
-
-        return minor;
-    }
 
     //---------------------//
     // computeAngleAndAxes //
@@ -568,6 +477,105 @@ public final class Ellipse
 
         ///System.out.println("distance: " + distance);
     }
+
+    //----------//
+    // getAngle //
+    //----------//
+    /**
+     * Report the angle between the major axis and the abscissae axis
+     *
+     * @return the major axis angle, in radians
+     */
+    public double getAngle ()
+    {
+        if (angle == null) {
+            computeCharacteristics();
+        }
+
+        return angle;
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Report the center of the ellipse, using the same coordinate system as the
+     * defining data points
+     *
+     * @return the ellipse center
+     */
+    public Point2D.Double getCenter ()
+    {
+        if (center == null) {
+            computeCharacteristics();
+        }
+
+        return center;
+    }
+
+    //-----------------//
+    // getCoefficients //
+    //-----------------//
+    /**
+     * Report the coefficients of the ellipse, as defined by the algebraic
+     * equation
+     *
+     * @return the algebraic coefficients, all packed in one array
+     */
+    public double[] getCoefficients ()
+    {
+        return coeffs;
+    }
+
+    //-------------//
+    // getDistance //
+    //-------------//
+    /**
+     * Report the mean algebraic distance between the data points and the
+     * ellipse
+     *
+     * @return the mean algebraic distance
+     */
+    public double getDistance ()
+    {
+        return distance;
+    }
+
+    //----------//
+    // getMajor //
+    //----------//
+    /**
+     * Report the 1/2 length of the major axis
+     *
+     * @return the half major length
+     */
+    public Double getMajor ()
+    {
+        if (major == null) {
+            computeCharacteristics();
+        }
+
+        return major;
+    }
+
+    //----------//
+    // getMinor //
+    //----------//
+    /**
+     * Report the 1/2 length of the minor axis
+     *
+     * @return the half minor length
+     */
+    public Double getMinor ()
+    {
+        if (minor == null) {
+            computeCharacteristics();
+        }
+
+        return minor;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------//
     // print //

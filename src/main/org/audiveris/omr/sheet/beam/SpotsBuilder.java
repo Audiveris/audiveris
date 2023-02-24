@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,12 +52,12 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ij.process.ByteProcessor;
-
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>SpotsBuilder</code> performs morphology analysis to retrieve the major spots
@@ -79,11 +79,13 @@ public class SpotsBuilder
     public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SpotsBuilder object.
      *
@@ -95,6 +97,7 @@ public class SpotsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // buildSheetSpots //
     //-----------------//
@@ -250,12 +253,14 @@ public class SpotsBuilder
     {
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
-        logger.debug("Spots retrieval beam: {}, diameter: {}, radius: {} ...",
-                     String.format("%.1f", beam),
-                     String.format("%.1f", diameter),
-                     String.format("%.1f", radius));
+        logger.debug(
+                "Spots retrieval beam: {}, diameter: {}, radius: {} ...",
+                String.format("%.1f", beam),
+                String.format("%.1f", diameter),
+                String.format("%.1f", radius));
 
-        final int[] seOffset = {0, 0};
+        final int[] seOffset =
+        { 0, 0 };
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);
         new MorphoProcessor(se).close(buffer);
     }
@@ -402,6 +407,7 @@ public class SpotsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

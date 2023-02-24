@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.util.ByteUtil;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 
@@ -52,11 +52,13 @@ public class Lags
     public static final String SYMBOL_LAG = "symLag";
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private Lags ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // buildBuffer //
     //-------------//

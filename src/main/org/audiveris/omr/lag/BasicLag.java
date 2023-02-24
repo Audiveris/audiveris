@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,6 +49,7 @@ public class BasicLag
     private static final Logger logger = LoggerFactory.getLogger(BasicLag.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Orientation of the lag. */
     private final Orientation orientation;
 
@@ -59,6 +60,7 @@ public class BasicLag
     private final String name;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Constructor with specified orientation
      *
@@ -76,6 +78,7 @@ public class BasicLag
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // addRunTable //
     //-------------//
@@ -161,6 +164,16 @@ public class BasicLag
         sections.forEach(section -> insert(section));
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return new StringBuilder(super.internals()).append(" ").append(orientation).append(
+                " sections:").append(entities.size()).toString();
+    }
+
     //---------------------//
     // intersectedSections //
     //---------------------//
@@ -234,17 +247,5 @@ public class BasicLag
         } else {
             this.runTable = runTable;
         }
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return new StringBuilder(super.internals())
-                .append(" ").append(orientation)
-                .append(" sections:").append(entities.size())
-                .toString();
     }
 }

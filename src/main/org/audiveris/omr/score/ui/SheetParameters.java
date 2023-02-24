@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,6 +61,7 @@ public class SheetParameters
             .getResourceMap(SheetParameters.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The swing component of this panel. */
     private final ScopedPanel scopedPanel;
 
@@ -74,6 +75,7 @@ public class SheetParameters
     private final EnumMap<Item, ScalingParam> scalings = new EnumMap<>(Item.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetParameters</code> object.
      *
@@ -105,6 +107,7 @@ public class SheetParameters
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // commit //
     //--------//
@@ -180,6 +183,7 @@ public class SheetParameters
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // ScaledPane //
     //------------//

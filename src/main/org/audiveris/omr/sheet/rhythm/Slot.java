@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -76,9 +76,10 @@ public class Slot
     private static final Logger logger = LoggerFactory.getLogger(Slot.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** This is the rank of this slot within the containing stack, starting at 1. */
     @XmlAttribute
     protected int id;
@@ -99,7 +100,7 @@ public class Slot
 
     // Transient data
     //---------------
-    //
+
     /** The containing measure stack. */
     @Navigable(false)
     protected MeasureStack stack;
@@ -108,6 +109,14 @@ public class Slot
     protected List<AbstractChordInter> incomings;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Slot ()
+    {
+    }
+
     /**
      * Creates a new (stack) Slot object.
      *
@@ -131,14 +140,8 @@ public class Slot
         computeXOffset();
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private Slot ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // afterReload //
     //-------------//
@@ -173,6 +176,20 @@ public class Slot
         }
     }
 
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        stack = (MeasureStack) parent;
+    }
+
     //-----------//
     // compareTo //
     //-----------//
@@ -186,6 +203,27 @@ public class Slot
     public int compareTo (Slot other)
     {
         return Double.compare(xOffset, other.xOffset);
+    }
+
+    //----------------//
+    // computeXOffset //
+    //----------------//
+    private void computeXOffset ()
+    {
+        // Compute slot refPoint as average of chords centers
+        Population xPop = new Population();
+        Population yPop = new Population();
+
+        for (AbstractChordInter chord : incomings) {
+            Point center = chord.getCenter();
+            xPop.includeValue(center.x);
+            yPop.includeValue(center.y);
+        }
+
+        Point2D ref = new Point2D.Double(xPop.getMeanValue(), yPop.getMeanValue());
+
+        // Store abscissa offset WRT measure stack left border
+        xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
     //--------//
@@ -319,19 +357,6 @@ public class Slot
         return id;
     }
 
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign a new id to slot.
-     *
-     * @param id new id
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
     //----------//
     // getStack //
     //----------//
@@ -343,20 +368,6 @@ public class Slot
     public MeasureStack getStack ()
     {
         return stack;
-    }
-
-    //----------//
-    // setStack //
-    //----------//
-    /**
-     * Set the containing stack for this slot.
-     *
-     * @param stack containing stack
-     */
-    public void setStack (MeasureStack stack)
-    {
-        this.stack = stack;
-        computeXOffset();
     }
 
     //---------------//
@@ -406,6 +417,33 @@ public class Slot
     public boolean isSuspicious ()
     {
         return suspicious;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign a new id to slot.
+     *
+     * @param id new id
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //----------//
+    // setStack //
+    //----------//
+    /**
+     * Set the containing stack for this slot.
+     *
+     * @param stack containing stack
+     */
+    public void setStack (MeasureStack stack)
+    {
+        this.stack = stack;
+        computeXOffset();
     }
 
     //---------------//
@@ -514,8 +552,8 @@ public class Slot
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("slot#").append(getId())
-                .append(" start=").append(String.format("%5s", getTimeOffset())).append(" [");
+        sb.append("slot#").append(getId()).append(" start=").append(
+                String.format("%5s", getTimeOffset())).append(" [");
 
         SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<>();
 
@@ -554,40 +592,7 @@ public class Slot
         return sb.toString();
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        stack = (MeasureStack) parent;
-    }
-
-    //----------------//
-    // computeXOffset //
-    //----------------//
-    private void computeXOffset ()
-    {
-        // Compute slot refPoint as average of chords centers
-        Population xPop = new Population();
-        Population yPop = new Population();
-
-        for (AbstractChordInter chord : incomings) {
-            Point center = chord.getCenter();
-            xPop.includeValue(center.x);
-            yPop.includeValue(center.y);
-        }
-
-        Point2D ref = new Point2D.Double(xPop.getMeanValue(), yPop.getMeanValue());
-
-        // Store abscissa offset WRT measure stack left border
-        xOffset = (int) Math.rint(stack.getXOffset(ref));
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // chordsOf //
@@ -612,6 +617,7 @@ public class Slot
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // CompoundSlot //
     //--------------//

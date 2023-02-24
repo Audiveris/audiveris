@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,6 +41,7 @@ public class IntegerPane
     protected final LIntegerField data;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>IntegerPane</code> object.
      *
@@ -61,6 +62,7 @@ public class IntegerPane
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,
@@ -72,12 +74,6 @@ public class IntegerPane
         builder.add(data.getField(), cst.xyw(titleWidth + 4, r, 1));
 
         return r + 2;
-    }
-
-    @Override
-    public void setEnabled (boolean bool)
-    {
-        data.setEnabled(bool);
     }
 
     @Override
@@ -94,5 +90,11 @@ public class IntegerPane
     protected Integer read ()
     {
         return data.getValue();
+    }
+
+    @Override
+    public void setEnabled (boolean bool)
+    {
+        data.setEnabled(bool);
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,7 +27,6 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitch;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -66,6 +65,14 @@ public class AugmentationDotInter
     private static final Logger logger = LoggerFactory.getLogger(AugmentationDotInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private AugmentationDotInter ()
+    {
+    }
+
     /**
      * Creates a new <code>AugmentationDotInter</code> object.
      *
@@ -78,14 +85,8 @@ public class AugmentationDotInter
         super(glyph, null, Shape.AUGMENTATION_DOT, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private AugmentationDotInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -167,6 +168,46 @@ public class AugmentationDotInter
         }
 
         return notes;
+    }
+
+    //--------------//
+    // getDotsLuBox //
+    //--------------//
+    /**
+     * Report dots lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param system    containing system
+     * @return proper lookup box
+     */
+    private Rectangle getDotsLuBox (Point dotCenter,
+                                    SystemInfo system)
+    {
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum(getProfile()));
+        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum(getProfile()));
+
+        return getLuBox(dotCenter, maxDx, maxDy);
+    }
+
+    //---------------//
+    // getNotesLuBox //
+    //---------------//
+    /**
+     * Report notes lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param system    containing system
+     * @return proper lookup box
+     */
+    private Rectangle getNotesLuBox (Point dotCenter,
+                                     SystemInfo system)
+    {
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum(getProfile()));
+        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum(getProfile()));
+
+        return getLuBox(dotCenter, maxDx, maxDy);
     }
 
     //---------//
@@ -371,7 +412,9 @@ public class AugmentationDotInter
 
                     // When this method is called, there is at most one stem per head
                     // (including the case of shared heads)
-                    for (Relation rel : system.getSig().getRelations(head, HeadStemRelation.class)) {
+                    for (Relation rel : system.getSig().getRelations(
+                            head,
+                            HeadStemRelation.class)) {
                         HeadStemRelation hsRel = (HeadStemRelation) rel;
 
                         if (hsRel.getHeadSide() == RIGHT) {
@@ -414,6 +457,39 @@ public class AugmentationDotInter
         }
 
         return (!links.isEmpty()) ? links.get(0) : null;
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this augmentation dot and either a note
+     * (head or rest) or another dot on left side.
+     *
+     * @param systemRests      ordered collection of rests in system
+     * @param systemHeadChords ordered collection of head chords in system
+     * @param systemDots       ordered collection of augmentation dots in system
+     * @param system           containing system
+     * @param profile          desired profile level
+     * @return the best link found or null
+     */
+    private Link lookupLink (List<Inter> systemRests,
+                             List<Inter> systemHeadChords,
+                             List<Inter> systemDots,
+                             SystemInfo system,
+                             int profile)
+    {
+        List<Link> links = new ArrayList<>();
+        Link headLink = lookupHeadLink(systemHeadChords, system, profile);
+
+        if (headLink != null) {
+            links.add(headLink);
+        }
+
+        links.addAll(lookupRestLinks(systemRests, system, profile));
+        links.addAll(lookupDotLinks(systemDots, system, profile));
+
+        return Link.bestOf(links);
     }
 
     //-----------------//
@@ -621,45 +697,7 @@ public class AugmentationDotInter
         return links;
     }
 
-    //--------------//
-    // getDotsLuBox //
-    //--------------//
-    /**
-     * Report dots lookup box based on provided dot center
-     *
-     * @param dotCenter center of dot candidate
-     * @param system    containing system
-     * @return proper lookup box
-     */
-    private Rectangle getDotsLuBox (Point dotCenter,
-                                    SystemInfo system)
-    {
-        final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum(getProfile()));
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum(getProfile()));
-
-        return getLuBox(dotCenter, maxDx, maxDy);
-    }
-
-    //---------------//
-    // getNotesLuBox //
-    //---------------//
-    /**
-     * Report notes lookup box based on provided dot center
-     *
-     * @param dotCenter center of dot candidate
-     * @param system    containing system
-     * @return proper lookup box
-     */
-    private Rectangle getNotesLuBox (Point dotCenter,
-                                     SystemInfo system)
-    {
-        final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum(getProfile()));
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum(getProfile()));
-
-        return getLuBox(dotCenter, maxDx, maxDy);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // getLuBox //
@@ -677,38 +715,5 @@ public class AugmentationDotInter
                                        int maxDy)
     {
         return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
-    }
-
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Try to detect a link between this augmentation dot and either a note
-     * (head or rest) or another dot on left side.
-     *
-     * @param systemRests      ordered collection of rests in system
-     * @param systemHeadChords ordered collection of head chords in system
-     * @param systemDots       ordered collection of augmentation dots in system
-     * @param system           containing system
-     * @param profile          desired profile level
-     * @return the best link found or null
-     */
-    private Link lookupLink (List<Inter> systemRests,
-                             List<Inter> systemHeadChords,
-                             List<Inter> systemDots,
-                             SystemInfo system,
-                             int profile)
-    {
-        List<Link> links = new ArrayList<>();
-        Link headLink = lookupHeadLink(systemHeadChords, system, profile);
-
-        if (headLink != null) {
-            links.add(headLink);
-        }
-
-        links.addAll(lookupRestLinks(systemRests, system, profile));
-        links.addAll(lookupDotLinks(systemDots, system, profile));
-
-        return Link.bestOf(links);
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,7 +55,6 @@ import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
 
 import org.bushe.swing.event.EventSubscriber;
-
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -103,6 +102,7 @@ public class MainGui
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sheet tabbed pane, which may contain several views. */
     public StubsController stubsController;
 
@@ -131,6 +131,7 @@ public class MainGui
     private ResourceMap resources;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>MainGui</code> instance, to handle any user display and interaction.
      */
@@ -139,6 +140,7 @@ public class MainGui
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // clearLog //
     //----------//
@@ -146,300 +148,6 @@ public class MainGui
     public void clearLog ()
     {
         logPane.clearLog();
-    }
-
-    //---------------------//
-    // displayConfirmation //
-    //---------------------//
-    @Override
-    public boolean displayConfirmation (Object message)
-    {
-        return displayConfirmation(message, "Confirm");
-    }
-
-    //---------------------//
-    // displayConfirmation //
-    //---------------------//
-    @Override
-    public boolean displayConfirmation (Object message,
-                                        String title)
-    {
-        return displayConfirmation(
-                message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-    }
-
-    //---------------------//
-    // displayConfirmation //
-    //---------------------//
-    @Override
-    public boolean displayConfirmation (Object message,
-                                        String title,
-                                        int optionType,
-                                        int messageType)
-    {
-        int answer = JOptionPane.showConfirmDialog(frame, message, title, optionType, messageType);
-
-        return answer == JOptionPane.YES_OPTION;
-    }
-
-    //--------------//
-    // displayError //
-    //--------------//
-    @Override
-    public void displayError (Object message)
-    {
-        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    //--------------------//
-    // displayHtmlMessage //
-    //--------------------//
-    @Override
-    public void displayHtmlMessage (String htmlStr)
-    {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(frame, htmlPane, appName, JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    //----------------//
-    // displayMessage //
-    //----------------//
-    @Override
-    public void displayMessage (Object message,
-                                String title)
-    {
-        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    //------------------------//
-    // displayModelessConfirm //
-    //------------------------//
-    @Override
-    public int displayModelessConfirm (Object message)
-    {
-        return ModelessOptionPane.showModelessConfirmDialog(
-                frame,
-                message,
-                "Confirm",
-                JOptionPane.YES_NO_OPTION);
-    }
-
-    //----------------//
-    // displayWarning //
-    //----------------//
-    @Override
-    public void displayWarning (Object message)
-    {
-        displayWarning(message, "Warning");
-    }
-
-    //----------------//
-    // displayWarning //
-    //----------------//
-    @Override
-    public void displayWarning (Object message,
-                                String title)
-    {
-        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.WARNING_MESSAGE);
-    }
-
-    //----------//
-    // getFrame //
-    //----------//
-    @Override
-    public JFrame getFrame ()
-    {
-        return frame;
-    }
-
-    //--------------//
-    // getGlassPane //
-    //--------------//
-    @Override
-    public OmrGlassPane getGlassPane ()
-    {
-        return glassPane;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report an Observer name, as an EventSubscriber.
-     *
-     * @return observer name
-     */
-    public String getName ()
-    {
-        return "MainGui";
-    }
-
-    //-----------//
-    // notifyLog //
-    //-----------//
-    @Override
-    public void notifyLog ()
-    {
-        logPane.notifyLog();
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Notification of sheet selection, to update frame title.
-     *
-     * @param stubEvent the event about selected sheet
-     */
-    @Override
-    public void onEvent (StubEvent stubEvent)
-    {
-        try {
-            // Ignore RELEASING
-            if (stubEvent.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(() -> {
-                final StringBuilder sb = new StringBuilder();
-
-                if (stub != null) {
-                    Book book = stub.getBook();
-                    // Frame title tells score name
-                    sb.append(book.getRadix());
-                }
-
-                // Update frame title
-                sb.append(" - ");
-
-                sb.append(resources.getString("Application.title"));
-                frame.setTitle(sb.toString());
-            });
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //----------------//
-    // propertyChange //
-    //----------------//
-    /**
-     * Notified on property change (such as local mainPane divider).
-     *
-     * @param evt the event details
-     */
-    @Override
-    public void propertyChange (PropertyChangeEvent evt)
-    {
-        String propertyName = evt.getPropertyName();
-
-        if (propertyName.equals(JSplitPane.DIVIDER_LOCATION_PROPERTY)) {
-            SheetStub stub = stubsController.getSelectedStub();
-
-            if ((stub != null) && stub.hasSheet()) {
-                SheetView view = stub.getAssembly().getCurrentView();
-
-                if (view != null) {
-                    if (view.getBoardsPane() != null) {
-                        // Force resizing of boards when log windows is resized.
-                        view.getBoardsPane().resize();
-                    }
-                }
-            }
-        }
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    protected void initialize (String[] args)
-    {
-        logger.debug("MainGui. 1/initialize");
-
-        // Launch background pre-loading tasks?
-        if (constants.preloadCostlyPackages.isSet()) {
-            ShapeClassifier.preload();
-            PartwiseBuilder.preload();
-        }
-    }
-
-    //-------//
-    // ready //
-    //-------//
-    @Override
-    protected void ready ()
-    {
-        logger.debug("MainGui. 3/ready");
-
-        // Get resources, now that application is available
-        resources = Application.getInstance().getContext().getResourceMap(getClass());
-
-        // Adjust default texts
-        UIUtil.adjustDefaultTexts();
-
-        // Set application exit listener
-        addExitListener(new GuiExitListener());
-
-        // Weakly listen to OmrGui Actions parameters
-        PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        GuiActions.getInstance().addPropertyChangeListener(weak);
-
-        // Check MusicFont is loaded
-        MusicFont.checkMusicFont();
-
-        // Just in case we already have messages pending
-        notifyLog();
-
-        // Perhaps time to check for a new release?
-        Versions.considerPolling();
-
-        // Launch inputs, books & scripts
-        for (Callable<Void> task : Main.getCli().getCliTasks()) {
-            logger.info("MainGui submitting {}", task);
-            OmrExecutors.getCachedLowExecutor().submit(task);
-        }
-    }
-
-    //---------//
-    // startup //
-    //---------//
-    @Override
-    protected void startup ()
-    {
-        logger.debug("MainGui. 2/startup");
-        logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
-        logger.info("\n{}", LogUtil.allInitialMessages());
-
-        if (!OcrUtil.getOcr().isAvailable()) {
-            logger.warn("{} Check log file for more details.", OCR.NO_OCR);
-        }
-
-        // Make the OmrGui instance available for the other classes
-        OMR.gui = this;
-
-        frame = getMainFrame();
-        frame.setName("AudiverisMainFrame"); // For SAF life cycle
-
-        stubsController = StubsController.getInstance();
-        stubsController.subscribe(this);
-
-        defineMenus();
-        defineLayout();
-
-        // Allow dropping of files
-        frame.setTransferHandler(new FileDropHandler());
-
-        // Handle ghost drop from shape palette
-        frame.setGlassPane(glassPane);
-
-        // Use the defined application name
-        appName = getContext().getResourceMap().getString("Application.name");
-
-        // Here we go...
-        show(frame);
     }
 
     //--------------//
@@ -593,7 +301,306 @@ public class MainGui
         }
     }
 
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public boolean displayConfirmation (Object message)
+    {
+        return displayConfirmation(message, "Confirm");
+    }
+
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public boolean displayConfirmation (Object message,
+                                        String title)
+    {
+        return displayConfirmation(
+                message,
+                title,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+    }
+
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public boolean displayConfirmation (Object message,
+                                        String title,
+                                        int optionType,
+                                        int messageType)
+    {
+        int answer = JOptionPane.showConfirmDialog(frame, message, title, optionType, messageType);
+
+        return answer == JOptionPane.YES_OPTION;
+    }
+
+    //--------------//
+    // displayError //
+    //--------------//
+    @Override
+    public void displayError (Object message)
+    {
+        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    //--------------------//
+    // displayHtmlMessage //
+    //--------------------//
+    @Override
+    public void displayHtmlMessage (String htmlStr)
+    {
+        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
+        htmlPane.setEditable(false);
+        JOptionPane.showMessageDialog(frame, htmlPane, appName, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    //----------------//
+    // displayMessage //
+    //----------------//
+    @Override
+    public void displayMessage (Object message,
+                                String title)
+    {
+        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    //------------------------//
+    // displayModelessConfirm //
+    //------------------------//
+    @Override
+    public int displayModelessConfirm (Object message)
+    {
+        return ModelessOptionPane.showModelessConfirmDialog(
+                frame,
+                message,
+                "Confirm",
+                JOptionPane.YES_NO_OPTION);
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    @Override
+    public void displayWarning (Object message)
+    {
+        displayWarning(message, "Warning");
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    @Override
+    public void displayWarning (Object message,
+                                String title)
+    {
+        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.WARNING_MESSAGE);
+    }
+
+    //----------//
+    // getFrame //
+    //----------//
+    @Override
+    public JFrame getFrame ()
+    {
+        return frame;
+    }
+
+    //--------------//
+    // getGlassPane //
+    //--------------//
+    @Override
+    public OmrGlassPane getGlassPane ()
+    {
+        return glassPane;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report an Observer name, as an EventSubscriber.
+     *
+     * @return observer name
+     */
+    public String getName ()
+    {
+        return "MainGui";
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    protected void initialize (String[] args)
+    {
+        logger.debug("MainGui. 1/initialize");
+
+        // Launch background pre-loading tasks?
+        if (constants.preloadCostlyPackages.isSet()) {
+            ShapeClassifier.preload();
+            PartwiseBuilder.preload();
+        }
+    }
+
+    //-----------//
+    // notifyLog //
+    //-----------//
+    @Override
+    public void notifyLog ()
+    {
+        logPane.notifyLog();
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification of sheet selection, to update frame title.
+     *
+     * @param stubEvent the event about selected sheet
+     */
+    @Override
+    public void onEvent (StubEvent stubEvent)
+    {
+        try {
+            // Ignore RELEASING
+            if (stubEvent.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            final SheetStub stub = stubEvent.getData();
+            SwingUtilities.invokeLater( () ->
+            {
+                final StringBuilder sb = new StringBuilder();
+
+                if (stub != null) {
+                    Book book = stub.getBook();
+                    // Frame title tells score name
+                    sb.append(book.getRadix());
+                }
+
+                // Update frame title
+                sb.append(" - ");
+
+                sb.append(resources.getString("Application.title"));
+                frame.setTitle(sb.toString());
+            });
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    /**
+     * Notified on property change (such as local mainPane divider).
+     *
+     * @param evt the event details
+     */
+    @Override
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        String propertyName = evt.getPropertyName();
+
+        if (propertyName.equals(JSplitPane.DIVIDER_LOCATION_PROPERTY)) {
+            SheetStub stub = stubsController.getSelectedStub();
+
+            if ((stub != null) && stub.hasSheet()) {
+                SheetView view = stub.getAssembly().getCurrentView();
+
+                if (view != null) {
+                    if (view.getBoardsPane() != null) {
+                        // Force resizing of boards when log windows is resized.
+                        view.getBoardsPane().resize();
+                    }
+                }
+            }
+        }
+    }
+
+    //-------//
+    // ready //
+    //-------//
+    @Override
+    protected void ready ()
+    {
+        logger.debug("MainGui. 3/ready");
+
+        // Get resources, now that application is available
+        resources = Application.getInstance().getContext().getResourceMap(getClass());
+
+        // Adjust default texts
+        UIUtil.adjustDefaultTexts();
+
+        // Set application exit listener
+        addExitListener(new GuiExitListener());
+
+        // Weakly listen to OmrGui Actions parameters
+        PropertyChangeListener weak = new WeakPropertyChangeListener(this);
+        GuiActions.getInstance().addPropertyChangeListener(weak);
+
+        // Check MusicFont is loaded
+        MusicFont.checkMusicFont();
+
+        // Just in case we already have messages pending
+        notifyLog();
+
+        // Perhaps time to check for a new release?
+        Versions.considerPolling();
+
+        // Launch inputs, books & scripts
+        for (Callable<Void> task : Main.getCli().getCliTasks()) {
+            logger.info("MainGui submitting {}", task);
+            OmrExecutors.getCachedLowExecutor().submit(task);
+        }
+    }
+
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("MainGui. 2/startup");
+        logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
+        logger.info("\n{}", LogUtil.allInitialMessages());
+
+        if (!OcrUtil.getOcr().isAvailable()) {
+            logger.warn("{} Check log file for more details.", OCR.NO_OCR);
+        }
+
+        // Make the OmrGui instance available for the other classes
+        OMR.gui = this;
+
+        frame = getMainFrame();
+        frame.setName("AudiverisMainFrame"); // For SAF life cycle
+
+        stubsController = StubsController.getInstance();
+        stubsController.subscribe(this);
+
+        defineMenus();
+        defineLayout();
+
+        // Allow dropping of files
+        frame.setTransferHandler(new FileDropHandler());
+
+        // Handle ghost drop from shape palette
+        frame.setGlassPane(glassPane);
+
+        // Use the defined application name
+        appName = getContext().getResourceMap().getString("Application.name");
+
+        // Here we go...
+        show(frame);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

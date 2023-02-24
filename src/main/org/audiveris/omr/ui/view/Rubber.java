@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,8 +24,15 @@ package org.audiveris.omr.ui.view;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.Colors;
-import static org.audiveris.omr.ui.selection.MouseMovement.*;
-import static org.audiveris.omr.ui.util.UIPredicates.*;
+import static org.audiveris.omr.ui.selection.MouseMovement.CLICKING;
+import static org.audiveris.omr.ui.selection.MouseMovement.DRAGGING;
+import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
+import static org.audiveris.omr.ui.selection.MouseMovement.RELEASING;
+import static org.audiveris.omr.ui.util.UIPredicates.isAdditionWanted;
+import static org.audiveris.omr.ui.util.UIPredicates.isContextWanted;
+import static org.audiveris.omr.ui.util.UIPredicates.isDragWanted;
+import static org.audiveris.omr.ui.util.UIPredicates.isRezoomWanted;
+import static org.audiveris.omr.ui.util.UIPredicates.isRubberWanted;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -113,6 +120,7 @@ public class Rubber
     private static final double ZOOM_FACTOR = Math.pow(BASE, 1d / INTERVALS);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** View from which the rubber will receive physical mouse events. */
     protected JComponent component;
 
@@ -138,6 +146,7 @@ public class Rubber
     private final int id;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a rubber, with no predefined parameter (zoom, component) which are meant
      * to be provided later.
@@ -147,17 +156,6 @@ public class Rubber
     public Rubber ()
     {
         id = globalId.addAndGet(1);
-    }
-
-    /**
-     * Create a rubber, with a linked zoom, the related component being linked later
-     *
-     * @param zoom the related zoom
-     */
-    public Rubber (Zoom zoom)
-    {
-        id = globalId.addAndGet(1);
-        setZoom(zoom);
     }
 
     /**
@@ -174,7 +172,55 @@ public class Rubber
         setZoom(zoom);
     }
 
+    /**
+     * Create a rubber, with a linked zoom, the related component being linked later
+     *
+     * @param zoom the related zoom
+     */
+    public Rubber (Zoom zoom)
+    {
+        id = globalId.addAndGet(1);
+        setZoom(zoom);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------//
+    // clampCenter //
+    //-------------//
+    /**
+     * Maintain rubber center within component bounds.
+     */
+    private void clampCenter ()
+    {
+        final Point initial = getCenter();
+
+        if (initial == null) {
+            return;
+        }
+
+        int x = initial.x;
+        int y = initial.y;
+
+        // The center must stay within the component
+        final int compWidth = unscaled(component.getWidth());
+        final int compHeight = unscaled(component.getHeight());
+
+        if (x < 0) {
+            x = 0;
+        } else if (x > compWidth) {
+            x = compWidth;
+        }
+
+        if (y < 0) {
+            y = 0;
+        } else if (y > compHeight) {
+            y = compHeight;
+        }
+
+        rect.translate(x - initial.x, y - initial.y);
+    }
+
     //------------------//
     // connectComponent //
     //------------------//
@@ -203,6 +249,57 @@ public class Rubber
             // To be notified of mouse  wheel mouvements
             component.removeMouseWheelListener(this); // No multiple notifs
             component.addMouseWheelListener(this);
+        }
+    }
+
+    //---------------//
+    // cropRectangle //
+    //---------------//
+    /**
+     * Crop rubber rectangle with component bounds.
+     */
+    private void cropRectangle ()
+    {
+        // The origin must stay within the component
+        final int compWidth = unscaled(component.getWidth());
+        final int compHeight = unscaled(component.getHeight());
+
+        if (rect.x < 0) {
+            rect.x = 0;
+        } else if (rect.x > compWidth) {
+            rect.x = compWidth;
+        }
+
+        if (rect.y < 0) {
+            rect.y = 0;
+        } else if (rect.y > compHeight) {
+            rect.y = compHeight;
+        }
+
+        // The rectangle shouldn't extend past the drawing area.
+        if ((rect.x + rect.width) > compWidth) {
+            rect.width = compWidth - rect.x;
+        }
+
+        if ((rect.y + rect.height) > compHeight) {
+            rect.height = compHeight - rect.y;
+        }
+    }
+
+    //---------------------//
+    // disconnectComponent //
+    //---------------------//
+    /**
+     * Disconnect the provided component
+     *
+     * @param component the component to disconnect
+     */
+    private void disconnectComponent (JComponent component)
+    {
+        if (component != null) {
+            component.removeMouseListener(this);
+            component.removeMouseMotionListener(this);
+            component.removeMouseWheelListener(this);
         }
     }
 
@@ -244,9 +341,9 @@ public class Rubber
     /**
      * Adjust the zoom ratio, according to the provided increment value.
      * <ul>
-     * <li> +1 to increase
-     * <li> -1 to decrease
-     * <li> 0 to reset to 100%
+     * <li>+1 to increase
+     * <li>-1 to decrease
+     * <li>0 to reset to 100%
      * </ul>
      *
      * @param increment how to modify
@@ -322,7 +419,7 @@ public class Rubber
                     (vr.y + rawRect.y) - e.getY(),
                     vr.width,
                     vr.height);
-            SwingUtilities.invokeLater(() -> component.scrollRectToVisible(vr));
+            SwingUtilities.invokeLater( () -> component.scrollRectToVisible(vr));
         } else if (isRubberWanted(e)) {
             updateSize(e);
             mouseMonitor.rectangleSelected(rect, DRAGGING);
@@ -471,6 +568,52 @@ public class Rubber
         }
     }
 
+    //-----------//
+    // normalize //
+    //-----------//
+    private void normalize ()
+    {
+        if (rect == null) {
+            rect = new Rectangle(
+                    unscaled(rawRect.x),
+                    unscaled(rawRect.y),
+                    unscaled(rawRect.width),
+                    unscaled(rawRect.height));
+        } else {
+            rect.setBounds(
+                    unscaled(rawRect.x),
+                    unscaled(rawRect.y),
+                    unscaled(rawRect.width),
+                    unscaled(rawRect.height));
+        }
+
+        // The x & y are the original coordinates when mouse began
+        // But width & height may be negative
+        // Make the width and height positive, if necessary.
+        if (rect.width < 0) {
+            rect.width = -rect.width;
+            rect.x = rect.x - rect.width + 1;
+
+            if (rect.x < 0) {
+                rect.width += rect.x;
+                rect.x = 0;
+            }
+        }
+
+        if (rect.height < 0) {
+            rect.height = -rect.height;
+            rect.y = rect.y - rect.height + 1;
+
+            if (rect.y < 0) {
+                rect.height += rect.y;
+                rect.y = 0;
+            }
+        }
+
+        // Crop rect within the component
+        cropRectangle();
+    }
+
     //--------//
     // render //
     //--------//
@@ -550,6 +693,21 @@ public class Rubber
         }
     }
 
+    //-------//
+    // reset //
+    //-------//
+    private void reset (MouseEvent e)
+    {
+        if (rawRect == null) {
+            rawRect = new Rectangle(e.getX(), e.getY(), 0, 0);
+        } else {
+            rawRect.setBounds(e.getX(), e.getY(), 0, 0);
+        }
+
+        normalize();
+        resetOrigin(rect.x, rect.y);
+    }
+
     //-------------//
     // resetOrigin //
     //-------------//
@@ -591,6 +749,38 @@ public class Rubber
             }
         } else {
             rect = null;
+        }
+    }
+
+    //--------//
+    // scaled //
+    //--------//
+    private int scaled (int val)
+    {
+        if (zoom != null) {
+            return zoom.scaled(val);
+        } else {
+            return val;
+        }
+    }
+
+    //-----------//
+    // setCursor //
+    //-----------//
+    private void setCursor (MouseEvent e)
+    {
+        if (isDragWanted(e)) {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        } else if (isAdditionWanted(e)) {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        } else if (isContextWanted(e)) {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else if (isRubberWanted(e)) {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else if (isRezoomWanted(e)) {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else {
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 
@@ -655,187 +845,6 @@ public class Rubber
         }
     }
 
-    //-- private access ----------------------------------------------------------------------------
-    //-------------//
-    // clampCenter //
-    //-------------//
-    /**
-     * Maintain rubber center within component bounds.
-     */
-    private void clampCenter ()
-    {
-        final Point initial = getCenter();
-
-        if (initial == null) {
-            return;
-        }
-
-        int x = initial.x;
-        int y = initial.y;
-
-        // The center must stay within the component
-        final int compWidth = unscaled(component.getWidth());
-        final int compHeight = unscaled(component.getHeight());
-
-        if (x < 0) {
-            x = 0;
-        } else if (x > compWidth) {
-            x = compWidth;
-        }
-
-        if (y < 0) {
-            y = 0;
-        } else if (y > compHeight) {
-            y = compHeight;
-        }
-
-        rect.translate(x - initial.x, y - initial.y);
-    }
-
-    //---------------//
-    // cropRectangle //
-    //---------------//
-    /**
-     * Crop rubber rectangle with component bounds.
-     */
-    private void cropRectangle ()
-    {
-        // The origin must stay within the component
-        final int compWidth = unscaled(component.getWidth());
-        final int compHeight = unscaled(component.getHeight());
-
-        if (rect.x < 0) {
-            rect.x = 0;
-        } else if (rect.x > compWidth) {
-            rect.x = compWidth;
-        }
-
-        if (rect.y < 0) {
-            rect.y = 0;
-        } else if (rect.y > compHeight) {
-            rect.y = compHeight;
-        }
-
-        // The rectangle shouldn't extend past the drawing area.
-        if ((rect.x + rect.width) > compWidth) {
-            rect.width = compWidth - rect.x;
-        }
-
-        if ((rect.y + rect.height) > compHeight) {
-            rect.height = compHeight - rect.y;
-        }
-    }
-
-    //---------------------//
-    // disconnectComponent //
-    //---------------------//
-    /**
-     * Disconnect the provided component
-     *
-     * @param component the component to disconnect
-     */
-    private void disconnectComponent (JComponent component)
-    {
-        if (component != null) {
-            component.removeMouseListener(this);
-            component.removeMouseMotionListener(this);
-            component.removeMouseWheelListener(this);
-        }
-    }
-
-    //-----------//
-    // normalize //
-    //-----------//
-    private void normalize ()
-    {
-        if (rect == null) {
-            rect = new Rectangle(
-                    unscaled(rawRect.x),
-                    unscaled(rawRect.y),
-                    unscaled(rawRect.width),
-                    unscaled(rawRect.height));
-        } else {
-            rect.setBounds(
-                    unscaled(rawRect.x),
-                    unscaled(rawRect.y),
-                    unscaled(rawRect.width),
-                    unscaled(rawRect.height));
-        }
-
-        // The x & y are the original coordinates when mouse began
-        // But width & height may be negative
-        // Make the width and height positive, if necessary.
-        if (rect.width < 0) {
-            rect.width = -rect.width;
-            rect.x = rect.x - rect.width + 1;
-
-            if (rect.x < 0) {
-                rect.width += rect.x;
-                rect.x = 0;
-            }
-        }
-
-        if (rect.height < 0) {
-            rect.height = -rect.height;
-            rect.y = rect.y - rect.height + 1;
-
-            if (rect.y < 0) {
-                rect.height += rect.y;
-                rect.y = 0;
-            }
-        }
-
-        // Crop rect within the component
-        cropRectangle();
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    private void reset (MouseEvent e)
-    {
-        if (rawRect == null) {
-            rawRect = new Rectangle(e.getX(), e.getY(), 0, 0);
-        } else {
-            rawRect.setBounds(e.getX(), e.getY(), 0, 0);
-        }
-
-        normalize();
-        resetOrigin(rect.x, rect.y);
-    }
-
-    //--------//
-    // scaled //
-    //--------//
-    private int scaled (int val)
-    {
-        if (zoom != null) {
-            return zoom.scaled(val);
-        } else {
-            return val;
-        }
-    }
-
-    //-----------//
-    // setCursor //
-    //-----------//
-    private void setCursor (MouseEvent e)
-    {
-        if (isDragWanted(e)) {
-            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-        } else if (isAdditionWanted(e)) {
-            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        } else if (isContextWanted(e)) {
-            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else if (isRubberWanted(e)) {
-            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else if (isRezoomWanted(e)) {
-            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else {
-            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-    }
-
     //----------//
     // unscaled //
     //----------//
@@ -862,6 +871,7 @@ public class Rubber
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

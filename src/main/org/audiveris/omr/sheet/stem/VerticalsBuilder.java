@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,7 +33,7 @@ import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -70,6 +70,7 @@ public class VerticalsBuilder
     private static final Logger logger = LoggerFactory.getLogger(VerticalsBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The system to process. */
     private final SystemInfo system;
 
@@ -83,6 +84,7 @@ public class VerticalsBuilder
     private final StemChecker stemChecker;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new VerticalsBuilder object, using system profile.
      *
@@ -98,6 +100,7 @@ public class VerticalsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // buildVerticals //
     //----------------//
@@ -107,7 +110,7 @@ public class VerticalsBuilder
      * @throws StepException if processing failed at this step
      */
     public void buildVerticals ()
-            throws StepException
+        throws StepException
     {
         // Display
         if (OMR.gui != null) {
@@ -125,14 +128,6 @@ public class VerticalsBuilder
 
         // Apply seed checks
         checkVerticals(candidates);
-    }
-
-    //-----------------//
-    // getMinSideRatio //
-    //-----------------//
-    public static Constant.Ratio getMinSideRatio ()
-    {
-        return constants.minSideRatio;
     }
 
     //----------------//
@@ -223,14 +218,27 @@ public class VerticalsBuilder
                 sheet.getFilamentIndex(),
                 null,
                 scale.getMaxStem(),
-                scale.toPixels((Scale.Fraction) constants
-                        .getConstant(constants.minCoreSectionLength, system.getProfile())),
+                scale.toPixels(
+                        (Scale.Fraction) constants.getConstant(
+                                constants.minCoreSectionLength,
+                                system.getProfile())),
                 constants.minSideRatio.getValue());
 
         return factory.retrieveSticks(vSections, hSections);
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getMinSideRatio //
+    //-----------------//
+    public static Constant.Ratio getMinSideRatio ()
+    {
+        return constants.minSideRatio;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

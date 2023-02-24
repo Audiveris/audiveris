@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class JunctionRatioPolicy
     public static final JunctionRatioPolicy DEFAULT = new JunctionRatioPolicy();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Maximum value acceptable for length ratio.
      */
@@ -55,6 +56,7 @@ public class JunctionRatioPolicy
     private final double minLengthRatio;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a policy based on default length ratio.
      */
@@ -76,6 +78,7 @@ public class JunctionRatioPolicy
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // consistentRun //
     //---------------//
@@ -104,10 +107,11 @@ public class JunctionRatioPolicy
     public String toString ()
     {
         return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio + " minLengthRatio="
-               + minLengthRatio + "}";
+                + minLengthRatio + "}";
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

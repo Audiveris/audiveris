@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -62,6 +62,7 @@ public class WedgesBuilder
     private static final Logger logger = LoggerFactory.getLogger(WedgesBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -73,6 +74,7 @@ public class WedgesBuilder
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -86,6 +88,7 @@ public class WedgesBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // buildWedges //
     //-------------//
@@ -101,7 +104,8 @@ public class WedgesBuilder
         // Do the same on right end of segments
         List<SegmentInter> segments = curves.getSegments();
 
-        for (final boolean rev : new boolean[]{true, false}) {
+        for (final boolean rev : new boolean[]
+        { true, false }) {
             Collections.sort(segments, rev ? Inters.byAbscissa : Inters.byRightAbscissa);
 
             for (int index = 0; index < segments.size(); index++) {
@@ -225,10 +229,8 @@ public class WedgesBuilder
         }
 
         // Adjust lines precisely
-        l1.setLine(l1.getX1(), l1.getY1() + 0.5,
-                   l1.getX2() + 1, l1.getY2() + 0.5);
-        l2.setLine(l2.getX1(), l2.getY1() + 0.5,
-                   l2.getX2() + 1, l2.getY2() + 0.5);
+        l1.setLine(l1.getX1(), l1.getY1() + 0.5, l1.getX2() + 1, l1.getY2() + 0.5);
+        l2.setLine(l2.getX1(), l2.getY1() + 0.5, l2.getX2() + 1, l2.getY2() + 0.5);
 
         WedgeInter inter = new WedgeInter(l1, l2, box, shape, impacts);
 
@@ -264,6 +266,7 @@ public class WedgesBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,32 +61,20 @@ public abstract class Profiles
     /** Maximum defined profile value. */
     public static final int MAX_VALUE = 4;
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Enum <code>InputQuality</code> describes input quality.
-     */
-    public static enum InputQuality
-    {
-        /** The highest quality, no gaps allowed. */
-        Synthetic,
-        /** The standard quality, small gaps allowed. */
-        Standard,
-        /** The lowest quality, use a hierarchy of gap profiles. */
-        Poor;
-    }
-
     /** Default input quality. */
     public static final Param<InputQuality> defaultQualityParam = new ConstantBasedParam<>(
             constants.defaultQuality,
             Param.GLOBAL_SCOPE);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private Profiles ()
     {
         // Not meant to be instantiated
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -98,5 +86,20 @@ public abstract class Profiles
                 InputQuality.class,
                 InputQuality.Standard,
                 "Default quality for input image");
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Enum <code>InputQuality</code> describes input quality.
+     */
+    public static enum InputQuality
+    {
+        /** The highest quality, no gaps allowed. */
+        Synthetic,
+        /** The standard quality, small gaps allowed. */
+        Standard,
+        /** The lowest quality, use a hierarchy of gap profiles. */
+        Poor;
     }
 }

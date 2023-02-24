@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -168,6 +168,7 @@ public class Skeleton
     { 2, 4, 6, 8, 1, 3, 5, 7 };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The skeleton buffer. */
     public ByteProcessor buf;
 
@@ -194,6 +195,7 @@ public class Skeleton
     private Map<SystemInfo, List<Glyph>> erasedSeeds;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Skeleton object.
      *
@@ -205,6 +207,30 @@ public class Skeleton
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------//
+    // addVoidArc //
+    //------------//
+    /**
+     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     *
+     * @param arc the void arc to register
+     */
+    public void addVoidArc (Arc arc)
+    {
+        for (boolean rev : new boolean[]
+        { true, false }) {
+            Point junctionPt = arc.getJunction(rev);
+            List<Arc> arcs = voidArcsMap.get(junctionPt);
+
+            if (arcs == null) {
+                voidArcsMap.put(junctionPt, arcs = new ArrayList<>());
+            }
+
+            arcs.add(arc);
+        }
+    }
+
     //---------------//
     // buildSkeleton //
     //---------------//
@@ -276,27 +302,29 @@ public class Skeleton
         return img;
     }
 
-    //------------//
-    // addVoidArc //
-    //------------//
+    //-----------------//
+    // getErasedInters //
+    //-----------------//
     /**
-     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     * Report the collection of erased inters, with provided crossable characteristic
      *
-     * @param arc the void arc to register
+     * @param crossable true for crossable, false for non-crossable
+     * @return the desired erased inters
      */
-    public void addVoidArc (Arc arc)
+    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
     {
-        for (boolean rev : new boolean[]
-        { true, false }) {
-            Point junctionPt = arc.getJunction(rev);
-            List<Arc> arcs = voidArcsMap.get(junctionPt);
+        return crossable ? crossables : nonCrossables;
+    }
 
-            if (arcs == null) {
-                voidArcsMap.put(junctionPt, arcs = new ArrayList<>());
-            }
-
-            arcs.add(arc);
-        }
+    //----------------//
+    // getErasedSeeds //
+    //----------------//
+    /**
+     * @return the erasedSeeds
+     */
+    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
+    {
+        return erasedSeeds;
     }
 
     //----------//
@@ -342,23 +370,6 @@ public class Skeleton
     }
 
     //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Set pixel value at provided location
-     *
-     * @param x   abscissa
-     * @param y   ordinate
-     * @param val pixel value to set
-     */
-    public void setPixel (int x,
-                          int y,
-                          int val)
-    {
-        buf.set(x, y, val);
-    }
-
-    //----------//
     // setColor //
     //----------//
     /**
@@ -392,30 +403,24 @@ public class Skeleton
         }
     }
 
-    //-----------------//
-    // getErasedInters //
-    //-----------------//
+    //----------//
+    // setPixel //
+    //----------//
     /**
-     * Report the collection of erased inters, with provided crossable characteristic
+     * Set pixel value at provided location
      *
-     * @param crossable true for crossable, false for non-crossable
-     * @return the desired erased inters
+     * @param x   abscissa
+     * @param y   ordinate
+     * @param val pixel value to set
      */
-    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
+    public void setPixel (int x,
+                          int y,
+                          int val)
     {
-        return crossable ? crossables : nonCrossables;
+        buf.set(x, y, val);
     }
 
-    //----------------//
-    // getErasedSeeds //
-    //----------------//
-    /**
-     * @return the erasedSeeds
-     */
-    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
-    {
-        return erasedSeeds;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // getDir //
@@ -493,6 +498,7 @@ public class Skeleton
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

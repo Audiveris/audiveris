@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.run;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LIntegerField;
@@ -35,6 +31,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Class <code>RunBoard</code> is dedicated to display of Run information.
@@ -49,9 +49,11 @@ public class RunBoard
     private static final Logger logger = LoggerFactory.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]
+    { RunEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Field for run length */
     private final LIntegerField rLength = new LIntegerField(
             false,
@@ -65,6 +67,7 @@ public class RunBoard
             "Pixel coordinate at start of run");
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a Run Board on the RunTable of a provided ag
      *
@@ -88,8 +91,9 @@ public class RunBoard
     {
         super(
                 Board.RUN.name + ((runTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
-                : " Hori"),
-                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                        : " Hori"),
+                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100
+                        : 0),
                 runTable.getRunService(),
                 eventClasses,
                 selected,
@@ -100,6 +104,25 @@ public class RunBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        final FormLayout layout = Panel.makeFormLayout(1, 3);
+        final PanelBuilder builder = new PanelBuilder(layout, getBody());
+        final CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+
+        builder.add(rStart.getLabel(), cst.xy(1, r));
+        builder.add(rStart.getField(), cst.xy(3, r));
+
+        builder.add(rLength.getLabel(), cst.xy(5, r));
+        builder.add(rLength.getField(), cst.xy(7, r));
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -133,23 +156,5 @@ public class RunBoard
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        final FormLayout layout = Panel.makeFormLayout(1, 3);
-        final PanelBuilder builder = new PanelBuilder(layout, getBody());
-        final CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-
-        builder.add(rStart.getLabel(), cst.xy(1, r));
-        builder.add(rStart.getField(), cst.xy(3, r));
-
-        builder.add(rLength.getLabel(), cst.xy(5, r));
-        builder.add(rLength.getField(), cst.xy(7, r));
     }
 }

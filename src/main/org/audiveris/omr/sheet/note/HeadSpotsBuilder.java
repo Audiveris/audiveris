@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,7 @@ public class HeadSpotsBuilder
     Map<SystemInfo, List<Glyph>> glyphMap = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadSpotsBuilder</code> object.
      *
@@ -64,25 +65,6 @@ public class HeadSpotsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getSpots //
-    //----------//
-    /**
-     * Retrieve the glyphs out of buffer runs.
-     *
-     * @return the map of spot glyphs per system
-     */
-    public Map<SystemInfo, List<Glyph>> getSpots ()
-    {
-        RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
-        List<Glyph> spots = GlyphFactory.buildGlyphs(
-                headRuns,
-                new Point(0, 0),
-                GlyphGroup.HEAD_SPOT);
-
-        // Dispatch spots per system(s)
-        return dispatchSheetSpots(spots);
-    }
 
     //--------------------//
     // dispatchSheetSpots //
@@ -115,5 +97,25 @@ public class HeadSpotsBuilder
         }
 
         return spotMap;
+    }
+
+    //----------//
+    // getSpots //
+    //----------//
+    /**
+     * Retrieve the glyphs out of buffer runs.
+     *
+     * @return the map of spot glyphs per system
+     */
+    public Map<SystemInfo, List<Glyph>> getSpots ()
+    {
+        RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
+        List<Glyph> spots = GlyphFactory.buildGlyphs(
+                headRuns,
+                new Point(0, 0),
+                GlyphGroup.HEAD_SPOT);
+
+        // Dispatch spots per system(s)
+        return dispatchSheetSpots(spots);
     }
 }

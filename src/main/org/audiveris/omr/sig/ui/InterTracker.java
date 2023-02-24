@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,6 +61,7 @@ public class InterTracker
     protected SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an <code>InterTracker</code> object.
      *
@@ -75,33 +76,37 @@ public class InterTracker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     public Inter getInter ()
     {
         return inter;
     }
 
-    public void setInter (Inter inter)
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * Report the bounding box of the whole scene to be drawn.
+     *
+     * @return the scene bounds
+     */
+    public Rectangle getSceneBounds ()
     {
-        this.inter = inter;
+        Rectangle box = inter.getBounds();
+
+        if (system != null) {
+            // Inter links
+            for (Link link : inter.searchLinks(system)) {
+                box.add(link.partner.getRelationCenter());
+            }
+        }
+
+        return box;
     }
 
     public Sheet getSheet ()
     {
         return sheet;
-    }
-
-    //-----------//
-    // setSystem //
-    //-----------//
-    /**
-     * Assign the current containing system.
-     * A non-null system allows to search for supporting links, etc.
-     *
-     * @param system the new containing system
-     */
-    public void setSystem (SystemInfo system)
-    {
-        this.system = system;
     }
 
     //--------//
@@ -134,25 +139,22 @@ public class InterTracker
         }
     }
 
-    //----------------//
-    // getSceneBounds //
-    //----------------//
-    /**
-     * Report the bounding box of the whole scene to be drawn.
-     *
-     * @return the scene bounds
-     */
-    public Rectangle getSceneBounds ()
+    public void setInter (Inter inter)
     {
-        Rectangle box = inter.getBounds();
+        this.inter = inter;
+    }
 
-        if (system != null) {
-            // Inter links
-            for (Link link : inter.searchLinks(system)) {
-                box.add(link.partner.getRelationCenter());
-            }
-        }
-
-        return box;
+    //-----------//
+    // setSystem //
+    //-----------//
+    /**
+     * Assign the current containing system.
+     * A non-null system allows to search for supporting links, etc.
+     *
+     * @param system the new containing system
+     */
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
     }
 }

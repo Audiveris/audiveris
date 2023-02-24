@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,7 +44,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
-@XmlType(propOrder = {"num", "den"})
+@XmlType(propOrder =
+{ "num", "den" })
 public class Rational
         extends Number
         implements Comparable<Rational>
@@ -76,6 +77,7 @@ public class Rational
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Numerator integer value, after rational reduction. */
     @XmlAttribute(name = "num")
     public final int num;
@@ -85,6 +87,13 @@ public class Rational
     public final int den;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /** Needed for JAXB. */
+    private Rational ()
+    {
+        num = den = 1;
+    }
+
     /**
      * Create a final Rational instance
      *
@@ -115,13 +124,8 @@ public class Rational
         this.den = den;
     }
 
-    /** Needed for JAXB. */
-    private Rational ()
-    {
-        num = den = 1;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // abs //
     //-----//
@@ -176,12 +180,12 @@ public class Rational
     /**
      * Division
      *
-     * @param that the other rational instance
+     * @param that the integer to divide by
      * @return this / that
      */
-    public Rational divides (Rational that)
+    public Rational divides (int that)
     {
-        return times(that.inverse());
+        return new Rational(num, den * that);
     }
 
     //---------//
@@ -190,12 +194,12 @@ public class Rational
     /**
      * Division
      *
-     * @param that the integer to divide by
+     * @param that the other rational instance
      * @return this / that
      */
-    public Rational divides (int that)
+    public Rational divides (Rational that)
     {
-        return new Rational(num, den * that);
+        return times(that.inverse());
     }
 
     //-------------//
@@ -285,12 +289,12 @@ public class Rational
     /**
      * Subtraction
      *
-     * @param that the other rational instance
+     * @param that the integer to subtract
      * @return this - that
      */
-    public Rational minus (Rational that)
+    public Rational minus (int that)
     {
-        return plus(that.opposite());
+        return plus(-that);
     }
 
     //-------//
@@ -299,12 +303,12 @@ public class Rational
     /**
      * Subtraction
      *
-     * @param that the integer to subtract
+     * @param that the other rational instance
      * @return this - that
      */
-    public Rational minus (int that)
+    public Rational minus (Rational that)
     {
-        return plus(-that);
+        return plus(that.opposite());
     }
 
     //----------//
@@ -318,6 +322,20 @@ public class Rational
     public Rational opposite ()
     {
         return new Rational(-num, den);
+    }
+
+    //------//
+    // plus //
+    //------//
+    /**
+     * Addition
+     *
+     * @param that the integer to add
+     * @return this + that
+     */
+    public Rational plus (int that)
+    {
+        return plus(new Rational(that, 1));
     }
 
     //------//
@@ -342,18 +360,18 @@ public class Rational
         return new Rational((this.num * that.den) + (this.den * that.num), this.den * that.den);
     }
 
-    //------//
-    // plus //
-    //------//
+    //-------//
+    // times //
+    //-------//
     /**
-     * Addition
+     * Multiplication
      *
-     * @param that the integer to add
-     * @return this + that
+     * @param that the integer to multiply by
+     * @return this * that
      */
-    public Rational plus (int that)
+    public Rational times (int that)
     {
-        return plus(new Rational(that, 1));
+        return new Rational(num * that, den);
     }
 
     //-------//
@@ -370,20 +388,6 @@ public class Rational
         return new Rational(this.num * that.num, this.den * that.den);
     }
 
-    //-------//
-    // times //
-    //-------//
-    /**
-     * Multiplication
-     *
-     * @param that the integer to multiply by
-     * @return this * that
-     */
-    public Rational times (int that)
-    {
-        return new Rational(num * that, den);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -396,6 +400,8 @@ public class Rational
             return num + "/" + den;
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // decode //
@@ -412,14 +418,16 @@ public class Rational
         final String[] tokens = str.split("\\s*/\\s*");
 
         switch (tokens.length) {
-        case 2: {
+        case 2:
+        {
             int num = Integer.decode(tokens[0].trim());
             int den = Integer.decode(tokens[1].trim());
 
             return new Rational(num, den);
         }
 
-        case 1: {
+        case 1:
+        {
             int num = Integer.decode(tokens[0].trim());
 
             return new Rational(num, 1);
@@ -427,26 +435,6 @@ public class Rational
 
         default:
             throw new NumberFormatException(str);
-        }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    /**
-     * Compute the Greatest Common Divisor of two rational values.
-     *
-     * @param a a rational
-     * @param b another rational
-     * @return the GCD of a and b
-     */
-    public static Rational gcd (Rational a,
-                                Rational b)
-    {
-        if (a.num == 0) {
-            return b;
-        } else {
-            return new Rational(1, GCD.lcm(a.den, b.den));
         }
     }
 
@@ -470,7 +458,28 @@ public class Rational
         return s;
     }
 
+    //-----//
+    // gcd //
+    //-----//
+    /**
+     * Compute the Greatest Common Divisor of two rational values.
+     *
+     * @param a a rational
+     * @param b another rational
+     * @return the GCD of a and b
+     */
+    public static Rational gcd (Rational a,
+                                Rational b)
+    {
+        if (a.num == 0) {
+            return b;
+        } else {
+            return new Rational(1, GCD.lcm(a.den, b.den));
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -483,7 +492,7 @@ public class Rational
 
         @Override
         public String marshal (Rational val)
-                throws Exception
+            throws Exception
         {
             if (val == null) {
                 return null;
@@ -494,7 +503,7 @@ public class Rational
 
         @Override
         public Rational unmarshal (String str)
-                throws Exception
+            throws Exception
         {
             return decode(str);
         }

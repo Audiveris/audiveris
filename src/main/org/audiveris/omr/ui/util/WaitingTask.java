@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -43,13 +43,11 @@ import javax.swing.JProgressBar;
  * Method <code>doInBackground</code> must be provided in subclass.
  * <p>
  * Method <code>finished</code> can be provided in subclass to trigger some other action when the
- * task
- * is completed.
+ * task is completed.
  *
  * @param <T> the result type returned by <code>doInBackground</code> and <code>get</code> methods
  * @param <V> the type used for carrying out intermediate results by <code>publish</code> and
  *            <code>process</code> methods
- *
  * @author Hervé Bitteur
  */
 public abstract class WaitingTask<T, V>
@@ -64,6 +62,7 @@ public abstract class WaitingTask<T, V>
     protected JDialog dialog;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>WaitingTask</code> with default dialog title and display delay.
      *
@@ -102,8 +101,8 @@ public abstract class WaitingTask<T, V>
             public void run ()
             {
                 final String dialogTitle = (title != null) ? title
-                        : application.getContext().getResourceMap(WaitingTask.class)
-                                .getString("title");
+                        : application.getContext().getResourceMap(WaitingTask.class).getString(
+                                "title");
 
                 dialog = new JDialog(application.getMainFrame(), dialogTitle, false);
 
@@ -129,6 +128,7 @@ public abstract class WaitingTask<T, V>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     protected void finished ()
     {

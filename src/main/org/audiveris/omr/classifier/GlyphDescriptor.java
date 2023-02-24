@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,10 +47,12 @@ public abstract class GlyphDescriptor
     private static final Logger logger = LoggerFactory.getLogger(GlyphDescriptor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Descriptor name. */
     private final String name;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>GlyphDescriptor</code> object.
      *
@@ -62,6 +64,7 @@ public abstract class GlyphDescriptor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Export the provided collection of samples to a file (using CSV format).
      *
@@ -77,8 +80,8 @@ public abstract class GlyphDescriptor
         final Path path = WellKnowns.TRAIN_FOLDER.resolve(radix + ext);
 
         try (FileOutputStream fos = new FileOutputStream(path.toFile());
-             OutputStreamWriter osw = new OutputStreamWriter(fos, WellKnowns.FILE_ENCODING);
-             PrintWriter out = new PrintWriter(new BufferedWriter(osw))) {
+                OutputStreamWriter osw = new OutputStreamWriter(fos, WellKnowns.FILE_ENCODING);
+                PrintWriter out = new PrintWriter(new BufferedWriter(osw))) {
             for (Sample sample : samples) {
                 for (double in : getFeatures(sample, sample.getInterline())) {
                     out.print(in);

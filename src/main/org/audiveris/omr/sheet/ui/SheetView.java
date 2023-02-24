@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -62,6 +62,7 @@ public class SheetView
     private static final Logger logger = LoggerFactory.getLogger(SheetView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The containing sheet assembly. */
     private final SheetAssembly assembly;
 
@@ -85,8 +86,8 @@ public class SheetView
     private final JSplitPane splitPane;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     *
      * @param assembly   the sheet assembly
      * @param title      title for the view
      * @param boardsPane related boards pane
@@ -128,9 +129,10 @@ public class SheetView
         // Called back when split container is resized
         splitPane.addPropertyChangeListener(
                 JSplitPane.DIVIDER_LOCATION_PROPERTY,
-                (PropertyChangeEvent pce) -> {
-            assembly.setCommonDividerLocation(splitPane.getDividerLocation());
-        });
+                (PropertyChangeEvent pce) ->
+                {
+                    assembly.setCommonDividerLocation(splitPane.getDividerLocation());
+                });
 
         // Make the new view reuse the common zoom and rubber instances
         RubberPanel rubberPanel = scrollView.getView();
@@ -154,6 +156,7 @@ public class SheetView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // close //
     //-------//
@@ -250,6 +253,19 @@ public class SheetView
         return splitPane;
     }
 
+    //---------------//
+    // getScrollView //
+    //---------------//
+    /**
+     * Report the image scroll view.
+     *
+     * @return the scrollView
+     */
+    public ScrollView getScrollView ()
+    {
+        return scrollView;
+    }
+
     //----------//
     // getTitle //
     //----------//
@@ -312,20 +328,8 @@ public class SheetView
         return sb.toString();
     }
 
-    //---------------//
-    // getScrollView //
-    //---------------//
-    /**
-     * Report the image scroll view.
-     *
-     * @return the scrollView
-     */
-    public ScrollView getScrollView ()
-    {
-        return scrollView;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------------//
     // BoardsScrollPane //
     //------------------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,15 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.util.Jaxb;
-import net.jcip.annotations.NotThreadSafe;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoPath;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -87,27 +86,19 @@ public class BrokenLine
     private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The ordered sequence of points. */
     @XmlElement(name = "point")
     @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     private final List<Point> points = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BrokenLine object with an initially empty sequence of points.
      */
     public BrokenLine ()
     {
-    }
-
-    /**
-     * Creates a new BrokenLine object with a few initial points.
-     *
-     * @param points array of initial points
-     */
-    public BrokenLine (Point... points)
-    {
-        resetPoints(Arrays.asList(points));
     }
 
     /**
@@ -120,7 +111,18 @@ public class BrokenLine
         resetPoints(points);
     }
 
+    /**
+     * Creates a new BrokenLine object with a few initial points.
+     *
+     * @param points array of initial points
+     */
+    public BrokenLine (Point... points)
+    {
+        resetPoints(Arrays.asList(points));
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addPoint //
     //----------//
@@ -411,6 +413,8 @@ public class BrokenLine
         return "{BrokenLine " + getSequenceString() + "}";
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //---------------------//
     // getDraggingDistance //
     //---------------------//
@@ -438,6 +442,7 @@ public class BrokenLine
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

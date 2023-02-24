@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,6 +40,14 @@ public class SmallBeamInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SmallBeamInter ()
+    {
+        super((Shape) null, (GradeImpacts) null, null, 0);
+    }
+
+    /**
      * Creates a new SmallBeamInter object.
      *
      * @param impacts the grade details
@@ -53,15 +61,8 @@ public class SmallBeamInter
         super(Shape.BEAM_SMALL, impacts, median, height);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private SmallBeamInter ()
-    {
-        super((Shape) null, (GradeImpacts) null, null, 0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//

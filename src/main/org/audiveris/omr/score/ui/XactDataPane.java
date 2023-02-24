@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,7 @@ public abstract class XactDataPane<E>
             .getResourceMap(XactDataPane.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Model parameter (cannot be null). */
     protected final Param<E> model;
 
@@ -71,6 +72,7 @@ public abstract class XactDataPane<E>
     protected final JLabel title;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>XactDataPane</code> object.
      *
@@ -98,6 +100,7 @@ public abstract class XactDataPane<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void actionPerformed (ActionEvent e)
     {
@@ -155,6 +158,13 @@ public abstract class XactDataPane<E>
     }
 
     /**
+     * Write the parameter into the fields content
+     *
+     * @param content the data to display
+     */
+    protected abstract void display (E content);
+
+    /**
      * Report the count of needed logical rows.
      * Typically 2 (the label separator plus 1 line of data)
      *
@@ -181,6 +191,20 @@ public abstract class XactDataPane<E>
     }
 
     /**
+     * Read the parameter as defined by the fields content.
+     *
+     * @return the pane parameter
+     */
+    protected abstract E read ();
+
+    /**
+     * Set the enabled flag for all data fields
+     *
+     * @param bool the flag value
+     */
+    protected abstract void setEnabled (boolean bool);
+
+    /**
      * User selects (or deselects) this pane
      *
      * @param bool true for selection
@@ -196,25 +220,4 @@ public abstract class XactDataPane<E>
         return new StringBuilder(getClass().getSimpleName()).append(' ').append(title.getText())
                 .append(' ').append(model).toString();
     }
-
-    /**
-     * Write the parameter into the fields content
-     *
-     * @param content the data to display
-     */
-    protected abstract void display (E content);
-
-    /**
-     * Read the parameter as defined by the fields content.
-     *
-     * @return the pane parameter
-     */
-    protected abstract E read ();
-
-    /**
-     * Set the enabled flag for all data fields
-     *
-     * @param bool the flag value
-     */
-    protected abstract void setEnabled (boolean bool);
 }

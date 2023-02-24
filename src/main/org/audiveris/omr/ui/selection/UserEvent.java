@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  * stored as selections, and handled by the EventBus.
  *
  * @param <E> type of conveyed data
- *
  * @author Hervé Bitteur
  */
 public abstract class UserEvent<E>
@@ -39,6 +38,7 @@ public abstract class UserEvent<E>
     private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The entity which created this event (cannot be null). */
     public final Object source;
 
@@ -49,6 +49,7 @@ public abstract class UserEvent<E>
     public MouseMovement movement;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new UserEvent object.
      *
@@ -70,6 +71,7 @@ public abstract class UserEvent<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getData //
     //---------//
@@ -79,6 +81,23 @@ public abstract class UserEvent<E>
      * @return the conveyed data (which may be null)
      */
     public abstract E getData ();
+
+    //----------------//
+    // internalString //
+    //----------------//
+    /**
+     * Report a string about the internals of the specific subclass.
+     *
+     * @return the (sub)class internals as a string
+     */
+    protected String internalString ()
+    {
+        if (getData() != null) {
+            return getData().toString();
+        } else {
+            return "";
+        }
+    }
 
     //----------//
     // toString //
@@ -102,22 +121,5 @@ public abstract class UserEvent<E>
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //----------------//
-    // internalString //
-    //----------------//
-    /**
-     * Report a string about the internals of the specific subclass.
-     *
-     * @return the (sub)class internals as a string
-     */
-    protected String internalString ()
-    {
-        if (getData() != null) {
-            return getData().toString();
-        } else {
-            return "";
-        }
     }
 }

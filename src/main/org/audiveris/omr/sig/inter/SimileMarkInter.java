@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,7 +57,15 @@ public class SimileMarkInter
 
     private static final Logger logger = LoggerFactory.getLogger(SimileMarkInter.class);
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SimileMarkInter ()
+    {
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SimileMarkInter</code> object.
      *
@@ -84,14 +92,8 @@ public class SimileMarkInter
         super(null, null, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private SimileMarkInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -129,29 +131,6 @@ public class SimileMarkInter
     }
 
     //--------//
-    // create //
-    //--------//
-    /**
-     * Create a SimileMarkInter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static SimileMarkInter create (Glyph glyph,
-                                          Shape shape,
-                                          double grade,
-                                          Staff staff)
-    {
-        SimileMarkInter simile = new SimileMarkInter(glyph, shape, grade);
-        simile.setStaff(staff);
-
-        return simile;
-    }
-
-    //--------//
     // remove //
     //--------//
     /**
@@ -174,5 +153,30 @@ public class SimileMarkInter
         }
 
         super.remove(extensive);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a SimileMarkInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance or null if failed
+     */
+    public static SimileMarkInter create (Glyph glyph,
+                                          Shape shape,
+                                          double grade,
+                                          Staff staff)
+    {
+        SimileMarkInter simile = new SimileMarkInter(glyph, shape, grade);
+        simile.setStaff(staff);
+
+        return simile;
     }
 }

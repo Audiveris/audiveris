@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import java.util.Objects;
 import org.audiveris.omr.sheet.SheetStub;
+
+import java.util.Objects;
 
 /**
  * Class <code>Version</code> handles the different components of a version string.
@@ -60,6 +61,7 @@ public class Version
     public final String label;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>Version</code> object and parse its components.
      * <p>
@@ -125,6 +127,7 @@ public class Version
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // compareTo //
     //-----------//
@@ -231,30 +234,6 @@ public class Version
         return hash;
     }
 
-    //-----//
-    // min //
-    //-----//
-    public static Version min (Version v1,
-                               Version v2)
-    {
-        Objects.requireNonNull(v1, "Version v1 is null");
-        Objects.requireNonNull(v2, "Version v2 is null");
-
-        return v1.compareTo(v2) <= 0 ? v1 : v2;
-    }
-
-    //--------------//
-    // minWithLabel //
-    //--------------//
-    public static Version minWithLabel (Version v1,
-                                        Version v2)
-    {
-        Objects.requireNonNull(v1, "Version v1 is null");
-        Objects.requireNonNull(v2, "Version v2 is null");
-
-        return v1.compareWithLabelTo(v2) <= 0 ? v1 : v2;
-    }
-
     //--------------//
     // toLongString //
     //--------------//
@@ -284,7 +263,34 @@ public class Version
         return value;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----//
+    // min //
+    //-----//
+    public static Version min (Version v1,
+                               Version v2)
+    {
+        Objects.requireNonNull(v1, "Version v1 is null");
+        Objects.requireNonNull(v2, "Version v2 is null");
+
+        return v1.compareTo(v2) <= 0 ? v1 : v2;
+    }
+
+    //--------------//
+    // minWithLabel //
+    //--------------//
+    public static Version minWithLabel (Version v1,
+                                        Version v2)
+    {
+        Objects.requireNonNull(v1, "Version v1 is null");
+        Objects.requireNonNull(v2, "Version v2 is null");
+
+        return v1.compareWithLabelTo(v2) <= 0 ? v1 : v2;
+    }
+
     //~ Inner classes ------------------------------------------------------------------------------
+
     //----------------//
     // UpgradeVersion //
     //----------------//

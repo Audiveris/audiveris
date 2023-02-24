@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -74,7 +74,8 @@ public abstract class ObjectEditor
     private static final Constants constants = new Constants();
 
     /** Radius for detection. */
-    private static final double HANDLE_DETECTION_RADIUS = constants.handleDetectionRadius.getValue();
+    private static final double HANDLE_DETECTION_RADIUS = constants.handleDetectionRadius
+            .getValue();
 
     /** Half side of handle icon square. */
     private static final double HANDLE_HALF_SIDE = constants.handleHalfSide.getValue();
@@ -83,6 +84,7 @@ public abstract class ObjectEditor
     private static final double HANDLE_ARC_RADIUS = constants.handleArcRadius.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying object being edited. */
     protected final Object object;
 
@@ -105,6 +107,7 @@ public abstract class ObjectEditor
     protected Zoom zoom;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>ObjectEditor</code> object.
      *
@@ -121,6 +124,20 @@ public abstract class ObjectEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------//
+    // doit //
+    //------//
+    /**
+     * Apply (modified) model to object geometry.
+     * <p>
+     * This method is called only if a non-zero move has occurred on the selected handle.
+     */
+    protected void doit ()
+    {
+        // Void
+    }
+
     //------------//
     // endProcess //
     //------------//
@@ -130,6 +147,19 @@ public abstract class ObjectEditor
     public void endProcess ()
     {
         // Void
+    }
+
+    //-----------//
+    // finalDoit //
+    //-----------//
+    /**
+     * Apply final (modified) model to object geometry.
+     * <p>
+     * This method is called at end of edition.
+     */
+    public void finalDoit ()
+    {
+        doit(); //By default
     }
 
     //-----------//
@@ -151,6 +181,65 @@ public abstract class ObjectEditor
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    //------------//
+    // moveHandle //
+    //------------//
+    /**
+     * Move the selected handle, according to user drag.
+     * <p>
+     * The move can be limited due to handle specific limitations (horizontal, vertical) or to
+     * system area.
+     *
+     * @param dx desired move in x
+     * @param dy desired move in y
+     */
+    protected void moveHandle (int dx,
+                               int dy)
+    {
+        if ((dx != 0) || (dy != 0)) {
+            // Make sure we stay within system area
+            final Point newPt = new Point(lastPt.x + dx, lastPt.y + dy);
+
+            if (system.getArea().contains(newPt)) {
+                // Move the selected handle
+                if (selectedHandle.move(dx, dy)) {
+                    hasMoved = true;
+                    lastPt = newPt;
+                    doit(); // Apply modified model to the object position/geometry
+                }
+            } else {
+                // Remain on last point
+                system.getSheet().getLocationService().publish(
+                        new LocationEvent(
+                                this,
+                                SelectionHint.ENTITY_TRANSIENT,
+                                MouseMovement.DRAGGING,
+                                new Rectangle(lastPt)));
+            }
+        }
+    }
+
+    //-----------------//
+    // processKeyboard //
+    //-----------------//
+    /**
+     * Process user keyboard action.
+     *
+     * @param vector shift of a handle
+     */
+    public void processKeyboard (Point vector)
+    {
+        if (selectedHandle == null) {
+            return;
+        }
+
+        if (lastPt == null) {
+            lastPt = PointUtil.rounded(selectedHandle.getPoint());
+        }
+
+        moveHandle(vector.x, vector.y);
     }
 
     //--------------//
@@ -241,70 +330,12 @@ public abstract class ObjectEditor
         return active;
     }
 
-    //-----------------//
-    // processKeyboard //
-    //-----------------//
-    /**
-     * Process user keyboard action.
-     *
-     * @param vector shift of a handle
-     */
-    public void processKeyboard (Point vector)
-    {
-        if (selectedHandle == null) {
-            return;
-        }
-
-        if (lastPt == null) {
-            lastPt = PointUtil.rounded(selectedHandle.getPoint());
-        }
-
-        moveHandle(vector.x, vector.y);
-    }
-
     //---------//
     // publish //
     //---------//
     protected void publish ()
     {
         // Void
-    }
-
-    //------------//
-    // moveHandle //
-    //------------//
-    /**
-     * Move the selected handle, according to user drag.
-     * <p>
-     * The move can be limited due to handle specific limitations (horizontal, vertical) or to
-     * system area.
-     *
-     * @param dx desired move in x
-     * @param dy desired move in y
-     */
-    protected void moveHandle (int dx,
-                               int dy)
-    {
-        if ((dx != 0) || (dy != 0)) {
-            // Make sure we stay within system area
-            final Point newPt = new Point(lastPt.x + dx, lastPt.y + dy);
-
-            if (system.getArea().contains(newPt)) {
-                // Move the selected handle
-                if (selectedHandle.move(dx, dy)) {
-                    hasMoved = true;
-                    lastPt = newPt;
-                    doit(); // Apply modified model to the object position/geometry
-                }
-            } else {
-                // Remain on last point
-                system.getSheet().getLocationService().publish(new LocationEvent(
-                        this,
-                        SelectionHint.ENTITY_TRANSIENT,
-                        MouseMovement.DRAGGING,
-                        new Rectangle(lastPt)));
-            }
-        }
     }
 
     //--------//
@@ -344,37 +375,8 @@ public abstract class ObjectEditor
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName())
-                .append('{')
-                .append(object)
-                .append('}')
+        return new StringBuilder(getClass().getSimpleName()).append('{').append(object).append('}')
                 .toString();
-    }
-
-    //------//
-    // doit //
-    //------//
-    /**
-     * Apply (modified) model to object geometry.
-     * <p>
-     * This method is called only if a non-zero move has occurred on the selected handle.
-     */
-    protected void doit ()
-    {
-        // Void
-    }
-
-    //-----------//
-    // finalDoit //
-    //-----------//
-    /**
-     * Apply final (modified) model to object geometry.
-     * <p>
-     * This method is called at end of edition.
-     */
-    public void finalDoit ()
-    {
-        doit(); //By default
     }
 
     //------//
@@ -389,6 +391,34 @@ public abstract class ObjectEditor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Ratio handleMaxZoom = new Constant.Ratio(
+                2.0,
+                "Maximum effective zoom on handle");
+
+        private final Constant.Double handleDetectionRadius = new Constant.Double(
+                "pixels",
+                6.0,
+                "Detection radius around inter handle");
+
+        private final Constant.Double handleHalfSide = new Constant.Double(
+                "pixels",
+                4.0,
+                "Half side of handle rounded rectangle");
+
+        private final Constant.Double handleArcRadius = new Constant.Double(
+                "pixels",
+                3.0,
+                "Arc radius at each corner of handle rounded rectangle");
+    }
+
     //--------//
     // Handle //
     //--------//
@@ -466,8 +496,9 @@ public abstract class ObjectEditor
                             boolean isSelected)
         {
             // Draw handle rectangle with a fixed size, regardless of current zoom of score view
-            final double zoom = Math.min(constants.handleMaxZoom.getValue(),
-                                         g.getTransform().getScaleX());
+            final double zoom = Math.min(
+                    constants.handleMaxZoom.getValue(),
+                    g.getTransform().getScaleX());
             final double halfSide = HANDLE_HALF_SIDE / zoom;
             final double arcRadius = HANDLE_ARC_RADIUS / zoom;
             final RoundRectangle2D square = new RoundRectangle2D.Double(
@@ -494,32 +525,5 @@ public abstract class ObjectEditor
 
             return sb.toString();
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Ratio handleMaxZoom = new Constant.Ratio(
-                2.0,
-                "Maximum effective zoom on handle");
-
-        private final Constant.Double handleDetectionRadius = new Constant.Double(
-                "pixels",
-                6.0,
-                "Detection radius around inter handle");
-
-        private final Constant.Double handleHalfSide = new Constant.Double(
-                "pixels",
-                4.0,
-                "Half side of handle rounded rectangle");
-
-        private final Constant.Double handleArcRadius = new Constant.Double(
-                "pixels",
-                3.0,
-                "Arc radius at each corner of handle rounded rectangle");
     }
 }

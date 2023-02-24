@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,12 +38,14 @@ public abstract class GradeUtil
     private static final Logger logger = LoggerFactory.getLogger(GradeUtil.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private GradeUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------//
     // clamp //
     //-------//
@@ -70,32 +72,16 @@ public abstract class GradeUtil
     // contextual //
     //------------//
     /**
-     * Compute contextual grade, knowing inter grade and, for each partner,
-     * its intrinsic grade and the ratio brought by supporting relation.
+     * Compute contextual grade, knowing inter grade and total contribution of partners.
      *
-     * @param inter    the (intrinsic grade of the) inter
-     * @param partners the array of (intrinsic grades of the) supporting partners
-     * @param ratios   the array of ratios of supporting partners, parallel to partners array
-     * @return the resulting contextual probability for inter
+     * @param inter        intrinsic grade of inter
+     * @param contribution total contribution of partners
+     * @return contextual grade for inter
      */
     public static double contextual (double inter,
-                                     double[] partners,
-                                     double[] ratios)
+                                     double contribution)
     {
-        Objects.requireNonNull(ratios, "Null ratios array");
-        Objects.requireNonNull(partners, "Null sources array");
-
-        if (ratios.length != partners.length) {
-            throw new IllegalArgumentException("Arrays of different lengths");
-        }
-
-        double contribution = 0;
-
-        for (int i = 0; i < partners.length; i++) {
-            contribution += contributionOf(partners[i], ratios[i]);
-        }
-
-        return contextual(inter, contribution);
+        return ((1 + contribution) * inter) / (1 + (contribution * inter));
     }
 
     //------------//
@@ -129,16 +115,32 @@ public abstract class GradeUtil
     // contextual //
     //------------//
     /**
-     * Compute contextual grade, knowing inter grade and total contribution of partners.
+     * Compute contextual grade, knowing inter grade and, for each partner,
+     * its intrinsic grade and the ratio brought by supporting relation.
      *
-     * @param inter        intrinsic grade of inter
-     * @param contribution total contribution of partners
-     * @return contextual grade for inter
+     * @param inter    the (intrinsic grade of the) inter
+     * @param partners the array of (intrinsic grades of the) supporting partners
+     * @param ratios   the array of ratios of supporting partners, parallel to partners array
+     * @return the resulting contextual probability for inter
      */
     public static double contextual (double inter,
-                                     double contribution)
+                                     double[] partners,
+                                     double[] ratios)
     {
-        return ((1 + contribution) * inter) / (1 + (contribution * inter));
+        Objects.requireNonNull(ratios, "Null ratios array");
+        Objects.requireNonNull(partners, "Null sources array");
+
+        if (ratios.length != partners.length) {
+            throw new IllegalArgumentException("Arrays of different lengths");
+        }
+
+        double contribution = 0;
+
+        for (int i = 0; i < partners.length; i++) {
+            contribution += contributionOf(partners[i], ratios[i]);
+        }
+
+        return contextual(inter, contribution);
     }
 
     //----------------//

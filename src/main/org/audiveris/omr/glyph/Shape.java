@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,8 +25,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -511,6 +511,8 @@ public enum Shape
                                                              Shape o2) -> o1.name().compareTo(
                                                                      o2.name());
 
+    //~ Instance fields ----------------------------------------------------------------------------
+
     /** Explanation of the glyph shape. */
     private final String description;
 
@@ -523,43 +525,30 @@ public enum Shape
     /** Related color constant. */
     private Constant.Color constantColor;
 
-    //-------//
-    // Shape //
-    //-------//
+    //~ Constructors -------------------------------------------------------------------------------
+
     Shape ()
     {
         this("", null, null);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description)
     {
         this(description, null, null);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description,
            Color color)
     {
         this(description, null, color);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description,
            Shape physicalShape)
     {
         this(description, physicalShape, null);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description,
            Shape physicalShape,
            Color color)
@@ -576,193 +565,7 @@ public enum Shape
                 "Color for shape " + name());
     }
 
-    //---------//
-    // isGrace //
-    //---------//
-    /**
-     * Check whether the shape is a grace
-     *
-     * @return true if grace
-     */
-    public boolean isGrace ()
-    {
-        return ShapeSet.Graces.contains(this);
-    }
-
-    //--------//
-    // isHead //
-    //--------//
-    /**
-     * Check whether the shape is a head.
-     *
-     * @return true if head
-     */
-    public boolean isHead ()
-    {
-        return ShapeSet.Heads.contains(this);
-    }
-
-    //--------//
-    // isRest //
-    //--------//
-    /**
-     * Check whether the shape is a rest.
-     *
-     * @return true if rest
-     */
-    public boolean isRest ()
-    {
-        return ShapeSet.Rests.contains(this);
-    }
-
-    //--------------//
-    // isPercussion //
-    //--------------//
-    /**
-     * Check whether the shape represents an un-pitched percussion.
-     *
-     * @return true if so
-     */
-    public boolean isPercussion ()
-    {
-        return ShapeSet.HeadsCross.contains(this) || ShapeSet.HeadsDiamond.contains(this)
-                || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(this);
-    }
-
-    //--------//
-    // isText //
-    //--------//
-    /**
-     * Check whether the shape is a text (or a simple character).
-     *
-     * @return true if text or character
-     */
-    public boolean isText ()
-    {
-        return (this == TEXT) || (this == CHARACTER);
-    }
-
-    //--------------//
-    // isSharpBased //
-    //--------------//
-    /**
-     * Check whether the shape is a sharp or a key-sig sequence of sharps.
-     *
-     * @return true if sharp or sharp key sig
-     */
-    public boolean isSharpBased ()
-    {
-        return (this == SHARP) || ShapeSet.SharpKeys.contains(this);
-    }
-
-    //-------------//
-    // isFlatBased //
-    //-------------//
-    /**
-     * Check whether the shape is a flat or a key-sig sequence of flats.
-     *
-     * @return true if flat or flat key sig
-     */
-    public boolean isFlatBased ()
-    {
-        return (this == FLAT) || ShapeSet.FlatKeys.contains(this);
-    }
-
-    //-------------//
-    // isSmallFlag //
-    //-------------//
-    /**
-     * Check whether the shape is a small flag, meant for cue or grace.
-     *
-     * @return true if small flag
-     */
-    public boolean isSmallFlag ()
-    {
-        return ShapeSet.SmallFlagsUp.contains(this) || ShapeSet.SmallFlagsDown.contains(this);
-    }
-
-    //-------------//
-    // isSmallHead //
-    //-------------//
-    /**
-     * Check whether the shape is a small note head, meant for cue or grace.
-     *
-     * @return true if small (black/void/whole/breve)
-     */
-    public boolean isSmallHead ()
-    {
-        return ShapeSet.HeadsOvalSmall.contains(this);
-    }
-
-    //-------------//
-    // isTrainable //
-    //-------------//
-    /**
-     * Report whether this shape can be used to train an classifier.
-     *
-     * @return true if trainable, false otherwise
-     */
-    public boolean isTrainable ()
-    {
-        return ordinal() <= LAST_PHYSICAL_SHAPE.ordinal();
-    }
-
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Report a user-friendly description of this shape.
-     *
-     * @return the shape description
-     */
-    public String getDescription ()
-    {
-        if (description == null) {
-            return toString(); // Could be improved
-        } else {
-            return description;
-        }
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color assigned to the shape, if any.
-     *
-     * @return the related color, or null
-     */
-    public Color getColor ()
-    {
-        return color;
-    }
-
-    //----------//
-    // setColor //
-    //----------//
-    /**
-     * Assign a color for this shape.
-     *
-     * @param color the display color
-     */
-    public void setColor (Color color)
-    {
-        this.color = color;
-    }
-
-    //------------------//
-    // setConstantColor //
-    //------------------//
-    /**
-     * Define a specific color for the shape.
-     *
-     * @param color the specified color
-     */
-    public void setConstantColor (Color color)
-    {
-        constantColor.setValue(color);
-        setColor(color);
-    }
+    //~ Methods ------------------------------------------------------------------------------------
 
     //------------------//
     // createShapeColor //
@@ -777,22 +580,17 @@ public enum Shape
         }
     }
 
-    //---------------//
-    // getSlashCount //
-    //---------------//
+    //----------//
+    // getColor //
+    //----------//
     /**
-     * Report the number of slashes in this shape (currently effective on RepeatBars only).
+     * Report the color assigned to the shape, if any.
      *
-     * @return count of slashes
+     * @return the related color, or null
      */
-    public int getSlashCount ()
+    public Color getColor ()
     {
-        return switch (this) {
-        case REPEAT_ONE_BAR -> 1;
-        case REPEAT_TWO_BARS -> 2;
-        case REPEAT_FOUR_BARS -> 4;
-        default -> 0;
-        };
+        return color;
     }
 
     //--------------------//
@@ -815,20 +613,21 @@ public enum Shape
         return symbol.getDecoratedVersion();
     }
 
-    //-----------//
-    // getSymbol //
-    //-----------//
+    //----------------//
+    // getDescription //
+    //----------------//
     /**
-     * Report the symbol to use for this shape.
+     * Report a user-friendly description of this shape.
      *
-     * @param family the selected MusicFont family
-     * @return the shape symbol, perhaps null
+     * @return the shape description
      */
-    public ShapeSymbol getSymbol (MusicFamily family)
+    public String getDescription ()
     {
-        final FontSymbol fs = getFontSymbol(family);
-
-        return (fs != null) ? fs.symbol : null;
+        if (description == null) {
+            return toString(); // Could be improved
+        } else {
+            return description;
+        }
     }
 
     //---------------//
@@ -845,6 +644,30 @@ public enum Shape
     public FontSymbol getFontSymbol (MusicFamily family)
     {
         return getFontSymbolByInterline(family, MusicFont.DEFAULT_INTERLINE);
+    }
+
+    //---------------//
+    // getFontSymbol //
+    //---------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font.
+     *
+     * @param font preferred font
+     * @return a FontSymbol structure, populated by the first compatible font, or null
+     */
+    public FontSymbol getFontSymbol (MusicFont font)
+    {
+        ShapeSymbol symbol = font.getSymbol(this);
+
+        while (symbol == null && font.getBackup() != null) {
+            font = font.getBackup();
+            symbol = font.getSymbol(this);
+        }
+
+        if (symbol == null)
+            return null;
+
+        return new FontSymbol(font, symbol);
     }
 
     //--------------------------//
@@ -881,28 +704,36 @@ public enum Shape
         return getFontSymbol(MusicFont.getBaseFontBySize(family, pointSize));
     }
 
-    //---------------//
-    // getFontSymbol //
-    //---------------//
-    /**
-     * Report the couple font/symbol for this shape and the provided music font.
-     *
-     * @param font preferred font
-     * @return a FontSymbol structure, populated by the first compatible font, or null
-     */
-    public FontSymbol getFontSymbol (MusicFont font)
+    //--------------//
+    // getHeadMotif //
+    //--------------//
+    public HeadMotif getHeadMotif ()
     {
-        ShapeSymbol symbol = font.getSymbol(this);
-
-        while (symbol == null && font.getBackup() != null) {
-            font = font.getBackup();
-            symbol = font.getSymbol(this);
+        if (ShapeSet.HeadsOval.contains(this)) {
+            return HeadMotif.oval;
         }
 
-        if (symbol == null)
-            return null;
+        if (ShapeSet.HeadsOvalSmall.contains(this)) {
+            return HeadMotif.small;
+        }
 
-        return new FontSymbol(font, symbol);
+        if (ShapeSet.HeadsCross.contains(this)) {
+            return HeadMotif.cross;
+        }
+
+        if (ShapeSet.HeadsDiamond.contains(this)) {
+            return HeadMotif.diamond;
+        }
+
+        if (ShapeSet.HeadsTriangle.contains(this)) {
+            return HeadMotif.triangle;
+        }
+
+        if (ShapeSet.HeadsCircle.contains(this)) {
+            return HeadMotif.circle;
+        }
+
+        return null;
     }
 
     //-----------------//
@@ -973,38 +804,6 @@ public enum Shape
         }
     }
 
-    //--------------//
-    // getHeadMotif //
-    //--------------//
-    public HeadMotif getHeadMotif ()
-    {
-        if (ShapeSet.HeadsOval.contains(this)) {
-            return HeadMotif.oval;
-        }
-
-        if (ShapeSet.HeadsOvalSmall.contains(this)) {
-            return HeadMotif.small;
-        }
-
-        if (ShapeSet.HeadsCross.contains(this)) {
-            return HeadMotif.cross;
-        }
-
-        if (ShapeSet.HeadsDiamond.contains(this)) {
-            return HeadMotif.diamond;
-        }
-
-        if (ShapeSet.HeadsTriangle.contains(this)) {
-            return HeadMotif.triangle;
-        }
-
-        if (ShapeSet.HeadsCircle.contains(this)) {
-            return HeadMotif.circle;
-        }
-
-        return null;
-    }
-
     //------------------//
     // getPhysicalShape //
     //------------------//
@@ -1020,6 +819,40 @@ public enum Shape
         } else {
             return this;
         }
+    }
+
+    //---------------//
+    // getSlashCount //
+    //---------------//
+    /**
+     * Report the number of slashes in this shape (currently effective on RepeatBars only).
+     *
+     * @return count of slashes
+     */
+    public int getSlashCount ()
+    {
+        return switch (this) {
+        case REPEAT_ONE_BAR -> 1;
+        case REPEAT_TWO_BARS -> 2;
+        case REPEAT_FOUR_BARS -> 4;
+        default -> 0;
+        };
+    }
+
+    //-----------//
+    // getSymbol //
+    //-----------//
+    /**
+     * Report the symbol to use for this shape.
+     *
+     * @param family the selected MusicFont family
+     * @return the shape symbol, perhaps null
+     */
+    public ShapeSymbol getSymbol (MusicFamily family)
+    {
+        final FontSymbol fs = getFontSymbol(family);
+
+        return (fs != null) ? fs.symbol : null;
     }
 
     //-------------//
@@ -1039,6 +872,166 @@ public enum Shape
         //        return getPhysicalShape().getSymbol() != null;
         return !ShapeSet.Undraggables.contains(this);
     }
+
+    //-------------//
+    // isFlatBased //
+    //-------------//
+    /**
+     * Check whether the shape is a flat or a key-sig sequence of flats.
+     *
+     * @return true if flat or flat key sig
+     */
+    public boolean isFlatBased ()
+    {
+        return (this == FLAT) || ShapeSet.FlatKeys.contains(this);
+    }
+
+    //---------//
+    // isGrace //
+    //---------//
+    /**
+     * Check whether the shape is a grace
+     *
+     * @return true if grace
+     */
+    public boolean isGrace ()
+    {
+        return ShapeSet.Graces.contains(this);
+    }
+
+    //--------//
+    // isHead //
+    //--------//
+    /**
+     * Check whether the shape is a head.
+     *
+     * @return true if head
+     */
+    public boolean isHead ()
+    {
+        return ShapeSet.Heads.contains(this);
+    }
+
+    //--------------//
+    // isPercussion //
+    //--------------//
+    /**
+     * Check whether the shape represents an un-pitched percussion.
+     *
+     * @return true if so
+     */
+    public boolean isPercussion ()
+    {
+        return ShapeSet.HeadsCross.contains(this) || ShapeSet.HeadsDiamond.contains(this)
+                || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(this);
+    }
+
+    //--------//
+    // isRest //
+    //--------//
+    /**
+     * Check whether the shape is a rest.
+     *
+     * @return true if rest
+     */
+    public boolean isRest ()
+    {
+        return ShapeSet.Rests.contains(this);
+    }
+
+    //--------------//
+    // isSharpBased //
+    //--------------//
+    /**
+     * Check whether the shape is a sharp or a key-sig sequence of sharps.
+     *
+     * @return true if sharp or sharp key sig
+     */
+    public boolean isSharpBased ()
+    {
+        return (this == SHARP) || ShapeSet.SharpKeys.contains(this);
+    }
+
+    //-------------//
+    // isSmallFlag //
+    //-------------//
+    /**
+     * Check whether the shape is a small flag, meant for cue or grace.
+     *
+     * @return true if small flag
+     */
+    public boolean isSmallFlag ()
+    {
+        return ShapeSet.SmallFlagsUp.contains(this) || ShapeSet.SmallFlagsDown.contains(this);
+    }
+
+    //-------------//
+    // isSmallHead //
+    //-------------//
+    /**
+     * Check whether the shape is a small note head, meant for cue or grace.
+     *
+     * @return true if small (black/void/whole/breve)
+     */
+    public boolean isSmallHead ()
+    {
+        return ShapeSet.HeadsOvalSmall.contains(this);
+    }
+
+    //--------//
+    // isText //
+    //--------//
+    /**
+     * Check whether the shape is a text (or a simple character).
+     *
+     * @return true if text or character
+     */
+    public boolean isText ()
+    {
+        return (this == TEXT) || (this == CHARACTER);
+    }
+
+    //-------------//
+    // isTrainable //
+    //-------------//
+    /**
+     * Report whether this shape can be used to train an classifier.
+     *
+     * @return true if trainable, false otherwise
+     */
+    public boolean isTrainable ()
+    {
+        return ordinal() <= LAST_PHYSICAL_SHAPE.ordinal();
+    }
+
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Assign a color for this shape.
+     *
+     * @param color the display color
+     */
+    public void setColor (Color color)
+    {
+        this.color = color;
+    }
+
+    //------------------//
+    // setConstantColor //
+    //------------------//
+    /**
+     * Define a specific color for the shape.
+     *
+     * @param color the specified color
+     */
+    public void setConstantColor (Color color)
+    {
+        constantColor.setValue(color);
+        setColor(color);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------------//
     // dumpShapeColors //

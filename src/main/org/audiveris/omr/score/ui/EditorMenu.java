@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -71,8 +71,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import static javax.swing.Action.NAME;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -802,6 +800,26 @@ public class EditorMenu
         }
 
         /**
+         * Launch user edition on current staff line.
+         */
+        private class LineEditionAction
+                extends AbstractAction
+        {
+
+            LineEditionAction ()
+            {
+                putValue(NAME, "Edit lines");
+                putValue(SHORT_DESCRIPTION, "Edit the staff lines individually");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                sheet.getSheetEditor().openEditMode(staff, false);
+            }
+        }
+
+        /**
          * Plot the x-axis projection of the current staff.
          */
         private class PlotAction
@@ -874,26 +892,6 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 sheet.getSheetEditor().openEditMode(staff, true);
-            }
-        }
-
-        /**
-         * Launch user edition on current staff line.
-         */
-        private class LineEditionAction
-                extends AbstractAction
-        {
-
-            LineEditionAction ()
-            {
-                putValue(NAME, "Edit lines");
-                putValue(SHORT_DESCRIPTION, "Edit the staff lines individually");
-            }
-
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                sheet.getSheetEditor().openEditMode(staff, false);
             }
         }
     }

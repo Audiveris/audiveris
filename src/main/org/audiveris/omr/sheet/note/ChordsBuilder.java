@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,9 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
+
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
@@ -52,7 +55,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -91,6 +93,7 @@ public class ChordsBuilder
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -99,6 +102,7 @@ public class ChordsBuilder
     private final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ChordsBuilder</code> object.
      *
@@ -111,6 +115,7 @@ public class ChordsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // buildHeadChords //
     //-----------------//

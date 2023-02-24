@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,6 +41,16 @@ public class MarkerBarRelation
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return constants.markerSupportCoeff.getValue();
+    }
+
     //----------------//
     // isSingleSource //
     //----------------//
@@ -59,16 +69,8 @@ public class MarkerBarRelation
         return true;
     }
 
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.markerSupportCoeff.getValue();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

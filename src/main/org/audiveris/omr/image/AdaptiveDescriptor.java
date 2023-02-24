@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -43,9 +43,11 @@ import javax.xml.bind.annotation.XmlRootElement;
  * neighborhood of (x,y) point.
  * <p>
  * The threshold is computed as follows:
+ *
  * <pre>
- *      threshold = (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev)
+ * threshold = (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev)
  * </pre>
+ *
  * where:
  * <ul>
  * <li><code>mean</code> and <code>stdDev</code> are respectively the mean value and the
@@ -68,8 +70,11 @@ public class AdaptiveDescriptor
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveDescriptor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** In the threshold formula, this parameter defines the coefficient value applied to
-     * the <code>mean</code> pixel value in any point neighborhood. */
+
+    /**
+     * In the threshold formula, this parameter defines the coefficient value applied to
+     * the <code>mean</code> pixel value in any point neighborhood.
+     */
     @XmlAttribute(name = "mean-coeff")
     public final double meanCoeff;
 
@@ -80,7 +85,15 @@ public class AdaptiveDescriptor
     @XmlAttribute(name = "std-dev-coeff")
     public final double stdDevCoeff;
 
+    /** No-arg constructor meant for JAXB. */
+    private AdaptiveDescriptor ()
+    {
+        meanCoeff = 0;
+        stdDevCoeff = 0;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new AdaptiveDescriptor object.
      *
@@ -94,14 +107,25 @@ public class AdaptiveDescriptor
         this.stdDevCoeff = stdDevCoeff;
     }
 
-    /** No-arg constructor meant for JAXB. */
-    private AdaptiveDescriptor ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
     {
-        meanCoeff = 0;
-        stdDevCoeff = 0;
+        if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
+            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
+            final double epsilon = 0.00001;
+
+            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon) && (Math.abs(
+                    this.stdDevCoeff - that.stdDevCoeff) < epsilon);
+        }
+
+        return false;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getFilter //
     //-----------//
@@ -136,23 +160,6 @@ public class AdaptiveDescriptor
         return hash;
     }
 
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
-    {
-        if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
-            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
-            final double epsilon = 0.00001;
-
-            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon) && (Math.abs(
-                    this.stdDevCoeff - that.stdDevCoeff) < epsilon);
-        }
-
-        return false;
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//
@@ -165,6 +172,8 @@ public class AdaptiveDescriptor
 
         return sb.toString();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------------//
     // defaultIsSpecific //
@@ -190,28 +199,12 @@ public class AdaptiveDescriptor
         return constants.meanCoeff.getValue();
     }
 
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
-    }
-
     //-----------------------//
     // getDefaultStdDevCoeff //
     //-----------------------//
     public static double getDefaultStdDevCoeff ()
     {
         return constants.stdDevCoeff.getValue();
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
     }
 
     //----------------//
@@ -233,7 +226,24 @@ public class AdaptiveDescriptor
         constants.stdDevCoeff.resetToSource();
     }
 
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

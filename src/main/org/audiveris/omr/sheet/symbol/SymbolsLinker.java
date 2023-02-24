@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -79,6 +79,7 @@ public class SymbolsLinker
     private static final Logger logger = LoggerFactory.getLogger(SymbolsLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Dedicated system. */
     private final SystemInfo system;
 
@@ -86,6 +87,7 @@ public class SymbolsLinker
     private final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SymbolsLinker</code> object.
      *
@@ -99,209 +101,6 @@ public class SymbolsLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // linkOneSentence //
-    //-----------------//
-    /**
-     * Link a text sentence, according to its role, with its related entity if any.
-     *
-     * @param sentence the sentence to link
-     */
-    public void linkOneSentence (SentenceInter sentence)
-    {
-        try {
-            if (sentence.isVip()) {
-                logger.info("VIP linkOneSentence for {}", sentence);
-            }
-
-            final TextRole role = sentence.getRole();
-
-            if (role == null) {
-                logger.info("No role for {}", sentence);
-
-                return;
-            }
-
-            final Point2D location = sentence.getLocation();
-            final Rectangle bounds = sentence.getBounds();
-            final Scale scale = system.getSheet().getScale();
-
-            switch (role) {
-            case Lyrics ->
-            {
-                // Map each syllable with proper chord, in assigned staff
-                for (Inter wInter : sentence.getMembers()) {
-                    final LyricItemInter item = (LyricItemInter) wInter;
-                    final int profile = Math.max(item.getProfile(), system.getProfile());
-                    item.mapToChord(profile);
-                }
-            }
-
-            case Direction ->
-            {
-                // Map direction with proper chord
-                MeasureStack stack = system.getStackAt(location);
-
-                if (stack == null) {
-                    logger.info(
-                            "No measure stack for direction {} {}",
-                            sentence,
-                            sentence.getValue());
-                } else {
-                    int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
-                    Rectangle fatBounds = new Rectangle(bounds);
-                    fatBounds.grow(xGapMax, 0);
-
-                    AbstractChordInter chord = stack.getEventChord(location, fatBounds);
-
-                    if (chord != null) {
-                        sig.addEdge(chord, sentence, new ChordSentenceRelation());
-                    } else {
-                        logger.info("No chord near direction {} {}", sentence, sentence.getValue());
-                    }
-                }
-            }
-
-            case PartName ->
-            {
-                // Assign part name to proper part
-                Staff staff = system.getClosestStaff(sentence.getCenter());
-                Part part = staff.getPart();
-                part.setName(sentence);
-            }
-
-            case ChordName ->
-            {
-                // Map each word with proper chord, in assigned staff
-                for (Inter wInter : sentence.getMembers()) {
-                    WordInter word = (WordInter) wInter;
-                    Point wordCenter = word.getCenter();
-                    MeasureStack stack = system.getStackAt(wordCenter);
-
-                    if (stack == null) {
-                        logger.info("No stack at {}", word);
-                    } else {
-                        AbstractChordInter chordBelow = stack.getStandardChordBelow(
-                                wordCenter,
-                                word.getBounds());
-
-                        if (chordBelow != null) {
-                            sig.addEdge(chordBelow, word, new ChordNameRelation());
-                        } else {
-                            logger.info("No chord below {}", word);
-                        }
-                    }
-                }
-            }
-
-            case EndingNumber, EndingText ->
-            {
-                // Look for related ending
-                final Link link = sentence.lookupEndingLink(system);
-
-                if ((link != null) && (null == sig.getRelation(
-                        link.partner,
-                        sentence,
-                        EndingSentenceRelation.class))) {
-                    sig.addEdge(link.partner, sentence, link.relation);
-                }
-            }
-            }
-            // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
-        } catch (Exception ex) {
-            logger.warn("Error in linkOneSentence for {} {}", sentence, ex.toString(), ex);
-        }
-    }
-
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Process all links.
-     */
-    public void process ()
-    {
-        linkDynamics();
-        linkTexts();
-        linkPedals();
-        linkWedges();
-        linkFermatas();
-        linkGraces();
-        linkAugmentationDots();
-        linkTuplets();
-        linkOctaveShifts();
-    }
-
-    //-------------------//
-    // unlinkOneSentence //
-    //-------------------//
-    /**
-     * Unlink a text sentence, according to its role, with its related entity if any.
-     *
-     * @param sentence the sentence to unlink
-     * @param oldRole  the role this sentence had
-     */
-    public void unlinkOneSentence (SentenceInter sentence,
-                                   TextRole oldRole)
-    {
-        try {
-            if (sentence.isVip()) {
-                logger.info("VIP unlinkOneSentence for {}", sentence);
-            }
-
-            if (oldRole == null) {
-                logger.info("Null old role for {}", sentence);
-
-                return;
-            }
-
-            switch (oldRole) {
-            case Lyrics ->
-            {
-                for (Inter wInter : sentence.getMembers()) {
-                    LyricItemInter item = (LyricItemInter) wInter;
-
-                    for (Relation rel : sig.getRelations(item, ChordSyllableRelation.class)) {
-                        sig.removeEdge(rel);
-                    }
-                }
-            }
-
-            case Direction ->
-            {
-                for (Relation rel : sig.getRelations(sentence, ChordSentenceRelation.class)) {
-                    sig.removeEdge(rel);
-                }
-            }
-
-            case PartName ->
-            {
-                // Look for proper part
-                Staff staff = system.getClosestStaff(sentence.getCenter());
-                final Part part = staff.getPart();
-                part.setName((SentenceInter) null);
-            }
-
-            case ChordName ->
-            {
-                for (Inter wInter : sentence.getMembers()) {
-                    for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
-                        sig.removeEdge(rel);
-                    }
-                }
-            }
-
-            case EndingNumber, EndingText ->
-            {
-                for (Relation rel : sig.getRelations(sentence, EndingSentenceRelation.class)) {
-                    sig.removeEdge(rel);
-                }
-            }
-            }
-        } catch (Exception ex) {
-            logger.warn("Error in unlinkOneSentence for {} {}", sentence, ex.toString(), ex);
-        }
-    }
 
     //----------------------//
     // linkAugmentationDots //
@@ -460,6 +259,120 @@ public class SymbolsLinker
         }
     }
 
+    //-----------------//
+    // linkOneSentence //
+    //-----------------//
+    /**
+     * Link a text sentence, according to its role, with its related entity if any.
+     *
+     * @param sentence the sentence to link
+     */
+    public void linkOneSentence (SentenceInter sentence)
+    {
+        try {
+            if (sentence.isVip()) {
+                logger.info("VIP linkOneSentence for {}", sentence);
+            }
+
+            final TextRole role = sentence.getRole();
+
+            if (role == null) {
+                logger.info("No role for {}", sentence);
+
+                return;
+            }
+
+            final Point2D location = sentence.getLocation();
+            final Rectangle bounds = sentence.getBounds();
+            final Scale scale = system.getSheet().getScale();
+
+            switch (role) {
+            case Lyrics ->
+            {
+                // Map each syllable with proper chord, in assigned staff
+                for (Inter wInter : sentence.getMembers()) {
+                    final LyricItemInter item = (LyricItemInter) wInter;
+                    final int profile = Math.max(item.getProfile(), system.getProfile());
+                    item.mapToChord(profile);
+                }
+            }
+
+            case Direction ->
+            {
+                // Map direction with proper chord
+                MeasureStack stack = system.getStackAt(location);
+
+                if (stack == null) {
+                    logger.info(
+                            "No measure stack for direction {} {}",
+                            sentence,
+                            sentence.getValue());
+                } else {
+                    int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                    Rectangle fatBounds = new Rectangle(bounds);
+                    fatBounds.grow(xGapMax, 0);
+
+                    AbstractChordInter chord = stack.getEventChord(location, fatBounds);
+
+                    if (chord != null) {
+                        sig.addEdge(chord, sentence, new ChordSentenceRelation());
+                    } else {
+                        logger.info("No chord near direction {} {}", sentence, sentence.getValue());
+                    }
+                }
+            }
+
+            case PartName ->
+            {
+                // Assign part name to proper part
+                Staff staff = system.getClosestStaff(sentence.getCenter());
+                Part part = staff.getPart();
+                part.setName(sentence);
+            }
+
+            case ChordName ->
+            {
+                // Map each word with proper chord, in assigned staff
+                for (Inter wInter : sentence.getMembers()) {
+                    WordInter word = (WordInter) wInter;
+                    Point wordCenter = word.getCenter();
+                    MeasureStack stack = system.getStackAt(wordCenter);
+
+                    if (stack == null) {
+                        logger.info("No stack at {}", word);
+                    } else {
+                        AbstractChordInter chordBelow = stack.getStandardChordBelow(
+                                wordCenter,
+                                word.getBounds());
+
+                        if (chordBelow != null) {
+                            sig.addEdge(chordBelow, word, new ChordNameRelation());
+                        } else {
+                            logger.info("No chord below {}", word);
+                        }
+                    }
+                }
+            }
+
+            case EndingNumber, EndingText ->
+            {
+                // Look for related ending
+                final Link link = sentence.lookupEndingLink(system);
+
+                if ((link != null) && (null == sig.getRelation(
+                        link.partner,
+                        sentence,
+                        EndingSentenceRelation.class))) {
+                    sig.addEdge(link.partner, sentence, link.relation);
+                }
+            }
+            }
+            // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
+        } catch (Exception ex) {
+            logger.warn("Error in linkOneSentence for {} {}", sentence, ex.toString(), ex);
+        }
+    }
+
     //------------//
     // linkPedals //
     //------------//
@@ -541,6 +454,96 @@ public class SymbolsLinker
             } catch (Exception ex) {
                 logger.warn("Error in linkWedges for {} {}", inter, ex.toString(), ex);
             }
+        }
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Process all links.
+     */
+    public void process ()
+    {
+        linkDynamics();
+        linkTexts();
+        linkPedals();
+        linkWedges();
+        linkFermatas();
+        linkGraces();
+        linkAugmentationDots();
+        linkTuplets();
+        linkOctaveShifts();
+    }
+
+    //-------------------//
+    // unlinkOneSentence //
+    //-------------------//
+    /**
+     * Unlink a text sentence, according to its role, with its related entity if any.
+     *
+     * @param sentence the sentence to unlink
+     * @param oldRole  the role this sentence had
+     */
+    public void unlinkOneSentence (SentenceInter sentence,
+                                   TextRole oldRole)
+    {
+        try {
+            if (sentence.isVip()) {
+                logger.info("VIP unlinkOneSentence for {}", sentence);
+            }
+
+            if (oldRole == null) {
+                logger.info("Null old role for {}", sentence);
+
+                return;
+            }
+
+            switch (oldRole) {
+            case Lyrics ->
+            {
+                for (Inter wInter : sentence.getMembers()) {
+                    LyricItemInter item = (LyricItemInter) wInter;
+
+                    for (Relation rel : sig.getRelations(item, ChordSyllableRelation.class)) {
+                        sig.removeEdge(rel);
+                    }
+                }
+            }
+
+            case Direction ->
+            {
+                for (Relation rel : sig.getRelations(sentence, ChordSentenceRelation.class)) {
+                    sig.removeEdge(rel);
+                }
+            }
+
+            case PartName ->
+            {
+                // Look for proper part
+                Staff staff = system.getClosestStaff(sentence.getCenter());
+                final Part part = staff.getPart();
+                part.setName((SentenceInter) null);
+            }
+
+            case ChordName ->
+            {
+                for (Inter wInter : sentence.getMembers()) {
+                    for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
+                        sig.removeEdge(rel);
+                    }
+                }
+            }
+
+            case EndingNumber, EndingText ->
+            {
+                for (Relation rel : sig.getRelations(sentence, EndingSentenceRelation.class)) {
+                    sig.removeEdge(rel);
+                }
+            }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in unlinkOneSentence for {} {}", sentence, ex.toString(), ex);
         }
     }
 }

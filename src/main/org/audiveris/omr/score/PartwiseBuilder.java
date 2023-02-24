@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -279,6 +279,7 @@ public class PartwiseBuilder
     private static final int MAX_LEVEL_NUMBER = 16;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The ScorePartwise instance to be populated. */
     private final ScorePartwise scorePartwise = new ScorePartwise();
 
@@ -307,6 +308,7 @@ public class PartwiseBuilder
     private final ObjectFactory factory = new ObjectFactory();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new PartwiseBuilder object, on a related score instance.
      *
@@ -324,6 +326,7 @@ public class PartwiseBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addSlur //
     //---------//
@@ -756,35 +759,6 @@ public class PartwiseBuilder
         return current.pmNotations;
     }
 
-    //----------------------//
-    // getOctaveShiftNumber //
-    //----------------------//
-    private Integer getOctaveShiftNumber (OctaveShiftInter os)
-    {
-        final Integer num = octaveShiftNumbers.get(os);
-
-        if (num != null) {
-            octaveShiftNumbers.remove(os);
-            logger.debug("{} last use {} -> {}", os, num, octaveShiftNumbers);
-
-            return num;
-        } else {
-            // Determine first available number
-            for (int i = 1; i <= MAX_LEVEL_NUMBER; i++) {
-                if (!octaveShiftNumbers.containsValue(i)) {
-                    octaveShiftNumbers.put(os, i);
-                    logger.debug("{} first use {} -> {}", os, i, octaveShiftNumbers);
-
-                    return i;
-                }
-            }
-        }
-
-        logger.warn("No number for {}", os);
-
-        return null;
-    }
-
     //----------------//
     // getOctaveShift //
     //----------------//
@@ -818,6 +792,35 @@ public class PartwiseBuilder
         }
 
         return 0;
+    }
+
+    //----------------------//
+    // getOctaveShiftNumber //
+    //----------------------//
+    private Integer getOctaveShiftNumber (OctaveShiftInter os)
+    {
+        final Integer num = octaveShiftNumbers.get(os);
+
+        if (num != null) {
+            octaveShiftNumbers.remove(os);
+            logger.debug("{} last use {} -> {}", os, num, octaveShiftNumbers);
+
+            return num;
+        } else {
+            // Determine first available number
+            for (int i = 1; i <= MAX_LEVEL_NUMBER; i++) {
+                if (!octaveShiftNumbers.containsValue(i)) {
+                    octaveShiftNumbers.put(os, i);
+                    logger.debug("{} first use {} -> {}", os, i, octaveShiftNumbers);
+
+                    return i;
+                }
+            }
+        }
+
+        logger.warn("No number for {}", os);
+
+        return null;
     }
 
     //--------------//
@@ -935,6 +938,62 @@ public class PartwiseBuilder
                         current.measure,
                         current.page,
                         ex);
+            }
+        }
+    }
+
+    //--------------------//
+    // insertMultipleRest //
+    //--------------------//
+    /**
+     * Complete current measure and insert other dummy measures for this multiple measure rest
+     *
+     * @param stack the containing stack
+     */
+    private void insertMultipleRest (MeasureStack stack)
+    {
+        final Integer count = stack.getMultipleMeasureCount(current.multipleRests);
+
+        if (count != null) {
+            // Measure duration
+            final AbstractTimeInter timeSig = stack.getCurrentTimeSignature();
+            final int dur = current.page.simpleDurationOf(
+                    timeSig != null ? timeSig.getTimeRational().getValue() : Rational.ONE); // Safer
+
+            // Create as many measures as needed
+            for (int num = 0; num < count; num++) {
+                if (num == 0) {
+                    // Multiple rest indication is only for first measure
+                    final MultipleRest multipleRest = factory.createMultipleRest();
+                    multipleRest.setValue(new BigInteger("" + count));
+
+                    final MeasureStyle measureStyle = factory.createMeasureStyle();
+                    measureStyle.setMultipleRest(multipleRest);
+
+                    getAttributes().getMeasureStyle().add(measureStyle);
+                }
+
+                // Non printed measure rest for every measure
+                current.pmNote = factory.createNote();
+                current.pmNote.setPrintObject(YesNo.NO);
+
+                final Rest rest = factory.createRest();
+                rest.setMeasure(YesNo.YES);
+                current.pmNote.setRest(rest);
+
+                current.pmNote.setDuration(new BigDecimal(dur));
+
+                // TODO: Is voice needed?
+                //
+                current.pmMeasure.getNoteOrBackupOrForward().add(current.pmNote);
+
+                if (num != count - 1) {
+                    // Insert dummy measure
+                    current.pmMeasure = factory.createScorePartwisePartMeasure();
+                    current.pmPart.getMeasure().add(current.pmMeasure);
+                    current.pmMeasure.setNumber(
+                            stack.getScoreId(current.pageMeasureIdOffset + num + 1));
+                }
             }
         }
     }
@@ -1618,6 +1677,38 @@ public class PartwiseBuilder
         }
     }
 
+    //-------------//
+    // processKeys //
+    //-------------//
+    /**
+     * Process the potential key signatures of the current measure.
+     * We may have no key at all, or different keys from one staff to the other.
+     * If all keys are the same, only one info is written.
+     */
+    private void processKeys ()
+    {
+        // Something to process?
+        if (current.measure.hasKeys()) {
+            // Check if all keys are the same across all staves in measure
+            if (current.measure.hasSameKeys()) {
+                processKey(current.measure.getKey(0), true); // global: true
+            } else {
+                // Work staff by staff
+                final int staffCount = current.measure.getPart().getStaves().size();
+
+                for (int index = 0; index < staffCount; index++) {
+                    KeyInter key = current.measure.getKey(index);
+                    processKey(key, false); // global: false
+                }
+            }
+        } else {
+            // No key signature in measure: this is meaningful only at beginning of staff
+            if (isFirst.measure) {
+                processKeyVoid();
+            }
+        }
+    }
+
     //----------------//
     // processKeyVoid //
     //----------------//
@@ -1655,38 +1746,6 @@ public class PartwiseBuilder
             }
         } catch (Exception ex) {
             logger.warn("Error in processKeyVoid in {}", current.page, ex);
-        }
-    }
-
-    //-------------//
-    // processKeys //
-    //-------------//
-    /**
-     * Process the potential key signatures of the current measure.
-     * We may have no key at all, or different keys from one staff to the other.
-     * If all keys are the same, only one info is written.
-     */
-    private void processKeys ()
-    {
-        // Something to process?
-        if (current.measure.hasKeys()) {
-            // Check if all keys are the same across all staves in measure
-            if (current.measure.hasSameKeys()) {
-                processKey(current.measure.getKey(0), true); // global: true
-            } else {
-                // Work staff by staff
-                final int staffCount = current.measure.getPart().getStaves().size();
-
-                for (int index = 0; index < staffCount; index++) {
-                    KeyInter key = current.measure.getKey(index);
-                    processKey(key, false); // global: false
-                }
-            }
-        } else {
-            // No key signature in measure: this is meaningful only at beginning of staff
-            if (isFirst.measure) {
-                processKeyVoid();
-            }
         }
     }
 
@@ -2086,62 +2145,6 @@ public class PartwiseBuilder
         current.endMeasure();
         tupletNumbers.clear();
         isFirst.measure = false;
-    }
-
-    //--------------------//
-    // insertMultipleRest //
-    //--------------------//
-    /**
-     * Complete current measure and insert other dummy measures for this multiple measure rest
-     *
-     * @param stack the containing stack
-     */
-    private void insertMultipleRest (MeasureStack stack)
-    {
-        final Integer count = stack.getMultipleMeasureCount(current.multipleRests);
-
-        if (count != null) {
-            // Measure duration
-            final AbstractTimeInter timeSig = stack.getCurrentTimeSignature();
-            final int dur = current.page.simpleDurationOf(
-                    timeSig != null ? timeSig.getTimeRational().getValue() : Rational.ONE); // Safer
-
-            // Create as many measures as needed
-            for (int num = 0; num < count; num++) {
-                if (num == 0) {
-                    // Multiple rest indication is only for first measure
-                    final MultipleRest multipleRest = factory.createMultipleRest();
-                    multipleRest.setValue(new BigInteger("" + count));
-
-                    final MeasureStyle measureStyle = factory.createMeasureStyle();
-                    measureStyle.setMultipleRest(multipleRest);
-
-                    getAttributes().getMeasureStyle().add(measureStyle);
-                }
-
-                // Non printed measure rest for every measure
-                current.pmNote = factory.createNote();
-                current.pmNote.setPrintObject(YesNo.NO);
-
-                final Rest rest = factory.createRest();
-                rest.setMeasure(YesNo.YES);
-                current.pmNote.setRest(rest);
-
-                current.pmNote.setDuration(new BigDecimal(dur));
-
-                // TODO: Is voice needed?
-                //
-                current.pmMeasure.getNoteOrBackupOrForward().add(current.pmNote);
-
-                if (num != count - 1) {
-                    // Insert dummy measure
-                    current.pmMeasure = factory.createScorePartwisePartMeasure();
-                    current.pmPart.getMeasure().add(current.pmMeasure);
-                    current.pmMeasure.setNumber(
-                            stack.getScoreId(current.pageMeasureIdOffset + num + 1));
-                }
-            }
-        }
     }
 
     //-------------//
@@ -3300,6 +3303,36 @@ public class PartwiseBuilder
         return toTenths(staffTopY - point.getY());
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------//
+    // areEqual //
+    //----------//
+    /**
+     * Check whether the two Clef instances are equal.
+     *
+     * @param left  one clef
+     * @param right another clef
+     * @return true if equal
+     */
+    private static boolean areEqual (Clef left,
+                                     Clef right)
+    {
+        return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(
+                left.getSign(),
+                right.getSign()) && Objects.equals(left.getLine(), right.getLine()) && Objects
+                        .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Key left,
+                                     Key right)
+    {
+        return left.getFifths().equals(right.getFifths());
+    }
+
     //-------//
     // build //
     //-------//
@@ -3333,35 +3366,103 @@ public class PartwiseBuilder
     {
     }
 
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Key left,
-                                     Key right)
-    {
-        return left.getFifths().equals(right.getFifths());
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    /**
-     * Check whether the two Clef instances are equal.
-     *
-     * @param left  one clef
-     * @param right another clef
-     * @return true if equal
-     */
-    private static boolean areEqual (Clef left,
-                                     Clef right)
-    {
-        return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(
-                left.getSign(),
-                right.getSign()) && Objects.equals(left.getLine(), right.getLine()) && Objects
-                        .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //---------------//
+    // ClefIterators //
+    //---------------//
+    /**
+     * Class to handle the insertion of clefs in a measure.
+     * If needed, this class could be reused for some attribute other than clef,
+     * such as key signature or time signature (if these attributes can indeed
+     * occur in the middle of a measure. To be checked).
+     */
+    private class ClefIterators
+    {
+
+        /** Containing measure. */
+        private final Measure measure;
+
+        /** Staves of the containing part. */
+        private final List<Staff> staves;
+
+        /** Per staff, iterator on Clefs sorted by abscissa. */
+        private final Map<Staff, ListIterator<ClefInter>> iters;
+
+        ClefIterators (Measure measure)
+        {
+            this.measure = measure;
+
+            staves = measure.getPart().getStaves();
+
+            // Temporary map: staff -> staff's clefs
+            Map<Staff, List<ClefInter>> map = new HashMap<>();
+
+            for (ClefInter clef : measure.getClefs()) {
+                Staff staff = clef.getStaff();
+                List<ClefInter> list = map.get(staff);
+
+                if (list == null) {
+                    map.put(staff, list = new ArrayList<>());
+                }
+
+                list.add(clef);
+            }
+
+            // Populate iterators
+            iters = new LinkedHashMap<>();
+
+            for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
+                List<ClefInter> list = entry.getValue(); // Already sorted by full center abscissa
+                iters.put(entry.getKey(), list.listIterator());
+            }
+        }
+
+        /**
+         * Push as far as possible the relevant clefs iterators, according to the
+         * current abscissa offset.
+         *
+         * @param xOffset       the abscissa offset of chord to be exported, if any
+         * @param specificStaff a specific staff, or null for all staves within current part
+         */
+        public void push (Integer xOffset,
+                          Staff specificStaff)
+        {
+            if (xOffset != null) {
+                MeasureStack stack = measure.getStack();
+
+                for (Staff staff : staves) {
+                    List<Staff> theStaff = Collections.singletonList(staff);
+
+                    if ((specificStaff == null) || (staff == specificStaff)) {
+                        final ListIterator<ClefInter> it = iters.get(staff);
+
+                        // Check pending clef WRT current abscissa offset
+                        if ((it != null) && it.hasNext()) {
+                            final ClefInter clef = it.next();
+
+                            if (measure.isDummy() /// || measure.isTemporary()
+                                    || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
+                                // Consume this clef
+                                processClef(clef);
+                            } else {
+                                // Reset iterator
+                                it.previous();
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Flush all iterators
+                for (ListIterator<ClefInter> it : iters.values()) {
+                    while (it.hasNext()) {
+                        processClef(it.next());
+                    }
+                }
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -3513,101 +3614,6 @@ public class PartwiseBuilder
         }
     }
 
-    //---------------//
-    // ClefIterators //
-    //---------------//
-    /**
-     * Class to handle the insertion of clefs in a measure.
-     * If needed, this class could be reused for some attribute other than clef,
-     * such as key signature or time signature (if these attributes can indeed
-     * occur in the middle of a measure. To be checked).
-     */
-    private class ClefIterators
-    {
-
-        /** Containing measure. */
-        private final Measure measure;
-
-        /** Staves of the containing part. */
-        private final List<Staff> staves;
-
-        /** Per staff, iterator on Clefs sorted by abscissa. */
-        private final Map<Staff, ListIterator<ClefInter>> iters;
-
-        ClefIterators (Measure measure)
-        {
-            this.measure = measure;
-
-            staves = measure.getPart().getStaves();
-
-            // Temporary map: staff -> staff's clefs
-            Map<Staff, List<ClefInter>> map = new HashMap<>();
-
-            for (ClefInter clef : measure.getClefs()) {
-                Staff staff = clef.getStaff();
-                List<ClefInter> list = map.get(staff);
-
-                if (list == null) {
-                    map.put(staff, list = new ArrayList<>());
-                }
-
-                list.add(clef);
-            }
-
-            // Populate iterators
-            iters = new LinkedHashMap<>();
-
-            for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
-                List<ClefInter> list = entry.getValue(); // Already sorted by full center abscissa
-                iters.put(entry.getKey(), list.listIterator());
-            }
-        }
-
-        /**
-         * Push as far as possible the relevant clefs iterators, according to the
-         * current abscissa offset.
-         *
-         * @param xOffset       the abscissa offset of chord to be exported, if any
-         * @param specificStaff a specific staff, or null for all staves within current part
-         */
-        public void push (Integer xOffset,
-                          Staff specificStaff)
-        {
-            if (xOffset != null) {
-                MeasureStack stack = measure.getStack();
-
-                for (Staff staff : staves) {
-                    List<Staff> theStaff = Collections.singletonList(staff);
-
-                    if ((specificStaff == null) || (staff == specificStaff)) {
-                        final ListIterator<ClefInter> it = iters.get(staff);
-
-                        // Check pending clef WRT current abscissa offset
-                        if ((it != null) && it.hasNext()) {
-                            final ClefInter clef = it.next();
-
-                            if (measure.isDummy() /// || measure.isTemporary()
-                                    || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
-                                // Consume this clef
-                                processClef(clef);
-                            } else {
-                                // Reset iterator
-                                it.previous();
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Flush all iterators
-                for (ListIterator<ClefInter> it : iters.values()) {
-                    while (it.hasNext()) {
-                        processClef(it.next());
-                    }
-                }
-            }
-        }
-    }
-
     //--------------//
     // MeasurePrint //
     //--------------//
@@ -3632,16 +3638,6 @@ public class PartwiseBuilder
             // It will later be removed if not actually used in the measure
             pmPrint = factory.createPrint();
             current.pmMeasure.getNoteOrBackupOrForward().add(pmPrint);
-        }
-
-        public void process ()
-        {
-            populatePrint();
-
-            // Something to print actually?
-            if (!used) {
-                current.pmMeasure.getNoteOrBackupOrForward().remove(pmPrint);
-            }
         }
 
         private Print getPrint ()
@@ -3752,6 +3748,16 @@ public class PartwiseBuilder
                 }
 
                 getPrint().setMeasureNumbering(pmNumbering);
+            }
+        }
+
+        public void process ()
+        {
+            populatePrint();
+
+            // Something to print actually?
+            if (!used) {
+                current.pmMeasure.getNoteOrBackupOrForward().remove(pmPrint);
             }
         }
     }

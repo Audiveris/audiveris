@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,15 +47,18 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.*;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 import org.audiveris.omr.sig.relation.TremoloStemRelation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,10 +111,10 @@ public class StemInter
     private static final double ANCHOR_MARGIN_RATIO = constants.anchorMarginRatio.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * <strike>Upper point of stem</strike>
      * <p>
@@ -133,16 +136,13 @@ public class StemInter
     private Point2D oldBottom;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new StemInter object.
-     *
-     * @param glyph   the underlying glyph
-     * @param impacts the grade details
+     * No-arg constructor meant for JAXB.
      */
-    public StemInter (Glyph glyph,
-                      GradeImpacts impacts)
+    protected StemInter ()
     {
-        super(glyph, Shape.STEM, impacts);
+        super(null, null, 0.0);
     }
 
     /**
@@ -158,14 +158,19 @@ public class StemInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new StemInter object.
+     *
+     * @param glyph   the underlying glyph
+     * @param impacts the grade details
      */
-    protected StemInter ()
+    public StemInter (Glyph glyph,
+                      GradeImpacts impacts)
     {
-        super(null, null, 0.0);
+        super(glyph, Shape.STEM, impacts);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -572,17 +577,20 @@ public class StemInter
         return set;
     }
 
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum acceptable grade
-     *
-     * @return minimum grade
-     */
-    public static double getMinGrade ()
+    //-----------------//
+    // getReliableLine //
+    //-----------------//
+    private Line2D getReliableLine ()
     {
-        return AbstractInter.getMinGrade();
+        // Extrapolate stem line or use a "vertical" through its center abscissa?
+        final Sheet sheet = getSig().getSystem().getSheet();
+        final Scale scale = sheet.getScale();
+
+        if (getBounds().height >= scale.toPixels(constants.minLengthForSlope)) {
+            return getMedian();
+        } else {
+            return sheet.getSkew().skewedVertical(getCenter());
+        }
     }
 
     //----------//
@@ -664,57 +672,116 @@ public class StemInter
 
                 // First head tested is enough.
                 return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
-                               || (headShape == Shape.NOTEHEAD_VOID_SMALL);
+                        || (headShape == Shape.NOTEHEAD_VOID_SMALL);
             }
         }
 
         return false;
     }
 
-    //--------//
-    // remove //
-    //--------//
+    //-----------------//
+    // lookupBeamLinks //
+    //-----------------//
     /**
-     * Remove head-head relations that were based on this stem.
+     * Look for links to beams nearby.
      *
-     * @param extensive true for non-manual removals only
-     * @see #added()
+     * @param system  the containing system
+     * @param profile the profile to use
+     * @return collection of links, perhaps empty
      */
-    @Override
-    public void remove (boolean extensive)
+    public Collection<Link> lookupBeamLinks (SystemInfo system,
+                                             int profile)
     {
-        if (isRemoved()) {
-            return;
+        Collection<Link> links = new LinkedHashSet<>();
+
+        // Look for beams around the stem
+        final Scale scale = system.getSheet().getScale();
+        final int maxBeamOutDx = scale.toPixels(BeamStemRelation.getXOutGapMaximum(profile));
+        final int maxYGap = scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
+        final Rectangle luBox = getBounds();
+        luBox.grow(maxBeamOutDx, maxYGap);
+
+        final Set<Inter> beams = new LinkedHashSet<>(
+                system.getSig().inters(
+                        (Inter inter) -> !inter.isRemoved() && inter instanceof AbstractBeamInter
+                                && inter.getBounds().intersects(luBox)));
+
+        // Include also the beams already connected to the stem
+        if (sig != null) {
+            beams.addAll(getBeams());
         }
 
-        if (isGood()) {
-            // Discard head-head relations that are based only on this stem instance
-            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
+        // Now, keep only beams that would still link to this stem
+        final Line2D stemMedian = getMedian();
+        final double yStem = getCenter().y;
 
-            for (HeadInter head : stemHeads) {
-                // Other stems this head is linked to
-                Set<StemInter> otherStems = head.getStems();
-                otherStems.remove(this);
+        for (Inter inter : beams) {
+            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            final Point2D crossPt = LineUtil.intersection(stemMedian, beam.getMedian());
+            final VerticalSide vSide = (crossPt.getY() < yStem) ? TOP : BOTTOM;
+            final Link link = BeamStemRelation.checkLink(beam, this, vSide, scale, profile);
 
-                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
-                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
-
-                    if (stemHeads.contains(similarHead)) {
-                        // Head - otherHead are both on this stem
-                        // Keep HH support only if they are on same good stem (different of this)
-                        Set<StemInter> similarStems = similarHead.getStems();
-                        similarStems.retainAll(otherStems);
-
-                        if (!Inters.hasGoodMember(similarStems)) {
-                            logger.debug("Removing head-head within {} & {}", head, similarHead);
-                            sig.removeEdge(rel);
-                        }
-                    }
-                }
+            // BeamStemRelation link is implemented from beam to stem, hence we have to reverse it
+            if (link != null) {
+                links.add(link.reverse(beam));
             }
         }
 
-        super.remove(extensive);
+        return links;
+    }
+
+    //-----------------//
+    // lookupHeadLinks //
+    //-----------------//
+    /**
+     * Look for links to heads nearby that need a stem relation.
+     *
+     * @return collection of links, perhaps empty
+     */
+    private Collection<Link> lookupHeadLinks (SystemInfo system,
+                                              int profile)
+    {
+        Collection<Link> links = null;
+
+        // Search for non-linked heads in a lookup area around the stem
+        final Scale scale = system.getSheet().getScale();
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(profile));
+        final Rectangle luBox = getBounds();
+        luBox.grow(maxHeadOutDx, maxYGap);
+
+        final Set<Inter> heads = new LinkedHashSet<>(
+                system.getSig().inters(
+                        (Inter inter) -> !inter.isRemoved() && ShapeSet.StemHeads.contains(
+                                inter.getShape()) && inter.getBounds().intersects(luBox)
+                                && ((HeadInter) inter).getStems().isEmpty()));
+
+        // Include also the heads already connected to the stem
+        if (sig != null) {
+            heads.addAll(getHeads());
+        }
+
+        // Now, keep only heads that would still link to this stem
+        final List<Inter> thisStem = new ArrayList<>();
+        thisStem.add(this);
+
+        for (Inter inter : heads) {
+            HeadInter head = (HeadInter) inter;
+            Link link = head.lookupLink(thisStem, system, profile);
+
+            if ((link != null) && (link.partner == this)) {
+                if (links == null) {
+                    links = new ArrayList<>();
+                }
+
+                // Use link reverse
+                Link rev = new Link(head, link.relation, false);
+                links.add(rev);
+            }
+        }
+
+        // TODO: solve conflicts if any (perhaps using preferred corners & relation.grade)
+        return (links == null) ? Collections.emptyList() : links;
     }
 
     //---------------//
@@ -771,9 +838,9 @@ public class StemInter
         Collections.sort(
                 beams,
                 (AbstractBeamInter b1,
-                        AbstractBeamInter b2) -> Double.compare(
-                        LineUtil.yAtX(b1.getMedian(), x),
-                        LineUtil.yAtX(b2.getMedian(), x)));
+                 AbstractBeamInter b2) -> Double.compare(
+                         LineUtil.yAtX(b1.getMedian(), x),
+                         LineUtil.yAtX(b2.getMedian(), x)));
 
         final int dir = computeDirection(); // From head to tail
         final AbstractBeamInter beam = (dir < 0) ? beams.get(0) : beams.get(beams.size() - 1);
@@ -789,20 +856,50 @@ public class StemInter
         }
     }
 
-    //-----------------//
-    // getReliableLine //
-    //-----------------//
-    private Line2D getReliableLine ()
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove head-head relations that were based on this stem.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
     {
-        // Extrapolate stem line or use a "vertical" through its center abscissa?
-        final Sheet sheet = getSig().getSystem().getSheet();
-        final Scale scale = sheet.getScale();
-
-        if (getBounds().height >= scale.toPixels(constants.minLengthForSlope)) {
-            return getMedian();
-        } else {
-            return sheet.getSkew().skewedVertical(getCenter());
+        if (isRemoved()) {
+            return;
         }
+
+        if (isGood()) {
+            // Discard head-head relations that are based only on this stem instance
+            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
+
+            for (HeadInter head : stemHeads) {
+                // Other stems this head is linked to
+                Set<StemInter> otherStems = head.getStems();
+                otherStems.remove(this);
+
+                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
+                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
+
+                    if (stemHeads.contains(similarHead)) {
+                        // Head - otherHead are both on this stem
+                        // Keep HH support only if they are on same good stem (different of this)
+                        Set<StemInter> similarStems = similarHead.getStems();
+                        similarStems.retainAll(otherStems);
+
+                        if (!Inters.hasGoodMember(similarStems)) {
+                            logger.debug("Removing head-head within {} & {}", head, similarHead);
+                            sig.removeEdge(rel);
+                        }
+                    }
+                }
+            }
+        }
+
+        super.remove(extensive);
     }
 
     //-------------//
@@ -824,111 +921,6 @@ public class StemInter
         allLinks.addAll(lookupBeamLinks(system, profile));
 
         return allLinks;
-    }
-
-    //-----------------//
-    // lookupBeamLinks //
-    //-----------------//
-    /**
-     * Look for links to beams nearby.
-     *
-     * @param system  the containing system
-     * @param profile the profile to use
-     * @return collection of links, perhaps empty
-     */
-    public Collection<Link> lookupBeamLinks (SystemInfo system,
-                                             int profile)
-    {
-        Collection<Link> links = new LinkedHashSet<>();
-
-        // Look for beams around the stem
-        final Scale scale = system.getSheet().getScale();
-        final int maxBeamOutDx = scale.toPixels(BeamStemRelation.getXOutGapMaximum(profile));
-        final int maxYGap = scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
-        final Rectangle luBox = getBounds();
-        luBox.grow(maxBeamOutDx, maxYGap);
-
-        final Set<Inter> beams = new LinkedHashSet<>(
-                system.getSig().inters(
-                        (Inter inter) -> !inter.isRemoved() && inter instanceof AbstractBeamInter
-                                                 && inter.getBounds().intersects(luBox)));
-
-        // Include also the beams already connected to the stem
-        if (sig != null) {
-            beams.addAll(getBeams());
-        }
-
-        // Now, keep only beams that would still link to this stem
-        final Line2D stemMedian = getMedian();
-        final double yStem = getCenter().y;
-
-        for (Inter inter : beams) {
-            final AbstractBeamInter beam = (AbstractBeamInter) inter;
-            final Point2D crossPt = LineUtil.intersection(stemMedian, beam.getMedian());
-            final VerticalSide vSide = (crossPt.getY() < yStem) ? TOP : BOTTOM;
-            final Link link = BeamStemRelation.checkLink(beam, this, vSide, scale, profile);
-
-            // BeamStemRelation link is implemented from beam to stem, hence we have to reverse it
-            if (link != null) {
-                links.add(link.reverse(beam));
-            }
-        }
-
-        return links;
-    }
-
-    //-----------------//
-    // lookupHeadLinks //
-    //-----------------//
-    /**
-     * Look for links to heads nearby that need a stem relation.
-     *
-     * @return collection of links, perhaps empty
-     */
-    private Collection<Link> lookupHeadLinks (SystemInfo system,
-                                              int profile)
-    {
-        Collection<Link> links = null;
-
-        // Search for non-linked heads in a lookup area around the stem
-        final Scale scale = system.getSheet().getScale();
-        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
-        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(profile));
-        final Rectangle luBox = getBounds();
-        luBox.grow(maxHeadOutDx, maxYGap);
-
-        final Set<Inter> heads = new LinkedHashSet<>(
-                system.getSig().inters(
-                        (Inter inter) -> !inter.isRemoved() && ShapeSet.StemHeads.contains(
-                        inter.getShape()) && inter.getBounds().intersects(luBox)
-                                                 && ((HeadInter) inter).getStems().isEmpty()));
-
-        // Include also the heads already connected to the stem
-        if (sig != null) {
-            heads.addAll(getHeads());
-        }
-
-        // Now, keep only heads that would still link to this stem
-        final List<Inter> thisStem = new ArrayList<>();
-        thisStem.add(this);
-
-        for (Inter inter : heads) {
-            HeadInter head = (HeadInter) inter;
-            Link link = head.lookupLink(thisStem, system, profile);
-
-            if ((link != null) && (link.partner == this)) {
-                if (links == null) {
-                    links = new ArrayList<>();
-                }
-
-                // Use link reverse
-                Link rev = new Link(head, link.relation, false);
-                links.add(rev);
-            }
-        }
-
-        // TODO: solve conflicts if any (perhaps using preferred corners & relation.grade)
-        return (links == null) ? Collections.emptyList() : links;
     }
 
     //---------------//
@@ -977,13 +969,7 @@ public class StemInter
         return upgraded;
     }
 
-    //---------------//
-    // minTailLength //
-    //---------------//
-    public static Scale.Fraction minTailLength ()
-    {
-        return constants.minTailLength;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // bestTailLength //
@@ -993,7 +979,29 @@ public class StemInter
         return constants.bestTailLength;
     }
 
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum acceptable grade
+     *
+     * @return minimum grade
+     */
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
+    }
+
+    //---------------//
+    // minTailLength //
+    //---------------//
+    public static Scale.Fraction minTailLength ()
+    {
+        return constants.minTailLength;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

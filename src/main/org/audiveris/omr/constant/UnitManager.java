@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,15 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.audiveris.omr.Main;
 import org.audiveris.omr.util.StopWatch;
 
-import org.reflections.Reflections;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.reflections.Reflections;
+
+import net.jcip.annotations.ThreadSafe;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -70,6 +70,7 @@ public class UnitManager
     private static final UnitManager INSTANCE = new UnitManager();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The root node. */
     private final PackageNode root = new PackageNode("<root>", null);
 
@@ -80,6 +81,7 @@ public class UnitManager
     private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** This is a singleton. */
     private UnitManager ()
     {
@@ -87,18 +89,6 @@ public class UnitManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this package.
-     *
-     * @return the single instance
-     */
-    public static UnitManager getInstance ()
-    {
-        return INSTANCE;
-    }
 
     //--------//
     // addSet //
@@ -116,6 +106,27 @@ public class UnitManager
 
         // Register this name in the dirty ones
         dirtySets.add(set.getName());
+    }
+
+    //---------//
+    // addUnit //
+    //---------//
+    /**
+     * Include a Unit in the hierarchy.
+     *
+     * @param unit the Unit to include
+     */
+    private void addUnit (UnitNode unit)
+    {
+        //log ("addUnit unit=" + unit.getName());
+        // Update the hierarchy. Include it in the map, as well as all needed
+        // intermediate package nodes if any is needed.
+        String name = unit.getName();
+
+        // Add this node and its parents as needed
+        if (mapOfNodes.putIfAbsent(name, unit) == null) {
+            updateParents(unit);
+        }
     }
 
     //---------------//
@@ -148,8 +159,9 @@ public class UnitManager
         props.removeAll(constants);
         dumpStrings("Non set-enclosed properties", props);
 
-        dumpStrings("Unused User properties",
-                    ConstantManager.getInstance().getUnusedUserProperties());
+        dumpStrings(
+                "Unused User properties",
+                ConstantManager.getInstance().getUnusedUserProperties());
     }
 
     //----------------//
@@ -210,6 +222,23 @@ public class UnitManager
                     sb.append(String.format("%n%s", set.dumpOf()));
                 }
             }
+        }
+
+        logger.info(sb.toString());
+    }
+
+    //-------------//
+    // dumpStrings //
+    //-------------//
+    private void dumpStrings (String title,
+                              Collection<String> strings)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("%s:%n", title));
+
+        for (String string : strings) {
+            sb.append(String.format("%s%n", string));
         }
 
         logger.info(sb.toString());
@@ -306,6 +335,35 @@ public class UnitManager
         }
     }
 
+    //--------------//
+    // retrieveUnit //
+    //--------------//
+    /**
+     * Looks for the unit with given name.
+     * If the unit does not exist, it is created and inserted in the hierarchy.
+     *
+     * @param name the name of the desired unit
+     * @return the unit (found, or created)
+     */
+    private UnitNode retrieveUnit (String name)
+    {
+        Node node = getNode(name);
+
+        if (node == null) {
+            // Create a hosting unit node
+            UnitNode unit = new UnitNode(name);
+            addUnit(unit);
+
+            return unit;
+        } else if (node instanceof UnitNode) {
+            return (UnitNode) node;
+        } else if (node instanceof PackageNode) {
+            logger.error("Unit with same name as package {}", name);
+        }
+
+        return null;
+    }
+
     //-------------//
     // searchUnits //
     //-------------//
@@ -348,73 +406,6 @@ public class UnitManager
         }
 
         return found;
-    }
-
-    //---------//
-    // addUnit //
-    //---------//
-    /**
-     * Include a Unit in the hierarchy.
-     *
-     * @param unit the Unit to include
-     */
-    private void addUnit (UnitNode unit)
-    {
-        //log ("addUnit unit=" + unit.getName());
-        // Update the hierarchy. Include it in the map, as well as all needed
-        // intermediate package nodes if any is needed.
-        String name = unit.getName();
-
-        // Add this node and its parents as needed
-        if (mapOfNodes.putIfAbsent(name, unit) == null) {
-            updateParents(unit);
-        }
-    }
-
-    //-------------//
-    // dumpStrings //
-    //-------------//
-    private void dumpStrings (String title,
-                              Collection<String> strings)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(String.format("%s:%n", title));
-
-        for (String string : strings) {
-            sb.append(String.format("%s%n", string));
-        }
-
-        logger.info(sb.toString());
-    }
-
-    //--------------//
-    // retrieveUnit //
-    //--------------//
-    /**
-     * Looks for the unit with given name.
-     * If the unit does not exist, it is created and inserted in the hierarchy.
-     *
-     * @param name the name of the desired unit
-     * @return the unit (found, or created)
-     */
-    private UnitNode retrieveUnit (String name)
-    {
-        Node node = getNode(name);
-
-        if (node == null) {
-            // Create a hosting unit node
-            UnitNode unit = new UnitNode(name);
-            addUnit(unit);
-
-            return unit;
-        } else if (node instanceof UnitNode) {
-            return (UnitNode) node;
-        } else if (node instanceof PackageNode) {
-            logger.error("Unit with same name as package {}", name);
-        }
-
-        return null;
     }
 
     //---------------//
@@ -464,5 +455,20 @@ public class UnitManager
 
         // No intermediate parent found, so hook it to the root itself
         getRoot().addChild(child);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this package.
+     *
+     * @return the single instance
+     */
+    public static UnitManager getInstance ()
+    {
+        return INSTANCE;
     }
 }

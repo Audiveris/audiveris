@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,8 +37,8 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +89,14 @@ public class GraceChordInter
     private static final Shape HEAD_SHAPE = Shape.NOTEHEAD_BLACK_SMALL;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private GraceChordInter ()
+    {
+    }
+
     /**
      * Creates a new GraceChordInter object from a glyph recognized as a whole grace note.
      *
@@ -103,14 +111,8 @@ public class GraceChordInter
         super(glyph, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private GraceChordInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -158,49 +160,6 @@ public class GraceChordInter
         setStem(stem);
     }
 
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add a valid GraceChordInter from a glyph recognized as a grace note.
-     * <p>
-     * Suited for grace notes which are located on left side of a standard chord.
-     *
-     * @param glyph            underlying glyph
-     * @param shape            detected shape
-     * @param grade            assigned grade
-     * @param system           containing system
-     * @param systemHeadChords system head chords, ordered by abscissa
-     * @return the created inter or null
-     */
-    public static GraceChordInter createValidAdded (Glyph glyph,
-                                                    Shape shape,
-                                                    double grade,
-                                                    SystemInfo system,
-                                                    List<Inter> systemHeadChords)
-    {
-        if (glyph.isVip()) {
-            logger.info("VIP GraceChordInter createValidAdded {} as {}", glyph, shape);
-        }
-
-        final GraceChordInter graceChord = new GraceChordInter(glyph, shape, grade);
-        final Rectangle graceBox = graceChord.getBounds();
-        final Rectangle headBox = getHeadBounds(HEAD_SHAPE, shape, graceBox, system.getSheet());
-        final Point headCenter = GeoUtil.center(headBox);
-        final int profile = system.getProfile();
-        final Link link = graceChord.lookupLink(system, systemHeadChords, headCenter, profile);
-
-        if (link != null) {
-            system.getSig().addVertex(graceChord);
-            link.applyTo(graceChord);
-            graceChord.createMembers();
-
-            return graceChord;
-        }
-
-        return null;
-    }
-
     //----------------------------//
     // getDurationSansDotOrTuplet //
     //----------------------------//
@@ -213,61 +172,6 @@ public class GraceChordInter
     public Rational getDurationSansDotOrTuplet ()
     {
         return new Rational(1, 8);
-    }
-
-    //---------------//
-    // getHeadBounds //
-    //---------------//
-    /**
-     * Report the bounds of head, knowing the bounds of whole grace note.
-     *
-     * @param headShape  the shape of just the grace head
-     * @param graceShape the shape for the whole grace note
-     * @param graceBox   the bounds of whole grace note (with stem and perhaps slash)
-     * @param sheet      the containing sheet
-     * @return head bounds
-     */
-    private static Rectangle getHeadBounds (Shape headShape,
-                                            Shape graceShape,
-                                            Rectangle graceBox,
-                                            Sheet sheet)
-    {
-        final Dimension dim = getHeadDimension(headShape, sheet);
-
-        if (isUp(graceShape)) {
-            // Head is on bottom left corner of whole box
-            return new Rectangle(
-                    graceBox.x,
-                    graceBox.y + graceBox.height - 1 - dim.height,
-                    dim.width,
-                    dim.height);
-        } else {
-            // Head is on top right corner of whole box
-            return new Rectangle(
-                    graceBox.x + graceBox.width - 1 - dim.width,
-                    graceBox.y,
-                    dim.width,
-                    dim.height);
-        }
-    }
-
-    //------------------//
-    // getHeadDimension //
-    //------------------//
-    /**
-     * Report the dimension of head part.
-     *
-     * @param headShape the shape of just the grace head
-     * @param sheet     the containing sheet
-     * @return head bounds
-     */
-    private static Dimension getHeadDimension (Shape headShape,
-                                               Sheet sheet)
-    {
-        final Scale scale = sheet.getScale();
-        final MusicFamily family = sheet.getStub().getMusicFamily();
-        final FontSymbol fs = headShape.getFontSymbolByInterline(family, scale.getInterline());
-        return fs.getDimension();
     }
 
     //------------//
@@ -343,23 +247,6 @@ public class GraceChordInter
         return shape != null;
     }
 
-    //------//
-    // isUp //
-    //------//
-    /**
-     * Report whether the grace stem is up.
-     *
-     * @return true if up
-     */
-    public static boolean isUp (Shape shape)
-    {
-        return switch (shape) {
-        case GRACE_NOTE, GRACE_NOTE_SLASH -> true;
-        case GRACE_NOTE_DOWN, GRACE_NOTE_SLASH_DOWN -> false;
-        default -> throw new IllegalArgumentException("Unsupported grace Shape " + shape);
-        };
-    }
-
     //-------------//
     // searchLinks //
     //-------------//
@@ -377,7 +264,125 @@ public class GraceChordInter
         return (link != null) ? Arrays.asList(link) : Collections.emptyList();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a valid GraceChordInter from a glyph recognized as a grace note.
+     * <p>
+     * Suited for grace notes which are located on left side of a standard chord.
+     *
+     * @param glyph            underlying glyph
+     * @param shape            detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created inter or null
+     */
+    public static GraceChordInter createValidAdded (Glyph glyph,
+                                                    Shape shape,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
+    {
+        if (glyph.isVip()) {
+            logger.info("VIP GraceChordInter createValidAdded {} as {}", glyph, shape);
+        }
+
+        final GraceChordInter graceChord = new GraceChordInter(glyph, shape, grade);
+        final Rectangle graceBox = graceChord.getBounds();
+        final Rectangle headBox = getHeadBounds(HEAD_SHAPE, shape, graceBox, system.getSheet());
+        final Point headCenter = GeoUtil.center(headBox);
+        final int profile = system.getProfile();
+        final Link link = graceChord.lookupLink(system, systemHeadChords, headCenter, profile);
+
+        if (link != null) {
+            system.getSig().addVertex(graceChord);
+            link.applyTo(graceChord);
+            graceChord.createMembers();
+
+            return graceChord;
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getHeadBounds //
+    //---------------//
+    /**
+     * Report the bounds of head, knowing the bounds of whole grace note.
+     *
+     * @param headShape  the shape of just the grace head
+     * @param graceShape the shape for the whole grace note
+     * @param graceBox   the bounds of whole grace note (with stem and perhaps slash)
+     * @param sheet      the containing sheet
+     * @return head bounds
+     */
+    private static Rectangle getHeadBounds (Shape headShape,
+                                            Shape graceShape,
+                                            Rectangle graceBox,
+                                            Sheet sheet)
+    {
+        final Dimension dim = getHeadDimension(headShape, sheet);
+
+        if (isUp(graceShape)) {
+            // Head is on bottom left corner of whole box
+            return new Rectangle(
+                    graceBox.x,
+                    graceBox.y + graceBox.height - 1 - dim.height,
+                    dim.width,
+                    dim.height);
+        } else {
+            // Head is on top right corner of whole box
+            return new Rectangle(
+                    graceBox.x + graceBox.width - 1 - dim.width,
+                    graceBox.y,
+                    dim.width,
+                    dim.height);
+        }
+    }
+
+    //------------------//
+    // getHeadDimension //
+    //------------------//
+    /**
+     * Report the dimension of head part.
+     *
+     * @param headShape the shape of just the grace head
+     * @param sheet     the containing sheet
+     * @return head bounds
+     */
+    private static Dimension getHeadDimension (Shape headShape,
+                                               Sheet sheet)
+    {
+        final Scale scale = sheet.getScale();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final FontSymbol fs = headShape.getFontSymbolByInterline(family, scale.getInterline());
+        return fs.getDimension();
+    }
+
+    //------//
+    // isUp //
+    //------//
+    /**
+     * Report whether the grace stem is up.
+     *
+     * @return true if up
+     */
+    public static boolean isUp (Shape shape)
+    {
+        return switch (shape) {
+        case GRACE_NOTE, GRACE_NOTE_SLASH -> true;
+        case GRACE_NOTE_DOWN, GRACE_NOTE_SLASH_DOWN -> false;
+        default -> throw new IllegalArgumentException("Unsupported grace Shape " + shape);
+        };
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

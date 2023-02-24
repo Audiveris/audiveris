@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -64,6 +64,15 @@ public class PageNumber
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed for JAXB.
+     */
+    private PageNumber ()
+    {
+        this.sheetNumber = 0;
+        this.sheetPageId = 0;
+    }
+
+    /**
      * Creates a new <code>ScorePageRef</code> object.
      *
      * @param sheetNumber sheet number (counted from 1) within the containing book
@@ -74,15 +83,6 @@ public class PageNumber
     {
         this.sheetNumber = sheetNumber;
         this.sheetPageId = sheetPageId;
-    }
-
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private PageNumber ()
-    {
-        this.sheetNumber = 0;
-        this.sheetPageId = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,27 +47,6 @@ public class EntityListEvent<E extends Entity>
     private final List<E> entities;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>EntityListEvent</code> object.
-     *
-     * @param source   the entity that created this event
-     * @param hint     hint about event origin (or null)
-     * @param movement the user movement
-     * @param entities the selected collection of entities (or null)
-     */
-    public EntityListEvent (Object source,
-                            SelectionHint hint,
-                            MouseMovement movement,
-                            List<E> entities)
-    {
-        super(source, hint, movement);
-
-        if (entities != null) {
-            this.entities = Collections.unmodifiableList(new ArrayList<>(entities));
-        } else {
-            this.entities = Collections.emptyList();
-        }
-    }
 
     /**
      * Creates a new <code>EntityListEvent</code> object.
@@ -92,7 +71,30 @@ public class EntityListEvent<E extends Entity>
         }
     }
 
+    /**
+     * Creates a new <code>EntityListEvent</code> object.
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin (or null)
+     * @param movement the user movement
+     * @param entities the selected collection of entities (or null)
+     */
+    public EntityListEvent (Object source,
+                            SelectionHint hint,
+                            MouseMovement movement,
+                            List<E> entities)
+    {
+        super(source, hint, movement);
+
+        if (entities != null) {
+            this.entities = Collections.unmodifiableList(new ArrayList<>(entities));
+        } else {
+            this.entities = Collections.emptyList();
+        }
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getData //
     //---------//

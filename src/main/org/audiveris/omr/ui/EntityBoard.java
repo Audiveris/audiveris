@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,11 +22,6 @@
 package org.audiveris.omr.ui;
 
 import org.audiveris.omr.sig.inter.Inter;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.SpinnerUtil;
@@ -45,6 +40,10 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,18 +74,11 @@ public class EntityBoard<E extends Entity>
             .getResourceMap(EntityBoard.class);
 
     /** Events this board is interested in. */
-    private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
-
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** To select precise ID option. */
-    public static enum IdOption
-    {
-        ID_NONE,
-        ID_LABEL,
-        ID_SPINNER;
-    }
+    private static final Class<?>[] eventsRead = new Class<?>[]
+    { EntityListEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Counter of entities selection. */
     protected JLabel count;
 
@@ -112,6 +104,7 @@ public class EntityBoard<E extends Entity>
     protected boolean selfUpdating = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>EntityBoard</code> object, with all entity fields by default.
      *
@@ -195,6 +188,7 @@ public class EntityBoard<E extends Entity>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -213,61 +207,28 @@ public class EntityBoard<E extends Entity>
         }
     }
 
-    //---------//
-    // onEvent //
-    //---------//
+    //--------------//
+    // defineLayout //
+    //--------------//
     /**
-     * Call-back triggered when user Selection has been modified
-     *
-     * @param event of current inter list
+     * Define the layout for common fields of all EntityBoard (sub)classes.
+     * Layout for others (count, vip, dump) is defined in super Board class.
      */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onEvent (UserEvent event)
+    private void defineLayout ()
     {
-        logger.debug("EntityBoard event:{}", event);
+        CellConstraints cst = new CellConstraints();
 
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        // Layout
+        int r = 1; // --------------------------------
 
-            if (event instanceof EntityListEvent) {
-                // Display entity parameters (while preventing circular updates)
-                selfUpdating = true;
-                handleEntityListEvent((EntityListEvent<E>) event);
-                selfUpdating = false;
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
+        if (idSpinner != null) {
+            builder.addLabel("Id", cst.xy(1, r));
+            builder.add(idSpinner, cst.xy(3, r));
         }
-    }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * CallBack triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating spinner
-     */
-    @Override
-    public void stateChanged (ChangeEvent e)
-    {
-        if ((idSpinner != null) && (idSpinner == e.getSource())) {
-            // Nota: this method is automatically called whenever the spinner
-            // value is changed, including when an entity selection notification
-            // is received leading to such selfUpdating. Hence the check.
-            if (!selfUpdating) {
-                // Notify the new entity id
-                getSelectionService().publish(
-                        new IdEvent(
-                                this,
-                                SelectionHint.ENTITY_INIT,
-                                null,
-                                (Integer) idSpinner.getValue()));
-            }
+        if (idLabel != null) {
+            builder.add(idLabel.getLabel(), cst.xy(1, r));
+            builder.add(idLabel.getField(), cst.xy(3, r));
         }
     }
 
@@ -384,6 +345,85 @@ public class EntityBoard<E extends Entity>
         }
     }
 
+    //---------------//
+    // makeIdSpinner //
+    //---------------//
+    /**
+     * Convenient method to allocate an entity-based spinner
+     *
+     * @param index the underlying entity index
+     * @return the spinner built
+     */
+    private JSpinner makeIdSpinner (EntityIndex<E> index)
+    {
+        JSpinner spinner = new JSpinner(new SpinnerIdModel<>(getName(), index));
+        spinner.setValue(0); // Initial value before listener is set!
+        spinner.addChangeListener(this);
+        spinner.setLocale(Locale.ENGLISH);
+        SpinnerUtil.setRightAlignment(spinner);
+        SpinnerUtil.setEditable(spinner, true);
+
+        return spinner;
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Call-back triggered when user Selection has been modified
+     *
+     * @param event of current inter list
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onEvent (UserEvent event)
+    {
+        logger.debug("EntityBoard event:{}", event);
+
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            if (event instanceof EntityListEvent) {
+                // Display entity parameters (while preventing circular updates)
+                selfUpdating = true;
+                handleEntityListEvent((EntityListEvent<E>) event);
+                selfUpdating = false;
+            }
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //--------------//
+    // stateChanged //
+    //--------------//
+    /**
+     * CallBack triggered by a change in one of the spinners.
+     *
+     * @param e the change event, this allows to retrieve the originating spinner
+     */
+    @Override
+    public void stateChanged (ChangeEvent e)
+    {
+        if ((idSpinner != null) && (idSpinner == e.getSource())) {
+            // Nota: this method is automatically called whenever the spinner
+            // value is changed, including when an entity selection notification
+            // is received leading to such selfUpdating. Hence the check.
+            if (!selfUpdating) {
+                // Notify the new entity id
+                getSelectionService().publish(
+                        new IdEvent(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                null,
+                                (Integer) idSpinner.getValue()));
+            }
+        }
+    }
+
     //--------------------//
     // vipActionPerformed //
     //--------------------//
@@ -404,49 +444,13 @@ public class EntityBoard<E extends Entity>
         }
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout for common fields of all EntityBoard (sub)classes.
-     * Layout for others (count, vip, dump) is defined in super Board class.
-     */
-    private void defineLayout ()
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /** To select precise ID option. */
+    public static enum IdOption
     {
-        CellConstraints cst = new CellConstraints();
-
-        // Layout
-        int r = 1; // --------------------------------
-
-        if (idSpinner != null) {
-            builder.addLabel("Id", cst.xy(1, r));
-            builder.add(idSpinner, cst.xy(3, r));
-        }
-
-        if (idLabel != null) {
-            builder.add(idLabel.getLabel(), cst.xy(1, r));
-            builder.add(idLabel.getField(), cst.xy(3, r));
-        }
-    }
-
-    //---------------//
-    // makeIdSpinner //
-    //---------------//
-    /**
-     * Convenient method to allocate an entity-based spinner
-     *
-     * @param index the underlying entity index
-     * @return the spinner built
-     */
-    private JSpinner makeIdSpinner (EntityIndex<E> index)
-    {
-        JSpinner spinner = new JSpinner(new SpinnerIdModel<>(getName(), index));
-        spinner.setValue(0); // Initial value before listener is set!
-        spinner.addChangeListener(this);
-        spinner.setLocale(Locale.ENGLISH);
-        SpinnerUtil.setRightAlignment(spinner);
-        SpinnerUtil.setEditable(spinner, true);
-
-        return spinner;
+        ID_NONE,
+        ID_LABEL,
+        ID_SPINNER;
     }
 }

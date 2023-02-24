@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.HALF_NOTE_UP;
 import static org.audiveris.omr.glyph.Shape.QUARTER_NOTE_UP;
+
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -56,6 +57,7 @@ public class CompoundNoteSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
@@ -115,6 +117,7 @@ public class CompoundNoteSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

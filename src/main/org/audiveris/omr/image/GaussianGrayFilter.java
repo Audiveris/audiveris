@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,6 +46,7 @@ public class GaussianGrayFilter
     private final Kernel kernel;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new GaussianGrayFilter object with a default radius value.
      */
@@ -66,6 +67,51 @@ public class GaussianGrayFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------------//
+    // convolveAndTranspose //
+    //----------------------//
+    private void convolveAndTranspose (byte[] inPixels,
+                                       byte[] outPixels,
+                                       int width,
+                                       int height)
+    {
+        float[] matrix = kernel.getKernelData(null);
+        int cols = kernel.getWidth();
+        int cols2 = cols / 2;
+
+        for (int y = 0; y < height; y++) {
+            int index = y;
+            int ioffset = y * width;
+
+            for (int x = 0; x < width; x++) {
+                float p = 0;
+                int moffset = cols2;
+
+                for (int col = -cols2; col <= cols2; col++) {
+                    float f = matrix[moffset + col];
+
+                    if (f != 0) {
+                        int ix = x + col;
+
+                        if (ix < 0) {
+                            ix = 0;
+                        } else if (ix >= width) {
+                            ix = width - 1;
+                        }
+
+                        int pix = inPixels[ioffset + ix] & 0xff;
+                        p += (f * pix);
+                    }
+                }
+
+                int ip = clamp((int) (p + 0.5));
+                outPixels[index] = (byte) ip;
+                index += height;
+            }
+        }
+    }
+
     //--------//
     // filter //
     //--------//
@@ -113,48 +159,28 @@ public class GaussianGrayFilter
         return radius;
     }
 
-    //----------------------//
-    // convolveAndTranspose //
-    //----------------------//
-    private void convolveAndTranspose (byte[] inPixels,
-                                       byte[] outPixels,
-                                       int width,
-                                       int height)
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------//
+    // clamp //
+    //-------//
+    /**
+     * Clamp a value to the range 0..255.
+     *
+     * @param val the input value
+     * @return the value constrained in [0..255]
+     */
+    private static int clamp (int val)
     {
-        float[] matrix = kernel.getKernelData(null);
-        int cols = kernel.getWidth();
-        int cols2 = cols / 2;
-
-        for (int y = 0; y < height; y++) {
-            int index = y;
-            int ioffset = y * width;
-
-            for (int x = 0; x < width; x++) {
-                float p = 0;
-                int moffset = cols2;
-
-                for (int col = -cols2; col <= cols2; col++) {
-                    float f = matrix[moffset + col];
-
-                    if (f != 0) {
-                        int ix = x + col;
-
-                        if (ix < 0) {
-                            ix = 0;
-                        } else if (ix >= width) {
-                            ix = width - 1;
-                        }
-
-                        int pix = inPixels[ioffset + ix] & 0xff;
-                        p += (f * pix);
-                    }
-                }
-
-                int ip = clamp((int) (p + 0.5));
-                outPixels[index] = (byte) ip;
-                index += height;
-            }
+        if (val < 0) {
+            return 0;
         }
+
+        if (val > 255) {
+            return 255;
+        }
+
+        return val;
     }
 
     //------------//
@@ -197,27 +223,5 @@ public class GaussianGrayFilter
         }
 
         return new Kernel(rows, 1, matrix);
-    }
-
-    //-------//
-    // clamp //
-    //-------//
-    /**
-     * Clamp a value to the range 0..255.
-     *
-     * @param val the input value
-     * @return the value constrained in [0..255]
-     */
-    private static int clamp (int val)
-    {
-        if (val < 0) {
-            return 0;
-        }
-
-        if (val > 255) {
-            return 255;
-        }
-
-        return val;
     }
 }

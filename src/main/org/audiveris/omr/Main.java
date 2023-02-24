@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -74,11 +74,28 @@ public class Main
     private static CLI cli;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private Main ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // checkLocale //
+    //-------------//
+    private static void checkLocale ()
+    {
+        final String localeStr = constants.locale.getValue().trim();
+
+        Locale locale = getLocale(localeStr);
+
+        if (locale != null) {
+            Locale.setDefault(locale);
+            logger.debug("Locale set to {}", locale);
+        }
+    }
+
     //--------//
     // getCli //
     //--------//
@@ -92,6 +109,24 @@ public class Main
         return cli;
     }
 
+    //-----------//
+    // getLocale //
+    //-----------//
+    private static Locale getLocale (String localeStr)
+    {
+        if (!localeStr.isEmpty()) {
+            for (Locale locale : Locale.getAvailableLocales()) {
+                if (locale.toString().equalsIgnoreCase(localeStr)) {
+                    return locale;
+                }
+            }
+
+            logger.warn("Not supported locale {}", localeStr);
+        }
+
+        return null;
+    }
+
     //---------------------//
     // getSheetStepTimeOut //
     //---------------------//
@@ -103,6 +138,56 @@ public class Main
     public static int getSheetStepTimeOut ()
     {
         return constants.sheetStepTimeOut.getValue();
+    }
+
+    //---------------------//
+    // getSupportedLocales //
+    //---------------------//
+    public static List<Locale> getSupportedLocales ()
+    {
+        final List<Locale> locales = new ArrayList<>();
+        final String str = constants.supportedLocales.getValue();
+        final String[] tokens = str.split("\\s*,\\s*");
+
+        for (String token : tokens) {
+            String trimmedToken = token.trim();
+
+            if (!trimmedToken.isEmpty()) {
+                Locale locale = getLocale(trimmedToken);
+
+                if (locale != null) {
+                    locales.add(locale);
+                }
+            }
+        }
+
+        return locales;
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    private static void initialize ()
+    {
+        // (re) Open the executor services
+        OmrExecutors.restart();
+    }
+
+    //----------//
+    // logTasks //
+    //----------//
+    private static void logTasks (List<CliTask> tasks,
+                                  boolean inParallel)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Submitting ").append(tasks.size()).append(" task(s) in ");
+        sb.append(inParallel ? "parallel:" : "sequence:");
+
+        for (Callable task : tasks) {
+            sb.append("\n    ").append(task);
+        }
+
+        logger.info(sb.toString());
     }
 
     //------//
@@ -205,119 +290,6 @@ public class Main
         }
     }
 
-    //---------------------//
-    // getSupportedLocales //
-    //---------------------//
-    public static List<Locale> getSupportedLocales ()
-    {
-        final List<Locale> locales = new ArrayList<>();
-        final String str = constants.supportedLocales.getValue();
-        final String[] tokens = str.split("\\s*,\\s*");
-
-        for (String token : tokens) {
-            String trimmedToken = token.trim();
-
-            if (!trimmedToken.isEmpty()) {
-                Locale locale = getLocale(trimmedToken);
-
-                if (locale != null) {
-                    locales.add(locale);
-                }
-            }
-        }
-
-        return locales;
-    }
-
-    //-----------//
-    // setLocale //
-    //-----------//
-    /**
-     * Set application locale value.
-     *
-     * @param locale value to set
-     */
-    public static void setLocale (Locale locale)
-    {
-        if (!Locale.getDefault().equals(locale)) {
-            constants.locale.setValue(locale.toString());
-            Locale.setDefault(locale);
-            logger.info("Locale set to: '{}'", locale);
-        }
-    }
-
-    //--------------------------//
-    // processSystemsInParallel //
-    //--------------------------//
-    /**
-     * Tell whether we should process systems of a sheet in parallel.
-     *
-     * @return true if so
-     */
-    public static boolean processSystemsInParallel ()
-    {
-        return constants.processSystemsInParallel.isSet();
-    }
-
-    //-------------//
-    // checkLocale //
-    //-------------//
-    private static void checkLocale ()
-    {
-        final String localeStr = constants.locale.getValue().trim();
-
-        Locale locale = getLocale(localeStr);
-
-        if (locale != null) {
-            Locale.setDefault(locale);
-            logger.debug("Locale set to {}", locale);
-        }
-    }
-
-    //-----------//
-    // getLocale //
-    //-----------//
-    private static Locale getLocale (String localeStr)
-    {
-        if (!localeStr.isEmpty()) {
-            for (Locale locale : Locale.getAvailableLocales()) {
-                if (locale.toString().equalsIgnoreCase(localeStr)) {
-                    return locale;
-                }
-            }
-
-            logger.warn("Not supported locale {}", localeStr);
-        }
-
-        return null;
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    private static void initialize ()
-    {
-        // (re) Open the executor services
-        OmrExecutors.restart();
-    }
-
-    //----------//
-    // logTasks //
-    //----------//
-    private static void logTasks (List<CliTask> tasks,
-                                  boolean inParallel)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Submitting ").append(tasks.size()).append(" task(s) in ");
-        sb.append(inParallel ? "parallel:" : "sequence:");
-
-        for (Callable task : tasks) {
-            sb.append("\n    ").append(task);
-        }
-
-        logger.info(sb.toString());
-    }
-
     //------------//
     // processCli //
     //------------//
@@ -334,6 +306,19 @@ public class Main
             // Stop the JVM, with failure status (1)
             Runtime.getRuntime().exit(1);
         }
+    }
+
+    //--------------------------//
+    // processSystemsInParallel //
+    //--------------------------//
+    /**
+     * Tell whether we should process systems of a sheet in parallel.
+     *
+     * @return true if so
+     */
+    public static boolean processSystemsInParallel ()
+    {
+        return constants.processSystemsInParallel.isSet();
     }
 
     //---------------//
@@ -358,8 +343,7 @@ public class Main
                     for (Future<Void> future : futures) {
                         try {
                             future.get();
-                        } catch (InterruptedException |
-                                 ExecutionException ex) {
+                        } catch (InterruptedException | ExecutionException ex) {
                             CliTask task = tasks.get(futures.indexOf(future));
                             final String radix = task.getRadix();
 
@@ -389,6 +373,23 @@ public class Main
         return failure;
     }
 
+    //-----------//
+    // setLocale //
+    //-----------//
+    /**
+     * Set application locale value.
+     *
+     * @param locale value to set
+     */
+    public static void setLocale (Locale locale)
+    {
+        if (!Locale.getDefault().equals(locale)) {
+            constants.locale.setValue(locale.toString());
+            Locale.setDefault(locale);
+            logger.info("Locale set to: '{}'", locale);
+        }
+    }
+
     //-----------------//
     // showEnvironment //
     //-----------------//
@@ -399,24 +400,20 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n"
-                            + "- OS:           {}\n"
-                            + "- Architecture: {}\n"
-                            + "- Java VM:      {}\n"
+                    "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
+                            + "- Architecture: {}\n" + "- Java VM:      {}\n"
                             + "- OCR Engine:   {}",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
                     System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),
-                    System.getProperty("java.vm.name") + " (build "
-                            + System.getProperty("java.vm.version")
-                            + ", "
-                            + System.getProperty("java.vm.info")
-                            + ")",
+                    System.getProperty("java.vm.name") + " (build " + System.getProperty(
+                            "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")",
                     TesseractOCR.getInstance().identify());
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

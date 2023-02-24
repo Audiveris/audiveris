@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Users are encouraged to use the more powerful {@link NextInVoiceRelation} whenever possible.
  *
  * @see NextInVoiceRelation
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "same-voice")
@@ -48,6 +47,7 @@ public class SameVoiceRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // isSingleSource //
     //----------------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,16 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.clef;
 
+import static org.audiveris.omr.glyph.Shape.C_CLEF;
+import static org.audiveris.omr.glyph.Shape.F_CLEF;
+import static org.audiveris.omr.glyph.Shape.G_CLEF;
+import static org.audiveris.omr.glyph.Shape.G_CLEF_8VA;
+import static org.audiveris.omr.glyph.Shape.G_CLEF_8VB;
+import static org.audiveris.omr.glyph.Shape.PERCUSSION_CLEF;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
@@ -33,8 +43,6 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -52,10 +60,9 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -64,9 +71,6 @@ import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -80,6 +84,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>ClefBuilder</code> extracts the clef symbol at the beginning of a staff.
@@ -111,6 +118,7 @@ public class ClefBuilder
             PERCUSSION_CLEF);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Dedicated staff to analyze. */
     private final Staff staff;
 
@@ -144,6 +152,7 @@ public class ClefBuilder
     private final Classifier classifier = ShapeClassifier.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ClefBuilder object.
      *
@@ -169,6 +178,7 @@ public class ClefBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // findClefs //
     //-----------//
@@ -206,29 +216,6 @@ public class ClefBuilder
         if (!bestMap.isEmpty()) {
             registerClefs(bestMap.values());
         }
-    }
-
-    //----------------//
-    // setBrowseStart //
-    //----------------//
-    /**
-     * Set the start abscissa for browsing.
-     *
-     * @param browseStart precise browse beginning abscissa (generally right after left bar line).
-     */
-    public void setBrowseStart (int browseStart)
-    {
-        range.browseStart = browseStart;
-        range.browseStop = browseStart + params.maxClefEnd;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return "ClefBuilder#" + staff.getId();
     }
 
     //------------//
@@ -379,8 +366,7 @@ public class ClefBuilder
         final List<ClefInter> inters = new ArrayList<>(bestMap.values());
         Collections.sort(inters, Inters.byReverseGrade);
 
-        interLoop:
-        for (int i = 0; i < inters.size(); i++) {
+        interLoop: for (int i = 0; i < inters.size(); i++) {
             final double grade = inters.get(i).getGrade();
 
             for (int j = i + 1; j < inters.size(); j++) {
@@ -476,8 +462,8 @@ public class ClefBuilder
 
             if (idx == 0) {
                 // Case of best clef
-                Rectangle box = (inter.getGlyph() != null)
-                        ? inter.getGlyph().getBounds().intersection(clefBox) : clefBox;
+                Rectangle box = (inter.getGlyph() != null) ? inter.getGlyph().getBounds()
+                        .intersection(clefBox) : clefBox;
                 int end = (box.x + box.width) - 1;
                 staff.setClefStop(end);
             }
@@ -519,7 +505,100 @@ public class ClefBuilder
         }
     }
 
+    //----------------//
+    // setBrowseStart //
+    //----------------//
+    /**
+     * Set the start abscissa for browsing.
+     *
+     * @param browseStart precise browse beginning abscissa (generally right after left bar line).
+     */
+    public void setBrowseStart (int browseStart)
+    {
+        range.browseStart = browseStart;
+        range.browseStop = browseStart + params.maxClefEnd;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "ClefBuilder#" + staff.getId();
+    }
+
+    //-------------//
+    // ClefAdapter //
+    //-------------//
+    /**
+     * Handles the integration between glyph clustering class and clef environment.
+     * <p>
+     * For each clef kind, we keep the best result found if any.
+     */
+    private class ClefAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        /** Best inter per clef kind. */
+        private final Map<ClefKind, ClefInter> bestMap;
+
+        ClefAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+                     Map<ClefKind, ClefInter> bestMap)
+        {
+            super(graph);
+            this.bestMap = bestMap;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = system.registerGlyph(glyph, null);
+            }
+
+            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
+
+            Evaluation[] evals = classifier.evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.clefMinGrade / Grades.intrinsicRatio,
+                    null);
+
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
+
+                if (HEADER_CLEF_SHAPES.contains(shape)) {
+                    final double grade = Grades.intrinsicRatio * eval.grade;
+                    ClefKind kind = ClefInter.kindOf(glyph.getCenter2D(), shape, staff);
+                    ClefInter bestInter = bestMap.get(kind);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return bounds.height > params.maxGlyphHeight;
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return weight < params.minGlyphWeight;
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Column //
     //--------//
@@ -716,75 +795,6 @@ public class ClefBuilder
                 maxGlyphHeight = specific.toPixelsDouble(constants.maxGlyphHeight);
                 minGlyphWeight = specific.toPixels(constants.minGlyphWeight);
             }
-        }
-    }
-
-    //-------------//
-    // ClefAdapter //
-    //-------------//
-    /**
-     * Handles the integration between glyph clustering class and clef environment.
-     * <p>
-     * For each clef kind, we keep the best result found if any.
-     */
-    private class ClefAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        /** Best inter per clef kind. */
-        private final Map<ClefKind, ClefInter> bestMap;
-
-        ClefAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                     Map<ClefKind, ClefInter> bestMap)
-        {
-            super(graph);
-            this.bestMap = bestMap;
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = system.registerGlyph(glyph, null);
-            }
-
-            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
-
-            Evaluation[] evals = classifier.evaluate(
-                    glyph,
-                    staff.getSpecificInterline(),
-                    params.maxEvalRank,
-                    Grades.clefMinGrade / Grades.intrinsicRatio,
-                    null);
-
-            for (Evaluation eval : evals) {
-                final Shape shape = eval.shape;
-
-                if (HEADER_CLEF_SHAPES.contains(shape)) {
-                    final double grade = Grades.intrinsicRatio * eval.grade;
-                    ClefKind kind = ClefInter.kindOf(glyph.getCenter2D(), shape, staff);
-                    ClefInter bestInter = bestMap.get(kind);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return bounds.height > params.maxGlyphHeight;
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minGlyphWeight;
         }
     }
 }

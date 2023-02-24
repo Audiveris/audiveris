@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,10 +60,13 @@ public class LineCluster
     private static final Logger logger = LoggerFactory.getLogger(LineCluster.class);
 
     /** For comparing LineCluster instances on their reverse true length. */
-    public static final Comparator<LineCluster> byReverseLength = (LineCluster c1, LineCluster c2)
-            -> Double.compare(c2.getTrueLength(), c1.getTrueLength());
+    public static final Comparator<LineCluster> byReverseLength = (c1,
+                                                                   c2) -> Double.compare(
+                                                                           c2.getTrueLength(),
+                                                                           c1.getTrueLength());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Id for debug. */
     private final String id;
 
@@ -89,6 +92,7 @@ public class LineCluster
     private boolean vip = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LineCluster object.
      *
@@ -119,6 +123,7 @@ public class LineCluster
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // destroy //
     //---------//
@@ -312,7 +317,8 @@ public class LineCluster
             Double y = null;
 
             // Try to extrapolate vertically from previous or next line only
-            for (int dir : new int[]{-1, 1}) {
+            for (int dir : new int[]
+            { -1, 1 }) {
                 final StaffFilament otherLine = lines.get(pos + dir);
 
                 if ((otherLine != null) && otherLine.isWithinRange(x) && otherLine.isWithinRange(
@@ -416,6 +422,125 @@ public class LineCluster
         return trueLength;
     }
 
+    //---------//
+    // include //
+    //---------//
+    /**
+     * Merge another cluster with this one.
+     *
+     * @param that     the other cluster
+     * @param deltaPos the delta to apply to that cluster positions
+     */
+    private void include (LineCluster that,
+                          int deltaPos)
+    {
+        if (logger.isDebugEnabled() || isVip() || that.isVip()) {
+            logger.info("VIP inclusion of {} into {} deltaPos:{}", that, this, deltaPos);
+
+            if (that.isVip()) {
+                setVip(true);
+            }
+        }
+
+        for (Entry<Integer, StaffFilament> entry : that.lines.entrySet()) {
+            int thisPos = entry.getKey() + deltaPos;
+            StaffFilament thatLine = entry.getValue();
+            StaffFilament thisLine = lines.get(thisPos);
+
+            if (thisLine == null) {
+                thisLine = thatLine;
+                thatLine.setCluster(this, thisPos);
+                lines.put(thisPos, thisLine);
+            } else {
+                thisLine.include(thatLine);
+            }
+        }
+
+        that.parent = this;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Merged:{}", that);
+            logger.debug("Merger:{}", this);
+        }
+
+        invalidateCache();
+    }
+
+    //---------//
+    // include //
+    //---------//
+    /**
+     * Include a filament, with all its combs.
+     *
+     * @param pivot    the filament to include
+     * @param pivotPos the imposed position within the cluster
+     */
+    private void include (StaffFilament pivot,
+                          int pivotPos)
+    {
+        if (logger.isDebugEnabled() || pivot.isVip()) {
+            logger.info("VIP {} include pivot:{} at pos:{}", this, pivot.getId(), pivotPos);
+
+            if (pivot.isVip()) {
+                setVip(true);
+            }
+        }
+
+        StaffFilament ancestor = (StaffFilament) pivot.getAncestor();
+
+        // Loop on all combs that involve this filament
+        // Use a copy to avoid concurrent modification error
+        List<FilamentComb> combs = new ArrayList<>(pivot.getCombs().values());
+
+        if (combs.isEmpty()) {
+            // Specific case of one-line clusters, without any comb
+            lines.put(0, pivot);
+            pivot.setCluster(this, 0);
+        } else {
+            for (FilamentComb comb : combs) {
+                if (comb.isProcessed()) {
+                    continue;
+                }
+
+                comb.setProcessed(true);
+
+                int deltaPos = pivotPos - comb.getIndex(pivot);
+                logger.debug("{} deltaPos:{}", comb, deltaPos);
+
+                // Dispatch content of comb to proper lines
+                for (int i = 0; i < comb.getCount(); i++) {
+                    StaffFilament fil = (StaffFilament) comb.getFilament(i).getAncestor();
+                    LineCluster cluster = fil.getCluster();
+
+                    if (cluster == null) {
+                        int pos = i + deltaPos;
+                        StaffFilament line = lines.get(pos);
+
+                        if (line == null) {
+                            lines.put(pos, fil);
+                        } else {
+                            line.include(fil);
+                        }
+
+                        if (fil.isVip()) {
+                            logger.info("VIP adding {} to {} at pos {}", fil, this, pos);
+                            setVip(true);
+                        }
+
+                        fil.setCluster(this, pos);
+
+                        if (fil != ancestor) {
+                            include(fil, pos); // Recursively
+                        }
+                    } else if (cluster.getAncestor() != this.getAncestor()) {
+                        // Need to merge the two clusters
+                        include(cluster, (i + deltaPos) - fil.getClusterPos());
+                    }
+                }
+            }
+        }
+    }
+
     //------------------------//
     // includeFilamentByIndex //
     //------------------------//
@@ -475,6 +600,15 @@ public class LineCluster
         return false; // Should not happen
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    private void invalidateCache ()
+    {
+        contourBox = null;
+        trueLength = null;
+    }
+
     //-----------//
     // isOneLine //
     //-----------//
@@ -490,15 +624,6 @@ public class LineCluster
     public boolean isVip ()
     {
         return vip;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip (boolean vip)
-    {
-        this.vip = vip;
     }
 
     //-----------//
@@ -542,6 +667,15 @@ public class LineCluster
         }
 
         invalidateCache();
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public void setVip (boolean vip)
+    {
+        this.vip = vip;
     }
 
     //----------//
@@ -668,133 +802,5 @@ public class LineCluster
         invalidateCache();
 
         return removed;
-    }
-
-    //---------//
-    // include //
-    //---------//
-    /**
-     * Include a filament, with all its combs.
-     *
-     * @param pivot    the filament to include
-     * @param pivotPos the imposed position within the cluster
-     */
-    private void include (StaffFilament pivot,
-                          int pivotPos)
-    {
-        if (logger.isDebugEnabled() || pivot.isVip()) {
-            logger.info("VIP {} include pivot:{} at pos:{}", this, pivot.getId(), pivotPos);
-
-            if (pivot.isVip()) {
-                setVip(true);
-            }
-        }
-
-        StaffFilament ancestor = (StaffFilament) pivot.getAncestor();
-
-        // Loop on all combs that involve this filament
-        // Use a copy to avoid concurrent modification error
-        List<FilamentComb> combs = new ArrayList<>(pivot.getCombs().values());
-
-        if (combs.isEmpty()) {
-            // Specific case of one-line clusters, without any comb
-            lines.put(0, pivot);
-            pivot.setCluster(this, 0);
-        } else {
-            for (FilamentComb comb : combs) {
-                if (comb.isProcessed()) {
-                    continue;
-                }
-
-                comb.setProcessed(true);
-
-                int deltaPos = pivotPos - comb.getIndex(pivot);
-                logger.debug("{} deltaPos:{}", comb, deltaPos);
-
-                // Dispatch content of comb to proper lines
-                for (int i = 0; i < comb.getCount(); i++) {
-                    StaffFilament fil = (StaffFilament) comb.getFilament(i).getAncestor();
-                    LineCluster cluster = fil.getCluster();
-
-                    if (cluster == null) {
-                        int pos = i + deltaPos;
-                        StaffFilament line = lines.get(pos);
-
-                        if (line == null) {
-                            lines.put(pos, fil);
-                        } else {
-                            line.include(fil);
-                        }
-
-                        if (fil.isVip()) {
-                            logger.info("VIP adding {} to {} at pos {}", fil, this, pos);
-                            setVip(true);
-                        }
-
-                        fil.setCluster(this, pos);
-
-                        if (fil != ancestor) {
-                            include(fil, pos); // Recursively
-                        }
-                    } else if (cluster.getAncestor() != this.getAncestor()) {
-                        // Need to merge the two clusters
-                        include(cluster, (i + deltaPos) - fil.getClusterPos());
-                    }
-                }
-            }
-        }
-    }
-
-    //---------//
-    // include //
-    //---------//
-    /**
-     * Merge another cluster with this one.
-     *
-     * @param that     the other cluster
-     * @param deltaPos the delta to apply to that cluster positions
-     */
-    private void include (LineCluster that,
-                          int deltaPos)
-    {
-        if (logger.isDebugEnabled() || isVip() || that.isVip()) {
-            logger.info("VIP inclusion of {} into {} deltaPos:{}", that, this, deltaPos);
-
-            if (that.isVip()) {
-                setVip(true);
-            }
-        }
-
-        for (Entry<Integer, StaffFilament> entry : that.lines.entrySet()) {
-            int thisPos = entry.getKey() + deltaPos;
-            StaffFilament thatLine = entry.getValue();
-            StaffFilament thisLine = lines.get(thisPos);
-
-            if (thisLine == null) {
-                thisLine = thatLine;
-                thatLine.setCluster(this, thisPos);
-                lines.put(thisPos, thisLine);
-            } else {
-                thisLine.include(thatLine);
-            }
-        }
-
-        that.parent = this;
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Merged:{}", that);
-            logger.debug("Merger:{}", this);
-        }
-
-        invalidateCache();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    private void invalidateCache ()
-    {
-        contourBox = null;
-        trueLength = null;
     }
 }

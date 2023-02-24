@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.key;
 
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
@@ -35,7 +37,6 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.IntegerFunction;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -54,8 +55,6 @@ import org.jgrapht.graph.SimpleGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ij.process.ByteProcessor;
-
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -63,9 +62,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>KeyExtractor</code> is a companion of KeyBuilder, focused on extracting key
@@ -82,6 +82,7 @@ public class KeyExtractor
     private static final Logger logger = LoggerFactory.getLogger(KeyExtractor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final Sheet sheet;
 
     private final SystemInfo system;
@@ -102,6 +103,7 @@ public class KeyExtractor
     private final Classifier classifier = ShapeClassifier.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>KeyExtractor</code> object.
      *
@@ -121,6 +123,7 @@ public class KeyExtractor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // extractAlter //
     //--------------//
@@ -157,8 +160,8 @@ public class KeyExtractor
             double grade = Grades.intrinsicRatio * slice.getEval().grade;
 
             if (grade >= minGrade) {
-                if ((slice.getAlter() == null)
-                            || (slice.getAlter().getGlyph() != slice.getGlyph())) {
+                if ((slice.getAlter() == null) || (slice.getAlter().getGlyph() != slice
+                        .getGlyph())) {
                     logger.debug("Glyph#{} {}", slice.getGlyph().getId(), slice.getEval());
 
                     KeyAlterInter alterInter = KeyAlterInter.create(
@@ -176,6 +179,34 @@ public class KeyExtractor
         }
 
         return null;
+    }
+
+    //--------//
+    // getInk //
+    //--------//
+    /**
+     * Report the amount of ink in the provided rectangle of the staff-free buffer.
+     *
+     * @param rect provided rectangle
+     * @return number of foreground pixels, off staff lines
+     */
+    private int getInk (Rectangle rect)
+    {
+        final int xMin = rect.x;
+        final int xMax = (rect.x + rect.width) - 1;
+        final int yMin = rect.y;
+        final int yMax = (rect.y + rect.height) - 1;
+        int weight = 0;
+
+        for (int x = xMin; x <= xMax; x++) {
+            for (int y = yMin; y <= yMax; y++) {
+                if (staffFreeSource.get(x, y) == 0) {
+                    weight++;
+                }
+            }
+        }
+
+        return weight;
     }
 
     //---------------//
@@ -321,6 +352,71 @@ public class KeyExtractor
         return false;
     }
 
+    //-----------------//
+    // purgeCandidates //
+    //-----------------//
+    /**
+     * Make sure that no part is shared by different candidates.
+     */
+    private void purgeCandidates (List<Candidate> candidates)
+    {
+        final List<Candidate> toRemove = new ArrayList<>();
+        Collections.sort(candidates, Candidate.byReverseGrade);
+
+        for (int i = 0; i < candidates.size(); i++) {
+            final Candidate candidate = candidates.get(i);
+
+            for (Glyph part : candidate.parts) {
+                toRemove.clear();
+
+                for (Candidate c : candidates.subList(i + 1, candidates.size())) {
+                    if (c.parts.contains(part)) {
+                        toRemove.add(c);
+                    }
+                }
+
+                candidates.removeAll(toRemove);
+            }
+        }
+    }
+
+    //------------//
+    // purgeParts //
+    //------------//
+    /**
+     * Purge the population of candidate parts as much as possible, since the cost
+     * of their later combinations is exponential.
+     * <p>
+     * Those of width 1 and stuck on right side of slice can be safely removed, since they
+     * certainly belong to the stem of the next slice.
+     * <p>
+     * Those composed of just one (isolated) pixel are also removed, although this is more
+     * questionable.
+     *
+     * @param parts the collection to purge
+     * @param xMax  maximum abscissa in area
+     */
+    private void purgeParts (List<Glyph> parts,
+                             int xMax)
+    {
+        final List<Glyph> toRemove = new ArrayList<>();
+
+        for (Glyph glyph : parts) {
+            if ((glyph.getWeight() < params.minPartWeight) || (glyph.getBounds().x == xMax)) {
+                toRemove.add(glyph);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            parts.removeAll(toRemove);
+        }
+
+        if (parts.size() > params.maxPartCount) {
+            Collections.sort(parts, Glyphs.byReverseWeight);
+            parts.retainAll(parts.subList(0, params.maxPartCount));
+        }
+    }
+
     //--------------------//
     // retrieveCandidates //
     //--------------------//
@@ -440,100 +536,130 @@ public class KeyExtractor
         return ink >= params.minGlyphWeight;
     }
 
-    //--------//
-    // getInk //
-    //--------//
+    //--------------------//
+    // AbstractKeyAdapter //
+    //--------------------//
     /**
-     * Report the amount of ink in the provided rectangle of the staff-free buffer.
-     *
-     * @param rect provided rectangle
-     * @return number of foreground pixels, off staff lines
+     * Abstract adapter for retrieving items.
      */
-    private int getInk (Rectangle rect)
+    private abstract class AbstractKeyAdapter
+            extends GlyphCluster.AbstractAdapter
     {
-        final int xMin = rect.x;
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
-        int weight = 0;
 
-        for (int x = xMin; x <= xMax; x++) {
-            for (int y = yMin; y <= yMax; y++) {
-                if (staffFreeSource.get(x, y) == 0) {
-                    weight++;
-                }
-            }
+        /** Relevant peaks. */
+        protected final List<KeyPeak> peaks;
+
+        /** Minimum acceptable intrinsic grade. */
+        protected final double minGrade;
+
+        /** Relevant shapes. */
+        protected final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
+
+        AbstractKeyAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+                            List<KeyPeak> peaks,
+                            Set<Shape> targetShapes,
+                            double minGrade)
+        {
+            super(graph);
+            this.peaks = peaks;
+            this.targetShapes.addAll(targetShapes);
+            this.minGrade = minGrade;
         }
 
-        return weight;
-    }
+        protected boolean embracesSlicePeaks (KeySlice slice,
+                                              Glyph glyph)
+        {
+            final Rectangle sliceBox = slice.getRect();
+            final int sliceStart = sliceBox.x;
+            final int sliceStop = (sliceBox.x + sliceBox.width) - 1;
+            final Rectangle glyphBox = glyph.getBounds();
 
-    //-----------------//
-    // purgeCandidates //
-    //-----------------//
-    /**
-     * Make sure that no part is shared by different candidates.
-     */
-    private void purgeCandidates (List<Candidate> candidates)
-    {
-        final List<Candidate> toRemove = new ArrayList<>();
-        Collections.sort(candidates, Candidate.byReverseGrade);
+            // Make sure that the glyph width embraces the slice peak(s)
+            for (KeyPeak peak : peaks) {
+                final double peakCenter = peak.getCenter();
 
-        for (int i = 0; i < candidates.size(); i++) {
-            final Candidate candidate = candidates.get(i);
-
-            for (Glyph part : candidate.parts) {
-                toRemove.clear();
-
-                for (Candidate c : candidates.subList(i + 1, candidates.size())) {
-                    if (c.parts.contains(part)) {
-                        toRemove.add(c);
+                if ((sliceStart <= peakCenter) && (peakCenter <= sliceStop)) {
+                    // Is this slice peak embraced by glyph?
+                    if (!GeoUtil.xEmbraces(glyphBox, peakCenter)) {
+                        return false;
                     }
                 }
+            }
 
-                candidates.removeAll(toRemove);
+            return true;
+        }
+
+        protected void evaluateSliceGlyph (KeySlice slice,
+                                           Glyph glyph,
+                                           Set<Glyph> parts)
+        {
+            if (isTooSmall(glyph.getBounds())) {
+                return;
+            }
+
+            if ((slice != null) && !embracesSlicePeaks(slice, glyph)) {
+                return;
+            }
+
+            trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                system.addFreeGlyph(glyph);
+            }
+
+            if (glyph.isVip()) {
+                logger.info("VIP evaluateSliceGlyph for {}", glyph);
+            }
+
+            Evaluation[] evals = classifier.evaluate(
+                    glyph,
+                    sheet.getInterline(),
+                    params.maxEvalRank,
+                    minGrade / Grades.intrinsicRatio,
+                    null);
+
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
+
+                if (targetShapes.contains(shape)) {
+                    logger.debug("glyph#{} width:{} {}", glyph.getId(), glyph.getWidth(), eval);
+                    keepCandidate(glyph, parts, eval);
+                }
             }
         }
-    }
 
-    //------------//
-    // purgeParts //
-    //------------//
-    /**
-     * Purge the population of candidate parts as much as possible, since the cost
-     * of their later combinations is exponential.
-     * <p>
-     * Those of width 1 and stuck on right side of slice can be safely removed, since they
-     * certainly belong to the stem of the next slice.
-     * <p>
-     * Those composed of just one (isolated) pixel are also removed, although this is more
-     * questionable.
-     *
-     * @param parts the collection to purge
-     * @param xMax  maximum abscissa in area
-     */
-    private void purgeParts (List<Glyph> parts,
-                             int xMax)
-    {
-        final List<Glyph> toRemove = new ArrayList<>();
-
-        for (Glyph glyph : parts) {
-            if ((glyph.getWeight() < params.minPartWeight) || (glyph.getBounds().x == xMax)) {
-                toRemove.add(glyph);
-            }
+        @Override
+        public boolean isTooHeavy (int weight)
+        {
+            return weight > params.maxGlyphWeight;
         }
 
-        if (!toRemove.isEmpty()) {
-            parts.removeAll(toRemove);
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return (bounds.width > params.maxGlyphWidth) || (bounds.height > params.maxGlyphHeight);
         }
 
-        if (parts.size() > params.maxPartCount) {
-            Collections.sort(parts, Glyphs.byReverseWeight);
-            parts.retainAll(parts.subList(0, params.maxPartCount));
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return weight < params.minGlyphWeight;
         }
+
+        @Override
+        public boolean isTooSmall (Rectangle bounds)
+        {
+            return (bounds.width < params.minGlyphWidth) || (bounds.height < params.minGlyphHeight);
+        }
+
+        protected abstract void keepCandidate (Glyph glyph,
+                                               Set<Glyph> parts,
+                                               Evaluation eval);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Candidate //
     //-----------//
@@ -544,12 +670,18 @@ public class KeyExtractor
     {
 
         /** To sort according to decreasing grade. */
-        public static final Comparator<Candidate> byReverseGrade = (Candidate c1, Candidate c2)
-                -> (c1 == c2) ? 0 : Double.compare(c2.eval.grade, c1.eval.grade);
+        public static final Comparator<Candidate> byReverseGrade = (Candidate c1,
+                                                                    Candidate c2) -> (c1 == c2) ? 0
+                                                                            : Double.compare(
+                                                                                    c2.eval.grade,
+                                                                                    c1.eval.grade);
 
         /** To sort according to left abscissa. */
-        public static final Comparator<Candidate> byAbscissa = (Candidate c1, Candidate c2)
-                -> (c1 == c2) ? 0 : Double.compare(c1.glyph.getLeft(), c2.glyph.getLeft());
+        public static final Comparator<Candidate> byAbscissa = (Candidate c1,
+                                                                Candidate c2) -> (c1 == c2) ? 0
+                                                                        : Double.compare(
+                                                                                c1.glyph.getLeft(),
+                                                                                c2.glyph.getLeft());
 
         final Glyph glyph;
 
@@ -632,6 +764,48 @@ public class KeyExtractor
                 "Maximum glyph weight");
     }
 
+    //-----------------//
+    // MultipleAdapter //
+    //-----------------//
+    /**
+     * Adapter for retrieving all items of the key (in key area).
+     */
+    private class MultipleAdapter
+            extends AbstractKeyAdapter
+    {
+
+        final KeyRoi roi;
+
+        final List<Candidate> candidates = new ArrayList<>();
+
+        MultipleAdapter (KeyRoi roi,
+                         List<KeyPeak> peaks,
+                         SimpleGraph<Glyph, GlyphLink> graph,
+                         Set<Shape> targetShapes,
+                         double minGrade)
+        {
+            super(graph, peaks, targetShapes, minGrade);
+            this.roi = roi;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            // Retrieve impacted slice
+            final KeySlice slice = roi.sliceOf(glyph.getCentroid().x);
+            evaluateSliceGlyph(slice, glyph, parts);
+        }
+
+        @Override
+        protected void keepCandidate (Glyph glyph,
+                                      Set<Glyph> parts,
+                                      Evaluation eval)
+        {
+            candidates.add(new Candidate(glyph, parts, eval));
+        }
+    }
+
     //------------//
     // Parameters //
     //------------//
@@ -679,170 +853,6 @@ public class KeyExtractor
                 minGlyphWeight = specific.toPixels(constants.minGlyphWeight);
                 maxGlyphWeight = specific.toPixels(constants.maxGlyphWeight);
             }
-        }
-    }
-
-    //--------------------//
-    // AbstractKeyAdapter //
-    //--------------------//
-    /**
-     * Abstract adapter for retrieving items.
-     */
-    private abstract class AbstractKeyAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        /** Relevant peaks. */
-        protected final List<KeyPeak> peaks;
-
-        /** Minimum acceptable intrinsic grade. */
-        protected final double minGrade;
-
-        /** Relevant shapes. */
-        protected final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
-
-        AbstractKeyAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                            List<KeyPeak> peaks,
-                            Set<Shape> targetShapes,
-                            double minGrade)
-        {
-            super(graph);
-            this.peaks = peaks;
-            this.targetShapes.addAll(targetShapes);
-            this.minGrade = minGrade;
-        }
-
-        @Override
-        public boolean isTooHeavy (int weight)
-        {
-            return weight > params.maxGlyphWeight;
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return (bounds.width > params.maxGlyphWidth) || (bounds.height > params.maxGlyphHeight);
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minGlyphWeight;
-        }
-
-        @Override
-        public boolean isTooSmall (Rectangle bounds)
-        {
-            return (bounds.width < params.minGlyphWidth) || (bounds.height < params.minGlyphHeight);
-        }
-
-        protected boolean embracesSlicePeaks (KeySlice slice,
-                                              Glyph glyph)
-        {
-            final Rectangle sliceBox = slice.getRect();
-            final int sliceStart = sliceBox.x;
-            final int sliceStop = (sliceBox.x + sliceBox.width) - 1;
-            final Rectangle glyphBox = glyph.getBounds();
-
-            // Make sure that the glyph width embraces the slice peak(s)
-            for (KeyPeak peak : peaks) {
-                final double peakCenter = peak.getCenter();
-
-                if ((sliceStart <= peakCenter) && (peakCenter <= sliceStop)) {
-                    // Is this slice peak embraced by glyph?
-                    if (!GeoUtil.xEmbraces(glyphBox, peakCenter)) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        protected void evaluateSliceGlyph (KeySlice slice,
-                                           Glyph glyph,
-                                           Set<Glyph> parts)
-        {
-            if (isTooSmall(glyph.getBounds())) {
-                return;
-            }
-
-            if ((slice != null) && !embracesSlicePeaks(slice, glyph)) {
-                return;
-            }
-
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
-            }
-
-            if (glyph.isVip()) {
-                logger.info("VIP evaluateSliceGlyph for {}", glyph);
-            }
-
-            Evaluation[] evals = classifier.evaluate(
-                    glyph,
-                    sheet.getInterline(),
-                    params.maxEvalRank,
-                    minGrade / Grades.intrinsicRatio,
-                    null);
-
-            for (Evaluation eval : evals) {
-                final Shape shape = eval.shape;
-
-                if (targetShapes.contains(shape)) {
-                    logger.debug("glyph#{} width:{} {}", glyph.getId(), glyph.getWidth(), eval);
-                    keepCandidate(glyph, parts, eval);
-                }
-            }
-        }
-
-        protected abstract void keepCandidate (Glyph glyph,
-                                               Set<Glyph> parts,
-                                               Evaluation eval);
-    }
-
-    //-----------------//
-    // MultipleAdapter //
-    //-----------------//
-    /**
-     * Adapter for retrieving all items of the key (in key area).
-     */
-    private class MultipleAdapter
-            extends AbstractKeyAdapter
-    {
-
-        final KeyRoi roi;
-
-        final List<Candidate> candidates = new ArrayList<>();
-
-        MultipleAdapter (KeyRoi roi,
-                         List<KeyPeak> peaks,
-                         SimpleGraph<Glyph, GlyphLink> graph,
-                         Set<Shape> targetShapes,
-                         double minGrade)
-        {
-            super(graph, peaks, targetShapes, minGrade);
-            this.roi = roi;
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            // Retrieve impacted slice
-            final KeySlice slice = roi.sliceOf(glyph.getCentroid().x);
-            evaluateSliceGlyph(slice, glyph, parts);
-        }
-
-        @Override
-        protected void keepCandidate (Glyph glyph,
-                                      Set<Glyph> parts,
-                                      Evaluation eval)
-        {
-            candidates.add(new Candidate(glyph, parts, eval));
         }
     }
 

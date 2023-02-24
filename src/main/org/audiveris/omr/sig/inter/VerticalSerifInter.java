@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * a MultipleRestInter.
  *
  * @see MultipleRestInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "vertical-serif")
@@ -44,19 +43,11 @@ public class VerticalSerifInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new VerticalSerifInter object.
-     *
-     * @param glyph   the underlying glyph
-     * @param impacts the grade details
-     * @param median  the median line
-     * @param width   the serif width
+     * No-arg constructor meant for JAXB.
      */
-    public VerticalSerifInter (Glyph glyph,
-                               GradeImpacts impacts,
-                               Line2D median,
-                               Double width)
+    private VerticalSerifInter ()
     {
-        super(glyph, Shape.VERTICAL_SERIF, impacts, median, width);
+        super(null, null, 0.0);
     }
 
     /**
@@ -76,14 +67,23 @@ public class VerticalSerifInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new VerticalSerifInter object.
+     *
+     * @param glyph   the underlying glyph
+     * @param impacts the grade details
+     * @param median  the median line
+     * @param width   the serif width
      */
-    private VerticalSerifInter ()
+    public VerticalSerifInter (Glyph glyph,
+                               GradeImpacts impacts,
+                               Line2D median,
+                               Double width)
     {
-        super(null, null, 0.0);
+        super(glyph, Shape.VERTICAL_SERIF, impacts, median, width);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//

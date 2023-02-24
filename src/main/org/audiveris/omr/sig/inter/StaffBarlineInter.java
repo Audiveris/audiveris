@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,7 +31,14 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.PartBarline.Style;
-import static org.audiveris.omr.sheet.PartBarline.Style.*;
+import static org.audiveris.omr.sheet.PartBarline.Style.HEAVY;
+import static org.audiveris.omr.sheet.PartBarline.Style.HEAVY_HEAVY;
+import static org.audiveris.omr.sheet.PartBarline.Style.HEAVY_LIGHT;
+import static org.audiveris.omr.sheet.PartBarline.Style.LIGHT_HEAVY;
+import static org.audiveris.omr.sheet.PartBarline.Style.LIGHT_HEAVY_LIGHT;
+import static org.audiveris.omr.sheet.PartBarline.Style.LIGHT_LIGHT;
+import static org.audiveris.omr.sheet.PartBarline.Style.NONE;
+import static org.audiveris.omr.sheet.PartBarline.Style.REGULAR;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
@@ -109,29 +116,19 @@ public final class StaffBarlineInter
     private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Transient data
     //---------------
-    //
+
     private Style style;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>StaffBarlineInter</code> object from a shape.
-     *
-     * @param shape THIN_BARLINE, THICK_BARLINE, DOUBLE_BARLINE,FINAL_BARLINE,
-     *              REVERSE_FINAL_BARLINE, LEFT_REPEAT_SIGN,
-     *              RIGHT_REPEAT_SIGN,BACK_TO_BACK_REPEAT_SIGN
-     * @param grade quality
-     */
-    public StaffBarlineInter (Shape shape,
-                              Double grade)
-    {
-        this.shape = shape;
-        setGrade(grade);
 
-        if (shape != null) {
-            style = toStyle(shape);
-        }
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private StaffBarlineInter ()
+    {
     }
 
     /**
@@ -168,13 +165,26 @@ public final class StaffBarlineInter
     }
 
     /**
-     * No-arg constructor needed for JAXB.
+     * Creates a new <code>StaffBarlineInter</code> object from a shape.
+     *
+     * @param shape THIN_BARLINE, THICK_BARLINE, DOUBLE_BARLINE,FINAL_BARLINE,
+     *              REVERSE_FINAL_BARLINE, LEFT_REPEAT_SIGN,
+     *              RIGHT_REPEAT_SIGN,BACK_TO_BACK_REPEAT_SIGN
+     * @param grade quality
      */
-    private StaffBarlineInter ()
+    public StaffBarlineInter (Shape shape,
+                              Double grade)
     {
+        this.shape = shape;
+        setGrade(grade);
+
+        if (shape != null) {
+            style = toStyle(shape);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -196,6 +206,66 @@ public final class StaffBarlineInter
         }
 
         EnsembleHelper.addMember(this, member);
+    }
+
+    //-----------//
+    // cancelAdd //
+    //-----------//
+    /**
+     * Cancel the proposed StaffBarlineInter addition.
+     *
+     * @param cancel the boolean to set
+     * @param sheet  the containing sheet
+     * @return an empty task list
+     */
+    private List<? extends UITask> cancelAdd (WrappedBoolean cancel,
+                                              Sheet sheet)
+    {
+        cancel.set(true);
+
+        sheet.getInterIndex().publish(null);
+        sheet.getLocationService().publish(
+                new LocationEvent(this, SelectionHint.LOCATION_INIT, MouseMovement.PRESSING, null));
+
+        return Collections.emptyList();
+    }
+
+    //--------------//
+    // computeStyle //
+    //--------------//
+    /**
+     * Compute the style for this StaffBarline, based on its member barlines.
+     * <p>
+     * The separation between thin and thick barlines is not reliable enough, therefore we have
+     * to base the computation on the number of barlines rather than a strict difference between
+     * thin/thick roles.
+     *
+     * @return the style inferred from composition
+     */
+    private Style computeStyle ()
+    {
+        switch (getMembers().size()) {
+        case 0:
+            return NONE;
+
+        case 1:
+            return (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
+
+        case 2:
+            if (getLeftBar().getShape() == Shape.THIN_BARLINE) {
+                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
+            } else {
+                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT : HEAVY_HEAVY;
+            }
+
+        case 3:
+            return LIGHT_HEAVY_LIGHT;
+
+        default:
+            logger.warn("Unknown style for {}", this);
+
+            return null;
+        }
     }
 
     //----------//
@@ -235,6 +305,44 @@ public final class StaffBarlineInter
         }
 
         return new Rectangle(bounds);
+    }
+
+    //--------------------//
+    // getClosureToRemove //
+    //--------------------//
+    /**
+     * Retrieve the system-high closure of StaffBarline instance this one is part of,
+     * and prompt user for removal confirmation.
+     *
+     * @param cancel (output) if not null, ability to cancel processing by setting it to true
+     * @return the closure to remove, empty if user did not confirm.
+     */
+    List<Inter> getClosureToRemove (WrappedBoolean cancel)
+    {
+        final List<Inter> closure = new ArrayList<>();
+
+        for (PartBarline pb : getSystemBarline()) {
+            closure.addAll(pb.getStaffBarlines());
+        }
+
+        // Display closure staff barlines to user
+        final Sheet sheet = sig.getSystem().getSheet();
+        sheet.getInterIndex().getEntityService().publish(
+                new EntityListEvent<>(
+                        this,
+                        SelectionHint.ENTITY_INIT,
+                        MouseMovement.PRESSING,
+                        closure));
+
+        if ((cancel == null) || OMR.gui.displayConfirmation(
+                "Do you confirm whole system-height removal?",
+                "Removal of " + closure.size() + " barline(s)")) {
+            return closure;
+        } else {
+            cancel.set(true);
+
+            return Collections.emptyList();
+        }
     }
 
     //-----------//
@@ -356,14 +464,6 @@ public final class StaffBarlineInter
         }
 
         throw new IllegalStateException("No abscissa computable for " + this);
-    }
-
-    //-------------------------//
-    // getMaxStaffBarlineShift //
-    //-------------------------//
-    public static Scale.Fraction getMaxStaffBarlineShift ()
-    {
-        return constants.maxStaffBarlineShift;
     }
 
     //------------//
@@ -581,6 +681,21 @@ public final class StaffBarlineInter
         throw new IllegalStateException("No abscissa computable for " + this);
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        PartBarline.Style style = getStyle();
+
+        if (style != null) {
+            return style.toString();
+        }
+
+        return null;
+    }
+
     //----------//
     // getStyle //
     //----------//
@@ -714,6 +829,27 @@ public final class StaffBarlineInter
         }
 
         return false;
+    }
+
+    //-------------------------//
+    // imposeWithinStaffLimits //
+    //-------------------------//
+    @Override
+    public boolean imposeWithinStaffLimits ()
+    {
+        return true;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" ").append(getStyle());
+
+        return sb.toString();
     }
 
     //-----------------//
@@ -926,28 +1062,6 @@ public final class StaffBarlineInter
     }
 
     //-----------//
-    // cancelAdd //
-    //-----------//
-    /**
-     * Cancel the proposed StaffBarlineInter addition.
-     *
-     * @param cancel the boolean to set
-     * @param sheet  the containing sheet
-     * @return an empty task list
-     */
-    private List<? extends UITask> cancelAdd (WrappedBoolean cancel,
-                                              Sheet sheet)
-    {
-        cancel.set(true);
-
-        sheet.getInterIndex().publish(null);
-        sheet.getLocationService().publish(
-                new LocationEvent(this, SelectionHint.LOCATION_INIT, MouseMovement.PRESSING, null));
-
-        return Collections.emptyList();
-    }
-
-    //-----------//
     // preRemove //
     //-----------//
     @Override
@@ -984,118 +1098,6 @@ public final class StaffBarlineInter
         }
 
         EnsembleHelper.removeMember(this, member);
-    }
-
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        PartBarline.Style style = getStyle();
-
-        if (style != null) {
-            return style.toString();
-        }
-
-        return null;
-    }
-
-    //--------------------//
-    // getClosureToRemove //
-    //--------------------//
-    /**
-     * Retrieve the system-high closure of StaffBarline instance this one is part of,
-     * and prompt user for removal confirmation.
-     *
-     * @param cancel (output) if not null, ability to cancel processing by setting it to true
-     * @return the closure to remove, empty if user did not confirm.
-     */
-    List<Inter> getClosureToRemove (WrappedBoolean cancel)
-    {
-        final List<Inter> closure = new ArrayList<>();
-
-        for (PartBarline pb : getSystemBarline()) {
-            closure.addAll(pb.getStaffBarlines());
-        }
-
-        // Display closure staff barlines to user
-        final Sheet sheet = sig.getSystem().getSheet();
-        sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        closure));
-
-        if ((cancel == null) || OMR.gui.displayConfirmation(
-                "Do you confirm whole system-height removal?",
-                "Removal of " + closure.size() + " barline(s)")) {
-            return closure;
-        } else {
-            cancel.set(true);
-
-            return Collections.emptyList();
-        }
-    }
-
-    //-------------------------//
-    // imposeWithinStaffLimits //
-    //-------------------------//
-    @Override
-    public boolean imposeWithinStaffLimits ()
-    {
-        return true;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(getStyle());
-
-        return sb.toString();
-    }
-
-    //--------------//
-    // computeStyle //
-    //--------------//
-    /**
-     * Compute the style for this StaffBarline, based on its member barlines.
-     * <p>
-     * The separation between thin and thick barlines is not reliable enough, therefore we have
-     * to base the computation on the number of barlines rather than a strict difference between
-     * thin/thick roles.
-     *
-     * @return the style inferred from composition
-     */
-    private Style computeStyle ()
-    {
-        switch (getMembers().size()) {
-        case 0:
-            return NONE;
-
-        case 1:
-            return (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
-
-        case 2:
-            if (getLeftBar().getShape() == Shape.THIN_BARLINE) {
-                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
-            } else {
-                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT : HEAVY_HEAVY;
-            }
-
-        case 3:
-            return LIGHT_HEAVY_LIGHT;
-
-        default:
-            logger.warn("Unknown style for {}", this);
-
-            return null;
-        }
     }
 
     //---------//
@@ -1135,6 +1137,8 @@ public final class StaffBarlineInter
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------------//
     // getClosestStaffBarline //
     //------------------------//
@@ -1164,7 +1168,16 @@ public final class StaffBarlineInter
         return bestBar;
     }
 
+    //-------------------------//
+    // getMaxStaffBarlineShift //
+    //-------------------------//
+    public static Scale.Fraction getMaxStaffBarlineShift ()
+    {
+        return constants.maxStaffBarlineShift;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

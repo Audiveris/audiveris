@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
@@ -51,6 +49,8 @@ import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
@@ -73,10 +73,12 @@ public class DistancesBuilder
     private static final Logger logger = LoggerFactory.getLogger(DistancesBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>DistancesBuilder</code> object.
      *
@@ -88,6 +90,7 @@ public class DistancesBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // buildDistances //
     //----------------//
@@ -114,14 +117,15 @@ public class DistancesBuilder
 
         // Display distances image in a template view?
         if ((OMR.gui != null) && constants.displayTemplates.isSet()) {
-            SelectionService templateService = new SelectionService(
-                    "templateService",
-                    new Class[]{AnchoredTemplateEvent.class});
+            SelectionService templateService = new SelectionService("templateService", new Class[]
+            { AnchoredTemplateEvent.class });
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.TEMPLATE_TAB,
-                    new ScrollImageView(sheet, new TemplateView(sheet, img, table, templateService)),
+                    new ScrollImageView(
+                            sheet,
+                            new TemplateView(sheet, img, table, templateService)),
                     new BoardsPane(new DistanceBoard(sheet, table), templateBoard));
             templateBoard.stateChanged(null); // To feed template service
         }
@@ -192,6 +196,48 @@ public class DistancesBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displayTemplates = new Constant.Boolean(
+                false,
+                "Should we display the templates tab?");
+    }
+
+    //--------------//
+    // ImagePainter //
+    //--------------//
+    private static class ImagePainter
+            implements Painter
+    {
+
+        final Graphics2D g;
+
+        public ImagePainter (BufferedImage img)
+        {
+            g = img.createGraphics();
+            g.setColor(Color.WHITE);
+        }
+
+        @Override
+        public void paintGlyph (Glyph glyph)
+        {
+            glyph.getRunTable().render(g, glyph.getTopLeft());
+        }
+
+        @Override
+        public void paintPixel (int x,
+                                int y)
+        {
+            g.fillRect(x, y, 1, 1);
+        }
+    }
+
     //---------//
     // Painter //
     //---------//
@@ -231,46 +277,5 @@ public class DistancesBuilder
             table.setValue(x, y, ChamferDistance.VALUE_UNKNOWN);
         }
 
-    }
-
-    //--------------//
-    // ImagePainter //
-    //--------------//
-    private static class ImagePainter
-            implements Painter
-    {
-
-        final Graphics2D g;
-
-        public ImagePainter (BufferedImage img)
-        {
-            g = img.createGraphics();
-            g.setColor(Color.WHITE);
-        }
-
-        @Override
-        public void paintGlyph (Glyph glyph)
-        {
-            glyph.getRunTable().render(g, glyph.getTopLeft());
-        }
-
-        @Override
-        public void paintPixel (int x,
-                                int y)
-        {
-            g.fillRect(x, y, 1, 1);
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displayTemplates = new Constant.Boolean(
-                false,
-                "Should we display the templates tab?");
     }
 }

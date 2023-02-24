@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,9 +47,11 @@ public class Range
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To sort by increasing main. */
-    public static final Comparator<Range> byMain = (e1, e2) -> Double.compare(e1.main, e2.main);
+    public static final Comparator<Range> byMain = (e1,
+                                                    e2) -> Double.compare(e1.main, e2.main);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Key at beginning of range. */
     @XmlAttribute(name = "min")
     public final int min;
@@ -62,7 +64,16 @@ public class Range
     @XmlAttribute(name = "max")
     public final int max;
 
+    /** No-arg constructor meant for JAXB. */
+    private Range ()
+    {
+        this.min = 0;
+        this.main = 0;
+        this.max = 0;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>Range</code> object.
      *
@@ -79,15 +90,8 @@ public class Range
         this.max = max;
     }
 
-    /** No-arg constructor meant for JAXB. */
-    private Range ()
-    {
-        this.min = 0;
-        this.main = 0;
-        this.max = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getWidth //
     //----------//

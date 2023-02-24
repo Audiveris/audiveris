@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,17 +47,8 @@ public class UITaskList
 
     private static final Logger logger = LoggerFactory.getLogger(UITaskList.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Possible options. */
-    public static enum Option
-    {
-        /** Sequence not to be kept in history. */
-        NO_HISTORY,
-        /** User has validated the choice. */
-        VALIDATED;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sequence of related actions. */
     private final List<UITask> list = new ArrayList<>();
 
@@ -66,17 +57,6 @@ public class UITaskList
 
     /** For a graceful cancel. */
     private boolean cancelled = false;
-
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>InterTaskList</code> object.
-     *
-     * @param tasks sequence of related tasks
-     */
-    public UITaskList (UITask... tasks)
-    {
-        this(Arrays.asList(tasks));
-    }
 
     /**
      * Creates a new <code>InterTaskList</code> object.
@@ -88,7 +68,20 @@ public class UITaskList
         list.addAll(tasks);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>InterTaskList</code> object.
+     *
+     * @param tasks sequence of related tasks
+     */
+    public UITaskList (UITask... tasks)
+    {
+        this(Arrays.asList(tasks));
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // add //
     //-----//
@@ -205,6 +198,17 @@ public class UITaskList
     }
 
     //-------------//
+    // isCancelled //
+    //-------------//
+    /**
+     * @return the cancelled
+     */
+    public boolean isCancelled ()
+    {
+        return cancelled;
+    }
+
+    //-------------//
     // isOptionSet //
     //-------------//
     public boolean isOptionSet (Option key)
@@ -236,6 +240,17 @@ public class UITaskList
             UITask task = it.previous();
             task.performUndo();
         }
+    }
+
+    //--------------//
+    // setCancelled //
+    //--------------//
+    /**
+     * @param cancelled the cancelled to set
+     */
+    public void setCancelled (boolean cancelled)
+    {
+        this.cancelled = cancelled;
     }
 
     //------------//
@@ -271,25 +286,14 @@ public class UITaskList
         options.removeAll(Arrays.asList(keys));
     }
 
-    //-------------//
-    // isCancelled //
-    //-------------//
-    /**
-     * @return the cancelled
-     */
-    public boolean isCancelled ()
-    {
-        return cancelled;
-    }
+    //~ Enumerations -------------------------------------------------------------------------------
 
-    //--------------//
-    // setCancelled //
-    //--------------//
-    /**
-     * @param cancelled the cancelled to set
-     */
-    public void setCancelled (boolean cancelled)
+    /** Possible options. */
+    public static enum Option
     {
-        this.cancelled = cancelled;
+        /** Sequence not to be kept in history. */
+        NO_HISTORY,
+        /** User has validated the choice. */
+        VALIDATED;
     }
 }

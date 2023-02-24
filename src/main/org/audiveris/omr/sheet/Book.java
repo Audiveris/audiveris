@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,8 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet;
+
+import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
@@ -40,7 +42,6 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.SheetStub.SheetInput;
 import org.audiveris.omr.sheet.Versions.CheckResult;
 import org.audiveris.omr.sheet.rhythm.Voices;
@@ -319,6 +320,14 @@ public class Book
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed by JAXB.
+     */
+    private Book ()
+    {
+        path = null;
+    }
+
+    /**
      * Create a Book with a path to an input images file.
      *
      * @param inputPath the input image path (which may contain several images)
@@ -330,14 +339,6 @@ public class Book
         this.path = inputPath;
 
         initTransients(FileUtil.getNameSansExtension(inputPath).trim(), null);
-    }
-
-    /**
-     * No-arg constructor needed by JAXB.
-     */
-    private Book ()
-    {
-        path = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -1101,6 +1102,30 @@ public class Book
         }
 
         return pathMap;
+    }
+
+    //------------------------//
+    // getScoreInsertionIndex //
+    //------------------------//
+    /**
+     * Report the index in scores list where the score containing the provided page
+     * should be inserted.
+     *
+     * @param pageRef the provided page
+     * @return proper index in scores list
+     */
+    private int getScoreInsertionIndex (PageRef pageRef)
+    {
+        for (int i = 0; i < scores.size(); i++) {
+            final Score s = scores.get(i);
+            final PageRef r = s.getFirstPageRef();
+
+            if ((r != null) && pageRef.compareTo(r) <= 0) {
+                return i;
+            }
+        }
+
+        return scores.size();
     }
 
     //-----------//
@@ -2602,30 +2627,6 @@ public class Book
                 it.remove();
             }
         }
-    }
-
-    //------------------------//
-    // getScoreInsertionIndex //
-    //------------------------//
-    /**
-     * Report the index in scores list where the score containing the provided page
-     * should be inserted.
-     *
-     * @param pageRef the provided page
-     * @return proper index in scores list
-     */
-    private int getScoreInsertionIndex (PageRef pageRef)
-    {
-        for (int i = 0; i < scores.size(); i++) {
-            final Score s = scores.get(i);
-            final PageRef r = s.getFirstPageRef();
-
-            if ((r != null) && pageRef.compareTo(r) <= 0) {
-                return i;
-            }
-        }
-
-        return scores.size();
     }
 
     //--------------//

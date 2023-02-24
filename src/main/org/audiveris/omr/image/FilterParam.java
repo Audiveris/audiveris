@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -43,6 +43,7 @@ public class FilterParam
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     /**
      * JAXB adapter.
      */
@@ -52,7 +53,7 @@ public class FilterParam
 
         @Override
         public FilterDescriptorValue marshal (FilterParam fp)
-                throws Exception
+            throws Exception
         {
             if (fp == null) {
                 return null;
@@ -72,7 +73,7 @@ public class FilterParam
 
         @Override
         public FilterParam unmarshal (FilterDescriptorValue value)
-                throws Exception
+            throws Exception
         {
             if (value == null) {
                 return null;
@@ -94,9 +95,10 @@ public class FilterParam
         protected static class FilterDescriptorValue
         {
 
-            @XmlElementRefs({
-                @XmlElementRef(type = GlobalDescriptor.class),
-                @XmlElementRef(type = AdaptiveDescriptor.class)})
+            @XmlElementRefs(
+            {
+                    @XmlElementRef(type = GlobalDescriptor.class),
+                    @XmlElementRef(type = AdaptiveDescriptor.class) })
             FilterDescriptor filter;
         }
     }

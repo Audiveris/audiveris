@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -94,6 +94,7 @@ public class InterBoard
             .getResourceMap(InterBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -168,6 +169,7 @@ public class InterBoard
     private boolean selfUpdatingText;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new InterBoard object, pre-selected by default.
      *
@@ -215,6 +217,7 @@ public class InterBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -545,7 +548,32 @@ public class InterBoard
         shapeIcon.setIcon(getTinySymbol(getSelectedEntity()));
     }
 
+    //-----------------------//
+    // BoardToEnsembleAction //
+    //-----------------------//
+    private class BoardToEnsembleAction
+            extends AbstractAction
+    {
+
+        public BoardToEnsembleAction ()
+        {
+            super(resources.getString("ToEnsembleAction.text"));
+            putValue(
+                    Action.SHORT_DESCRIPTION,
+                    resources.getString("ToEnsembleAction.shortDescription"));
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Select the containing ensemble of current inter
+            final Inter inter = InterBoard.this.getSelectedEntity();
+            inter.getSig().publish(inter.getEnsemble(), SelectionHint.ENTITY_INIT);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -669,30 +697,6 @@ public class InterBoard
                     }
                 }
             }
-        }
-    }
-
-    //-----------------------//
-    // BoardToEnsembleAction //
-    //-----------------------//
-    private class BoardToEnsembleAction
-            extends AbstractAction
-    {
-
-        public BoardToEnsembleAction ()
-        {
-            super(resources.getString("ToEnsembleAction.text"));
-            putValue(
-                    Action.SHORT_DESCRIPTION,
-                    resources.getString("ToEnsembleAction.shortDescription"));
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Select the containing ensemble of current inter
-            final Inter inter = InterBoard.this.getSelectedEntity();
-            inter.getSig().publish(inter.getEnsemble(), SelectionHint.ENTITY_INIT);
         }
     }
 }

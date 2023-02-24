@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,7 @@ public abstract class TreeNode
     private static final Logger logger = LoggerFactory.getLogger(TreeNode.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Children : the list of nodes just below in the tree.
      */
@@ -60,6 +61,7 @@ public abstract class TreeNode
     protected TreeNode parent;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a node in the tree, given its parent.
      *
@@ -75,6 +77,7 @@ public abstract class TreeNode
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addChild //
     //----------//
@@ -234,20 +237,6 @@ public abstract class TreeNode
         return parent;
     }
 
-    //-----------//
-    // setParent //
-    //-----------//
-    /**
-     * Modify the link to the parent of this node.
-     *
-     * @param parent the (new) parent
-     */
-    public void setParent (TreeNode parent)
-    {
-        logger.debug("setParent parent={} for {}", parent, this);
-        this.parent = parent;
-    }
-
     //--------------------//
     // getPreviousSibling //
     //--------------------//
@@ -284,5 +273,19 @@ public abstract class TreeNode
             node.setParent(this);
             node.setChildrenParent(); // Recursively
         }
+    }
+
+    //-----------//
+    // setParent //
+    //-----------//
+    /**
+     * Modify the link to the parent of this node.
+     *
+     * @param parent the (new) parent
+     */
+    public void setParent (TreeNode parent)
+    {
+        logger.debug("setParent parent={} for {}", parent, this);
+        this.parent = parent;
     }
 }

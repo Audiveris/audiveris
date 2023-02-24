@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,6 +61,25 @@ public class BeamHookInter
     private static final Constants constants = new Constants();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Meant for JAXB.
+     */
+    private BeamHookInter ()
+    {
+        super((Shape) null, (GradeImpacts) null, null, 0);
+    }
+
+    /**
+     * Creates manually a new HookInter ghost object
+     *
+     * @param grade quality grade
+     */
+    public BeamHookInter (Double grade)
+    {
+        super(Shape.BEAM_HOOK, grade);
+    }
+
     /**
      * Creates a new HookInter object.
      *
@@ -75,25 +94,8 @@ public class BeamHookInter
         super(Shape.BEAM_HOOK, impacts, median, height);
     }
 
-    /**
-     * Creates manually a new HookInter ghost object
-     *
-     * @param grade quality grade
-     */
-    public BeamHookInter (Double grade)
-    {
-        super(Shape.BEAM_HOOK, grade);
-    }
-
-    /**
-     * Meant for JAXB.
-     */
-    private BeamHookInter ()
-    {
-        super((Shape) null, (GradeImpacts) null, null, 0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -126,54 +128,6 @@ public class BeamHookInter
     public boolean isHook ()
     {
         return true;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
-        Collections.sort(systemStems, Inters.byAbscissa);
-
-        final Link link = lookupLink(systemStems, system, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, BeamStemRelation.class);
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        if ((median == null) && (glyph != null)) {
-            // Case of manual hook: Compute height and median parameters and area
-            Rectangle box = glyph.getBounds();
-            height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
-
-            Point2D centroid = glyph.getCentroidDouble();
-            double slope = 0.0; // Glyph line is not reliable for a short item like a hook!
-            Point2D p1 = LineUtil.intersectionAtX(centroid, slope, box.x);
-            Point2D p2 = LineUtil.intersectionAtX(centroid, slope, box.x + box.width);
-            median = new Line2D.Double(p1.getX(), p1.getY() + 0.5, p2.getX(), p2.getY() + 0.5);
-
-            computeArea();
-        }
     }
 
     //------------//
@@ -234,7 +188,56 @@ public class BeamHookInter
         return new Link(bestStem, bestRel, true);
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        final Link link = lookupLink(systemStems, system, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, BeamStemRelation.class);
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if ((median == null) && (glyph != null)) {
+            // Case of manual hook: Compute height and median parameters and area
+            Rectangle box = glyph.getBounds();
+            height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
+
+            Point2D centroid = glyph.getCentroidDouble();
+            double slope = 0.0; // Glyph line is not reliable for a short item like a hook!
+            Point2D p1 = LineUtil.intersectionAtX(centroid, slope, box.x);
+            Point2D p2 = LineUtil.intersectionAtX(centroid, slope, box.x + box.width);
+            median = new Line2D.Double(p1.getX(), p1.getY() + 0.5, p2.getX(), p2.getY() + 0.5);
+
+            computeArea();
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

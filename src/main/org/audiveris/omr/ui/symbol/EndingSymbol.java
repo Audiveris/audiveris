@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.EndingInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -44,6 +45,7 @@ public class EndingSymbol
     final boolean withRightLeg;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an EndingSymbol.
      *
@@ -58,6 +60,7 @@ public class EndingSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
@@ -69,15 +72,6 @@ public class EndingSymbol
         p.model.translate(p.vectorTo(location));
 
         return p.model;
-    }
-
-    //--------//
-    // getTip //
-    //--------//
-    @Override
-    public String getTip ()
-    {
-        return shape + (withRightLeg ? " (w/ right leg)" : "");
     }
 
     //-----------//
@@ -105,6 +99,15 @@ public class EndingSymbol
         return p;
     }
 
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return shape + (withRightLeg ? " (w/ right leg)" : "");
+    }
+
     //-------//
     // paint //
     //-------//
@@ -128,6 +131,7 @@ public class EndingSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

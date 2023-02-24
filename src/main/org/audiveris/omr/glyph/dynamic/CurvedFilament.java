@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -56,6 +56,7 @@ public class CurvedFilament
     private static final Logger logger = LoggerFactory.getLogger(CurvedFilament.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Typical length between points. */
     protected final int segmentLength;
 
@@ -66,6 +67,7 @@ public class CurvedFilament
     protected NaturalSpline spline;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>CurvedFilament</code> object.
      *
@@ -80,6 +82,7 @@ public class CurvedFilament
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // computeLine //
     //-------------//
@@ -151,6 +154,57 @@ public class CurvedFilament
         } catch (Exception ex) {
             logger.warn("Filament cannot computeData", ex);
         }
+    }
+
+    //-----------//
+    // findPoint //
+    //-----------//
+    /**
+     * Report the defining point, if any, near the provided coordinate.
+     *
+     * @param coord       the provided coordinate value
+     * @param orientation the rough filament orientation
+     * @param margin      the maximum acceptable delta on coordinate
+     * @return the defining point or null if none
+     */
+    protected Point2D findPoint (int coord,
+                                 Orientation orientation,
+                                 int margin)
+    {
+        Point2D best = null;
+        double bestDeltaCoord = Integer.MAX_VALUE;
+
+        for (Point2D p : points) {
+            double dc = Math.abs(
+                    coord - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
+
+            if ((dc <= margin) && (dc < bestDeltaCoord)) {
+                bestDeltaCoord = dc;
+                best = p;
+            }
+        }
+
+        return best;
+    }
+
+    //--------------//
+    // getBisectors //
+    //--------------//
+    /**
+     * Report bisectors of inter-points segments.
+     *
+     * @return sequence of bisectors, such that bisectors[i] is bisector of
+     *         segment (i -> i+1)
+     */
+    private List<Line2D> getBisectors ()
+    {
+        List<Line2D> bisectors = new ArrayList<>();
+
+        for (int i = 0; i < (points.size() - 1); i++) {
+            bisectors.add(LineUtil.bisector(new Line2D.Double(points.get(i), points.get(i + 1))));
+        }
+
+        return bisectors;
     }
 
     //------------------//
@@ -227,6 +281,37 @@ public class CurvedFilament
         }
     }
 
+    //-----------//
+    // getRadius //
+    //-----------//
+    /**
+     * Report radius computed at point with index 'i'.
+     * <p>
+     * TODO: This is a simplistic way for computing radius, based on intersection
+     * of the two adjacent bisectors.
+     * There may be other ways, such as using the following property:
+     * sin angle a / length of segment a = 1 / (2 * radius)
+     *
+     * @param i         the index of desired point
+     * @param bisectors the sequence of bisectors
+     * @return the value of radius of curvature
+     */
+    private double getRadius (int i,
+                              List<Line2D> bisectors)
+    {
+        Line2D prevBisector = bisectors.get(i - 1);
+        Point2D point = points.get(i);
+        Line2D nextBisector = bisectors.get(i);
+
+        Point2D inter = LineUtil.intersection(
+                prevBisector.getP1(),
+                prevBisector.getP2(),
+                nextBisector.getP1(),
+                nextBisector.getP2());
+
+        return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
+    }
+
     //------------//
     // getSlopeAt //
     //------------//
@@ -260,6 +345,20 @@ public class CurvedFilament
         }
 
         return spline;
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     *
+     */
+    @Override
+    protected void invalidateCache ()
+    {
+        super.invalidateCache();
+        points = null;
+        spline = null;
     }
 
     //-----------------//
@@ -355,9 +454,12 @@ public class CurvedFilament
 
                 if (found.size() > 1) {
                     // Pick up the section closest to the point
-                    Collections.sort(found, (Section s1, Section s2) -> Double.compare(
-                            point.distance(s1.getCentroid()),
-                            point.distance(s2.getCentroid())));
+                    Collections.sort(
+                            found,
+                            (Section s1,
+                             Section s2) -> Double.compare(
+                                     point.distance(s1.getCentroid()),
+                                     point.distance(s2.getCentroid())));
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
@@ -419,103 +521,8 @@ public class CurvedFilament
         }
     }
 
-    //-----------//
-    // findPoint //
-    //-----------//
-    /**
-     * Report the defining point, if any, near the provided coordinate.
-     *
-     * @param coord       the provided coordinate value
-     * @param orientation the rough filament orientation
-     * @param margin      the maximum acceptable delta on coordinate
-     * @return the defining point or null if none
-     */
-    protected Point2D findPoint (int coord,
-                                 Orientation orientation,
-                                 int margin)
-    {
-        Point2D best = null;
-        double bestDeltaCoord = Integer.MAX_VALUE;
-
-        for (Point2D p : points) {
-            double dc = Math.abs(
-                    coord - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
-
-            if ((dc <= margin) && (dc < bestDeltaCoord)) {
-                bestDeltaCoord = dc;
-                best = p;
-            }
-        }
-
-        return best;
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    /**
-     *
-     */
-    @Override
-    protected void invalidateCache ()
-    {
-        super.invalidateCache();
-        points = null;
-        spline = null;
-    }
-
-    //--------------//
-    // getBisectors //
-    //--------------//
-    /**
-     * Report bisectors of inter-points segments.
-     *
-     * @return sequence of bisectors, such that bisectors[i] is bisector of
-     *         segment (i -> i+1)
-     */
-    private List<Line2D> getBisectors ()
-    {
-        List<Line2D> bisectors = new ArrayList<>();
-
-        for (int i = 0; i < (points.size() - 1); i++) {
-            bisectors.add(LineUtil.bisector(new Line2D.Double(points.get(i), points.get(i + 1))));
-        }
-
-        return bisectors;
-    }
-
-    //-----------//
-    // getRadius //
-    //-----------//
-    /**
-     * Report radius computed at point with index 'i'.
-     * <p>
-     * TODO: This is a simplistic way for computing radius, based on intersection
-     * of the two adjacent bisectors.
-     * There may be other ways, such as using the following property:
-     * sin angle a / length of segment a = 1 / (2 * radius)
-     *
-     * @param i         the index of desired point
-     * @param bisectors the sequence of bisectors
-     * @return the value of radius of curvature
-     */
-    private double getRadius (int i,
-                              List<Line2D> bisectors)
-    {
-        Line2D prevBisector = bisectors.get(i - 1);
-        Point2D point = points.get(i);
-        Line2D nextBisector = bisectors.get(i);
-
-        Point2D inter = LineUtil.intersection(
-                prevBisector.getP1(),
-                prevBisector.getP2(),
-                nextBisector.getP1(),
-                nextBisector.getP2());
-
-        return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // Constructor //
     //-------------//

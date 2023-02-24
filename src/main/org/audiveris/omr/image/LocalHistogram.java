@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,6 +41,7 @@ public class LocalHistogram
     private static final int MIN = 0;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     //  private int[] hist=new int[256];
     private int[] counts = new int[256];
 
@@ -51,19 +52,6 @@ public class LocalHistogram
     private int binCount = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new LocalHistogram object.
-     *
-     * @param cnt DOCUMENT ME!
-     */
-    public LocalHistogram (int[] cnt)
-    {
-        // this.hist=hist;
-        this.counts = cnt;
-
-        // this.hist=h;
-        //count();
-    }
 
     /**
      * Creates a new LocalHistogram object.
@@ -98,7 +86,22 @@ public class LocalHistogram
         init(index, width, height, pixels, pg, type);
     }
 
+    /**
+     * Creates a new LocalHistogram object.
+     *
+     * @param cnt DOCUMENT ME!
+     */
+    public LocalHistogram (int[] cnt)
+    {
+        // this.hist=hist;
+        this.counts = cnt;
+
+        // this.hist=h;
+        //count();
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     public void add (LocalHistogram bh)
     {
         int u = Math.min(min, bh.min);

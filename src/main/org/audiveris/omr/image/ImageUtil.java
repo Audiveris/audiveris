@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,12 +52,14 @@ public abstract class ImageUtil
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** No constructor needed, this is just a functional class. */
     private ImageUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------------//
     // grayAlphaToGray //
     //-----------------//
@@ -88,6 +90,21 @@ public abstract class ImageUtil
         }
 
         return img;
+    }
+
+    //---------------//
+    // maxRgbaToGray //
+    //---------------//
+    /**
+     * Take an RGBA image and, ignoring the alpha value, always select the maximum pixel
+     * value among R,G and B bands to provide the output gray value.
+     *
+     * @param rgba input image with 3 bands RGB and 1 Alpha channel
+     * @return a gray image
+     */
+    public static BufferedImage maxRgbaToGray (BufferedImage rgba)
+    {
+        return maxRgbToGray(rgbaToRgb(rgba));
     }
 
     //--------------//
@@ -133,21 +150,6 @@ public abstract class ImageUtil
         return img;
     }
 
-    //---------------//
-    // maxRgbaToGray //
-    //---------------//
-    /**
-     * Take an RGBA image and, ignoring the alpha value, always select the maximum pixel
-     * value among R,G and B bands to provide the output gray value.
-     *
-     * @param rgba input image with 3 bands RGB and 1 Alpha channel
-     * @return a gray image
-     */
-    public static BufferedImage maxRgbaToGray (BufferedImage rgba)
-    {
-        return maxRgbToGray(rgbaToRgb(rgba));
-    }
-
     //-----------//
     // printInfo //
     //-----------//
@@ -168,48 +170,6 @@ public abstract class ImageUtil
                 type,
                 typeOf(type),
                 colorModel);
-    }
-
-    //-----------//
-    // rgbToGray //
-    //-----------//
-    /**
-     * Take an RGB image and combine the R, G and B bands according to standard luminance
-     * value to provide the output gray value.
-     *
-     * @param rgb input image with 3 bands RGB
-     * @return a gray image
-     */
-    public static BufferedImage rgbToGray (BufferedImage rgb)
-    {
-        logger.info("Converting RGB to gray ...");
-
-        final int width = rgb.getWidth();
-        final int height = rgb.getHeight();
-        final Raster source = rgb.getData();
-        final int numBands = rgb.getColorModel().getNumComponents();
-        final int[] inLevels = new int[numBands];
-
-        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        final WritableRaster raster = img.getRaster();
-
-        // We use luminance value based on standard RGB combination
-        final double[] weights = {0.114d, 0.587d, 0.299d};
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                source.getPixel(x, y, inLevels);
-
-                double val = 0;
-                for (int i = 0; i < 3; i++) {
-                    val += weights[i] * inLevels[i];
-                }
-
-                raster.setSample(x, y, 0, (int) Math.rint(val));
-            }
-        }
-
-        return img;
     }
 
     //------------//
@@ -256,6 +216,49 @@ public abstract class ImageUtil
             for (int x = 0; x < width; x++) {
                 source.getPixel(x, y, levels);
                 raster.setPixel(x, y, levels);
+            }
+        }
+
+        return img;
+    }
+
+    //-----------//
+    // rgbToGray //
+    //-----------//
+    /**
+     * Take an RGB image and combine the R, G and B bands according to standard luminance
+     * value to provide the output gray value.
+     *
+     * @param rgb input image with 3 bands RGB
+     * @return a gray image
+     */
+    public static BufferedImage rgbToGray (BufferedImage rgb)
+    {
+        logger.info("Converting RGB to gray ...");
+
+        final int width = rgb.getWidth();
+        final int height = rgb.getHeight();
+        final Raster source = rgb.getData();
+        final int numBands = rgb.getColorModel().getNumComponents();
+        final int[] inLevels = new int[numBands];
+
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        final WritableRaster raster = img.getRaster();
+
+        // We use luminance value based on standard RGB combination
+        final double[] weights =
+        { 0.114d, 0.587d, 0.299d };
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                source.getPixel(x, y, inLevels);
+
+                double val = 0;
+                for (int i = 0; i < 3; i++) {
+                    val += weights[i] * inLevels[i];
+                }
+
+                raster.setSample(x, y, 0, (int) Math.rint(val));
             }
         }
 

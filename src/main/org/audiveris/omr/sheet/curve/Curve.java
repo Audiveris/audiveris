@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -62,18 +62,19 @@ public abstract class Curve
     private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
     /** Comparison by left abscissa. */
-    public static final Comparator<Curve> byLeftAbscissa = (Curve c1,
-                                                            Curve c2) -> Integer.compare(
+    public static final Comparator<Curve> byLeftAbscissa = (c1,
+                                                            c2) -> Integer.compare(
                                                                     c1.getEnd(true).x,
                                                                     c2.getEnd(true).x);
 
     /** Comparison by right abscissa. */
-    public static final Comparator<Curve> byRightAbscissa = (Curve c1,
-                                                             Curve c2) -> Integer.compare(
+    public static final Comparator<Curve> byRightAbscissa = (c1,
+                                                             c2) -> Integer.compare(
                                                                      c1.getEnd(false).x,
                                                                      c2.getEnd(false).x);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Unique id. (within containing sheet) */
     protected final int id;
 
@@ -96,6 +97,7 @@ public abstract class Curve
     private AttachmentHolder attachments;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Curve object.
      *
@@ -119,6 +121,7 @@ public abstract class Curve
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // addAttachment //
     //---------------//
@@ -321,19 +324,6 @@ public abstract class Curve
         return glyph;
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * Assign the underlying glyph
-     *
-     * @param glyph the underlying glyph (with relevant runs only)
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-    }
-
     //-------//
     // getId //
     //-------//
@@ -373,6 +363,92 @@ public abstract class Curve
     public Set<Arc> getParts ()
     {
         return parts;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("#").append(id);
+        sb.append(super.internals());
+
+        return sb.toString();
+    }
+
+    //----------------//
+    // isCloseToCurve //
+    //----------------//
+    /**
+     * Check whether the provided coordinates are close enough to curve.
+     *
+     * @param x              point abscissa
+     * @param y              point ordinate
+     * @param maxRunDistance maximum acceptable distance from a run end to nearest curve point
+     * @param index          current position in points sequence
+     * @return true for OK
+     */
+    private boolean isCloseToCurve (int x,
+                                    int y,
+                                    double maxRunDistance,
+                                    int index)
+    {
+        final double maxD2 = maxRunDistance * maxRunDistance;
+
+        for (int ip = index; ip < points.size(); ip++) {
+            Point point = points.get(ip);
+            double dx = point.x - x;
+            double dy = point.y - y;
+            double d2 = (dx * dx) + (dy * dy);
+
+            if (d2 <= maxD2) {
+                return true;
+            }
+        }
+
+        for (int ip = index - 1; ip >= 0; ip--) {
+            Point point = points.get(ip);
+            double dx = point.x - x;
+            double dy = point.y - y;
+            double d2 = (dx * dx) + (dy * dy);
+
+            if (d2 <= maxD2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //------------//
+    // junctionOf //
+    //------------//
+    /**
+     * Report the junction point between arcs a1 and a2.
+     *
+     * @param a1 first arc
+     * @param a2 second arc
+     * @return the common junction point if any, otherwise null
+     */
+    private Point junctionOf (Arc a1,
+                              Arc a2)
+    {
+        List<Point> s1 = new ArrayList<>();
+        s1.add(a1.getJunction(true));
+        s1.add(a1.getJunction(false));
+
+        List<Point> s2 = new ArrayList<>();
+        s2.add(a2.getJunction(true));
+        s2.add(a2.getJunction(false));
+        s1.retainAll(s2);
+
+        if (!s1.isEmpty()) {
+            return s1.get(0);
+        } else {
+            return null;
+        }
     }
 
     //-------------------//
@@ -481,91 +557,20 @@ public abstract class Curve
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("#").append(id);
-        sb.append(super.internals());
-
-        return sb.toString();
-    }
-
-    //----------------//
-    // isCloseToCurve //
-    //----------------//
+    //----------//
+    // setGlyph //
+    //----------//
     /**
-     * Check whether the provided coordinates are close enough to curve.
+     * Assign the underlying glyph
      *
-     * @param x              point abscissa
-     * @param y              point ordinate
-     * @param maxRunDistance maximum acceptable distance from a run end to nearest curve point
-     * @param index          current position in points sequence
-     * @return true for OK
+     * @param glyph the underlying glyph (with relevant runs only)
      */
-    private boolean isCloseToCurve (int x,
-                                    int y,
-                                    double maxRunDistance,
-                                    int index)
+    public void setGlyph (Glyph glyph)
     {
-        final double maxD2 = maxRunDistance * maxRunDistance;
-
-        for (int ip = index; ip < points.size(); ip++) {
-            Point point = points.get(ip);
-            double dx = point.x - x;
-            double dy = point.y - y;
-            double d2 = (dx * dx) + (dy * dy);
-
-            if (d2 <= maxD2) {
-                return true;
-            }
-        }
-
-        for (int ip = index - 1; ip >= 0; ip--) {
-            Point point = points.get(ip);
-            double dx = point.x - x;
-            double dy = point.y - y;
-            double d2 = (dx * dx) + (dy * dy);
-
-            if (d2 <= maxD2) {
-                return true;
-            }
-        }
-
-        return false;
+        this.glyph = glyph;
     }
 
-    //------------//
-    // junctionOf //
-    //------------//
-    /**
-     * Report the junction point between arcs a1 and a2.
-     *
-     * @param a1 first arc
-     * @param a2 second arc
-     * @return the common junction point if any, otherwise null
-     */
-    private Point junctionOf (Arc a1,
-                              Arc a2)
-    {
-        List<Point> s1 = new ArrayList<>();
-        s1.add(a1.getJunction(true));
-        s1.add(a1.getJunction(false));
-
-        List<Point> s2 = new ArrayList<>();
-        s2.add(a2.getJunction(true));
-        s2.add(a2.getJunction(false));
-        s1.retainAll(s2);
-
-        if (!s1.isEmpty()) {
-            return s1.get(0);
-        } else {
-            return null;
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------------------//
     // getAbscissaComparator //

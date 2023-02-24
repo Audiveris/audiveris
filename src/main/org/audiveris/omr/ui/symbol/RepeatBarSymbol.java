@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
+import org.audiveris.omr.glyph.Shape;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -58,6 +59,7 @@ public class RepeatBarSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getParams //
     //-----------//
@@ -96,6 +98,7 @@ public class RepeatBarSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//

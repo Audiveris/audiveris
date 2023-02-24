@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,14 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>FilterDescriptor</code> allows to configure a binarization
@@ -50,6 +50,7 @@ public abstract class FilterDescriptor
     public static final Param<FilterDescriptor> defaultFilter = new Default();
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // equals //
     //--------//
@@ -92,6 +93,17 @@ public abstract class FilterDescriptor
         return hash;
     }
 
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getKind());
+
+        return sb.toString();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -106,16 +118,7 @@ public abstract class FilterDescriptor
         return sb.toString();
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    protected String internalsString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getKind());
-
-        return sb.toString();
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // getDefaultKind //
@@ -134,6 +137,7 @@ public abstract class FilterDescriptor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

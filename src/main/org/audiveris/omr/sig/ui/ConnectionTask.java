@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,6 +26,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +43,8 @@ public abstract class ConnectionTask
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionTask.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Specifies the kind of connection.
-     * Limited to slurs for the time being.
-     */
-    public enum Kind
-    {
-        SLUR_CONNECTION;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Impacted page. */
     protected final Page page;
 
@@ -66,6 +58,7 @@ public abstract class ConnectionTask
     protected Inter two;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ConnectionTask</code> object.
      *
@@ -83,6 +76,7 @@ public abstract class ConnectionTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     public Page getPage ()
     {
         return page;
@@ -91,14 +85,12 @@ public abstract class ConnectionTask
     @Override
     public String toString ()
     {
-        return new StringBuilder(actionName)
-                .append(" ").append(kind)
-                .append(" one:").append(one)
-                .append(" two:").append(two)
-                .toString();
+        return new StringBuilder(actionName).append(" ").append(kind).append(" one:").append(one)
+                .append(" two:").append(two).toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // ConnectTask //
     //-------------//
@@ -187,5 +179,15 @@ public abstract class ConnectionTask
                 logger.info("Slur re-connection between #{} and #{}", s1.getId(), s2.getId());
             }
         }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Specifies the kind of connection.
+     * Limited to slurs for the time being.
+     */
+    public enum Kind
+    {
+        SLUR_CONNECTION;
     }
 }

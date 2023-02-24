@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class LabeledEnum<E extends Enum<E>>
     public final String label;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a LabeledEnum entry.
      *
@@ -58,11 +59,6 @@ public class LabeledEnum<E extends Enum<E>>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public String toString ()
-    {
-        return label;
-    }
 
     @Override
     public boolean equals (Object obj)
@@ -85,6 +81,37 @@ public class LabeledEnum<E extends Enum<E>>
         hash = (17 * hash) + Objects.hashCode(this.label);
 
         return hash;
+    }
+
+    @Override
+    public String toString ()
+    {
+        return label;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------//
+    // valueOf //
+    //---------//
+    /**
+     * Report the LabeledEnum for provided enum value in LabeledEnum entries.
+     *
+     * @param <E>       the underlying enum type
+     * @param enumValue the E value
+     * @param entries   the labeled entries
+     * @return the LabeledEnum instance or null if not found
+     */
+    public static <E extends Enum<E>> LabeledEnum<E> valueOf (E enumValue,
+                                                              LabeledEnum<E>[] entries)
+    {
+        for (LabeledEnum<E> le : entries) {
+            if (le.value == enumValue) {
+                return le;
+            }
+        }
+
+        return null;
     }
 
     //--------//
@@ -133,28 +160,5 @@ public class LabeledEnum<E extends Enum<E>>
         }
 
         return labeled;
-    }
-
-    //---------//
-    // valueOf //
-    //---------//
-    /**
-     * Report the LabeledEnum for provided enum value in LabeledEnum entries.
-     *
-     * @param <E>       the underlying enum type
-     * @param enumValue the E value
-     * @param entries   the labeled entries
-     * @return the LabeledEnum instance or null if not found
-     */
-    public static <E extends Enum<E>> LabeledEnum<E> valueOf (E enumValue,
-                                                              LabeledEnum<E>[] entries)
-    {
-        for (LabeledEnum<E> le : entries) {
-            if (le.value == enumValue) {
-                return le;
-            }
-        }
-
-        return null;
     }
 }

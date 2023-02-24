@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,6 +40,7 @@ public class SentenceRoleTask
     private static final Logger logger = LoggerFactory.getLogger(SentenceRoleTask.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Old sentence role. */
     final TextRole oldRole;
 
@@ -47,6 +48,7 @@ public class SentenceRoleTask
     final TextRole newRole;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SentenceTask</code> object.
      *
@@ -63,6 +65,7 @@ public class SentenceRoleTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public SentenceInter getInter ()
     {

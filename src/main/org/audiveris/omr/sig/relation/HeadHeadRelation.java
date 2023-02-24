@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,6 +41,7 @@ public class HeadHeadRelation
     private static final Constants constants = new Constants();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadHeadRelation</code> object.
      */
@@ -49,23 +50,6 @@ public class HeadHeadRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return false;
-    }
 
     //----------------//
     // getSourceCoeff //
@@ -85,7 +69,26 @@ public class HeadHeadRelation
         return constants.headSupportCoeff.getValue();
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -114,10 +114,10 @@ public class Measure
     private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Indicates if the measure is in some abnormal rhythm status. */
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
@@ -243,7 +243,7 @@ public class Measure
 
     // Transient data
     //---------------
-    //
+
     /** To flag a dummy measure. */
     private boolean dummy;
 
@@ -256,6 +256,15 @@ public class Measure
     private MeasureStack stack;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Measure ()
+    {
+        this.part = null;
+    }
+
     /**
      * Creates a new <code>Measure</code> object.
      *
@@ -266,15 +275,8 @@ public class Measure
         this.part = part;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private Measure ()
-    {
-        this.part = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------------//
     // addDummyMeasureRest //
     //---------------------//
@@ -403,6 +405,16 @@ public class Measure
         }
     }
 
+    //--------------------//
+    // addOtherCollection //
+    //--------------------//
+    private void addOtherCollection (Collection<? extends Inter> otherCollection)
+    {
+        for (Inter inter : otherCollection) {
+            addInter(inter);
+        }
+    }
+
     //----------//
     // addVoice //
     //----------//
@@ -414,6 +426,19 @@ public class Measure
     public void addVoice (Voice voice)
     {
         voices.add(voice);
+    }
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        try {
+            Trimmable.afterMarshal(this);
+        } catch (Exception ex) {
+            logger.error("Error afterMarshal {}", ex);
+        }
     }
 
     //-------------//
@@ -455,6 +480,33 @@ public class Measure
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        part = (Part) parent;
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        try {
+            Trimmable.beforeMarshal(this);
+        } catch (Exception ex) {
+            logger.error("Error beforeMarshal {}", ex);
         }
     }
 
@@ -532,6 +584,30 @@ public class Measure
         }
 
         return kept;
+    }
+
+    //---------------//
+    // filterByStaff //
+    //---------------//
+    /**
+     * Filter the inters that relate to the provided staff.
+     *
+     * @param inters the input collection of inters
+     * @param staff  the imposed staff
+     * @return the inters that related to staff
+     */
+    private Set<Inter> filterByStaff (Set<? extends Inter> inters,
+                                      Staff staff)
+    {
+        Set<Inter> found = new LinkedHashSet<>();
+
+        for (Inter inter : inters) {
+            if (inter.getStaff() == staff) {
+                found.add(inter);
+            }
+        }
+
+        return found;
     }
 
     //-----------------//
@@ -909,6 +985,20 @@ public class Measure
         return null;
     }
 
+    //---------//
+    // getLeft //
+    //---------//
+    private int getLeft ()
+    {
+        int left = Integer.MAX_VALUE;
+
+        for (Staff staff : getPart().getStaves()) {
+            left = Math.min(left, getAbscissa(LEFT, staff));
+        }
+
+        return left;
+    }
+
     //--------------------//
     // getLeftPartBarline //
     //--------------------//
@@ -920,19 +1010,6 @@ public class Measure
     public PartBarline getLeftPartBarline ()
     {
         return leftBarline;
-    }
-
-    //--------------------//
-    // setLeftPartBarline //
-    //--------------------//
-    /**
-     * Set the PartBarline on left.
-     *
-     * @param leftBarline left barline
-     */
-    public void setLeftPartBarline (PartBarline leftBarline)
-    {
-        this.leftBarline = leftBarline;
     }
 
     //----------------------//
@@ -964,6 +1041,30 @@ public class Measure
         return null; // No clef previously defined in this measure and staff
     }
 
+    //----------------------//
+    // getMeasureRestChords //
+    //----------------------//
+    /**
+     * Report all rest-chords meant to last the whole measure.
+     *
+     * @return the measure-long rest chords in measure
+     */
+    public Set<AbstractChordInter> getMeasureRestChords ()
+    {
+        final SystemInfo system = stack.getSystem();
+        final Set<AbstractChordInter> set = new LinkedHashSet<>();
+
+        for (RestChordInter chord : getRestChords()) {
+            final List<Inter> members = chord.getMembers();
+
+            if (!members.isEmpty() && system.isMeasureRestShape(members.get(0).getShape())) {
+                set.add(chord);
+            }
+        }
+
+        return set;
+    }
+
     //-------------------//
     // getMidPartBarline //
     //-------------------//
@@ -977,17 +1078,26 @@ public class Measure
         return midBarline;
     }
 
-    //-------------------//
-    // setMidPartBarline //
-    //-------------------//
+    //-----------//
+    // getPageId //
+    //-----------//
     /**
-     * Set the middle PartBarline.
+     * Report the measure ID within page (in fact the related stack ID).
+     * <p>
+     * NOTA: @XmlAttribute annotation forces this information to be written in book file
+     * (although it is not used when unmarshalling)
      *
-     * @param midBarline mid barline
+     * @return the page ID of containing stack
      */
-    public void setMidPartBarline (PartBarline midBarline)
+    @XmlAttribute(name = "id")
+    @SuppressWarnings("unused")
+    private String getPageId ()
     {
-        this.midBarline = midBarline;
+        if (stack != null) {
+            return stack.getPageId();
+        }
+
+        return null;
     }
 
     //---------//
@@ -1047,6 +1157,33 @@ public class Measure
         }
     }
 
+    //--------------------//
+    // getPrecedingInPage //
+    //--------------------//
+    /**
+     * Report the preceding measure of this one, either in this system / part, or in the
+     * preceding system / part, but still in the same page.
+     *
+     * @return the preceding measure, or null if not found in the page
+     */
+    public Measure getPrecedingInPage ()
+    {
+        // Look in current part
+        Measure prevMeasure = getPrecedingInSystem();
+
+        if (prevMeasure != null) {
+            return prevMeasure;
+        }
+
+        Part precedingPart = getPart().getPrecedingInPage();
+
+        if (precedingPart != null) {
+            return precedingPart.getLastMeasure();
+        } else {
+            return null;
+        }
+    }
+
     //---------------------//
     // getPrecedingInScore //
     //---------------------//
@@ -1089,33 +1226,6 @@ public class Measure
         return null;
     }
 
-    //--------------------//
-    // getPrecedingInPage //
-    //--------------------//
-    /**
-     * Report the preceding measure of this one, either in this system / part, or in the
-     * preceding system / part, but still in the same page.
-     *
-     * @return the preceding measure, or null if not found in the page
-     */
-    public Measure getPrecedingInPage ()
-    {
-        // Look in current part
-        Measure prevMeasure = getPrecedingInSystem();
-
-        if (prevMeasure != null) {
-            return prevMeasure;
-        }
-
-        Part precedingPart = getPart().getPrecedingInPage();
-
-        if (precedingPart != null) {
-            return precedingPart.getLastMeasure();
-        } else {
-            return null;
-        }
-    }
-
     //----------------------//
     // getPrecedingInSystem //
     //----------------------//
@@ -1148,6 +1258,20 @@ public class Measure
         return Collections.unmodifiableSet(restChords);
     }
 
+    //----------//
+    // getRight //
+    //----------//
+    private int getRight ()
+    {
+        int right = 0;
+
+        for (Staff staff : getPart().getStaves()) {
+            right = Math.max(right, getAbscissa(RIGHT, staff));
+        }
+
+        return right;
+    }
+
     //---------------------//
     // getRightPartBarline //
     //---------------------//
@@ -1159,19 +1283,6 @@ public class Measure
     public PartBarline getRightPartBarline ()
     {
         return rightBarline;
-    }
-
-    //---------------------//
-    // setRightPartBarline //
-    //---------------------//
-    /**
-     * Assign the (right) PartBarline that ends this measure
-     *
-     * @param rightBarline the right PartBarline
-     */
-    public void setRightPartBarline (PartBarline rightBarline)
-    {
-        this.rightBarline = rightBarline;
     }
 
     //------------//
@@ -1206,19 +1317,6 @@ public class Measure
 
             return null;
         }
-    }
-
-    //----------------//
-    // getSimileMarks //
-    //----------------//
-    /**
-     * Report the simile marks in this measure.
-     *
-     * @return the simile marks in measure
-     */
-    public Set<SimileMarkInter> getSimileMarks ()
-    {
-        return Collections.unmodifiableSet(similes);
     }
 
     //----------//
@@ -1282,6 +1380,19 @@ public class Measure
         }
     }
 
+    //----------------//
+    // getSimileMarks //
+    //----------------//
+    /**
+     * Report the simile marks in this measure.
+     *
+     * @return the simile marks in measure
+     */
+    public Set<SimileMarkInter> getSimileMarks ()
+    {
+        return Collections.unmodifiableSet(similes);
+    }
+
     //----------//
     // getStack //
     //----------//
@@ -1291,17 +1402,6 @@ public class Measure
     public MeasureStack getStack ()
     {
         return stack;
-    }
-
-    //----------//
-    // setStack //
-    //----------//
-    /**
-     * @param stack the stack to set
-     */
-    public void setStack (MeasureStack stack)
-    {
-        this.stack = stack;
     }
 
     //-------------------//
@@ -1430,6 +1530,20 @@ public class Measure
         return Collections.unmodifiableSet(tuplets);
     }
 
+    //--------------//
+    // getVoiceById //
+    //--------------//
+    private Voice getVoiceById (int id)
+    {
+        for (Voice voice : voices) {
+            if (voice.getId() == id) {
+                return voice;
+            }
+        }
+
+        return null;
+    }
+
     //-----------//
     // getVoices //
     //-----------//
@@ -1441,30 +1555,6 @@ public class Measure
     public List<Voice> getVoices ()
     {
         return Collections.unmodifiableList(voices);
-    }
-
-    //----------------------//
-    // getMeasureRestChords //
-    //----------------------//
-    /**
-     * Report all rest-chords meant to last the whole measure.
-     *
-     * @return the measure-long rest chords in measure
-     */
-    public Set<AbstractChordInter> getMeasureRestChords ()
-    {
-        final SystemInfo system = stack.getSystem();
-        final Set<AbstractChordInter> set = new LinkedHashSet<>();
-
-        for (RestChordInter chord : getRestChords()) {
-            final List<Inter> members = chord.getMembers();
-
-            if (!members.isEmpty() && system.isMeasureRestShape(members.get(0).getShape())) {
-                set.add(chord);
-            }
-        }
-
-        return set;
     }
 
     //----------//
@@ -1577,19 +1667,6 @@ public class Measure
         return abnormal;
     }
 
-    //-------------//
-    // setAbnormal //
-    //-------------//
-    /**
-     * Mark this measure as being abnormal or not.
-     *
-     * @param abnormal new value
-     */
-    public void setAbnormal (boolean abnormal)
-    {
-        this.abnormal = abnormal;
-    }
-
     //---------//
     // isDummy //
     //---------//
@@ -1601,17 +1678,6 @@ public class Measure
     public boolean isDummy ()
     {
         return dummy;
-    }
-
-    //----------//
-    // setDummy //
-    //----------//
-    /**
-     * Flag this measure as dummy.
-     */
-    public void setDummy ()
-    {
-        dummy = true;
     }
 
     //---------------//
@@ -1674,6 +1740,30 @@ public class Measure
         // Voices: rhythm reprocessed
         //
         measureBelow.switchItemsPart(part);
+    }
+
+    //----------------//
+    // mergeWithOther //
+    //----------------//
+    /**
+     * Merge this measure with the content of the provided other measure.
+     *
+     * @param other the other measure
+     */
+    private void mergeWithOther (Measure other)
+    {
+        // Keys: addressed by caller
+        //
+        addOtherCollection(other.clefs);
+        addOtherCollection(other.timeSigs);
+        addOtherCollection(other.headChords);
+        addOtherCollection(other.restChords);
+        addOtherCollection(other.flags);
+        addOtherCollection(other.tuplets);
+        addOtherCollection(other.augDots);
+        addOtherCollection(other.similes);
+
+        // Voices: addressed by caller
     }
 
     //----------------//
@@ -1760,6 +1850,26 @@ public class Measure
             similes.remove(simileInter);
         } else {
             logger.error("Attempt to use removeInter() with {}", inter);
+        }
+    }
+
+    //------------------//
+    // removeVoiceChord //
+    //------------------//
+    /**
+     * Remove the provided chord from a containing voice if any.
+     *
+     * @param chord head or rest chord to be removed
+     */
+    private void removeVoiceChord (AbstractChordInter chord)
+    {
+        for (Voice voice : voices) {
+            if (voice.removeChord(chord)) {
+                if (voice.getChords().isEmpty()) {
+                    voices.remove(voice);
+                    break;
+                }
+            }
         }
     }
 
@@ -1870,6 +1980,19 @@ public class Measure
         }
     }
 
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    /**
+     * Mark this measure as being abnormal or not.
+     *
+     * @param abnormal new value
+     */
+    public void setAbnormal (boolean abnormal)
+    {
+        this.abnormal = abnormal;
+    }
+
     //--------------//
     // setCueVoices //
     //--------------//
@@ -1892,6 +2015,67 @@ public class Measure
                 }
             }
         }
+    }
+
+    //----------//
+    // setDummy //
+    //----------//
+    /**
+     * Flag this measure as dummy.
+     */
+    public void setDummy ()
+    {
+        dummy = true;
+    }
+
+    //--------------------//
+    // setLeftPartBarline //
+    //--------------------//
+    /**
+     * Set the PartBarline on left.
+     *
+     * @param leftBarline left barline
+     */
+    public void setLeftPartBarline (PartBarline leftBarline)
+    {
+        this.leftBarline = leftBarline;
+    }
+
+    //-------------------//
+    // setMidPartBarline //
+    //-------------------//
+    /**
+     * Set the middle PartBarline.
+     *
+     * @param midBarline mid barline
+     */
+    public void setMidPartBarline (PartBarline midBarline)
+    {
+        this.midBarline = midBarline;
+    }
+
+    //---------------------//
+    // setRightPartBarline //
+    //---------------------//
+    /**
+     * Assign the (right) PartBarline that ends this measure
+     *
+     * @param rightBarline the right PartBarline
+     */
+    public void setRightPartBarline (PartBarline rightBarline)
+    {
+        this.rightBarline = rightBarline;
+    }
+
+    //----------//
+    // setStack //
+    //----------//
+    /**
+     * @param stack the stack to set
+     */
+    public void setStack (MeasureStack stack)
+    {
+        this.stack = stack;
     }
 
     //------------//
@@ -1992,6 +2176,50 @@ public class Measure
         measureBelow.setStack(stack);
     }
 
+    //-------------------//
+    // splitCollectionAt //
+    //-------------------//
+    private void splitCollectionAt (Map<Staff, Integer> xRefs,
+                                    Measure leftMeasure,
+                                    Collection<? extends Inter> collection)
+    {
+        for (Iterator<? extends Inter> it = collection.iterator(); it.hasNext();) {
+            final Inter inter = it.next();
+            Staff staff = inter.getStaff();
+
+            if ((staff == null) && (inter instanceof AbstractChordInter)) {
+                staff = ((AbstractChordInter) inter).getTopStaff();
+            }
+
+            if (inter.getCenter().x <= xRefs.get(staff)) {
+                leftMeasure.addInter(inter);
+                it.remove();
+            }
+        }
+    }
+
+    //-----------------------//
+    // splitCollectionBefore //
+    //-----------------------//
+    private void splitCollectionBefore (List<Staff> stavesBelow,
+                                        Measure measureBelow,
+                                        Collection<? extends Inter> collection)
+    {
+        for (Iterator<? extends Inter> it = collection.iterator(); it.hasNext();) {
+            final Inter inter = it.next();
+            Staff staff = inter.getStaff();
+
+            if ((staff == null) && (inter instanceof AbstractChordInter)) {
+                staff = ((AbstractChordInter) inter).getBottomStaff();
+            }
+
+            if (stavesBelow.contains(staff)) {
+                measureBelow.addInter(inter);
+                it.remove();
+            }
+        }
+    }
+
     //-------------//
     // swapVoiceId //
     //-------------//
@@ -2027,6 +2255,19 @@ public class Measure
         }
 
         return oldOwner;
+    }
+
+    //----------------------//
+    // switchCollectionPart //
+    //----------------------//
+    private void switchCollectionPart (Part newPart,
+                                       Collection<? extends Inter> collection)
+    {
+        for (Inter item : collection) {
+            if ((item.getSpecificPart() != null) && (item.getSpecificPart() != newPart)) {
+                item.setPart(newPart);
+            }
+        }
     }
 
     //-----------------//
@@ -2077,244 +2318,5 @@ public class Measure
         sb.append('}');
 
         return sb.toString();
-    }
-
-    //--------------------//
-    // addOtherCollection //
-    //--------------------//
-    private void addOtherCollection (Collection<? extends Inter> otherCollection)
-    {
-        for (Inter inter : otherCollection) {
-            addInter(inter);
-        }
-    }
-
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
-    {
-        try {
-            Trimmable.afterMarshal(this);
-        } catch (Exception ex) {
-            logger.error("Error afterMarshal {}", ex);
-        }
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        part = (Part) parent;
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        try {
-            Trimmable.beforeMarshal(this);
-        } catch (Exception ex) {
-            logger.error("Error beforeMarshal {}", ex);
-        }
-    }
-
-    //---------------//
-    // filterByStaff //
-    //---------------//
-    /**
-     * Filter the inters that relate to the provided staff.
-     *
-     * @param inters the input collection of inters
-     * @param staff  the imposed staff
-     * @return the inters that related to staff
-     */
-    private Set<Inter> filterByStaff (Set<? extends Inter> inters,
-                                      Staff staff)
-    {
-        Set<Inter> found = new LinkedHashSet<>();
-
-        for (Inter inter : inters) {
-            if (inter.getStaff() == staff) {
-                found.add(inter);
-            }
-        }
-
-        return found;
-    }
-
-    //---------//
-    // getLeft //
-    //---------//
-    private int getLeft ()
-    {
-        int left = Integer.MAX_VALUE;
-
-        for (Staff staff : getPart().getStaves()) {
-            left = Math.min(left, getAbscissa(LEFT, staff));
-        }
-
-        return left;
-    }
-
-    //-----------//
-    // getPageId //
-    //-----------//
-    /**
-     * Report the measure ID within page (in fact the related stack ID).
-     * <p>
-     * NOTA: @XmlAttribute annotation forces this information to be written in book file
-     * (although it is not used when unmarshalling)
-     *
-     * @return the page ID of containing stack
-     */
-    @XmlAttribute(name = "id")
-    @SuppressWarnings("unused")
-    private String getPageId ()
-    {
-        if (stack != null) {
-            return stack.getPageId();
-        }
-
-        return null;
-    }
-
-    //----------//
-    // getRight //
-    //----------//
-    private int getRight ()
-    {
-        int right = 0;
-
-        for (Staff staff : getPart().getStaves()) {
-            right = Math.max(right, getAbscissa(RIGHT, staff));
-        }
-
-        return right;
-    }
-
-    //--------------//
-    // getVoiceById //
-    //--------------//
-    private Voice getVoiceById (int id)
-    {
-        for (Voice voice : voices) {
-            if (voice.getId() == id) {
-                return voice;
-            }
-        }
-
-        return null;
-    }
-
-    //----------------//
-    // mergeWithOther //
-    //----------------//
-    /**
-     * Merge this measure with the content of the provided other measure.
-     *
-     * @param other the other measure
-     */
-    private void mergeWithOther (Measure other)
-    {
-        // Keys: addressed by caller
-        //
-        addOtherCollection(other.clefs);
-        addOtherCollection(other.timeSigs);
-        addOtherCollection(other.headChords);
-        addOtherCollection(other.restChords);
-        addOtherCollection(other.flags);
-        addOtherCollection(other.tuplets);
-        addOtherCollection(other.augDots);
-        addOtherCollection(other.similes);
-
-        // Voices: addressed by caller
-    }
-
-    //------------------//
-    // removeVoiceChord //
-    //------------------//
-    /**
-     * Remove the provided chord from a containing voice if any.
-     *
-     * @param chord head or rest chord to be removed
-     */
-    private void removeVoiceChord (AbstractChordInter chord)
-    {
-        for (Voice voice : voices) {
-            if (voice.removeChord(chord)) {
-                if (voice.getChords().isEmpty()) {
-                    voices.remove(voice);
-                    break;
-                }
-            }
-        }
-    }
-
-    //-------------------//
-    // splitCollectionAt //
-    //-------------------//
-    private void splitCollectionAt (Map<Staff, Integer> xRefs,
-                                    Measure leftMeasure,
-                                    Collection<? extends Inter> collection)
-    {
-        for (Iterator<? extends Inter> it = collection.iterator(); it.hasNext();) {
-            final Inter inter = it.next();
-            Staff staff = inter.getStaff();
-
-            if ((staff == null) && (inter instanceof AbstractChordInter)) {
-                staff = ((AbstractChordInter) inter).getTopStaff();
-            }
-
-            if (inter.getCenter().x <= xRefs.get(staff)) {
-                leftMeasure.addInter(inter);
-                it.remove();
-            }
-        }
-    }
-
-    //-----------------------//
-    // splitCollectionBefore //
-    //-----------------------//
-    private void splitCollectionBefore (List<Staff> stavesBelow,
-                                        Measure measureBelow,
-                                        Collection<? extends Inter> collection)
-    {
-        for (Iterator<? extends Inter> it = collection.iterator(); it.hasNext();) {
-            final Inter inter = it.next();
-            Staff staff = inter.getStaff();
-
-            if ((staff == null) && (inter instanceof AbstractChordInter)) {
-                staff = ((AbstractChordInter) inter).getBottomStaff();
-            }
-
-            if (stavesBelow.contains(staff)) {
-                measureBelow.addInter(inter);
-                it.remove();
-            }
-        }
-    }
-
-    //----------------------//
-    // switchCollectionPart //
-    //----------------------//
-    private void switchCollectionPart (Part newPart,
-                                       Collection<? extends Inter> collection)
-    {
-        for (Inter item : collection) {
-            if ((item.getSpecificPart() != null) && (item.getSpecificPart() != newPart)) {
-                item.setPart(newPart);
-            }
-        }
     }
 }

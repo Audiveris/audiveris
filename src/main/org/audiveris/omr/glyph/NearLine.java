@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,6 +39,15 @@ public interface NearLine
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
+     * Report the approximating straight line computed on glyph pixels, focused on pixel
+     * centers rather than pixel top left corner and going from border to border.
+     *
+     * @return the center line, ready to be displayed
+     * @see #getLine()
+     */
+    Line2D getCenterLine ();
+
+    /**
      * Report the co-tangent of glyph line angle with abscissa axis.
      *
      * @return co-tangent of heading angle (dx/dy).
@@ -61,15 +70,6 @@ public interface NearLine
      * @return the absolute value of the mean distance
      */
     double getMeanDistance ();
-
-    /**
-     * Report the approximating straight line computed on glyph pixels, focused on pixel
-     * centers rather than pixel top left corner and going from border to border.
-     *
-     * @return the center line, ready to be displayed
-     * @see #getLine()
-     */
-    Line2D getCenterLine ();
 
     /**
      * Report the tangent of glyph line angle with abscissa axis.

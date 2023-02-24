@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
+import org.audiveris.omr.glyph.Shape;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -53,6 +54,7 @@ public class SlashedFlagSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getParams //
     //-----------//
@@ -86,21 +88,22 @@ public class SlashedFlagSymbol
         final boolean isUp = shape == Shape.SMALL_FLAG_SLASH;
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
-        g.draw(isUp
-                ? new Line2D.Double(
+        g.draw(
+                isUp ? new Line2D.Double(
                         loc.getX() - (p.rect.getWidth() / 2),
                         loc.getY() + (p.rect.getHeight() / 5),
                         loc.getX() + (p.rect.getWidth() / 2),
                         loc.getY() - (p.rect.getHeight() / 5))
-                : new Line2D.Double(
-                        loc.getX() - (p.rect.getWidth() / 2),
-                        loc.getY() - (p.rect.getHeight() / 5),
-                        loc.getX() + (p.rect.getWidth() / 2),
-                        loc.getY() + (p.rect.getHeight() / 5)));
+                        : new Line2D.Double(
+                                loc.getX() - (p.rect.getWidth() / 2),
+                                loc.getY() - (p.rect.getHeight() / 5),
+                                loc.getX() + (p.rect.getWidth() / 2),
+                                loc.getY() + (p.rect.getHeight() / 5)));
         g.setStroke(oldStroke);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

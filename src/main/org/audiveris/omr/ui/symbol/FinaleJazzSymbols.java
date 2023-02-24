@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -269,6 +269,46 @@ public class FinaleJazzSymbols
     }
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //-----------------//
+    // FlagsDownSymbol //
+    //-----------------//
+    /**
+     * Class <code>FlagsDownSymbol</code> displays a pack of several flags down
+     */
+    public class FlagsDownSymbol
+            extends FlagsSymbol
+    {
+
+        /**
+         * Creates a new FlagsDownSymbol object.
+         *
+         * @param shape     the related shape
+         * @param family    the selected music font family
+         * @param flagCount the number of flags
+         */
+        public FlagsDownSymbol (Shape shape,
+                                MusicFamily family,
+                                int flagCount)
+        {
+            super(shape, family, flagCount);
+        }
+
+        @Override
+        protected MyParams initParams (MusicFont font)
+        {
+            MyParams p = new MyParams();
+
+            p.flag1 = font.layoutShapeByCode(Shape.FLAG_1_DOWN);
+            p.rect1 = p.flag1.getBounds();
+            p.flag2 = font.layoutShapeByCode(Shape.FLAG_2_DOWN);
+            p.rect2 = p.flag2.getBounds();
+            p.dy = (int) Math.rint(p.rect2.getHeight() * dyF2Ratio);
+            p.align = TOP_LEFT;
+
+            return p;
+        }
+    }
+
     //-------------//
     // FlagsSymbol //
     //-------------//
@@ -364,46 +404,6 @@ public class FinaleJazzSymbols
             double dy;
 
             Alignment align;
-        }
-    }
-
-    //-----------------//
-    // FlagsDownSymbol //
-    //-----------------//
-    /**
-     * Class <code>FlagsDownSymbol</code> displays a pack of several flags down
-     */
-    public class FlagsDownSymbol
-            extends FlagsSymbol
-    {
-
-        /**
-         * Creates a new FlagsDownSymbol object.
-         *
-         * @param shape     the related shape
-         * @param family    the selected music font family
-         * @param flagCount the number of flags
-         */
-        public FlagsDownSymbol (Shape shape,
-                                MusicFamily family,
-                                int flagCount)
-        {
-            super(shape, family, flagCount);
-        }
-
-        @Override
-        protected MyParams initParams (MusicFont font)
-        {
-            MyParams p = new MyParams();
-
-            p.flag1 = font.layoutShapeByCode(Shape.FLAG_1_DOWN);
-            p.rect1 = p.flag1.getBounds();
-            p.flag2 = font.layoutShapeByCode(Shape.FLAG_2_DOWN);
-            p.rect2 = p.flag2.getBounds();
-            p.dy = (int) Math.rint(p.rect2.getHeight() * dyF2Ratio);
-            p.align = TOP_LEFT;
-
-            return p;
         }
     }
 }

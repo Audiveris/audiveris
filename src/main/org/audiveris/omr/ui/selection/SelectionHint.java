@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -66,24 +66,7 @@ public enum SelectionHint
      */
     ENTITY_TRANSIENT;
 
-    //------------//
-    // isLocation //
-    //------------//
-    /**
-     * Predicate for LOCATION_XXX.
-     *
-     * @return true for location-related hints
-     */
-    public boolean isLocation ()
-    {
-        switch (this) {
-        case LOCATION_INIT:
-        case LOCATION_ADD:
-            return true;
-        }
-
-        return false;
-    }
+    //~ Methods ------------------------------------------------------------------------------------
 
     //-----------//
     // isContext //
@@ -98,6 +81,25 @@ public enum SelectionHint
         switch (this) {
         case CONTEXT_INIT:
         case CONTEXT_ADD:
+            return true;
+        }
+
+        return false;
+    }
+
+    //------------//
+    // isLocation //
+    //------------//
+    /**
+     * Predicate for LOCATION_XXX.
+     *
+     * @return true for location-related hints
+     */
+    public boolean isLocation ()
+    {
+        switch (this) {
+        case LOCATION_INIT:
+        case LOCATION_ADD:
             return true;
         }
 

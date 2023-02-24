@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -81,7 +81,14 @@ import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BASELINE_LEFT;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_RIGHT;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_RIGHT;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -164,6 +171,7 @@ public abstract class SheetPainter
             constants.basicFontSize.getValue());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sheet. */
     protected final Sheet sheet;
 
@@ -183,6 +191,7 @@ public abstract class SheetPainter
     protected SigPainter sigPainter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SheetPainter object.
      *
@@ -200,6 +209,7 @@ public abstract class SheetPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // basicLayout //
     //-------------//
@@ -268,69 +278,6 @@ public abstract class SheetPainter
      * @return the sig painter
      */
     protected abstract SigPainter getSigPainter ();
-
-    //---------------//
-    // getVoicePanel //
-    //---------------//
-    /**
-     * Build a panel which displays all defined voice ID colors.
-     * <p>
-     * Separate numbers for first staff and second staff as: 1234 / 5678
-     *
-     * @return the populated voice panel
-     */
-    public static JPanel getVoicePanel ()
-    {
-        final int length = Voices.getColorCount();
-        final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
-        final Color background = Color.WHITE;
-        final StringBuilder sbc = new StringBuilder();
-
-        for (int i = 0; i <= length; i++) {
-            if (i != 0) {
-                sbc.append(",");
-            }
-
-            sbc.append("10dlu");
-        }
-
-        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
-        final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
-        final CellConstraints cst = new CellConstraints();
-
-        // Adjust dimensions
-        final Dimension cellDim = new Dimension(5, 22);
-        panel.setInsets(3, 0, 0, 3); // TLBR
-
-        final int mid = length / 2;
-
-        for (int c = 1; c <= length; c++) {
-            final Color color = new Color(Voices.colorOf(c).getRGB()); // Remove alpha
-            final JLabel label = new JLabel("" + c, JLabel.CENTER);
-            label.setPreferredSize(cellDim);
-            label.setFont(font);
-            label.setOpaque(true);
-            label.setBackground(background);
-            label.setForeground(color);
-
-            int col = (c <= mid) ? c : (c + 1);
-            builder.add(label, cst.xy(col, 1));
-        }
-        // Separation between staves
-        {
-            final Color color = Color.BLACK;
-            final JLabel label = new JLabel(" /");
-            label.setPreferredSize(cellDim);
-            label.setFont(font);
-            label.setOpaque(true);
-            label.setBackground(background);
-            label.setForeground(color);
-            builder.add(label, cst.xy(mid + 1, 1));
-        }
-
-        return panel;
-    }
 
     //-------//
     // paint //
@@ -476,7 +423,115 @@ public abstract class SheetPainter
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------------//
+    // getVoicePanel //
+    //---------------//
+    /**
+     * Build a panel which displays all defined voice ID colors.
+     * <p>
+     * Separate numbers for first staff and second staff as: 1234 / 5678
+     *
+     * @return the populated voice panel
+     */
+    public static JPanel getVoicePanel ()
+    {
+        final int length = Voices.getColorCount();
+        final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
+        final Color background = Color.WHITE;
+        final StringBuilder sbc = new StringBuilder();
+
+        for (int i = 0; i <= length; i++) {
+            if (i != 0) {
+                sbc.append(",");
+            }
+
+            sbc.append("10dlu");
+        }
+
+        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
+        final Panel panel = new Panel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final CellConstraints cst = new CellConstraints();
+
+        // Adjust dimensions
+        final Dimension cellDim = new Dimension(5, 22);
+        panel.setInsets(3, 0, 0, 3); // TLBR
+
+        final int mid = length / 2;
+
+        for (int c = 1; c <= length; c++) {
+            final Color color = new Color(Voices.colorOf(c).getRGB()); // Remove alpha
+            final JLabel label = new JLabel("" + c, JLabel.CENTER);
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+
+            int col = (c <= mid) ? c : (c + 1);
+            builder.add(label, cst.xy(col, 1));
+        }
+        // Separation between staves
+        {
+            final Color color = Color.BLACK;
+            final JLabel label = new JLabel(" /");
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy(mid + 1, 1));
+        }
+
+        return panel;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer basicFontSize = new Constant.Integer(
+                "points",
+                30,
+                "Standard font size for annotations");
+
+        private final Constant.Boolean drawPartLimits = new Constant.Boolean(
+                false,
+                "Should we draw part upper and lower core limits");
+
+        private final Constant.Boolean chordVoiceAppended = new Constant.Boolean(
+                false,
+                "Should the chords voices be appended to ID?");
+
+        private final Constant.Ratio minDisplayZoomForChordId = new Constant.Ratio(
+                0.75,
+                "Minimum display zoom value to display chords ID");
+
+        private final Constant.Ratio chordIdZoom = new Constant.Ratio(
+                0.5,
+                "Zoom applied on font for chords ID");
+
+        private final Constant.Integer partDx = new Constant.Integer(
+                "pixels",
+                40,
+                "Abscissa right offset for part name");
+
+        private final Constant.Integer partDy = new Constant.Integer(
+                "pixels",
+                20,
+                "Ordinate down offset for part name");
+
+        private final Constant.Ratio zoomForPartName = new Constant.Ratio(
+                0.6,
+                "Zoom applied on part names");
+    }
 
     //------------//
     // SigPainter //
@@ -576,6 +631,14 @@ public abstract class SheetPainter
         //--------------//
         // getMusicFont //
         //--------------//
+        public MusicFont getMusicFont ()
+        {
+            return getMusicFont(false, false);
+        }
+
+        //--------------//
+        // getMusicFont //
+        //--------------//
         /**
          * Select the proper music font according to end-user font family choice.
          *
@@ -609,14 +672,6 @@ public abstract class SheetPainter
         private MusicFont getMusicFont (Staff staff)
         {
             return getMusicFont(false, staff);
-        }
-
-        //--------------//
-        // getMusicFont //
-        //--------------//
-        public MusicFont getMusicFont ()
-        {
-            return getMusicFont(false, false);
         }
 
         //-------------//
@@ -1356,19 +1411,6 @@ public abstract class SheetPainter
         // visit //
         //-------//
         @Override
-        public void visit (StemInter stem)
-        {
-            setColor(stem);
-
-            g.setStroke(stemStroke);
-
-            g.draw(stem.getMedian());
-        }
-
-        //-------//
-        // visit //
-        //-------//
-        @Override
         public void visit (StaffBarlineInter inter)
         {
             List<Inter> members = inter.getMembers(); // Needs sig, thus it can't be used for ghost.
@@ -1380,6 +1422,19 @@ public abstract class SheetPainter
             } else if (inter.getShape() != null) {
                 visit((Inter) inter);
             }
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (StemInter stem)
+        {
+            setColor(stem);
+
+            g.setStroke(stemStroke);
+
+            g.draw(stem.getMedian());
         }
 
         //-------//
@@ -1451,48 +1506,5 @@ public abstract class SheetPainter
                 paintWord(word, fontInfo);
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer basicFontSize = new Constant.Integer(
-                "points",
-                30,
-                "Standard font size for annotations");
-
-        private final Constant.Boolean drawPartLimits = new Constant.Boolean(
-                false,
-                "Should we draw part upper and lower core limits");
-
-        private final Constant.Boolean chordVoiceAppended = new Constant.Boolean(
-                false,
-                "Should the chords voices be appended to ID?");
-
-        private final Constant.Ratio minDisplayZoomForChordId = new Constant.Ratio(
-                0.75,
-                "Minimum display zoom value to display chords ID");
-
-        private final Constant.Ratio chordIdZoom = new Constant.Ratio(
-                0.5,
-                "Zoom applied on font for chords ID");
-
-        private final Constant.Integer partDx = new Constant.Integer(
-                "pixels",
-                40,
-                "Abscissa right offset for part name");
-
-        private final Constant.Integer partDy = new Constant.Integer(
-                "pixels",
-                20,
-                "Ordinate down offset for part name");
-
-        private final Constant.Ratio zoomForPartName = new Constant.Ratio(
-                0.6,
-                "Zoom applied on part names");
     }
 }

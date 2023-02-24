@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -59,6 +59,7 @@ public class InjectionSolver
     private final int[] config;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new instance of InjectionSolver
      *
@@ -81,22 +82,6 @@ public class InjectionSolver
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // solve //
-    //-------//
-    /**
-     * Report (one of) the mapping(s) for which the global distance is minimum.
-     *
-     * @return an array parallel to the domain collection, which for each (domain) element gives the
-     *         mapped range element
-     */
-    public int[] solve ()
-    {
-        Arrays.fill(free, true);
-        inspect(0, 0);
-
-        return bestConfig;
-    }
 
     //------//
     // dump //
@@ -152,7 +137,25 @@ public class InjectionSolver
         }
     }
 
+    //-------//
+    // solve //
+    //-------//
+    /**
+     * Report (one of) the mapping(s) for which the global distance is minimum.
+     *
+     * @return an array parallel to the domain collection, which for each (domain) element gives the
+     *         mapped range element
+     */
+    public int[] solve ()
+    {
+        Arrays.fill(free, true);
+        inspect(0, 0);
+
+        return bestConfig;
+    }
+
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     /**
      * Interface <code>Distance</code> provides the measurement for individual mapping costs.
      */

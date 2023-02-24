@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -43,6 +43,15 @@ public class FingeringInter
     private final int value;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FingeringInter ()
+    {
+        this.value = 0;
+    }
+
     /**
      * Creates a new FingeringInter object.
      *
@@ -58,15 +67,8 @@ public class FingeringInter
         this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private FingeringInter ()
-    {
-        this.value = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -91,6 +93,36 @@ public class FingeringInter
     public int getValue ()
     {
         return value;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static int valueOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case fingering0:
+            return 0;
+
+        case fingering1:
+            return 1;
+
+        case fingering2:
+            return 2;
+
+        case fingering3:
+            return 3;
+
+        case fingering4:
+            return 4;
+
+        case fingering5:
+            return 5;
+        }
+
+        throw new IllegalArgumentException("No fingering value for " + omrShape);
     }
 
     //---------//
@@ -132,33 +164,5 @@ public class FingeringInter
         }
 
         throw new IllegalArgumentException("No fingering value for " + shape);
-    }
-
-    //---------//
-    // valueOf //
-    //---------//
-    private static int valueOf (OmrShape omrShape)
-    {
-        switch (omrShape) {
-        case fingering0:
-            return 0;
-
-        case fingering1:
-            return 1;
-
-        case fingering2:
-            return 2;
-
-        case fingering3:
-            return 3;
-
-        case fingering4:
-            return 4;
-
-        case fingering5:
-            return 5;
-        }
-
-        throw new IllegalArgumentException("No fingering value for " + omrShape);
     }
 }

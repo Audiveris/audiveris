@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,10 +60,12 @@ public class StepMenu
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The concrete UI menu. */
     private final JMenu menu;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Generates the menu to be inserted in the application pull-down menus.
      *
@@ -85,6 +87,7 @@ public class StepMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getMenu //
     //---------//
@@ -114,7 +117,41 @@ public class StepMenu
         }
     }
 
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class <code>MyMenuListener</code> is triggered when the whole sub-menu is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
+     */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            SheetStub stub = StubsController.getCurrentStub();
+            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(stub, isIdle);
+                }
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //------------//
+    // StepAction //
+    //------------//
     private static class StepAction
             extends AbstractAction
     {
@@ -137,7 +174,7 @@ public class StepMenu
             {
                 @Override
                 protected Void doInBackground ()
-                        throws Exception
+                    throws Exception
                 {
                     try {
                         OmrStep sofar = stub.getLatestStep();
@@ -244,36 +281,6 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class <code>MyMenuListener</code> is triggered when the whole sub-menu is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            SheetStub stub = StubsController.getCurrentStub();
-            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(stub, isIdle);
                 }
             }
         }

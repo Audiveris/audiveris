@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,7 +36,54 @@ import java.awt.geom.Rectangle2D;
  */
 public interface Anchored
 {
-    //~ Enumerations -------------------------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Report the rectangular bounds when positioning anchor at location (x,y).
+     *
+     * @param x      abscissa for anchor
+     * @param y      ordinate for anchor
+     * @param anchor chosen anchor
+     * @return the corresponding bounds
+     */
+    Rectangle2D getBoundsAt (double x,
+                             double y,
+                             Anchor anchor);
+
+    /**
+     * Report the rectangle height
+     *
+     * @return the rectangle height
+     */
+    int getHeight ();
+
+    /**
+     * Report the Point offset from rectangle upper left corner to the provided anchor.
+     *
+     * @param anchor the desired anchor
+     * @return the corresponding offset (vector from upper-left to anchor)
+     */
+    Point2D getOffset (Anchor anchor);
+
+    /**
+     * Report the template width
+     *
+     * @return the rectangle width
+     */
+    int getWidth ();
+
+    /**
+     * Assign a relative offset for an anchor.
+     *
+     * @param anchor the specified anchor
+     * @param dx     the abscissa offset from upper left corner in pixels
+     * @param dy     the ordinate offset from upper left corner in pixels
+     */
+    void putOffset (Anchor anchor,
+                    double dx,
+                    double dy);
+
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     /** Specifies a reference relative location. */
     public enum Anchor
@@ -117,56 +164,10 @@ public interface Anchored
         public VerticalSide vSide ()
         {
             return switch (this) {
-            case TOP_LEFT_STEM,TOP_RIGHT_STEM  -> TOP;
+            case TOP_LEFT_STEM, TOP_RIGHT_STEM -> TOP;
             case MIDDLE_LEFT, LEFT_STEM, CENTER, RIGHT_STEM, MIDDLE_RIGHT -> null;
             case BOTTOM_LEFT_STEM, BOTTOM_RIGHT_STEM -> BOTTOM;
             };
         }
     }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Report the rectangular bounds when positioning anchor at location (x,y).
-     *
-     * @param x      abscissa for anchor
-     * @param y      ordinate for anchor
-     * @param anchor chosen anchor
-     * @return the corresponding bounds
-     */
-    Rectangle2D getBoundsAt (double x,
-                             double y,
-                             Anchor anchor);
-
-    /**
-     * Report the rectangle height
-     *
-     * @return the rectangle height
-     */
-    int getHeight ();
-
-    /**
-     * Report the Point offset from rectangle upper left corner to the provided anchor.
-     *
-     * @param anchor the desired anchor
-     * @return the corresponding offset (vector from upper-left to anchor)
-     */
-    Point2D getOffset (Anchor anchor);
-
-    /**
-     * Report the template width
-     *
-     * @return the rectangle width
-     */
-    int getWidth ();
-
-    /**
-     * Assign a relative offset for an anchor.
-     *
-     * @param anchor the specified anchor
-     * @param dx     the abscissa offset from upper left corner in pixels
-     * @param dy     the ordinate offset from upper left corner in pixels
-     */
-    void putOffset (Anchor anchor,
-                    double dx,
-                    double dy);
 }

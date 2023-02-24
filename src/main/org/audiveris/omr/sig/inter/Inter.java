@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -195,13 +195,6 @@ public interface Inter
     Double getContextualGrade ();
 
     /**
-     * Assign the contextual grade, (0..1 probability) computed for interpretation.
-     *
-     * @param value the contextual grade value
-     */
-    void setContextualGrade (double value);
-
-    /**
      * Report (a COPY of) the core bounds for this interpretation.
      *
      * @return a COPY of core box
@@ -214,13 +207,6 @@ public interface Inter
      * @return informations for a tip
      */
     String getDetails ();
-
-    /**
-     * Report whether the inter can be manually edited.
-     *
-     * @return true id editable
-     */
-    boolean isEditable ();
 
     /**
      * Report a proper editor for manual inter edition.
@@ -246,25 +232,11 @@ public interface Inter
     Glyph getGlyph ();
 
     /**
-     * Assign the glyph which is concerned by this interpretation.
-     *
-     * @param glyph the underlying glyph (non null)
-     */
-    void setGlyph (Glyph glyph);
-
-    /**
      * Report the intrinsic grade (0..1 probability) assigned to interpretation
      *
      * @return the intrinsic grade, null if unknown
      */
     Double getGrade ();
-
-    /**
-     * Assign an intrinsic grade (0..1 probability) to interpretation
-     *
-     * @param grade the new value for intrinsic grade
-     */
-    void setGrade (Double grade);
 
     /**
      * Report details about the final grade
@@ -290,32 +262,11 @@ public interface Inter
     Inter getMirror ();
 
     /**
-     * Assign the mirror instance.
-     *
-     * @param mirror the mirrored instance
-     */
-    void setMirror (Inter mirror);
-
-    /**
      * Report the containing part, if any.
      *
      * @return the containing part, or null
      */
     Part getPart ();
-
-    /**
-     * Report the containing part specifically assigned, if any.
-     *
-     * @return the containing part specifically assigned, or null
-     */
-    Part getSpecificPart ();
-
-    /**
-     * Assign the related part, if any.
-     *
-     * @param part the part to set
-     */
-    void setPart (Part part);
 
     /**
      * Report the profile level for relations with this inter
@@ -369,11 +320,11 @@ public interface Inter
     SIGraph getSig ();
 
     /**
-     * Assign the containing SIG
+     * Report the containing part specifically assigned, if any.
      *
-     * @param sig the containing SIG
+     * @return the containing part specifically assigned, or null
      */
-    void setSig (SIGraph sig);
+    Part getSpecificPart ();
 
     /**
      * Report the related staff, if any.
@@ -381,13 +332,6 @@ public interface Inter
      * @return the related staff or null
      */
     Staff getStaff ();
-
-    /**
-     * Assign the related staff, if any.
-     *
-     * @param staff the staff to set
-     */
-    void setStaff (Staff staff);
 
     /**
      * Report a COPY of the bounding box based on MusicFont symbol.
@@ -448,18 +392,18 @@ public interface Inter
     boolean isAbnormal ();
 
     /**
-     * Set this inter as an abnormal one.
-     *
-     * @param abnormal new value
-     */
-    void setAbnormal (boolean abnormal);
-
-    /**
      * Report whether the interpretation has a good contextual grade.
      *
      * @return true if contextual grade is good
      */
     boolean isContextuallyGood ();
+
+    /**
+     * Report whether the inter can be manually edited.
+     *
+     * @return true id editable
+     */
+    boolean isEditable ();
 
     /**
      * Report whether this instance has been frozen.
@@ -483,25 +427,11 @@ public interface Inter
     boolean isImplicit ();
 
     /**
-     * Set this inter as implicit.
-     *
-     * @param implicit new value
-     */
-    void setImplicit (boolean implicit);
-
-    /**
      * Report whether this instance has been set manually.
      *
      * @return true if manual
      */
     boolean isManual ();
-
-    /**
-     * Set this inter as a manual one.
-     *
-     * @param manual new value
-     */
-    void setManual (boolean manual);
 
     /**
      * Report whether this instance has been removed from SIG.
@@ -639,12 +569,82 @@ public interface Inter
                                     Collection<Link> links);
 
     /**
+     * Set this inter as an abnormal one.
+     *
+     * @param abnormal new value
+     */
+    void setAbnormal (boolean abnormal);
+
+    /**
      * Assign the bounding box for this interpretation.
      * The assigned bounds may be different from the underlying glyph bounds.
      *
      * @param box the bounding box
      */
     void setBounds (Rectangle box);
+
+    /**
+     * Assign the contextual grade, (0..1 probability) computed for interpretation.
+     *
+     * @param value the contextual grade value
+     */
+    void setContextualGrade (double value);
+
+    /**
+     * Assign the glyph which is concerned by this interpretation.
+     *
+     * @param glyph the underlying glyph (non null)
+     */
+    void setGlyph (Glyph glyph);
+
+    /**
+     * Assign an intrinsic grade (0..1 probability) to interpretation
+     *
+     * @param grade the new value for intrinsic grade
+     */
+    void setGrade (Double grade);
+
+    /**
+     * Set this inter as implicit.
+     *
+     * @param implicit new value
+     */
+    void setImplicit (boolean implicit);
+
+    /**
+     * Set this inter as a manual one.
+     *
+     * @param manual new value
+     */
+    void setManual (boolean manual);
+
+    /**
+     * Assign the mirror instance.
+     *
+     * @param mirror the mirrored instance
+     */
+    void setMirror (Inter mirror);
+
+    /**
+     * Assign the related part, if any.
+     *
+     * @param part the part to set
+     */
+    void setPart (Part part);
+
+    /**
+     * Assign the containing SIG
+     *
+     * @param sig the containing SIG
+     */
+    void setSig (SIGraph sig);
+
+    /**
+     * Assign the related staff, if any.
+     *
+     * @param staff the staff to set
+     */
+    void setStaff (Staff staff);
 
     /**
      * Check inter instance for an upgrade with respect to its persisted data.

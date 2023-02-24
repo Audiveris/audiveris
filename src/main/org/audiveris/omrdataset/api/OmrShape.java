@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,7 +50,6 @@ import java.util.EnumSet;
  * All the barline and repeat symbols are meant to be defined for the staff height only.
  *
  * @see <a href="http://www.smufl.org/">http://www.smufl.org/</a>
- *
  * @author Hervé Bitteur
  */
 public enum OmrShape
@@ -427,42 +426,6 @@ public enum OmrShape
     wiggleVibratoLargeFaster("wiggle vibrato large faster"),
     wiggleVibratoLargeSlowest("wiggle vibrato large slowest");
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Short explanation of the symbol shape. */
-    public final String description;
-
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Define a symbol shape
-     *
-     * @param description textual symbol description
-     */
-    OmrShape (String description)
-    {
-        this.description = description;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Report whether this is a barline shape.
-     *
-     * @return true if so
-     */
-    public boolean isBarline ()
-    {
-        return BARLINE_SHAPES.contains(this);
-    }
-
-    /**
-     * Report whether the shape is to be ignored for standard processing.
-     *
-     * @return true to ignore
-     */
-    public boolean isIgnored ()
-    {
-        return IGNORED_SHAPES.contains(this);
-    }
-
     private static final EnumSet<OmrShape> BARLINE_SHAPES = EnumSet.of(
             barlineSingle,
             barlineDouble,
@@ -545,4 +508,43 @@ public enum OmrShape
             wiggleVibratoLargeSlowest,
             //
             unknown);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    /** Short explanation of the symbol shape. */
+    public final String description;
+
+    //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Define a symbol shape
+     *
+     * @param description textual symbol description
+     */
+    OmrShape (String description)
+    {
+        this.description = description;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Report whether this is a barline shape.
+     *
+     * @return true if so
+     */
+    public boolean isBarline ()
+    {
+        return BARLINE_SHAPES.contains(this);
+    }
+
+    /**
+     * Report whether the shape is to be ignored for standard processing.
+     *
+     * @return true to ignore
+     */
+    public boolean isIgnored ()
+    {
+        return IGNORED_SHAPES.contains(this);
+    }
 }

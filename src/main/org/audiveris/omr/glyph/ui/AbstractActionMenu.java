@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,6 +61,7 @@ public abstract class AbstractActionMenu
     private final Map<DynAction, Integer> levels = new LinkedHashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new AbstractActionMenu object.
      *
@@ -74,21 +75,6 @@ public abstract class AbstractActionMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // updateMenu //
-    //------------//
-    @Override
-    public int updateMenu (Collection<Glyph> glyphs)
-    {
-        super.updateMenu(glyphs);
-
-        // Update all dynamic actions accordingly
-        for (DynAction action : dynActions.keySet()) {
-            action.update();
-        }
-
-        return glyphNb;
-    }
 
     //----------//
     // initMenu //
@@ -112,8 +98,7 @@ public abstract class AbstractActionMenu
         JMenu prevMenu = getMenu();
 
         for (int level = 0; level <= maxLevel; level++) {
-            SeparableMenu currentMenu = (level == 0) ? getMenu()
-                    : new SeparableMenu("Continued");
+            SeparableMenu currentMenu = (level == 0) ? getMenu() : new SeparableMenu("Continued");
 
             for (Integer tag : tags) {
                 for (Map.Entry<DynAction, Integer> entry : dynActions.entrySet()) {
@@ -156,7 +141,24 @@ public abstract class AbstractActionMenu
         dynActions.put(action, action.tag);
     }
 
+    //------------//
+    // updateMenu //
+    //------------//
+    @Override
+    public int updateMenu (Collection<Glyph> glyphs)
+    {
+        super.updateMenu(glyphs);
+
+        // Update all dynamic actions accordingly
+        for (DynAction action : dynActions.keySet()) {
+            action.update();
+        }
+
+        return glyphNb;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // DynAction //
     //-----------//

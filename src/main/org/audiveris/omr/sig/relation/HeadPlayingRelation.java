@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,24 +42,8 @@ public class HeadPlayingRelation
     private static final Constants constants = new Constants();
 
     //~ Constructors -------------------------------------------------------------------------------
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
 
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
+    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // getTargetCoeff //
@@ -88,6 +72,26 @@ public class HeadPlayingRelation
         return getYGapMaximum(profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -105,6 +109,7 @@ public class HeadPlayingRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -120,16 +125,12 @@ public class HeadPlayingRelation
                 0.25,
                 "Maximum horizontal gap between playing center & chord");
 
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
-                1.2,
-                "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between playing center & chord");
 
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                3.0,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(3.0, "Idem for profile 1");
     }
 }

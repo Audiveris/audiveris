@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -81,12 +81,11 @@ public class PageRhythm
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{FlagInter.class,
-                                                                  RestChordInter.class,
-                                                                  AugmentationDotInter.class,
-                                                                  TupletInter.class};
+    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]
+    { FlagInter.class, RestChordInter.class, AugmentationDotInter.class, TupletInter.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The page being processed. */
     private final Page page;
 
@@ -94,6 +93,7 @@ public class PageRhythm
     private final List<Range> ranges = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PageRhythm</code> object.
      *
@@ -105,42 +105,6 @@ public class PageRhythm
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Process rhythm information in this page.
-     */
-    public void process ()
-    {
-        // Populate all stacks in page with potential time signatures (TS), and derive ranges.
-        if (populateTimeSignatures()) {
-            // Populate all stacks/measures in page with their FRATs
-            populateFRATs();
-
-            // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
-            processRanges();
-        }
-    }
-
-    //----------------//
-    // reprocessStack //
-    //----------------//
-    /**
-     * Stack-focused re-processing.
-     *
-     * @param stack the stack to re-process
-     */
-    public void reprocessStack (MeasureStack stack)
-    {
-        logger.debug("PageRhythm.reprocessStack {}", stack);
-
-        Rational expectedDuration = stack.getExpectedDuration();
-        new StackRhythm(stack).process(expectedDuration);
-
-        // Refine voices IDs within the containing system
-        Voices.refineSystem(stack.getSystem());
-    }
 
     //---------------//
     // populateFRATs //
@@ -247,8 +211,10 @@ public class PageRhythm
                     // Use last timeRational of previous page
                     range.timeRational = lastTR.duplicate();
                     range.duration = lastTR.getValue();
-                    logger.info("{} Using last timeRational of previous page: {}",
-                                page, range.timeRational);
+                    logger.info(
+                            "{} Using last timeRational of previous page: {}",
+                            page,
+                            range.timeRational);
                 } else {
                     // Fallback using last expectedDuration of previous page
                     Sheet prevSheet = prevStub.getSheet(); // Perhaps load from disk...
@@ -268,8 +234,10 @@ public class PageRhythm
 
                     if ((prevStack != null) && (prevStack.getExpectedDuration() != null)) {
                         range.duration = prevStack.getExpectedDuration();
-                        logger.info("{} Using expected duration of last stack in previous page: {}",
-                                    page, range.duration);
+                        logger.info(
+                                "{} Using expected duration of last stack in previous page: {}",
+                                page,
+                                range.duration);
                     }
                 }
             }
@@ -289,6 +257,24 @@ public class PageRhythm
         }
 
         return true;
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Process rhythm information in this page.
+     */
+    public void process ()
+    {
+        // Populate all stacks in page with potential time signatures (TS), and derive ranges.
+        if (populateTimeSignatures()) {
+            // Populate all stacks/measures in page with their FRATs
+            populateFRATs();
+
+            // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
+            processRanges();
+        }
     }
 
     //---------------//
@@ -331,6 +317,25 @@ public class PageRhythm
         }
     }
 
+    //----------------//
+    // reprocessStack //
+    //----------------//
+    /**
+     * Stack-focused re-processing.
+     *
+     * @param stack the stack to re-process
+     */
+    public void reprocessStack (MeasureStack stack)
+    {
+        logger.debug("PageRhythm.reprocessStack {}", stack);
+
+        Rational expectedDuration = stack.getExpectedDuration();
+        new StackRhythm(stack).process(expectedDuration);
+
+        // Refine voices IDs within the containing system
+        Voices.refineSystem(stack.getSystem());
+    }
+
     //----------//
     // seqNumOf //
     //----------//
@@ -359,6 +364,7 @@ public class PageRhythm
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Range //
     //-------//

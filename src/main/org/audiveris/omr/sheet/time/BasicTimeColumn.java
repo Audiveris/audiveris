@@ -28,6 +28,7 @@ public class BasicTimeColumn
     final Set<Inter> timeSet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BasicColumn</code> object.
      *
@@ -43,6 +44,7 @@ public class BasicTimeColumn
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     protected TimeBuilder allocateBuilder (Staff staff)
     {
@@ -148,7 +150,10 @@ public class BasicTimeColumn
         }
 
         // Select a single vertical line (based on item count? or the left-most line?)
-        Collections.sort(lines, (o1, o2) -> Double.compare(o1.getOffset(), o2.getOffset()));
+        Collections.sort(
+                lines,
+                (o1,
+                 o2) -> Double.compare(o1.getOffset(), o2.getOffset()));
 
         Line chosenLine = lines.get(0);
         List<Inter> kept = new ArrayList<>();

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -63,6 +63,7 @@ public class SampleController
     private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final SampleRepository repository;
 
     private final ApplicationAction removeAction;
@@ -70,6 +71,7 @@ public class SampleController
     private final AssignAction assignAction;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleController</code> object.
      *
@@ -86,6 +88,7 @@ public class SampleController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Assign a new shape to a sample.
      *
@@ -149,17 +152,6 @@ public class SampleController
         return removeAction;
     }
 
-    /**
-     * Remove the provided sample
-     *
-     * @param sample sample to remove
-     */
-    public void removeSample (Sample sample)
-    {
-        final SampleModel sampleModel = (SampleModel) model;
-        sampleModel.removeSample(sample);
-    }
-
     //--------------//
     // RemoveSample //
     //--------------//
@@ -176,14 +168,27 @@ public class SampleController
         SampleController.this.removeSample(sample);
     }
 
+    /**
+     * Remove the provided sample
+     *
+     * @param sample sample to remove
+     */
+    public void removeSample (Sample sample)
+    {
+        final SampleModel sampleModel = (SampleModel) model;
+        sampleModel.removeSample(sample);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // AssignAction //
     //--------------//
     /**
      * Action to assign a new shape for a given sample.
      * <p>
-     * This action can be accessed by different ways:<ul>
+     * This action can be accessed by different ways:
+     * <ul>
      * <li>By pressing the assignButton in {@link SampleBoard},
      * <li>By selecting the assign item in the private class SamplePopup menu, triggered by a
      * right-click in {@link SampleListing}.

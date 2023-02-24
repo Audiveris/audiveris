@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -85,6 +85,7 @@ public class OmrExecutors
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Not meant to be instantiated.
      */
@@ -92,7 +93,8 @@ public class OmrExecutors
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------------//
     // getCachedLowExecutor //
     //----------------------//
@@ -189,6 +191,7 @@ public class OmrExecutors
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // CachedLows //
     //------------//
@@ -198,15 +201,15 @@ public class OmrExecutors
     {
 
         @Override
-        public String getName ()
-        {
-            return "cachedLow";
-        }
-
-        @Override
         protected ExecutorService createPool ()
         {
             return Executors.newCachedThreadPool(new Factory(getName(), Thread.MIN_PRIORITY, 0));
+        }
+
+        @Override
+        public String getName ()
+        {
+            return "cachedLow";
         }
     }
 
@@ -300,12 +303,17 @@ public class OmrExecutors
                  int threadPriority,
                  long stackSize)
         {
-//            SecurityManager s = System.getSecurityManager();
-//            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            //            SecurityManager s = System.getSecurityManager();
+            //            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
             group = Thread.currentThread().getThreadGroup();
             this.threadPrefix = threadPrefix;
             this.threadPriority = threadPriority;
             this.stackSize = stackSize;
+        }
+
+        private String getOneThreadName ()
+        {
+            return threadPrefix + "-thread-" + threadNumber.incrementAndGet();
         }
 
         @Override
@@ -323,11 +331,6 @@ public class OmrExecutors
 
             return t;
         }
-
-        private String getOneThreadName ()
-        {
-            return threadPrefix + "-thread-" + threadNumber.incrementAndGet();
-        }
     }
 
     //-------//
@@ -339,17 +342,17 @@ public class OmrExecutors
     {
 
         @Override
-        public String getName ()
-        {
-            return "high";
-        }
-
-        @Override
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
                     defaultParallelism.getValue() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.NORM_PRIORITY, 0));
+        }
+
+        @Override
+        public String getName ()
+        {
+            return "high";
         }
     }
 
@@ -362,17 +365,17 @@ public class OmrExecutors
     {
 
         @Override
-        public String getName ()
-        {
-            return "low";
-        }
-
-        @Override
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
                     defaultParallelism.getValue() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.MIN_PRIORITY, 0));
+        }
+
+        @Override
+        public String getName ()
+        {
+            return "low";
         }
     }
 
@@ -384,11 +387,6 @@ public class OmrExecutors
 
         /** The underlying pool of threads. */
         protected ExecutorService pool;
-
-        /**
-         * Name the pool.
-         */
-        public abstract String getName ();
 
         /**
          * Terminate the pool.
@@ -437,6 +435,16 @@ public class OmrExecutors
         }
 
         /**
+         * Needed to create the concrete pool.
+         */
+        protected abstract ExecutorService createPool ();
+
+        /**
+         * Name the pool.
+         */
+        public abstract String getName ();
+
+        /**
          * Get the pool ready to use.
          */
         public synchronized ExecutorService getPool ()
@@ -462,10 +470,5 @@ public class OmrExecutors
         {
             return (pool != null) && !pool.isShutdown();
         }
-
-        /**
-         * Needed to create the concrete pool.
-         */
-        protected abstract ExecutorService createPool ();
     }
 }

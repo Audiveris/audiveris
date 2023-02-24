@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,51 @@ public class EntityAction
     private Action delegate = null;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Wraps an existing action, used as a delegate.
+     *
+     * @param entityActions collection of actions
+     * @param menu          the menu where the related item is to be inserted
+     * @param toolBar       the toolBar for icon insertion
+     * @param delegate      the existing action
+     */
+    protected EntityAction (Collection<Action> entityActions,
+                            JMenu menu,
+                            JToolBar toolBar,
+                            Action delegate)
+    {
+        this(
+                entityActions,
+                menu,
+                toolBar,
+                (String) delegate.getValue(Action.NAME),
+                (String) delegate.getValue(Action.SHORT_DESCRIPTION),
+                (String) delegate.getValue(Action.ACCELERATOR_KEY),
+                (Icon) delegate.getValue(Action.SMALL_ICON));
+        this.delegate = delegate;
+    }
+
+    /**
+     * Convenient constructor with no delegate and no accelerator.
+     *
+     * @param entityActions collection of actions
+     * @param menu          the menu where the related item is to be inserted
+     * @param toolBar       the toolBar for icon insertion or null
+     * @param label         label for the menu item
+     * @param tip           tooltip text
+     * @param icon          icon for menu and toolbar, or null
+     */
+    protected EntityAction (Collection<Action> entityActions,
+                            JMenu menu,
+                            JToolBar toolBar,
+                            String label,
+                            String tip,
+                            Icon icon)
+    {
+        this(entityActions, menu, toolBar, label, tip, null, icon);
+    }
+
     /**
      * Creates an action, and registers the action in the provided menu as
      * well as in the toolbar (if so desired)
@@ -103,57 +148,8 @@ public class EntityAction
         }
     }
 
-    //-----------//
-    // OmrAction //
-    //-----------//
-    /**
-     * Wraps an existing action, used as a delegate.
-     *
-     * @param entityActions collection of actions
-     * @param menu          the menu where the related item is to be inserted
-     * @param toolBar       the toolBar for icon insertion
-     * @param delegate      the existing action
-     */
-    protected EntityAction (Collection<Action> entityActions,
-                            JMenu menu,
-                            JToolBar toolBar,
-                            Action delegate)
-    {
-        this(
-                entityActions,
-                menu,
-                toolBar,
-                (String) delegate.getValue(Action.NAME),
-                (String) delegate.getValue(Action.SHORT_DESCRIPTION),
-                (String) delegate.getValue(Action.ACCELERATOR_KEY),
-                (Icon) delegate.getValue(Action.SMALL_ICON));
-        this.delegate = delegate;
-    }
-
-    //-----------//
-    // OmrAction //
-    //-----------//
-    /**
-     * Convenient constructor with no delegate and no accelerator.
-     *
-     * @param entityActions collection of actions
-     * @param menu          the menu where the related item is to be inserted
-     * @param toolBar       the toolBar for icon insertion or null
-     * @param label         label for the menu item
-     * @param tip           tooltip text
-     * @param icon          icon for menu and toolbar, or null
-     */
-    protected EntityAction (Collection<Action> entityActions,
-                            JMenu menu,
-                            JToolBar toolBar,
-                            String label,
-                            String tip,
-                            Icon icon)
-    {
-        this(entityActions, menu, toolBar, label, tip, null, icon);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//

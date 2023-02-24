@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,9 +33,6 @@ import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.StopWatch;
 
-//import org.nd4j.linalg.api.ndarray.INDArray;
-//import org.nd4j.linalg.dataset.DataSet;
-//import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +78,7 @@ public class BasicClassifier
     public static final String MODEL_ENTRY_NAME = "model.xml";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying (old) neural network. */
     private NeuralNetwork model;
 
@@ -88,6 +86,7 @@ public class BasicClassifier
     private TrainingMonitor listener;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Private constructor, to create a glyph neural network.
      */
@@ -104,6 +103,37 @@ public class BasicClassifier
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------//
+    // addListener //
+    //-------------//
+    @Override
+    public void addListener (TrainingMonitor listener)
+    {
+        this.listener = listener;
+    }
+
+    //---------------//
+    // createNetwork //
+    //---------------//
+    private NeuralNetwork createNetwork ()
+    {
+        // Get a brand new one (not trained)
+        logger.info("Creating a brand new {}", getName());
+
+        // We allocate a hidden layer with as many cells as the output layer
+        return new NeuralNetwork(
+                descriptor.length(),
+                SHAPE_COUNT,
+                SHAPE_COUNT,
+                constants.amplitude.getValue(),
+                descriptor.getFeatureLabels(), // Input labels
+                ShapeSet.getPhysicalShapeNames(), // Output labels
+                constants.learningRate.getValue(),
+                constants.momentum.getValue(),
+                getMaxEpochs());
+    }
+
     //--------------//
     // getMaxEpochs //
     //--------------//
@@ -118,21 +148,6 @@ public class BasicClassifier
         return constants.maxEpochs.getValue();
     }
 
-    //--------------//
-    // setMaxEpochs //
-    //--------------//
-    /**
-     * Modify the upper limit on the number of epochs for the training process.
-     *
-     * @param maxEpochs new value for epochs limit
-     */
-    @Override
-    public void setMaxEpochs (int maxEpochs)
-    {
-        model.setEpochs(maxEpochs);
-        constants.maxEpochs.setValue(maxEpochs);
-    }
-
     //---------//
     // getName //
     //---------//
@@ -140,15 +155,6 @@ public class BasicClassifier
     public final String getName ()
     {
         return "Glyph Classifier";
-    }
-
-    //-------------//
-    // addListener //
-    //-------------//
-    @Override
-    public void addListener (TrainingMonitor listener)
-    {
-        this.listener = listener;
     }
 
     //-----------------------//
@@ -179,6 +185,117 @@ public class BasicClassifier
         return evals;
     }
 
+    //--------------//
+    // isCompatible //
+    //--------------//
+    @Override
+    protected boolean isCompatible (NeuralNetwork model,
+                                    Norms norms)
+    {
+        if (!Arrays.equals(model.getInputLabels(), descriptor.getFeatureLabels())) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Engine inputs: {}", Arrays.toString(model.getInputLabels()));
+                logger.debug("Shape  inputs: {}", Arrays.toString(descriptor.getFeatureLabels()));
+            }
+
+            return false;
+        }
+
+        if (!Arrays.equals(model.getOutputLabels(), ShapeSet.getPhysicalShapeNames())) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Engine  outputs: {}", Arrays.toString(model.getOutputLabels()));
+                logger.debug(
+                        "Physical shapes: {}",
+                        Arrays.toString(ShapeSet.getPhysicalShapeNames()));
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    //-----------//
+    // loadModel //
+    //-----------//
+    @Override
+    protected NeuralNetwork loadModel (Path root)
+        throws Exception
+    {
+        Path modelPath = root.resolve(MODEL_ENTRY_NAME);
+
+        try (InputStream is = Files.newInputStream(modelPath)) {
+            return NeuralNetwork.unmarshal(is);
+        }
+    }
+
+    //-----------//
+    // loadNorms //
+    //-----------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Rather than binary we use XML format.
+     *
+     * @param root the root path to file system
+     * @return the loaded Norms instance, or exception is thrown
+     * @throws Exception if anything goes wrong
+     */
+    @Override
+    protected Norms loadNorms (Path root)
+        throws Exception
+    {
+        final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
+        final Unmarshaller um = jaxbContext.createUnmarshaller();
+
+        INDArray means = null;
+        INDArray stds = null;
+
+        final Path meansEntry = root.resolve(MEANS_XML_ENTRY_NAME);
+
+        if (meansEntry != null) {
+            try (InputStream is = Files.newInputStream(meansEntry); // READ by default
+                    BufferedInputStream bis = new BufferedInputStream(is)) {
+                MyVector vector = (MyVector) um.unmarshal(bis);
+                means = Nd4j.create(vector.data);
+                logger.debug("means:{}", means);
+            }
+        }
+
+        final Path stdsEntry = root.resolve(STDS_XML_ENTRY_NAME);
+
+        if (stdsEntry != null) {
+            try (InputStream is = Files.newInputStream(stdsEntry); // READ by default
+                    BufferedInputStream bis = new BufferedInputStream(is)) {
+                MyVector vector = (MyVector) um.unmarshal(bis);
+                stds = Nd4j.create(vector.data);
+                logger.debug("stds:{}", stds);
+            }
+        }
+
+        if ((means != null) && (stds != null)) {
+            logger.info("Classifier loaded XML norms.");
+
+            return new Norms(means, stds);
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // normalize //
+    //-----------//
+    /**
+     * Apply the known norms on the provided (raw) features.
+     *
+     * @param features raw features, to be normalized in situ
+     */
+    private void normalize (INDArray features)
+    {
+        features.subiRowVector(norms.means);
+        features.diviRowVector(norms.stds);
+    }
+
     //-------//
     // reset //
     //-------//
@@ -188,6 +305,21 @@ public class BasicClassifier
         model = createNetwork();
     }
 
+    //--------------//
+    // setMaxEpochs //
+    //--------------//
+    /**
+     * Modify the upper limit on the number of epochs for the training process.
+     *
+     * @param maxEpochs new value for epochs limit
+     */
+    @Override
+    public void setMaxEpochs (int maxEpochs)
+    {
+        model.setEpochs(maxEpochs);
+        constants.maxEpochs.setValue(maxEpochs);
+    }
+
     //------//
     // stop //
     //------//
@@ -195,6 +327,55 @@ public class BasicClassifier
     public void stop ()
     {
         model.stop();
+    }
+
+    //------------//
+    // storeModel //
+    //------------//
+    @Override
+    protected void storeModel (Path root)
+        throws Exception
+    {
+        Path modelPath = root.resolve(MODEL_ENTRY_NAME);
+
+        try (OutputStream bos = new BufferedOutputStream(
+                Files.newOutputStream(modelPath, CREATE))) {
+            model.marshal(bos);
+            bos.flush();
+        }
+
+        logger.info("Engine marshalled to {}", modelPath);
+    }
+
+    //------------//
+    // storeNorms //
+    //------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Rather than binary, we use XML format.
+     *
+     * @throws Exception if anything goes wrong
+     */
+    @Override
+    protected void storeNorms (Path root)
+        throws Exception
+    {
+        final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
+        final Path means = root.resolve(MEANS_XML_ENTRY_NAME);
+        final Path stds = root.resolve(STDS_XML_ENTRY_NAME);
+
+        try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(means, CREATE))) {
+            MyVector vector = new MyVector(norms.means);
+            Jaxb.marshal(vector, bos, jaxbContext);
+            bos.flush();
+        }
+
+        try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(stds, CREATE))) {
+            MyVector vector = new MyVector(norms.stds);
+            Jaxb.marshal(vector, bos, jaxbContext);
+            bos.flush();
+        }
     }
 
     //-------//
@@ -274,186 +455,7 @@ public class BasicClassifier
         store(FILE_NAME);
     }
 
-    //--------------//
-    // isCompatible //
-    //--------------//
-    @Override
-    protected boolean isCompatible (NeuralNetwork model,
-                                    Norms norms)
-    {
-        if (!Arrays.equals(model.getInputLabels(), descriptor.getFeatureLabels())) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Engine inputs: {}", Arrays.toString(model.getInputLabels()));
-                logger.debug("Shape  inputs: {}", Arrays.toString(descriptor.getFeatureLabels()));
-            }
-
-            return false;
-        }
-
-        if (!Arrays.equals(model.getOutputLabels(), ShapeSet.getPhysicalShapeNames())) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Engine  outputs: {}", Arrays.toString(model.getOutputLabels()));
-                logger.debug(
-                        "Physical shapes: {}",
-                        Arrays.toString(ShapeSet.getPhysicalShapeNames()));
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    //-----------//
-    // loadModel //
-    //-----------//
-    @Override
-    protected NeuralNetwork loadModel (Path root)
-            throws Exception
-    {
-        Path modelPath = root.resolve(MODEL_ENTRY_NAME);
-
-        try (InputStream is = Files.newInputStream(modelPath)) {
-            return NeuralNetwork.unmarshal(is);
-        }
-    }
-
-    //-----------//
-    // loadNorms //
-    //-----------//
-    /**
-     * {@inheritDoc}.
-     * <p>
-     * Rather than binary we use XML format.
-     *
-     * @param root the root path to file system
-     * @return the loaded Norms instance, or exception is thrown
-     * @throws Exception if anything goes wrong
-     */
-    @Override
-    protected Norms loadNorms (Path root)
-            throws Exception
-    {
-        final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
-        final Unmarshaller um = jaxbContext.createUnmarshaller();
-
-        INDArray means = null;
-        INDArray stds = null;
-
-        final Path meansEntry = root.resolve(MEANS_XML_ENTRY_NAME);
-
-        if (meansEntry != null) {
-            try (InputStream is = Files.newInputStream(meansEntry); // READ by default
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-                MyVector vector = (MyVector) um.unmarshal(bis);
-                means = Nd4j.create(vector.data);
-                logger.debug("means:{}", means);
-            }
-        }
-
-        final Path stdsEntry = root.resolve(STDS_XML_ENTRY_NAME);
-
-        if (stdsEntry != null) {
-            try (InputStream is = Files.newInputStream(stdsEntry); // READ by default
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-                MyVector vector = (MyVector) um.unmarshal(bis);
-                stds = Nd4j.create(vector.data);
-                logger.debug("stds:{}", stds);
-            }
-        }
-
-        if ((means != null) && (stds != null)) {
-            logger.info("Classifier loaded XML norms.");
-
-            return new Norms(means, stds);
-        }
-
-        return null;
-    }
-
-    //------------//
-    // storeModel //
-    //------------//
-    @Override
-    protected void storeModel (Path root)
-            throws Exception
-    {
-        Path modelPath = root.resolve(MODEL_ENTRY_NAME);
-
-        try (OutputStream bos = new BufferedOutputStream(
-                Files.newOutputStream(modelPath, CREATE))) {
-            model.marshal(bos);
-            bos.flush();
-        }
-
-        logger.info("Engine marshalled to {}", modelPath);
-    }
-
-    //------------//
-    // storeNorms //
-    //------------//
-    /**
-     * {@inheritDoc}.
-     * <p>
-     * Rather than binary, we use XML format.
-     *
-     * @throws Exception if anything goes wrong
-     */
-    @Override
-    protected void storeNorms (Path root)
-            throws Exception
-    {
-        final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
-        final Path means = root.resolve(MEANS_XML_ENTRY_NAME);
-        final Path stds = root.resolve(STDS_XML_ENTRY_NAME);
-
-        try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(means, CREATE))) {
-            MyVector vector = new MyVector(norms.means);
-            Jaxb.marshal(vector, bos, jaxbContext);
-            bos.flush();
-        }
-
-        try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(stds, CREATE))) {
-            MyVector vector = new MyVector(norms.stds);
-            Jaxb.marshal(vector, bos, jaxbContext);
-            bos.flush();
-        }
-    }
-
-    //---------------//
-    // createNetwork //
-    //---------------//
-    private NeuralNetwork createNetwork ()
-    {
-        // Get a brand new one (not trained)
-        logger.info("Creating a brand new {}", getName());
-
-        // We allocate a hidden layer with as many cells as the output layer
-        return new NeuralNetwork(
-                descriptor.length(),
-                SHAPE_COUNT,
-                SHAPE_COUNT,
-                constants.amplitude.getValue(),
-                descriptor.getFeatureLabels(), // Input labels
-                ShapeSet.getPhysicalShapeNames(), // Output labels
-                constants.learningRate.getValue(),
-                constants.momentum.getValue(),
-                getMaxEpochs());
-    }
-
-    //-----------//
-    // normalize //
-    //-----------//
-    /**
-     * Apply the known norms on the provided (raw) features.
-     *
-     * @param features raw features, to be normalized in situ
-     */
-    private void normalize (INDArray features)
-    {
-        features.subiRowVector(norms.means);
-        features.diviRowVector(norms.stds);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -469,6 +471,7 @@ public class BasicClassifier
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -517,6 +520,11 @@ public class BasicClassifier
         @XmlElement(name = "value")
         public double[] data;
 
+        /** Meant for JAXB. */
+        private MyVector ()
+        {
+        }
+
         MyVector (INDArray features)
         {
             int cols = features.columns();
@@ -526,11 +534,6 @@ public class BasicClassifier
             for (int j = 0; j < cols; j++) {
                 data[j] = features.getDouble(j);
             }
-        }
-
-        /** Meant for JAXB. */
-        private MyVector ()
-        {
         }
     }
 }

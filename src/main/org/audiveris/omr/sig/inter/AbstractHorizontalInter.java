@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,10 +58,10 @@ public class AbstractHorizontalInter
 {
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * The ribbon average thickness, specified in pixels with 1 digit maximum after the dot.
      */
@@ -75,27 +75,18 @@ public class AbstractHorizontalInter
     protected Line2D median;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new AbstractHorizontalInter object.
-     * Note there is no underlying glyph, cleaning will be based on ribbon area.
+     * Creates a new AbstractHorizontalInter <b>ghost</b> object.
+     * Median and height must be assigned later
      *
-     * @param shape   BEAM or BEAM_HOOK or BEAM_SMALL or MULTIPLE_REST
-     * @param impacts the grade details
-     * @param median  median ribbon line
-     * @param height  beam height
+     * @param shape BEAM or BEAM_HOOK or BEAM_SMALL or MULTIPLE_REST
+     * @param grade the grade
      */
     protected AbstractHorizontalInter (Shape shape,
-                                       GradeImpacts impacts,
-                                       Line2D median,
-                                       double height)
+                                       Double grade)
     {
-        super(null, null, shape, impacts);
-        this.median = median;
-        this.height = height;
-
-        if (median != null) {
-            computeArea();
-        }
+        super(null, null, shape, grade);
     }
 
     /**
@@ -122,19 +113,61 @@ public class AbstractHorizontalInter
     }
 
     /**
-     * Creates a new AbstractHorizontalInter <b>ghost</b> object.
-     * Median and height must be assigned later
+     * Creates a new AbstractHorizontalInter object.
+     * Note there is no underlying glyph, cleaning will be based on ribbon area.
      *
-     * @param shape BEAM or BEAM_HOOK or BEAM_SMALL or MULTIPLE_REST
-     * @param grade the grade
+     * @param shape   BEAM or BEAM_HOOK or BEAM_SMALL or MULTIPLE_REST
+     * @param impacts the grade details
+     * @param median  median ribbon line
+     * @param height  beam height
      */
     protected AbstractHorizontalInter (Shape shape,
-                                       Double grade)
+                                       GradeImpacts impacts,
+                                       Line2D median,
+                                       double height)
     {
-        super(null, null, shape, grade);
+        super(null, null, shape, impacts);
+        this.median = median;
+        this.height = height;
+
+        if (median != null) {
+            computeArea();
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (median != null) {
+            computeArea();
+        }
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    /**
+     * Compute the beam area.
+     */
+    protected final void computeArea ()
+    {
+        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
+
+        // Define precise bounds based on this path
+        // NOTA: these bounds may go slightly beyond the sheet image limits...
+        bounds = getArea().getBounds();
+    }
+
     //----------//
     // contains //
     //----------//
@@ -156,21 +189,6 @@ public class AbstractHorizontalInter
         }
 
         return area.contains(point);
-    }
-
-    //-------------//
-    // computeArea //
-    //-------------//
-    /**
-     * Compute the beam area.
-     */
-    protected final void computeArea ()
-    {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
-
-        // Define precise bounds based on this path
-        // NOTA: these bounds may go slightly beyond the sheet image limits...
-        bounds = getArea().getBounds();
     }
 
     //-----------//
@@ -238,6 +256,15 @@ public class AbstractHorizontalInter
         return median;
     }
 
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point2D getRelationCenter ()
+    {
+        return PointUtil.middle(median);
+    }
+
     //----------//
     // setGlyph //
     //----------//
@@ -253,30 +280,5 @@ public class AbstractHorizontalInter
 
             computeArea();
         }
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        if (median != null) {
-            computeArea();
-        }
-    }
-
-    //-------------------//
-    // getRelationCenter //
-    //-------------------//
-    @Override
-    public Point2D getRelationCenter ()
-    {
-        return PointUtil.middle(median);
     }
 }

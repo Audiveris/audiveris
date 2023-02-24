@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -74,10 +74,25 @@ public enum ProcessingSwitch
     smallVoidHeads(null),
     smallWholeHeads(null);
 
+    /**
+     * The switches currently supported.
+     */
+    public static EnumSet<ProcessingSwitch> supportedSwitches = EnumSet.range(
+            indentations,
+            multiWholeHeadChords);
+
+    /**
+     * The switches now obsolete.
+     */
+    public static EnumSet<ProcessingSwitch> obsoleteSwitches = EnumSet.range(
+            poorInputMode,
+            smallWholeHeads);
+
     /** Underlying boolean constant. */
     private final Constant.Boolean constant;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a switch from its dedicated application constant.
      *
@@ -89,6 +104,7 @@ public enum ProcessingSwitch
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // getConstant //
     //-------------//
@@ -101,16 +117,4 @@ public enum ProcessingSwitch
     {
         return constant;
     }
-
-    /**
-     * The switches currently supported.
-     */
-    public static EnumSet<ProcessingSwitch> supportedSwitches
-            = EnumSet.range(indentations, multiWholeHeadChords);
-
-    /**
-     * The switches now obsolete.
-     */
-    public static EnumSet<ProcessingSwitch> obsoleteSwitches
-            = EnumSet.range(poorInputMode, smallWholeHeads);
 }

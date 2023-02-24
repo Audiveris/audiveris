@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -66,6 +66,7 @@ public interface PixelFilter
                     int y);
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     /**
      * Structure used to report precise context of the source.
      * It can be extended for more specialized data.

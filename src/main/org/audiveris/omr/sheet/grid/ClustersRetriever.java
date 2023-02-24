@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,9 +27,9 @@ import org.audiveris.omr.glyph.dynamic.Compounds;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Histogram;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
-import org.audiveris.omr.sheet.ProcessingSwitches;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
@@ -105,18 +105,29 @@ public class ClustersRetriever
     /**
      * For comparing Filament instances on their starting point.
      */
-    private static final Comparator<StaffFilament> byStartAbscissa = (f1, f2)
-            -> Double.compare(f1.getStartPoint().getX(), f2.getStartPoint().getX());
+    private static final Comparator<StaffFilament> byStartAbscissa = (f1,
+                                                                      f2) -> Double.compare(
+                                                                              f1.getStartPoint()
+                                                                                      .getX(),
+                                                                              f2.getStartPoint()
+                                                                                      .getX());
 
     /**
      * For comparing Filament instances on their stopping point.
      */
-    private static final Comparator<StaffFilament> byStopAbscissa = (f1, f2)
-            -> Double.compare(f1.getStopPoint().getX(), f2.getStopPoint().getX());
+    private static final Comparator<StaffFilament> byStopAbscissa = (f1,
+                                                                     f2) -> Double.compare(
+                                                                             f1.getStopPoint()
+                                                                                     .getX(),
+                                                                             f2.getStopPoint()
+                                                                                     .getX());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Comparator on cluster ordinate. */
-    public Comparator<LineCluster> byOrdinate = (LineCluster c1, LineCluster c2) -> {
+    public Comparator<LineCluster> byOrdinate = (LineCluster c1,
+                                                 LineCluster c2) ->
+    {
         double o1 = ordinateOf(c1);
         double o2 = ordinateOf(c2);
 
@@ -134,7 +145,9 @@ public class ClustersRetriever
     /**
      * Comparator by page layout (this leads to systems).
      */
-    public Comparator<LineCluster> byLayout = (LineCluster c1, LineCluster c2) -> {
+    public Comparator<LineCluster> byLayout = (LineCluster c1,
+                                               LineCluster c2) ->
+    {
         Point p1 = c1.getCenter();
         Point p2 = c2.getCenter();
 
@@ -191,6 +204,7 @@ public class ClustersRetriever
     private final List<LineCluster> allClusters = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ClustersRetriever object, for a given staff interline.
      *
@@ -217,152 +231,6 @@ public class ClustersRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // buildInfo //
-    //-----------//
-    /**
-     * Organize the filaments into clusters as possible.
-     *
-     * @return the filaments that could not be clustered
-     */
-    public List<StaffFilament> buildInfo ()
-    {
-        final boolean isMultiInterline = scale.getSmallInterlineScale() != null;
-        final boolean checkConsistency;
-        combSizes.clear();
-
-        if (pass == 1) {
-            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-
-            // Processing tablatures?
-            if (switches.getValue(ProcessingSwitch.sixStringTablatures)) {
-                combSizes.add(6);
-            } else if (switches.getValue(ProcessingSwitch.fourStringTablatures)) {
-                combSizes.add(4);
-            } else {
-                combSizes.add(5);
-            }
-
-            // Processing percussion one-line staves?
-            if (switches.getValue(ProcessingSwitch.oneLineStaves)) {
-                combSizes.add(1);
-            }
-
-            checkConsistency = isMultiInterline;
-        } else {
-            combSizes.add(5);
-            checkConsistency = false;
-        }
-
-        // Retrieve all vertical combs gathering filaments
-        retrieveCombs();
-
-        // Interconnect filaments via the network of combs
-        followCombsNetwork();
-
-        // Retrieve clusters
-        retrieveClusters(checkConsistency);
-
-        logger.info("Retrieved line clusters: {} of sizes {} with {}",
-                    allClusters.size(), combSizes, interlineScale);
-
-        return discardedFilaments;
-    }
-
-    //-----------------//
-    // getClusterBelow //
-    //-----------------//
-    /**
-     * Report the cluster physically below the provided one within the provided list,
-     * ordered by layout.
-     *
-     * @param cluster the cluster at hand
-     * @param list    clusters ordered by layout
-     * @return the first cluster physically below, or null if none
-     */
-    public static LineCluster getClusterBelow (LineCluster cluster,
-                                               List<LineCluster> list)
-    {
-        final int idx = list.indexOf(cluster);
-        if (idx < 0) {
-            return null;
-        }
-
-        final Rectangle box = cluster.getBounds();
-        for (LineCluster other : list.subList(idx + 1, list.size())) {
-            // Check abscissa ranges
-            if (GeoUtil.xOverlap(box, other.getBounds()) > 0) {
-                return other;
-            }
-
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // getClusters //
-    //-------------//
-    /**
-     * Report the sequence of clusters detected by this retriever using
-     * its provided interline value.
-     *
-     * @return the sequence of interline-based clusters
-     */
-    public List<LineCluster> getClusters ()
-    {
-        return allClusters;
-    }
-
-    //-----------------//
-    // getHalfClusters //
-    //-----------------//
-    /**
-     * Report the list of half-width clusters within the provided list,
-     * ordered by layout.
-     *
-     * @param list clusters ordered by layout
-     * @return the first cluster physically below, or null if none
-     */
-    public static List<LineCluster> getHalfClusters (List<LineCluster> list)
-    {
-        final List<LineCluster> halves = new ArrayList<>();
-
-        for (int i = 0; i < list.size(); i++) {
-            final LineCluster cluster = list.get(i);
-            final Rectangle box = cluster.getBounds();
-
-            if (i > 0) {
-                final LineCluster prev = list.get(i - 1);
-                if (GeoUtil.xOverlap(box, prev.getBounds()) < 0) {
-                    halves.add(cluster);
-                    continue;
-                }
-            }
-
-            if (i < list.size() - 1) {
-                final LineCluster next = list.get(i + 1);
-                if (GeoUtil.xOverlap(box, next.getBounds()) < 0) {
-                    halves.add(cluster);
-                }
-            }
-        }
-
-        return halves;
-    }
-
-    //--------------//
-    // getInterline //
-    //--------------//
-    /**
-     * Report the value of the interline this retriever is based upon
-     *
-     * @return the interline value
-     */
-    public int getInterline ()
-    {
-        return interlineScale.main;
-    }
 
     //-----------//
     // bestMatch //
@@ -417,26 +285,59 @@ public class ClustersRetriever
         return bestDist;
     }
 
-    //---------------------//
-    // getWidthMedianValue //
-    //---------------------//
+    //-----------//
+    // buildInfo //
+    //-----------//
     /**
-     * Report the median width value within the provided collection of clusters.
+     * Organize the filaments into clusters as possible.
      *
-     * @param collection the collection of clusters
-     * @return median value of all widths, null if none
+     * @return the filaments that could not be clustered
      */
-    public static Integer getWidthMedianValue (Collection<LineCluster> collection)
+    public List<StaffFilament> buildInfo ()
     {
-        if (collection.isEmpty()) {
-            return null;
+        final boolean isMultiInterline = scale.getSmallInterlineScale() != null;
+        final boolean checkConsistency;
+        combSizes.clear();
+
+        if (pass == 1) {
+            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+            // Processing tablatures?
+            if (switches.getValue(ProcessingSwitch.sixStringTablatures)) {
+                combSizes.add(6);
+            } else if (switches.getValue(ProcessingSwitch.fourStringTablatures)) {
+                combSizes.add(4);
+            } else {
+                combSizes.add(5);
+            }
+
+            // Processing percussion one-line staves?
+            if (switches.getValue(ProcessingSwitch.oneLineStaves)) {
+                combSizes.add(1);
+            }
+
+            checkConsistency = isMultiInterline;
+        } else {
+            combSizes.add(5);
+            checkConsistency = false;
         }
 
-        final List<LineCluster> list = new ArrayList<>(collection);
-        Collections.sort(list, (c1, c2) -> Integer.compare(c1.getBounds().width,
-                                                           c2.getBounds().width));
+        // Retrieve all vertical combs gathering filaments
+        retrieveCombs();
 
-        return list.get(list.size() / 2).getBounds().width;
+        // Interconnect filaments via the network of combs
+        followCombsNetwork();
+
+        // Retrieve clusters
+        retrieveClusters(checkConsistency);
+
+        logger.info(
+                "Retrieved line clusters: {} of sizes {} with {}",
+                allClusters.size(),
+                combSizes,
+                interlineScale);
+
+        return discardedFilaments;
     }
 
     //----------//
@@ -588,8 +489,8 @@ public class ClustersRetriever
         StaffFilament twoAnc = (StaffFilament) two.getAncestor();
 
         if (oneAnc != twoAnc) {
-            if (oneAnc.getLength(Orientation.HORIZONTAL)
-                        >= twoAnc.getLength(Orientation.HORIZONTAL)) {
+            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(
+                    Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
                 oneAnc.getCombs().putAll(twoAnc.getCombs());
@@ -840,6 +741,33 @@ public class ClustersRetriever
         removeMergedFilaments(allFilaments);
     }
 
+    //-------------//
+    // getClusters //
+    //-------------//
+    /**
+     * Report the sequence of clusters detected by this retriever using
+     * its provided interline value.
+     *
+     * @return the sequence of interline-based clusters
+     */
+    public List<LineCluster> getClusters ()
+    {
+        return allClusters;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    /**
+     * Report the value of the interline this retriever is based upon
+     *
+     * @return the interline value
+     */
+    public int getInterline ()
+    {
+        return interlineScale.main;
+    }
+
     //--------------//
     // isConsistent //
     //--------------//
@@ -1001,6 +929,18 @@ public class ClustersRetriever
     // ordinateOf //
     //------------//
     /**
+     * Report the orthogonal distance of the cluster center
+     * to the sheet top edge tilted with global slope.
+     */
+    private double ordinateOf (LineCluster cluster)
+    {
+        return ordinateOf(cluster.getCenter());
+    }
+
+    //------------//
+    // ordinateOf //
+    //------------//
+    /**
      * Report the orthogonal distance of the provided point
      * to the sheet top edge tilted with global slope.
      */
@@ -1011,18 +951,6 @@ public class ClustersRetriever
         } else {
             return null;
         }
-    }
-
-    //------------//
-    // ordinateOf //
-    //------------//
-    /**
-     * Report the orthogonal distance of the cluster center
-     * to the sheet top edge tilted with global slope.
-     */
-    private double ordinateOf (LineCluster cluster)
-    {
-        return ordinateOf(cluster.getCenter());
     }
 
     //-------------//
@@ -1066,6 +994,31 @@ public class ClustersRetriever
                 it.remove();
             }
         }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render the vertical combs of filaments
+     *
+     * @param g graphics context
+     */
+    void renderItems (Graphics2D g)
+    {
+        Color oldColor = g.getColor();
+        g.setColor(combColor);
+
+        for (Entry<Integer, List<FilamentComb>> entry : colCombs.entrySet()) {
+            int col = entry.getKey();
+            int x = colX[col];
+
+            for (FilamentComb comb : entry.getValue()) {
+                g.draw(new Line2D.Double(x, comb.getY(0), x, comb.getY(comb.getCount() - 1)));
+            }
+        }
+
+        g.setColor(oldColor);
     }
 
     //------------------//
@@ -1218,46 +1171,6 @@ public class ClustersRetriever
         return list;
     }
 
-    //---------------------//
-    // retrievePopularSize //
-    //---------------------//
-    /**
-     * Retrieve the most popular size (line count) among all combs.
-     */
-    private int retrievePopularSize ()
-    {
-        // Build histogram of combs lengths
-        Histogram<Integer> histo = new Histogram<>();
-
-        for (List<FilamentComb> list : colCombs.values()) {
-            for (FilamentComb comb : list) {
-                histo.increaseCount(comb.getCount(), comb.getCount());
-            }
-        }
-
-        // Use the most popular length
-        // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
-        //TODO: NO: simply pickup the most popular size WITHIN 4..6 !!! avoid 2!
-        int popSize = histo.getMaxBucket();
-
-        logger.debug("Popular line comb: {} histo:{}", popSize, histo.dataString());
-
-        return popSize;
-    }
-
-    //--------------//
-    // trimClusters //
-    //--------------//
-    private void trimClusters ()
-    {
-        Collections.sort(allClusters, byOrdinate);
-
-        // Trim clusters with too many lines
-        for (LineCluster cluster : allClusters) {
-            cluster.trim(combSizes, constants.minClusterTablatureLengthRatio.getValue());
-        }
-    }
-
     //-------------------------//
     // retrieveOneLineClusters //
     //-------------------------//
@@ -1332,32 +1245,142 @@ public class ClustersRetriever
         return singles;
     }
 
-    //-------------//
-    // renderItems //
-    //-------------//
+    //---------------------//
+    // retrievePopularSize //
+    //---------------------//
     /**
-     * Render the vertical combs of filaments
-     *
-     * @param g graphics context
+     * Retrieve the most popular size (line count) among all combs.
      */
-    void renderItems (Graphics2D g)
+    private int retrievePopularSize ()
     {
-        Color oldColor = g.getColor();
-        g.setColor(combColor);
+        // Build histogram of combs lengths
+        Histogram<Integer> histo = new Histogram<>();
 
-        for (Entry<Integer, List<FilamentComb>> entry : colCombs.entrySet()) {
-            int col = entry.getKey();
-            int x = colX[col];
-
-            for (FilamentComb comb : entry.getValue()) {
-                g.draw(new Line2D.Double(x, comb.getY(0), x, comb.getY(comb.getCount() - 1)));
+        for (List<FilamentComb> list : colCombs.values()) {
+            for (FilamentComb comb : list) {
+                histo.increaseCount(comb.getCount(), comb.getCount());
             }
         }
 
-        g.setColor(oldColor);
+        // Use the most popular length
+        // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
+        //TODO: NO: simply pickup the most popular size WITHIN 4..6 !!! avoid 2!
+        int popSize = histo.getMaxBucket();
+
+        logger.debug("Popular line comb: {} histo:{}", popSize, histo.dataString());
+
+        return popSize;
+    }
+
+    //--------------//
+    // trimClusters //
+    //--------------//
+    private void trimClusters ()
+    {
+        Collections.sort(allClusters, byOrdinate);
+
+        // Trim clusters with too many lines
+        for (LineCluster cluster : allClusters) {
+            cluster.trim(combSizes, constants.minClusterTablatureLengthRatio.getValue());
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getClusterBelow //
+    //-----------------//
+    /**
+     * Report the cluster physically below the provided one within the provided list,
+     * ordered by layout.
+     *
+     * @param cluster the cluster at hand
+     * @param list    clusters ordered by layout
+     * @return the first cluster physically below, or null if none
+     */
+    public static LineCluster getClusterBelow (LineCluster cluster,
+                                               List<LineCluster> list)
+    {
+        final int idx = list.indexOf(cluster);
+        if (idx < 0) {
+            return null;
+        }
+
+        final Rectangle box = cluster.getBounds();
+        for (LineCluster other : list.subList(idx + 1, list.size())) {
+            // Check abscissa ranges
+            if (GeoUtil.xOverlap(box, other.getBounds()) > 0) {
+                return other;
+            }
+
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getHalfClusters //
+    //-----------------//
+    /**
+     * Report the list of half-width clusters within the provided list,
+     * ordered by layout.
+     *
+     * @param list clusters ordered by layout
+     * @return the first cluster physically below, or null if none
+     */
+    public static List<LineCluster> getHalfClusters (List<LineCluster> list)
+    {
+        final List<LineCluster> halves = new ArrayList<>();
+
+        for (int i = 0; i < list.size(); i++) {
+            final LineCluster cluster = list.get(i);
+            final Rectangle box = cluster.getBounds();
+
+            if (i > 0) {
+                final LineCluster prev = list.get(i - 1);
+                if (GeoUtil.xOverlap(box, prev.getBounds()) < 0) {
+                    halves.add(cluster);
+                    continue;
+                }
+            }
+
+            if (i < list.size() - 1) {
+                final LineCluster next = list.get(i + 1);
+                if (GeoUtil.xOverlap(box, next.getBounds()) < 0) {
+                    halves.add(cluster);
+                }
+            }
+        }
+
+        return halves;
+    }
+
+    //---------------------//
+    // getWidthMedianValue //
+    //---------------------//
+    /**
+     * Report the median width value within the provided collection of clusters.
+     *
+     * @param collection the collection of clusters
+     * @return median value of all widths, null if none
+     */
+    public static Integer getWidthMedianValue (Collection<LineCluster> collection)
+    {
+        if (collection.isEmpty()) {
+            return null;
+        }
+
+        final List<LineCluster> list = new ArrayList<>(collection);
+        Collections.sort(
+                list,
+                (c1,
+                 c2) -> Integer.compare(c1.getBounds().width, c2.getBounds().width));
+
+        return list.get(list.size() / 2).getBounds().width;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1428,7 +1451,8 @@ public class ClustersRetriever
     private static class FilY
     {
 
-        public static final Comparator<FilY> byOrdinate = (f1, f2) -> Double.compare(f1.y, f2.y);
+        public static final Comparator<FilY> byOrdinate = (f1,
+                                                           f2) -> Double.compare(f1.y, f2.y);
 
         final StaffFilament filament;
 

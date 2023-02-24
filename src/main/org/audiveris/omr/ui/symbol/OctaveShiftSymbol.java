@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter.Kind;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.BasicStroke;
 import java.awt.Composite;
@@ -77,21 +76,11 @@ public class OctaveShiftSymbol
             0.0f);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // ALTA or BASSA
     public Kind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a standard size OctaveShiftSymbol, ALTA by default
-     *
-     * @param shape  OTTAVA, QUINDICESIMA or VENTIDUESIMA
-     * @param family the musicFont family
-     */
-    public OctaveShiftSymbol (Shape shape,
-                              MusicFamily family)
-    {
-        this(shape, Kind.ALTA, family);
-    }
 
     /**
      * Create a standard size OctaveShiftSymbol.
@@ -108,7 +97,20 @@ public class OctaveShiftSymbol
         this.kind = kind;
     }
 
+    /**
+     * Create a standard size OctaveShiftSymbol, ALTA by default
+     *
+     * @param shape  OTTAVA, QUINDICESIMA or VENTIDUESIMA
+     * @param family the musicFont family
+     */
+    public OctaveShiftSymbol (Shape shape,
+                              MusicFamily family)
+    {
+        this(shape, Kind.ALTA, family);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
@@ -197,6 +199,7 @@ public class OctaveShiftSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

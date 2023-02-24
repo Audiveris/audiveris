@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -112,29 +112,23 @@ public abstract class AbstractTimeInter
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** TimeRational value encoded as a "num/den" string. */
     @XmlAttribute(name = "time-rational")
     @XmlJavaTypeAdapter(TimeRational.JaxbAdapter.class)
     protected TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new TimeInter object.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combo like TIME_FOUR_FOUR)
-     * @param grade evaluation grade
+     * No-arg constructor meant for JAXB.
      */
-    public AbstractTimeInter (Glyph glyph,
-                              Shape shape,
-                              Double grade)
+    private AbstractTimeInter ()
     {
-        super(glyph, null, shape, grade);
-        timeRational = rationalOf(shape);
+        super(null, null, null, (Double) null);
     }
 
     /**
@@ -155,25 +149,21 @@ public abstract class AbstractTimeInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new TimeInter object.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combo like TIME_FOUR_FOUR)
+     * @param grade evaluation grade
      */
-    private AbstractTimeInter ()
+    public AbstractTimeInter (Glyph glyph,
+                              Shape shape,
+                              Double grade)
     {
-        super(null, null, null, (Double) null);
+        super(glyph, null, shape, grade);
+        timeRational = rationalOf(shape);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // replicate //
-    //-----------//
-    /**
-     * Use this AbstractTimeInter instance as a template for creating another one.
-     * NOTA: Its bounds should be updated to the target location.
-     *
-     * @param targetStaff the target staff
-     * @return the duplicate (not inserted in sig)
-     */
-    public abstract AbstractTimeInter replicate (Staff targetStaff);
 
     //------------//
     // deriveFrom //
@@ -198,28 +188,6 @@ public abstract class AbstractTimeInter
     public Rational getBeatValue ()
     {
         return getBeatValue(getTimeRational());
-    }
-
-    //--------------//
-    // getBeatValue //
-    //--------------//
-    /**
-     * Report the duration of one beat for the provided TimeRational.
-     *
-     * @param timeRational provided TimeRational
-     * @return beat value
-     */
-    public static Rational getBeatValue (TimeRational timeRational)
-    {
-        final int num = timeRational.num;
-        final int den = timeRational.den;
-
-        // Specific case for 6/8, 9/8, 12/8 (but not 3/8)
-        if ((num != 3) && ((num % 3) == 0) && (den == 8)) {
-            return new Rational(3, 8);
-        }
-
-        return new Rational(1, den);
     }
 
     //----------------//
@@ -292,6 +260,21 @@ public abstract class AbstractTimeInter
         }
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        TimeValue timeValue = getValue();
+
+        if (timeValue != null) {
+            return super.internals() + " " + timeValue;
+        } else {
+            return super.internals() + " NO_VALUE";
+        }
+    }
+
     //--------//
     // modify //
     //--------//
@@ -353,68 +336,79 @@ public abstract class AbstractTimeInter
     }
 
     //-----------//
-    // internals //
+    // replicate //
     //-----------//
-    @Override
-    protected String internals ()
-    {
-        TimeValue timeValue = getValue();
+    /**
+     * Use this AbstractTimeInter instance as a template for creating another one.
+     * NOTA: Its bounds should be updated to the target location.
+     *
+     * @param targetStaff the target staff
+     * @return the duplicate (not inserted in sig)
+     */
+    public abstract AbstractTimeInter replicate (Staff targetStaff);
 
-        if (timeValue != null) {
-            return super.internals() + " " + timeValue;
-        } else {
-            return super.internals() + " NO_VALUE";
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------------//
+    // getBeatValue //
+    //--------------//
+    /**
+     * Report the duration of one beat for the provided TimeRational.
+     *
+     * @param timeRational provided TimeRational
+     * @return beat value
+     */
+    public static Rational getBeatValue (TimeRational timeRational)
+    {
+        final int num = timeRational.num;
+        final int den = timeRational.den;
+
+        // Specific case for 6/8, 9/8, 12/8 (but not 3/8)
+        if ((num != 3) && ((num % 3) == 0) && (den == 8)) {
+            return new Rational(3, 8);
         }
+
+        return new Rational(1, den);
     }
 
-    //------------//
-    // rationalOf //
-    //------------//
+    //-------------//
+    // isSupported //
+    //-------------//
     /**
-     * Report the num/den pair of predefined time signature shapes.
+     * Tell whether the provided TimeRational value is among the supported ones.
      *
-     * @param shape the queried shape
-     * @return the related num/den or null
+     * @param tr provided value to check
+     * @return true if so
      */
-    public static TimeRational rationalOf (Shape shape)
+    public static boolean isSupported (TimeRational tr)
     {
-        if (shape == null) {
-            return null;
+        return defaultTimes.contains(tr) || optionalTimes.contains(tr);
+    }
+
+    //-----------------//
+    // predefinedShape //
+    //-----------------//
+    /**
+     * Look for a predefined shape, if any, that would correspond to the current
+     * <code>num</code> and <code>den</code> values of this time sig.
+     *
+     * @return the shape found or null
+     */
+    private static Shape predefinedShape (TimeRational timeRational)
+    {
+        if (timeRational == null) {
+            return null; // Safer
         }
 
-        switch (shape) {
-        case COMMON_TIME:
-        case TIME_FOUR_FOUR:
-            return new TimeRational(4, 4);
+        for (Shape s : ShapeSet.WholeTimes) {
+            TimeRational nd = rationals.get(s);
 
-        case CUT_TIME:
-        case TIME_TWO_TWO:
-            return new TimeRational(2, 2);
-
-        case TIME_TWO_FOUR:
-            return new TimeRational(2, 4);
-
-        case TIME_THREE_FOUR:
-            return new TimeRational(3, 4);
-
-        case TIME_FIVE_FOUR:
-            return new TimeRational(5, 4);
-
-        case TIME_SIX_FOUR:
-            return new TimeRational(6, 4);
-
-        case TIME_THREE_EIGHT:
-            return new TimeRational(3, 8);
-
-        case TIME_SIX_EIGHT:
-            return new TimeRational(6, 8);
-
-        case TIME_TWELVE_EIGHT:
-            return new TimeRational(12, 8);
-
-        default:
-            return null;
+            if (timeRational.equals(nd)) {
+                return s;
+            }
         }
+
+        return null;
     }
 
     //------------//
@@ -479,47 +473,58 @@ public abstract class AbstractTimeInter
         }
     }
 
-    //-------------//
-    // isSupported //
-    //-------------//
+    //------------//
+    // rationalOf //
+    //------------//
     /**
-     * Tell whether the provided TimeRational value is among the supported ones.
+     * Report the num/den pair of predefined time signature shapes.
      *
-     * @param tr provided value to check
-     * @return true if so
+     * @param shape the queried shape
+     * @return the related num/den or null
      */
-    public static boolean isSupported (TimeRational tr)
+    public static TimeRational rationalOf (Shape shape)
     {
-        return defaultTimes.contains(tr) || optionalTimes.contains(tr);
-    }
-
-    //-----------------//
-    // predefinedShape //
-    //-----------------//
-    /**
-     * Look for a predefined shape, if any, that would correspond to the current
-     * <code>num</code> and <code>den</code> values of this time sig.
-     *
-     * @return the shape found or null
-     */
-    private static Shape predefinedShape (TimeRational timeRational)
-    {
-        if (timeRational == null) {
-            return null; // Safer
+        if (shape == null) {
+            return null;
         }
 
-        for (Shape s : ShapeSet.WholeTimes) {
-            TimeRational nd = rationals.get(s);
+        switch (shape) {
+        case COMMON_TIME:
+        case TIME_FOUR_FOUR:
+            return new TimeRational(4, 4);
 
-            if (timeRational.equals(nd)) {
-                return s;
-            }
+        case CUT_TIME:
+        case TIME_TWO_TWO:
+            return new TimeRational(2, 2);
+
+        case TIME_TWO_FOUR:
+            return new TimeRational(2, 4);
+
+        case TIME_THREE_FOUR:
+            return new TimeRational(3, 4);
+
+        case TIME_FIVE_FOUR:
+            return new TimeRational(5, 4);
+
+        case TIME_SIX_FOUR:
+            return new TimeRational(6, 4);
+
+        case TIME_THREE_EIGHT:
+            return new TimeRational(3, 8);
+
+        case TIME_SIX_EIGHT:
+            return new TimeRational(6, 8);
+
+        case TIME_TWELVE_EIGHT:
+            return new TimeRational(12, 8);
+
+        default:
+            return null;
         }
-
-        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

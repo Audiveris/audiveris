@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -267,13 +267,13 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (RepeatDotInter inter)
+    public void visit (PluckingInter inter)
     {
         visit((Inter) inter); // Redirection by default
     }
 
     @Override
-    public void visit (PluckingInter inter)
+    public void visit (RepeatDotInter inter)
     {
         visit((Inter) inter); // Redirection by default
     }

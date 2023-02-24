@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -85,6 +85,7 @@ public class LinksStep
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>LinksStep</code> object.
      */
@@ -93,6 +94,26 @@ public class LinksStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Void context)
+        throws StepException
+    {
+        // Check for ties in same staff, now that head alterations and clef changes are available
+        for (SystemInfo system : sheet.getSystems()) {
+            List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+
+            for (Inter inter : system.getSig().inters(SlurInter.class)) {
+                SlurInter slur = (SlurInter) inter;
+                slur.checkStaffTie(systemHeadChords);
+            }
+        }
+    }
+
     //----------//
     // doSystem //
     //----------//
@@ -181,26 +202,8 @@ public class LinksStep
         return isImpactedBy(classe, impactingClasses);
     }
 
-    //----------//
-    // doEpilog //
-    //----------//
-    @Override
-    protected void doEpilog (Sheet sheet,
-                             Void context)
-        throws StepException
-    {
-        // Check for ties in same staff, now that head alterations and clef changes are available
-        for (SystemInfo system : sheet.getSystems()) {
-            List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-
-            for (Inter inter : system.getSig().inters(SlurInter.class)) {
-                SlurInter slur = (SlurInter) inter;
-                slur.checkStaffTie(systemHeadChords);
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

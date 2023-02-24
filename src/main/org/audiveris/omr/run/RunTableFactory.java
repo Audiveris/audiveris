@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.run;
 
-import ij.process.ByteProcessor;
-
-import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -46,6 +45,7 @@ public class RunTableFactory
     private static final Logger logger = LoggerFactory.getLogger(RunTableFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The desired orientation. */
     private final Orientation orientation;
 
@@ -53,6 +53,7 @@ public class RunTableFactory
     private final Filter filter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an RunsTableFactory, with its specified orientation and no filtering.
      *
@@ -63,9 +64,6 @@ public class RunTableFactory
         this(orientation, null);
     }
 
-    // ----------------//
-    // RunTableFactory //
-    // ----------------//
     /**
      * Create an RunsTableFactory, with its specified orientation and filtering.
      *
@@ -80,6 +78,7 @@ public class RunTableFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     // ------------//
     // createTable //
     // ------------//
@@ -114,13 +113,14 @@ public class RunTableFactory
         RunsRetriever retriever = new RunsRetriever(
                 orientation,
                 orientation.isVertical() ? new VerticalAdapter(source, table, roi.getLocation())
-                : new HorizontalAdapter(source, table, roi.getLocation()));
+                        : new HorizontalAdapter(source, table, roi.getLocation()));
         retriever.retrieveRuns(roi);
 
         return table;
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //--------//
     // Filter //
     //--------//
@@ -143,7 +143,48 @@ public class RunTableFactory
                        int length);
     }
 
+    //-------------------//
+    // HorizontalAdapter //
+    //-------------------//
+    /**
+     * RunAdapter for horizontal runs.
+     */
+    private class HorizontalAdapter
+            extends MyAdapter
+    {
+
+        HorizontalAdapter (ByteProcessor source,
+                           RunTable table,
+                           Point tableOffset)
+        {
+            super(source, table, tableOffset);
+        }
+
+        @Override
+        protected boolean checkFilter (int coord,
+                                       int pos,
+                                       int length)
+        {
+            return filter.check(coord - length, pos, length);
+        }
+
+        @Override
+        public void endPosition (int pos,
+                                 List<Run> runs)
+        {
+            table.setSequence(pos - tableOffset.y, RunTable.encode(runs));
+        }
+
+        @Override
+        public final boolean isFore (int coord,
+                                     int pos)
+        {
+            return source.get(coord, pos) == 0;
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // LengthFilter //
     //--------------//
@@ -175,46 +216,6 @@ public class RunTableFactory
         }
     }
 
-    //-------------------//
-    // HorizontalAdapter //
-    //-------------------//
-    /**
-     * RunAdapter for horizontal runs.
-     */
-    private class HorizontalAdapter
-            extends MyAdapter
-    {
-
-        HorizontalAdapter (ByteProcessor source,
-                           RunTable table,
-                           Point tableOffset)
-        {
-            super(source, table, tableOffset);
-        }
-
-        @Override
-        public void endPosition (int pos,
-                                 List<Run> runs)
-        {
-            table.setSequence(pos - tableOffset.y, RunTable.encode(runs));
-        }
-
-        @Override
-        public final boolean isFore (int coord,
-                                     int pos)
-        {
-            return source.get(coord, pos) == 0;
-        }
-
-        @Override
-        protected boolean checkFilter (int coord,
-                                       int pos,
-                                       int length)
-        {
-            return filter.check(coord - length, pos, length);
-        }
-    }
-
     // ----------//
     // MyAdapter //
     // ----------//
@@ -239,6 +240,13 @@ public class RunTableFactory
             this.table = table;
             this.tableOffset = tableOffset;
         }
+
+        //-------------//
+        // checkFilter //
+        //-------------//
+        protected abstract boolean checkFilter (int coord,
+                                                int pos,
+                                                int length);
 
         // --------//
         // foreRun //
@@ -282,13 +290,6 @@ public class RunTableFactory
             // No annotation: it's safer to assume no thread safety
             return false;
         }
-
-        //-------------//
-        // checkFilter //
-        //-------------//
-        protected abstract boolean checkFilter (int coord,
-                                                int pos,
-                                                int length);
     }
 
     //-----------------//
@@ -309,6 +310,14 @@ public class RunTableFactory
         }
 
         @Override
+        protected boolean checkFilter (int coord,
+                                       int pos,
+                                       int length)
+        {
+            return filter.check(pos, coord - length, length);
+        }
+
+        @Override
         public void endPosition (int pos,
                                  List<Run> runs)
         {
@@ -320,14 +329,6 @@ public class RunTableFactory
                                      int pos)
         {
             return source.get(pos, coord) == 0;
-        }
-
-        @Override
-        protected boolean checkFilter (int coord,
-                                       int pos,
-                                       int length)
-        {
-            return filter.check(pos, coord - length, length);
         }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,10 +51,12 @@ public class LogSlider
     private static final double doubleUnit = unit; // To speed up
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Base of log (generally 2 or 10)
     private final double base;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>LogSlider</code> instance.
      *
@@ -107,7 +109,8 @@ public class LogSlider
             labelTable.put(
                     i * unit,
                     new JLabel(
-                            (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
+                            (i < 0) ? ("1/" + (int) expOf(-i * unit))
+                                    : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -118,6 +121,15 @@ public class LogSlider
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------//
+    // expOf //
+    //-------//
+    private double expOf (int i)
+    {
+        return Math.pow(base, i / doubleUnit);
+    }
+
     //----------------//
     // getDoubleValue //
     //----------------//
@@ -130,6 +142,14 @@ public class LogSlider
     public double getDoubleValue ()
     {
         return expOf(super.getValue());
+    }
+
+    //-------//
+    // logOf //
+    //-------//
+    private int logOf (double d)
+    {
+        return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
     }
 
     //----------------//
@@ -180,23 +200,8 @@ public class LogSlider
                 "Method setMinorTickSpacing not supported by LogSlider");
     }
 
-    //-------//
-    // expOf //
-    //-------//
-    private double expOf (int i)
-    {
-        return Math.pow(base, i / doubleUnit);
-    }
-
-    //-------//
-    // logOf //
-    //-------//
-    private int logOf (double d)
-    {
-        return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

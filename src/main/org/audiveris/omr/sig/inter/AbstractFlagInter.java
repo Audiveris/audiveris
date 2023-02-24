@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -63,6 +63,7 @@ public abstract class AbstractFlagInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Value of this flag (compound?) in terms of individual flags.
      * (Lazily evaluated)
@@ -70,6 +71,7 @@ public abstract class AbstractFlagInter
     protected Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>AbstractFlagInter</code> object.
      */
@@ -92,6 +94,7 @@ public abstract class AbstractFlagInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -136,61 +139,6 @@ public abstract class AbstractFlagInter
         return new Editor(this);
     }
 
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Report the count of individual flags represented by this inter shape.
-     *
-     * @return the corresponding count of individual flags
-     */
-    public int getValue ()
-    {
-        if (value == null) {
-            value = getFlagValue(shape);
-        }
-
-        return value;
-    }
-
-    //----------//
-    // getVoice //
-    //----------//
-    @Override
-    public Voice getVoice ()
-    {
-        for (Relation rel : sig.getRelations(this, FlagStemRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
-        Collections.sort(systemStems, Inters.byAbscissa);
-
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final Link link = lookupLink(systemStems, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, FlagStemRelation.class);
-    }
-
     //-----------------//
     // getSnapAbscissa //
     //-----------------//
@@ -218,6 +166,36 @@ public abstract class AbstractFlagInter
             double halfWidth = getBounds().width / 2.0;
 
             return stemX + halfWidth;
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Report the count of individual flags represented by this inter shape.
+     *
+     * @return the corresponding count of individual flags
+     */
+    public int getValue ()
+    {
+        if (value == null) {
+            value = getFlagValue(shape);
+        }
+
+        return value;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, FlagStemRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
         }
 
         return null;
@@ -270,7 +248,10 @@ public abstract class AbstractFlagInter
             glyph.addAttachment("fs", luBox);
         }
 
-        final List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+        final List<Inter> stems = Inters.intersectedInters(
+                systemStems,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;
@@ -333,6 +314,33 @@ public abstract class AbstractFlagInter
         return null;
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(systemStems, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, FlagStemRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // createValidAdded //
     //------------------//
@@ -356,8 +364,7 @@ public abstract class AbstractFlagInter
                                                       SystemInfo system,
                                                       List<Inter> systemStems)
     {
-        final AbstractFlagInter flag = shape.isSmallFlag()
-                ? new SmallFlagInter(glyph, shape, grade)
+        final AbstractFlagInter flag = shape.isSmallFlag() ? new SmallFlagInter(glyph, shape, grade)
                 : new FlagInter(glyph, shape, grade);
         final Link link = flag.lookupLink(systemStems, system.getProfile());
 
@@ -414,6 +421,7 @@ public abstract class AbstractFlagInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Editor //
     //--------//

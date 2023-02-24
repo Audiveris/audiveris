@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,7 +22,7 @@
 package org.audiveris.omr.moments;
 
 import org.audiveris.omr.math.Polynomial;
-import static org.audiveris.omr.moments.LegendreMoments.*;
+import static org.audiveris.omr.moments.LegendreMoments.ORDER;
 
 import java.awt.image.WritableRaster;
 
@@ -67,6 +67,7 @@ public class BasicLegendreExtractor
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BasicLegendreExtractor object.
      */
@@ -75,74 +76,6 @@ public class BasicLegendreExtractor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // reconstruct //
-    //-------------//
-    @Override
-    public void reconstruct (WritableRaster raster)
-    {
-        int size = raster.getHeight();
-
-        ///double[][] buf = new double[size][size];
-        final int rad = size / 2;
-        final int[] ia = new int[1];
-        double minVal = Double.MAX_VALUE;
-        double maxVal = Double.MIN_VALUE;
-
-        for (int x = 0; x < size; x++) {
-            double tx = (x - rad) / (double) rad;
-
-            for (int y = 0; y < size; y++) {
-                double ty = (y - rad) / (double) rad;
-                double val = 0;
-
-                for (int m = 0; m <= ORDER; m++) {
-                    for (int n = 0; n <= (ORDER - m); n++) {
-                        double tau = Math.sqrt((((2 * m) + 1) * ((2 * n) + 1)) / 4d);
-                        double moment = descriptor.getMoment(m, n);
-                        double pm = P[m].evaluate(tx);
-                        double pn = P[n].evaluate(ty);
-                        double inc = tau * moment * pm * pn;
-                        val += inc;
-
-                        //                        System.out.println(
-                        //                            String.format(
-                        //                                Locale.UK,
-                        //                                "m:%02d n:%02d tau:%7.3f mom:%6.3f pmn:%6.3f pn:%6.3f inc:%6.3f val:%6.3f",
-                        //                                m,
-                        //                                n,
-                        //                                tau,
-                        //                                moment,
-                        //                                pmn,
-                        //                                pn,
-                        //                                inc,
-                        //                                val));
-                    }
-                }
-
-                //                buf[x][y] = val;
-                minVal = Math.min(minVal, val);
-                maxVal = Math.max(maxVal, val);
-
-                int gray = Math.min(255, Math.max(0, (int) Math.rint(val * 256)));
-                ia[0] = 255 - gray;
-                raster.setPixel(x, y, ia);
-            }
-        }
-
-        System.out.println("minVal:" + minVal + " maxVal:" + maxVal);
-
-        //        // Normalize the gray levels (berk!)
-        //        for (int x = 0; x < size; x++) {
-        //            for (int y = 0; y < size; y++) {
-        //                double val = buf[x][y];
-        //                int    gray = (int) Math.rint((val / maxVal) * 255);
-        //                gray = Math.min(255, Math.max(0, gray));
-        //                ia[0] = 255 - gray;
-        //                raster.setPixel(x, y, ia);
-        //            }
-        //        }
-    }
 
     //----------------//
     // extractMoments //
@@ -232,6 +165,77 @@ public class BasicLegendreExtractor
             }
         }
     }
+
+    //-------------//
+    // reconstruct //
+    //-------------//
+    @Override
+    public void reconstruct (WritableRaster raster)
+    {
+        int size = raster.getHeight();
+
+        ///double[][] buf = new double[size][size];
+        final int rad = size / 2;
+        final int[] ia = new int[1];
+        double minVal = Double.MAX_VALUE;
+        double maxVal = Double.MIN_VALUE;
+
+        for (int x = 0; x < size; x++) {
+            double tx = (x - rad) / (double) rad;
+
+            for (int y = 0; y < size; y++) {
+                double ty = (y - rad) / (double) rad;
+                double val = 0;
+
+                for (int m = 0; m <= ORDER; m++) {
+                    for (int n = 0; n <= (ORDER - m); n++) {
+                        double tau = Math.sqrt((((2 * m) + 1) * ((2 * n) + 1)) / 4d);
+                        double moment = descriptor.getMoment(m, n);
+                        double pm = P[m].evaluate(tx);
+                        double pn = P[n].evaluate(ty);
+                        double inc = tau * moment * pm * pn;
+                        val += inc;
+
+                        //                        System.out.println(
+                        //                            String.format(
+                        //                                Locale.UK,
+                        //                                "m:%02d n:%02d tau:%7.3f mom:%6.3f pmn:%6.3f pn:%6.3f inc:%6.3f val:%6.3f",
+                        //                                m,
+                        //                                n,
+                        //                                tau,
+                        //                                moment,
+                        //                                pmn,
+                        //                                pn,
+                        //                                inc,
+                        //                                val));
+                    }
+                }
+
+                //                buf[x][y] = val;
+                minVal = Math.min(minVal, val);
+                maxVal = Math.max(maxVal, val);
+
+                int gray = Math.min(255, Math.max(0, (int) Math.rint(val * 256)));
+                ia[0] = 255 - gray;
+                raster.setPixel(x, y, ia);
+            }
+        }
+
+        System.out.println("minVal:" + minVal + " maxVal:" + maxVal);
+
+        //        // Normalize the gray levels (berk!)
+        //        for (int x = 0; x < size; x++) {
+        //            for (int y = 0; y < size; y++) {
+        //                double val = buf[x][y];
+        //                int    gray = (int) Math.rint((val / maxVal) * 255);
+        //                gray = Math.min(255, Math.max(0, gray));
+        //                ia[0] = 255 - gray;
+        //                raster.setPixel(x, y, ia);
+        //            }
+        //        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //    //-----------------//
     //    // checkOrthogonal //

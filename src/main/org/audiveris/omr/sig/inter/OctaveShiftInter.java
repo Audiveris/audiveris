@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,8 +46,8 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OctaveShiftSymbol;
 import static org.audiveris.omr.ui.symbol.OctaveShiftSymbol.DEFAULT_HOOK_LENGTH;
@@ -131,18 +131,11 @@ public class OctaveShiftInter
                                                                i1.getStaff().getId(),
                                                                i2.getStaff().getId());
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public static enum Kind
-    {
-        ALTA, // Notes to be performed higher than written
-        BASSA; // Notes to be performed lower than written
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** The kind of this shift. */
     @XmlAttribute(name = "kind")
     private Kind kind;
@@ -169,7 +162,7 @@ public class OctaveShiftInter
 
     // Transient data
     //---------------
-    //
+
     /** Width of number value symbol. */
     private double valueWidth;
 
@@ -177,6 +170,15 @@ public class OctaveShiftInter
     private double valueHeight;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed by JAXB.
+     */
+    @SuppressWarnings("unchecked")
+    private OctaveShiftInter ()
+    {
+    }
+
     /**
      * Creates a new <code>OctaveShiftInter</code> object.
      *
@@ -225,15 +227,8 @@ public class OctaveShiftInter
         this.hookEnd = hookEnd;
     }
 
-    /**
-     * No-arg constructor needed by JAXB.
-     */
-    @SuppressWarnings("unchecked")
-    private OctaveShiftInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -283,6 +278,26 @@ public class OctaveShiftInter
         return isAbnormal();
     }
 
+    //------------------------//
+    // computeValueDimensions //
+    //------------------------//
+    /**
+     * Determine dimensions of the value box, according to OctaveShiftInter shape
+     * and to sheet scale.
+     *
+     * @param sheet the containing sheet
+     */
+    private void computeValueDimensions (Sheet sheet)
+    {
+        final Scale scale = sheet.getScale();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
+        final TextLayout layout = fs.getLayout();
+        final Rectangle2D symBounds = layout.getBounds();
+        valueWidth = symBounds.getWidth();
+        valueHeight = symBounds.getHeight();
+    }
+
     //----------//
     // contains //
     //----------//
@@ -319,46 +334,6 @@ public class OctaveShiftInter
         }
 
         return false;
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create an instance of OctaveShiftInter.
-     * <p>
-     * TODO: this is a VERY PRELIMINARY implementation!
-     *
-     * @param glyph        the underlying glyph (just the value part, with no dash part)
-     * @param shape        OTTAVA, QUINDICESIMA or VENTIDUESIMA
-     * @param grade        interpretation quality
-     * @param closestStaff closest staff, which may not be the right one!
-     * @return the created instance or null
-     */
-    public static Inter create (Glyph glyph,
-                                Shape shape,
-                                double grade,
-                                Staff closestStaff)
-    {
-        // TODO: Search a more suitable staff than just the vertically closest one
-        final Staff staff = closestStaff;
-        //
-        // Item cannot be located within staff height
-        final Point center = glyph.getCenter();
-
-        if (staff.distanceTo(center) <= 0) {
-            return null;
-        }
-
-        //TODO: Can we check for presence of a long dashed line???
-        //
-        final OctaveShiftInter os = new OctaveShiftInter(glyph, shape, null, grade);
-        final Scale scale = staff.getSystem().getSheet().getScale();
-        final int lineLg = scale.toPixels(DEFAULT_LINE_LENGTH);
-        os.line = new Line2D.Double(center, new Point(center.x + lineLg, center.y));
-        os.setStaff(staff);
-
-        return os;
     }
 
     //------------//
@@ -532,28 +507,6 @@ public class OctaveShiftInter
         }
     }
 
-    //--------------//
-    // setExtension //
-    //--------------//
-    /**
-     * Set extension on the provided side.
-     *
-     * @param side  LEFT or RIGHT
-     * @param other extension, perhaps null
-     */
-    public void setExtension (HorizontalSide side,
-                              OctaveShiftInter other)
-    {
-        Objects.requireNonNull(side, "No side provided for OctaveShift setExtension");
-
-        switch (side) {
-        case LEFT:
-            leftExtension = other;
-        case RIGHT:
-            rightExtension = other;
-        }
-    }
-
     //-------------//
     // getHookCopy //
     //-------------//
@@ -579,40 +532,6 @@ public class OctaveShiftInter
     {
         final Scale scale = staff.getSystem().getSheet().getScale();
         return scale.toPixels(DEFAULT_HOOK_LENGTH);
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        if ((line == null) && (glyph != null) && (bounds != null)) {
-            // Compute a not too bad line chunk
-            final Sheet sheet = StubsController.getInstance().getSelectedStub().getSheet();
-            computeValueDimensions(sheet);
-
-            final Point p1 = getCenterLeft();
-            p1.x += (int) Math.rint(valueWidth / 2.0);
-            final int lg = sheet.getScale().toPixels(DEFAULT_LINE_LENGTH);
-            final Point2D p2 = new Point2D.Double(p1.x + lg, p1.y);
-            line = new Line2D.Double(p1, p2);
-        }
-    }
-
-    //-------------//
-    // setHookCopy //
-    //-------------//
-    /**
-     * Assign a COPY to the hook end.
-     *
-     * @param hookEnd the new hook end, perhaps null
-     */
-    public void setHookCopy (Point2D hookEnd)
-    {
-        this.hookEnd = hookEnd != null ? new Point2D.Double(hookEnd.getX(), hookEnd.getY()) : null;
     }
 
     //---------//
@@ -670,6 +589,39 @@ public class OctaveShiftInter
         }
     }
 
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * Build the whole sequence of (physical) OctaveShiftInter instances that compose
+     * a (logical) octave shift.
+     * <p>
+     * This is done by using the existing leftExtension and rightExtension pointers.
+     *
+     * @return the sequence of OctaveShiftInter's
+     */
+    private List<OctaveShiftInter> getSequence ()
+    {
+        final List<OctaveShiftInter> list = new ArrayList<>();
+        list.add(this);
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            OctaveShiftInter other = getExtension(side);
+
+            while (other != null) {
+                if (side == LEFT) {
+                    list.add(0, other);
+                } else {
+                    list.add(other);
+                }
+
+                other = other.getExtension(side);
+            }
+        }
+
+        return list;
+    }
+
     //----------//
     // getShift //
     //----------//
@@ -706,6 +658,62 @@ public class OctaveShiftInter
         case VENTIDUESIMA -> 22;
         default -> null; // Should not occur!
         };
+    }
+
+    //-------------//
+    // getValueBox //
+    //-------------//
+    /**
+     * Report the bounding box around the value symbol of the OctaveShiftInter at hand.
+     *
+     * @return bounds of the 8/15/22 number
+     */
+    private Rectangle2D getValueBox ()
+    {
+        return new Rectangle2D.Double(
+                line.getX1() - valueWidth / 2.0,
+                line.getY1() - valueHeight / 2.0,
+                valueWidth,
+                valueHeight);
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        final StringBuilder sb = new StringBuilder(super.internals());
+
+        if (kind != null) {
+            sb.append(" ").append(kind);
+        }
+
+        return sb.toString();
+    }
+
+    //-------------//
+    // lookupLinks //
+    //-------------//
+    /**
+     * Try to detect the links between this OctaveShift instance and first chord on left side
+     * plus last chord on right side in the related staff.
+     *
+     * @param staffChords ordered collection of chords in related staff
+     * @return the pair of links found, perhaps empty
+     */
+    private List<Link> lookupLinks (List<AbstractChordInter> staffChords)
+    {
+        if (staffChords.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<Link> links = new ArrayList<>();
+        final int last = staffChords.size() - 1;
+        links.add(new Link(staffChords.get(0), new OctaveShiftChordRelation(LEFT), true));
+        links.add(new Link(staffChords.get(last), new OctaveShiftChordRelation(RIGHT), true));
+
+        return links;
     }
 
     //---------//
@@ -797,6 +805,62 @@ public class OctaveShiftInter
         return searchObsoletelinks(links, OctaveShiftChordRelation.class);
     }
 
+    //--------------//
+    // setExtension //
+    //--------------//
+    /**
+     * Set extension on the provided side.
+     *
+     * @param side  LEFT or RIGHT
+     * @param other extension, perhaps null
+     */
+    public void setExtension (HorizontalSide side,
+                              OctaveShiftInter other)
+    {
+        Objects.requireNonNull(side, "No side provided for OctaveShift setExtension");
+
+        switch (side) {
+        case LEFT:
+            leftExtension = other;
+        case RIGHT:
+            rightExtension = other;
+        }
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if ((line == null) && (glyph != null) && (bounds != null)) {
+            // Compute a not too bad line chunk
+            final Sheet sheet = StubsController.getInstance().getSelectedStub().getSheet();
+            computeValueDimensions(sheet);
+
+            final Point p1 = getCenterLeft();
+            p1.x += (int) Math.rint(valueWidth / 2.0);
+            final int lg = sheet.getScale().toPixels(DEFAULT_LINE_LENGTH);
+            final Point2D p2 = new Point2D.Double(p1.x + lg, p1.y);
+            line = new Line2D.Double(p1, p2);
+        }
+    }
+
+    //-------------//
+    // setHookCopy //
+    //-------------//
+    /**
+     * Assign a COPY to the hook end.
+     *
+     * @param hookEnd the new hook end, perhaps null
+     */
+    public void setHookCopy (Point2D hookEnd)
+    {
+        this.hookEnd = hookEnd != null ? new Point2D.Double(hookEnd.getX(), hookEnd.getY()) : null;
+    }
+
     //----------//
     // setStaff //
     //----------//
@@ -811,168 +875,60 @@ public class OctaveShiftInter
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        final StringBuilder sb = new StringBuilder(super.internals());
+    //~ Static Methods -----------------------------------------------------------------------------
 
-        if (kind != null) {
-            sb.append(" ").append(kind);
-        }
-
-        return sb.toString();
-    }
-
-    //------------------------//
-    // computeValueDimensions //
-    //------------------------//
+    //--------//
+    // create //
+    //--------//
     /**
-     * Determine dimensions of the value box, according to OctaveShiftInter shape
-     * and to sheet scale.
-     *
-     * @param sheet the containing sheet
-     */
-    private void computeValueDimensions (Sheet sheet)
-    {
-        final Scale scale = sheet.getScale();
-        final MusicFamily family = sheet.getStub().getMusicFamily();
-        final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
-        final TextLayout layout = fs.getLayout();
-        final Rectangle2D symBounds = layout.getBounds();
-        valueWidth = symBounds.getWidth();
-        valueHeight = symBounds.getHeight();
-    }
-
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * Build the whole sequence of (physical) OctaveShiftInter instances that compose
-     * a (logical) octave shift.
+     * (Try to) create an instance of OctaveShiftInter.
      * <p>
-     * This is done by using the existing leftExtension and rightExtension pointers.
+     * TODO: this is a VERY PRELIMINARY implementation!
      *
-     * @return the sequence of OctaveShiftInter's
+     * @param glyph        the underlying glyph (just the value part, with no dash part)
+     * @param shape        OTTAVA, QUINDICESIMA or VENTIDUESIMA
+     * @param grade        interpretation quality
+     * @param closestStaff closest staff, which may not be the right one!
+     * @return the created instance or null
      */
-    private List<OctaveShiftInter> getSequence ()
+    public static Inter create (Glyph glyph,
+                                Shape shape,
+                                double grade,
+                                Staff closestStaff)
     {
-        final List<OctaveShiftInter> list = new ArrayList<>();
-        list.add(this);
+        // TODO: Search a more suitable staff than just the vertically closest one
+        final Staff staff = closestStaff;
+        //
+        // Item cannot be located within staff height
+        final Point center = glyph.getCenter();
 
-        for (HorizontalSide side : HorizontalSide.values()) {
-            OctaveShiftInter other = getExtension(side);
-
-            while (other != null) {
-                if (side == LEFT) {
-                    list.add(0, other);
-                } else {
-                    list.add(other);
-                }
-
-                other = other.getExtension(side);
-            }
+        if (staff.distanceTo(center) <= 0) {
+            return null;
         }
 
-        return list;
-    }
+        //TODO: Can we check for presence of a long dashed line???
+        //
+        final OctaveShiftInter os = new OctaveShiftInter(glyph, shape, null, grade);
+        final Scale scale = staff.getSystem().getSheet().getScale();
+        final int lineLg = scale.toPixels(DEFAULT_LINE_LENGTH);
+        os.line = new Line2D.Double(center, new Point(center.x + lineLg, center.y));
+        os.setStaff(staff);
 
-    //-------------//
-    // getValueBox //
-    //-------------//
-    /**
-     * Report the bounding box around the value symbol of the OctaveShiftInter at hand.
-     *
-     * @return bounds of the 8/15/22 number
-     */
-    private Rectangle2D getValueBox ()
-    {
-        return new Rectangle2D.Double(
-                line.getX1() - valueWidth / 2.0,
-                line.getY1() - valueHeight / 2.0,
-                valueWidth,
-                valueHeight);
-    }
-
-    //-------------//
-    // lookupLinks //
-    //-------------//
-    /**
-     * Try to detect the links between this OctaveShift instance and first chord on left side
-     * plus last chord on right side in the related staff.
-     *
-     * @param staffChords ordered collection of chords in related staff
-     * @return the pair of links found, perhaps empty
-     */
-    private List<Link> lookupLinks (List<AbstractChordInter> staffChords)
-    {
-        if (staffChords.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        final List<Link> links = new ArrayList<>();
-        final int last = staffChords.size() - 1;
-        links.add(new Link(staffChords.get(0), new OctaveShiftChordRelation(LEFT), true));
-        links.add(new Link(staffChords.get(last), new OctaveShiftChordRelation(RIGHT), true));
-
-        return links;
+        return os;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
     {
 
-        // OTTAVA, QUINDICESIMA or VENTIDUESIMA
-        public Shape shape;
-
-        // ALTA or BASSA
-        public Kind kind;
-
-        // Line left ending point (area center for the 8/15/22 symbol)
-        public Point2D p1;
-
-        // Line right ending point
-        public Point2D p2;
-
-        // (Optional) Hook ending point (above or below p2)
-        public Point2D hookEnd;
-
-        public Model (OctaveShiftInter os)
-        {
-            this(os.shape, os.kind, os.line.getP1(), os.line.getP2(), os.hookEnd);
-        }
-
-        public Model (Shape shape,
-                      Kind kind,
-                      Point2D p1,
-                      Point2D p2,
-                      Point2D hookEnd)
-        {
-            this.shape = shape;
-            this.kind = kind;
-            this.p1 = new Point2D.Double(p1.getX(), p1.getY());
-            this.p2 = new Point2D.Double(p2.getX(), p2.getY());
-            this.hookEnd = (hookEnd == null) ? null
-                    : new Point2D.Double(hookEnd.getX(), hookEnd.getY());
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
-
-            if (hookEnd != null) {
-                PointUtil.add(hookEnd, dx, dy);
-            }
-        }
+        private final Scale.Fraction minGapFromStaff = new Scale.Fraction(
+                2.0,
+                "Minimum vertical gap from upper or lower staff");
     }
 
     //--------//
@@ -1054,73 +1010,6 @@ public class OctaveShiftInter
                     : (triplet.left != null) ? triplet.left : triplet.middle;
         }
 
-        @Override
-        protected void doit ()
-        {
-            for (OctaveShiftInter os : seq) {
-                final Model model = models.get(os);
-                os.line.setLine(model.p1, model.p2);
-                os.setHookCopy(model.hookEnd);
-                os.setBounds(null);
-            }
-        }
-
-        /**
-         * Report whether the provided Inter is concerned by this editor.
-         * <p>
-         * For this "multi-inter" editor we consider the whole sequence of inters.
-         *
-         * @param inter provided inter
-         * @return true if provided inter is involved in 'seq'
-         */
-        public boolean concerns (Inter inter)
-        {
-            return seq.contains(inter);
-        }
-
-        /**
-         * Specific handle management that does not forbid to drag beyond system limits.
-         *
-         * @param dx user location translation in abscissa
-         * @param dy user location translation in ordinate
-         */
-        @Override
-        protected void moveHandle (int dx,
-                                   int dy)
-        {
-            if (dx == 0 && dy == 0) {
-                return;
-            }
-
-            if (selectedHandle.move(dx, dy)) {
-                hasMoved = true;
-                lastPt = new Point(lastPt.x + dx, lastPt.y + dy);
-                doit();
-            }
-        }
-
-        @Override
-        public void publish ()
-        {
-            if (selectedHandle != null) {
-                final Inter inter = ((OsHandle) selectedHandle).os; // The current os
-                tracker.setInter(inter); // This triggers the dynamic display of os links
-                tracker.setSystem(inter.getStaff().getSystem());
-            }
-        }
-
-        @Override
-        public void undo ()
-        {
-            for (OctaveShiftInter os : seq) {
-                final Model originalModel = originalModels.get(os);
-                os.line.setLine(originalModel.p1, originalModel.p2);
-                os.setHookCopy(originalModel.hookEnd);
-                os.setBounds(null);
-                super.undo();
-            }
-        }
-
         /**
          * Report a perhaps modified dy value, so that OctaveShift remains vertically in the
          * gutter between its current upper and lower staves.
@@ -1190,6 +1079,19 @@ public class OctaveShiftInter
         }
 
         /**
+         * Report whether the provided Inter is concerned by this editor.
+         * <p>
+         * For this "multi-inter" editor we consider the whole sequence of inters.
+         *
+         * @param inter provided inter
+         * @return true if provided inter is involved in 'seq'
+         */
+        public boolean concerns (Inter inter)
+        {
+            return seq.contains(inter);
+        }
+
+        /**
          * Create the triplet of OctaveShift handles, according to instance position within the
          * global sequence.
          *
@@ -1214,6 +1116,17 @@ public class OctaveShiftInter
             // Right handle on bottom line only
             if (idx == seq.size() - 1) {
                 handles.add(triplet.right = new RightHandle(os, models.get(os).p2));
+            }
+        }
+
+        @Override
+        protected void doit ()
+        {
+            for (OctaveShiftInter os : seq) {
+                final Model model = models.get(os);
+                os.line.setLine(model.p1, model.p2);
+                os.setHookCopy(model.hookEnd);
+                os.setBounds(null);
             }
         }
 
@@ -1254,6 +1167,37 @@ public class OctaveShiftInter
         private InterEditor getMiniEditor (OctaveShiftInter os)
         {
             return new MiniEditor(os);
+        }
+
+        /**
+         * Specific handle management that does not forbid to drag beyond system limits.
+         *
+         * @param dx user location translation in abscissa
+         * @param dy user location translation in ordinate
+         */
+        @Override
+        protected void moveHandle (int dx,
+                                   int dy)
+        {
+            if (dx == 0 && dy == 0) {
+                return;
+            }
+
+            if (selectedHandle.move(dx, dy)) {
+                hasMoved = true;
+                lastPt = new Point(lastPt.x + dx, lastPt.y + dy);
+                doit();
+            }
+        }
+
+        @Override
+        public void publish ()
+        {
+            if (selectedHandle != null) {
+                final Inter inter = ((OsHandle) selectedHandle).os; // The current os
+                tracker.setInter(inter); // This triggers the dynamic display of os links
+                tracker.setSystem(inter.getStaff().getSystem());
+            }
         }
 
         /**
@@ -1330,6 +1274,18 @@ public class OctaveShiftInter
             publishSequence();
         }
 
+        @Override
+        public void undo ()
+        {
+            for (OctaveShiftInter os : seq) {
+                final Model originalModel = originalModels.get(os);
+                os.line.setLine(originalModel.p1, originalModel.p2);
+                os.setHookCopy(originalModel.hookEnd);
+                os.setBounds(null);
+                super.undo();
+            }
+        }
+
         /**
          * Update the left and right extensions for every OctaveShiftInter in 'seq'.
          *
@@ -1360,65 +1316,6 @@ public class OctaveShiftInter
                     os.setExtension(LEFT, fSeq.get(idx - 1));
                     os.setExtension(RIGHT, null);
                 }
-            }
-        }
-
-        //------------//
-        // MiniEditor //
-        //------------//
-        /**
-         * This class is a trick to fill an EditionTask focused on a specific OctaveShiftInter.
-         */
-        private class MiniEditor
-                extends InterEditor
-        {
-
-            public MiniEditor (OctaveShiftInter os)
-            {
-                super(os);
-            }
-
-            @Override
-            public void finalDoit ()
-            {
-                Editor.this.doit();
-                updateExtensions(true); // Take all inters in 'seq'
-            }
-
-            @Override
-            public void undo ()
-            {
-                Editor.this.undo();
-                updateExtensions(false); // Take in 'seq' only the inters non flagged as REMOVED
-            }
-        }
-
-        //----------//
-        // OsHandle //
-        //----------//
-        /**
-         * A UI handle, with its underlying OctaveShiftInter instance.
-         * <p>
-         * Reference to related OctaveShiftInter is needed, since this editor can handle several
-         * physical OctaveShiftInter instances making a long logical octave shift on several staves.
-         */
-        private abstract class OsHandle
-                extends Handle
-        {
-
-            protected final OctaveShiftInter os; // Underlying OS instance
-
-            protected final Model model; // Model for OS
-
-            protected final Triplet triplet; // Triplet of left / middle / right handles
-
-            public OsHandle (OctaveShiftInter os,
-                             Point2D center)
-            {
-                super(center);
-                this.os = os;
-                model = models.get(os);
-                triplet = triplets.get(os);
             }
         }
 
@@ -1594,6 +1491,65 @@ public class OctaveShiftInter
             }
         }
 
+        //------------//
+        // MiniEditor //
+        //------------//
+        /**
+         * This class is a trick to fill an EditionTask focused on a specific OctaveShiftInter.
+         */
+        private class MiniEditor
+                extends InterEditor
+        {
+
+            public MiniEditor (OctaveShiftInter os)
+            {
+                super(os);
+            }
+
+            @Override
+            public void finalDoit ()
+            {
+                Editor.this.doit();
+                updateExtensions(true); // Take all inters in 'seq'
+            }
+
+            @Override
+            public void undo ()
+            {
+                Editor.this.undo();
+                updateExtensions(false); // Take in 'seq' only the inters non flagged as REMOVED
+            }
+        }
+
+        //----------//
+        // OsHandle //
+        //----------//
+        /**
+         * A UI handle, with its underlying OctaveShiftInter instance.
+         * <p>
+         * Reference to related OctaveShiftInter is needed, since this editor can handle several
+         * physical OctaveShiftInter instances making a long logical octave shift on several staves.
+         */
+        private abstract class OsHandle
+                extends Handle
+        {
+
+            protected final OctaveShiftInter os; // Underlying OS instance
+
+            protected final Model model; // Model for OS
+
+            protected final Triplet triplet; // Triplet of left / middle / right handles
+
+            public OsHandle (OctaveShiftInter os,
+                             Point2D center)
+            {
+                super(center);
+                this.os = os;
+                model = models.get(os);
+                triplet = triplets.get(os);
+            }
+        }
+
         //-------------//
         // RightHandle //
         //-------------//
@@ -1732,15 +1688,66 @@ public class OctaveShiftInter
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
+    //------//
+    // Kind //
+    //------//
+    public static enum Kind
+    {
+        ALTA, // Notes to be performed higher than written
+        BASSA; // Notes to be performed lower than written
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
     {
 
-        private final Scale.Fraction minGapFromStaff = new Scale.Fraction(
-                2.0,
-                "Minimum vertical gap from upper or lower staff");
+        // OTTAVA, QUINDICESIMA or VENTIDUESIMA
+        public Shape shape;
+
+        // ALTA or BASSA
+        public Kind kind;
+
+        // Line left ending point (area center for the 8/15/22 symbol)
+        public Point2D p1;
+
+        // Line right ending point
+        public Point2D p2;
+
+        // (Optional) Hook ending point (above or below p2)
+        public Point2D hookEnd;
+
+        public Model (OctaveShiftInter os)
+        {
+            this(os.shape, os.kind, os.line.getP1(), os.line.getP2(), os.hookEnd);
+        }
+
+        public Model (Shape shape,
+                      Kind kind,
+                      Point2D p1,
+                      Point2D p2,
+                      Point2D hookEnd)
+        {
+            this.shape = shape;
+            this.kind = kind;
+            this.p1 = new Point2D.Double(p1.getX(), p1.getY());
+            this.p2 = new Point2D.Double(p2.getX(), p2.getY());
+            this.hookEnd = (hookEnd == null) ? null
+                    : new Point2D.Double(hookEnd.getX(), hookEnd.getY());
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
+
+            if (hookEnd != null) {
+                PointUtil.add(hookEnd, dx, dy);
+            }
+        }
     }
 }

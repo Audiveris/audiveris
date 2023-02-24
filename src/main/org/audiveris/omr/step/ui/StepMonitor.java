@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class StepMonitor
     private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Progress bar for actions performed on sheet. */
     private final JProgressBar bar = new MyJProgressBar();
 
@@ -57,6 +58,7 @@ public class StepMonitor
     private int actives = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a user monitor on step processing.
      * There is exactly one instance of this class (and no instance when running in batch mode)
@@ -71,52 +73,31 @@ public class StepMonitor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the monitoring bar
-     *
-     * @return the step progress bar
-     */
-    public JProgressBar getComponent ()
-    {
-        return bar;
-    }
 
-    //-----------//
-    // notifyMsg //
-    //-----------//
+    //---------//
+    // animate //
+    //---------//
     /**
-     * Display a simple message in the progress window.
-     *
-     * @param msg the message to display
+     * Sets the progress bar to show a percentage a certain amount above the previous
+     * percentage value (or above 0 if the bar had been indeterminate).
+     * This method is called on every message logged (see LogStepMonitorHandler)
      */
-    public void notifyMsg (final String msg)
+    void animate ()
     {
-        logger.debug("notifyMsg '{}'", msg);
-        SwingUtilities.invokeLater(() -> bar.setString(msg));
-    }
+        if (!constants.useIndeterminate.isSet()) {
+            logger.debug("animate");
+            SwingUtilities.invokeLater( () ->
+            {
+                int old = bar.getValue();
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Sets the progress bar to show a percentage.
-     *
-     * @param amount percentage, in decimal form, from 0.0 to 1.0
-     */
-    private void setBar (final double amount)
-    {
-        logger.debug("setBar amount:{}", amount);
-        SwingUtilities.invokeLater(() -> {
-            int divisions = constants.divisions.getValue();
-            bar.setMinimum(0);
-            bar.setMaximum(divisions);
+                if (old > bar.getMinimum()) {
+                    int diff = bar.getMaximum() - old;
+                    int increment = (int) Math.round(diff * constants.ratio.getValue());
 
-            int val = (int) Math.round(divisions * amount);
-            bar.setValue(val);
-        });
+                    bar.setValue(old + increment);
+                }
+            });
+        }
     }
 
     //------------------//
@@ -151,32 +132,57 @@ public class StepMonitor
         }
     }
 
-    //---------//
-    // animate //
-    //---------//
+    //--------------//
+    // getComponent //
+    //--------------//
     /**
-     * Sets the progress bar to show a percentage a certain amount above the previous
-     * percentage value (or above 0 if the bar had been indeterminate).
-     * This method is called on every message logged (see LogStepMonitorHandler)
+     * Report the monitoring bar
+     *
+     * @return the step progress bar
      */
-    void animate ()
+    public JProgressBar getComponent ()
     {
-        if (!constants.useIndeterminate.isSet()) {
-            logger.debug("animate");
-            SwingUtilities.invokeLater(() -> {
-                int old = bar.getValue();
+        return bar;
+    }
 
-                if (old > bar.getMinimum()) {
-                    int diff = bar.getMaximum() - old;
-                    int increment = (int) Math.round(diff * constants.ratio.getValue());
+    //-----------//
+    // notifyMsg //
+    //-----------//
+    /**
+     * Display a simple message in the progress window.
+     *
+     * @param msg the message to display
+     */
+    public void notifyMsg (final String msg)
+    {
+        logger.debug("notifyMsg '{}'", msg);
+        SwingUtilities.invokeLater( () -> bar.setString(msg));
+    }
 
-                    bar.setValue(old + increment);
-                }
-            });
-        }
+    //--------//
+    // setBar //
+    //--------//
+    /**
+     * Sets the progress bar to show a percentage.
+     *
+     * @param amount percentage, in decimal form, from 0.0 to 1.0
+     */
+    private void setBar (final double amount)
+    {
+        logger.debug("setBar amount:{}", amount);
+        SwingUtilities.invokeLater( () ->
+        {
+            int divisions = constants.divisions.getValue();
+            bar.setMinimum(0);
+            bar.setMaximum(divisions);
+
+            int val = (int) Math.round(divisions * amount);
+            bar.setValue(val);
+        });
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -186,7 +192,7 @@ public class StepMonitor
 
         private final Constant.Integer divisions = new Constant.Integer(
                 "divisions",
-                1_000,
+                1000,
                 "Number of divisions (amount of precision) of step monitor, minimum 10");
 
         private final Ratio ratio = new Ratio(

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -172,6 +172,7 @@ public class RhythmsStep
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>RhythmsStep</code> object.
      */
@@ -180,6 +181,7 @@ public class RhythmsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // doit //
     //------//
@@ -190,6 +192,42 @@ public class RhythmsStep
         // Process each page of the sheet
         for (Page page : sheet.getPages()) {
             new PageRhythm(page).process();
+        }
+    }
+
+    //--------//
+    // impact //
+    //--------//
+    /**
+     * Reprocess rhythms for stacks impacted by the provided inters.
+     *
+     * @param inters the (removed) inters
+     */
+    public void impact (Collection<Inter> inters)
+    {
+        logger.debug("RHYTHMS impact inters: {}", Entities.ids(inters));
+
+        // First, determine what will be impacted
+        final Impact impact = new Impact();
+
+        for (Inter inter : inters) {
+            final Class classe = inter.getClass();
+            final SIGraph sig = inter.getSig();
+
+            if (isImpactedBy(classe, forStack)) {
+                // Reprocess just the stack
+                Point center = inter.getCenter();
+
+                if (center != null) {
+                    MeasureStack stack = sig.getSystem().getStackAt(center);
+                    impact.add(stack);
+                }
+            }
+        }
+
+        // Second, handle each rhythm impact
+        for (MeasureStack stack : impact.onStacks) {
+            new PageRhythm(stack.getSystem().getPage()).reprocessStack(stack);
         }
     }
 
@@ -268,42 +306,6 @@ public class RhythmsStep
         }
     }
 
-    //--------//
-    // impact //
-    //--------//
-    /**
-     * Reprocess rhythms for stacks impacted by the provided inters.
-     *
-     * @param inters the (removed) inters
-     */
-    public void impact (Collection<Inter> inters)
-    {
-        logger.debug("RHYTHMS impact inters: {}", Entities.ids(inters));
-
-        // First, determine what will be impacted
-        final Impact impact = new Impact();
-
-        for (Inter inter : inters) {
-            final Class classe = inter.getClass();
-            final SIGraph sig = inter.getSig();
-
-            if (isImpactedBy(classe, forStack)) {
-                // Reprocess just the stack
-                Point center = inter.getCenter();
-
-                if (center != null) {
-                    MeasureStack stack = sig.getSystem().getStackAt(center);
-                    impact.add(stack);
-                }
-            }
-        }
-
-        // Second, handle each rhythm impact
-        for (MeasureStack stack : impact.onStacks) {
-            new PageRhythm(stack.getSystem().getPage()).reprocessStack(stack);
-        }
-    }
-
     //--------------//
     // isImpactedBy //
     //--------------//
@@ -318,6 +320,7 @@ public class RhythmsStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Impact //
     //--------//
@@ -328,17 +331,17 @@ public class RhythmsStep
 
         final Set<MeasureStack> onStacks = new LinkedHashSet<>();
 
-        public void add (Page page)
-        {
-            if (page != null) {
-                onPages.add(page);
-            }
-        }
-
         public void add (MeasureStack stack)
         {
             if (stack != null) {
                 onStacks.add(stack);
+            }
+        }
+
+        public void add (Page page)
+        {
+            if (page != null) {
+                onPages.add(page);
             }
         }
 

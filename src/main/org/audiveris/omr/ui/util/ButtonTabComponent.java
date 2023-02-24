@@ -94,10 +94,12 @@ public class ButtonTabComponent
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The containing JTabbedPane. */
     private final ClosableTabbedPane pane;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ButtonTabComponent</code> object.
      *
@@ -146,6 +148,7 @@ public class ButtonTabComponent
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // TabButton //
     //-----------//
@@ -193,12 +196,6 @@ public class ButtonTabComponent
             }
         }
 
-        //we don't want to update UI for this button
-        @Override
-        public void updateUI ()
-        {
-        }
-
         //paint the cross
         @Override
         protected void paintComponent (Graphics g)
@@ -224,6 +221,12 @@ public class ButtonTabComponent
             g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
             g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
             g2.dispose();
+        }
+
+        //we don't want to update UI for this button
+        @Override
+        public void updateUI ()
+        {
         }
     }
 }

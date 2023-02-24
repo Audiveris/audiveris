@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,7 @@ public class MeasureFixer
     private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Current stack of measures in current system. */
     private MeasureStack stack;
 
@@ -77,6 +78,7 @@ public class MeasureFixer
     private Integer lastId;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new MeasureFixer object.
      */
@@ -85,28 +87,6 @@ public class MeasureFixer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // process Page //
-    //--------------//
-    /**
-     * Process the provided page.
-     *
-     * @param page the page to process
-     */
-    public void process (Page page)
-    {
-        logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
-
-        for (SystemInfo system : page.getSystems()) {
-            process(system);
-        }
-
-        // Remember the number of measures in this page
-        page.computeMeasureCount();
-
-        // Remember the delta of measure ids in this page
-        page.setDeltaMeasureId(page.getLastSystem().getLastStack().getIdValue());
-    }
 
     //---------------------//
     // getStackTermination //
@@ -222,6 +202,29 @@ public class MeasureFixer
         // Check for an exact duration sum (TODO: is this too strict?)
         return prevStackTermination.plus(stackTermination).abs().equals(
                 prevStack.getExpectedDuration());
+    }
+
+    //--------------//
+    // process Page //
+    //--------------//
+    /**
+     * Process the provided page.
+     *
+     * @param page the page to process
+     */
+    public void process (Page page)
+    {
+        logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
+
+        for (SystemInfo system : page.getSystems()) {
+            process(system);
+        }
+
+        // Remember the number of measures in this page
+        page.computeMeasureCount();
+
+        // Remember the delta of measure ids in this page
+        page.setDeltaMeasureId(page.getLastSystem().getLastStack().getIdValue());
     }
 
     //----------------//

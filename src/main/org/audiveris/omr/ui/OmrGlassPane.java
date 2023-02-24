@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class OmrGlassPane
     private static final Logger logger = LoggerFactory.getLogger(OmrGlassPane.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The transform to apply when painting on top of target (zoomed sheet view). */
     private AffineTransform targetTransform;
 
@@ -57,6 +58,42 @@ public class OmrGlassPane
     private InterDnd interDnd;
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * The scene is composed of inter image plus its decorations if any
+     * (staff reference, support links, ledgers).
+     *
+     * @param center inter center (glass-based)
+     * @return bounding box of inter + reference point + decorations if any
+     */
+    @Override
+    protected Rectangle getSceneBounds (Point center)
+    {
+        // Use image bounds
+        Rectangle rect = super.getSceneBounds(center);
+
+        if ((interDnd != null) && overTarget) {
+            // Use inter decorations, etc (this depends on staff reference availability)
+            Rectangle box = interDnd.getSceneBounds();
+
+            if (box != null) {
+                rect.add(targetTransform.createTransformedShape(box).getBounds());
+            }
+        }
+
+        // To cope with curve thickness, not taken into account in inter bounds
+        if (targetTransform != null) {
+            double ratio = targetTransform.getScaleX();
+            int margin = (int) Math.ceil((ratio * Curves.DEFAULT_THICKNESS) / 2.0);
+            rect.grow(margin, margin);
+        }
+
+        return rect;
+    }
+
     //----------------//
     // paintComponent //
     //----------------//
@@ -97,41 +134,6 @@ public class OmrGlassPane
             Rectangle rect = getImageBounds(localPoint);
             g2.drawImage(draggedImage, null, rect.x, rect.y);
         }
-    }
-
-    //----------------//
-    // getSceneBounds //
-    //----------------//
-    /**
-     * The scene is composed of inter image plus its decorations if any
-     * (staff reference, support links, ledgers).
-     *
-     * @param center inter center (glass-based)
-     * @return bounding box of inter + reference point + decorations if any
-     */
-    @Override
-    protected Rectangle getSceneBounds (Point center)
-    {
-        // Use image bounds
-        Rectangle rect = super.getSceneBounds(center);
-
-        if ((interDnd != null) && overTarget) {
-            // Use inter decorations, etc (this depends on staff reference availability)
-            Rectangle box = interDnd.getSceneBounds();
-
-            if (box != null) {
-                rect.add(targetTransform.createTransformedShape(box).getBounds());
-            }
-        }
-
-        // To cope with curve thickness, not taken into account in inter bounds
-        if (targetTransform != null) {
-            double ratio = targetTransform.getScaleX();
-            int margin = (int) Math.ceil((ratio * Curves.DEFAULT_THICKNESS) / 2.0);
-            rect.grow(margin, margin);
-        }
-
-        return rect;
     }
 
     //-------------//

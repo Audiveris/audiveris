@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,7 @@ public class BarColumn
     private static final Logger logger = LoggerFactory.getLogger(BarColumn.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The sheet graph of peaks. */
     private final PeakGraph peakGraph;
 
@@ -74,6 +75,7 @@ public class BarColumn
     private Double width;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BarColumn</code> object.
      *
@@ -89,6 +91,7 @@ public class BarColumn
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addChain //
     //----------//
@@ -146,6 +149,22 @@ public class BarColumn
         }
 
         return true;
+    }
+
+    //---------------//
+    // computeStatus //
+    //---------------//
+    private boolean computeStatus ()
+    {
+        int nb = 0;
+
+        for (StaffPeak peak : peaks) {
+            if ((peak != null) && !peak.isBrace()) {
+                nb++;
+            }
+        }
+
+        return nb == peaks.length;
     }
 
     //----------//
@@ -310,23 +329,8 @@ public class BarColumn
         return sb.toString();
     }
 
-    //---------------//
-    // computeStatus //
-    //---------------//
-    private boolean computeStatus ()
-    {
-        int nb = 0;
-
-        for (StaffPeak peak : peaks) {
-            if ((peak != null) && !peak.isBrace()) {
-                nb++;
-            }
-        }
-
-        return nb == peaks.length;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Chain //
     //-------//
@@ -338,9 +342,12 @@ public class BarColumn
     {
 
         /** To sort by (de-skewed) abscissa. */
-        public static final Comparator<Chain> byAbscissa = (Chain c1, Chain c2)
-                -> Double.compare(c1.first().getDeskewedAbscissa(),
-                                  c2.first().getDeskewedAbscissa());
+        public static final Comparator<Chain> byAbscissa = (c1,
+                                                            c2) -> Double.compare(
+                                                                    c1.first()
+                                                                            .getDeskewedAbscissa(),
+                                                                    c2.first()
+                                                                            .getDeskewedAbscissa());
 
         /**
          * Create a Chain out of peaks.

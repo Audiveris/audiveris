@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -59,6 +57,8 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -91,6 +91,7 @@ public class PeakGraph
     private static final Logger logger = LoggerFactory.getLogger(PeakGraph.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -108,6 +109,7 @@ public class PeakGraph
     private final BarFilamentBuilder filamentBuilder;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PeakGraph</code> object.
      *
@@ -128,6 +130,133 @@ public class PeakGraph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------------//
+    // areRightConnected //
+    //-------------------//
+    /**
+     * Report whether the two provided staves are connected on their last peak.
+     *
+     * @param top    top staff
+     * @param bottom bottom staff
+     * @return true if right connected
+     */
+    private boolean areRightConnected (Staff top,
+                                       Staff bottom)
+    {
+        StaffPeak p1 = projectorOf(top).getLastPeak();
+        StaffPeak p2 = projectorOf(bottom).getLastPeak();
+
+        if ((p1 != null) && (p2 != null)) {
+            BarAlignment align = this.getEdge(p1, p2);
+
+            if (align instanceof BarConnection) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //    //-------------//
+    //    // alignGroups //
+    //    //-------------//
+    //    /**
+    //     * For groups of peaks of identical size between two staves, make sure alignments
+    //     * are consistent with each peak position within the group.
+    //     */
+    //    private void alignGroups ()
+    //    {
+    //        List<List<StaffPeak>> groups1 = null;
+    //
+    //        for (StaffProjector projector : projectors) {
+    //            final List<List<StaffPeak>> groups2 = getGroupsOf(projector);
+    //
+    //            if (groups1 != null) {
+    //                int i2Min = 0;
+    //
+    //                for (int i1 = 0; i1 < groups1.size(); i1++) {
+    //                    final List<StaffPeak> g1 = groups1.get(i1);
+    //                    final double start1 = g1.get(0).getDeskewedCenter().getX();
+    //                    final double stop1 = g1.get(g1.size() - 1).getDeskewedCenter().getX();
+    //
+    //                    for (int i2 = i2Min; i2 < groups2.size(); i2++) {
+    //                        final List<StaffPeak> g2 = groups2.get(i2);
+    //                        final List<StaffPeak> partners = getConnectedPeaks(g2.get(0), TOP);
+    //                        partners.retainAll(g1);
+    //
+    //                        if (!partners.isEmpty()) {
+    //                            // We have some alignment, check the pair of groups
+    //                            if (g1.size() == g2.size()) {
+    //                                pruneGroupPair(g1, g2);
+    //                            }
+    //                        } else {
+    //                            // Speed up a bit
+    //                            final double start2 = g2.get(0).getDeskewedCenter().getX();
+    //
+    //                            if (start2 > (stop1 + params.maxAlignmentSlope)) {
+    //                                break;
+    //                            }
+    //
+    //                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
+    //
+    //                            if ((stop2 + params.maxAlignmentSlope) < start1) {
+    //                                i2Min = i1 + 1;
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //
+    //            groups1 = groups2;
+    //        }
+    //    }
+    //
+    //----------------//
+    // buildBarSticks //
+    //----------------//
+    /**
+     * Build the underlying stick of every peak.
+     * <p>
+     * These sticks are needed to detect those peaks which go past staff height above,
+     * below, or both, and may rather be stems.
+     * They are used also to detect curly peaks that are due to brace portions (not reliable).
+     * <p>
+     * For each peak, we take a vertical "slice" of the relevant sections using a lookup area.
+     * We then run a dedicated factory on the sections and make it focus on the bar core area.
+     */
+    private void buildBarSticks ()
+    {
+        // Preselect sections of proper max width
+        final int maxWidth = getMaxPeaksWidth();
+        final List<Section> allSections = getSectionsByWidth(maxWidth);
+        logger.debug("sections:{}", allSections.size());
+
+        for (StaffProjector projector : projectors) {
+            List<StaffPeak> toRemove = new ArrayList<>();
+
+            for (StaffPeak peak : projector.getPeaks()) {
+                // Build filament from proper slice of sections for this peak
+                Filament filament = filamentBuilder.buildFilament(
+                        peak,
+                        params.bracketLookupExtension,
+                        allSections);
+
+                if (filament != null) {
+                    peak.setFilament(filament);
+                    logger.debug("{}", peak);
+                } else {
+                    toRemove.add(peak);
+                }
+            }
+
+            if (!toRemove.isEmpty()) {
+                logger.debug("Staff#{} no filament {}", projector.getStaff().getId(), toRemove);
+                projector.removePeaks(toRemove);
+            }
+        }
+    }
+
     //--------------//
     // buildSystems //
     //--------------//
@@ -138,7 +267,7 @@ public class PeakGraph
      * @throws StepException if processing failed at this step
      */
     public void buildSystems ()
-            throws StepException
+        throws StepException
     {
         final StopWatch watch = new StopWatch("PeakGraph.buildSystems");
 
@@ -271,132 +400,6 @@ public class PeakGraph
         return Math.abs(dx) <= params.maxAlignmentBraceDx;
     }
 
-    //-------------------//
-    // areRightConnected //
-    //-------------------//
-    /**
-     * Report whether the two provided staves are connected on their last peak.
-     *
-     * @param top    top staff
-     * @param bottom bottom staff
-     * @return true if right connected
-     */
-    private boolean areRightConnected (Staff top,
-                                       Staff bottom)
-    {
-        StaffPeak p1 = projectorOf(top).getLastPeak();
-        StaffPeak p2 = projectorOf(bottom).getLastPeak();
-
-        if ((p1 != null) && (p2 != null)) {
-            BarAlignment align = this.getEdge(p1, p2);
-
-            if (align instanceof BarConnection) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //    //-------------//
-    //    // alignGroups //
-    //    //-------------//
-    //    /**
-    //     * For groups of peaks of identical size between two staves, make sure alignments
-    //     * are consistent with each peak position within the group.
-    //     */
-    //    private void alignGroups ()
-    //    {
-    //        List<List<StaffPeak>> groups1 = null;
-    //
-    //        for (StaffProjector projector : projectors) {
-    //            final List<List<StaffPeak>> groups2 = getGroupsOf(projector);
-    //
-    //            if (groups1 != null) {
-    //                int i2Min = 0;
-    //
-    //                for (int i1 = 0; i1 < groups1.size(); i1++) {
-    //                    final List<StaffPeak> g1 = groups1.get(i1);
-    //                    final double start1 = g1.get(0).getDeskewedCenter().getX();
-    //                    final double stop1 = g1.get(g1.size() - 1).getDeskewedCenter().getX();
-    //
-    //                    for (int i2 = i2Min; i2 < groups2.size(); i2++) {
-    //                        final List<StaffPeak> g2 = groups2.get(i2);
-    //                        final List<StaffPeak> partners = getConnectedPeaks(g2.get(0), TOP);
-    //                        partners.retainAll(g1);
-    //
-    //                        if (!partners.isEmpty()) {
-    //                            // We have some alignment, check the pair of groups
-    //                            if (g1.size() == g2.size()) {
-    //                                pruneGroupPair(g1, g2);
-    //                            }
-    //                        } else {
-    //                            // Speed up a bit
-    //                            final double start2 = g2.get(0).getDeskewedCenter().getX();
-    //
-    //                            if (start2 > (stop1 + params.maxAlignmentSlope)) {
-    //                                break;
-    //                            }
-    //
-    //                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
-    //
-    //                            if ((stop2 + params.maxAlignmentSlope) < start1) {
-    //                                i2Min = i1 + 1;
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //
-    //            groups1 = groups2;
-    //        }
-    //    }
-    //
-    //----------------//
-    // buildBarSticks //
-    //----------------//
-    /**
-     * Build the underlying stick of every peak.
-     * <p>
-     * These sticks are needed to detect those peaks which go past staff height above,
-     * below, or both, and may rather be stems.
-     * They are used also to detect curly peaks that are due to brace portions (not reliable).
-     * <p>
-     * For each peak, we take a vertical "slice" of the relevant sections using a lookup area.
-     * We then run a dedicated factory on the sections and make it focus on the bar core area.
-     */
-    private void buildBarSticks ()
-    {
-        // Preselect sections of proper max width
-        final int maxWidth = getMaxPeaksWidth();
-        final List<Section> allSections = getSectionsByWidth(maxWidth);
-        logger.debug("sections:{}", allSections.size());
-
-        for (StaffProjector projector : projectors) {
-            List<StaffPeak> toRemove = new ArrayList<>();
-
-            for (StaffPeak peak : projector.getPeaks()) {
-                // Build filament from proper slice of sections for this peak
-                Filament filament = filamentBuilder.buildFilament(
-                        peak,
-                        params.bracketLookupExtension,
-                        allSections);
-
-                if (filament != null) {
-                    peak.setFilament(filament);
-                    logger.debug("{}", peak);
-                } else {
-                    toRemove.add(peak);
-                }
-            }
-
-            if (!toRemove.isEmpty()) {
-                logger.debug("Staff#{} no filament {}", projector.getStaff().getId(), toRemove);
-                projector.removePeaks(toRemove);
-            }
-        }
-    }
-
     //-----------------//
     // checkConnection //
     //-----------------//
@@ -433,7 +436,7 @@ public class PeakGraph
         }
 
         if ((data.gap <= params.maxConnectionGap)
-                    && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
+                && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
             double gapImpact = 1 - (data.gap / (double) params.maxConnectionGap);
             double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
             BarConnection connection = new BarConnection(sheet, alignment, gapImpact, whiteImpact);
@@ -813,8 +816,10 @@ public class PeakGraph
             projector.process();
 
             if (staff.isOneLineStaff() && projector.getPeaks().size() <= 1) {
-                logger.info("Discarding 1-line staff for unsufficient barline peaks {} {}",
-                            staff, staff.getMidLine().getBounds());
+                logger.info(
+                        "Discarding 1-line staff for unsufficient barline peaks {} {}",
+                        staff,
+                        staff.getMidLine().getBounds());
                 staffManager.removeStaff(staff);
             } else {
                 projectors.add(projector);
@@ -1037,8 +1042,9 @@ public class PeakGraph
                 final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
 
                 if (xOffset > params.maxFirstConnectionXOffset) {
-                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak())
-                                || !areRightConnected(p1.getStaff(), p2.getStaff())) {
+                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak()) || !areRightConnected(
+                            p1.getStaff(),
+                            p2.getStaff())) {
                         continue;
                     }
                 }
@@ -1335,7 +1341,8 @@ public class PeakGraph
         final Staff staff = peak.getStaff();
         final StaffProjector projector = projectorOf(staff);
 
-        for (StaffPeak p : new StaffPeak[]{p1, p2}) {
+        for (StaffPeak p : new StaffPeak[]
+        { p1, p2 }) {
             p.computeDeskewedCenter(sheet.getSkew());
             projector.insertPeak(p, peak);
             findAlignmentsAndConnectionsOf(p);
@@ -1393,6 +1400,7 @@ public class PeakGraph
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,7 @@ public class HeaderTimeColumn
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addPlot //
     //---------//
@@ -84,6 +85,22 @@ public class HeaderTimeColumn
             return "time:" + timeInter.getValue();
         } else {
             return null;
+        }
+    }
+
+    @Override
+    protected TimeBuilder allocateBuilder (Staff staff)
+    {
+        int browseStart = staff.getHeaderStop();
+
+        return new HeaderTimeBuilder(staff, this, browseStart);
+    }
+
+    @Override
+    protected void cleanup ()
+    {
+        for (TimeBuilder builder : builders.values()) {
+            builder.cleanup();
         }
     }
 
@@ -160,22 +177,6 @@ public class HeaderTimeColumn
             return maxTimeOffset;
         } else {
             return -1;
-        }
-    }
-
-    @Override
-    protected TimeBuilder allocateBuilder (Staff staff)
-    {
-        int browseStart = staff.getHeaderStop();
-
-        return new HeaderTimeBuilder(staff, this, browseStart);
-    }
-
-    @Override
-    protected void cleanup ()
-    {
-        for (TimeBuilder builder : builders.values()) {
-            builder.cleanup();
         }
     }
 }

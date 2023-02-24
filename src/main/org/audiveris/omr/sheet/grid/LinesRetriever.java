@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -35,12 +35,12 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.lag.SectionTally;
 import org.audiveris.omr.lag.Sections;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.OneLineStaff;
@@ -105,6 +105,7 @@ public class LinesRetriever
     private static final Logger logger = LoggerFactory.getLogger(LinesRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -152,6 +153,7 @@ public class LinesRetriever
     final BarsRetriever barsRetriever;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -170,6 +172,7 @@ public class LinesRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -183,7 +186,8 @@ public class LinesRetriever
     public RunTable buildHorizontalLag ()
     {
         final RunsViewer runsViewer = (constants.displayRuns.isSet() && (OMR.gui != null))
-                ? new RunsViewer(sheet) : null;
+                ? new RunsViewer(sheet)
+                : null;
 
         RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
@@ -198,8 +202,9 @@ public class LinesRetriever
         // Split horizontal runs into short & long tables
         shortHoriTable = new RunTable(HORIZONTAL, sheet.getWidth(), sheet.getHeight());
 
-        RunTable longHoriTable = horiTable.purge((Run run)
-                -> run.getLength() < params.minRunLength, shortHoriTable);
+        RunTable longHoriTable = horiTable.purge(
+                (Run run) -> run.getLength() < params.minRunLength,
+                shortHoriTable);
 
         if (runsViewer != null) {
             runsViewer.display("short-hori", shortHoriTable);
@@ -211,265 +216,6 @@ public class LinesRetriever
         hLag = sheet.getLagManager().buildHorizontalLag(longHoriTable, null);
 
         return longVertTable;
-    }
-
-    //---------------//
-    // completeLines //
-    //---------------//
-    /**
-     * Complete the retrieved staff lines whenever possible with filaments and short
-     * sections left over.
-     * <p>
-     * When this method is called, the precise staff abscissa endings are known (thanks to staff
-     * projection and barline handling).
-     * Lines must be completed accordingly.
-     * Ending points are determined by searching the best vertical fit for a staff pattern of 5 line
-     * segments.
-     * Then filaments and sections are added to the theoretical lines.
-     * <p>
-     * To decide on inclusion of filament or section, the line geometry must be rather precise.
-     * But geometry will be impacted by inclusions.
-     * Hence, line geometry must be recomputed on each major update.
-     * Line geometry is computed by sampling on abscissa and retrieving ordinate barycenter of glyph
-     * sections within each abscissa sample.
-     * <p>
-     * <b>Synopsis:</b>
-     * <br>
-     * <pre>
-     *      + defineEndPoints()
-     *      + includeDiscardedFilaments()
-     *          + canIncludeFilament(fil1, fil2)
-     *          + fil1.stealSections(fil2)
-     *      + fillHoles()
-     *      + includeSections()
-     *          + canIncludeSection(fil, sct)
-     *          + fil.addSection(sct)
-     *      + polishCurvature()
-     *      + fillHoles()
-     *      + includeStickers()
-     * </pre>
-     */
-    public void completeLines ()
-    {
-        StopWatch watch = new StopWatch("completeLines");
-        binaryBuffer = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
-
-        try {
-            // Define the precise end points for every staff line
-            watch.start("defineEndPoints");
-            defineEndPoints();
-
-            // Browse sloped filaments and discarded filaments for possible inclusion
-            watch.start("include discarded filaments");
-            includeDiscardedFilaments();
-
-            // Add intermediate points where needed (1)
-            watch.start("fillHoles");
-            fillHoles();
-
-            // Dispatch horizontal sections into thick & thin ones
-            final List<Section> thickSections = new ArrayList<>();
-            final List<Section> thinSections = new ArrayList<>();
-            watch.start("dispatchHorizontalSections");
-            dispatchHorizontalSections(thickSections, thinSections);
-
-            // First, consider thick sections
-            watch.start("include " + thickSections.size() + " thick stickers");
-            includeSections(thickSections);
-
-            // Second, consider thin sections
-            watch.start("include " + thinSections.size() + " thin stickers");
-            includeSections(thinSections);
-
-            // Polish staff lines (TODO: to be improved)
-            watch.start("polishCurvatures");
-            polishCurvatures();
-
-            // Add intermediate points where needed (2)
-            watch.start("fillHoles");
-            fillHoles();
-
-            // Include isolated horizontal sticker sections
-            watch.start("includeStickers");
-            includeStickers(); // This may delete intermediate points
-
-            // Add intermediate points where needed (3)
-            watch.start("fillHoles");
-            fillHoles();
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
-    //---------------------//
-    // createShortSections //
-    //---------------------//
-    /**
-     * Build horizontal sections out of shortHoriTable runs
-     *
-     * @return the list of created sections
-     */
-    public List<Section> createShortSections ()
-    {
-        // Complete the horizontal hLag with the short sections
-        // (it already contains all the other (long) horizontal sections)
-        SectionFactory sectionsFactory = new SectionFactory(hLag, JunctionRatioPolicy.DEFAULT);
-        List<Section> shortSections = sectionsFactory.createSections(shortHoriTable, null, true);
-
-        sheet.getLagManager().setVipSections(HORIZONTAL);
-
-        return shortSections;
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Render the filaments, their ending tangents, their combs
-     *
-     * @param g graphics context
-     */
-    @Override
-    public void renderItems (Graphics2D g)
-    {
-        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-        final Color oldColor = g.getColor();
-
-        // Combs stuff?
-        if (constants.showCombs.isSet()) {
-            if (clustersRetriever != null) {
-                clustersRetriever.renderItems(g);
-            }
-
-            if (smallClustersRetriever != null) {
-                smallClustersRetriever.renderItems(g);
-            }
-        }
-
-        // Filament lines?
-        if (constants.showHorizontalLines.isSet() && (filaments != null)) {
-            List<StaffFilament> allFils = new ArrayList<>(filaments);
-
-            if (secondFilaments != null) {
-                allFils.addAll(secondFilaments);
-            }
-
-            final boolean showPoints = ViewParameters.getInstance().isStaffPointsPainting();
-            final double pointWidth = scale.toPixelsDouble(Staff.getDefiningPointSize());
-            g.setColor(Colors.ENTITY_MINOR);
-
-            for (Filament filament : allFils) {
-                filament.renderLine(g, showPoints, pointWidth);
-            }
-
-            // Draw tangent at each ending point?
-            if (constants.showTangents.isSet()) {
-                g.setColor(Colors.TANGENT);
-
-                double dx = sheet.getScale().toPixels(constants.tangentLg);
-
-                for (Filament filament : allFils) {
-                    Point2D p = filament.getStartPoint();
-                    double der = filament.getSlopeAt(p.getX(), HORIZONTAL);
-                    g.draw(new Line2D.Double(p.getX(), p.getY(),
-                                             p.getX() - dx, p.getY() - (der * dx)));
-                    p = filament.getStopPoint();
-                    der = filament.getSlopeAt(p.getX(), HORIZONTAL);
-                    g.draw(new Line2D.Double(p.getX(), p.getY(),
-                                             p.getX() + dx, p.getY() + (der * dx)));
-                }
-            }
-        }
-
-        g.setStroke(oldStroke);
-        g.setColor(oldColor);
-    }
-
-    //---------------//
-    // retrieveLines //
-    //---------------//
-    /**
-     * Organize the long and thin horizontal sections into filaments that will be good
-     * candidates for staff lines.
-     * <ol>
-     * <li>First, retrieve long horizontal sections and merge them into filaments.</li>
-     * <li>Second, detect series of filaments regularly spaced vertically and aggregate them into
-     * clusters of lines (as staff candidates).</li>
-     * </ol>
-     * <p>
-     * <b>Synopsis:</b>
-     * <br>
-     * <pre>
-     *      + filamentFactory.retrieveFilaments()
-     *      + retrieveGlobalSlope()
-     *      + clustersRetriever.buildInfo()
-     *      + secondClustersRetriever.buildInfo()
-     *      + buildStaves()
-     * </pre>
-     *
-     * @throws StepException if processing failed at this step
-     */
-    public void retrieveLines ()
-            throws StepException
-    {
-        StopWatch watch = new StopWatch("retrieveLines");
-
-        try {
-            // Retrieve filaments out of merged long sections
-            watch.start("retrieveFilaments");
-
-            // Create initial filaments
-            FilamentFactory<StaffFilament> factory = new FilamentFactory<>(
-                    scale,
-                    sheet.getFilamentIndex(),
-                    Orientation.HORIZONTAL,
-                    StaffFilament.class);
-            factory.dump("LinesRetriever factory");
-            filaments = factory.retrieveFilaments(hLag.getEntities());
-
-            // Purge curved filaments
-            purgeCurvedFilaments();
-
-            // Compute global slope out of longest filaments
-            watch.start("retrieveGlobalSlope");
-            globalSlope = retrieveGlobalSlope();
-            sheet.setSkew(new Skew(globalSlope, sheet));
-            logger.info("Global slope: {}", String.format("%.5f", globalSlope));
-
-            // Purge sloped filaments
-            slopedFilaments = purgeSlopedFilaments();
-
-            // Retrieve regular patterns of filaments and pack them into clusters
-            watch.start("clustersRetriever");
-            clustersRetriever = new ClustersRetriever(sheet, 1, filaments);
-            discardedFilaments = clustersRetriever.buildInfo();
-
-            // Check for a small interline
-            final Integer smallInterline = scale.getSmallInterline();
-
-            if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
-                secondFilaments = discardedFilaments;
-                Collections.sort(secondFilaments, Entities.byId);
-                logger.info("Searching clusters with smallInterline: {}", smallInterline);
-                watch.start("smallClustersRetriever");
-                smallClustersRetriever = new ClustersRetriever(sheet, 2, secondFilaments);
-                discardedFilaments = smallClustersRetriever.buildInfo();
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Discarded filaments: {}", Entities.ids(discardedFilaments));
-            }
-
-            // Convert clusters into staves
-            watch.start("BuildStaves");
-            buildStaves();
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
     }
 
     //-------------//
@@ -637,8 +383,12 @@ public class LinesRetriever
 
         if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(String.format("%sRes thickness:%.1f vs %d",
-                                          vips, rThickness, maxThickness));
+                logger.info(
+                        String.format(
+                                "%sRes thickness:%.1f vs %d",
+                                vips,
+                                rThickness,
+                                maxThickness));
             }
 
             return false;
@@ -718,8 +468,12 @@ public class LinesRetriever
 
         if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(String.format("%sRes thickness:%.1f vs %d",
-                                          vips, rThickness, maxThickness));
+                logger.info(
+                        String.format(
+                                "%sRes thickness:%.1f vs %d",
+                                vips,
+                                rThickness,
+                                maxThickness));
             }
 
             return false;
@@ -730,6 +484,109 @@ public class LinesRetriever
         }
 
         return true;
+    }
+
+    //---------------//
+    // completeLines //
+    //---------------//
+    /**
+     * Complete the retrieved staff lines whenever possible with filaments and short
+     * sections left over.
+     * <p>
+     * When this method is called, the precise staff abscissa endings are known (thanks to staff
+     * projection and barline handling).
+     * Lines must be completed accordingly.
+     * Ending points are determined by searching the best vertical fit for a staff pattern of 5 line
+     * segments.
+     * Then filaments and sections are added to the theoretical lines.
+     * <p>
+     * To decide on inclusion of filament or section, the line geometry must be rather precise.
+     * But geometry will be impacted by inclusions.
+     * Hence, line geometry must be recomputed on each major update.
+     * Line geometry is computed by sampling on abscissa and retrieving ordinate barycenter of glyph
+     * sections within each abscissa sample.
+     * <p>
+     * <b>Synopsis:</b>
+     * <br>
+     *
+     * <pre>
+     * +defineEndPoints() + includeDiscardedFilaments() + canIncludeFilament(fil1, fil2) + fil1
+     *         .stealSections(fil2) + fillHoles() + includeSections() + canIncludeSection(fil, sct)
+     *         + fil.addSection(sct) + polishCurvature() + fillHoles() + includeStickers()
+     * </pre>
+     */
+    public void completeLines ()
+    {
+        StopWatch watch = new StopWatch("completeLines");
+        binaryBuffer = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
+
+        try {
+            // Define the precise end points for every staff line
+            watch.start("defineEndPoints");
+            defineEndPoints();
+
+            // Browse sloped filaments and discarded filaments for possible inclusion
+            watch.start("include discarded filaments");
+            includeDiscardedFilaments();
+
+            // Add intermediate points where needed (1)
+            watch.start("fillHoles");
+            fillHoles();
+
+            // Dispatch horizontal sections into thick & thin ones
+            final List<Section> thickSections = new ArrayList<>();
+            final List<Section> thinSections = new ArrayList<>();
+            watch.start("dispatchHorizontalSections");
+            dispatchHorizontalSections(thickSections, thinSections);
+
+            // First, consider thick sections
+            watch.start("include " + thickSections.size() + " thick stickers");
+            includeSections(thickSections);
+
+            // Second, consider thin sections
+            watch.start("include " + thinSections.size() + " thin stickers");
+            includeSections(thinSections);
+
+            // Polish staff lines (TODO: to be improved)
+            watch.start("polishCurvatures");
+            polishCurvatures();
+
+            // Add intermediate points where needed (2)
+            watch.start("fillHoles");
+            fillHoles();
+
+            // Include isolated horizontal sticker sections
+            watch.start("includeStickers");
+            includeStickers(); // This may delete intermediate points
+
+            // Add intermediate points where needed (3)
+            watch.start("fillHoles");
+            fillHoles();
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
+    //---------------------//
+    // createShortSections //
+    //---------------------//
+    /**
+     * Build horizontal sections out of shortHoriTable runs
+     *
+     * @return the list of created sections
+     */
+    public List<Section> createShortSections ()
+    {
+        // Complete the horizontal hLag with the short sections
+        // (it already contains all the other (long) horizontal sections)
+        SectionFactory sectionsFactory = new SectionFactory(hLag, JunctionRatioPolicy.DEFAULT);
+        List<Section> shortSections = sectionsFactory.createSections(shortHoriTable, null, true);
+
+        sheet.getLagManager().setVipSections(HORIZONTAL);
+
+        return shortSections;
     }
 
     //-----------------//
@@ -1110,8 +967,11 @@ public class LinesRetriever
 
                 if (!toAdd.isEmpty()) {
                     if (logger.isDebugEnabled()) {
-                        logger.info("Staff#{} line#{} {}",
-                                    staff.getId(), lineId, Sections.ids(toAdd));
+                        logger.info(
+                                "Staff#{} line#{} {}",
+                                staff.getId(),
+                                lineId,
+                                Sections.ids(toAdd));
                     }
 
                     // Include sticker sections, while preserving line ending points
@@ -1195,10 +1055,10 @@ public class LinesRetriever
         final List<LineCluster> halfClusters = ClustersRetriever.getHalfClusters(allClusters);
         final List<LineCluster> fullClusters = new ArrayList<>(allClusters);
         fullClusters.removeAll(halfClusters);
-//        Integer fullMedian = ClustersRetriever.getWidthMedianValue(fullClusters);
-//        Integer halfMedian = ClustersRetriever.getWidthMedianValue(halfClusters);
-//        logger.info("Median clusters widths full:{}, half:{}", fullMedian, halfMedian);
-//
+        //        Integer fullMedian = ClustersRetriever.getWidthMedianValue(fullClusters);
+        //        Integer halfMedian = ClustersRetriever.getWidthMedianValue(halfClusters);
+        //        logger.info("Median clusters widths full:{}, half:{}", fullMedian, halfMedian);
+        //
         // A full cluster cannot be indented on right side
         for (Iterator<LineCluster> it = fullClusters.listIterator(); it.hasNext();) {
             final LineCluster fc = it.next();
@@ -1223,30 +1083,30 @@ public class LinesRetriever
             }
         }
 
-//        // Let's consider the available vertical gap below every cluster
-//        int id = 0;
-//        for (LineCluster ol : fullClusters) {
-//            // Make sure there is a staff below the staff and measure the vertical gap
-//            final LineCluster below = ClustersRetriever.getClusterBelow(ol, allClusters);
-//
-//            if (below != null) {
-//                final StaffFilament lastLine = ol.getLastLine();
-//                final StaffFilament firstLine = below.getFirstLine();
-//
-//                // Take vertical distance measured at middle of common abscissa range
-//                final Rectangle b1 = lastLine.getBounds();
-//                final Rectangle b2 = firstLine.getBounds();
-//                final int xLeft = Math.max(b1.x, b2.x);
-//                final int xRight = Math.min(b1.x + b1.width, b2.x + b2.width);
-//                final int xMid = (xLeft + xRight) / 2;
-//                final double y1 = lastLine.yAt(xMid);
-//                final double y2 = firstLine.yAt(xMid);
-//                final double dist = y2 - y1;
-//
-//                logger.info("{} {}",
-//                            String.format("%2d dist:%5.1f", ++id, dist / scale.getInterline()), ol);
-//            }
-//        }
+        //        // Let's consider the available vertical gap below every cluster
+        //        int id = 0;
+        //        for (LineCluster ol : fullClusters) {
+        //            // Make sure there is a staff below the staff and measure the vertical gap
+        //            final LineCluster below = ClustersRetriever.getClusterBelow(ol, allClusters);
+        //
+        //            if (below != null) {
+        //                final StaffFilament lastLine = ol.getLastLine();
+        //                final StaffFilament firstLine = below.getFirstLine();
+        //
+        //                // Take vertical distance measured at middle of common abscissa range
+        //                final Rectangle b1 = lastLine.getBounds();
+        //                final Rectangle b2 = firstLine.getBounds();
+        //                final int xLeft = Math.max(b1.x, b2.x);
+        //                final int xRight = Math.min(b1.x + b1.width, b2.x + b2.width);
+        //                final int xMid = (xLeft + xRight) / 2;
+        //                final double y1 = lastLine.yAt(xMid);
+        //                final double y2 = firstLine.yAt(xMid);
+        //                final double dist = y2 - y1;
+        //
+        //                logger.info("{} {}",
+        //                            String.format("%2d dist:%5.1f", ++id, dist / scale.getInterline()), ol);
+        //            }
+        //        }
     }
 
     //----------------------//
@@ -1256,7 +1116,7 @@ public class LinesRetriever
      * Discard all filaments that exhibit a too strong curvature.
      */
     private void purgeCurvedFilaments ()
-            throws StepException
+        throws StepException
     {
         List<Filament> toRemove = new ArrayList<>();
 
@@ -1354,6 +1214,78 @@ public class LinesRetriever
         }
 
         return toRemove;
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render the filaments, their ending tangents, their combs
+     *
+     * @param g graphics context
+     */
+    @Override
+    public void renderItems (Graphics2D g)
+    {
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+        final Color oldColor = g.getColor();
+
+        // Combs stuff?
+        if (constants.showCombs.isSet()) {
+            if (clustersRetriever != null) {
+                clustersRetriever.renderItems(g);
+            }
+
+            if (smallClustersRetriever != null) {
+                smallClustersRetriever.renderItems(g);
+            }
+        }
+
+        // Filament lines?
+        if (constants.showHorizontalLines.isSet() && (filaments != null)) {
+            List<StaffFilament> allFils = new ArrayList<>(filaments);
+
+            if (secondFilaments != null) {
+                allFils.addAll(secondFilaments);
+            }
+
+            final boolean showPoints = ViewParameters.getInstance().isStaffPointsPainting();
+            final double pointWidth = scale.toPixelsDouble(Staff.getDefiningPointSize());
+            g.setColor(Colors.ENTITY_MINOR);
+
+            for (Filament filament : allFils) {
+                filament.renderLine(g, showPoints, pointWidth);
+            }
+
+            // Draw tangent at each ending point?
+            if (constants.showTangents.isSet()) {
+                g.setColor(Colors.TANGENT);
+
+                double dx = sheet.getScale().toPixels(constants.tangentLg);
+
+                for (Filament filament : allFils) {
+                    Point2D p = filament.getStartPoint();
+                    double der = filament.getSlopeAt(p.getX(), HORIZONTAL);
+                    g.draw(
+                            new Line2D.Double(
+                                    p.getX(),
+                                    p.getY(),
+                                    p.getX() - dx,
+                                    p.getY() - (der * dx)));
+                    p = filament.getStopPoint();
+                    der = filament.getSlopeAt(p.getX(), HORIZONTAL);
+                    g.draw(
+                            new Line2D.Double(
+                                    p.getX(),
+                                    p.getY(),
+                                    p.getX() + dx,
+                                    p.getY() + (der * dx)));
+                }
+            }
+        }
+
+        g.setStroke(oldStroke);
+        g.setColor(oldColor);
     }
 
     //-------------------//
@@ -1491,7 +1423,91 @@ public class LinesRetriever
         }
     }
 
+    //---------------//
+    // retrieveLines //
+    //---------------//
+    /**
+     * Organize the long and thin horizontal sections into filaments that will be good
+     * candidates for staff lines.
+     * <ol>
+     * <li>First, retrieve long horizontal sections and merge them into filaments.</li>
+     * <li>Second, detect series of filaments regularly spaced vertically and aggregate them into
+     * clusters of lines (as staff candidates).</li>
+     * </ol>
+     * <p>
+     * <b>Synopsis:</b>
+     * <br>
+     *
+     * <pre>
+     * +filamentFactory.retrieveFilaments() + retrieveGlobalSlope() + clustersRetriever.buildInfo()
+     *         + secondClustersRetriever.buildInfo() + buildStaves()
+     * </pre>
+     *
+     * @throws StepException if processing failed at this step
+     */
+    public void retrieveLines ()
+        throws StepException
+    {
+        StopWatch watch = new StopWatch("retrieveLines");
+
+        try {
+            // Retrieve filaments out of merged long sections
+            watch.start("retrieveFilaments");
+
+            // Create initial filaments
+            FilamentFactory<StaffFilament> factory = new FilamentFactory<>(
+                    scale,
+                    sheet.getFilamentIndex(),
+                    Orientation.HORIZONTAL,
+                    StaffFilament.class);
+            factory.dump("LinesRetriever factory");
+            filaments = factory.retrieveFilaments(hLag.getEntities());
+
+            // Purge curved filaments
+            purgeCurvedFilaments();
+
+            // Compute global slope out of longest filaments
+            watch.start("retrieveGlobalSlope");
+            globalSlope = retrieveGlobalSlope();
+            sheet.setSkew(new Skew(globalSlope, sheet));
+            logger.info("Global slope: {}", String.format("%.5f", globalSlope));
+
+            // Purge sloped filaments
+            slopedFilaments = purgeSlopedFilaments();
+
+            // Retrieve regular patterns of filaments and pack them into clusters
+            watch.start("clustersRetriever");
+            clustersRetriever = new ClustersRetriever(sheet, 1, filaments);
+            discardedFilaments = clustersRetriever.buildInfo();
+
+            // Check for a small interline
+            final Integer smallInterline = scale.getSmallInterline();
+
+            if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
+                secondFilaments = discardedFilaments;
+                Collections.sort(secondFilaments, Entities.byId);
+                logger.info("Searching clusters with smallInterline: {}", smallInterline);
+                watch.start("smallClustersRetriever");
+                smallClustersRetriever = new ClustersRetriever(sheet, 2, secondFilaments);
+                discardedFilaments = smallClustersRetriever.buildInfo();
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Discarded filaments: {}", Entities.ids(discardedFilaments));
+            }
+
+            // Convert clusters into staves
+            watch.start("BuildStaves");
+            buildStaves();
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     private static class Constants
             extends ConstantSet
     {
@@ -1517,13 +1533,14 @@ public class LinesRetriever
 
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
         // ----------------------------------------------
+
         private final Constant.Ratio stickerThickness = new Constant.Ratio(
                 1.0,
                 "Ratio of sticker thickness vs staff line MAXIMUM thickness");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
-        //
+
         private final Scale.LineFraction maxStickerGap = new Scale.LineFraction(
                 0.25,
                 "Maximum vertical gap between sticker and closest line side");
@@ -1538,6 +1555,7 @@ public class LinesRetriever
 
         // Constants specified WRT mean interline
         // --------------------------------------
+
         private final Scale.Fraction minRunLength = new Scale.Fraction(
                 0.25,
                 "Minimum length for a horizontal run to be considered");
@@ -1576,6 +1594,7 @@ public class LinesRetriever
 
         // Constants for display
         // ---------------------
+
         private final Constant.Boolean showHorizontalLines = new Constant.Boolean(
                 true,
                 "Should we show the horizontal grid lines?");

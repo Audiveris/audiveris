@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,7 +22,6 @@
 package org.audiveris.omr.image;
 
 import ij.process.ByteProcessor;
-
 import net.jcip.annotations.ThreadSafe;
 
 /**
@@ -42,6 +41,7 @@ public class GlobalFilter
     private final int threshold;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a binary wrapper on a raw pixel source.
      *
@@ -56,6 +56,7 @@ public class GlobalFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // filteredImage //
     //---------------//

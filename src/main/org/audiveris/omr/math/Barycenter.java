@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,6 +46,7 @@ public class Barycenter
     private double yy;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Barycenter object.
      */
@@ -54,6 +55,7 @@ public class Barycenter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getWeight //
     //-----------//
@@ -99,25 +101,6 @@ public class Barycenter
     /**
      * Include another barycenter.
      *
-     * @param weight total weight of this other barycenter
-     * @param x      abscissa
-     * @param y      ordinate
-     */
-    public final void include (double weight,
-                               double x,
-                               double y)
-    {
-        this.weight += weight;
-        this.xx += (x * weight);
-        this.yy += (y * weight);
-    }
-
-    //---------//
-    // include //
-    //---------//
-    /**
-     * Include another barycenter.
-     *
      * @param that the other barycenter to include
      */
     public final void include (Barycenter that)
@@ -146,13 +129,19 @@ public class Barycenter
     // include //
     //---------//
     /**
-     * Include one point (with default weight assigned to 1).
+     * Include another barycenter.
      *
-     * @param point point to include
+     * @param weight total weight of this other barycenter
+     * @param x      abscissa
+     * @param y      ordinate
      */
-    public final void include (Point2D point)
+    public final void include (double weight,
+                               double x,
+                               double y)
     {
-        include(1, point.getX(), point.getY());
+        this.weight += weight;
+        this.xx += (x * weight);
+        this.yy += (y * weight);
     }
 
     //---------//
@@ -168,6 +157,19 @@ public class Barycenter
                                Point2D point)
     {
         include(weight, point.getX(), point.getY());
+    }
+
+    //---------//
+    // include //
+    //---------//
+    /**
+     * Include one point (with default weight assigned to 1).
+     *
+     * @param point point to include
+     */
+    public final void include (Point2D point)
+    {
+        include(1, point.getX(), point.getY());
     }
 
     //----------//

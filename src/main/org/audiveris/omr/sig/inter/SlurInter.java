@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,7 +53,8 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.SlurSymbol;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -113,13 +114,16 @@ public class SlurInter
     private static final Logger logger = LoggerFactory.getLogger(SlurInter.class);
 
     /** To sort slurs vertically within a measure. */
-    public static final Comparator<SlurInter> verticalComparator = (SlurInter s1, SlurInter s2)
-            -> Double.compare(s1.getCurve().getY1(), s2.getCurve().getY1());
+    public static final Comparator<SlurInter> verticalComparator = (s1,
+                                                                    s2) -> Double.compare(
+                                                                            s1.getCurve().getY1(),
+                                                                            s2.getCurve().getY1());
 
     /**
      * Predicate for a slur not connected on both ends.
      */
-    public static final Predicate<SlurInter> isOrphan = (SlurInter slur) -> {
+    public static final Predicate<SlurInter> isOrphan = (slur) ->
+    {
         for (HorizontalSide side : HorizontalSide.values()) {
             if (slur.getHead(side) == null) {
                 return true;
@@ -130,7 +134,8 @@ public class SlurInter
     };
 
     /** Predicate for an orphan slur at the end of its system/part. */
-    public static final Predicate<SlurInter> isEndingOrphan = (SlurInter slur) -> {
+    public static final Predicate<SlurInter> isEndingOrphan = (slur) ->
+    {
         if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
             // Check we are in last measure
             Point2D end = slur.getCurve().getP2();
@@ -150,7 +155,8 @@ public class SlurInter
     };
 
     /** Predicate for an orphan slur at the beginning of its system/part. */
-    public static final Predicate<SlurInter> isBeginningOrphan = (SlurInter slur) -> {
+    public static final Predicate<SlurInter> isBeginningOrphan = (slur) ->
+    {
         if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
             // Check we are in first measure
             Point2D end = slur.getCurve().getP1();
@@ -160,8 +166,7 @@ public class SlurInter
                 // Check slur ends in first measure half (excluding header area)
                 Staff staff1 = system.getClosestStaff(end);
                 Measure measure = stack.getMeasureAt(staff1);
-                int middle
-                        = (staff1.getHeaderStop() + measure.getAbscissa(LEFT, staff1) + measure
+                int middle = (staff1.getHeaderStop() + measure.getAbscissa(LEFT, staff1) + measure
                         .getWidth()) / 2;
                 if (end.getX() < middle) {
                     return true;
@@ -172,17 +177,18 @@ public class SlurInter
     };
 
     /** Predicate for an extended slur at the end of its system/part. */
-    public static final Predicate<SlurInter> isEndingExtended
-            = (SlurInter slur) -> slur.getExtension(RIGHT) != null;
+    public static final Predicate<SlurInter> isEndingExtended = (slur) -> slur.getExtension(
+            RIGHT) != null;
 
     /** Predicate for an extended slur at the beginning of its system/part. */
-    public static final Predicate<SlurInter> isBeginningExtended
-            = (SlurInter slur) -> slur.getExtension(LEFT) != null;
+    public static final Predicate<SlurInter> isBeginningExtended = (slur) -> slur.getExtension(
+            LEFT) != null;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Is the slur above heads or below heads. */
     @XmlAttribute
     private boolean above;
@@ -209,33 +215,17 @@ public class SlurInter
 
     // Transient data
     //---------------
-    //
+
     /** Physical characteristics. */
     private SlurInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new <code>SlurInter</code> object.
-     *
-     * @param info    the underlying slur information
-     * @param impacts the assignment details
+     * No-arg constructor meant for JAXB.
      */
-    public SlurInter (SlurInfo info,
-                      GradeImpacts impacts)
+    private SlurInter ()
     {
-        super(info.getGlyph(),
-              null,
-              (info.above() == 1) ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW,
-              impacts);
-        this.info = info;
-
-        above = info.above() == 1;
-        curve = info.getCurve();
-
-        // To debug attachments
-        for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
-            addAttachment(entry.getKey(), entry.getValue());
-        }
     }
 
     /**
@@ -251,13 +241,32 @@ public class SlurInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new <code>SlurInter</code> object.
+     *
+     * @param info    the underlying slur information
+     * @param impacts the assignment details
      */
-    private SlurInter ()
+    public SlurInter (SlurInfo info,
+                      GradeImpacts impacts)
     {
+        super(
+                info.getGlyph(),
+                null,
+                (info.above() == 1) ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW,
+                impacts);
+        this.info = info;
+
+        above = info.above() == 1;
+        curve = info.getCurve();
+
+        // To debug attachments
+        for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
+            addAttachment(entry.getKey(), entry.getValue());
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -430,10 +439,8 @@ public class SlurInter
 
         HeadInter h1 = getHead(LEFT);
         HeadInter h2 = getHead(RIGHT);
-        boolean result = (h1 != null) && (h2 != null)
-                                 && (h1.getStaff() == h2.getStaff())
-                                 && areTieCompatible(h1, h2)
-                                 && isSpaceClear(h1, h2, systemHeadChords);
+        boolean result = (h1 != null) && (h2 != null) && (h1.getStaff() == h2.getStaff())
+                && areTieCompatible(h1, h2) && isSpaceClear(h1, h2, systemHeadChords);
         setTie(result);
 
         if (isVip()) {
@@ -539,6 +546,15 @@ public class SlurInter
         return sb.toString();
     }
 
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
+    }
+
     //--------------//
     // getExtension //
     //--------------//
@@ -554,15 +570,6 @@ public class SlurInter
         Objects.requireNonNull(side, "No side provided for slur getExtension");
 
         return (side == HorizontalSide.LEFT) ? leftExtension : rightExtension;
-    }
-
-    //-----------//
-    // getEditor //
-    //-----------//
-    @Override
-    public InterEditor getEditor ()
-    {
-        return new Editor(this);
     }
 
     //---------//
@@ -808,33 +815,64 @@ public class SlurInter
         return tie;
     }
 
-    //--------//
-    // setTie //
-    //--------//
+    //-------------//
+    // lookupLinks //
+    //-------------//
     /**
-     * Set this slur as being a tie.
+     * Try to detect link between this Slur instance and head on left side
+     * plus head on right side.
      *
-     * @param tie new tie value
+     * @param systemHeads ordered collection of heads in system
+     * @param system      the containing system
+     * @param profile     desired profile level (currently ineffective)
+     * @return the collection of links found, perhaps null
      */
-    public void setTie (boolean tie)
+    private Collection<Link> lookupLinks (List<Inter> systemHeads,
+                                          SystemInfo system,
+                                          int profile)
     {
+        if (systemHeads.isEmpty()) {
+            return Collections.emptySet();
+        }
+
         if (isVip()) {
-            logger.info("VIP {} setTie {}", this, tie);
+            logger.info("VIP lookupLinks for {}", this);
         }
 
-        if (this.tie != tie) {
-            this.tie = tie;
+        SlurLinker slurLinker = new SlurLinker(system.getSheet());
 
-            if (tie) {
-                logger.debug("Tie for {}", this);
-            }
+        // Define slur side areas
+        Map<HorizontalSide, Area> sideAreas = slurLinker.defineAreaPair(this);
 
-            checkAbnormal();
+        // Retrieve candidate chords
+        Map<HorizontalSide, List<Inter>> chords = new EnumMap<>(HorizontalSide.class);
+        List<Inter> systemChords = system.getSig().inters(HeadChordInter.class);
 
-            if (sig != null) {
-                sig.getSystem().getSheet().getStub().setModified(true);
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Rectangle box = sideAreas.get(side).getBounds();
+            chords.put(side, Inters.intersectedInters(systemChords, GeoOrder.NONE, box));
+        }
+
+        // Select the best link pair, if any
+        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
+                this,
+                sideAreas,
+                system,
+                chords);
+
+        if (linkPair == null) {
+            return Collections.emptySet();
+        }
+
+        final List<Link> links = new ArrayList<>();
+
+        for (Link link : linkPair.values()) {
+            if (link != null) {
+                links.add(link);
             }
         }
+
+        return links;
     }
 
     //-----------//
@@ -952,6 +990,60 @@ public class SlurInter
         }
     }
 
+    //--------//
+    // setTie //
+    //--------//
+    /**
+     * Set this slur as being a tie.
+     *
+     * @param tie new tie value
+     */
+    public void setTie (boolean tie)
+    {
+        if (isVip()) {
+            logger.info("VIP {} setTie {}", this, tie);
+        }
+
+        if (this.tie != tie) {
+            this.tie = tie;
+
+            if (tie) {
+                logger.debug("Tie for {}", this);
+            }
+
+            checkAbnormal();
+
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        // Shape SLUR is obsolete, replaced by SLUR_ABOVE or SLUR_BELOW
+        if (shape == Shape.SLUR) {
+            shape = above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW;
+            upgraded = true;
+        }
+
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            // Force bounds recomputation from curve (including control points)
+            setBounds(null);
+            upgraded = true;
+        }
+
+        return upgraded;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // areTieCompatible //
     //------------------//
@@ -999,63 +1091,6 @@ public class SlurInter
         return true;
     }
 
-    //-------------//
-    // lookupLinks //
-    //-------------//
-    /**
-     * Try to detect link between this Slur instance and head on left side
-     * plus head on right side.
-     *
-     * @param systemHeads ordered collection of heads in system
-     * @param system      the containing system
-     * @param profile     desired profile level (currently ineffective)
-     * @return the collection of links found, perhaps null
-     */
-    private Collection<Link> lookupLinks (List<Inter> systemHeads,
-                                          SystemInfo system,
-                                          int profile)
-    {
-        if (systemHeads.isEmpty()) {
-            return Collections.emptySet();
-        }
-
-        if (isVip()) {
-            logger.info("VIP lookupLinks for {}", this);
-        }
-
-        SlurLinker slurLinker = new SlurLinker(system.getSheet());
-
-        // Define slur side areas
-        Map<HorizontalSide, Area> sideAreas = slurLinker.defineAreaPair(this);
-
-        // Retrieve candidate chords
-        Map<HorizontalSide, List<Inter>> chords = new EnumMap<>(HorizontalSide.class);
-        List<Inter> systemChords = system.getSig().inters(HeadChordInter.class);
-
-        for (HorizontalSide side : HorizontalSide.values()) {
-            Rectangle box = sideAreas.get(side).getBounds();
-            chords.put(side, Inters.intersectedInters(systemChords, GeoOrder.NONE, box));
-        }
-
-        // Select the best link pair, if any
-        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
-                this, sideAreas, system, chords);
-
-        if (linkPair == null) {
-            return Collections.emptySet();
-        }
-
-        final List<Link> links = new ArrayList<>();
-
-        for (Link link : linkPair.values()) {
-            if (link != null) {
-                links.add(link);
-            }
-        }
-
-        return links;
-    }
-
     //----------------//
     // discardOrphans //
     //----------------//
@@ -1079,97 +1114,7 @@ public class SlurInter
         }
     }
 
-    //-----------------//
-    // upgradeOldStuff //
-    //-----------------//
-    @Override
-    public boolean upgradeOldStuff (List<Version> upgrades)
-    {
-        boolean upgraded = false;
-
-        // Shape SLUR is obsolete, replaced by SLUR_ABOVE or SLUR_BELOW
-        if (shape == Shape.SLUR) {
-            shape = above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW;
-            upgraded = true;
-        }
-
-        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
-            // Force bounds recomputation from curve (including control points)
-            setBounds(null);
-            upgraded = true;
-        }
-
-        return upgraded;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Impacts //
-    //---------//
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]{
-            "dist",
-            "angle",
-            "width",
-            "height",
-            "vert"};
-
-        private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
-
-        public Impacts (double dist,
-                        double angle,
-                        double width,
-                        double height,
-                        double vert)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, dist);
-            setImpact(1, angle);
-            setImpact(2, width);
-            setImpact(3, height);
-            setImpact(4, vert);
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        public final Point2D p1;
-
-        public final Point2D c1;
-
-        public final Point2D c2;
-
-        public final Point2D p2;
-
-        // Array of 4 points used to update cubic curve via setCurve() method
-        public final Point2D[] points;
-
-        public Model (CubicCurve2D curve)
-        {
-            p1 = curve.getP1();
-            c1 = curve.getCtrlP1();
-            c2 = curve.getCtrlP2();
-            p2 = curve.getP2();
-            points = new Point2D[]{p1, c1, c2, p2};
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            for (Point2D pt : points) {
-                PointUtil.add(pt, dx, dy);
-            }
-        }
-    }
 
     //-----------//
     // Constants //
@@ -1259,8 +1204,7 @@ public class SlurInter
                 }
             });
 
-            handles.add(
-                    new Handle(model.p2)
+            handles.add(new Handle(model.p2)
             {
                 @Override
                 public boolean move (int dx,
@@ -1318,6 +1262,16 @@ public class SlurInter
         }
 
         @Override
+        protected void doit ()
+        {
+            final SlurInter slur = (SlurInter) getInter();
+            slur.getCurve().setCurve(model.points, 0);
+
+            slur.setBounds(null);
+            super.doit(); // No more glyph
+        }
+
+        @Override
         public void render (Graphics2D g)
         {
             // First, draw lines between handles
@@ -1353,23 +1307,13 @@ public class SlurInter
             StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append('{');
             sb.append(getInter());
-            sb.append(" org:").append(PointUtil.toString(originalModel.p1)).append('-')
-                    .append(PointUtil.toString(originalModel.p2));
-            sb.append(" new:").append(PointUtil.toString(model.p1)).append('-')
-                    .append(PointUtil.toString(model.p2));
+            sb.append(" org:").append(PointUtil.toString(originalModel.p1)).append('-').append(
+                    PointUtil.toString(originalModel.p2));
+            sb.append(" new:").append(PointUtil.toString(model.p1)).append('-').append(
+                    PointUtil.toString(model.p2));
             sb.append('}');
 
             return sb.toString();
-        }
-
-        @Override
-        protected void doit ()
-        {
-            final SlurInter slur = (SlurInter) getInter();
-            slur.getCurve().setCurve(model.points, 0);
-
-            slur.setBounds(null);
-            super.doit(); // No more glyph
         }
 
         @Override
@@ -1380,6 +1324,72 @@ public class SlurInter
 
             slur.setBounds(null);
             super.undo();
+        }
+    }
+
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]
+        { "dist", "angle", "width", "height", "vert" };
+
+        private static final double[] WEIGHTS = new double[]
+        { 3, 1, 1, 1, 1 };
+
+        public Impacts (double dist,
+                        double angle,
+                        double width,
+                        double height,
+                        double vert)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, dist);
+            setImpact(1, angle);
+            setImpact(2, width);
+            setImpact(3, height);
+            setImpact(4, vert);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public final Point2D p1;
+
+        public final Point2D c1;
+
+        public final Point2D c2;
+
+        public final Point2D p2;
+
+        // Array of 4 points used to update cubic curve via setCurve() method
+        public final Point2D[] points;
+
+        public Model (CubicCurve2D curve)
+        {
+            p1 = curve.getP1();
+            c1 = curve.getCtrlP1();
+            c2 = curve.getCtrlP2();
+            p2 = curve.getP2();
+            points = new Point2D[]
+            { p1, c1, c2, p2 };
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            for (Point2D pt : points) {
+                PointUtil.add(pt, dx, dy);
+            }
         }
     }
 }

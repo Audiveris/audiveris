@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class ScaleStep
     private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ScaleStep object.
      */
@@ -52,12 +53,13 @@ public class ScaleStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // doit //
     //------//
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         final Scale scale = new ScaleBuilder(sheet).retrieveScale();
         logger.info("{}", scale);

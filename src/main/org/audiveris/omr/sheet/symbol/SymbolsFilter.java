@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -92,10 +92,12 @@ public class SymbolsFilter
     public static final Orientation SYMBOL_ORIENTATION = Orientation.VERTICAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SymbolsFilter object.
      *
@@ -107,50 +109,6 @@ public class SymbolsFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Start from the staff-free image, remove all good inters, and from the remaining
-     * pixels build the symbols glyphs put in SYMBOL group.
-     * <p>
-     * For not good inters (some "weak" inters have already survived the first REDUCTION step)
-     * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
-     * thus compete for valuable compounds.
-     * <p>
-     * We also keep 1-letter words, since they might be symbols.
-     *
-     * @param optionalsMap (output) all weak glyphs gathered per system
-     */
-    public void process (Map<SystemInfo, List<Glyph>> optionalsMap)
-    {
-        logger.debug("SymbolsFilter running...");
-
-        ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-        BufferedImage img = rawBuf.getBufferedImage();
-        ByteProcessor buffer = new ByteProcessor(img);
-
-        // Prepare the ground for symbols retrieval, noting optional (weak) glyphs per system
-        Graphics2D g = img.createGraphics();
-        SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
-        eraser.eraseInters(optionalsMap);
-        buffer.threshold(127);
-
-        // Keep a copy on disk?
-        if (constants.saveSymbolsBuffer.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId(), "symbols");
-        }
-
-        // Display for visual check?
-        if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
-            sheet.getStub().getAssembly().addViewTab(
-                    "Symbols",
-                    new ScrollImageView(sheet, new SymbolsView(img, optionalsMap)),
-                    new BoardsPane(new PixelBoard(sheet)));
-        }
-
-        buildSymbolsGlyphs(buffer);
-    }
 
     //--------------------//
     // buildSymbolsGlyphs //
@@ -203,7 +161,53 @@ public class SymbolsFilter
         }
     }
 
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Start from the staff-free image, remove all good inters, and from the remaining
+     * pixels build the symbols glyphs put in SYMBOL group.
+     * <p>
+     * For not good inters (some "weak" inters have already survived the first REDUCTION step)
+     * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
+     * thus compete for valuable compounds.
+     * <p>
+     * We also keep 1-letter words, since they might be symbols.
+     *
+     * @param optionalsMap (output) all weak glyphs gathered per system
+     */
+    public void process (Map<SystemInfo, List<Glyph>> optionalsMap)
+    {
+        logger.debug("SymbolsFilter running...");
+
+        ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+        BufferedImage img = rawBuf.getBufferedImage();
+        ByteProcessor buffer = new ByteProcessor(img);
+
+        // Prepare the ground for symbols retrieval, noting optional (weak) glyphs per system
+        Graphics2D g = img.createGraphics();
+        SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
+        eraser.eraseInters(optionalsMap);
+        buffer.threshold(127);
+
+        // Keep a copy on disk?
+        if (constants.saveSymbolsBuffer.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "symbols");
+        }
+
+        // Display for visual check?
+        if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
+            sheet.getStub().getAssembly().addViewTab(
+                    "Symbols",
+                    new ScrollImageView(sheet, new SymbolsView(img, optionalsMap)),
+                    new BoardsPane(new PixelBoard(sheet)));
+        }
+
+        buildSymbolsGlyphs(buffer);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -271,6 +275,32 @@ public class SymbolsFilter
             super(buffer, g, sheet);
         }
 
+        //---------//
+        // canHide //
+        //---------//
+        /**
+         * Check if we can safely hide the inter (which cannot be mistaken for a symbol).
+         * TODO: Quick hack, to be better implemented.
+         *
+         * @param inter the inter to check
+         * @return true if we can safely hide the inter
+         */
+        @Override
+        protected boolean canHide (Inter inter)
+        {
+            double ctxGrade = inter.getBestGrade();
+
+            if (inter instanceof StemInter) {
+                return ctxGrade >= 0.7; // TODO a stem should be protected via its head chord?
+            }
+
+            if (inter instanceof HeadInter) {
+                return ctxGrade >= 0.6; // TODO
+            }
+
+            return super.canHide(inter);
+        }
+
         //-------------//
         // eraseInters //
         //-------------//
@@ -314,9 +344,8 @@ public class SymbolsFilter
 
                     // Members are handled via their ensemble
                     // Except for beams and words
-                    if ((inter.getEnsemble() != null)
-                                && !(inter instanceof AbstractBeamInter)
-                                && !(inter instanceof WordInter)) {
+                    if ((inter.getEnsemble() != null) && !(inter instanceof AbstractBeamInter)
+                            && !(inter instanceof WordInter)) {
                         continue;
                     }
 
@@ -347,55 +376,6 @@ public class SymbolsFilter
 
                 systemWeaks = null;
             }
-        }
-
-        //-------//
-        // visit //
-        //-------//
-        @Override
-        public void visit (HeadInter head)
-        {
-            final Template tpl = head.getTemplate();
-            final Rectangle tplBox = tpl.getBounds(head.getBounds());
-
-            // Use underlying glyph (enlarged only for strong inters)
-            final List<Point> fores = tpl.getForegroundPixels(tplBox, buffer, systemWeaks == null);
-
-            // Erase foreground pixels
-            for (final Point p : fores) {
-                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
-            }
-
-            // Save foreground pixels for optional (weak) glyphs
-            if (systemWeaks != null) {
-                savePixels(tplBox, fores);
-            }
-        }
-
-        //---------//
-        // canHide //
-        //---------//
-        /**
-         * Check if we can safely hide the inter (which cannot be mistaken for a symbol).
-         * TODO: Quick hack, to be better implemented.
-         *
-         * @param inter the inter to check
-         * @return true if we can safely hide the inter
-         */
-        @Override
-        protected boolean canHide (Inter inter)
-        {
-            double ctxGrade = inter.getBestGrade();
-
-            if (inter instanceof StemInter) {
-                return ctxGrade >= 0.7; // TODO a stem should be protected via its head chord?
-            }
-
-            if (inter instanceof HeadInter) {
-                return ctxGrade >= 0.6; // TODO
-            }
-
-            return super.canHide(inter);
         }
 
         //-------------//
@@ -469,6 +449,29 @@ public class SymbolsFilter
                     GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (HeadInter head)
+        {
+            final Template tpl = head.getTemplate();
+            final Rectangle tplBox = tpl.getBounds(head.getBounds());
+
+            // Use underlying glyph (enlarged only for strong inters)
+            final List<Point> fores = tpl.getForegroundPixels(tplBox, buffer, systemWeaks == null);
+
+            // Erase foreground pixels
+            for (final Point p : fores) {
+                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
+            }
+
+            // Save foreground pixels for optional (weak) glyphs
+            if (systemWeaks != null) {
+                savePixels(tplBox, fores);
+            }
         }
     }
 

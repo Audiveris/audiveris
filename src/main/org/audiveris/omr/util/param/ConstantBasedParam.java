@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
  *
  * @param <E> type for value
  * @param <C> type for value constant
- *
  * @author Hervé Bitteur
  */
 public class ConstantBasedParam<E, C extends Constant<E>>
@@ -43,9 +42,11 @@ public class ConstantBasedParam<E, C extends Constant<E>>
     private static final Logger logger = LoggerFactory.getLogger(ConstantBasedParam.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final C cst;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ConstantBasedParam</code> object.
      *
@@ -60,6 +61,7 @@ public class ConstantBasedParam<E, C extends Constant<E>>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public E getSourceValue ()
     {
@@ -97,8 +99,9 @@ public class ConstantBasedParam<E, C extends Constant<E>>
             if (specific == null) {
                 if (!cst.isSourceValue()) {
                     cst.resetToSource();
-                    logger.info("Default " + cst.getDescription() + " reset to {}",
-                                cst.getSourceValue());
+                    logger.info(
+                            "Default " + cst.getDescription() + " reset to {}",
+                            cst.getSourceValue());
 
                     return true;
                 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.ui.ObjectEditor.Handle;
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
@@ -75,18 +74,11 @@ public class MultipleRestInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>MultipleRestInter</code> object.
-     *
-     * @param grade  evaluation grade
-     * @param median median beam line
-     * @param height beam height
+     * Meant for JAXB.
      */
-    public MultipleRestInter (Double grade,
-                              Line2D median,
-                              double height)
+    private MultipleRestInter ()
     {
-        super(Shape.MULTIPLE_REST, grade, median, height);
-        setAbnormal(true);
+        super((Shape) null, (GradeImpacts) null, null, 0);
     }
 
     /**
@@ -101,14 +93,22 @@ public class MultipleRestInter
     }
 
     /**
-     * Meant for JAXB.
+     * Creates a new <code>MultipleRestInter</code> object.
+     *
+     * @param grade  evaluation grade
+     * @param median median beam line
+     * @param height beam height
      */
-    private MultipleRestInter ()
+    public MultipleRestInter (Double grade,
+                              Line2D median,
+                              double height)
     {
-        super((Shape) null, (GradeImpacts) null, null, 0);
+        super(Shape.MULTIPLE_REST, grade, median, height);
+        setAbnormal(true);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//

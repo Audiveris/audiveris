@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
@@ -32,13 +28,17 @@ import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.ClassUtil;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Component;
 import java.util.Comparator;
@@ -124,10 +124,13 @@ public abstract class Board
     public static final Desc CHECK = new Desc("Check", 900);
 
     /** To sort boards by their position. */
-    public static final Comparator<Board> byPosition = (Board b1, Board b2)
-            -> Integer.compare(b1.position, b2.position);
+    public static final Comparator<Board> byPosition = (Board b1,
+                                                        Board b2) -> Integer.compare(
+                                                                b1.position,
+                                                                b2.position);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The board instance name. */
     private final String name;
 
@@ -162,6 +165,7 @@ public abstract class Board
     private boolean selected;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a board from a pre-defined descriptor (name + position).
      *
@@ -230,6 +234,7 @@ public abstract class Board
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // connect //
     //---------//
@@ -256,231 +261,6 @@ public abstract class Board
 
         // Update action if any
         update();
-    }
-
-    //------------//
-    // disconnect //
-    //------------//
-    /**
-     * Disconnect from input selections.
-     */
-    public void disconnect ()
-    {
-        logger.debug("disconnect {}", this);
-
-        if (eventsRead != null) {
-            for (Class<?> eventClass : eventsRead) {
-                selectionService.unsubscribe(eventClass, this);
-            }
-        }
-    }
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component.
-     *
-     * @return the concrete component
-     */
-    public JPanel getComponent ()
-    {
-        return component;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this board instance.
-     *
-     * @return an instance name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //------------//
-    // isSelected //
-    //------------//
-    /**
-     * Report whether this board is currently selected.
-     *
-     * @return true if selected
-     */
-    public boolean isSelected ()
-    {
-        return selected;
-    }
-
-    //-------------//
-    // setSelected //
-    //-------------//
-    /**
-     * Select or not this board in its containing BoardsPane.
-     *
-     * @param selected true for selected, false for de-selected
-     */
-    public void setSelected (boolean selected)
-    {
-        // No modification?
-        if (selected == this.selected) {
-            return;
-        }
-
-        if (selected) {
-            connect();
-        } else {
-            disconnect();
-        }
-
-        this.selected = selected;
-
-        if (parent != null) {
-            parent.update();
-        }
-    }
-
-    //-------------//
-    // resizeBoard //
-    //-------------//
-    /**
-     * Resize board component, to adapt to its new composition.
-     */
-    public void resizeBoard ()
-    {
-        component.invalidate();
-        component.validate();
-        component.repaint();
-    }
-
-    //-----------//
-    // setParent //
-    //-----------//
-    public void setParent (BoardsPane parent)
-    {
-        this.parent = parent;
-    }
-
-    //-------------------//
-    // getSplitContainer //
-    //-------------------//
-    /**
-     * Report the JSplitPane that will contain the boards pane.
-     *
-     * @return the related split container
-     */
-    public JSplitPane getSplitContainer ()
-    {
-        return splitContainer;
-    }
-
-    //-------------------//
-    // setSplitContainer //
-    //-------------------//
-    /**
-     * Set the JSplitPane that will contain the boards pane.
-     *
-     * @param sp the related split container
-     */
-    public void setSplitContainer (JSplitPane sp)
-    {
-        splitContainer = sp;
-    }
-
-    //------------//
-    // setVisible //
-    //------------//
-    /**
-     * Make this board visible or not.
-     *
-     * @param bool true for visible
-     */
-    public void setVisible (boolean bool)
-    {
-        component.setVisible(bool);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return "{" + ClassUtil.nameOf(this) + " " + name + "}";
-    }
-
-    //---------//
-    // getBody //
-    //---------//
-    /**
-     * Report the body part of the board.
-     *
-     * @return the body
-     */
-    protected JPanel getBody ()
-    {
-        return body;
-    }
-
-    //---------------//
-    // getCountField //
-    //---------------//
-    protected JLabel getCountField ()
-    {
-        if (header == null) {
-            return null;
-        }
-
-        return header.count;
-    }
-
-    //---------------//
-    // getDumpButton //
-    //---------------//
-    /**
-     * Report the Dump button of the board, if any.
-     *
-     * @return the dump button, or null
-     */
-    protected JButton getDumpButton ()
-    {
-        if (header == null) {
-            return null;
-        }
-
-        return header.dump;
-    }
-
-    //---------------------//
-    // getSelectionService //
-    //---------------------//
-    /**
-     * Report the selection service this board is linked to.
-     *
-     * @return the selectionService
-     */
-    protected SelectionService getSelectionService ()
-    {
-        return selectionService;
-    }
-
-    //-----------//
-    // getVipBox //
-    //-----------//
-    /**
-     * Get access to the VIP box, if any.
-     *
-     * @return the vip label+field
-     */
-    protected LCheckBox getVipBox ()
-    {
-        if (header == null) {
-            return null;
-        }
-
-        return header.vip;
     }
 
     //--------------//
@@ -519,6 +299,244 @@ public abstract class Board
         builder.add(body, cst.xy(1, (header != null) ? 3 : 1));
     }
 
+    //------------//
+    // disconnect //
+    //------------//
+    /**
+     * Disconnect from input selections.
+     */
+    public void disconnect ()
+    {
+        logger.debug("disconnect {}", this);
+
+        if (eventsRead != null) {
+            for (Class<?> eventClass : eventsRead) {
+                selectionService.unsubscribe(eventClass, this);
+            }
+        }
+    }
+
+    //---------//
+    // getBody //
+    //---------//
+    /**
+     * Report the body part of the board.
+     *
+     * @return the body
+     */
+    protected JPanel getBody ()
+    {
+        return body;
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component.
+     *
+     * @return the concrete component
+     */
+    public JPanel getComponent ()
+    {
+        return component;
+    }
+
+    //---------------//
+    // getCountField //
+    //---------------//
+    protected JLabel getCountField ()
+    {
+        if (header == null) {
+            return null;
+        }
+
+        return header.count;
+    }
+
+    //---------------//
+    // getDumpButton //
+    //---------------//
+    /**
+     * Report the Dump button of the board, if any.
+     *
+     * @return the dump button, or null
+     */
+    protected JButton getDumpButton ()
+    {
+        if (header == null) {
+            return null;
+        }
+
+        return header.dump;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this board instance.
+     *
+     * @return an instance name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //---------------------//
+    // getSelectionService //
+    //---------------------//
+    /**
+     * Report the selection service this board is linked to.
+     *
+     * @return the selectionService
+     */
+    protected SelectionService getSelectionService ()
+    {
+        return selectionService;
+    }
+
+    //-------------------//
+    // getSplitContainer //
+    //-------------------//
+    /**
+     * Report the JSplitPane that will contain the boards pane.
+     *
+     * @return the related split container
+     */
+    public JSplitPane getSplitContainer ()
+    {
+        return splitContainer;
+    }
+
+    //-----------//
+    // getVipBox //
+    //-----------//
+    /**
+     * Get access to the VIP box, if any.
+     *
+     * @return the vip label+field
+     */
+    protected LCheckBox getVipBox ()
+    {
+        if (header == null) {
+            return null;
+        }
+
+        return header.vip;
+    }
+
+    //------------//
+    // isSelected //
+    //------------//
+    /**
+     * Report whether this board is currently selected.
+     *
+     * @return true if selected
+     */
+    public boolean isSelected ()
+    {
+        return selected;
+    }
+
+    //-------------//
+    // resizeBoard //
+    //-------------//
+    /**
+     * Resize board component, to adapt to its new composition.
+     */
+    public void resizeBoard ()
+    {
+        component.invalidate();
+        component.validate();
+        component.repaint();
+    }
+
+    //-----------//
+    // setParent //
+    //-----------//
+    public void setParent (BoardsPane parent)
+    {
+        this.parent = parent;
+    }
+
+    //-------------//
+    // setSelected //
+    //-------------//
+    /**
+     * Select or not this board in its containing BoardsPane.
+     *
+     * @param selected true for selected, false for de-selected
+     */
+    public void setSelected (boolean selected)
+    {
+        // No modification?
+        if (selected == this.selected) {
+            return;
+        }
+
+        if (selected) {
+            connect();
+        } else {
+            disconnect();
+        }
+
+        this.selected = selected;
+
+        if (parent != null) {
+            parent.update();
+        }
+    }
+
+    //-------------------//
+    // setSplitContainer //
+    //-------------------//
+    /**
+     * Set the JSplitPane that will contain the boards pane.
+     *
+     * @param sp the related split container
+     */
+    public void setSplitContainer (JSplitPane sp)
+    {
+        splitContainer = sp;
+    }
+
+    //------------//
+    // setVisible //
+    //------------//
+    /**
+     * Make this board visible or not.
+     *
+     * @param bool true for visible
+     */
+    public void setVisible (boolean bool)
+    {
+        component.setVisible(bool);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "{" + ClassUtil.nameOf(this) + " " + name + "}";
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Trigger an update of the board.
+     */
+    public void update ()
+    {
+        // Void by default
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // emptyFields //
     //-------------//
@@ -536,18 +554,8 @@ public abstract class Board
         }
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Trigger an update of the board.
-     */
-    public void update ()
-    {
-        // Void by default
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------//
     // Desc //
     //------//
@@ -595,10 +603,9 @@ public abstract class Board
                 boolean withDump)
         {
             count = withCount ? new JLabel("") : null;
-            vip = withVip
-                    ? new LCheckBox(
-                            resources.getString("vip.text"),
-                            resources.getString("vip.toolTipText")) : null;
+            vip = withVip ? new LCheckBox(
+                    resources.getString("vip.text"),
+                    resources.getString("vip.toolTipText")) : null;
             dump = withDump ? new JButton("Dump") : null;
 
             defineLayout();

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,8 @@ package org.audiveris.omr.image;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import static org.audiveris.omr.util.RegexUtil.*;
+import static org.audiveris.omr.util.RegexUtil.getGroup;
+import static org.audiveris.omr.util.RegexUtil.group;
 import org.audiveris.omr.util.WindowsRegistry;
 
 import org.slf4j.Logger;
@@ -53,11 +54,13 @@ public class Ghostscript
     private static volatile String path;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private Ghostscript ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //---------//
     // getPath //
     //---------//
@@ -97,9 +100,10 @@ public class Ghostscript
     private static List<String> getRegistryOutputs ()
     {
         /** Radices used in registry search (32, 64 or Wow). */
-        final String[] radices = new String[]{
-            "HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
-            "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
+        final String[] radices = new String[]
+        {
+                "HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
+                "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
         };
 
         List<String> outputs = new ArrayList<>();
@@ -134,8 +138,9 @@ public class Ghostscript
 
         /** Regex for registry key line. */
         final Pattern keyPattern = Pattern.compile(
-                "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\"
-                        + group(VERSION, "\\d+\\.\\d+") + "$");
+                "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\" + group(
+                        VERSION,
+                        "\\d+\\.\\d+") + "$");
 
         /** Regex for registry value line. */
         final Pattern valPattern = Pattern.compile(
@@ -214,6 +219,7 @@ public class Ghostscript
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -226,9 +232,6 @@ public class Ghostscript
                 9.06,
                 "Minimum Ghostscript acceptable version");
 
-        private final Constant.Double maxVersion = new Constant.Double(
-                "version",
-                9_999,
-                "Maximum Ghostscript acceptable version");
+        private final Constant.Double maxVersion=new Constant.Double("version",9_999,"Maximum Ghostscript acceptable version");
     }
 }

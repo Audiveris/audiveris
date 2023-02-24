@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,17 +42,11 @@ public class BeamInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new BeamInter object.
-     *
-     * @param impacts the grade details
-     * @param median  median beam line
-     * @param height  beam height
+     * Meant for JAXB.
      */
-    public BeamInter (GradeImpacts impacts,
-                      Line2D median,
-                      double height)
+    private BeamInter ()
     {
-        super(Shape.BEAM, impacts, median, height);
+        super((Shape) null, (GradeImpacts) null, null, 0);
     }
 
     /**
@@ -66,14 +60,21 @@ public class BeamInter
     }
 
     /**
-     * Meant for JAXB.
+     * Creates a new BeamInter object.
+     *
+     * @param impacts the grade details
+     * @param median  median beam line
+     * @param height  beam height
      */
-    private BeamInter ()
+    public BeamInter (GradeImpacts impacts,
+                      Line2D median,
+                      double height)
     {
-        super((Shape) null, (GradeImpacts) null, null, 0);
+        super(Shape.BEAM, impacts, median, height);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//

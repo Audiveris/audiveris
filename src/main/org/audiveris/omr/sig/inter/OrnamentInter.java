@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,21 +57,14 @@ public class OrnamentInter
 
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new OrnamentInter object.
-     *
-     * @param glyph underlying glyph
-     * @param shape TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED
-     *              (or tremolos)
-     * @param grade evaluation value
+     * No-arg constructor meant for JAXB.
      */
-    public OrnamentInter (Glyph glyph,
-                          Shape shape,
-                          Double grade)
+    protected OrnamentInter ()
     {
-        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
+
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new OrnamentInter object.
@@ -91,13 +84,22 @@ public class OrnamentInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new OrnamentInter object.
+     *
+     * @param glyph underlying glyph
+     * @param shape TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED
+     *              (or tremolos)
+     * @param grade evaluation value
      */
-    protected OrnamentInter ()
+    public OrnamentInter (Glyph glyph,
+                          Shape shape,
+                          Double grade)
     {
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -147,31 +149,6 @@ public class OrnamentInter
         }
 
         return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
-        Link link = lookupLink(systemHeadChords, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, ChordOrnamentRelation.class);
     }
 
     //------------//
@@ -245,6 +222,33 @@ public class OrnamentInter
 
         return null;
     }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordOrnamentRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // createValidAdded //

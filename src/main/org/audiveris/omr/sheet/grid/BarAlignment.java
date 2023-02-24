@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,6 +57,7 @@ public class BarAlignment
     protected double grade;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BarAlignment object.
      *
@@ -82,6 +83,7 @@ public class BarAlignment
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // compareTo //
     //-----------//
@@ -180,22 +182,6 @@ public class BarAlignment
         return hash;
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(String.format("(%.3f)", grade));
-        sb.append("{");
-        sb.append(internals());
-        sb.append("}");
-
-        return sb.toString();
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -212,6 +198,24 @@ public class BarAlignment
 
         return sb.toString();
     }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(String.format("(%.3f)", grade));
+        sb.append("{");
+        sb.append(internals());
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // bestOf //
@@ -251,6 +255,7 @@ public class BarAlignment
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Impacts //
     //---------//
@@ -261,9 +266,11 @@ public class BarAlignment
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"align", "dWidth"};
+        private static final String[] NAMES = new String[]
+        { "align", "dWidth" };
 
-        private static final double[] WEIGHTS = new double[]{2, 1};
+        private static final double[] WEIGHTS = new double[]
+        { 2, 1 };
 
         /**
          * Create Impacts.

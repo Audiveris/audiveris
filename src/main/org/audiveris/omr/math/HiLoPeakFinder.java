@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,10 +24,10 @@ package org.audiveris.omr.math;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.ChartPlotter;
 
-import org.jfree.data.xy.XYSeries;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.jfree.data.xy.XYSeries;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +54,7 @@ public class HiLoPeakFinder
     private static final Logger logger = LoggerFactory.getLogger(HiLoPeakFinder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Entity title. */
     public final String name;
 
@@ -96,6 +97,25 @@ public class HiLoPeakFinder
     };
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>HiLoPeakFinder</code> object aligned on provided function.
+     *
+     * @param name     a name for this finder
+     * @param function underlying function x &rarr; y
+     */
+    public HiLoPeakFinder (String name,
+                           IntegerFunction function)
+    {
+        Objects.requireNonNull(name, "PeakFinder needs non-null name");
+        Objects.requireNonNull(function, "PeakFinder needs non-null function");
+        this.name = name;
+        this.function = function;
+
+        xMin = function.getXMin();
+        xMax = function.getXMax();
+    }
+
     /**
      * Creates a new <code>HiLoPeakFinder</code> object on (sub-)domain of provided function.
      *
@@ -122,25 +142,61 @@ public class HiLoPeakFinder
         this.xMax = xMax;
     }
 
-    /**
-     * Creates a new <code>HiLoPeakFinder</code> object aligned on provided function.
-     *
-     * @param name     a name for this finder
-     * @param function underlying function x &rarr; y
-     */
-    public HiLoPeakFinder (String name,
-                           IntegerFunction function)
-    {
-        Objects.requireNonNull(name, "PeakFinder needs non-null name");
-        Objects.requireNonNull(function, "PeakFinder needs non-null function");
-        this.name = name;
-        this.function = function;
+    //~ Methods ------------------------------------------------------------------------------------
 
-        xMin = function.getXMin();
-        xMax = function.getXMax();
+    //------------//
+    // createPeak //
+    //------------//
+    /**
+     * Create a peak from an x range.
+     *
+     * @param pMin minimum acceptable x
+     * @param main x at highest y
+     * @param pMax maximum acceptable x
+     * @return the created peak
+     */
+    private Range createPeak (int pMin,
+                              int main,
+                              int pMax)
+    {
+        int total = function.getValue(main);
+        int lower = main;
+        int upper = main;
+        boolean modified;
+        logger.debug("{} starting at {} w/ {}", name, main, total);
+
+        do {
+            modified = false;
+
+            // Inspect both side x values, and pick up the one with largest gain
+            int before = (lower == pMin) ? 0 : function.getValue(lower - 1);
+            int after = (upper == pMax) ? 0 : function.getValue(upper + 1);
+            int gain = Math.max(before, after);
+            double gainRatio = (double) gain / (total + gain);
+
+            // If side x represents a significant gain for whole peak, take it, otherwise stop
+            if (gainRatio >= minGainRatio) {
+                if (before > after) {
+                    lower--;
+                    logger.debug("  going on at {} w/ {}", lower, gainRatio);
+                } else {
+                    upper++;
+                    logger.debug("  going on at {} w/ {}", upper, gainRatio);
+                }
+
+                total += gain;
+                modified = true;
+            } else {
+                logger.debug("{} stopped with {}", name, gainRatio);
+            }
+        } while (modified);
+
+        Range peak = new Range(lower, main, upper);
+        logger.debug("{} peak{}", name, peak);
+
+        return peak;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // findPeaks //
     //-----------//
@@ -304,6 +360,14 @@ public class HiLoPeakFinder
         return hiloSeries;
     }
 
+    /**
+     * @return the peaks
+     */
+    public List<Range> getPeaks ()
+    {
+        return peaks;
+    }
+
     //---------------//
     // getPeakSeries //
     //---------------//
@@ -359,14 +423,6 @@ public class HiLoPeakFinder
         }
 
         return peakSeries;
-    }
-
-    /**
-     * @return the peaks
-     */
-    public List<Range> getPeaks ()
-    {
-        return peaks;
     }
 
     //----------------//
@@ -477,72 +533,6 @@ public class HiLoPeakFinder
         return plotter;
     }
 
-    //-----------//
-    // setQuorum //
-    //-----------//
-    /**
-     * Assign quorum information.
-     *
-     * @param quorum quorum level and perhaps range
-     */
-    public void setQuorum (Quorum quorum)
-    {
-        this.quorum = quorum;
-    }
-
-    //------------//
-    // createPeak //
-    //------------//
-    /**
-     * Create a peak from an x range.
-     *
-     * @param pMin minimum acceptable x
-     * @param main x at highest y
-     * @param pMax maximum acceptable x
-     * @return the created peak
-     */
-    private Range createPeak (int pMin,
-                              int main,
-                              int pMax)
-    {
-        int total = function.getValue(main);
-        int lower = main;
-        int upper = main;
-        boolean modified;
-        logger.debug("{} starting at {} w/ {}", name, main, total);
-
-        do {
-            modified = false;
-
-            // Inspect both side x values, and pick up the one with largest gain
-            int before = (lower == pMin) ? 0 : function.getValue(lower - 1);
-            int after = (upper == pMax) ? 0 : function.getValue(upper + 1);
-            int gain = Math.max(before, after);
-            double gainRatio = (double) gain / (total + gain);
-
-            // If side x represents a significant gain for whole peak, take it, otherwise stop
-            if (gainRatio >= minGainRatio) {
-                if (before > after) {
-                    lower--;
-                    logger.debug("  going on at {} w/ {}", lower, gainRatio);
-                } else {
-                    upper++;
-                    logger.debug("  going on at {} w/ {}", upper, gainRatio);
-                }
-
-                total += gain;
-                modified = true;
-            } else {
-                logger.debug("{} stopped with {}", name, gainRatio);
-            }
-        } while (modified);
-
-        Range peak = new Range(lower, main, upper);
-        logger.debug("{} peak{}", name, peak);
-
-        return peak;
-    }
-
     private TreeMap<Integer, Double> replay (Range peak)
     {
         TreeMap<Integer, Double> thresholds = new TreeMap<>();
@@ -644,57 +634,20 @@ public class HiLoPeakFinder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // Quorum //
-    //--------//
+    //-----------//
+    // setQuorum //
+    //-----------//
     /**
-     * Defines a quorum level, with optional x range.
+     * Assign quorum information.
+     *
+     * @param quorum quorum level and perhaps range
      */
-    public static class Quorum
+    public void setQuorum (Quorum quorum)
     {
-
-        /**
-         * Quorum minimum value.
-         */
-        public final int minTop;
-
-        /**
-         * Range start if any.
-         */
-        public final Integer xMin;
-
-        /**
-         * Range stop if any.
-         */
-        public final Integer xMax;
-
-        /**
-         * Create a Quorum object, with specified range.
-         *
-         * @param minTop the minimum count
-         * @param xMin   range starting x value
-         * @param xMax   range stopping x value
-         */
-        public Quorum (int minTop,
-                       Integer xMin,
-                       Integer xMax)
-        {
-            this.minTop = minTop;
-            this.xMin = xMin;
-            this.xMax = xMax;
-        }
-
-        /**
-         * Create a Quorum object.
-         *
-         * @param minTop the minimum count
-         */
-        public Quorum (int minTop)
-        {
-            this(minTop, null, null);
-        }
+        this.quorum = quorum;
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //---------//
     // DerPeak //
@@ -725,6 +678,57 @@ public class HiLoPeakFinder
         public String toString ()
         {
             return String.format("(%d,%d)", min, max);
+        }
+    }
+
+    //--------//
+    // Quorum //
+    //--------//
+    /**
+     * Defines a quorum level, with optional x range.
+     */
+    public static class Quorum
+    {
+
+        /**
+         * Quorum minimum value.
+         */
+        public final int minTop;
+
+        /**
+         * Range start if any.
+         */
+        public final Integer xMin;
+
+        /**
+         * Range stop if any.
+         */
+        public final Integer xMax;
+
+        /**
+         * Create a Quorum object.
+         *
+         * @param minTop the minimum count
+         */
+        public Quorum (int minTop)
+        {
+            this(minTop, null, null);
+        }
+
+        /**
+         * Create a Quorum object, with specified range.
+         *
+         * @param minTop the minimum count
+         * @param xMin   range starting x value
+         * @param xMax   range stopping x value
+         */
+        public Quorum (int minTop,
+                       Integer xMin,
+                       Integer xMax)
+        {
+            this.minTop = minTop;
+            this.xMin = xMin;
+            this.xMax = xMax;
         }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,7 +46,8 @@ public abstract class SpinnerUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // fixIntegerList //
     //----------------//
@@ -64,18 +65,18 @@ public abstract class SpinnerUtil
         final JFormattedTextField ftf = editor.getTextField();
         ftf.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
         ftf.getActionMap().put("enterAction", new AbstractAction()
-                       {
-                           @Override
-                           public void actionPerformed (ActionEvent e)
-                           {
-                               try {
-                                   spinner.setValue(Integer.parseInt(ftf.getText()));
-                               } catch (NumberFormatException ex) {
-                                   // Reset to last value
-                                   ftf.setText(ftf.getValue().toString());
-                               }
-                           }
-                       });
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                try {
+                    spinner.setValue(Integer.parseInt(ftf.getText()));
+                } catch (NumberFormatException ex) {
+                    // Reset to last value
+                    ftf.setText(ftf.getValue().toString());
+                }
+            }
+        });
     }
 
     //-------------//

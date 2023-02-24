@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class TremoloStemRelation
     private static final Logger logger = LoggerFactory.getLogger(TremoloStemRelation.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TremoloStemRelation</code> object.
      */
@@ -60,6 +61,7 @@ public class TremoloStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -69,14 +71,6 @@ public class TremoloStemRelation
         final TremoloInter tremolo = (TremoloInter) e.getEdgeSource();
 
         tremolo.checkAbnormal();
-    }
-
-    //--------------------//
-    // getCenterDxMaximum //
-    //--------------------//
-    public static Scale.Fraction getCenterDxMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     //----------------//
@@ -109,14 +103,6 @@ public class TremoloStemRelation
     }
 
     //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
-    }
-
-    //----------------//
     // isSingleSource //
     //----------------//
     @Override
@@ -145,6 +131,24 @@ public class TremoloStemRelation
         if (!tremolo.isRemoved()) {
             tremolo.checkAbnormal();
         }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------------------//
+    // getCenterDxMaximum //
+    //--------------------//
+    public static Scale.Fraction getCenterDxMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

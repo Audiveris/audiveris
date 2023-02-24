@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,9 +55,11 @@ public class HeadSeedTally
     private static final Logger logger = LoggerFactory.getLogger(HeadSeedTally.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final Map<HorizontalSide, Map<HeadInter, Double>> data;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadSeedTally</code> object.
      */
@@ -71,6 +73,24 @@ public class HeadSeedTally
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------//
+    // dump //
+    //------//
+    public void dump (String title)
+    {
+        logger.info("\n{}", title);
+
+        for (Entry<HorizontalSide, Map<HeadInter, Double>> sEntry : data.entrySet()) {
+            final HorizontalSide hSide = sEntry.getKey();
+
+            for (Entry<HeadInter, Double> hEntry : sEntry.getValue().entrySet()) {
+                logger.info(
+                        String.format("%5s %3.1f %s", hSide, hEntry.getValue(), hEntry.getKey()));
+            }
+        }
+    }
+
     //-------//
     // getDx //
     //-------//
@@ -93,24 +113,6 @@ public class HeadSeedTally
         return null;
     }
 
-    //-------//
-    // putDx //
-    //-------//
-    /**
-     * Record the head-seed distance for provided head and side.
-     *
-     * @param head  head at hand
-     * @param hSide horizontal side of seed WRT head
-     * @param dx    measured horizontal distance, negative if inside head box, positive if outside
-     */
-    public void putDx (HeadInter head,
-                       HorizontalSide hSide,
-                       double dx)
-    {
-        ///logger.info(String.format("putDx %3d %5s %s", dx, hSide, head));
-        data.get(hSide).put(head, dx);
-    }
-
     //-------------------//
     // purgeRemovedHeads //
     //-------------------//
@@ -129,6 +131,26 @@ public class HeadSeedTally
             }
         }
     }
+
+    //-------//
+    // putDx //
+    //-------//
+    /**
+     * Record the head-seed distance for provided head and side.
+     *
+     * @param head  head at hand
+     * @param hSide horizontal side of seed WRT head
+     * @param dx    measured horizontal distance, negative if inside head box, positive if outside
+     */
+    public void putDx (HeadInter head,
+                       HorizontalSide hSide,
+                       double dx)
+    {
+        ///logger.info(String.format("putDx %3d %5s %s", dx, hSide, head));
+        data.get(hSide).put(head, dx);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // analyze //
@@ -194,8 +216,13 @@ public class HeadSeedTally
                     final double dx = pop.getMeanValue();
 
                     if (constants.printResults.isSet()) {
-                        logger.info(String.format("%-20s %-5s dx:%4.1f count: %d",
-                                                  shape, hSide, dx, card));
+                        logger.info(
+                                String.format(
+                                        "%-20s %-5s dx:%4.1f count: %d",
+                                        shape,
+                                        hSide,
+                                        dx,
+                                        card));
                     }
 
                     if (card >= constants.quorum.getValue()) {
@@ -209,24 +236,8 @@ public class HeadSeedTally
         sheet.getScale().setHeadSeedScale(hsScale);
     }
 
-    //------//
-    // dump //
-    //------//
-    public void dump (String title)
-    {
-        logger.info("\n{}", title);
-
-        for (Entry<HorizontalSide, Map<HeadInter, Double>> sEntry : data.entrySet()) {
-            final HorizontalSide hSide = sEntry.getKey();
-
-            for (Entry<HeadInter, Double> hEntry : sEntry.getValue().entrySet()) {
-                logger.info(String.format("%5s %3.1f %s",
-                                          hSide, hEntry.getValue(), hEntry.getKey()));
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

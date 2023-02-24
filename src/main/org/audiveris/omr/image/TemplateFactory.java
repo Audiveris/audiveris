@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -132,10 +132,12 @@ public class TemplateFactory
     private static final int IRRELEVANT = new Color(0, 0, 0, 0).getRGB(); // Fully transparent
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** All catalogs allocated so far, mapped by font family and point size. */
     private final Map<MusicFamily, Map<Integer, Catalog>> catalogs;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * (Private) Creates the singleton object.
      */
@@ -145,6 +147,200 @@ public class TemplateFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------------------//
+    // buildDecoratedImage //
+    //---------------------//
+    /**
+     * For easy visual checking, build a magnified template image with decorations.
+     *
+     * @param tpl the template at hand
+     * @param src source colored image
+     * @return decorated magnified image
+     */
+    private BufferedImage buildDecoratedImage (Template tpl,
+                                               BufferedImage src)
+    {
+        final int width = src.getWidth();
+        final int height = src.getHeight();
+        final Rectangle slim = tpl.getSlimBounds();
+
+        final int zoom = constants.magnificationRatio.getValue(); // (rather arbitrary ratio)
+        final BufferedImage img = new BufferedImage(
+                (width + 2) * zoom, // + 2 to cope with ordinate display on left and right
+                (height + 2) * zoom, // +2 to cope with abscissa display on top and bottom
+                BufferedImage.TYPE_INT_RGB);
+        final Graphics2D g = img.createGraphics();
+
+        // Fill frame background (with side regions)
+        g.setColor(Color.GRAY);
+        g.fillRect(0, 0, img.getWidth(), img.getHeight());
+
+        final AffineTransform at = AffineTransform.getScaleInstance(zoom, zoom);
+        at.concatenate(AffineTransform.getTranslateInstance(1, 1));
+        g.setTransform(at);
+
+        final Font textFont = new Font("SansSerif", Font.PLAIN, 1).deriveFont(15f / zoom);
+        final FontRenderContext frc = g.getFontRenderContext();
+
+        // Draw coordinate values
+        g.setColor(Color.BLACK);
+
+        for (int x = 0; x <= width; x++) {
+            final String str = Integer.toString(x);
+            final TextLayout layout = new TextLayout(str, textFont, frc);
+            final Point2D north = new Point2D.Double(x, -0.5);
+            OmrFont.paint(g, layout, north, Alignment.AREA_CENTER);
+
+            final Point2D south = new Point2D.Double(x, height + 0.5);
+            OmrFont.paint(g, layout, south, Alignment.AREA_CENTER);
+        }
+
+        for (int y = 0; y <= height; y++) {
+            final String str = Integer.toString(y);
+            final TextLayout layout = new TextLayout(str, textFont, frc);
+            final Point2D west = new Point2D.Double(-0.5, y);
+            OmrFont.paint(g, layout, west, Alignment.AREA_CENTER);
+
+            final Point2D east = new Point2D.Double(width + 0.5, y);
+            OmrFont.paint(g, layout, east, Alignment.AREA_CENTER);
+        }
+
+        // Fill template background
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+
+        // Draw template
+        g.drawImage(src, null, null);
+
+        // Paint shape symbol
+        final Composite oldComposite = g.getComposite();
+        g.setComposite(TemplateView.templateComposite);
+
+        MusicFont musicFont = MusicFont.getMusicFont(tpl.getFamily(), tpl.getPointSize());
+        final Point2D center = GeoUtil.center2D(slim);
+        final TemplateSymbol symbol = new TemplateSymbol(tpl.getShape(), tpl.getFamily());
+        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+        g.setComposite(oldComposite);
+
+        // Draw distances
+        UIUtil.setAbsoluteStroke(g, 1f);
+        g.setFont(textFont);
+
+        for (PixelDistance pix : tpl.getKeyPoints()) {
+            int d = (int) Math.rint(pix.d);
+
+            if (d != 0) {
+                g.drawRect(pix.x, pix.y, 1, 1);
+
+                final String str = Integer.toString(d);
+
+                final TextLayout layout = new TextLayout(str, textFont, frc);
+                final Point2D location = new Point2D.Double(pix.x + 0.5, pix.y + 0.5);
+                OmrFont.paint(g, layout, location, Alignment.AREA_CENTER);
+                ///g.drawString(str, pix.x + 0.4f, pix.y + 0.6f);
+            }
+        }
+
+        g.setColor(Color.GREEN);
+
+        // Draw trimmed bounds
+        UIUtil.setAbsoluteStroke(g, 3f);
+        g.draw(slim);
+        //
+        //        // Anchor Point locations, shown as rounded rectangles
+        //        for (Entry<Anchor, Point2D> entry : tpl.getOffsets().entrySet()) {
+        //            final Anchor anchor = entry.getKey();
+        //            final Point pt = tpl.getOffset(anchor);
+        //            final RoundRectangle2D rr = new RoundRectangle2D.Double(pt.x, pt.y, 1, 1, 0.5, 0.5);
+        //            g.draw(rr);
+        //        }
+
+        // Anchor Point2D locations, shown as small circles with anchor abbreviation
+        ///g.setXORMode(Color.BLACK);
+        for (Entry<Anchor, Point2D> entry : tpl.getOffsets().entrySet()) {
+            final Anchor anchor = entry.getKey();
+            final Point2D pt2D = entry.getValue();
+            final Ellipse2D ellipse = new Ellipse2D.Double(
+                    pt2D.getX() - 0.375,
+                    pt2D.getY() - 0.375,
+                    0.75,
+                    0.75);
+            g.draw(ellipse);
+
+            final String str = anchor.abbreviation();
+            final TextLayout layout = new TextLayout(str, textFont, frc);
+            OmrFont.paint(g, layout, pt2D, Alignment.AREA_CENTER);
+        }
+
+        g.dispose();
+
+        return img;
+    }
+
+    //---------------//
+    // buildTemplate //
+    //---------------//
+    /**
+     * Build a template for desired shape and size, based on MusicFont.
+     *
+     * @param shape     shape of the template
+     * @param pointSize precise scaling for font
+     * @return the brand new template
+     */
+    private Template buildTemplate (Shape shape,
+                                    MusicFamily family,
+                                    int pointSize)
+    {
+        logger.debug("Building template for {} {} {}", shape, family, pointSize);
+
+        final MusicFont font = MusicFont.getMusicFont(family, pointSize);
+        final TemplateSymbol symbol = new TemplateSymbol(shape, family);
+
+        // Check whether we have a usable template symbol
+        if (symbol.getDimension(font) == null) {
+            logger.info("{} No template for {}", family, shape);
+
+            return null;
+        }
+
+        final Rectangle fatBounds = symbol.getFatBounds(font);
+        final BufferedImage img = symbol.buildImage(font); // Gray pixels
+        binarize(img, constants.binarizationThreshold.getValue()); // B&W pixels + IRRELEVANT
+        final Rectangle slimBounds = getSlimBounds(img, fatBounds);
+
+        // Pre-populate template keyPoints?
+        final List<PixelDistance> keyPoints = (constants.prePopulateKeyPoints.isSet()
+                || constants.saveTemplates.isSet()) ? retrieveKeyPoints(
+                        shape,
+                        family,
+                        pointSize,
+                        img,
+                        fatBounds) : null;
+        // Generate the template instance
+        final Template tpl = new Template(
+                shape,
+                family,
+                pointSize,
+                img.getWidth(),
+                img.getHeight(),
+                keyPoints,
+                slimBounds);
+
+        // Add specific anchor points, if any
+        addAnchors(tpl, slimBounds);
+
+        // Store a copy on disk for visual check?
+        if (constants.saveTemplates.isSet()) {
+            BufferedImage output = buildDecoratedImage(tpl, img);
+            ImageUtil.saveOnDisk(output, "templates-" + family + "-" + pointSize, shape.name());
+        }
+
+        logger.debug("{} size:{} \n{}", shape, pointSize, tpl);
+
+        return tpl;
+    }
+
     //------------//
     // getCatalog //
     //------------//
@@ -180,63 +376,7 @@ public class TemplateFactory
         return catalog;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report this singleton instance.
-     *
-     * @return the TemplateFactory single instance
-     */
-    public static TemplateFactory getInstance ()
-    {
-        return INSTANCE;
-    }
-
-    //------//
-    // main //
-    //------//
-    /**
-     * An entry point to allow stand alone generation and visual check of a bunch of templates.
-     *
-     * @param args minimum and maximum pointSize values
-     */
-    public static void main (String... args)
-    {
-        final int min;
-        final int max;
-
-        if ((args == null) || (args.length == 0)) {
-            min = max = constants.defaultDecoratedPointSize.getValue();
-        } else {
-            min = Integer.decode(args[0]);
-            max = (args.length > 1) ? Integer.decode(args[1]) : min;
-        }
-
-        logger.info("minPointSize:{} maxPointSize{}", min, max);
-
-        final TemplateFactory factory = TemplateFactory.getInstance();
-
-        for (MusicFamily family : MusicFamily.values()) {
-            for (int pointSize = min; pointSize <= max; pointSize++) {
-                factory.getCatalog(family, pointSize);
-            }
-        }
-    }
-
-    //-----------------------//
-    // maxDistanceFromSymbol //
-    //-----------------------//
-    /**
-     * Report the maximum external distance from symbol foreground for a pixel to be considered.
-     *
-     * @return the (normalized) maximum distance
-     */
-    public static double maxDistanceFromSymbol ()
-    {
-        return constants.maxRawDistanceFromSymbol.getValue()
-                       / (double) ChamferDistance.DEFAULT_NORMALIZER;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------//
     // addAnchors //
@@ -280,70 +420,6 @@ public class TemplateFactory
         template.putOffset(Anchor.BOTTOM_RIGHT_STEM, right, getBottom(shape, slimBox, RIGHT));
     }
 
-    //--------//
-    // getTop //
-    //--------//
-    private static double getTop (Shape shape,
-                                  Rectangle slimBox,
-                                  HorizontalSide hSide)
-    {
-        return switch (shape) {
-            case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL ->
-                switch (hSide) {
-                    case LEFT ->
-                        slimBox.y + 0.5 * slimBox.height;
-                    case RIGHT ->
-                        slimBox.y - constants.stemDy.getValue() * slimBox.height;
-                };
-            case NOTEHEAD_CROSS ->
-                switch (hSide) {
-                    case LEFT ->
-                        slimBox.y + 0.2 * slimBox.height;
-                    case RIGHT ->
-                        slimBox.y;
-                };
-            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID ->
-                slimBox.y + slimBox.height / 2.0;
-            case NOTEHEAD_CROSS_VOID, NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID ->
-                slimBox.y;
-            default ->
-                slimBox.y - constants.stemDy.getValue() * slimBox.height;
-        };
-    }
-
-    //-----------//
-    // getBottom //
-    //-----------//
-    private static double getBottom (Shape shape,
-                                     Rectangle slimBox,
-                                     HorizontalSide hSide)
-    {
-        return switch (shape) {
-            case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL ->
-                switch (hSide) {
-                    case LEFT ->
-                        slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
-                    case RIGHT ->
-                        slimBox.y + 0.5 * slimBox.height;
-                };
-            case NOTEHEAD_CROSS ->
-                switch (hSide) {
-                    case LEFT ->
-                        slimBox.y + slimBox.height;
-                    case RIGHT ->
-                        slimBox.y + (1 - 0.2) * slimBox.height;
-                };
-            case NOTEHEAD_CROSS_VOID ->
-                slimBox.y + slimBox.height;
-            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID ->
-                slimBox.y + slimBox.height / 2.0;
-            case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID ->
-                slimBox.y;
-            default ->
-                slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
-        };
-    }
-
     //----------//
     // addHoles //
     //----------//
@@ -365,29 +441,32 @@ public class TemplateFactory
         final List<Point> holeSeeds = new ArrayList<>();
 
         switch (shape) {
-        case WHOLE_NOTE_CIRCLE_X, NOTEHEAD_CIRCLE_X_VOID, NOTEHEAD_CIRCLE_X -> {
+        case WHOLE_NOTE_CIRCLE_X, NOTEHEAD_CIRCLE_X_VOID, NOTEHEAD_CIRCLE_X ->
+        {
             // 4 holes on vertical and on horizontal axes
             holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
         }
-        case BREVE_CIRCLE_X -> {
+        case BREVE_CIRCLE_X ->
+        {
             // 4 holes on vertical and on horizontal axes
             holeSeeds.add(new Point(box.x + ((3 * box.width) / 8), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + ((5 * box.width) / 8), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
         }
-        case BREVE_CROSS -> {
+        case BREVE_CROSS ->
+        {
             // 3 holes on horizontal axis
             holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
             holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
         }
         default ->
-            // Just one hole in the symbol center
-            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
+                // Just one hole in the symbol center
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
         }
 
         // Fill the holes if any with HOLE color
@@ -516,199 +595,6 @@ public class TemplateFactory
         return distances;
     }
 
-    //---------------------//
-    // buildDecoratedImage //
-    //---------------------//
-    /**
-     * For easy visual checking, build a magnified template image with decorations.
-     *
-     * @param tpl the template at hand
-     * @param src source colored image
-     * @return decorated magnified image
-     */
-    private BufferedImage buildDecoratedImage (Template tpl,
-                                               BufferedImage src)
-    {
-        final int width = src.getWidth();
-        final int height = src.getHeight();
-        final Rectangle slim = tpl.getSlimBounds();
-
-        final int zoom = constants.magnificationRatio.getValue(); // (rather arbitrary ratio)
-        final BufferedImage img = new BufferedImage(
-                (width + 2) * zoom, // + 2 to cope with ordinate display on left and right
-                (height + 2) * zoom, // +2 to cope with abscissa display on top and bottom
-                BufferedImage.TYPE_INT_RGB);
-        final Graphics2D g = img.createGraphics();
-
-        // Fill frame background (with side regions)
-        g.setColor(Color.GRAY);
-        g.fillRect(0, 0, img.getWidth(), img.getHeight());
-
-        final AffineTransform at = AffineTransform.getScaleInstance(zoom, zoom);
-        at.concatenate(AffineTransform.getTranslateInstance(1, 1));
-        g.setTransform(at);
-
-        final Font textFont = new Font("SansSerif", Font.PLAIN, 1).deriveFont(15f / zoom);
-        final FontRenderContext frc = g.getFontRenderContext();
-
-        // Draw coordinate values
-        g.setColor(Color.BLACK);
-
-        for (int x = 0; x <= width; x++) {
-            final String str = Integer.toString(x);
-            final TextLayout layout = new TextLayout(str, textFont, frc);
-            final Point2D north = new Point2D.Double(x, -0.5);
-            OmrFont.paint(g, layout, north, Alignment.AREA_CENTER);
-
-            final Point2D south = new Point2D.Double(x, height + 0.5);
-            OmrFont.paint(g, layout, south, Alignment.AREA_CENTER);
-        }
-
-        for (int y = 0; y <= height; y++) {
-            final String str = Integer.toString(y);
-            final TextLayout layout = new TextLayout(str, textFont, frc);
-            final Point2D west = new Point2D.Double(-0.5, y);
-            OmrFont.paint(g, layout, west, Alignment.AREA_CENTER);
-
-            final Point2D east = new Point2D.Double(width + 0.5, y);
-            OmrFont.paint(g, layout, east, Alignment.AREA_CENTER);
-        }
-
-        // Fill template background
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, width, height);
-
-        // Draw template
-        g.drawImage(src, null, null);
-
-        // Paint shape symbol
-        final Composite oldComposite = g.getComposite();
-        g.setComposite(TemplateView.templateComposite);
-
-        MusicFont musicFont = MusicFont.getMusicFont(tpl.getFamily(), tpl.getPointSize());
-        final Point2D center = GeoUtil.center2D(slim);
-        final TemplateSymbol symbol = new TemplateSymbol(tpl.getShape(), tpl.getFamily());
-        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
-        g.setComposite(oldComposite);
-
-        // Draw distances
-        UIUtil.setAbsoluteStroke(g, 1f);
-        g.setFont(textFont);
-
-        for (PixelDistance pix : tpl.getKeyPoints()) {
-            int d = (int) Math.rint(pix.d);
-
-            if (d != 0) {
-                g.drawRect(pix.x, pix.y, 1, 1);
-
-                final String str = Integer.toString(d);
-
-                final TextLayout layout = new TextLayout(str, textFont, frc);
-                final Point2D location = new Point2D.Double(pix.x + 0.5, pix.y + 0.5);
-                OmrFont.paint(g, layout, location, Alignment.AREA_CENTER);
-                ///g.drawString(str, pix.x + 0.4f, pix.y + 0.6f);
-            }
-        }
-
-        g.setColor(Color.GREEN);
-
-        // Draw trimmed bounds
-        UIUtil.setAbsoluteStroke(g, 3f);
-        g.draw(slim);
-//
-//        // Anchor Point locations, shown as rounded rectangles
-//        for (Entry<Anchor, Point2D> entry : tpl.getOffsets().entrySet()) {
-//            final Anchor anchor = entry.getKey();
-//            final Point pt = tpl.getOffset(anchor);
-//            final RoundRectangle2D rr = new RoundRectangle2D.Double(pt.x, pt.y, 1, 1, 0.5, 0.5);
-//            g.draw(rr);
-//        }
-
-        // Anchor Point2D locations, shown as small circles with anchor abbreviation
-        ///g.setXORMode(Color.BLACK);
-        for (Entry<Anchor, Point2D> entry : tpl.getOffsets().entrySet()) {
-            final Anchor anchor = entry.getKey();
-            final Point2D pt2D = entry.getValue();
-            final Ellipse2D ellipse = new Ellipse2D.Double(pt2D.getX() - 0.375,
-                                                           pt2D.getY() - 0.375,
-                                                           0.75,
-                                                           0.75);
-            g.draw(ellipse);
-
-            final String str = anchor.abbreviation();
-            final TextLayout layout = new TextLayout(str, textFont, frc);
-            OmrFont.paint(g, layout, pt2D, Alignment.AREA_CENTER);
-        }
-
-        g.dispose();
-
-        return img;
-    }
-
-    //---------------//
-    // buildTemplate //
-    //---------------//
-    /**
-     * Build a template for desired shape and size, based on MusicFont.
-     *
-     * @param shape     shape of the template
-     * @param pointSize precise scaling for font
-     * @return the brand new template
-     */
-    private Template buildTemplate (Shape shape,
-                                    MusicFamily family,
-                                    int pointSize)
-    {
-        logger.debug("Building template for {} {} {}", shape, family, pointSize);
-
-        final MusicFont font = MusicFont.getMusicFont(family, pointSize);
-        final TemplateSymbol symbol = new TemplateSymbol(shape, family);
-
-        // Check whether we have a usable template symbol
-        if (symbol.getDimension(font) == null) {
-            logger.info("{} No template for {}", family, shape);
-
-            return null;
-        }
-
-        final Rectangle fatBounds = symbol.getFatBounds(font);
-        final BufferedImage img = symbol.buildImage(font); // Gray pixels
-        binarize(img, constants.binarizationThreshold.getValue()); // B&W pixels + IRRELEVANT
-        final Rectangle slimBounds = getSlimBounds(img, fatBounds);
-
-        // Pre-populate template keyPoints?
-        final List<PixelDistance> keyPoints = (constants.prePopulateKeyPoints.isSet()
-                                                       || constants.saveTemplates.isSet())
-                ? retrieveKeyPoints(
-                        shape,
-                        family,
-                        pointSize,
-                        img,
-                        fatBounds) : null;
-        // Generate the template instance
-        final Template tpl = new Template(
-                shape,
-                family,
-                pointSize,
-                img.getWidth(),
-                img.getHeight(),
-                keyPoints,
-                slimBounds);
-
-        // Add specific anchor points, if any
-        addAnchors(tpl, slimBounds);
-
-        // Store a copy on disk for visual check?
-        if (constants.saveTemplates.isSet()) {
-            BufferedImage output = buildDecoratedImage(tpl, img);
-            ImageUtil.saveOnDisk(output, "templates-" + family + "-" + pointSize, shape.name());
-        }
-
-        logger.debug("{} size:{} \n{}", shape, pointSize, tpl);
-
-        return tpl;
-    }
-
     //----------------------//
     // flagIrrelevantPixels //
     //----------------------//
@@ -733,18 +619,40 @@ public class TemplateFactory
         }
     }
 
-    //--------------//
-    // isBackground //
-    //--------------//
-    private static boolean isBackground (BufferedImage img,
-                                         int x,
-                                         int y)
+    //-----------//
+    // getBottom //
+    //-----------//
+    private static double getBottom (Shape shape,
+                                     Rectangle slimBox,
+                                     HorizontalSide hSide)
     {
-        if ((x >= 0) && (x < img.getWidth()) && (y >= 0) && (y < img.getHeight())) {
-            return img.getRGB(x, y) == BACK;
-        }
+        return switch (shape) {
+        case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL -> switch (hSide) {
+        case LEFT -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+        case RIGHT -> slimBox.y + 0.5 * slimBox.height;
+        };
+        case NOTEHEAD_CROSS -> switch (hSide) {
+        case LEFT -> slimBox.y + slimBox.height;
+        case RIGHT -> slimBox.y + (1 - 0.2) * slimBox.height;
+        };
+        case NOTEHEAD_CROSS_VOID -> slimBox.y + slimBox.height;
+        case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
+        default -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+        };
+    }
 
-        return false;
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report this singleton instance.
+     *
+     * @return the TemplateFactory single instance
+     */
+    public static TemplateFactory getInstance ()
+    {
+        return INSTANCE;
     }
 
     //---------------//
@@ -843,6 +751,87 @@ public class TemplateFactory
         return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
     }
 
+    //--------//
+    // getTop //
+    //--------//
+    private static double getTop (Shape shape,
+                                  Rectangle slimBox,
+                                  HorizontalSide hSide)
+    {
+        return switch (shape) {
+        case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL -> switch (hSide) {
+        case LEFT -> slimBox.y + 0.5 * slimBox.height;
+        case RIGHT -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
+        };
+        case NOTEHEAD_CROSS -> switch (hSide) {
+        case LEFT -> slimBox.y + 0.2 * slimBox.height;
+        case RIGHT -> slimBox.y;
+        };
+        case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
+        case NOTEHEAD_CROSS_VOID, NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
+        default -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
+        };
+    }
+
+    //--------------//
+    // isBackground //
+    //--------------//
+    private static boolean isBackground (BufferedImage img,
+                                         int x,
+                                         int y)
+    {
+        if ((x >= 0) && (x < img.getWidth()) && (y >= 0) && (y < img.getHeight())) {
+            return img.getRGB(x, y) == BACK;
+        }
+
+        return false;
+    }
+
+    //------//
+    // main //
+    //------//
+    /**
+     * An entry point to allow stand alone generation and visual check of a bunch of templates.
+     *
+     * @param args minimum and maximum pointSize values
+     */
+    public static void main (String... args)
+    {
+        final int min;
+        final int max;
+
+        if ((args == null) || (args.length == 0)) {
+            min = max = constants.defaultDecoratedPointSize.getValue();
+        } else {
+            min = Integer.decode(args[0]);
+            max = (args.length > 1) ? Integer.decode(args[1]) : min;
+        }
+
+        logger.info("minPointSize:{} maxPointSize{}", min, max);
+
+        final TemplateFactory factory = TemplateFactory.getInstance();
+
+        for (MusicFamily family : MusicFamily.values()) {
+            for (int pointSize = min; pointSize <= max; pointSize++) {
+                factory.getCatalog(family, pointSize);
+            }
+        }
+    }
+
+    //-----------------------//
+    // maxDistanceFromSymbol //
+    //-----------------------//
+    /**
+     * Report the maximum external distance from symbol foreground for a pixel to be considered.
+     *
+     * @return the (normalized) maximum distance
+     */
+    public static double maxDistanceFromSymbol ()
+    {
+        return constants.maxRawDistanceFromSymbol.getValue()
+                / (double) ChamferDistance.DEFAULT_NORMALIZER;
+    }
+
     //-------------------//
     // retrieveKeyPoints //
     //-------------------//
@@ -885,6 +874,7 @@ public class TemplateFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Catalog //
     //---------//
@@ -917,20 +907,6 @@ public class TemplateFactory
             buildAllTemplates();
         }
 
-        //-------------//
-        // getTemplate //
-        //-------------//
-        /**
-         * Report the template for the given shape.
-         *
-         * @param shape desired shape
-         * @return the template (not null, since all have been constructed)
-         */
-        public Template getTemplate (Shape shape)
-        {
-            return templates.get(shape);
-        }
-
         //-------------------//
         // buildAllTemplates //
         //-------------------//
@@ -944,6 +920,20 @@ public class TemplateFactory
             for (Shape shape : ShapeSet.Heads) {
                 templates.put(shape, buildTemplate(shape, family, pointSize));
             }
+        }
+
+        //-------------//
+        // getTemplate //
+        //-------------//
+        /**
+         * Report the template for the given shape.
+         *
+         * @param shape desired shape
+         * @return the template (not null, since all have been constructed)
+         */
+        public Template getTemplate (Shape shape)
+        {
+            return templates.get(shape);
         }
     }
 

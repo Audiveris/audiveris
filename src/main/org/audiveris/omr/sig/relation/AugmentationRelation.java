@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -63,6 +63,7 @@ public class AugmentationRelation
     { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -79,28 +80,37 @@ public class AugmentationRelation
         }
     }
 
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (int profile)
+    //---------------//
+    // getOutWeights //
+    //---------------//
+    @Override
+    protected double[] getOutWeights ()
     {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
-    }
-
-    //-------------------//
-    // getXOutGapMinimum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMinimum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMin, profile);
+        return OUT_WEIGHTS;
     }
 
     //----------------//
-    // getYGapMaximum //
+    // getSourceCoeff //
     //----------------//
-    public static Scale.Fraction getYGapMaximum (int profile)
+    /**
+     * @return the coefficient used to compute source support ratio
+     */
+    @Override
+    protected double getSourceCoeff ()
     {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
+        return constants.dotSupportCoeff.getValue();
+    }
+
+    @Override
+    protected Scale.Fraction getXOutGapMax (int profile)
+    {
+        return getXOutGapMaximum(profile);
+    }
+
+    @Override
+    protected Scale.Fraction getYGapMax (int profile)
+    {
+        return getYGapMaximum(profile);
     }
 
     //----------------//
@@ -140,39 +150,6 @@ public class AugmentationRelation
         }
     }
 
-    //---------------//
-    // getOutWeights //
-    //---------------//
-    @Override
-    protected double[] getOutWeights ()
-    {
-        return OUT_WEIGHTS;
-    }
-
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    /**
-     * @return the coefficient used to compute source support ratio
-     */
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.dotSupportCoeff.getValue();
-    }
-
-    @Override
-    protected Scale.Fraction getXOutGapMax (int profile)
-    {
-        return getXOutGapMaximum(profile);
-    }
-
-    @Override
-    protected Scale.Fraction getYGapMax (int profile)
-    {
-        return getYGapMaximum(profile);
-    }
-
     //---------------------//
     // updateChordDotCount //
     //---------------------//
@@ -197,7 +174,34 @@ public class AugmentationRelation
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
+    }
+
+    //-------------------//
+    // getXOutGapMinimum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMinimum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMin, profile);
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

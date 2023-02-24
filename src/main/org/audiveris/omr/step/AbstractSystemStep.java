@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public abstract class AbstractSystemStep<C>
     private static final Logger logger = LoggerFactory.getLogger(AbstractSystemStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new AbstractSystemStep object.
      */
@@ -58,6 +59,7 @@ public abstract class AbstractSystemStep<C>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // clearErrors //
     //-------------//
@@ -66,45 +68,6 @@ public abstract class AbstractSystemStep<C>
                              Sheet sheet)
     {
         // Void, since this is done system per system
-    }
-
-    //----------//
-    // doSystem //
-    //----------//
-    /**
-     * Do perform the step on the given system.
-     * This method must be defined for any concrete system step.
-     *
-     * @param system  the system to process
-     * @param context the sheet context
-     * @throws StepException raised if processing failed
-     */
-    public abstract void doSystem (SystemInfo system,
-                                   C context)
-        throws StepException;
-
-    //------//
-    // doit //
-    //------//
-    /**
-     * Actually perform the step.
-     * This method is run when this step is explicitly selected
-     *
-     * @param sheet the sheet to process
-     * @throws StepException raised if processing failed
-     */
-    @Override
-    public void doit (Sheet sheet)
-        throws StepException
-    {
-        // Preliminary actions
-        final C context = doProlog(sheet);
-
-        // Processing system per system
-        doitPerSystem(sheet, context);
-
-        // Final actions
-        doEpilog(sheet, context);
     }
 
     //-------------------//
@@ -141,21 +104,28 @@ public abstract class AbstractSystemStep<C>
         // Empty by default
     }
 
-    //----------//
-    // doProlog //
-    //----------//
+    //------//
+    // doit //
+    //------//
     /**
-     * Do preliminary common work before all systems processing are launched in parallel.
+     * Actually perform the step.
+     * This method is run when this step is explicitly selected
      *
-     * @param sheet the containing sheet
-     * @return the created sheet context
+     * @param sheet the sheet to process
      * @throws StepException raised if processing failed
      */
-    protected C doProlog (Sheet sheet)
+    @Override
+    public void doit (Sheet sheet)
         throws StepException
     {
-        // Empty by default
-        return null;
+        // Preliminary actions
+        final C context = doProlog(sheet);
+
+        // Processing system per system
+        doitPerSystem(sheet, context);
+
+        // Final actions
+        doEpilog(sheet, context);
     }
 
     //---------------//
@@ -216,4 +186,36 @@ public abstract class AbstractSystemStep<C>
             throw new RuntimeException(ex);
         }
     }
+
+    //----------//
+    // doProlog //
+    //----------//
+    /**
+     * Do preliminary common work before all systems processing are launched in parallel.
+     *
+     * @param sheet the containing sheet
+     * @return the created sheet context
+     * @throws StepException raised if processing failed
+     */
+    protected C doProlog (Sheet sheet)
+        throws StepException
+    {
+        // Empty by default
+        return null;
+    }
+
+    //----------//
+    // doSystem //
+    //----------//
+    /**
+     * Do perform the step on the given system.
+     * This method must be defined for any concrete system step.
+     *
+     * @param system  the system to process
+     * @param context the sheet context
+     * @throws StepException raised if processing failed
+     */
+    public abstract void doSystem (SystemInfo system,
+                                   C context)
+        throws StepException;
 }

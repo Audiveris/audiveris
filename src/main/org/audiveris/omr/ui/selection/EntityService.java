@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,10 +24,10 @@ package org.audiveris.omr.ui.selection;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -47,7 +47,6 @@ import java.util.List;
  * {@link #disconnect} methods.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 @SuppressWarnings("unchecked")
@@ -60,6 +59,7 @@ public class EntityService<E extends Entity>
     private static final Logger logger = LoggerFactory.getLogger(EntityService.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying entity index, if any. */
     protected final EntityIndex<E> index;
 
@@ -70,22 +70,6 @@ public class EntityService<E extends Entity>
     protected final List<E> basket = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>EntityService</code> object with no underlying index.
-     *
-     * @param name            service name
-     * @param locationService related location service, or null if none
-     * @param eventsAllowed   events allowed on the service
-     */
-    public EntityService (String name,
-                          SelectionService locationService,
-                          Class[] eventsAllowed)
-    {
-        super(name, eventsAllowed);
-
-        index = null;
-        this.locationService = locationService;
-    }
 
     /**
      * Creates a new <code>EntityService</code> object.
@@ -104,7 +88,25 @@ public class EntityService<E extends Entity>
         this.locationService = locationService;
     }
 
+    /**
+     * Creates a new <code>EntityService</code> object with no underlying index.
+     *
+     * @param name            service name
+     * @param locationService related location service, or null if none
+     * @param eventsAllowed   events allowed on the service
+     */
+    public EntityService (String name,
+                          SelectionService locationService,
+                          Class[] eventsAllowed)
+    {
+        super(name, eventsAllowed);
+
+        index = null;
+        this.locationService = locationService;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // connect //
     //---------//
@@ -156,6 +158,24 @@ public class EntityService<E extends Entity>
         return index;
     }
 
+    //-----------------//
+    // getMostRelevant //
+    //-----------------//
+    /**
+     * Among the list of selected entities, report the most "relevant" one.
+     *
+     * @param list the sequence of selected entities
+     * @return the chosen entity
+     */
+    protected E getMostRelevant (List<E> list)
+    {
+        if (!list.isEmpty()) {
+            return list.get(0); // Use first
+        } else {
+            return null;
+        }
+    }
+
     //-------------------//
     // getSelectedEntity //
     //-------------------//
@@ -187,52 +207,6 @@ public class EntityService<E extends Entity>
             return list;
         } else {
             return Collections.emptyList();
-        }
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
-            } else if (event instanceof IdEvent) {
-                handleIdEvent((IdEvent) event); // Id => indexed entity
-            } else if (event instanceof EntityListEvent) {
-                handleEntityListEvent((EntityListEvent<E>) event); // List => display contour of (one) entity
-            }
-        } catch (ConcurrentModificationException cme) {
-            // This can happen because of processing being done on EntityIndex...
-            // So, just abort the current UI stuff
-            throw cme;
-        } catch (Throwable ex) {
-            logger.warn(getClass().getSimpleName() + " onEvent error " + ex, ex);
-        }
-    }
-
-    //-----------------//
-    // getMostRelevant //
-    //-----------------//
-    /**
-     * Among the list of selected entities, report the most "relevant" one.
-     *
-     * @param list the sequence of selected entities
-     * @return the chosen entity
-     */
-    protected E getMostRelevant (List<E> list)
-    {
-        if (!list.isEmpty()) {
-            return list.get(0); // Use first
-        } else {
-            return null;
         }
     }
 
@@ -371,6 +345,34 @@ public class EntityService<E extends Entity>
                                 movement,
                                 basket));
             }
+        }
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            if (event instanceof LocationEvent) {
+                handleLocationEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
+            } else if (event instanceof IdEvent) {
+                handleIdEvent((IdEvent) event); // Id => indexed entity
+            } else if (event instanceof EntityListEvent) {
+                handleEntityListEvent((EntityListEvent<E>) event); // List => display contour of (one) entity
+            }
+        } catch (ConcurrentModificationException cme) {
+            // This can happen because of processing being done on EntityIndex...
+            // So, just abort the current UI stuff
+            throw cme;
+        } catch (Throwable ex) {
+            logger.warn(getClass().getSimpleName() + " onEvent error " + ex, ex);
         }
     }
 

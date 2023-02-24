@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
+
+import org.audiveris.omr.glyph.Shape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ public class BraceSymbol
     private static final int MULTIPLIER = 4;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a BraceSymbol.
      *
@@ -58,6 +60,7 @@ public class BraceSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getParams //
     //-----------//

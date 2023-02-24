@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,22 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import ij.process.ByteProcessor;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import static org.audiveris.omr.image.PixelSource.FOREGROUND;
-import static org.audiveris.omr.sheet.curve.Skeleton.*;
+import static org.audiveris.omr.sheet.curve.Skeleton.ARC;
+import static org.audiveris.omr.sheet.curve.Skeleton.JUNCTION;
+import static org.audiveris.omr.sheet.curve.Skeleton.diagDirs;
+import static org.audiveris.omr.sheet.curve.Skeleton.dxs;
+import static org.audiveris.omr.sheet.curve.Skeleton.dys;
+import static org.audiveris.omr.sheet.curve.Skeleton.horiDirs;
+import static org.audiveris.omr.sheet.curve.Skeleton.isJunction;
+import static org.audiveris.omr.sheet.curve.Skeleton.sideDirs;
+import static org.audiveris.omr.sheet.curve.Skeleton.vertDirs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>JunctionRetriever</code> scans all image pixels to retrieve junction pixels
@@ -46,6 +55,7 @@ public class JunctionRetriever
     private static final Logger logger = LoggerFactory.getLogger(JunctionRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Skeleton buffer. */
     private final ByteProcessor buf;
 
@@ -53,6 +63,7 @@ public class JunctionRetriever
     private final Vicinity vicinity = new Vicinity();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new JunctionRetriever object.
      *
@@ -64,25 +75,6 @@ public class JunctionRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // scanImage //
-    //-----------//
-    /**
-     * Scan the whole image.
-     */
-    public void scanImage ()
-    {
-        for (int x = 1, w = buf.getWidth(); x < w; x++) {
-            for (int y = 1, h = buf.getHeight(); y < h; y++) {
-                int pix = buf.get(x, y);
-
-                if ((pix == FOREGROUND) // Basic pixel, not yet processed
-                            || isJunction(pix)) { // Junction, perhaps not the best
-                    checkJunction(x, y);
-                }
-            }
-        }
-    }
 
     //---------------//
     // checkJunction //
@@ -149,6 +141,26 @@ public class JunctionRetriever
     }
 
     //-----------//
+    // scanImage //
+    //-----------//
+    /**
+     * Scan the whole image.
+     */
+    public void scanImage ()
+    {
+        for (int x = 1, w = buf.getWidth(); x < w; x++) {
+            for (int y = 1, h = buf.getHeight(); y < h; y++) {
+                int pix = buf.get(x, y);
+
+                if ((pix == FOREGROUND) // Basic pixel, not yet processed
+                        || isJunction(pix)) { // Junction, perhaps not the best
+                    checkJunction(x, y);
+                }
+            }
+        }
+    }
+
+    //-----------//
     // sideGrade //
     //-----------//
     /**
@@ -212,6 +224,7 @@ public class JunctionRetriever
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // Vicinity //
     //----------//

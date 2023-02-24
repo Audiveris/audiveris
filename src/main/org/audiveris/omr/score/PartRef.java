@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -160,6 +160,22 @@ public class PartRef
         this.systemRef = system;
     }
 
+    /**
+     * Report a fully qualified string of this partRef.
+     *
+     * @return fully qualified string
+     */
+    public String toQualifiedString ()
+    {
+        // @formatter:off
+        return new StringBuilder()
+            .append("Sheet#").append(systemRef.getPage().getSheetNumber())
+            .append(",Page#").append(systemRef.getPage().getId())
+            .append(",System#").append(systemRef.getId())
+            .append(',').append(this).toString();
+        // @formatter:on
+    }
+
     @Override
     public String toString ()
     {
@@ -180,21 +196,5 @@ public class PartRef
         }
 
         return sb.append('}').toString();
-    }
-
-    /**
-     * Report a fully qualified string of this partRef.
-     *
-     * @return fully qualified string
-     */
-    public String toQualifiedString ()
-    {
-        // @formatter:off
-        return new StringBuilder()
-            .append("Sheet#").append(systemRef.getPage().getSheetNumber())
-            .append(",Page#").append(systemRef.getPage().getId())
-            .append(",System#").append(systemRef.getId())
-            .append(',').append(this).toString();
-        // @formatter:on
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,11 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
-
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SimpleSheetPainter;
@@ -33,6 +28,11 @@ import org.audiveris.omr.step.OmrStep;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -55,6 +55,7 @@ public class BookPdfOutput
     private static final Logger logger = LoggerFactory.getLogger(BookPdfOutput.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related book. */
     private final Book book;
 
@@ -62,6 +63,7 @@ public class BookPdfOutput
     private final File file;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SheetPdfOutput object.
      *
@@ -76,6 +78,7 @@ public class BookPdfOutput
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Write the PDF output for the provided stub(s).
      *
@@ -85,7 +88,7 @@ public class BookPdfOutput
      */
     public void write (List<SheetStub> stubs,
                        SimpleSheetPainter painter)
-            throws Exception
+        throws Exception
     {
         FileOutputStream fos = null;
         Document document = null;

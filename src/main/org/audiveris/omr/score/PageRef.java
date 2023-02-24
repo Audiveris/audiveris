@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -128,6 +128,15 @@ public class PageRef
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed for JAXB.
+     */
+    private PageRef ()
+    {
+        id = 0;
+        movementStart = false;
+    }
+
+    /**
      * Creates a new <code>PageRef</code> object.
      *
      * @param stub          containing sheet stub
@@ -145,16 +154,15 @@ public class PageRef
         sheetNumber = stub.getNumber();
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private PageRef ()
-    {
-        id = 0;
-        movementStart = false;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // addSystem //
+    //-----------//
+    public void addSystem (SystemRef system)
+    {
+        systems.add(system);
+    }
 
     //----------------//
     // afterUnmarshal //
@@ -165,14 +173,6 @@ public class PageRef
     {
         stub = (SheetStub) parent;
         sheetNumber = stub.getNumber();
-    }
-
-    //-----------//
-    // addSystem //
-    //-----------//
-    public void addSystem (SystemRef system)
-    {
-        systems.add(system);
     }
 
     //-----------//

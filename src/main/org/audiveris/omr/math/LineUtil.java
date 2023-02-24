@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,7 +37,22 @@ public abstract class LineUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------//
+    // bisector //
+    //----------//
+    /**
+     * Return the bisector (French: médiatrice) of the provided segment
+     *
+     * @param segment the provided segment
+     * @return (a segment on) the bisector
+     */
+    public static Line2D bisector (Line2D segment)
+    {
+        return bisector(segment.getP1(), segment.getP2());
+    }
+
     //----------//
     // bisector //
     //----------//
@@ -70,18 +85,25 @@ public abstract class LineUtil
         return new Line2D.Double(x3, y3, x4, y4);
     }
 
-    //----------//
-    // bisector //
-    //----------//
+    //------------------//
+    // getInvertedSlope //
+    //------------------//
     /**
-     * Return the bisector (French: médiatrice) of the provided segment
+     * Report the inverted slope of line defined by two provided points.
+     * Line is expected not to be horizontal
      *
-     * @param segment the provided segment
-     * @return (a segment on) the bisector
+     * @param x1 start abscissa
+     * @param y1 start ordinate
+     * @param x2 stop abscissa
+     * @param y2 stop ordinate
+     * @return tangent of angle with vertical
      */
-    public static Line2D bisector (Line2D segment)
+    public static double getInvertedSlope (double x1,
+                                           double y1,
+                                           double x2,
+                                           double y2)
     {
-        return bisector(segment.getP1(), segment.getP2());
+        return (x2 - x1) / (y2 - y1);
     }
 
     //------------------//
@@ -116,27 +138,6 @@ public abstract class LineUtil
         return getInvertedSlope(start.getX(), start.getY(), stop.getX(), stop.getY());
     }
 
-    //------------------//
-    // getInvertedSlope //
-    //------------------//
-    /**
-     * Report the inverted slope of line defined by two provided points.
-     * Line is expected not to be horizontal
-     *
-     * @param x1 start abscissa
-     * @param y1 start ordinate
-     * @param x2 stop abscissa
-     * @param y2 stop ordinate
-     * @return tangent of angle with vertical
-     */
-    public static double getInvertedSlope (double x1,
-                                           double y1,
-                                           double x2,
-                                           double y2)
-    {
-        return (x2 - x1) / (y2 - y1);
-    }
-
     //----------//
     // getSlope //
     //----------//
@@ -167,6 +168,43 @@ public abstract class LineUtil
                                    Point2D stop)
     {
         return (stop.getY() - start.getY()) / (stop.getX() - start.getX());
+    }
+
+    //--------------//
+    // intersection //
+    //--------------//
+    /**
+     * Return the intersection point between infinite line A defined by points (x1,y1)
+     * and (x2,y2) and the infinite line B defined by points (x3,y3) and (x4,y4).
+     *
+     * @param x1 x of first point of line A
+     * @param y1 y of first point of line A
+     * @param x2 x of second point of line A
+     * @param y2 y of second point of line A
+     * @param x3 x of first point of line B
+     * @param y3 y of first point of line B
+     * @param x4 x of second point of line B
+     * @param y4 y of second point of line B
+     * @return the intersection point
+     */
+    public static Point2D.Double intersection (double x1,
+                                               double y1,
+                                               double x2,
+                                               double y2,
+                                               double x3,
+                                               double y3,
+                                               double x4,
+                                               double y4)
+    {
+        double den = ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4));
+
+        double v12 = (x1 * y2) - (y1 * x2);
+        double v34 = (x3 * y4) - (y3 * x4);
+
+        double x = ((v12 * (x3 - x4)) - ((x1 - x2) * v34)) / den;
+        double y = ((v12 * (y3 - y4)) - ((y1 - y2) * v34)) / den;
+
+        return new Point2D.Double(x, y);
     }
 
     //--------------//
@@ -222,62 +260,6 @@ public abstract class LineUtil
                 p4.getY());
     }
 
-    //--------------//
-    // intersection //
-    //--------------//
-    /**
-     * Return the intersection point between infinite line A defined by points (x1,y1)
-     * and (x2,y2) and the infinite line B defined by points (x3,y3) and (x4,y4).
-     *
-     * @param x1 x of first point of line A
-     * @param y1 y of first point of line A
-     * @param x2 x of second point of line A
-     * @param y2 y of second point of line A
-     * @param x3 x of first point of line B
-     * @param y3 y of first point of line B
-     * @param x4 x of second point of line B
-     * @param y4 y of second point of line B
-     * @return the intersection point
-     */
-    public static Point2D.Double intersection (double x1,
-                                               double y1,
-                                               double x2,
-                                               double y2,
-                                               double x3,
-                                               double y3,
-                                               double x4,
-                                               double y4)
-    {
-        double den = ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4));
-
-        double v12 = (x1 * y2) - (y1 * x2);
-        double v34 = (x3 * y4) - (y3 * x4);
-
-        double x = ((v12 * (x3 - x4)) - ((x1 - x2) * v34)) / den;
-        double y = ((v12 * (y3 - y4)) - ((y1 - y2) * v34)) / den;
-
-        return new Point2D.Double(x, y);
-    }
-
-    //-----------------//
-    // intersectionAtX //
-    //-----------------//
-    /**
-     * Return the intersection point between infinite line A defined by points
-     * p1 and p2 and the infinite vertical line at provided abscissa.
-     *
-     * @param p1 first point of line A
-     * @param p2 second point of line A
-     * @param x  provided abscissa
-     * @return the intersection point
-     */
-    public static Point2D.Double intersectionAtX (Point2D p1,
-                                                  Point2D p2,
-                                                  double x)
-    {
-        return intersection(p1.getX(), p1.getY(), p2.getX(), p2.getY(), x, 0, x, 1_000);
-    }
-
     //-----------------//
     // intersectionAtX //
     //-----------------//
@@ -292,10 +274,7 @@ public abstract class LineUtil
     public static Point2D.Double intersectionAtX (Line2D line,
                                                   double x)
     {
-        return intersection(line.getX1(), line.getY1(),
-                            line.getX2(), line.getY2(),
-                            x, 0,
-                            x, 1_000);
+        return intersection(line.getX1(),line.getY1(),line.getX2(),line.getY2(),x,0,x,1_000);
     }
 
     //-----------------//
@@ -314,32 +293,43 @@ public abstract class LineUtil
                                                   double slope,
                                                   double x)
     {
-        return intersection(p1.getX(), p1.getY(),
-                            p1.getX() + 1_000, p1.getY() + (1_000 * slope),
-                            x, 0,
-                            x, 1_000);
+        return intersection(p1.getX(),p1.getY(),p1.getX()+1_000,p1.getY()+(1_000*slope),x,0,x,1_000);
+    }
+
+    //-----------------//
+    // intersectionAtX //
+    //-----------------//
+    /**
+     * Return the intersection point between infinite line A defined by points
+     * p1 and p2 and the infinite vertical line at provided abscissa.
+     *
+     * @param p1 first point of line A
+     * @param p2 second point of line A
+     * @param x  provided abscissa
+     * @return the intersection point
+     */
+    public static Point2D.Double intersectionAtX (Point2D p1,
+                                                  Point2D p2,
+                                                  double x)
+    {
+        return intersection(p1.getX(),p1.getY(),p2.getX(),p2.getY(),x,0,x,1_000);
     }
 
     //-----------------//
     // intersectionAtY //
     //-----------------//
     /**
-     * Return the intersection point between infinite line A defined by
-     * points p1 and p2 and infinite horizontal line at provided ordinate.
+     * Return the intersection point between provided infinite line and infinite
+     * horizontal line at provided ordinate.
      *
-     * @param p1 first point of line A
-     * @param p2 second point of line A
-     * @param y  provided ordinate
+     * @param line provided line
+     * @param y    provided ordinate
      * @return the intersection point
      */
-    public static Point2D.Double intersectionAtY (Point2D p1,
-                                                  Point2D p2,
+    public static Point2D.Double intersectionAtY (Line2D line,
                                                   double y)
     {
-        return intersection(p1.getX(), p1.getY(),
-                            p2.getX(), p2.getY(),
-                            0, y,
-                            1_000, y);
+        return intersection(line.getX1(),line.getY1(),line.getX2(),line.getY2(),0,y,1_000,y);
     }
 
     //-----------------//
@@ -358,49 +348,26 @@ public abstract class LineUtil
                                                   double invertedSlope,
                                                   double y)
     {
-        return intersection(p1.getX(), p1.getY(),
-                            p1.getX() + (1_000 * invertedSlope), p1.getY() + 1_000,
-                            0, y,
-                            1_000, y);
+        return intersection(p1.getX(),p1.getY(),p1.getX()+(1_000*invertedSlope),p1.getY()+1_000,0,y,1_000,y);
     }
 
     //-----------------//
     // intersectionAtY //
     //-----------------//
     /**
-     * Return the intersection point between provided infinite line and infinite
-     * horizontal line at provided ordinate.
+     * Return the intersection point between infinite line A defined by
+     * points p1 and p2 and infinite horizontal line at provided ordinate.
      *
-     * @param line provided line
-     * @param y    provided ordinate
+     * @param p1 first point of line A
+     * @param p2 second point of line A
+     * @param y  provided ordinate
      * @return the intersection point
      */
-    public static Point2D.Double intersectionAtY (Line2D line,
+    public static Point2D.Double intersectionAtY (Point2D p1,
+                                                  Point2D p2,
                                                   double y)
     {
-        return intersection(line.getX1(), line.getY1(),
-                            line.getX2(), line.getY2(),
-                            0, y,
-                            1_000, y);
-    }
-
-    //----------//
-    // rotation //
-    //----------//
-    /**
-     * Computation of rotation from first to last point, with middle as approximate
-     * middle point of the curve.
-     *
-     * @param first  starting point of curve
-     * @param last   ending point of curve
-     * @param middle middle point of curve
-     * @return central rotation angle (in radians) from first to last.
-     */
-    public static double rotation (Point2D first,
-                                   Point2D last,
-                                   Point2D middle)
-    {
-        return rotation(new Line2D.Double(first, last), middle);
+        return intersection(p1.getX(),p1.getY(),p2.getX(),p2.getY(),0,y,1_000,y);
     }
 
     //----------//
@@ -425,110 +392,23 @@ public abstract class LineUtil
         return 4 * Math.atan(Math.sqrt(sagittaSq / halfChordLengthSq));
     }
 
-    //------//
-    // xAtY //
-    //------//
+    //----------//
+    // rotation //
+    //----------//
     /**
-     * Return the abscissa of intersection between infinite line A defined by
-     * points p1 and p2 and infinite horizontal line at provided ordinate.
+     * Computation of rotation from first to last point, with middle as approximate
+     * middle point of the curve.
      *
-     * @param p1 first point of line A
-     * @param p2 second point of line A
-     * @param y  provided ordinate
-     * @return the intersection abscissa
+     * @param first  starting point of curve
+     * @param last   ending point of curve
+     * @param middle middle point of curve
+     * @return central rotation angle (in radians) from first to last.
      */
-    public static double xAtY (Point2D p1,
-                               Point2D p2,
-                               double y)
+    public static double rotation (Point2D first,
+                                   Point2D last,
+                                   Point2D middle)
     {
-        return intersection(p1.getX(), p1.getY(),
-                            p2.getX(), p2.getY(),
-                            0, y,
-                            1_000, y).x;
-    }
-
-    //------//
-    // xAtY //
-    //------//
-    /**
-     * Return the abscissa of intersection between provided infinite line and infinite
-     * horizontal line at provided ordinate.
-     *
-     * @param line provided line
-     * @param y    provided ordinate
-     * @return the intersection abscissa
-     */
-    public static double xAtY (Line2D line,
-                               double y)
-    {
-        return intersection(line.getX1(), line.getY1(),
-                            line.getX2(), line.getY2(),
-                            0, y,
-                            1_000, y).x;
-    }
-
-    //------//
-    // yAtX //
-    //------//
-    /**
-     * Return the ordinate of intersection between infinite line defined by provided
-     * point and slope and the infinite vertical line at provided abscissa.
-     *
-     * @param p1    provided line point
-     * @param slope provided line slope
-     * @param x     provided abscissa
-     * @return the intersection ordinate
-     */
-    public static double yAtX (Point2D p1,
-                               double slope,
-                               double x)
-    {
-        return intersection(p1.getX(), p1.getY(),
-                            p1.getX() + 1_000, p1.getY() + (1_000 * slope),
-                            x, 0,
-                            x, 1_000).y;
-    }
-
-    //------//
-    // yAtX //
-    //------//
-    /**
-     * Return the ordinate of intersection between provided infinite line
-     * and the infinite vertical line at provided abscissa.
-     *
-     * @param line provided line
-     * @param x    provided abscissa
-     * @return the intersection ordinate
-     */
-    public static double yAtX (Line2D line,
-                               double x)
-    {
-        return intersection(line.getX1(), line.getY1(),
-                            line.getX2(), line.getY2(),
-                            x, 0,
-                            x, 1_000).y;
-    }
-
-    //------//
-    // yAtX //
-    //------//
-    /**
-     * Return the ordinate of intersection between infinite line A defined by points
-     * p1 and p2 and the infinite vertical line at provided abscissa.
-     *
-     * @param p1 first point of line A
-     * @param p2 second point of line A
-     * @param x  provided abscissa
-     * @return the intersection ordinate
-     */
-    public static double yAtX (Point2D p1,
-                               Point2D p2,
-                               double x)
-    {
-        return intersection(p1.getX(), p1.getY(),
-                            p2.getX(), p2.getY(),
-                            x, 0,
-                            x, 1_000).y;
+        return rotation(new Line2D.Double(first, last), middle);
     }
 
     //----------//
@@ -537,11 +417,8 @@ public abstract class LineUtil
     public static String toString (Line2D line)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("Line{")
-                .append(PointUtil.toString(line.getP1()))
-                .append("-")
-                .append(PointUtil.toString(line.getP2()))
-                .append("}");
+        sb.append("Line{").append(PointUtil.toString(line.getP1())).append("-").append(
+                PointUtil.toString(line.getP2())).append("}");
 
         return sb.toString();
     }
@@ -560,7 +437,97 @@ public abstract class LineUtil
                                   double dx,
                                   double dy)
     {
-        line.setLine(line.getX1() + dx, line.getY1() + dy,
-                     line.getX2() + dx, line.getY2() + dy);
+        line.setLine(line.getX1() + dx, line.getY1() + dy, line.getX2() + dx, line.getY2() + dy);
+    }
+
+    //------//
+    // xAtY //
+    //------//
+    /**
+     * Return the abscissa of intersection between provided infinite line and infinite
+     * horizontal line at provided ordinate.
+     *
+     * @param line provided line
+     * @param y    provided ordinate
+     * @return the intersection abscissa
+     */
+    public static double xAtY (Line2D line,
+                               double y)
+    {
+        return intersection(line.getX1(),line.getY1(),line.getX2(),line.getY2(),0,y,1_000,y).x;
+    }
+
+    //------//
+    // xAtY //
+    //------//
+    /**
+     * Return the abscissa of intersection between infinite line A defined by
+     * points p1 and p2 and infinite horizontal line at provided ordinate.
+     *
+     * @param p1 first point of line A
+     * @param p2 second point of line A
+     * @param y  provided ordinate
+     * @return the intersection abscissa
+     */
+    public static double xAtY (Point2D p1,
+                               Point2D p2,
+                               double y)
+    {
+        return intersection(p1.getX(),p1.getY(),p2.getX(),p2.getY(),0,y,1_000,y).x;
+    }
+
+    //------//
+    // yAtX //
+    //------//
+    /**
+     * Return the ordinate of intersection between provided infinite line
+     * and the infinite vertical line at provided abscissa.
+     *
+     * @param line provided line
+     * @param x    provided abscissa
+     * @return the intersection ordinate
+     */
+    public static double yAtX (Line2D line,
+                               double x)
+    {
+        return intersection(line.getX1(),line.getY1(),line.getX2(),line.getY2(),x,0,x,1_000).y;
+    }
+
+    //------//
+    // yAtX //
+    //------//
+    /**
+     * Return the ordinate of intersection between infinite line defined by provided
+     * point and slope and the infinite vertical line at provided abscissa.
+     *
+     * @param p1    provided line point
+     * @param slope provided line slope
+     * @param x     provided abscissa
+     * @return the intersection ordinate
+     */
+    public static double yAtX (Point2D p1,
+                               double slope,
+                               double x)
+    {
+        return intersection(p1.getX(),p1.getY(),p1.getX()+1_000,p1.getY()+(1_000*slope),x,0,x,1_000).y;
+    }
+
+    //------//
+    // yAtX //
+    //------//
+    /**
+     * Return the ordinate of intersection between infinite line A defined by points
+     * p1 and p2 and the infinite vertical line at provided abscissa.
+     *
+     * @param p1 first point of line A
+     * @param p2 second point of line A
+     * @param x  provided abscissa
+     * @return the intersection ordinate
+     */
+    public static double yAtX (Point2D p1,
+                               Point2D p2,
+                               double x)
+    {
+        return intersection(p1.getX(),p1.getY(),p2.getX(),p2.getY(),x,0,x,1_000).y;
     }
 }

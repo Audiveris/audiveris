@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class CueBeamsStep
     private static final Constants constants = new Constants();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new CueBeamsStep object.
      */
@@ -58,16 +59,6 @@ public class CueBeamsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
-    {
-        new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
-    }
 
     //----------//
     // doProlog //
@@ -87,7 +78,31 @@ public class CueBeamsStep
         return new Context(spots, spotLag);
     }
 
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
+                false,
+                "Should we display the cue beam Spots view?");
+    }
+
     //---------//
     // Context //
     //---------//
@@ -115,17 +130,5 @@ public class CueBeamsStep
             this.spots = spots;
             this.spotLag = spotLag;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
-                false,
-                "Should we display the cue beam Spots view?");
     }
 }

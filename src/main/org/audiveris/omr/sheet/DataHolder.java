@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,17 +57,17 @@ public abstract class DataHolder<T>
     private static final Logger logger = LoggerFactory.getLogger(DataHolder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Path to data on disk (within sheet folder). */
     @XmlAttribute(name = "path")
     protected final String pathString;
 
     // Transient data
     //---------------
-    //
+
     /** Direct access to data, if any. */
     protected T data;
 
@@ -81,6 +81,15 @@ public abstract class DataHolder<T>
     protected boolean discarded = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    protected DataHolder ()
+    {
+        this.pathString = null;
+    }
+
     /**
      * Creates a new <code>DataHolder</code> object.
      *
@@ -91,15 +100,8 @@ public abstract class DataHolder<T>
         this.pathString = pathString;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    protected DataHolder ()
-    {
-        this.pathString = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // discard //
     //---------//
@@ -142,8 +144,9 @@ public abstract class DataHolder<T>
                         logger.debug("path: {}", path);
 
                         if (Files.exists(path)) {
-                            try (InputStream is = Files
-                                    .newInputStream(path, StandardOpenOption.READ)) {
+                            try (InputStream is = Files.newInputStream(
+                                    path,
+                                    StandardOpenOption.READ)) {
                                 data = load(is);
                                 logger.debug("Loaded {}", path);
                             }
@@ -167,26 +170,6 @@ public abstract class DataHolder<T>
         }
 
         return data;
-    }
-
-    //---------//
-    // setData //
-    //---------//
-    /**
-     * Assign the data.
-     *
-     * @param data     the data to be hold
-     * @param modified is this data modified with respect to disk version
-     */
-    public void setData (T data,
-                         boolean modified)
-    {
-        this.data = data;
-        setModified(modified);
-
-        if (data != null) {
-            hasNoData = false;
-        }
     }
 
     //--------------//
@@ -241,6 +224,62 @@ public abstract class DataHolder<T>
         return modified;
     }
 
+    //------//
+    // load //
+    //------//
+    /**
+     * Load data from the provided input stream.
+     *
+     * @param is provided input stream
+     * @return the loaded data
+     * @throws Exception if anything goes wrong
+     */
+    protected abstract T load (InputStream is)
+        throws Exception;
+
+    //------------//
+    // removeData //
+    //------------//
+    /**
+     * Remove data from book project file.
+     * <p>
+     * NOTA: This method assumes the containing book is properly locked.
+     *
+     * @param sheetFolder path to sheet folder
+     */
+    public void removeData (Path sheetFolder)
+    {
+        final Path path = sheetFolder.resolve(pathString);
+
+        try {
+            if (Files.deleteIfExists(path)) {
+                logger.info("Removed {}", path);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in removeData " + ex, ex);
+        }
+    }
+
+    //---------//
+    // setData //
+    //---------//
+    /**
+     * Assign the data.
+     *
+     * @param data     the data to be hold
+     * @param modified is this data modified with respect to disk version
+     */
+    public void setData (T data,
+                         boolean modified)
+    {
+        this.data = data;
+        setModified(modified);
+
+        if (data != null) {
+            hasNoData = false;
+        }
+    }
+
     //-------------//
     // setModified //
     //-------------//
@@ -257,6 +296,18 @@ public abstract class DataHolder<T>
 
         modified = bool;
     }
+
+    //-------//
+    // store //
+    //-------//
+    /**
+     * Store data to the provided output stream.
+     *
+     * @param os provided output stream
+     * @throws Exception if anything goes wrong
+     */
+    protected abstract void store (OutputStream os)
+        throws Exception;
 
     //-----------//
     // storeData //
@@ -304,54 +355,6 @@ public abstract class DataHolder<T>
 
         return ok;
     }
-
-    //------------//
-    // removeData //
-    //------------//
-    /**
-     * Remove data from book project file.
-     * <p>
-     * NOTA: This method assumes the containing book is properly locked.
-     *
-     * @param sheetFolder path to sheet folder
-     */
-    public void removeData (Path sheetFolder)
-    {
-        final Path path = sheetFolder.resolve(pathString);
-
-        try {
-            if (Files.deleteIfExists(path)) {
-                logger.info("Removed {}", path);
-            }
-        } catch (Exception ex) {
-            logger.warn("Error in removeData " + ex, ex);
-        }
-    }
-
-    //------//
-    // load //
-    //------//
-    /**
-     * Load data from the provided input stream.
-     *
-     * @param is provided input stream
-     * @return the loaded data
-     * @throws Exception if anything goes wrong
-     */
-    protected abstract T load (InputStream is)
-            throws Exception;
-
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Store data to the provided output stream.
-     *
-     * @param os provided output stream
-     * @throws Exception if anything goes wrong
-     */
-    protected abstract void store (OutputStream os)
-            throws Exception;
 
     //----------//
     // toString //

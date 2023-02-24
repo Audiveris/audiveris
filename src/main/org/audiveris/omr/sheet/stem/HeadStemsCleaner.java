@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,6 +51,7 @@ public class HeadStemsCleaner
     private static final Logger logger = LoggerFactory.getLogger(HeadStemsCleaner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final HeadInter head;
 
     private final SIGraph sig;
@@ -58,6 +59,7 @@ public class HeadStemsCleaner
     private final List<HeadStemRelation> rels = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a <code>HeadStemsCleaner</code> object.
      *
@@ -71,6 +73,7 @@ public class HeadStemsCleaner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // check //
     //-------//
@@ -123,28 +126,6 @@ public class HeadStemsCleaner
                 }
             }
         }
-    }
-
-    //--------------------------//
-    // discardWorstContribution //
-    //--------------------------//
-    private HeadStemRelation discardWorstContribution (List<HeadStemRelation> relations)
-    {
-        double worstContrib = Double.MAX_VALUE;
-        HeadStemRelation worstRel = null;
-
-        for (HeadStemRelation rel : relations) {
-            final StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-            final double ratio = rel.getTargetRatio();
-            final double contrib = stem.getGrade() * (ratio - 1);
-
-            if (worstContrib > contrib) {
-                worstContrib = contrib;
-                worstRel = rel;
-            }
-        }
-
-        return worstRel;
     }
 
     //-----------------//
@@ -218,6 +199,28 @@ public class HeadStemsCleaner
                 }
 
                 sig.insertExclusion(head, worstStem, Exclusion.ExclusionCause.OVERLAP);
+            }
+        }
+
+        return worstRel;
+    }
+
+    //--------------------------//
+    // discardWorstContribution //
+    //--------------------------//
+    private HeadStemRelation discardWorstContribution (List<HeadStemRelation> relations)
+    {
+        double worstContrib = Double.MAX_VALUE;
+        HeadStemRelation worstRel = null;
+
+        for (HeadStemRelation rel : relations) {
+            final StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+            final double ratio = rel.getTargetRatio();
+            final double contrib = stem.getGrade() * (ratio - 1);
+
+            if (worstContrib > contrib) {
+                worstContrib = contrib;
+                worstRel = rel;
             }
         }
 
@@ -303,6 +306,7 @@ public class HeadStemsCleaner
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

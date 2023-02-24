@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,16 @@
 // </editor-fold>
 package org.audiveris.omr.log;
 
+import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.UriUtil;
+
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import org.apache.commons.io.FileUtils;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -30,16 +40,6 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.util.StatusPrinter;
-
-import org.apache.commons.io.FileUtils;
-
-import org.audiveris.omr.WellKnowns;
-import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.util.UriUtil;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,11 +80,13 @@ public abstract class LogUtil
     private static final List<String> initialMessages = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private LogUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // addAppender //
     //-------------//
@@ -291,6 +293,19 @@ public abstract class LogUtil
         StatusPrinter.print(loggerContext);
     }
 
+    //-------------//
+    // initMessage //
+    //-------------//
+    /**
+     * Record a message before logging is fully set.
+     *
+     * @param str the message to record
+     */
+    private static void initMessage (String str)
+    {
+        initialMessages.add(str);
+    }
+
     //----------------//
     // removeAppender //
     //----------------//
@@ -304,23 +319,6 @@ public abstract class LogUtil
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
                 Logger.ROOT_LOGGER_NAME);
         root.detachAppender(name);
-    }
-
-    //-------//
-    // start //
-    //-------//
-    /**
-     * In the calling thread, start log annotation with stub ID.
-     *
-     * @param stub the sheet/stub related to processing
-     */
-    public static void start (SheetStub stub)
-    {
-        start(stub.getBook());
-
-        if (!SwingUtilities.isEventDispatchThread()) {
-            MDC.put(SHEET, stub.getNum());
-        }
     }
 
     //-------//
@@ -341,6 +339,23 @@ public abstract class LogUtil
             }
 
             MDC.put(BOOK, str);
+        }
+    }
+
+    //-------//
+    // start //
+    //-------//
+    /**
+     * In the calling thread, start log annotation with stub ID.
+     *
+     * @param stub the sheet/stub related to processing
+     */
+    public static void start (SheetStub stub)
+    {
+        start(stub.getBook());
+
+        if (!SwingUtilities.isEventDispatchThread()) {
+            MDC.put(SHEET, stub.getNum());
         }
     }
 
@@ -406,18 +421,5 @@ public abstract class LogUtil
         case "OFF":
             return Level.OFF;
         }
-    }
-
-    //-------------//
-    // initMessage //
-    //-------------//
-    /**
-     * Record a message before logging is fully set.
-     *
-     * @param str the message to record
-     */
-    private static void initMessage (String str)
-    {
-        initialMessages.add(str);
     }
 }

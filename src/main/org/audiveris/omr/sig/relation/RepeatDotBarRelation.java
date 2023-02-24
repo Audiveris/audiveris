@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,10 +50,11 @@ public class RepeatDotBarRelation
 
     private static final Logger logger = LoggerFactory.getLogger(RepeatDotBarRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]
+    { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -63,40 +64,6 @@ public class RepeatDotBarRelation
         final RepeatDotInter dot = (RepeatDotInter) e.getEdgeSource();
 
         dot.checkAbnormal();
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
     }
 
     //---------------//
@@ -138,6 +105,24 @@ public class RepeatDotBarRelation
         return getYGapMaximum(profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //---------//
     // removed //
     //---------//
@@ -151,7 +136,26 @@ public class RepeatDotBarRelation
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

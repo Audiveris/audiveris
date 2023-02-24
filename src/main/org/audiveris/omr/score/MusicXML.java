@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -74,20 +74,22 @@ public abstract class MusicXML
      * <p>
      * NOTA: If this array is modified, check method {@link #getNoteTypeName(Rational) accordingly.
      */
-    private static final String[] noteTypeNames = new String[]{
-        "256th",
-        "128th",
-        "64th",
-        "32nd",
-        "16th",
-        "eighth",
-        "quarter",
-        "half",
-        "whole",
-        "breve",
-        "long"};
+    private static final String[] noteTypeNames = new String[]
+    {
+            "256th",
+            "128th",
+            "64th",
+            "32nd",
+            "16th",
+            "eighth",
+            "quarter",
+            "half",
+            "whole",
+            "breve",
+            "long" };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Not meant to be instantiated.
      */
@@ -95,7 +97,8 @@ public abstract class MusicXML
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // accidentalTextOf //
     //------------------//
@@ -348,40 +351,48 @@ public abstract class MusicXML
         final Shape shape = ornament.getShape();
 
         switch (shape) {
-        case MORDENT -> {
+        case MORDENT ->
+        {
             //      note that inverted-mordent in MusicXML refers to a MORDENT
             //      and mordent in MusicXML refers to a MORDENT_INVERTED
             return factory.createOrnamentsInvertedMordent(factory.createMordent());
         }
 
-        case MORDENT_INVERTED -> {
+        case MORDENT_INVERTED ->
+        {
             return factory.createOrnamentsMordent(factory.createMordent());
         }
 
-        case TR -> {
+        case TR ->
+        {
             return factory.createOrnamentsTrillMark(factory.createEmptyTrillSound());
         }
 
-        case TURN -> {
+        case TURN ->
+        {
             return factory.createOrnamentsTurn(factory.createHorizontalTurn());
         }
 
-        case TURN_INVERTED -> {
+        case TURN_INVERTED ->
+        {
             return factory.createOrnamentsInvertedTurn(factory.createHorizontalTurn());
         }
 
-        case TURN_SLASH -> {
+        case TURN_SLASH ->
+        {
             HorizontalTurn horizontalTurn = factory.createHorizontalTurn();
             horizontalTurn.setSlash(YesNo.YES);
 
             return factory.createOrnamentsInvertedTurn(horizontalTurn);
         }
 
-        case TURN_UP -> {
+        case TURN_UP ->
+        {
             return factory.createOrnamentsVerticalTurn(factory.createEmptyTrillSound());
         }
 
-        case TREMOLO_1, TREMOLO_2, TREMOLO_3 -> {
+        case TREMOLO_1, TREMOLO_2, TREMOLO_3 ->
+        {
             final Tremolo tremolo = factory.createTremolo();
             tremolo.setDefaultY(defaultY);
             tremolo.setType(TremoloType.SINGLE);

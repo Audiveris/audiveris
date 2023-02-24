@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,7 +49,25 @@ public class Param<E>
     /** Unique object for global scope. */
     public static final String GLOBAL_SCOPE = "Global";
 
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    // Persistent data
+    //----------------
+
+    protected E specific;
+
+    // Transient data
+    //---------------
+
+    /** Parent param, if any, to inherit from. */
+    protected Param<E> parent;
+
+    /** Scope of this param: GLOBAL_SCOPE, otherwise book or sheet/stub. */
+    @Navigable(false)
+    protected Object scope;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <b>Param</b> instance with its related scope.
      *
@@ -60,23 +78,8 @@ public class Param<E>
         this.scope = scope;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    // Persistent data
-    //----------------
-    //
-    protected E specific;
-
-    // Transient data
-    //---------------
-    //
-    /** Parent param, if any, to inherit from. */
-    protected Param<E> parent;
-
-    /** Scope of this param: GLOBAL_SCOPE, otherwise book or sheet/stub. */
-    @Navigable(false)
-    protected Object scope;
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getScope //
     //----------//
@@ -88,19 +91,6 @@ public class Param<E>
     public Object getScope ()
     {
         return scope;
-    }
-
-    //----------//
-    // setScope //
-    //----------//
-    /**
-     * Setter for scope field, needed after unmarshalling.
-     *
-     * @param scope the scope to set
-     */
-    public void setScope (Object scope)
-    {
-        this.scope = scope;
     }
 
     //----------------//
@@ -153,6 +143,31 @@ public class Param<E>
         return null;
     }
 
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    /**
+     * Return the string of the internals of this class, typically for inclusion in a toString.
+     *
+     * @return the string of internals
+     */
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("scope:").append(scope);
+
+        if (getSpecific() != null) {
+            sb.append(" specific:").append(getSpecific());
+        }
+
+        if (parent != null) {
+            sb.append(" parent:").append(parent);
+        }
+
+        return sb.toString();
+    }
+
     //------------//
     // isSpecific //
     //------------//
@@ -177,6 +192,19 @@ public class Param<E>
     public void setParent (Param<E> parent)
     {
         this.parent = parent;
+    }
+
+    //----------//
+    // setScope //
+    //----------//
+    /**
+     * Setter for scope field, needed after unmarshalling.
+     *
+     * @param scope the scope to set
+     */
+    public void setScope (Object scope)
+    {
+        this.scope = scope;
     }
 
     //-------------//
@@ -213,34 +241,7 @@ public class Param<E>
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName())
-                .append('{')
-                .append(internalsString())
+        return new StringBuilder(getClass().getSimpleName()).append('{').append(internalsString())
                 .append('}').toString();
-    }
-
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    /**
-     * Return the string of the internals of this class, typically for inclusion in a toString.
-     *
-     * @return the string of internals
-     */
-    protected String internalsString ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("scope:").append(scope);
-
-        if (getSpecific() != null) {
-            sb.append(" specific:").append(getSpecific());
-        }
-
-        if (parent != null) {
-            sb.append(" parent:").append(parent);
-        }
-
-        return sb.toString();
     }
 }

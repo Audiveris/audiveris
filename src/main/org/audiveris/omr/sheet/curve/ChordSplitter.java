@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -97,6 +97,7 @@ public class ChordSplitter
     private static final Logger logger = LoggerFactory.getLogger(ChordSplitter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The large chord to be split. */
     private final HeadChordInter chord;
 
@@ -123,6 +124,7 @@ public class ChordSplitter
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ChordSplitter</code> object.
      *
@@ -146,56 +148,6 @@ public class ChordSplitter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // split //
-    //-------//
-    /**
-     * Perform the chord split.
-     */
-    public void split ()
-    {
-        if (chord.isVip()) {
-            logger.info("VIP split {}, {} origins on {}", chord, origins.size(), side.opposite());
-        }
-
-        // Detect all partitions of consistent heads in this chord
-        getAllPartitions();
-        logger.debug("allPartitions: {}", allPartitions);
-
-        if (rootStem != null) {
-            // Detect all sub-stems of the (root) chord stem
-            Map<StemInter, List<Partition>> subStems = getSubStems();
-
-            if (subStems != null) {
-                StemInter lastSubStem = null;
-
-                for (Entry<StemInter, List<Partition>> entry : subStems.entrySet()) {
-                    lastSubStem = entry.getKey();
-                    processStem(lastSubStem, entry.getValue());
-                }
-
-                // Beams attached to last sub-stem?
-                for (Relation rel : sig.getRelations(rootStem, BeamStemRelation.class)) {
-                    BeamStemRelation oldRel = (BeamStemRelation) rel;
-                    BeamStemRelation newRel = new BeamStemRelation();
-                    newRel.setGrade(oldRel.getGrade());
-                    newRel.setBeamPortion(oldRel.getBeamPortion());
-                    newRel.setExtensionPoint(oldRel.getExtensionPoint());
-                    sig.addEdge(sig.getEdgeSource(oldRel), lastSubStem, newRel);
-                    sig.removeEdge(oldRel);
-                }
-
-                rootStem.remove();
-            } else {
-                processStem(rootStem, allPartitions); // Shared mode
-            }
-        } else {
-            // No stem involved, hence dispatch the whole heads
-            // TODO: to be implemented
-        }
-
-        chord.remove();
-    }
 
     //------------------//
     // getAllPartitions //
@@ -254,9 +206,8 @@ public class ChordSplitter
                 ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
 
         for (int iLast = 0, iMax = allPartitions.size() - 1; iLast <= iMax; iLast++) {
-            final int yStop = (iLast != iMax)
-                    ? (allPartitions.get(iLast + 1).first().getCenter().y - stemDir)
-                    : chord.getTailLocation().y;
+            final int yStop = (iLast != iMax) ? (allPartitions.get(iLast + 1).first().getCenter().y
+                    - stemDir) : chord.getTailLocation().y;
             final int height = stemDir * (yStop - yStart + 1);
 
             // Extract a sub-stem only if height is significant and smaller than root stem height
@@ -381,7 +332,59 @@ public class ChordSplitter
         }
     }
 
+    //-------//
+    // split //
+    //-------//
+    /**
+     * Perform the chord split.
+     */
+    public void split ()
+    {
+        if (chord.isVip()) {
+            logger.info("VIP split {}, {} origins on {}", chord, origins.size(), side.opposite());
+        }
+
+        // Detect all partitions of consistent heads in this chord
+        getAllPartitions();
+        logger.debug("allPartitions: {}", allPartitions);
+
+        if (rootStem != null) {
+            // Detect all sub-stems of the (root) chord stem
+            Map<StemInter, List<Partition>> subStems = getSubStems();
+
+            if (subStems != null) {
+                StemInter lastSubStem = null;
+
+                for (Entry<StemInter, List<Partition>> entry : subStems.entrySet()) {
+                    lastSubStem = entry.getKey();
+                    processStem(lastSubStem, entry.getValue());
+                }
+
+                // Beams attached to last sub-stem?
+                for (Relation rel : sig.getRelations(rootStem, BeamStemRelation.class)) {
+                    BeamStemRelation oldRel = (BeamStemRelation) rel;
+                    BeamStemRelation newRel = new BeamStemRelation();
+                    newRel.setGrade(oldRel.getGrade());
+                    newRel.setBeamPortion(oldRel.getBeamPortion());
+                    newRel.setExtensionPoint(oldRel.getExtensionPoint());
+                    sig.addEdge(sig.getEdgeSource(oldRel), lastSubStem, newRel);
+                    sig.removeEdge(oldRel);
+                }
+
+                rootStem.remove();
+            } else {
+                processStem(rootStem, allPartitions); // Shared mode
+            }
+        } else {
+            // No stem involved, hence dispatch the whole heads
+            // TODO: to be implemented
+        }
+
+        chord.remove();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

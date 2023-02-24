@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -148,6 +148,26 @@ public class EndingInter
     private String number;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private EndingInter ()
+    {
+    }
+
+    /**
+     * Creates a new <code>EndingInter</code> object, meant for user manual handling.
+     *
+     * @param withRightLeg true for an ending with a right leg
+     * @param grade        interpretation quality
+     */
+    public EndingInter (boolean withRightLeg,
+                        Double grade)
+    {
+        super(null, null, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, grade);
+    }
+
     /**
      * Creates a new <code>EndingInter</code> object.
      *
@@ -169,26 +189,8 @@ public class EndingInter
         this.rightLeg = rightLeg;
     }
 
-    /**
-     * Creates a new <code>EndingInter</code> object, meant for user manual handling.
-     *
-     * @param withRightLeg true for an ending with a right leg
-     * @param grade        interpretation quality
-     */
-    public EndingInter (boolean withRightLeg,
-                        Double grade)
-    {
-        super(null, null, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, grade);
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private EndingInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -253,6 +255,30 @@ public class EndingInter
         }
 
         return false;
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
+    {
+        final EndingSymbol endingSymbol = (EndingSymbol) symbol;
+        final Model model = endingSymbol.getModel(font, dropLocation);
+
+        line = new Line2D.Double(model.topLeft, model.topRight);
+        leftLeg = new Line2D.Double(model.topLeft, model.bottomLeft);
+
+        if (model.bottomRight != null) {
+            rightLeg = new Line2D.Double(model.topRight, model.bottomRight);
+        }
+
+        setBounds(null); // To reset cached value
+
+        return true;
     }
 
     //-----------//
@@ -366,14 +392,6 @@ public class EndingInter
         return null;
     }
 
-    //-----------//
-    // setNumber //
-    //-----------//
-    public void setNumber (String number)
-    {
-        this.number = number;
-    }
-
     //-------------------//
     // getRelationCenter //
     //-------------------//
@@ -392,6 +410,27 @@ public class EndingInter
     public Line2D getRightLeg ()
     {
         return rightLeg;
+    }
+
+    //--------------//
+    // getSentences //
+    //--------------//
+    /**
+     * Report the sorted sequence of included sentences (number and text).
+     *
+     * @return sequence of sentences, from left to right
+     */
+    private List<SentenceInter> getSentences ()
+    {
+        final List<SentenceInter> sentences = new ArrayList<>();
+
+        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
+            sentences.add((SentenceInter) sig.getOppositeInter(this, r));
+        }
+
+        Collections.sort(sentences, Inters.byAbscissa);
+
+        return sentences;
     }
 
     //----------//
@@ -419,28 +458,48 @@ public class EndingInter
         return null;
     }
 
-    //------------//
-    // deriveFrom //
-    //------------//
-    @Override
-    public boolean deriveFrom (ShapeSymbol symbol,
-                               Sheet sheet,
-                               MusicFont font,
-                               Point dropLocation)
+    //-----------//
+    // lookupBar //
+    //-----------//
+    /**
+     * Look for a StaffBarline vertically aligned with the ending side.
+     * <p>
+     * It is not very important to select a precise barline within a group, since for left end we
+     * choose the right-most bar and the opposite for right end.
+     * We simply have to make sure that the lookup area is wide enough.
+     * <p>
+     * An ending which starts a staff may have its left side after the clef and key signature, which
+     * means far after the starting barline (if any).
+     * Perhaps we should consider the staff header in such case.
+     *
+     * @param side       ending side
+     * @param staff      related staff
+     * @param systemBars the collection of StaffBarlines in the containing system
+     * @param profile    desired profile level
+     * @return the selected bar line, or null if none
+     */
+    private StaffBarlineInter lookupBar (HorizontalSide side,
+                                         Staff staff,
+                                         List<Inter> systemBars,
+                                         int profile)
     {
-        final EndingSymbol endingSymbol = (EndingSymbol) symbol;
-        final Model model = endingSymbol.getModel(font, dropLocation);
+        final SystemInfo system = staff.getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final Point end = PointUtil.rounded(
+                (side == HorizontalSide.LEFT) ? line.getP1() : line.getP2());
+        final int maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(profile));
+        Rectangle box = new Rectangle(end);
+        box.grow(maxBarShift, 0);
+        box.height = staff.getLastLine().yAt(end.x) - end.y;
 
-        line = new Line2D.Double(model.topLeft, model.topRight);
-        leftLeg = new Line2D.Double(model.topLeft, model.bottomLeft);
+        List<Inter> bars = Inters.intersectedInters(systemBars, GeoOrder.NONE, box);
+        Collections.sort(bars, Inters.byAbscissa);
 
-        if (model.bottomRight != null) {
-            rightLeg = new Line2D.Double(model.topRight, model.bottomRight);
+        if (bars.isEmpty()) {
+            return null;
         }
 
-        setBounds(null); // To reset cached value
-
-        return true;
+        return (StaffBarlineInter) bars.get((side == HorizontalSide.LEFT) ? (bars.size() - 1) : 0);
     }
 
     //---------------------//
@@ -544,6 +603,14 @@ public class EndingInter
         return searchObsoletelinks(links, EndingBarRelation.class);
     }
 
+    //-----------//
+    // setNumber //
+    //-----------//
+    public void setNumber (String number)
+    {
+        this.number = number;
+    }
+
     //-----------------//
     // upgradeOldStuff //
     //-----------------//
@@ -560,125 +627,7 @@ public class EndingInter
         return upgraded;
     }
 
-    //--------------//
-    // getSentences //
-    //--------------//
-    /**
-     * Report the sorted sequence of included sentences (number and text).
-     *
-     * @return sequence of sentences, from left to right
-     */
-    private List<SentenceInter> getSentences ()
-    {
-        final List<SentenceInter> sentences = new ArrayList<>();
-
-        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
-            sentences.add((SentenceInter) sig.getOppositeInter(this, r));
-        }
-
-        Collections.sort(sentences, Inters.byAbscissa);
-
-        return sentences;
-    }
-
-    //-----------//
-    // lookupBar //
-    //-----------//
-    /**
-     * Look for a StaffBarline vertically aligned with the ending side.
-     * <p>
-     * It is not very important to select a precise barline within a group, since for left end we
-     * choose the right-most bar and the opposite for right end.
-     * We simply have to make sure that the lookup area is wide enough.
-     * <p>
-     * An ending which starts a staff may have its left side after the clef and key signature, which
-     * means far after the starting barline (if any).
-     * Perhaps we should consider the staff header in such case.
-     *
-     * @param side       ending side
-     * @param staff      related staff
-     * @param systemBars the collection of StaffBarlines in the containing system
-     * @param profile    desired profile level
-     * @return the selected bar line, or null if none
-     */
-    private StaffBarlineInter lookupBar (HorizontalSide side,
-                                         Staff staff,
-                                         List<Inter> systemBars,
-                                         int profile)
-    {
-        final SystemInfo system = staff.getSystem();
-        final Scale scale = system.getSheet().getScale();
-        final Point end = PointUtil.rounded(
-                (side == HorizontalSide.LEFT) ? line.getP1() : line.getP2());
-        final int maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(profile));
-        Rectangle box = new Rectangle(end);
-        box.grow(maxBarShift, 0);
-        box.height = staff.getLastLine().yAt(end.x) - end.y;
-
-        List<Inter> bars = Inters.intersectedInters(systemBars, GeoOrder.NONE, box);
-        Collections.sort(bars, Inters.byAbscissa);
-
-        if (bars.isEmpty()) {
-            return null;
-        }
-
-        return (StaffBarlineInter) bars.get((side == HorizontalSide.LEFT) ? (bars.size() - 1) : 0);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-
-    //---------//
-    // Impacts //
-    //---------//
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]
-        { "straight", "slope", "length" };
-
-        private static final double[] WEIGHTS = new double[]
-        { 1, 1, 1 };
-
-        public Impacts (double straight,
-                        double slope,
-                        double length)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, straight);
-            setImpact(1, slope);
-            setImpact(2, length);
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        public Point2D topLeft;
-
-        public Point2D topRight;
-
-        public Point2D bottomLeft;
-
-        public Point2D bottomRight; // Optional
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(topLeft, dx, dy);
-            PointUtil.add(topRight, dx, dy);
-            PointUtil.add(bottomLeft, dx, dy);
-
-            if (bottomRight != null) {
-                PointUtil.add(bottomRight, dx, dy);
-            }
-        }
-    }
 
     //-----------//
     // Constants //
@@ -889,6 +838,59 @@ public class EndingInter
 
             inter.setBounds(null);
             super.undo();
+        }
+    }
+
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]
+        { "straight", "slope", "length" };
+
+        private static final double[] WEIGHTS = new double[]
+        { 1, 1, 1 };
+
+        public Impacts (double straight,
+                        double slope,
+                        double length)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, straight);
+            setImpact(1, slope);
+            setImpact(2, length);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public Point2D topLeft;
+
+        public Point2D topRight;
+
+        public Point2D bottomLeft;
+
+        public Point2D bottomRight; // Optional
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(topLeft, dx, dy);
+            PointUtil.add(topRight, dx, dy);
+            PointUtil.add(bottomLeft, dx, dy);
+
+            if (bottomRight != null) {
+                PointUtil.add(bottomRight, dx, dy);
+            }
         }
     }
 }

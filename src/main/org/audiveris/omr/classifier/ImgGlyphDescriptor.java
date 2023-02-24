@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,12 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.glyph.Glyph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>ImgGlyphDescriptor</code> is a glyph descriptor based directly on the pixels
@@ -45,6 +45,7 @@ public class ImgGlyphDescriptor
     private static final String[] NO_LABELS = new String[0];
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ImgGlyphDescriptor</code> object.
      */
@@ -54,6 +55,7 @@ public class ImgGlyphDescriptor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public String[] getFeatureLabels ()
     {

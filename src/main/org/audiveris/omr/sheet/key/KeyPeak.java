@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,10 +36,12 @@ public class KeyPeak
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To sort peaks by their area value. */
-    public static final Comparator<KeyPeak> byArea = (KeyPeak p1, KeyPeak p2)
-            -> (p1 == p2) ? 0 : Integer.compare(p1.area, p2.area);
+    public static final Comparator<KeyPeak> byArea = (KeyPeak p1,
+                                                      KeyPeak p2) -> (p1 == p2) ? 0
+                                                              : Integer.compare(p1.area, p2.area);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Max cumulated height. */
     protected int height;
 
@@ -47,6 +49,7 @@ public class KeyPeak
     protected int area;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>KeyPeak</code> object.
      *
@@ -68,6 +71,7 @@ public class KeyPeak
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report peak center abscissa
      *

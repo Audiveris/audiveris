@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,10 +60,12 @@ public class CrossDetector
     private static final Logger logger = LoggerFactory.getLogger(CrossDetector.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>CrossDetector</code> object.
      *
@@ -75,22 +77,6 @@ public class CrossDetector
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Resolve conflicts between overlapping inters from different systems.
-     */
-    public void process ()
-    {
-        final SystemManager manager = sheet.getSystemManager();
-
-        for (SystemInfo above : sheet.getSystems()) {
-            for (SystemInfo below : manager.verticalNeighbors(above, VerticalSide.BOTTOM)) {
-                detect(above, below);
-            }
-        }
-    }
 
     //--------//
     // detect //
@@ -105,7 +91,8 @@ public class CrossDetector
         final Rectangle gutterBounds = gutter.getBounds();
 
         // Build lists of candidates for above and for below
-        Predicate<Inter> predicate = (Inter inter) -> {
+        Predicate<Inter> predicate = (Inter inter) ->
+        {
             if (inter.isImplicit() || (inter instanceof SentenceInter)) {
                 return false;
             }
@@ -207,6 +194,23 @@ public class CrossDetector
         return Math.sqrt(bestD2);
     }
 
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Resolve conflicts between overlapping inters from different systems.
+     */
+    public void process ()
+    {
+        final SystemManager manager = sheet.getSystemManager();
+
+        for (SystemInfo above : sheet.getSystems()) {
+            for (SystemInfo below : manager.verticalNeighbors(above, VerticalSide.BOTTOM)) {
+                detect(above, below);
+            }
+        }
+    }
+
     /**
      * Resolve the conflict detected between the two provided inters.
      * <p>
@@ -270,6 +274,7 @@ public class CrossDetector
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

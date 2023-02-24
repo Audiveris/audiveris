@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,7 @@ public abstract class Support
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The [0..1] quality value of the geometric junction.
      */
@@ -69,6 +70,7 @@ public abstract class Support
     protected GradeImpacts impacts;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BasicSupport object, with a grade set to 1.
      */
@@ -88,18 +90,6 @@ public abstract class Support
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // setGrade //
-    //----------//
-    /**
-     * Set the support grade value.
-     *
-     * @param grade the grade to set
-     */
-    public void setGrade (double grade)
-    {
-        this.grade = grade;
-    }
 
     //----------//
     // getGrade //
@@ -112,19 +102,6 @@ public abstract class Support
     public double getGrade ()
     {
         return grade;
-    }
-
-    //------------//
-    // setImpacts //
-    //------------//
-    /**
-     * Assign details about the relation grade
-     *
-     * @param impacts the grade impacts
-     */
-    public void setImpacts (GradeImpacts impacts)
-    {
-        this.impacts = impacts;
     }
 
     //------------//
@@ -154,6 +131,17 @@ public abstract class Support
     }
 
     //----------------//
+    // getSourceCoeff //
+    //----------------//
+    /**
+     * @return the coefficient used to compute source support ratio (default: 0)
+     */
+    protected double getSourceCoeff ()
+    {
+        return 0;
+    }
+
+    //----------------//
     // getSourceRatio //
     //----------------//
     /**
@@ -164,6 +152,17 @@ public abstract class Support
     public final double getSourceRatio ()
     {
         return 1.0 + (getSourceCoeff() * grade);
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    /**
+     * @return the coefficient used to compute target support ratio (default: 0)
+     */
+    protected double getTargetCoeff ()
+    {
+        return 0;
     }
 
     //----------------//
@@ -180,6 +179,32 @@ public abstract class Support
     }
 
     //----------//
+    // setGrade //
+    //----------//
+    /**
+     * Set the support grade value.
+     *
+     * @param grade the grade to set
+     */
+    public void setGrade (double grade)
+    {
+        this.grade = grade;
+    }
+
+    //------------//
+    // setImpacts //
+    //------------//
+    /**
+     * Assign details about the relation grade
+     *
+     * @param impacts the grade impacts
+     */
+    public void setImpacts (GradeImpacts impacts)
+    {
+        this.impacts = impacts;
+    }
+
+    //----------//
     // toString //
     //----------//
     @Override
@@ -188,29 +213,8 @@ public abstract class Support
         return String.format("%.2f~%s", grade, super.toString());
     }
 
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    /**
-     * @return the coefficient used to compute source support ratio (default: 0)
-     */
-    protected double getSourceCoeff ()
-    {
-        return 0;
-    }
-
-    //----------------//
-    // getTargetCoeff //
-    //----------------//
-    /**
-     * @return the coefficient used to compute target support ratio (default: 0)
-     */
-    protected double getTargetCoeff ()
-    {
-        return 0;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

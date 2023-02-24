@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,10 +44,24 @@ public class ScopedPanel
     private static final String colSpec4 = "10dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:10dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Collection of individual data panes. */
     protected final List<XactDataPane> panes = new ArrayList<>();
 
+    /**
+     * Creates a new <code>ScopedPanel</code> object, using default colSpec4.
+     *
+     * @param name  panel name
+     * @param panes contained data panes
+     */
+    public ScopedPanel (String name,
+                        List<XactDataPane> panes)
+    {
+        this(name, panes, colSpec4, 3);
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ScopedPanel</code> object.
      *
@@ -80,29 +94,7 @@ public class ScopedPanel
         }
     }
 
-    /**
-     * Creates a new <code>ScopedPanel</code> object, using default colSpec4.
-     *
-     * @param name  panel name
-     * @param panes contained data panes
-     */
-    public ScopedPanel (String name,
-                        List<XactDataPane> panes)
-    {
-        this(name, panes, colSpec4, 3);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-
-    /**
-     * Report the contained data panes.
-     *
-     * @return the sequence of data panes
-     */
-    public List<XactDataPane> getPanes ()
-    {
-        return panes;
-    }
 
     /**
      * Define layout of the pane.
@@ -128,5 +120,15 @@ public class ScopedPanel
         for (XactDataPane pane : panes) {
             r = pane.defineLayout(builder, cst, titleWidth, r);
         }
+    }
+
+    /**
+     * Report the contained data panes.
+     *
+     * @return the sequence of data panes
+     */
+    public List<XactDataPane> getPanes ()
+    {
+        return panes;
     }
 }

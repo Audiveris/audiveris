@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import static org.audiveris.omr.math.GeoPath.countOf;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +32,9 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
-import static java.awt.geom.PathIterator.*;
+import static java.awt.geom.PathIterator.SEG_CUBICTO;
+import static java.awt.geom.PathIterator.SEG_LINETO;
+import static java.awt.geom.PathIterator.SEG_QUADTO;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.util.Collection;
@@ -68,11 +68,13 @@ public class NaturalSpline
     private static final Logger logger = LoggerFactory.getLogger(NaturalSpline.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private Point2D first; // Cached for faster access. Really useful???
 
     private Point2D last; // Cached for faster access. Really useful???
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes.
      *
@@ -86,6 +88,7 @@ public class NaturalSpline
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // getFirstPoint //
     //---------------//
@@ -204,19 +207,20 @@ public class NaturalSpline
         case SEG_LINETO:
             return (p2.x - p1.x) / deltaY;
 
-        case SEG_QUADTO: {
+        case SEG_QUADTO:
+        {
             double cpx = coords[0];
 
             return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t))) + (2 * p2.x * t)) / deltaY;
         }
 
-        case SEG_CUBICTO: {
+        case SEG_CUBICTO:
+        {
             double cpx1 = coords[0];
             double cpx2 = coords[2];
 
-            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t)))
-                            + (3 * cpx2 * ((2 * t * u) - (t * t)))
-                            + (3 * p2.x * t * t)) / deltaY;
+            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t))) + (3 * cpx2 * ((2 * t
+                    * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
         }
 
         default:
@@ -264,24 +268,86 @@ public class NaturalSpline
         case SEG_LINETO:
             return (p2.y - p1.y) / deltaX;
 
-        case SEG_QUADTO: {
+        case SEG_QUADTO:
+        {
             double cpy = buffer[1];
 
             return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t))) + (2 * p2.y * t)) / deltaX;
         }
 
-        case SEG_CUBICTO: {
+        case SEG_CUBICTO:
+        {
             double cpy1 = buffer[1];
             double cpy2 = buffer[3];
 
-            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t)))
-                            + (3 * cpy2 * ((2 * t * u) - (t * t)))
-                            + (3 * p2.y * t * t)) / deltaX;
+            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) + (3 * cpy2 * ((2 * t
+                    * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
         }
 
         default:
             throw new RuntimeException("Illegal currentSegment " + segmentKind);
         }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------------------//
+    // getCubicDerivatives //
+    //---------------------//
+    /**
+     * Computes the derivatives of natural cubic spline that interpolates the provided
+     * knots.
+     *
+     * @param z the provided n knots
+     * @return the corresponding array of derivative values
+     */
+    private static double[] getCubicDerivatives (double[] z)
+    {
+        // Number of segments
+        final int n = z.length - 1;
+
+        // Compute the derivative at each provided knot
+        double[] D = new double[n + 1];
+
+        /**
+         * <pre>
+         * Equation to solve.
+         *       [2 1       ] [D[0]]   [3(z[1] - z[0])  ]
+         *       |1 4 1     | |D[1]|   |3(z[2] - z[0])  |
+         *       |  1 4 1   | | .  | = |      .         |
+         *       |    ..... | | .  |   |      .         |
+         *       |     1 4 1| | .  |   |3(z[n] - z[n-2])|
+         *       [       1 2] [D[n]]   [3(z[n] - z[n-1])]
+         * </pre>
+         * <p>
+         * by using row operations to convert the matrix to upper triangular
+         * and then back substitution.
+         */
+        double[] gamma = new double[n + 1];
+        gamma[0] = 0.5;
+
+        for (int i = 1; i < n; i++) {
+            gamma[i] = 1 / (4 - gamma[i - 1]);
+        }
+
+        gamma[n] = 1 / (2 - gamma[n - 1]);
+
+        double[] delta = new double[n + 1];
+        delta[0] = 3 * (z[1] - z[0]) * gamma[0];
+
+        for (int i = 1; i < n; i++) {
+            delta[i] = ((3 * (z[i + 1] - z[i - 1])) - delta[i - 1]) * gamma[i];
+        }
+
+        delta[n] = ((3 * (z[n] - z[n - 1])) - delta[n - 1]) * gamma[n];
+
+        D[n] = delta[n];
+
+        for (int i = n - 1; i >= 0; i--) {
+            D[i] = delta[i] - (gamma[i] * D[i + 1]);
+        }
+
+        return D;
     }
 
     //-------------//
@@ -377,64 +443,5 @@ public class NaturalSpline
 
             return new NaturalSpline(curves);
         }
-    }
-
-    //---------------------//
-    // getCubicDerivatives //
-    //---------------------//
-    /**
-     * Computes the derivatives of natural cubic spline that interpolates the provided
-     * knots.
-     *
-     * @param z the provided n knots
-     * @return the corresponding array of derivative values
-     */
-    private static double[] getCubicDerivatives (double[] z)
-    {
-        // Number of segments
-        final int n = z.length - 1;
-
-        // Compute the derivative at each provided knot
-        double[] D = new double[n + 1];
-
-        /**
-         * <pre>
-         * Equation to solve.
-         *       [2 1       ] [D[0]]   [3(z[1] - z[0])  ]
-         *       |1 4 1     | |D[1]|   |3(z[2] - z[0])  |
-         *       |  1 4 1   | | .  | = |      .         |
-         *       |    ..... | | .  |   |      .         |
-         *       |     1 4 1| | .  |   |3(z[n] - z[n-2])|
-         *       [       1 2] [D[n]]   [3(z[n] - z[n-1])]
-         * </pre>
-         * <p>
-         * by using row operations to convert the matrix to upper triangular
-         * and then back substitution.
-         */
-        double[] gamma = new double[n + 1];
-        gamma[0] = 0.5;
-
-        for (int i = 1; i < n; i++) {
-            gamma[i] = 1 / (4 - gamma[i - 1]);
-        }
-
-        gamma[n] = 1 / (2 - gamma[n - 1]);
-
-        double[] delta = new double[n + 1];
-        delta[0] = 3 * (z[1] - z[0]) * gamma[0];
-
-        for (int i = 1; i < n; i++) {
-            delta[i] = ((3 * (z[i + 1] - z[i - 1])) - delta[i - 1]) * gamma[i];
-        }
-
-        delta[n] = ((3 * (z[n] - z[n - 1])) - delta[n - 1]) * gamma[n];
-
-        D[n] = delta[n];
-
-        for (int i = n - 1; i >= 0; i--) {
-            D[i] = delta[i] - (gamma[i] * D[i + 1]);
-        }
-
-        return D;
     }
 }

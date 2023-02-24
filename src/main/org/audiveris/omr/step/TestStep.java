@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -64,9 +64,10 @@ public class TestStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void doit (Sheet aSheet)
-            throws StepException
+        throws StepException
     {
         final Book book = aSheet.getStub().getBook();
 
@@ -121,6 +122,8 @@ public class TestStep
         return sb.toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // getPrintWriter //
     //----------------//
@@ -133,8 +136,7 @@ public class TestStep
                             WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
-        } catch (FileNotFoundException |
-                 UnsupportedEncodingException ex) {
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
             System.err.println("Error creating " + path + ex);
 
             return null;
@@ -163,6 +165,7 @@ public class TestStep
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //--------//
     // Holder //
     //--------//

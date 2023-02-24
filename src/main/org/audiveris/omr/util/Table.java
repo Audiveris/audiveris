@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -65,6 +65,14 @@ public interface Table
     int getHeight ();
 
     /**
+     * Report value at index location in table data
+     *
+     * @param index position in table data
+     * @return the value at index
+     */
+    int getValue (int index);
+
+    /**
      * Report value at (x,y) location.
      * Returned value is positive for UnsignedByte (0..255)
      *
@@ -74,14 +82,6 @@ public interface Table
      */
     int getValue (int x,
                   int y);
-
-    /**
-     * Report value at index location in table data
-     *
-     * @param index position in table data
-     * @return the value at index
-     */
-    int getValue (int index);
 
     /**
      * Define a sub-table view on a table.
@@ -119,7 +119,149 @@ public interface Table
                    int y,
                    int val);
 
+    //----------//
+    // Abstract //
+    //----------//
+    public abstract class Abstract
+            implements Table
+    {
+
+        /** Width of the whole data. */
+        protected final int width;
+
+        /** Height of the whole data. */
+        protected final int height;
+
+        /** Rectangular region of interest, if any. */
+        protected final Rectangle roi;
+
+        protected Abstract (int width,
+                            int height,
+                            Rectangle roi)
+        {
+            this.width = width;
+            this.height = height;
+            this.roi = (roi != null) ? new Rectangle(roi) : null;
+        }
+
+        protected final void checkRoi (Rectangle roi)
+        {
+            if ((roi.x < 0) || ((roi.x + roi.width) > width)) {
+                throw new IllegalArgumentException(
+                        "Illegal abscissa range " + roi + " width:" + width);
+            }
+
+            if ((roi.y < 0) || ((roi.y + roi.height) > height)) {
+                throw new IllegalArgumentException(
+                        "Illegal ordinate range " + roi + " height:" + height);
+            }
+        }
+
+        @Override
+        public void dump (String title)
+        {
+            if (title != null) {
+                System.out.println(title);
+            }
+
+            final String yFormat = printAbscissae(4);
+
+            for (int y = 0; y < height; y++) {
+                System.out.printf(yFormat, y);
+
+                for (int x = 0; x < width; x++) {
+                    System.out.printf("%4d", getValue(x, y));
+                }
+
+                System.out.println();
+            }
+        }
+
+        @Override
+        public void fill (int val)
+        {
+            if (roi == null) {
+                throw new IllegalArgumentException("Abstract fill() needs non-null roi");
+            }
+
+            // Not very efficient implementation...
+            for (int y = 0; y < roi.height; y++) {
+                for (int x = 0; x < roi.width; x++) {
+                    setValue(x, y, val);
+                }
+            }
+        }
+
+        @Override
+        public int getHeight ()
+        {
+            if (roi == null) {
+                return height;
+            } else {
+                return roi.height;
+            }
+        }
+
+        @Override
+        public int getWidth ()
+        {
+            if (roi == null) {
+                return width;
+            } else {
+                return roi.width;
+            }
+        }
+
+        /**
+         * Print the lines of abscissa values for the table.
+         *
+         * @param cell cell width
+         * @return the format string for printing ordinate values
+         */
+        protected String printAbscissae (int cell)
+        {
+            // # of x digits
+            final int wn = Math.max(1, (int) Math.ceil(Math.log10(width)));
+
+            // # of y digits
+            final int hn = Math.max(1, (int) Math.ceil(Math.log10(height)));
+            final String margin = "%" + hn + "s ";
+            final String dFormat = "%" + cell + "d";
+            final String sFormat = "%" + cell + "s";
+
+            // Abscissae
+            for (int i = wn - 1; i >= 0; i--) {
+                int mod = (int) Math.pow(10, i);
+                System.out.printf(margin, "");
+
+                for (int x = 0; x < width; x++) {
+                    if ((x % 10) == 0) {
+                        int d = (x / mod) % 10;
+                        System.out.printf(dFormat, d);
+                    } else if (i == 0) {
+                        System.out.printf(dFormat, x % 10);
+                    } else {
+                        System.out.printf(sFormat, "");
+                    }
+                }
+
+                System.out.println();
+            }
+
+            System.out.printf(margin, "");
+
+            for (int x = 0; x < width; x++) {
+                System.out.printf(sFormat, "-");
+            }
+
+            System.out.println();
+
+            return "%" + hn + "d:";
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Integer //
     //---------//
@@ -177,6 +319,12 @@ public interface Table
         }
 
         @Override
+        public int getValue (int index)
+        {
+            return data[index];
+        }
+
+        @Override
         public int getValue (int x,
                              int y)
         {
@@ -186,12 +334,6 @@ public interface Table
             }
 
             return data[(y * width) + x];
-        }
-
-        @Override
-        public int getValue (int index)
-        {
-            return data[index];
         }
 
         public int[] getValues ()
@@ -289,6 +431,12 @@ public interface Table
         }
 
         @Override
+        public int getValue (int index)
+        {
+            return data[index];
+        }
+
+        @Override
         public int getValue (int x,
                              int y)
         {
@@ -298,12 +446,6 @@ public interface Table
             }
 
             return data[(y * width) + x];
-        }
-
-        @Override
-        public int getValue (int index)
-        {
-            return data[index];
         }
 
         public short[] getValues ()
@@ -401,6 +543,12 @@ public interface Table
         }
 
         @Override
+        public int getValue (int index)
+        {
+            return data[index] & 0xff;
+        }
+
+        @Override
         public int getValue (int x,
                              int y)
         {
@@ -410,12 +558,6 @@ public interface Table
             }
 
             return data[(y * width) + x] & 0xff;
-        }
-
-        @Override
-        public int getValue (int index)
-        {
-            return data[index] & 0xff;
         }
 
         public byte[] getValues ()
@@ -453,147 +595,6 @@ public interface Table
             }
 
             data[(y * width) + x] = (byte) val;
-        }
-    }
-
-    //----------//
-    // Abstract //
-    //----------//
-    public abstract class Abstract
-            implements Table
-    {
-
-        /** Width of the whole data. */
-        protected final int width;
-
-        /** Height of the whole data. */
-        protected final int height;
-
-        /** Rectangular region of interest, if any. */
-        protected final Rectangle roi;
-
-        protected Abstract (int width,
-                            int height,
-                            Rectangle roi)
-        {
-            this.width = width;
-            this.height = height;
-            this.roi = (roi != null) ? new Rectangle(roi) : null;
-        }
-
-        @Override
-        public void dump (String title)
-        {
-            if (title != null) {
-                System.out.println(title);
-            }
-
-            final String yFormat = printAbscissae(4);
-
-            for (int y = 0; y < height; y++) {
-                System.out.printf(yFormat, y);
-
-                for (int x = 0; x < width; x++) {
-                    System.out.printf("%4d", getValue(x, y));
-                }
-
-                System.out.println();
-            }
-        }
-
-        @Override
-        public void fill (int val)
-        {
-            if (roi == null) {
-                throw new IllegalArgumentException("Abstract fill() needs non-null roi");
-            }
-
-            // Not very efficient implementation...
-            for (int y = 0; y < roi.height; y++) {
-                for (int x = 0; x < roi.width; x++) {
-                    setValue(x, y, val);
-                }
-            }
-        }
-
-        @Override
-        public int getHeight ()
-        {
-            if (roi == null) {
-                return height;
-            } else {
-                return roi.height;
-            }
-        }
-
-        @Override
-        public int getWidth ()
-        {
-            if (roi == null) {
-                return width;
-            } else {
-                return roi.width;
-            }
-        }
-
-        protected final void checkRoi (Rectangle roi)
-        {
-            if ((roi.x < 0) || ((roi.x + roi.width) > width)) {
-                throw new IllegalArgumentException(
-                        "Illegal abscissa range " + roi + " width:" + width);
-            }
-
-            if ((roi.y < 0) || ((roi.y + roi.height) > height)) {
-                throw new IllegalArgumentException(
-                        "Illegal ordinate range " + roi + " height:" + height);
-            }
-        }
-
-        /**
-         * Print the lines of abscissa values for the table.
-         *
-         * @param cell cell width
-         * @return the format string for printing ordinate values
-         */
-        protected String printAbscissae (int cell)
-        {
-            // # of x digits
-            final int wn = Math.max(1, (int) Math.ceil(Math.log10(width)));
-
-            // # of y digits
-            final int hn = Math.max(1, (int) Math.ceil(Math.log10(height)));
-            final String margin = "%" + hn + "s ";
-            final String dFormat = "%" + cell + "d";
-            final String sFormat = "%" + cell + "s";
-
-            // Abscissae
-            for (int i = wn - 1; i >= 0; i--) {
-                int mod = (int) Math.pow(10, i);
-                System.out.printf(margin, "");
-
-                for (int x = 0; x < width; x++) {
-                    if ((x % 10) == 0) {
-                        int d = (x / mod) % 10;
-                        System.out.printf(dFormat, d);
-                    } else if (i == 0) {
-                        System.out.printf(dFormat, x % 10);
-                    } else {
-                        System.out.printf(sFormat, "");
-                    }
-                }
-
-                System.out.println();
-            }
-
-            System.out.printf(margin, "");
-
-            for (int x = 0; x < width; x++) {
-                System.out.printf(sFormat, "-");
-            }
-
-            System.out.println();
-
-            return "%" + hn + "d:";
         }
     }
 }

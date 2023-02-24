@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,6 +51,7 @@ public class ShapeMenu
     private static final Logger logger = LoggerFactory.getLogger(ShapeMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing sheet. */
     private final Sheet sheet;
 
@@ -60,6 +61,7 @@ public class ShapeMenu
     private final ActionListener shapeListener;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ShapeMenu</code> object.
      *
@@ -72,7 +74,8 @@ public class ShapeMenu
         this.sheet = sheet;
         this.glyph = glyph;
 
-        shapeListener = (ActionEvent e) -> {
+        shapeListener = (ActionEvent e) ->
+        {
             JMenuItem source = (JMenuItem) e.getSource();
             Shape shape = Shape.valueOf(source.getText());
             sheet.getInterController().assignGlyph(glyph, shape);
@@ -82,16 +85,6 @@ public class ShapeMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * @return the glyph
-     */
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
 
     //-----------------//
     // addRecentShapes //
@@ -104,8 +97,9 @@ public class ShapeMenu
             final MusicFamily family = sheet.getStub().getMusicFamily();
 
             for (Shape shape : shapes) {
-                JMenuItem menuItem = new JMenuItem(shape.toString(),
-                                                   shape.getDecoratedSymbol(family));
+                JMenuItem menuItem = new JMenuItem(
+                        shape.toString(),
+                        shape.getDecoratedSymbol(family));
                 menuItem.setToolTipText(shape.getDescription());
                 menuItem.addActionListener(shapeListener);
                 add(menuItem);
@@ -113,6 +107,17 @@ public class ShapeMenu
 
             addSeparator();
         }
+    }
+
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * @return the glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
     }
 
     //--------------//
@@ -130,6 +135,7 @@ public class ShapeMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // AssignMenu //
     //------------//

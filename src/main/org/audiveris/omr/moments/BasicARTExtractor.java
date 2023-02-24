@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,7 +23,8 @@ package org.audiveris.omr.moments;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import static org.audiveris.omr.moments.ARTMoments.*;
+import static org.audiveris.omr.moments.ARTMoments.ANGULAR;
+import static org.audiveris.omr.moments.ARTMoments.RADIAL;
 import org.audiveris.omr.util.StopWatch;
 
 import java.awt.image.WritableRaster;
@@ -56,6 +57,7 @@ public class BasicARTExtractor
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BasicARTExtractor object and process the provided foreground points.
      */
@@ -64,11 +66,6 @@ public class BasicARTExtractor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public void reconstruct (WritableRaster raster)
-    {
-        ///throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     //----------------//
     // extractMoments //
@@ -116,6 +113,14 @@ public class BasicARTExtractor
             }
         }
     }
+
+    @Override
+    public void reconstruct (WritableRaster raster)
+    {
+        ///throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // initLUT //
@@ -176,6 +181,7 @@ public class BasicARTExtractor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

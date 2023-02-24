@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -69,8 +69,7 @@ public class GuiActions
     private static final Logger logger = LoggerFactory.getLogger(GuiActions.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(
-                    GuiActions.class);
+            .getResourceMap(GuiActions.class);
 
     /** Options UI. */
     private static Options options;
@@ -79,6 +78,7 @@ public class GuiActions
     private static volatile AboutAction aboutAction;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------------//
     // browseGlobalSamples //
     //---------------------//
@@ -95,7 +95,7 @@ public class GuiActions
         {
             @Override
             protected SampleBrowser doInBackground ()
-                    throws Exception
+                throws Exception
             {
                 return SampleBrowser.getInstance();
             }
@@ -120,7 +120,8 @@ public class GuiActions
                 false,
                 OMR.gui.getFrame(),
                 BookManager.getBaseFolder(),
-                new OmrFileFilter(ext, new String[]{ext}));
+                new OmrFileFilter(ext, new String[]
+                { ext }));
 
         if (repoPath == null) {
             return null;
@@ -130,7 +131,7 @@ public class GuiActions
         {
             @Override
             protected SampleBrowser doInBackground ()
-                    throws Exception
+                throws Exception
             {
                 return new SampleBrowser(SampleRepository.getInstance(repoPath, true));
             }
@@ -372,6 +373,8 @@ public class GuiActions
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // getInstance //
     //-------------//
@@ -386,6 +389,7 @@ public class GuiActions
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------------//
     // CheckUpdateTask //
     //-----------------//
@@ -395,7 +399,7 @@ public class GuiActions
 
         @Override
         protected Void doInBackground ()
-                throws Exception
+            throws Exception
         {
             Versions.poll(true /* manual */);
 
@@ -446,7 +450,7 @@ public class GuiActions
 
         @Override
         protected Options doInBackground ()
-                throws Exception
+            throws Exception
         {
             if (options == null) {
                 options = new Options();

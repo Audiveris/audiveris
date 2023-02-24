@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class LineModel
     private final BasicLine line;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LineModel object.
      *
@@ -55,6 +56,7 @@ public class LineModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public int above ()
     {
@@ -111,12 +113,6 @@ public class LineModel
     }
 
     @Override
-    public void setDistance (double dist)
-    {
-        // void?
-    }
-
-    @Override
     public Point2D getEndVector (boolean reverse)
     {
         int dir = reverse ? (-1) : 1;
@@ -140,5 +136,11 @@ public class LineModel
     public void reverse ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setDistance (double dist)
+    {
+        // void?
     }
 }

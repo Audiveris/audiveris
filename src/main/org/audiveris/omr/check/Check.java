@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public abstract class Check<C>
     private static final Logger logger = LoggerFactory.getLogger(Check.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Specifies the Failure to be assigned to the Checkable object,
      * when the result of this individual check is not acceptable.
@@ -74,6 +75,27 @@ public abstract class Check<C>
     private final boolean covariant;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new Check object.
+     *
+     * @param name        short name for this check
+     * @param description longer description
+     * @param low         lower bound of orange zone
+     * @param high        upper bound of orange zone
+     * @param covariant   true if higher is better, false otherwise
+     * @param redResult   result code to be assigned when result is RED
+     */
+    protected Check (String name,
+                     String description,
+                     Constant.Double low,
+                     Constant.Double high,
+                     boolean covariant,
+                     Failure redResult)
+    {
+        this(name, description, new NamedDouble(low), new NamedDouble(high), covariant, redResult);
+    }
+
     /**
      * Creates a new Check object.
      *
@@ -101,27 +123,8 @@ public abstract class Check<C>
         verifyRange();
     }
 
-    /**
-     * Creates a new Check object.
-     *
-     * @param name        short name for this check
-     * @param description longer description
-     * @param low         lower bound of orange zone
-     * @param high        upper bound of orange zone
-     * @param covariant   true if higher is better, false otherwise
-     * @param redResult   result code to be assigned when result is RED
-     */
-    protected Check (String name,
-                     String description,
-                     Constant.Double low,
-                     Constant.Double high,
-                     boolean covariant,
-                     Failure redResult)
-    {
-        this(name, description, new NamedDouble(low), new NamedDouble(high), covariant, redResult);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // getDescription //
     //----------------//
@@ -199,6 +202,18 @@ public abstract class Check<C>
     {
         return name;
     }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Method to be provided by any concrete subclass, in order to retrieve the
+     * proper data value from the given object passed as a parameter.
+     *
+     * @param obj the object to be checked
+     * @return the data value relevant for the check
+     */
+    protected abstract double getValue (C obj);
 
     //-------------//
     // isCovariant //
@@ -290,18 +305,6 @@ public abstract class Check<C>
         return sb.toString();
     }
 
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Method to be provided by any concrete subclass, in order to retrieve the
-     * proper data value from the given object passed as a parameter.
-     *
-     * @param obj the object to be checked
-     * @return the data value relevant for the check
-     */
-    protected abstract double getValue (C obj);
-
     //-------------//
     // verifyRange //
     //-------------//
@@ -316,6 +319,7 @@ public abstract class Check<C>
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Grade //
     //-------//

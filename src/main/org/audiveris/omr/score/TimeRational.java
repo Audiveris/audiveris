@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,7 +50,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "time-rational")
-@XmlType(propOrder = {"num", "den"})
+@XmlType(propOrder =
+{ "num", "den" })
 public class TimeRational
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -58,6 +59,7 @@ public class TimeRational
     private static final Logger logger = LoggerFactory.getLogger(TimeRational.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The non-reduced numerator indicates the number of beats.
      * <p>
@@ -71,7 +73,8 @@ public class TimeRational
     @XmlAttribute(name = "num")
     public final int num;
 
-    /** The non-reduced denominator indicates the beat unit.
+    /**
+     * The non-reduced denominator indicates the beat unit.
      * <p>
      * For example:
      * <ul>
@@ -83,7 +86,14 @@ public class TimeRational
     @XmlAttribute(name = "den")
     public final int den;
 
+    /** Zero-argument constructor to please JAXB. */
+    private TimeRational ()
+    {
+        den = num = 0;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TimeRational object.
      *
@@ -97,13 +107,8 @@ public class TimeRational
         this.den = den;
     }
 
-    /** Zero-argument constructor to please JAXB. */
-    private TimeRational ()
-    {
-        den = num = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // duplicate //
     //-----------//
@@ -168,6 +173,8 @@ public class TimeRational
         return num + "/" + den;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------//
     // decode //
     //--------//
@@ -183,7 +190,8 @@ public class TimeRational
         final String[] tokens = str.split("\\s*/\\s*");
 
         switch (tokens.length) {
-        case 2: {
+        case 2:
+        {
             int num = Integer.decode(tokens[0].trim());
 
             if ((num < 0) || (num > 99)) {
@@ -234,6 +242,7 @@ public class TimeRational
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -246,7 +255,7 @@ public class TimeRational
 
         @Override
         public String marshal (TimeRational val)
-                throws Exception
+            throws Exception
         {
             if (val == null) {
                 return null;
@@ -257,7 +266,7 @@ public class TimeRational
 
         @Override
         public TimeRational unmarshal (String str)
-                throws Exception
+            throws Exception
         {
             if (str == null) {
                 return null;

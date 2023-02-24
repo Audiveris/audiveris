@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,6 +46,15 @@ public class ChordArpeggiatoRelation
     private static final Constants constants = new Constants();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>ArpeggiatoChordRelation</code> object.
+     */
+    public ChordArpeggiatoRelation ()
+    {
+        super();
+    }
+
     /**
      * Creates a new <code>ArpeggiatoChordRelation</code> object.
      *
@@ -56,15 +65,8 @@ public class ChordArpeggiatoRelation
         super(grade);
     }
 
-    /**
-     * Creates a new <code>ArpeggiatoChordRelation</code> object.
-     */
-    public ChordArpeggiatoRelation ()
-    {
-        super();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -73,6 +75,12 @@ public class ChordArpeggiatoRelation
     {
         final ArpeggiatoInter arpeggiato = (ArpeggiatoInter) e.getEdgeTarget();
         arpeggiato.checkAbnormal();
+    }
+
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return constants.arpeggiatoSupportCoeff.getValue();
     }
 
     //----------------//
@@ -107,11 +115,7 @@ public class ChordArpeggiatoRelation
         }
     }
 
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.arpeggiatoSupportCoeff.getValue();
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // getXGapMaximum //
@@ -122,6 +126,7 @@ public class ChordArpeggiatoRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -138,8 +143,6 @@ public class ChordArpeggiatoRelation
                 "Maximum horizontal gap between arpeggiato & chord");
 
         @SuppressWarnings("unused")
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
-                2.5,
-                "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(2.5, "Idem for profile 1");
     }
 }

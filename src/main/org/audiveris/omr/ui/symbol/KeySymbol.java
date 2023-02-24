@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.KeyInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -51,6 +53,7 @@ public abstract class KeySymbol
     public final Shape itemShape;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new KeySymbol object.
      *
@@ -70,6 +73,7 @@ public abstract class KeySymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getParams //
     //-----------//
@@ -122,6 +126,19 @@ public abstract class KeySymbol
         return p;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(" fifths:").append(fifths);
+
+        return sb.toString();
+    }
+
     //-------//
     // paint //
     //-------//
@@ -163,20 +180,8 @@ public abstract class KeySymbol
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append(" fifths:").append(fifths);
-
-        return sb.toString();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//

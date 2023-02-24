@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -63,6 +63,7 @@ public class ScrollView
     private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Current view inside the scrolled pane. */
     protected RubberPanel view;
 
@@ -70,6 +71,7 @@ public class ScrollView
     private final JScrollPane component = new JScrollPane();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a bare view pane.
      * <p>
@@ -102,6 +104,44 @@ public class ScrollView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // bindKeys //
+    //----------//
+    private void bindKeys (JComponent component)
+    {
+        InputMap inputMap;
+        //        inputMap = component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        //        inputMap = component.getInputMap(JComponent.WHEN_FOCUSED); // Default
+        inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+        ActionMap actionMap = component.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke("UP"), "UpAction");
+        actionMap.put("UpAction", new UpAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "DownAction");
+        actionMap.put("DownAction", new DownAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift UP"), "ShiftUpAction");
+        actionMap.put("ShiftUpAction", new ShiftUpAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift DOWN"), "ShiftDownAction");
+        actionMap.put("ShiftDownAction", new ShiftDownAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("LEFT"), "LeftAction");
+        actionMap.put("LeftAction", new LeftAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "RightAction");
+        actionMap.put("RightAction", new RightAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift LEFT"), "ShiftLeftAction");
+        actionMap.put("ShiftLeftAction", new ShiftLeftAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("shift RIGHT"), "ShiftRightAction");
+        actionMap.put("ShiftRightAction", new ShiftRightAction());
+    }
+
     //-----------//
     // fitHeight //
     //-----------//
@@ -282,44 +322,8 @@ public class ScrollView
         }
     }
 
-    //----------//
-    // bindKeys //
-    //----------//
-    private void bindKeys (JComponent component)
-    {
-        InputMap inputMap;
-        //        inputMap = component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        //        inputMap = component.getInputMap(JComponent.WHEN_FOCUSED); // Default
-        inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-        ActionMap actionMap = component.getActionMap();
-
-        inputMap.put(KeyStroke.getKeyStroke("UP"), "UpAction");
-        actionMap.put("UpAction", new UpAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "DownAction");
-        actionMap.put("DownAction", new DownAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("shift UP"), "ShiftUpAction");
-        actionMap.put("ShiftUpAction", new ShiftUpAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("shift DOWN"), "ShiftDownAction");
-        actionMap.put("ShiftDownAction", new ShiftDownAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("LEFT"), "LeftAction");
-        actionMap.put("LeftAction", new LeftAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "RightAction");
-        actionMap.put("RightAction", new RightAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("shift LEFT"), "ShiftLeftAction");
-        actionMap.put("ShiftLeftAction", new ShiftLeftAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("shift RIGHT"), "ShiftRightAction");
-        actionMap.put("ShiftRightAction", new ShiftRightAction());
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

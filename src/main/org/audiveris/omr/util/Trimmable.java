@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,7 +45,39 @@ public abstract class Trimmable
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    /**
+     * Re-allocate empty collections to null annotated fields after being marshalled.
+     *
+     * @param obj the object just marshalled
+     * @throws IllegalAccessException    to be handled by caller
+     * @throws IllegalArgumentException  to be handled by caller
+     * @throws InstantiationException    to be handled by caller
+     * @throws InvocationTargetException to be handled by caller
+     * @throws NoSuchMethodException     to be handled by caller
+     */
+    public static void afterMarshal (Object obj)
+        throws IllegalAccessException, IllegalArgumentException, InstantiationException,
+        InvocationTargetException, NoSuchMethodException
+    {
+        for (Field field : obj.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(Collection.class)) {
+                field.setAccessible(true);
+
+                Object collection = field.get(obj);
+
+                if (collection == null) {
+                    Constructor<?> cons = field.getType().getConstructor(new Class[0]);
+                    field.set(obj, cons.newInstance());
+                }
+            }
+        }
+    }
+
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -59,10 +91,8 @@ public abstract class Trimmable
      * @throws NoSuchMethodException     to be handled by caller
      */
     public static void beforeMarshal (Object obj)
-            throws IllegalAccessException,
-                   IllegalArgumentException,
-                   InvocationTargetException,
-                   NoSuchMethodException
+        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+        NoSuchMethodException
     {
         // Nullify any empty collection field
         Class<?> classe = obj.getClass();
@@ -82,41 +112,8 @@ public abstract class Trimmable
         }
     }
 
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    /**
-     * Re-allocate empty collections to null annotated fields after being marshalled.
-     *
-     * @param obj the object just marshalled
-     * @throws IllegalAccessException    to be handled by caller
-     * @throws IllegalArgumentException  to be handled by caller
-     * @throws InstantiationException    to be handled by caller
-     * @throws InvocationTargetException to be handled by caller
-     * @throws NoSuchMethodException     to be handled by caller
-     */
-    public static void afterMarshal (Object obj)
-            throws IllegalAccessException,
-                   IllegalArgumentException,
-                   InstantiationException,
-                   InvocationTargetException,
-                   NoSuchMethodException
-    {
-        for (Field field : obj.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(Collection.class)) {
-                field.setAccessible(true);
-
-                Object collection = field.get(obj);
-
-                if (collection == null) {
-                    Constructor<?> cons = field.getType().getConstructor(new Class[0]);
-                    field.set(obj, cons.newInstance());
-                }
-            }
-        }
-    }
-
     //~ Annotations --------------------------------------------------------------------------------
+
     /**
      * Annotation <code>Collection</code> flags a collection field as trimmable.
      * <p>

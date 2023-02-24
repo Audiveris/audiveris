@@ -25,12 +25,15 @@ public class WatershedGrayLevel
     private static final int WATERSHED = -1;
 
     /** Abscissa offsets of the 8 neighbors, clockwise. */
-    private static final int[] dx8 = new int[]{-1, 0, 1, 1, 1, 0, -1, -1};
+    private static final int[] dx8 = new int[]
+    { -1, 0, 1, 1, 1, 0, -1, -1 };
 
     /** Ordinate offsets of the 8 neighbors, clockwise. */
-    private static final int[] dy8 = new int[]{-1, -1, -1, 0, 1, 1, 1, 0};
+    private static final int[] dy8 = new int[]
+    { -1, -1, -1, 0, 1, 1, 1, 0 };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Original gray-level image, organized row per row. */
     private final Table image;
 
@@ -55,6 +58,7 @@ public class WatershedGrayLevel
     private ListOfPixels[] exploreList;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new WatershedGrayLevel object.
      *
@@ -82,85 +86,6 @@ public class WatershedGrayLevel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getRegionCount //
-    //----------------//
-    /**
-     * Report the number of regions identified.
-     *
-     * @return the number of regions
-     */
-    public int getRegionCount ()
-    {
-        return maxRegionId;
-    }
-
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Build the boolean watershed map.
-     *
-     * @param step number of levels to check
-     * @return the watershed map (a true boolean value indicates a pixel which
-     *         is part of watershed line)
-     */
-    public boolean[][] process (int step)
-    {
-        init();
-
-        // Flooding level by level
-        int level = 0;
-        int yoffset = 0;
-
-        while (level < GRAYLEVEL) {
-            // Extend region by exploring neighbors of known pixels
-            while (true) {
-                Pixel p = nextPixel(level, step);
-
-                if (p == null) {
-                    break;
-                }
-
-                extend(p);
-            }
-
-            // Find a new seed for this level
-            Pixel seed = findSeed(level, yoffset);
-
-            if (seed != null) {
-                ///System.out.println("seed = " + seed);
-                // create and assign a new region to this seed
-                rmap.setValue(seed.x, seed.y, ++maxRegionId);
-                yoffset = seed.y;
-
-                // add this seed to the list of pixel to explore
-                exploreList[level].add(seed);
-            } else {
-                // no more seed for this level -> next level
-                level++;
-                yoffset = 0;
-            }
-        }
-
-        // Build the watershed map
-        ///dumpRmap();
-        boolean[][] shedmap = new boolean[width][height];
-
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                if (rmap.getValue(x, y) == WATERSHED) {
-                    shedmap[x][y] = true;
-                }
-            }
-        }
-
-        // free memory
-        clear();
-
-        // return the watershed map
-        return shedmap;
-    }
 
     //-------//
     // clear //
@@ -267,6 +192,19 @@ public class WatershedGrayLevel
         return null;
     }
 
+    //----------------//
+    // getRegionCount //
+    //----------------//
+    /**
+     * Report the number of regions identified.
+     *
+     * @return the number of regions
+     */
+    public int getRegionCount ()
+    {
+        return maxRegionId;
+    }
+
     //------//
     // init //
     //------//
@@ -307,7 +245,75 @@ public class WatershedGrayLevel
         return null;
     }
 
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Build the boolean watershed map.
+     *
+     * @param step number of levels to check
+     * @return the watershed map (a true boolean value indicates a pixel which
+     *         is part of watershed line)
+     */
+    public boolean[][] process (int step)
+    {
+        init();
+
+        // Flooding level by level
+        int level = 0;
+        int yoffset = 0;
+
+        while (level < GRAYLEVEL) {
+            // Extend region by exploring neighbors of known pixels
+            while (true) {
+                Pixel p = nextPixel(level, step);
+
+                if (p == null) {
+                    break;
+                }
+
+                extend(p);
+            }
+
+            // Find a new seed for this level
+            Pixel seed = findSeed(level, yoffset);
+
+            if (seed != null) {
+                ///System.out.println("seed = " + seed);
+                // create and assign a new region to this seed
+                rmap.setValue(seed.x, seed.y, ++maxRegionId);
+                yoffset = seed.y;
+
+                // add this seed to the list of pixel to explore
+                exploreList[level].add(seed);
+            } else {
+                // no more seed for this level -> next level
+                level++;
+                yoffset = 0;
+            }
+        }
+
+        // Build the watershed map
+        ///dumpRmap();
+        boolean[][] shedmap = new boolean[width][height];
+
+        for (int y = 0; y < this.height; y++) {
+            for (int x = 0; x < this.width; x++) {
+                if (rmap.getValue(x, y) == WATERSHED) {
+                    shedmap[x][y] = true;
+                }
+            }
+        }
+
+        // free memory
+        clear();
+
+        // return the watershed map
+        return shedmap;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // ListOfPixels //
     //--------------//

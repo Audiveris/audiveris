@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,8 +44,8 @@ import org.audiveris.omr.ui.dnd.GhostGlassPane;
 import org.audiveris.omr.ui.dnd.GhostMotionAdapter;
 import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
 import static org.audiveris.omr.ui.symbol.MusicFont.getPointSize;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -151,6 +151,7 @@ public class ShapeBoard
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -238,6 +239,7 @@ public class ShapeBoard
     private MusicFamily cachedFamily;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new ShapeBoard object.
      *
@@ -263,6 +265,51 @@ public class ShapeBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // addButton //
+    //-----------//
+    private void addButton (Panel panel,
+                            ShapeButton button)
+    {
+        button.addMouseListener(mouseListener); // For double-click
+        button.addMouseListener(dropAdapter); // For DnD transfer and double-click
+        button.addMouseMotionListener(motionAdapter); // For dragging
+
+        button.addKeyListener(keyListener);
+
+        if (panel != null) {
+            panel.add(button);
+        }
+    }
+
+    //------------//
+    // addButtons //
+    //------------//
+    /**
+     * Add one button for every shape in provided set.
+     *
+     * @param p      the child panel to populate
+     * @param shapes the set shapes
+     */
+    private void addButtons (Panel p,
+                             List<Shape> shapes)
+    {
+        for (Shape shape : shapes) {
+            final ShapeSymbol symbol = getDecoratedSymbol(shape);
+
+            if (symbol != null) {
+                try {
+                    addButton(p, new ShapeButton(symbol));
+                } catch (Exception ex) {
+                    logger.warn("No music glyph for shape: {}", shape, ex);
+                }
+            } else {
+                logger.warn("Panel. No button symbol for {}", shape);
+            }
+        }
+    }
+
     //--------------//
     // addToHistory //
     //--------------//
@@ -276,77 +323,121 @@ public class ShapeBoard
         shapeHistory.add(shape);
     }
 
-    //------------//
-    // getHistory //
-    //------------//
-    /**
-     * Report the recent shapes.
-     *
-     * @return list of most recent shapes
-     */
-    public List<Shape> getHistory ()
+    //-------------//
+    // assignGlyph //
+    //-------------//
+    private void assignGlyph (Glyph glyph,
+                              Shape shape)
     {
-        return shapeHistory.getShapes();
+        // Actually assign the shape
+        sheet.getInterController().assignGlyph(glyph, shape);
     }
 
-    //---------//
-    // onEvent //
-    //---------//
+    //----------------//
+    // buildAllPanels //
+    //----------------//
     /**
-     * Unused in this board.
+     * Build the global panel and populate the catalog of set panels.
      *
-     * @param event unused
+     * @return the global panel
      */
-    @Override
-    public void onEvent (UserEvent event)
+    private Panel buildAllPanels ()
     {
-        // Empty
-    }
+        final Panel panel = new Panel();
+        panel.setName("globalPanel");
+        panel.setNoInsets();
+        panel.setLayout(new WrapLayout(FlowLayout.LEADING));
+        panel.setBackground(Color.LIGHT_GRAY);
 
-    //-------------//
-    // resizeBoard //
-    //-------------//
-    @Override
-    public void resizeBoard ()
-    {
-        final int space = getSplitSpace();
+        setPanels.clear();
 
-        // Resize all visible panels in this board
-        if (globalPanel.isVisible()) {
-            globalPanel.setSize(space, 1);
-        }
+        for (ShapeSet set : ShapeSet.getShapeSets()) {
+            final Shape rep = set.getRep(); // Representative shape for the shape set
 
-        if (shapeHistory.panel.isVisible()) {
-            shapeHistory.panel.setSize(space, 1);
-        }
+            if (rep != null) {
+                final ShapeSymbol symbol = getDecoratedSymbol(rep);
 
-        for (Panel panel : setPanels.values()) {
-            if (panel.isVisible()) {
-                panel.setSize(space, 1);
+                if (symbol != null) {
+                    final ShapeButton button = new ShapeButton(symbol);
+                    button.setName(set.getName());
+                    button.addActionListener(setListener);
+                    button.setBorderPainted(false);
+
+                    final Character shortcut = reverseSetMap.get(set);
+                    button.setToolTipText(set.getName() + standardized(shortcut));
+                    panel.add(button);
+
+                    // Create the child set Panel
+                    setPanels.put(set, buildSetPanel(set));
+                } else {
+                    logger.error("GlobalPanel. No button symbol for {}", rep);
+                }
             }
         }
 
-        super.resizeBoard();
+        panel.addKeyListener(keyListener);
+
+        cachedFamily = sheet.getStub().getMusicFamily();
+
+        return panel;
     }
 
-    //-------------------//
-    // setSplitContainer //
-    //-------------------//
+    //---------------//
+    // buildSetPanel //
+    //---------------//
     /**
-     * {@inheritDoc}.
-     * <p>
-     * Start listening to splitPane being resized.
+     * Build the panel for a given set.
      *
-     * @param sp the related split container
+     * @param set the given set of shapes
+     * @return the set panel created
      */
-    @Override
-    public void setSplitContainer (JSplitPane sp)
+    private Panel buildSetPanel (ShapeSet set)
     {
-        // NOTA: To avoid duplicate listeners in JSplitPane, let's remove listener before adding it
-        sp.removePropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
-        sp.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
+        final Panel panel = new Panel();
+        panel.setName(set.getName());
+        panel.setNoInsets();
+        panel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
-        super.setSplitContainer(sp);
+        // Button to close this set and return to global panel
+        final JButton close = new JButton(BACK);
+        close.addActionListener(closeListener);
+        close.setToolTipText("Back to all-sets");
+        close.setBorderPainted(false); // To avoid visual confusion with draggable items
+        panel.add(close);
+
+        // Title for this set
+        panel.add(new JLabel(set.getName()));
+
+        // One button (or more) per filtered shape
+        final List<Shape> filtered = filteredShapes(set);
+
+        if (set == ShapeSet.HeadsAndDot) {
+            cachedHeads = filtered; // Keep in cache for potential future update
+            new HeadButtons().build(panel, filtered);
+        } else if (set == ShapeSet.Barlines) {
+            new ButtonsTable(8).build(panel, filtered);
+        } else if (set == ShapeSet.ClefsAndShifts) {
+            new ButtonsTable(5).build(panel, filtered);
+        } else if (set == ShapeSet.Dynamics) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Flags) {
+            new ButtonsTable(7).build(panel, filtered);
+        } else if (set == ShapeSet.Rests) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Times) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Romans) {
+            new ButtonsTable(6).build(panel, filtered);
+        } else if (set == ShapeSet.Physicals) {
+            new ButtonsTable(4).build(panel, filtered);
+        } else {
+            addButtons(panel, filtered);
+        }
+
+        // Specific listener for keyboard
+        panel.addKeyListener(keyListener);
+
+        return panel;
     }
 
     //--------------//
@@ -379,6 +470,210 @@ public class ShapeBoard
         return true;
     }
 
+    //----------//
+    // closeSet //
+    //----------//
+    private void closeSet ()
+    {
+        if (currentSetPanel != null) {
+            currentSetPanel.setVisible(false);
+        }
+
+        globalPanel.setVisible(true);
+
+        resizeBoard();
+        globalPanel.requestFocusInWindow();
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        CellConstraints cst = new CellConstraints();
+        FormLayout layout = new FormLayout("pref", "pref," + Panel.getFieldInterline() + ",pref");
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        getBody().setName("ShapeBody");
+
+        builder.add(shapeHistory.panel, cst.xy(1, 1));
+        builder.add(globalPanel, cst.xy(1, 3));
+
+        for (Panel sp : setPanels.values()) {
+            builder.add(sp, cst.xy(1, 3)); // Global panel and all set panels overlap!
+            sp.setVisible(false);
+        }
+    }
+
+    //----------------//
+    // filteredShapes //
+    //----------------//
+    /**
+     * A hack to filter shapes according to processing switches.
+     *
+     * @param set the set of shapes to filter
+     * @return the shapes kept
+     */
+    private List<Shape> filteredShapes (ShapeSet set)
+    {
+        final List<Shape> all = set.getSortedShapes();
+
+        if (set != ShapeSet.HeadsAndDot) {
+            return all;
+        }
+
+        return ShapeSet.getProcessedShapes(sheet, all);
+    }
+
+    //--------------------//
+    // getDecoratedSymbol //
+    //--------------------//
+    /**
+     * Report the decorated symbol in standard size for the desired shape,
+     * according to current music font preferences.
+     *
+     * @param shape the desired shape
+     * @return the standard symbol found, in its decorated version
+     */
+    private ShapeSymbol getDecoratedSymbol (Shape shape)
+    {
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final FontSymbol fs = shape.getFontSymbol(family);
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for {}", shape);
+            return null;
+        }
+
+        return fs.symbol.getDecoratedVersion();
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Report the recent shapes.
+     *
+     * @return list of most recent shapes
+     */
+    public List<Shape> getHistory ()
+    {
+        return shapeHistory.getShapes();
+    }
+
+    //----------------------//
+    // getNonDraggableImage //
+    //----------------------//
+    private BufferedImage getNonDraggableImage (Zoom zoom)
+    {
+        final Shape shape = Shape.NON_DRAGGABLE;
+        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
+        final int interline = sheet.getScale().getInterline();
+        final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
+        final FontSymbol fs = shape.getFontSymbolByInterline(
+                fontFamily,
+                getPointSize(zoomedInterline));
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for non-draggable shape");
+            return null;
+        }
+
+        return fs.symbol.getDecoratedVersion().buildImage(fs.font);
+    }
+
+    //---------------//
+    // getSplitSpace //
+    //---------------//
+    /**
+     * Report the available space for component within containing JSplitPane.
+     * <p>
+     * We take into account the JSplitPane size, the divider location and size and all
+     * the insets of ancestors until the JSplitPane included.
+     *
+     * @return the available width
+     */
+    private int getSplitSpace ()
+    {
+        final JComponent comp = getComponent();
+
+        synchronized (comp.getTreeLock()) {
+            final JSplitPane sp = getSplitContainer();
+            int space = sp.getSize().width;
+            space -= sp.getDividerSize();
+
+            final int divLoc = sp.getDividerLocation();
+            space -= divLoc;
+
+            // Remove horizontal insets
+            Container parent = comp.getParent();
+
+            while (parent != null) {
+                Insets insets = parent.getInsets();
+                space -= insets.left;
+                space -= insets.right;
+
+                if (parent instanceof JScrollPane scrollPane) {
+                    // Remove bar width if any
+                    JScrollBar bar = scrollPane.getVerticalScrollBar();
+
+                    if (bar.isShowing()) {
+                        space -= bar.getWidth();
+                    }
+                }
+
+                if (parent == sp) {
+                    break;
+                }
+
+                parent = parent.getParent();
+            }
+
+            if (parent == null) {
+                // Not currently connected to splitContainer, include its insets anyway
+                Insets insets = sp.getInsets();
+                space -= insets.left;
+                space -= insets.right;
+            }
+
+            return space;
+        }
+    }
+
+    //------------------------//
+    // getTinyDecoratedSymbol //
+    //------------------------//
+    /**
+     * Report the tiny decorated symbol for the desired shape,
+     * according to current music font preferences.
+     *
+     * @param shape the desired shape
+     * @return the symbol found, in its tiny decorated version
+     */
+    private ShapeSymbol getTinyDecoratedSymbol (Shape shape)
+    {
+        final ShapeSymbol decoSymbol = getDecoratedSymbol(shape);
+
+        if (decoSymbol == null) {
+            return null;
+        }
+
+        return decoSymbol.getTinyVersion();
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Unused in this board.
+     *
+     * @param event unused
+     */
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        // Empty
+    }
+
     //---------------//
     // processString //
     //---------------//
@@ -408,6 +703,158 @@ public class ShapeBoard
             }
         }
     }
+
+    //-------------//
+    // resizeBoard //
+    //-------------//
+    @Override
+    public void resizeBoard ()
+    {
+        final int space = getSplitSpace();
+
+        // Resize all visible panels in this board
+        if (globalPanel.isVisible()) {
+            globalPanel.setSize(space, 1);
+        }
+
+        if (shapeHistory.panel.isVisible()) {
+            shapeHistory.panel.setSize(space, 1);
+        }
+
+        for (Panel panel : setPanels.values()) {
+            if (panel.isVisible()) {
+                panel.setSize(space, 1);
+            }
+        }
+
+        super.resizeBoard();
+    }
+
+    //-----------//
+    // selectSet //
+    //-----------//
+    /**
+     * Display the selected set panel.
+     *
+     * @param fPanel the provided set panel
+     */
+    private void selectSet (Panel fPanel)
+    {
+        globalPanel.setVisible(false);
+
+        currentSetPanel = fPanel;
+        currentSetPanel.setVisible(true);
+        resizeBoard();
+        currentSetPanel.requestFocusInWindow();
+    }
+
+    //-----------//
+    // selectSet //
+    //-----------//
+    /**
+     * Display the set panel dedicated to the provided ShapeSet
+     *
+     * @param set the provided shape set
+     */
+    private void selectSet (ShapeSet set)
+    {
+        selectSet(setPanels.get(set));
+    }
+
+    //-------------------//
+    // setSplitContainer //
+    //-------------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Start listening to splitPane being resized.
+     *
+     * @param sp the related split container
+     */
+    @Override
+    public void setSplitContainer (JSplitPane sp)
+    {
+        // NOTA: To avoid duplicate listeners in JSplitPane, let's remove listener before adding it
+        sp.removePropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
+        sp.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
+
+        super.setSplitContainer(sp);
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Update ShapeBoard content.
+     * <ul>
+     * <li>A perhaps new font family for shape buttons.
+     * <li>Perhaps new filtered shapes according to effective processing switches.
+     * </ul>
+     */
+    @Override
+    public void update ()
+    {
+        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
+
+        if (fontFamily != cachedFamily) {
+            // We can update each shape button icon in situ.
+            shapeHistory.update();
+            updateAllPanels();
+            cachedFamily = fontFamily;
+        }
+
+        final ShapeSet headSet = ShapeSet.HeadsAndDot;
+        final List<Shape> newHeads = filteredShapes(headSet);
+
+        if (!newHeads.equals(cachedHeads)) {
+            // We have to deal with addition / removal of shape buttons
+            final boolean isGlobal = globalPanel.isVisible();
+            final String currentSetName = isGlobal ? null : currentSetPanel.getName();
+
+            setPanels.put(headSet, buildSetPanel(headSet));
+
+            defineLayout();
+
+            if (isGlobal) {
+                closeSet();
+            } else {
+                if (!headSet.getName().equals(currentSetName)) {
+                    selectSet(currentSetPanel);
+                } else {
+                    closeSet();
+                    selectSet(headSet);
+                }
+            }
+        }
+    }
+
+    //-----------------//
+    // updateAllPanels //
+    //-----------------//
+    private void updateAllPanels ()
+    {
+        updatePanel(globalPanel);
+
+        for (Panel setPanel : setPanels.values()) {
+            updatePanel(setPanel);
+        }
+    }
+
+    //-------------//
+    // updatePanel //
+    //-------------//
+    private void updatePanel (Panel panel)
+    {
+        for (Component comp : panel.getComponents()) {
+            if (comp instanceof ShapeButton shapeButton) {
+                shapeButton.update();
+            } else if (comp instanceof Panel p) {
+                updatePanel(p);
+            }
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // populateCharMaps //
@@ -473,297 +920,6 @@ public class ShapeBoard
         }
     }
 
-    //------------//
-    // addButtons //
-    //------------//
-    /**
-     * Add one button for every shape in provided set.
-     *
-     * @param p      the child panel to populate
-     * @param shapes the set shapes
-     */
-    private void addButtons (Panel p,
-                             List<Shape> shapes)
-    {
-        for (Shape shape : shapes) {
-            final ShapeSymbol symbol = getDecoratedSymbol(shape);
-
-            if (symbol != null) {
-                try {
-                    addButton(p, new ShapeButton(symbol));
-                } catch (Exception ex) {
-                    logger.warn("No music glyph for shape: {}", shape, ex);
-                }
-            } else {
-                logger.warn("Panel. No button symbol for {}", shape);
-            }
-        }
-    }
-
-    //-----------//
-    // addButton //
-    //-----------//
-    private void addButton (Panel panel,
-                            ShapeButton button)
-    {
-        button.addMouseListener(mouseListener); // For double-click
-        button.addMouseListener(dropAdapter); // For DnD transfer and double-click
-        button.addMouseMotionListener(motionAdapter); // For dragging
-
-        button.addKeyListener(keyListener);
-
-        if (panel != null) {
-            panel.add(button);
-        }
-    }
-
-    //-------------//
-    // assignGlyph //
-    //-------------//
-    private void assignGlyph (Glyph glyph,
-                              Shape shape)
-    {
-        // Actually assign the shape
-        sheet.getInterController().assignGlyph(glyph, shape);
-    }
-
-    //----------------//
-    // buildAllPanels //
-    //----------------//
-    /**
-     * Build the global panel and populate the catalog of set panels.
-     *
-     * @return the global panel
-     */
-    private Panel buildAllPanels ()
-    {
-        final Panel panel = new Panel();
-        panel.setName("globalPanel");
-        panel.setNoInsets();
-        panel.setLayout(new WrapLayout(FlowLayout.LEADING));
-        panel.setBackground(Color.LIGHT_GRAY);
-
-        setPanels.clear();
-
-        for (ShapeSet set : ShapeSet.getShapeSets()) {
-            final Shape rep = set.getRep(); // Representative shape for the shape set
-
-            if (rep != null) {
-                final ShapeSymbol symbol = getDecoratedSymbol(rep);
-
-                if (symbol != null) {
-                    final ShapeButton button = new ShapeButton(symbol);
-                    button.setName(set.getName());
-                    button.addActionListener(setListener);
-                    button.setBorderPainted(false);
-
-                    final Character shortcut = reverseSetMap.get(set);
-                    button.setToolTipText(set.getName() + standardized(shortcut));
-                    panel.add(button);
-
-                    // Create the child set Panel
-                    setPanels.put(set, buildSetPanel(set));
-                } else {
-                    logger.error("GlobalPanel. No button symbol for {}", rep);
-                }
-            }
-        }
-
-        panel.addKeyListener(keyListener);
-
-        cachedFamily = sheet.getStub().getMusicFamily();
-
-        return panel;
-    }
-
-    //-----------------//
-    // updateAllPanels //
-    //-----------------//
-    private void updateAllPanels ()
-    {
-        updatePanel(globalPanel);
-
-        for (Panel setPanel : setPanels.values()) {
-            updatePanel(setPanel);
-        }
-    }
-
-    //-------------//
-    // updatePanel //
-    //-------------//
-    private void updatePanel (Panel panel)
-    {
-        for (Component comp : panel.getComponents()) {
-            if (comp instanceof ShapeButton shapeButton) {
-                shapeButton.update();
-            } else if (comp instanceof Panel p) {
-                updatePanel(p);
-            }
-        }
-    }
-
-    //---------------//
-    // buildSetPanel //
-    //---------------//
-    /**
-     * Build the panel for a given set.
-     *
-     * @param set the given set of shapes
-     * @return the set panel created
-     */
-    private Panel buildSetPanel (ShapeSet set)
-    {
-        final Panel panel = new Panel();
-        panel.setName(set.getName());
-        panel.setNoInsets();
-        panel.setLayout(new WrapLayout(FlowLayout.LEADING));
-
-        // Button to close this set and return to global panel
-        final JButton close = new JButton(BACK);
-        close.addActionListener(closeListener);
-        close.setToolTipText("Back to all-sets");
-        close.setBorderPainted(false); // To avoid visual confusion with draggable items
-        panel.add(close);
-
-        // Title for this set
-        panel.add(new JLabel(set.getName()));
-
-        // One button (or more) per filtered shape
-        final List<Shape> filtered = filteredShapes(set);
-
-        if (set == ShapeSet.HeadsAndDot) {
-            cachedHeads = filtered; // Keep in cache for potential future update
-            new HeadButtons().build(panel, filtered);
-        } else if (set == ShapeSet.Barlines) {
-            new ButtonsTable(8).build(panel, filtered);
-        } else if (set == ShapeSet.ClefsAndShifts) {
-            new ButtonsTable(5).build(panel, filtered);
-        } else if (set == ShapeSet.Dynamics) {
-            new ButtonsTable(6).build(panel, filtered);
-        } else if (set == ShapeSet.Flags) {
-            new ButtonsTable(7).build(panel, filtered);
-        } else if (set == ShapeSet.Rests) {
-            new ButtonsTable(6).build(panel, filtered);
-        } else if (set == ShapeSet.Times) {
-            new ButtonsTable(6).build(panel, filtered);
-        } else if (set == ShapeSet.Romans) {
-            new ButtonsTable(6).build(panel, filtered);
-        } else if (set == ShapeSet.Physicals) {
-            new ButtonsTable(4).build(panel, filtered);
-        } else {
-            addButtons(panel, filtered);
-        }
-
-        // Specific listener for keyboard
-        panel.addKeyListener(keyListener);
-
-        return panel;
-    }
-
-    //----------------//
-    // filteredShapes //
-    //----------------//
-    /**
-     * A hack to filter shapes according to processing switches.
-     *
-     * @param set the set of shapes to filter
-     * @return the shapes kept
-     */
-    private List<Shape> filteredShapes (ShapeSet set)
-    {
-        final List<Shape> all = set.getSortedShapes();
-
-        if (set != ShapeSet.HeadsAndDot) {
-            return all;
-        }
-
-        return ShapeSet.getProcessedShapes(sheet, all);
-    }
-
-    //----------//
-    // closeSet //
-    //----------//
-    private void closeSet ()
-    {
-        if (currentSetPanel != null) {
-            currentSetPanel.setVisible(false);
-        }
-
-        globalPanel.setVisible(true);
-
-        resizeBoard();
-        globalPanel.requestFocusInWindow();
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout("pref", "pref," + Panel.getFieldInterline() + ",pref");
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-        getBody().setName("ShapeBody");
-
-        builder.add(shapeHistory.panel, cst.xy(1, 1));
-        builder.add(globalPanel, cst.xy(1, 3));
-
-        for (Panel sp : setPanels.values()) {
-            builder.add(sp, cst.xy(1, 3)); // Global panel and all set panels overlap!
-            sp.setVisible(false);
-        }
-    }
-
-    //----------------------//
-    // getNonDraggableImage //
-    //----------------------//
-    private BufferedImage getNonDraggableImage (Zoom zoom)
-    {
-        final Shape shape = Shape.NON_DRAGGABLE;
-        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
-        final int interline = sheet.getScale().getInterline();
-        final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
-        final FontSymbol fs = shape.getFontSymbolByInterline(fontFamily, getPointSize(zoomedInterline));
-
-        if (fs.symbol == null) {
-            logger.warn("No symbol for non-draggable shape");
-            return null;
-        }
-
-        return fs.symbol.getDecoratedVersion().buildImage(fs.font);
-    }
-
-    //-----------//
-    // selectSet //
-    //-----------//
-    /**
-     * Display the set panel dedicated to the provided ShapeSet
-     *
-     * @param set the provided shape set
-     */
-    private void selectSet (ShapeSet set)
-    {
-        selectSet(setPanels.get(set));
-    }
-
-    //-----------//
-    // selectSet //
-    //-----------//
-    /**
-     * Display the selected set panel.
-     *
-     * @param fPanel the provided set panel
-     */
-    private void selectSet (Panel fPanel)
-    {
-        globalPanel.setVisible(false);
-
-        currentSetPanel = fPanel;
-        currentSetPanel.setVisible(true);
-        resizeBoard();
-        currentSetPanel.requestFocusInWindow();
-    }
-
     //--------------//
     // standardized //
     //--------------//
@@ -800,156 +956,8 @@ public class ShapeBoard
         return sb.toString().toUpperCase();
     }
 
-    //--------------------//
-    // getDecoratedSymbol //
-    //--------------------//
-    /**
-     * Report the decorated symbol in standard size for the desired shape,
-     * according to current music font preferences.
-     *
-     * @param shape the desired shape
-     * @return the standard symbol found, in its decorated version
-     */
-    private ShapeSymbol getDecoratedSymbol (Shape shape)
-    {
-        final MusicFamily family = sheet.getStub().getMusicFamily();
-        final FontSymbol fs = shape.getFontSymbol(family);
-
-        if (fs.symbol == null) {
-            logger.warn("No symbol for {}", shape);
-            return null;
-        }
-
-        return fs.symbol.getDecoratedVersion();
-    }
-
-    //------------------------//
-    // getTinyDecoratedSymbol //
-    //------------------------//
-    /**
-     * Report the tiny decorated symbol for the desired shape,
-     * according to current music font preferences.
-     *
-     * @param shape the desired shape
-     * @return the symbol found, in its tiny decorated version
-     */
-    private ShapeSymbol getTinyDecoratedSymbol (Shape shape)
-    {
-        final ShapeSymbol decoSymbol = getDecoratedSymbol(shape);
-
-        if (decoSymbol == null) {
-            return null;
-        }
-
-        return decoSymbol.getTinyVersion();
-    }
-
-    //---------------//
-    // getSplitSpace //
-    //---------------//
-    /**
-     * Report the available space for component within containing JSplitPane.
-     * <p>
-     * We take into account the JSplitPane size, the divider location and size and all
-     * the insets of ancestors until the JSplitPane included.
-     *
-     * @return the available width
-     */
-    private int getSplitSpace ()
-    {
-        final JComponent comp = getComponent();
-
-        synchronized (comp.getTreeLock()) {
-            final JSplitPane sp = getSplitContainer();
-            int space = sp.getSize().width;
-            space -= sp.getDividerSize();
-
-            final int divLoc = sp.getDividerLocation();
-            space -= divLoc;
-
-            // Remove horizontal insets
-            Container parent = comp.getParent();
-
-            while (parent != null) {
-                Insets insets = parent.getInsets();
-                space -= insets.left;
-                space -= insets.right;
-
-                if (parent instanceof JScrollPane scrollPane) {
-                    // Remove bar width if any
-                    JScrollBar bar = scrollPane.getVerticalScrollBar();
-
-                    if (bar.isShowing()) {
-                        space -= bar.getWidth();
-                    }
-                }
-
-                if (parent == sp) {
-                    break;
-                }
-
-                parent = parent.getParent();
-            }
-
-            if (parent == null) {
-                // Not currently connected to splitContainer, include its insets anyway
-                Insets insets = sp.getInsets();
-                space -= insets.left;
-                space -= insets.right;
-            }
-
-            return space;
-        }
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Update ShapeBoard content.
-     * <ul>
-     * <li>A perhaps new font family for shape buttons.
-     * <li>Perhaps new filtered shapes according to effective processing switches.
-     * </ul>
-     */
-    @Override
-    public void update ()
-    {
-        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
-
-        if (fontFamily != cachedFamily) {
-            // We can update each shape button icon in situ.
-            shapeHistory.update();
-            updateAllPanels();
-            cachedFamily = fontFamily;
-        }
-
-        final ShapeSet headSet = ShapeSet.HeadsAndDot;
-        final List<Shape> newHeads = filteredShapes(headSet);
-
-        if (!newHeads.equals(cachedHeads)) {
-            // We have to deal with addition / removal of shape buttons
-            final boolean isGlobal = globalPanel.isVisible();
-            final String currentSetName = isGlobal ? null : currentSetPanel.getName();
-
-            setPanels.put(headSet, buildSetPanel(headSet));
-
-            defineLayout();
-
-            if (isGlobal) {
-                closeSet();
-            } else {
-                if (!headSet.getName().equals(currentSetName)) {
-                    selectSet(currentSetPanel);
-                } else {
-                    closeSet();
-                    selectSet(headSet);
-                }
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // ButtonsTable //
     //--------------//
@@ -1147,23 +1155,6 @@ public class ShapeBoard
             return sb.toString();
         }
 
-        private int shapeCol (Shape shape)
-        {
-            return switch (shape) {
-            case AUGMENTATION_DOT -> 1;
-            case QUARTER_NOTE_UP -> 3;
-            case QUARTER_NOTE_DOWN -> 5;
-            case HALF_NOTE_UP -> 7;
-            case HALF_NOTE_DOWN -> 9;
-
-            case PLAYING_OPEN -> 3;
-            case PLAYING_HALF_OPEN -> 5;
-            case PLAYING_CLOSED -> 7;
-
-            default -> throw new IllegalArgumentException("No shapeCol for " + shape);
-            };
-        }
-
         private int headCol (Rational dur)
         {
             if (dur.equals(Rational.QUARTER)) {
@@ -1201,6 +1192,23 @@ public class ShapeBoard
             case triangle -> 9;
             case circle -> 11;
             default -> throw new IllegalArgumentException("No headRow for head motif " + motif);
+            };
+        }
+
+        private int shapeCol (Shape shape)
+        {
+            return switch (shape) {
+            case AUGMENTATION_DOT -> 1;
+            case QUARTER_NOTE_UP -> 3;
+            case QUARTER_NOTE_DOWN -> 5;
+            case HALF_NOTE_UP -> 7;
+            case HALF_NOTE_DOWN -> 9;
+
+            case PLAYING_OPEN -> 3;
+            case PLAYING_HALF_OPEN -> 5;
+            case PLAYING_CLOSED -> 7;
+
+            default -> throw new IllegalArgumentException("No shapeCol for " + shape);
             };
         }
     }
@@ -1464,14 +1472,14 @@ public class ShapeBoard
             }
         }
 
-        public ShapeSymbol getSymbol ()
-        {
-            return decoSymbol;
-        }
-
         public Shape getShape ()
         {
             return decoSymbol.getShape();
+        }
+
+        public ShapeSymbol getSymbol ()
+        {
+            return decoSymbol;
         }
 
         public void update ()

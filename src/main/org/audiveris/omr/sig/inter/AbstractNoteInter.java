@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,47 +49,13 @@ public abstract class AbstractNoteInter
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractNoteInter.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Enum <code>NoteStep</code> describes the names of the various note steps.
-     */
-    public static enum NoteStep
-    {
-        /** La */
-        A,
-        /** Si */
-        B,
-        /** Do */
-        C,
-        /** Ré */
-        D,
-        /** Mi */
-        E,
-        /** Fa */
-        F,
-        /** Sol */
-        G;
-    }
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new AbstractNoteInter object.
-     *
-     * @param glyph   the underlying glyph, if any
-     * @param bounds  the object bounds
-     * @param shape   the underlying shape
-     * @param impacts the grade details
-     * @param staff   the related staff
-     * @param pitch   the note pitch
+     * No-arg constructor meant for JAXB.
      */
-    public AbstractNoteInter (Glyph glyph,
-                              Rectangle bounds,
-                              Shape shape,
-                              GradeImpacts impacts,
-                              Staff staff,
-                              Double pitch)
+    protected AbstractNoteInter ()
     {
-        super(glyph, bounds, shape, impacts, staff, pitch);
     }
 
     /**
@@ -113,13 +79,64 @@ public abstract class AbstractNoteInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new AbstractNoteInter object.
+     *
+     * @param glyph   the underlying glyph, if any
+     * @param bounds  the object bounds
+     * @param shape   the underlying shape
+     * @param impacts the grade details
+     * @param staff   the related staff
+     * @param pitch   the note pitch
      */
-    protected AbstractNoteInter ()
+    public AbstractNoteInter (Glyph glyph,
+                              Rectangle bounds,
+                              Shape shape,
+                              GradeImpacts impacts,
+                              Staff staff,
+                              Double pitch)
     {
+        super(glyph, bounds, shape, impacts, staff, pitch);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Since a note instance is held by its containing staff, make sure staff
+     * notes collection is updated.
+     *
+     * @see #remove()
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (staff != null) {
+            staff.addNote(this);
+        }
+    }
+
+    //------------------//
+    // getAbsolutePitch //
+    //------------------//
+    /**
+     * Report the absolute pitch for this note, using the current clef, and the pitch
+     * position of the note.
+     *
+     * @return the related "absolute" pitch
+     */
+    public int getAbsolutePitch ()
+    {
+        AbstractChordInter chord = getChord();
+        Measure measure = chord.getMeasure();
+        ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
+
+        return ClefInter.absolutePitchOf(clef, getIntegerPitch());
+    }
+
     //----------//
     // getChord //
     //----------//
@@ -173,43 +190,6 @@ public abstract class AbstractNoteInter
         }
 
         return null;
-    }
-
-    //-------//
-    // added //
-    //-------//
-    /**
-     * Since a note instance is held by its containing staff, make sure staff
-     * notes collection is updated.
-     *
-     * @see #remove()
-     */
-    @Override
-    public void added ()
-    {
-        super.added();
-
-        if (staff != null) {
-            staff.addNote(this);
-        }
-    }
-
-    //------------------//
-    // getAbsolutePitch //
-    //------------------//
-    /**
-     * Report the absolute pitch for this note, using the current clef, and the pitch
-     * position of the note.
-     *
-     * @return the related "absolute" pitch
-     */
-    public int getAbsolutePitch ()
-    {
-        AbstractChordInter chord = getChord();
-        Measure measure = chord.getMeasure();
-        ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
-
-        return ClefInter.absolutePitchOf(clef, getIntegerPitch());
     }
 
     //-----------//
@@ -284,5 +264,28 @@ public abstract class AbstractNoteInter
         }
 
         super.remove(extensive);
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Enum <code>NoteStep</code> describes the names of the various note steps.
+     */
+    public static enum NoteStep
+    {
+        /** La */
+        A,
+        /** Si */
+        B,
+        /** Do */
+        C,
+        /** Ré */
+        D,
+        /** Mi */
+        E,
+        /** Fa */
+        F,
+        /** Sol */
+        G;
     }
 }

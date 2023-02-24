@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,12 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
-import net.jcip.annotations.NotThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Class <code>VerticalFilter</code> is a specialization of
@@ -40,6 +39,7 @@ import org.slf4j.LoggerFactory;
  * vertical window always moves to the right. Instead of a whole table of integrals, this class uses
  * a vertical tile whose width equals the window size, and the height equals the picture height.
  * <br>
+ * 
  * <pre>
  *                                              +----------------+
  *                                              |   TILE_WIDTH   |
@@ -79,6 +79,7 @@ public class VerticalFilter
     private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
@@ -100,6 +101,7 @@ public class VerticalFilter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // MyTile //
     //--------//

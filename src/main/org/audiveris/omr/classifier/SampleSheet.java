@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -87,21 +87,8 @@ public class SampleSheet
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Formalizes the status of sheet image, to avoid endless load attempts.
-     */
-    public enum ImageStatus
-    {
-        /** There is no recorded image for this sheet. */
-        NO_IMAGE,
-        /** Sheet image is available on disk. */
-        ON_DISK,
-        /** Sheet image is available in memory. */
-        LOADED;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Full descriptor. */
     private final Descriptor descriptor;
 
@@ -127,6 +114,7 @@ public class SampleSheet
     private Tribe currentTribe;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleSheet</code> object.
      *
@@ -165,6 +153,7 @@ public class SampleSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // getAllSamples //
     //---------------//
@@ -335,19 +324,6 @@ public class SampleSheet
         return Collections.emptyList();
     }
 
-    //-----------//
-    // setTribes //
-    //-----------//
-    /**
-     * Assign the set of tribes.
-     *
-     * @param tribes the tribes to set
-     */
-    public void setTribes (List<Tribe> tribes)
-    {
-        this.tribes = tribes;
-    }
-
     //------------//
     // isModified //
     //------------//
@@ -357,19 +333,6 @@ public class SampleSheet
     public boolean isModified ()
     {
         return modified || !imageSaved;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * Flag the sample sheet as modified.
-     *
-     * @param modified the value to assign
-     */
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
     }
 
     //---------//
@@ -414,42 +377,9 @@ public class SampleSheet
                 imageSaved = true;
                 logger.info("Stored {}", imagePath);
             }
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    /**
-     * Register the image binary table for this sheet.
-     *
-     * @param image the image to set (non-null)
-     * @param saved true if image already on disk
-     */
-    public void setImage (RunTable image,
-                          boolean saved)
-    {
-        this.image = image;
-        this.imageSaved = saved;
-        imageStatus = ImageStatus.LOADED;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-        sb.append(getDescriptor().getName());
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //------------------//
@@ -511,6 +441,65 @@ public class SampleSheet
         setModified(true);
     }
 
+    //----------//
+    // setImage //
+    //----------//
+    /**
+     * Register the image binary table for this sheet.
+     *
+     * @param image the image to set (non-null)
+     * @param saved true if image already on disk
+     */
+    public void setImage (RunTable image,
+                          boolean saved)
+    {
+        this.image = image;
+        this.imageSaved = saved;
+        imageStatus = ImageStatus.LOADED;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Flag the sample sheet as modified.
+     *
+     * @param modified the value to assign
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+    }
+
+    //-----------//
+    // setTribes //
+    //-----------//
+    /**
+     * Assign the set of tribes.
+     *
+     * @param tribes the tribes to set
+     */
+    public void setTribes (List<Tribe> tribes)
+    {
+        this.tribes = tribes;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+        sb.append(getDescriptor().getName());
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Delete from disk the samples, tribes and image if any of a defunct sheet.
      *
@@ -549,6 +538,20 @@ public class SampleSheet
         }
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(RunTable.class, SampleList.class);
+        }
+
+        return jaxbContext;
+    }
+
     //-----------//
     // unmarshal //
     //-----------//
@@ -562,7 +565,7 @@ public class SampleSheet
      */
     public static SampleSheet unmarshal (Path path,
                                          Descriptor desc)
-            throws IOException
+        throws IOException
     {
         logger.debug("SampleSheet unmarshalling {}", path);
 
@@ -580,21 +583,23 @@ public class SampleSheet
         }
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(RunTable.class, SampleList.class);
-        }
+    //~ Enumerations -------------------------------------------------------------------------------
 
-        return jaxbContext;
+    /**
+     * Formalizes the status of sheet image, to avoid endless load attempts.
+     */
+    public enum ImageStatus
+    {
+        /** There is no recorded image for this sheet. */
+        NO_IMAGE,
+        /** Sheet image is available on disk. */
+        ON_DISK,
+        /** Sheet image is available in memory. */
+        LOADED;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // SampleList //
     //------------//
@@ -615,6 +620,12 @@ public class SampleSheet
         @XmlElement(name = "sample")
         private final ArrayList<Sample> samples = new ArrayList<>();
 
+        // Meant for JAXB
+        private SampleList ()
+        {
+            name = null;
+        }
+
         SampleList (SampleSheet sampleSheet)
         {
             name = sampleSheet.getDescriptor().getName();
@@ -622,12 +633,6 @@ public class SampleSheet
             for (List<Sample> list : sampleSheet.shapeMap.values()) {
                 samples.addAll(list);
             }
-        }
-
-        // Meant for JAXB
-        private SampleList ()
-        {
-            name = null;
         }
 
         //----------------//
@@ -650,8 +655,9 @@ public class SampleSheet
                 case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
                 case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
                 case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
-                default -> {
-                }
+                default ->
+                        {
+                        }
                 }
             }
         }

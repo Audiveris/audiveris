@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.util.Wrapper;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -43,6 +43,7 @@ public class AreaMask
     private final Rectangle rect;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new AreaMask object.
      *
@@ -55,6 +56,7 @@ public class AreaMask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // apply //
     //-------//
@@ -100,9 +102,10 @@ public class AreaMask
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
-    //---------//
+
+    //-----------------//
     // AreaMaskAdapter //
-    //---------//
+    //-----------------//
     public static interface AreaMaskAdapter
     {
 
@@ -117,6 +120,7 @@ public class AreaMask
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // ForeCounter //
     //-------------//
@@ -145,11 +149,9 @@ public class AreaMask
         public void process (int x,
                              int y)
         {
-            if ((x >= 0)
-                        && (x < filterWidth)
-                        && (y >= 0)
-                        && (y < filterHeight)
-                        && (filter.get(x, y) == 0)) {
+            if ((x >= 0) && (x < filterWidth) && (y >= 0) && (y < filterHeight) && (filter.get(
+                    x,
+                    y) == 0)) {
                 fore.value++;
             }
         }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ public abstract class DynamicMenu
     private static final Logger logger = LoggerFactory.getLogger(DynamicMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -60,27 +61,6 @@ public abstract class DynamicMenu
     };
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create the dynamic menu.
-     *
-     * @param menuLabel the label to be used for the menu
-     * @param menuClass the precise class for menu
-     */
-    public DynamicMenu (String menuLabel,
-                        Class<? extends JMenu> menuClass)
-    {
-        try {
-            menu = menuClass.newInstance();
-            menu.setText(menuLabel);
-
-            // Listener to menu selection, to modify content on-the-fly
-            menu.addMenuListener(menuListener);
-        } catch (IllegalAccessException |
-                 InstantiationException ex) {
-            logger.error("Could not instantiate " + menuClass, ex);
-            menu = null;
-        }
-    }
 
     /**
      * Creates a new DynamicMenu object.
@@ -97,14 +77,44 @@ public abstract class DynamicMenu
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (IllegalAccessException |
-                 InstantiationException ex) {
+        } catch (IllegalAccessException | InstantiationException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }
     }
 
+    /**
+     * Create the dynamic menu.
+     *
+     * @param menuLabel the label to be used for the menu
+     * @param menuClass the precise class for menu
+     */
+    public DynamicMenu (String menuLabel,
+                        Class<? extends JMenu> menuClass)
+    {
+        try {
+            menu = menuClass.newInstance();
+            menu.setText(menuLabel);
+
+            // Listener to menu selection, to modify content on-the-fly
+            menu.addMenuListener(menuListener);
+        } catch (IllegalAccessException | InstantiationException ex) {
+            logger.error("Could not instantiate " + menuClass, ex);
+            menu = null;
+        }
+    }
+
+    //------------//
+    // buildItems //
+    //------------//
+    /**
+     * This is the method that is called whenever the menu is selected.
+     * To be implemented in a subclass.
+     */
+    protected abstract void buildItems ();
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getMenu //
     //---------//
@@ -117,13 +127,4 @@ public abstract class DynamicMenu
     {
         return menu;
     }
-
-    //------------//
-    // buildItems //
-    //------------//
-    /**
-     * This is the method that is called whenever the menu is selected.
-     * To be implemented in a subclass.
-     */
-    protected abstract void buildItems ();
 }

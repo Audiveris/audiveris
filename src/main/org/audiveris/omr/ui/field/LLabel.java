@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,6 +34,16 @@ public class LLabel
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * Creates a new <code>LLabel</code> object.
+     *
+     * @param horizontalAlignment horizontal alignment
+     */
+    public LLabel (int horizontalAlignment)
+    {
+        this(null, null, horizontalAlignment);
+    }
+
+    /**
      * Creates a new <code>LLabel</code> object, with default center alignment
      *
      * @param label the string to be used as label text
@@ -43,16 +53,6 @@ public class LLabel
                    String tip)
     {
         this(label, tip, JLabel.CENTER);
-    }
-
-    /**
-     * Creates a new <code>LLabel</code> object.
-     *
-     * @param horizontalAlignment horizontal alignment
-     */
-    public LLabel (int horizontalAlignment)
-    {
-        this(null, null, horizontalAlignment);
     }
 
     /**
@@ -71,6 +71,7 @@ public class LLabel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getText //
     //---------//

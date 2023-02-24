@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -35,7 +35,8 @@ public abstract class XmlUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------------------//
     // stripNonValidXMLCharacters //
     //----------------------------//
@@ -69,10 +70,8 @@ public abstract class XmlUtil
         StringBuilder sb = new StringBuilder();
 
         for (char c : input.toCharArray()) {
-            if ((c == 0x9) || (c == 0xA) || (c == 0xD)
-                        || ((c >= 0x20) && (c <= 0xD7FF))
-                        || ((c >= 0xE000) && (c <= 0xFFFD))
-                        || ((c >= 0x10000) && (c <= 0x10FFFF))) {
+            if ((c == 0x9) || (c == 0xA) || (c == 0xD) || ((c >= 0x20) && (c <= 0xD7FF))
+                    || ((c >= 0xE000) && (c <= 0xFFFD)) || ((c >= 0x10000) && (c <= 0x10FFFF))) {
                 sb.append(c);
             } else if (stripped != null) {
                 stripped.set(true);

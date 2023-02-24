@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.check;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionService;
@@ -33,12 +29,15 @@ import org.audiveris.omr.ui.selection.UserEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 /**
  * Class <code>CheckBoard</code> defines a board dedicated to the display of check result
  * information.
  *
  * @param <C> The {@link Checkable} type to be checked (can be an entity context)
- *
  * @author Hervé Bitteur
  */
 public class CheckBoard<C>
@@ -49,10 +48,12 @@ public class CheckBoard<C>
     private static final Logger logger = LoggerFactory.getLogger(CheckBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** For display of check suite results. */
     private final CheckPanel<C> checkPanel;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a Check Board.
      *
@@ -86,6 +87,7 @@ public class CheckBoard<C>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // applySuite //
     //------------//
@@ -106,6 +108,21 @@ public class CheckBoard<C>
         }
 
         tellObject(object);
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout (String name)
+    {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
+
+        ///builder.setDefaultDialogBorder();
+        CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+        builder.add(checkPanel.getComponent(), cst.xy(1, r));
     }
 
     //---------//
@@ -148,20 +165,5 @@ public class CheckBoard<C>
             setVisible(true);
             checkPanel.passForm(object);
         }
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout (String name)
-    {
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-        builder.add(checkPanel.getComponent(), cst.xy(1, r));
     }
 }

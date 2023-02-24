@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,12 +60,14 @@ public abstract class Symbols
     public static final CodeRange PRIVATE_USE_AREA = new CodeRange(0xE000, 0xF8FF);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * For the related font family, this is the map of plain symbol per shape.
      */
     protected final EnumMap<Shape, ShapeSymbol> symbolMap = new EnumMap<>(Shape.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // family //
     //--------//
@@ -156,20 +158,6 @@ public abstract class Symbols
         }
 
         return symbol;
-    }
-
-    //------//
-    // ints //
-    //------//
-    /**
-     * Meant to simplify code writing.
-     *
-     * @param codes sequence of one int or more parameters
-     * @return the int array
-     */
-    protected static int[] ints (int... codes)
-    {
-        return codes;
     }
 
     //------------//
@@ -367,7 +355,24 @@ public abstract class Symbols
         symbolMap.put(NUMBER_CUSTOM, new NumberSymbol(NUMBER_CUSTOM, family(), 0));
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------//
+    // ints //
+    //------//
+    /**
+     * Meant to simplify code writing.
+     *
+     * @param codes sequence of one int or more parameters
+     * @return the int array
+     */
+    protected static int[] ints (int... codes)
+    {
+        return codes;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // CodeRange //
     //-----------//

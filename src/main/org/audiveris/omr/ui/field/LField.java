@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,8 +30,8 @@ import javax.swing.SwingConstants;
  * and a component, which are handled as a whole.
  *
  * @param <C> precise subtype of JComponent field
- * <br>
- * <img src="doc-files/Fields.png" alt="Labeled Field Component UML">
+ *            <br>
+ *            <img src="doc-files/Fields.png" alt="Labeled Field Component UML">
  * @author Hervé Bitteur
  */
 public class LField<C extends JComponent>
@@ -45,6 +45,7 @@ public class LField<C extends JComponent>
     protected final C field;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LField object.
      *
@@ -66,6 +67,7 @@ public class LField<C extends JComponent>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getField //
     //----------//
@@ -106,20 +108,6 @@ public class LField<C extends JComponent>
         field.setEnabled(bool);
     }
 
-    //------------//
-    // setVisible //
-    //------------//
-    /**
-     * Make the whole label + field structure visible or not.
-     *
-     * @param bool true for visible, false for non visible
-     */
-    public void setVisible (boolean bool)
-    {
-        label.setVisible(bool);
-        field.setVisible(bool);
-    }
-
     //---------//
     // setName //
     //---------//
@@ -132,5 +120,19 @@ public class LField<C extends JComponent>
     {
         label.setName(name + "Label");
         field.setName(name + "Field");
+    }
+
+    //------------//
+    // setVisible //
+    //------------//
+    /**
+     * Make the whole label + field structure visible or not.
+     *
+     * @param bool true for visible, false for non visible
+     */
+    public void setVisible (boolean bool)
+    {
+        label.setVisible(bool);
+        field.setVisible(bool);
     }
 }

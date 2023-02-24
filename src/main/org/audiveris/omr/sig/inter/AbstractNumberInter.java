@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -79,25 +79,12 @@ public abstract class AbstractNumberInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractNumberInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Integer value for the number. */
     @XmlAttribute
     protected Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new AbstractNumberInter object.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     */
-    public AbstractNumberInter (Glyph glyph,
-                                Shape shape,
-                                Double grade)
-    {
-        super(glyph, null, shape, grade);
-        this.value = (shape != null) ? valueOf(shape) : null;
-    }
 
     /**
      * Creates a new AbstractNumberInter object.
@@ -120,15 +107,15 @@ public abstract class AbstractNumberInter
     /**
      * Creates a new AbstractNumberInter object.
      *
-     * @param bounds bounding box of the number
-     * @param shape  precise shape
-     * @param grade  evaluation value
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
      */
-    public AbstractNumberInter (Rectangle bounds,
+    public AbstractNumberInter (Glyph glyph,
                                 Shape shape,
                                 Double grade)
     {
-        super(null, bounds, shape, grade);
+        super(glyph, null, shape, grade);
         this.value = (shape != null) ? valueOf(shape) : null;
     }
 
@@ -150,7 +137,23 @@ public abstract class AbstractNumberInter
         }
     }
 
+    /**
+     * Creates a new AbstractNumberInter object.
+     *
+     * @param bounds bounding box of the number
+     * @param shape  precise shape
+     * @param grade  evaluation value
+     */
+    public AbstractNumberInter (Rectangle bounds,
+                                Shape shape,
+                                Double grade)
+    {
+        super(null, bounds, shape, grade);
+        this.value = (shape != null) ? valueOf(shape) : null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -158,42 +161,6 @@ public abstract class AbstractNumberInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create instance of proper sub-class of AbstractNumberInter
-     * (TimeNumberInter, MeasureCountInter, ...).
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static AbstractNumberInter create (Glyph glyph,
-                                              Shape shape,
-                                              double grade,
-                                              Staff staff)
-    {
-        AbstractNumberInter number;
-
-        // TimeNumber?
-        number = TimeNumberInter.create(glyph, shape, grade, staff);
-        if (number != null) {
-            return number;
-        }
-
-        // MeasureNumber?
-        number = MeasureCountInter.createValidAdded(glyph, shape, grade, staff);
-        if (number != null) {
-            return number;
-        }
-
-        // Nothing
-        return null;
     }
 
     //----------------//
@@ -259,6 +226,67 @@ public abstract class AbstractNumberInter
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * (Try to) create instance of proper sub-class of AbstractNumberInter
+     * (TimeNumberInter, MeasureCountInter, ...).
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance or null if failed
+     */
+    public static AbstractNumberInter create (Glyph glyph,
+                                              Shape shape,
+                                              double grade,
+                                              Staff staff)
+    {
+        AbstractNumberInter number;
+
+        // TimeNumber?
+        number = TimeNumberInter.create(glyph, shape, grade, staff);
+        if (number != null) {
+            return number;
+        }
+
+        // MeasureNumber?
+        number = MeasureCountInter.createValidAdded(glyph, shape, grade, staff);
+        if (number != null) {
+            return number;
+        }
+
+        // Nothing
+        return null;
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    protected static int valueOf (OmrShape omrShape)
+    {
+        return switch (omrShape) {
+        case timeSig0 -> 0;
+        case timeSig1 -> 1;
+        case timeSig2 -> 2;
+        case timeSig3 -> 3;
+        case timeSig4 -> 4;
+        case timeSig5 -> 5;
+        case timeSig6 -> 6;
+        case timeSig7 -> 7;
+        case timeSig8 -> 8;
+        case timeSig9 -> 9;
+        case timeSig12 -> 12;
+        case timeSig16 -> 16;
+
+        default -> throw new IllegalArgumentException("No integer value defined for " + omrShape);
+        };
+    }
+
     //---------//
     // valueOf //
     //---------//
@@ -288,28 +316,7 @@ public abstract class AbstractNumberInter
         };
     }
 
-    //---------//
-    // valueOf //
-    //---------//
-    protected static int valueOf (OmrShape omrShape)
-    {
-        return switch (omrShape) {
-        case timeSig0 -> 0;
-        case timeSig1 -> 1;
-        case timeSig2 -> 2;
-        case timeSig3 -> 3;
-        case timeSig4 -> 4;
-        case timeSig5 -> 5;
-        case timeSig6 -> 6;
-        case timeSig7 -> 7;
-        case timeSig8 -> 8;
-        case timeSig9 -> 9;
-        case timeSig12 -> 12;
-        case timeSig16 -> 16;
-
-        default -> throw new IllegalArgumentException("No integer value defined for " + omrShape);
-        };
-    }
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-------------//
     // NumberInter //

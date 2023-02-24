@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
+import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
+import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
+
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
@@ -29,8 +32,6 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
-import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
-import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.view.Rubber;
@@ -67,17 +68,20 @@ public class SampleContext
     private static final Point NO_OFFSET = new Point(0, 0);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final SampleRepository repository;
 
     private final ContextView contextView;
 
     private final SelectionService locationService = new SelectionService(
             "sampleLocationService",
-            new Class<?>[]{LocationEvent.class});
+            new Class<?>[]
+            { LocationEvent.class });
 
     private EntityService<Sample> sampleService;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleContext</code> object.
      *
@@ -93,6 +97,7 @@ public class SampleContext
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // connect //
     //---------//
@@ -108,6 +113,17 @@ public class SampleContext
         locationService.subscribeStrongly(LocationEvent.class, contextView);
     }
 
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout of this component.
+     */
+    private void defineLayout ()
+    {
+        component.add(new ScrollView(contextView).getComponent(), BorderLayout.CENTER);
+    }
+
     //---------//
     // refresh //
     //---------//
@@ -120,18 +136,8 @@ public class SampleContext
         contextView.display(sample);
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout of this component.
-     */
-    private void defineLayout ()
-    {
-        component.add(new ScrollView(contextView).getComponent(), BorderLayout.CENTER);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // ContextView //
     //-------------//
@@ -149,63 +155,6 @@ public class SampleContext
                      Rubber rubber)
         {
             super(zoom, rubber);
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                if (event instanceof LocationEvent) {
-                    handleLocationEvent((LocationEvent) event);
-                } else if (event instanceof EntityListEvent) {
-                    handleEntityListEvent((EntityListEvent) event);
-                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
-        }
-
-        /**
-         * Interest in EntityList
-         *
-         * @param listEvent list of inters
-         */
-        protected void handleEntityListEvent (EntityListEvent<Sample> listEvent)
-        {
-            // Sample => sample, sheet & location
-            display(listEvent.getEntity());
-        }
-
-        @Override
-        protected void handleLocationEvent (LocationEvent locationEvent)
-        {
-            // Location => move view focus on this location w/ markers
-            showFocusLocation(locationEvent.getData(), true); // Centered: true
-        }
-
-        @Override
-        protected void render (Graphics2D g)
-        {
-            if (sheetTable != null) {
-                g.setColor(Color.LIGHT_GRAY);
-                sheetTable.render(g, new Point(0, 0));
-            }
-        }
-
-        @Override
-        protected void renderItems (Graphics2D g)
-        {
-            if (sample != null) {
-                g.setColor(Color.BLUE);
-                sample.getRunTable()
-                        .render(g, (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
-            }
         }
 
         private void display (Sample newSample)
@@ -252,6 +201,64 @@ public class SampleContext
             setModelSize(dim);
             locationService.publish(new LocationEvent(this, LOCATION_INIT, PRESSING, rect));
             repaint();
+        }
+
+        /**
+         * Interest in EntityList
+         *
+         * @param listEvent list of inters
+         */
+        protected void handleEntityListEvent (EntityListEvent<Sample> listEvent)
+        {
+            // Sample => sample, sheet & location
+            display(listEvent.getEntity());
+        }
+
+        @Override
+        protected void handleLocationEvent (LocationEvent locationEvent)
+        {
+            // Location => move view focus on this location w/ markers
+            showFocusLocation(locationEvent.getData(), true); // Centered: true
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof LocationEvent) {
+                    handleLocationEvent((LocationEvent) event);
+                } else if (event instanceof EntityListEvent) {
+                    handleEntityListEvent((EntityListEvent) event);
+                }
+            } catch (Exception ex) {
+                logger.warn(getClass().getName() + " onEvent error", ex);
+            }
+        }
+
+        @Override
+        protected void render (Graphics2D g)
+        {
+            if (sheetTable != null) {
+                g.setColor(Color.LIGHT_GRAY);
+                sheetTable.render(g, new Point(0, 0));
+            }
+        }
+
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            if (sample != null) {
+                g.setColor(Color.BLUE);
+                sample.getRunTable().render(
+                        g,
+                        (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
+            }
         }
     }
 }

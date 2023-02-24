@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,27 +54,10 @@ public class DotFermataRelation
 
     private static final Logger logger = LoggerFactory.getLogger(DotFermataRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]
+    { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
 
     //---------------//
     // getOutWeights //
@@ -125,7 +108,26 @@ public class DotFermataRelation
         return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -145,17 +147,13 @@ public class DotFermataRelation
                 0.75,
                 "Maximum horizontal gap between dot center & fermata reference point");
 
-        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-                1.0,
-                "Idem for profile 1");
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(1.0, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between dot center & fermata reference point");
 
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
-                0.75,
-                "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(0.75, "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,

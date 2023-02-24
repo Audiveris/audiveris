@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Map.Entry;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -54,20 +54,22 @@ public class HeadSeedScale
     private static final Logger logger = LoggerFactory.getLogger(HeadSeedScale.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Flat list of <code>HeadSeed</code> instances. */
     @XmlElement(name = "head-seed")
     private ArrayList<HeadSeed> list; // Used during [un]marshalling only
 
     // Transient data
     //---------------
-    //
-    private final EnumMap<Shape, EnumMap<HorizontalSide, Double>> globalMap
-            = new EnumMap<>(Shape.class);
+
+    private final EnumMap<Shape, EnumMap<HorizontalSide, Double>> globalMap = new EnumMap<>(
+            Shape.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadSeedScale</code> object.
      */
@@ -76,6 +78,58 @@ public class HeadSeedScale
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        list = null;
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller u,
+                                 Object parent)
+    {
+        if (list != null) {
+            for (HeadSeed value : list) {
+                putDx(value.shape, value.side, value.dx);
+            }
+
+            list = null;
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins.
+     */
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        list = new ArrayList<>();
+
+        for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : globalMap.entrySet()) {
+            final Shape shape = entry.getKey();
+
+            for (Entry<HorizontalSide, Double> e : entry.getValue().entrySet()) {
+                final HorizontalSide hSide = e.getKey();
+                final Double dx = e.getValue();
+                list.add(new HeadSeed(shape, hSide, dx));
+            }
+        }
+    }
+
     //-------//
     // getDx //
     //-------//
@@ -147,8 +201,8 @@ public class HeadSeedScale
                     sb.append(',');
                 }
 
-                sb.append(e.getKey().name().charAt(0)).append(':')
-                        .append(String.format("%.1f", e.getValue()));
+                sb.append(e.getKey().name().charAt(0)).append(':').append(
+                        String.format("%.1f", e.getValue()));
                 innerStarted = true;
             }
 
@@ -159,58 +213,8 @@ public class HeadSeedScale
         return sb.append('}').toString();
     }
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        list = new ArrayList<>();
-
-        for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : globalMap.entrySet()) {
-            final Shape shape = entry.getKey();
-
-            for (Entry<HorizontalSide, Double> e : entry.getValue().entrySet()) {
-                final HorizontalSide hSide = e.getKey();
-                final Double dx = e.getValue();
-                list.add(new HeadSeed(shape, hSide, dx));
-            }
-        }
-    }
-
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
-    {
-        list = null;
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller u,
-                                 Object parent)
-    {
-        if (list != null) {
-            for (HeadSeed value : list) {
-                putDx(value.shape, value.side, value.dx);
-            }
-
-            list = null;
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // HeadSeed //
     //----------//
@@ -242,6 +246,13 @@ public class HeadSeedScale
         @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
         public final Double dx;
 
+        // No-arg constructor needed by JAXB
+        @SuppressWarnings("unused")
+        private HeadSeed ()
+        {
+            this(null, null, null);
+        }
+
         public HeadSeed (Shape shape,
                          HorizontalSide side,
                          Double dx)
@@ -249,13 +260,6 @@ public class HeadSeedScale
             this.shape = shape;
             this.side = side;
             this.dx = dx;
-        }
-
-        // No-arg constructor needed by JAXB
-        @SuppressWarnings("unused")
-        private HeadSeed ()
-        {
-            this(null, null, null);
         }
     }
 }

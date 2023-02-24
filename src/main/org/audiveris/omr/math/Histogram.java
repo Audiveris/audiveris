@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,17 +45,22 @@ public class Histogram<K extends Number>
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** To sort peaks by decreasing value. */
-    public final Comparator<PeakEntry<K>> reversePeakComparator = (PeakEntry<K> e1, PeakEntry<K> e2)
-            -> Double.compare(e2.getValue(), e1.getValue());
+    public final Comparator<PeakEntry<K>> reversePeakComparator = (e1,
+                                                                   e2) -> Double.compare(
+                                                                           e2.getValue(),
+                                                                           e1.getValue());
 
     /** To sort double peaks by decreasing value. */
-    public final Comparator<PeakEntry<Double>> reverseDoublePeakComparator
-            = (PeakEntry<Double> e1, PeakEntry<Double> e2)
-            -> Double.compare(e2.getValue(), e1.getValue());
+    public final Comparator<PeakEntry<Double>> reverseDoublePeakComparator = (e1,
+                                                                              e2) -> Double.compare(
+                                                                                      e2.getValue(),
+                                                                                      e1.getValue());
 
     /** To sort double peaks by decreasing value. */
-    public final Comparator<MaxEntry<K>> reverseMaxComparator = (MaxEntry<K> e1, MaxEntry<K> e2)
-            -> Double.compare(e2.getValue(), e1.getValue());
+    public final Comparator<MaxEntry<K>> reverseMaxComparator = (e1,
+                                                                 e2) -> Double.compare(
+                                                                         e2.getValue(),
+                                                                         e1.getValue());
 
     /**
      * Underlying map. :
@@ -68,6 +73,7 @@ public class Histogram<K extends Number>
     protected int totalCount = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Histogram object, with no pre-defined range of buckets.
      */
@@ -76,6 +82,7 @@ public class Histogram<K extends Number>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // bucketSet //
     //-----------//
@@ -99,6 +106,32 @@ public class Histogram<K extends Number>
     {
         map.clear();
         totalCount = 0;
+    }
+
+    //------------------//
+    // createDoublePeak //
+    //------------------//
+    private DoublePeak createDoublePeak (K first,
+                                         K best,
+                                         K second,
+                                         int count)
+    {
+        // Use interpolation for more accurate data on first & second
+        double preciseFirst = first.doubleValue();
+        K prevKey = prevKey(first);
+
+        if (prevKey != null) {
+            preciseFirst = preciseKey(prevKey, first, count);
+        }
+
+        double preciseSecond = second.doubleValue();
+        K nextKey = nextKey(second);
+
+        if (nextKey != null) {
+            preciseSecond = preciseKey(second, nextKey, count);
+        }
+
+        return new DoublePeak(preciseFirst, best.doubleValue(), preciseSecond);
     }
 
     //------------//
@@ -449,6 +482,57 @@ public class Histogram<K extends Number>
         return map.lastKey();
     }
 
+    //---------//
+    // nextKey //
+    //---------//
+    private K nextKey (K key)
+    {
+        boolean found = false;
+
+        for (K k : map.keySet()) {
+            if (found) {
+                return k;
+            } else if (key.equals(k)) {
+                found = true;
+            }
+        }
+
+        return null;
+    }
+
+    //------------//
+    // preciseKey //
+    //------------//
+    private double preciseKey (K prev,
+                               K next,
+                               int count)
+    {
+        // Use interpolation for accurate data between prev & next keys
+        double prevCount = getCount(prev);
+        double nextCount = getCount(next);
+
+        return ((prev.doubleValue() * (nextCount - count)) + (next.doubleValue() * (count
+                - prevCount))) / (nextCount - prevCount);
+    }
+
+    //---------//
+    // prevKey //
+    //---------//
+    private K prevKey (K key)
+    {
+        K prev = null;
+
+        for (K k : map.keySet()) {
+            if (key.equals(k)) {
+                return prev;
+            } else {
+                prev = k;
+            }
+        }
+
+        return null;
+    }
+
     //-------//
     // print //
     //-------//
@@ -510,82 +594,24 @@ public class Histogram<K extends Number>
         return map.values();
     }
 
-    //------------------//
-    // createDoublePeak //
-    //------------------//
-    private DoublePeak createDoublePeak (K first,
-                                         K best,
-                                         K second,
-                                         int count)
-    {
-        // Use interpolation for more accurate data on first & second
-        double preciseFirst = first.doubleValue();
-        K prevKey = prevKey(first);
-
-        if (prevKey != null) {
-            preciseFirst = preciseKey(prevKey, first, count);
-        }
-
-        double preciseSecond = second.doubleValue();
-        K nextKey = nextKey(second);
-
-        if (nextKey != null) {
-            preciseSecond = preciseKey(second, nextKey, count);
-        }
-
-        return new DoublePeak(preciseFirst, best.doubleValue(), preciseSecond);
-    }
-
-    //---------//
-    // nextKey //
-    //---------//
-    private K nextKey (K key)
-    {
-        boolean found = false;
-
-        for (K k : map.keySet()) {
-            if (found) {
-                return k;
-            } else if (key.equals(k)) {
-                found = true;
-            }
-        }
-
-        return null;
-    }
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //------------//
-    // preciseKey //
+    // DoublePeak //
     //------------//
-    private double preciseKey (K prev,
-                               K next,
-                               int count)
+    /**
+     * A peak of double values.
+     */
+    public static class DoublePeak
+            extends Peak<Double>
     {
-        // Use interpolation for accurate data between prev & next keys
-        double prevCount = getCount(prev);
-        double nextCount = getCount(next);
 
-        return ((prev.doubleValue() * (nextCount - count)) + (next.doubleValue() * (count
-                                                                                            - prevCount)))
-               / (nextCount - prevCount);
-    }
-
-    //---------//
-    // prevKey //
-    //---------//
-    private K prevKey (K key)
-    {
-        K prev = null;
-
-        for (K k : map.keySet()) {
-            if (key.equals(k)) {
-                return prev;
-            } else {
-                prev = k;
-            }
+        private DoublePeak (double first,
+                            double best,
+                            double second)
+        {
+            super(first, best, second);
         }
-
-        return null;
     }
 
     //------------//
@@ -610,25 +636,6 @@ public class Histogram<K extends Number>
          * @return the highest count in the bucket
          */
         double getValue ();
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------------//
-    // DoublePeak //
-    //------------//
-    /**
-     * A peak of double values.
-     */
-    public static class DoublePeak
-            extends Peak<Double>
-    {
-
-        private DoublePeak (double first,
-                            double best,
-                            double second)
-        {
-            super(first, best, second);
-        }
     }
 
     //----------//
@@ -684,16 +691,6 @@ public class Histogram<K extends Number>
         }
 
         /**
-         * Set x value
-         *
-         * @param key x value
-         */
-        public void setKey (K key)
-        {
-            this.key = key;
-        }
-
-        /**
          * Report y value
          *
          * @return the y value
@@ -702,6 +699,16 @@ public class Histogram<K extends Number>
         public double getValue ()
         {
             return value;
+        }
+
+        /**
+         * Set x value
+         *
+         * @param key x value
+         */
+        public void setKey (K key)
+        {
+            this.key = key;
         }
 
         @Override

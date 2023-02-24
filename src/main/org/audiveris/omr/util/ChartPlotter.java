@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class ChartPlotter
     public static final double MARK = 2.5;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Collection of series. */
     protected final XYSeriesCollection dataset = new XYSeriesCollection();
 
@@ -60,6 +61,7 @@ public class ChartPlotter
     protected final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ChartPlotter</code> object.
      *
@@ -87,6 +89,22 @@ public class ChartPlotter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----//
+    // add //
+    //-----//
+    /**
+     * Add a series, with no shapes, to the chart.
+     *
+     * @param series populated series
+     * @param color  display color
+     */
+    public void add (XYSeries series,
+                     Color color)
+    {
+        add(series, color, false);
+    }
+
     //-----//
     // add //
     //-----//
@@ -108,19 +126,17 @@ public class ChartPlotter
         renderer.setSeriesShapesVisible(index, displayShapes);
     }
 
-    //-----//
-    // add //
-    //-----//
+    //---------//
+    // display //
+    //---------//
     /**
-     * Add a series, with no shapes, to the chart.
+     * Wrap chart into a frame with chart title and display at provided location.
      *
-     * @param series populated series
-     * @param color  display color
+     * @param location frame location
      */
-    public void add (XYSeries series,
-                     Color color)
+    public void display (Point location)
     {
-        add(series, color, false);
+        display(chart.getTitle().getText(), location);
     }
 
     //---------//
@@ -143,19 +159,6 @@ public class ChartPlotter
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLocation(location);
         frame.setVisible(true);
-    }
-
-    //---------//
-    // display //
-    //---------//
-    /**
-     * Wrap chart into a frame with chart title and display at provided location.
-     *
-     * @param location frame location
-     */
-    public void display (Point location)
-    {
-        display(chart.getTitle().getText(), location);
     }
 
     //---------------//

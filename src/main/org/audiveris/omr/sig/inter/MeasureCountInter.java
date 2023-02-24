@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -65,19 +65,12 @@ public class MeasureCountInter
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureCountInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new MeasureCountInter object.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
+     * No-arg constructor meant for JAXB.
      */
-    public MeasureCountInter (Glyph glyph,
-                              Shape shape,
-                              Double grade)
+    private MeasureCountInter ()
     {
-        super(glyph, shape, grade);
+        super((Glyph) null, (Integer) null, 0.0);
     }
 
     /**
@@ -94,15 +87,24 @@ public class MeasureCountInter
         super(glyph, value, grade);
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new MeasureCountInter object.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
      */
-    private MeasureCountInter ()
+    public MeasureCountInter (Glyph glyph,
+                              Shape shape,
+                              Double grade)
     {
-        super((Glyph) null, (Integer) null, 0.0);
+        super(glyph, shape, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -123,6 +125,36 @@ public class MeasureCountInter
 
         return isAbnormal();
     }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
+    {
+        // We use standard addition task for this measure number
+        // NOTA: We can't use super (AbstractNumberInter) which has a specific behavior
+        final SystemInfo system = staff.getSystem();
+        final List<UITask> tasks = new ArrayList<>();
+        final Collection<Link> links = searchLinks(system);
+        tasks.add(new AdditionTask(system.getSig(), this, getBounds(), links));
+
+        return tasks;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final Link link = lookupLink(getCenter(), system);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // createValidAdded //
@@ -203,34 +235,6 @@ public class MeasureCountInter
         return null;
     }
 
-    //--------//
-    // preAdd //
-    //--------//
-    @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel,
-                                          Wrapper<Inter> toPublish)
-    {
-        // We use standard addition task for this measure number
-        // NOTA: We can't use super (AbstractNumberInter) which has a specific behavior
-        final SystemInfo system = staff.getSystem();
-        final List<UITask> tasks = new ArrayList<>();
-        final Collection<Link> links = searchLinks(system);
-        tasks.add(new AdditionTask(system.getSig(), this, getBounds(), links));
-
-        return tasks;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final Link link = lookupLink(getCenter(), system);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
     //------------//
     // searchRest //
     //------------//
@@ -248,6 +252,7 @@ public class MeasureCountInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -116,10 +116,10 @@ public class HeadInter
     private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * <b>Deprecated</b> Old mirror instance, if any.
      * <p>
@@ -132,7 +132,7 @@ public class HeadInter
 
     // Transient data
     //---------------
-    //
+
     /** Shape template. */
     private Template template;
 
@@ -140,22 +140,10 @@ public class HeadInter
     private HeadLinker linker;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>HeadInter</code> object.
-     *
-     * @param bounds  the object bounds
-     * @param shape   the underlying shape
-     * @param impacts the grade details
-     * @param staff   the related staff
-     * @param pitch   the note pitch
-     */
-    public HeadInter (Rectangle bounds,
-                      Shape shape,
-                      GradeImpacts impacts,
-                      Staff staff,
-                      Double pitch)
+
+    /** No-arg constructor needed by JAXB. */
+    protected HeadInter ()
     {
-        super(null, bounds, shape, impacts, staff, pitch);
     }
 
     /**
@@ -176,12 +164,26 @@ public class HeadInter
         super(null, bounds, shape, grade, staff, pitch);
     }
 
-    /** No-arg constructor needed by JAXB. */
-    protected HeadInter ()
+    /**
+     * Creates a new <code>HeadInter</code> object.
+     *
+     * @param bounds  the object bounds
+     * @param shape   the underlying shape
+     * @param impacts the grade details
+     * @param staff   the related staff
+     * @param pitch   the note pitch
+     */
+    public HeadInter (Rectangle bounds,
+                      Shape shape,
+                      GradeImpacts impacts,
+                      Staff staff,
+                      Double pitch)
     {
+        super(null, bounds, shape, impacts, staff, pitch);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -410,6 +412,55 @@ public class HeadInter
         return 0;
     }
 
+    //----------//
+    // getChord //
+    //----------//
+    /**
+     * Report the containing (head) chord, if any.
+     *
+     * @return containing chord or null
+     */
+    @Override
+    public HeadChordInter getChord ()
+    {
+        return (HeadChordInter) getEnsemble();
+    }
+
+    //---------------//
+    // getCoreBounds //
+    //---------------//
+    @Override
+    public Rectangle getCoreBounds ()
+    {
+        if (coreBounds == null) {
+            coreBounds = shrink(getBounds()).getBounds();
+        }
+
+        return new Rectangle(coreBounds);
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
+    }
+
+    //-----------//
+    // getLinker //
+    //-----------//
+    /**
+     * Report the dedicated head-stem linker.
+     *
+     * @return the linker
+     */
+    public HeadLinker getLinker ()
+    {
+        return linker;
+    }
+
     //----------------------//
     // getMeasureAccidental //
     //----------------------//
@@ -456,139 +507,6 @@ public class HeadInter
         }
 
         return null;
-    }
-
-    //----------//
-    // getChord //
-    //----------//
-    /**
-     * Report the containing (head) chord, if any.
-     *
-     * @return containing chord or null
-     */
-    @Override
-    public HeadChordInter getChord ()
-    {
-        return (HeadChordInter) getEnsemble();
-    }
-
-    //---------------//
-    // getCoreBounds //
-    //---------------//
-    @Override
-    public Rectangle getCoreBounds ()
-    {
-        if (coreBounds == null) {
-            coreBounds = shrink(getBounds()).getBounds();
-        }
-
-        return new Rectangle(coreBounds);
-    }
-
-    //--------------------------//
-    // getNeededLedgerAdditions //
-    //--------------------------//
-    /**
-     * Report UI tasks to add needed ledgers.
-     *
-     * @param headCenter location of head center
-     * @param staff      related staff
-     * @return the list of ledger additions, perhaps empty
-     */
-    public static List<UITask> getNeededLedgerAdditions (Point2D headCenter,
-                                                         Staff staff)
-    {
-        final List<UITask> tasks = new ArrayList<>();
-        final SIGraph theSig = staff.getSystem().getSig();
-
-        for (Line2D line : getNeededLedgerSegments(headCenter, staff)) {
-            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1.0);
-            ledger.setManual(true);
-            ledger.setStaff(staff);
-            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.emptySet()));
-        }
-
-        return tasks;
-    }
-
-    //-------------------------//
-    // getNeededLedgerSegments //
-    //-------------------------//
-    /**
-     * Report the ledger segments that should be added to support a head at provided center.
-     *
-     * @param headCenter location of head center
-     * @param staff      related staff
-     * @return the sequence of needed ledger segments, departing from staff
-     */
-    public static List<Line2D> getNeededLedgerSegments (Point2D headCenter,
-                                                        Staff staff)
-    {
-        if (staff == null) {
-            return Collections.emptyList();
-        }
-
-        final int lineCount = staff.getLineCount();
-        final List<Line2D> segments = new ArrayList<>();
-        final int thePitch = (int) Math.rint(staff.pitchPositionOf(headCenter));
-        final int linePitch = 2 * (int) Math.rint(thePitch / 2);
-
-        if (Math.abs(linePitch) > lineCount) {
-            final int dir = Integer.signum(thePitch);
-            final double x = headCenter.getX();
-
-            final Scale scale = staff.getSystem().getSheet().getScale();
-            final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
-            final double x1 = x - (ledgerLength / 2.0);
-            final double x2 = x + (ledgerLength / 2.0);
-
-            for (int p = (lineCount + 1) * dir; p * dir <= linePitch * dir; p += 2 * dir) {
-                final int y = (int) Math.rint(staff.pitchToOrdinate(x, p));
-
-                // Check if we already have a suitable ledger available, otherwise create a segment
-                final int ledgerIndex = (p - dir * (lineCount - 1)) / 2;
-                if (staff.getLedgerAt(ledgerIndex, x) == null) {
-                    segments.add(new Line2D.Double(x1, y, x2, y));
-                }
-            }
-        }
-
-        return segments;
-    }
-
-    //-------------//
-    // getTemplate //
-    //-------------//
-    /**
-     * Report the template used to generate this head shape with proper size.
-     *
-     * @return related template template
-     */
-    public Template getTemplate ()
-    {
-        if (template == null) {
-            final int pointSize = staff.getHeadPointSize();
-            final Sheet sheet = staff.getSystem().getSheet();
-            final MusicFamily family = sheet.getStub().getMusicFamily();
-
-            template = TemplateFactory.getInstance().getCatalog(family, pointSize).getTemplate(
-                    shape);
-
-            if (template == null) {
-                logger.warn("Null template for {} {}", shape, family);
-            }
-        }
-
-        return template;
-    }
-
-    //-----------//
-    // getEditor //
-    //-----------//
-    @Override
-    public InterEditor getEditor ()
-    {
-        return new Editor(this);
     }
 
     //------------//
@@ -693,29 +611,40 @@ public class HeadInter
     }
 
     //-----------------//
-    // getSnapOrdinate //
+    // getSnapAbscissa //
     //-----------------//
     /**
-     * Report the theoretical ordinate of head center when correctly aligned with staff
-     * lines and ledgers.
+     * Report the theoretical abscissa of head center when correctly aligned with
+     * a suitable stem.
      * <p>
-     * Required properties: staff, bounds
+     * Required properties: staff, shape, bounds
      *
-     * @param headCenter location of head center
-     * @param staff      related staff
-     * @return the proper ordinate if any, null otherwise
+     * @return the proper abscissa if any, null otherwise
      */
-    public static Double getSnapOrdinate (Point2D headCenter,
-                                          Staff staff)
+    private Double getSnapAbscissa ()
     {
         if (staff == null) {
             return null;
         }
 
-        final double pitch = staff.pitchPositionOf(headCenter);
-        final double roundedPitch = Math.rint(pitch);
+        if (ShapeSet.StemLessHeads.contains(shape)) {
+            return null;
+        }
 
-        return staff.pitchToOrdinate(headCenter.getX(), roundedPitch);
+        // Stems nearby?
+        final Collection<Link> links = searchLinks(staff.getSystem());
+
+        for (Link link : links) {
+            // We can have at most one link
+            StemInter stem = (StemInter) link.partner;
+            double stemX = LineUtil.xAtY(stem.getMedian(), getCenter().y);
+            double halfWidth = getBounds().width / 2.0;
+            HorizontalSide headSide = (stemX < getCenter().x) ? LEFT : RIGHT;
+
+            return (headSide == LEFT) ? (stemX + halfWidth) : (stemX - halfWidth);
+        }
+
+        return null;
     }
 
     //-----------------------//
@@ -819,30 +748,30 @@ public class HeadInter
         return set;
     }
 
-    //-----------//
-    // getLinker //
-    //-----------//
+    //-------------//
+    // getTemplate //
+    //-------------//
     /**
-     * Report the dedicated head-stem linker.
+     * Report the template used to generate this head shape with proper size.
      *
-     * @return the linker
+     * @return related template template
      */
-    public HeadLinker getLinker ()
+    public Template getTemplate ()
     {
-        return linker;
-    }
+        if (template == null) {
+            final int pointSize = staff.getHeadPointSize();
+            final Sheet sheet = staff.getSystem().getSheet();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
 
-    //-----------//
-    // setLinker //
-    //-----------//
-    /**
-     * Set the dedicated head-stem linker.
-     *
-     * @param linker the head-stem linker
-     */
-    public void setLinker (HeadLinker linker)
-    {
-        this.linker = linker;
+            template = TemplateFactory.getInstance().getCatalog(family, pointSize).getTemplate(
+                    shape);
+
+            if (template == null) {
+                logger.warn("Null template for {} {}", shape, family);
+            }
+        }
+
+        return template;
     }
 
     //------------//
@@ -852,6 +781,82 @@ public class HeadInter
     public InterTracker getTracker (Sheet sheet)
     {
         return new Tracker(this, sheet);
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this Head instance and a stem nearby.
+     * <p>
+     * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
+     * 2/ Select the best connection among the compatible candidates.
+     *
+     * @param candidateStems abscissa-ordered collection of candidate stems
+     * @param system         containing system
+     * @param profile        desired profile level
+     * @return the link found or null
+     */
+    public Link lookupLink (List<Inter> candidateStems,
+                            SystemInfo system,
+                            int profile)
+    {
+        if (candidateStems.isEmpty()) {
+            return null;
+        }
+
+        final Scale scale = system.getSheet().getScale();
+        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(profile));
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(profile));
+
+        Link bestLink = null;
+        double bestGrade = 0;
+
+        for (HorizontalSide hSide : HorizontalSide.values()) {
+            for (VerticalSide vSide : VerticalSide.values()) {
+                Point refPt = PointUtil.rounded(getStemReferencePoint(hSide, vSide));
+                int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
+                int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
+                Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
+                List<Inter> stems = Inters.intersectedInters(
+                        candidateStems,
+                        GeoOrder.BY_ABSCISSA,
+                        luBox);
+                int xDir = hSide.direction();
+
+                for (Inter inter : stems) {
+                    StemInter stem = (StemInter) inter;
+                    final Point2D start = stem.getTop();
+                    final Point2D stop = stem.getBottom();
+
+                    double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+                    final double xGap = xDir * (crossX - refPt.getX());
+                    final double yGap;
+
+                    if (refPt.getY() < start.getY()) {
+                        yGap = start.getY() - refPt.getY();
+                    } else if (refPt.getY() > stop.getY()) {
+                        yGap = refPt.getY() - stop.getY();
+                    } else {
+                        yGap = 0;
+                    }
+
+                    HeadStemRelation rel = new HeadStemRelation();
+                    rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
+
+                    if (rel.getGrade() >= rel.getMinGrade()) {
+                        if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
+                            rel.setExtensionPoint(refPt); // Approximately
+                            bestLink = new Link(stem, rel, true);
+                            bestGrade = rel.getGrade();
+                        }
+                    }
+                }
+            }
+        }
+
+        return bestLink;
     }
 
     //----------//
@@ -1080,6 +1085,19 @@ public class HeadInter
         return searchObsoletelinks(links, HeadStemRelation.class);
     }
 
+    //-----------//
+    // setLinker //
+    //-----------//
+    /**
+     * Set the dedicated head-stem linker.
+     *
+     * @param linker the head-stem linker
+     */
+    public void setLinker (HeadLinker linker)
+    {
+        this.linker = linker;
+    }
+
     //-----------------//
     // upgradeOldStuff //
     //-----------------//
@@ -1100,81 +1118,7 @@ public class HeadInter
         return upgraded;
     }
 
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Try to detect a link between this Head instance and a stem nearby.
-     * <p>
-     * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
-     * 2/ Select the best connection among the compatible candidates.
-     *
-     * @param candidateStems abscissa-ordered collection of candidate stems
-     * @param system         containing system
-     * @param profile        desired profile level
-     * @return the link found or null
-     */
-    public Link lookupLink (List<Inter> candidateStems,
-                            SystemInfo system,
-                            int profile)
-    {
-        if (candidateStems.isEmpty()) {
-            return null;
-        }
-
-        final Scale scale = system.getSheet().getScale();
-        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(profile));
-        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
-        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(profile));
-
-        Link bestLink = null;
-        double bestGrade = 0;
-
-        for (HorizontalSide hSide : HorizontalSide.values()) {
-            for (VerticalSide vSide : VerticalSide.values()) {
-                Point refPt = PointUtil.rounded(getStemReferencePoint(hSide, vSide));
-                int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
-                int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
-                Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-                List<Inter> stems = Inters.intersectedInters(
-                        candidateStems,
-                        GeoOrder.BY_ABSCISSA,
-                        luBox);
-                int xDir = hSide.direction();
-
-                for (Inter inter : stems) {
-                    StemInter stem = (StemInter) inter;
-                    final Point2D start = stem.getTop();
-                    final Point2D stop = stem.getBottom();
-
-                    double crossX = LineUtil.xAtY(start, stop, refPt.getY());
-                    final double xGap = xDir * (crossX - refPt.getX());
-                    final double yGap;
-
-                    if (refPt.getY() < start.getY()) {
-                        yGap = start.getY() - refPt.getY();
-                    } else if (refPt.getY() > stop.getY()) {
-                        yGap = refPt.getY() - stop.getY();
-                    } else {
-                        yGap = 0;
-                    }
-
-                    HeadStemRelation rel = new HeadStemRelation();
-                    rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
-
-                    if (rel.getGrade() >= rel.getMinGrade()) {
-                        if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
-                            rel.setExtensionPoint(refPt); // Approximately
-                            bestLink = new Link(stem, rel, true);
-                            bestGrade = rel.getGrade();
-                        }
-                    }
-                }
-            }
-        }
-
-        return bestLink;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------------//
     // getMaxOverlapDxRatio //
@@ -1188,6 +1132,77 @@ public class HeadInter
     public static double getMaxOverlapDxRatio ()
     {
         return constants.maxOverlapDxRatio.getValue();
+    }
+
+    //--------------------------//
+    // getNeededLedgerAdditions //
+    //--------------------------//
+    /**
+     * Report UI tasks to add needed ledgers.
+     *
+     * @param headCenter location of head center
+     * @param staff      related staff
+     * @return the list of ledger additions, perhaps empty
+     */
+    public static List<UITask> getNeededLedgerAdditions (Point2D headCenter,
+                                                         Staff staff)
+    {
+        final List<UITask> tasks = new ArrayList<>();
+        final SIGraph theSig = staff.getSystem().getSig();
+
+        for (Line2D line : getNeededLedgerSegments(headCenter, staff)) {
+            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1.0);
+            ledger.setManual(true);
+            ledger.setStaff(staff);
+            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.emptySet()));
+        }
+
+        return tasks;
+    }
+
+    //-------------------------//
+    // getNeededLedgerSegments //
+    //-------------------------//
+    /**
+     * Report the ledger segments that should be added to support a head at provided center.
+     *
+     * @param headCenter location of head center
+     * @param staff      related staff
+     * @return the sequence of needed ledger segments, departing from staff
+     */
+    public static List<Line2D> getNeededLedgerSegments (Point2D headCenter,
+                                                        Staff staff)
+    {
+        if (staff == null) {
+            return Collections.emptyList();
+        }
+
+        final int lineCount = staff.getLineCount();
+        final List<Line2D> segments = new ArrayList<>();
+        final int thePitch = (int) Math.rint(staff.pitchPositionOf(headCenter));
+        final int linePitch = 2 * (int) Math.rint(thePitch / 2);
+
+        if (Math.abs(linePitch) > lineCount) {
+            final int dir = Integer.signum(thePitch);
+            final double x = headCenter.getX();
+
+            final Scale scale = staff.getSystem().getSheet().getScale();
+            final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
+            final double x1 = x - (ledgerLength / 2.0);
+            final double x2 = x + (ledgerLength / 2.0);
+
+            for (int p = (lineCount + 1) * dir; p * dir <= linePitch * dir; p += 2 * dir) {
+                final int y = (int) Math.rint(staff.pitchToOrdinate(x, p));
+
+                // Check if we already have a suitable ledger available, otherwise create a segment
+                final int ledgerIndex = (p - dir * (lineCount - 1)) / 2;
+                if (staff.getLedgerAt(ledgerIndex, x) == null) {
+                    segments.add(new Line2D.Double(x1, y, x2, y));
+                }
+            }
+        }
+
+        return segments;
     }
 
     //--------------------//
@@ -1217,40 +1232,29 @@ public class HeadInter
     }
 
     //-----------------//
-    // getSnapAbscissa //
+    // getSnapOrdinate //
     //-----------------//
     /**
-     * Report the theoretical abscissa of head center when correctly aligned with
-     * a suitable stem.
+     * Report the theoretical ordinate of head center when correctly aligned with staff
+     * lines and ledgers.
      * <p>
-     * Required properties: staff, shape, bounds
+     * Required properties: staff, bounds
      *
-     * @return the proper abscissa if any, null otherwise
+     * @param headCenter location of head center
+     * @param staff      related staff
+     * @return the proper ordinate if any, null otherwise
      */
-    private Double getSnapAbscissa ()
+    public static Double getSnapOrdinate (Point2D headCenter,
+                                          Staff staff)
     {
         if (staff == null) {
             return null;
         }
 
-        if (ShapeSet.StemLessHeads.contains(shape)) {
-            return null;
-        }
+        final double pitch = staff.pitchPositionOf(headCenter);
+        final double roundedPitch = Math.rint(pitch);
 
-        // Stems nearby?
-        final Collection<Link> links = searchLinks(staff.getSystem());
-
-        for (Link link : links) {
-            // We can have at most one link
-            StemInter stem = (StemInter) link.partner;
-            double stemX = LineUtil.xAtY(stem.getMedian(), getCenter().y);
-            double halfWidth = getBounds().width / 2.0;
-            HorizontalSide headSide = (stemX < getCenter().x) ? LEFT : RIGHT;
-
-            return (headSide == LEFT) ? (stemX + halfWidth) : (stemX - halfWidth);
-        }
-
-        return null;
+        return staff.pitchToOrdinate(headCenter.getX(), roundedPitch);
     }
 
     //--------//
@@ -1275,25 +1279,6 @@ public class HeadInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Impacts //
-    //---------//
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]
-        { "dist" };
-
-        private static final double[] WEIGHTS = new double[]
-        { 1 };
-
-        public Impacts (double dist)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, dist);
-        }
-    }
 
     //-----------//
     // Constants //
@@ -1403,6 +1388,26 @@ public class HeadInter
     }
 
     //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]
+        { "dist" };
+
+        private static final double[] WEIGHTS = new double[]
+        { 1 };
+
+        public Impacts (double dist)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, dist);
+        }
+    }
+
+    //---------//
     // Tracker //
     //---------//
     /**
@@ -1419,20 +1424,6 @@ public class HeadInter
         }
 
         @Override
-        public void render (Graphics2D g)
-        {
-            super.render(g);
-
-            // Add needed ledgers
-            for (Line2D line : getNeededLedgerSegments(
-                    inter.getRelationCenter(),
-                    inter.getStaff())) {
-                g.setColor(Color.RED);
-                g.draw(line);
-            }
-        }
-
-        @Override
         public Rectangle getSceneBounds ()
         {
             Rectangle box = super.getSceneBounds();
@@ -1445,6 +1436,20 @@ public class HeadInter
             }
 
             return box;
+        }
+
+        @Override
+        public void render (Graphics2D g)
+        {
+            super.render(g);
+
+            // Add needed ledgers
+            for (Line2D line : getNeededLedgerSegments(
+                    inter.getRelationCenter(),
+                    inter.getStaff())) {
+                g.setColor(Color.RED);
+                g.draw(line);
+            }
         }
     }
 }

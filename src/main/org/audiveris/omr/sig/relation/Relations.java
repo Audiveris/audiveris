@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -97,12 +97,85 @@ public abstract class Relations
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private Relations ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    /**
+     * Build the maps of possible support classes for a source inter class and for a
+     * target inter class.
+     * <p>
+     * A few relations are used only for support during reduction, rather than symbolic relation.
+     * They are thus excluded for lack of usefulness at UI level:
+     * <ul>
+     * <li>BarConnectionRelation
+     * <li>BeamHeadRelation
+     * <li>ClefKeyRelation
+     * <li>HeadHeadRelation
+     * <li>KeyAltersRelation
+     * <li>NoExclusion
+     * <li>StemAlignmentRelation
+     * </ul>
+     */
+    private static void buildMaps ()
+    {
+        map(AbstractBeamInter.class, BeamStemRelation.class, StemInter.class);
+
+        map(AbstractChordInter.class, ChordDynamicsRelation.class, DynamicsInter.class);
+        map(AbstractChordInter.class, ChordPedalRelation.class, PedalInter.class);
+        map(AbstractChordInter.class, ChordTupletRelation.class, TupletInter.class);
+        map(AbstractChordInter.class, ChordWedgeRelation.class, WedgeInter.class);
+
+        map(AlterInter.class, AlterHeadRelation.class, HeadInter.class);
+
+        map(AugmentationDotInter.class, AugmentationRelation.class, AbstractNoteInter.class);
+        map(AugmentationDotInter.class, DoubleDotRelation.class, AugmentationDotInter.class);
+
+        map(BeamInter.class, BeamRestRelation.class, RestInter.class);
+
+        map(EndingInter.class, EndingBarRelation.class, BarlineInter.class); // Old
+        map(EndingInter.class, EndingBarRelation.class, StaffBarlineInter.class);
+        map(EndingInter.class, EndingSentenceRelation.class, SentenceInter.class);
+
+        map(FermataDotInter.class, DotFermataRelation.class, FermataArcInter.class); // Temporary!
+
+        map(FermataInter.class, FermataBarRelation.class, BarlineInter.class); // Old
+        map(FermataInter.class, FermataBarRelation.class, StaffBarlineInter.class);
+        map(FermataInter.class, FermataChordRelation.class, AbstractChordInter.class);
+
+        map(FlagInter.class, FlagStemRelation.class, StemInter.class);
+        map(SmallFlagInter.class, FlagStemRelation.class, StemInter.class);
+
+        map(HeadChordInter.class, ChordArpeggiatoRelation.class, ArpeggiatoInter.class);
+        map(HeadChordInter.class, ChordArticulationRelation.class, ArticulationInter.class);
+        map(HeadChordInter.class, ChordGraceRelation.class, GraceChordInter.class);
+        map(HeadChordInter.class, ChordNameRelation.class, ChordNameInter.class);
+        map(HeadChordInter.class, ChordOrnamentRelation.class, OrnamentInter.class);
+        map(HeadChordInter.class, ChordSentenceRelation.class, SentenceInter.class);
+        map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
+        map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);
+
+        map(HeadInter.class, HeadPlayingRelation.class, PlayingInter.class);
+        map(HeadInter.class, HeadStemRelation.class, StemInter.class);
+
+        map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class); // Old
+        map(MarkerInter.class, MarkerBarRelation.class, StaffBarlineInter.class);
+
+        map(MultipleRestInter.class, MultipleRestCountRelation.class, MeasureCountInter.class);
+
+        map(RepeatDotInter.class, RepeatDotBarRelation.class, BarlineInter.class);
+        map(RepeatDotInter.class, RepeatDotPairRelation.class, RepeatDotInter.class);
+
+        map(SlurInter.class, SlurHeadRelation.class, HeadInter.class);
+
+        map(TimeNumberInter.class, TimeTopBottomRelation.class, TimeNumberInter.class);
+        map(TremoloInter.class, TremoloStemRelation.class, StemInter.class);
+    }
+
     /**
      * Report the defined relation classes between the provided source and target
      * inter classes.
@@ -198,6 +271,27 @@ public abstract class Relations
         }
     }
 
+    private static Set<Class<? extends Relation>> getSet (
+                                                          Map<Class<? extends Inter>, Set<Class<? extends Relation>>> map,
+                                                          Class<? extends Inter> classe)
+    {
+        Set<Class<? extends Relation>> set = map.get(classe);
+
+        if (set == null) {
+            map.put(classe, set = new LinkedHashSet<>());
+        }
+
+        return set;
+    }
+
+    private static void map (Class<? extends Inter> sourceClass,
+                             Class<? extends Relation> relationClass,
+                             Class<? extends Inter> targetClass)
+    {
+        getSet(src, sourceClass).add(relationClass);
+        getSet(tgt, targetClass).add(relationClass);
+    }
+
     /**
      * Report a simple name for the provided relation class.
      *
@@ -274,99 +368,8 @@ public abstract class Relations
         }
     }
 
-    /**
-     * Build the maps of possible support classes for a source inter class and for a
-     * target inter class.
-     * <p>
-     * A few relations are used only for support during reduction, rather than symbolic relation.
-     * They are thus excluded for lack of usefulness at UI level:
-     * <ul>
-     * <li>BarConnectionRelation
-     * <li>BeamHeadRelation
-     * <li>ClefKeyRelation
-     * <li>HeadHeadRelation
-     * <li>KeyAltersRelation
-     * <li>NoExclusion
-     * <li>StemAlignmentRelation
-     * </ul>
-     */
-    private static void buildMaps ()
-    {
-        map(AbstractBeamInter.class, BeamStemRelation.class, StemInter.class);
-
-        map(AbstractChordInter.class, ChordDynamicsRelation.class, DynamicsInter.class);
-        map(AbstractChordInter.class, ChordPedalRelation.class, PedalInter.class);
-        map(AbstractChordInter.class, ChordTupletRelation.class, TupletInter.class);
-        map(AbstractChordInter.class, ChordWedgeRelation.class, WedgeInter.class);
-
-        map(AlterInter.class, AlterHeadRelation.class, HeadInter.class);
-
-        map(AugmentationDotInter.class, AugmentationRelation.class, AbstractNoteInter.class);
-        map(AugmentationDotInter.class, DoubleDotRelation.class, AugmentationDotInter.class);
-
-        map(BeamInter.class, BeamRestRelation.class, RestInter.class);
-
-        map(EndingInter.class, EndingBarRelation.class, BarlineInter.class); // Old
-        map(EndingInter.class, EndingBarRelation.class, StaffBarlineInter.class);
-        map(EndingInter.class, EndingSentenceRelation.class, SentenceInter.class);
-
-        map(FermataDotInter.class, DotFermataRelation.class, FermataArcInter.class); // Temporary!
-
-        map(FermataInter.class, FermataBarRelation.class, BarlineInter.class); // Old
-        map(FermataInter.class, FermataBarRelation.class, StaffBarlineInter.class);
-        map(FermataInter.class, FermataChordRelation.class, AbstractChordInter.class);
-
-        map(FlagInter.class, FlagStemRelation.class, StemInter.class);
-        map(SmallFlagInter.class, FlagStemRelation.class, StemInter.class);
-
-        map(HeadChordInter.class, ChordArpeggiatoRelation.class, ArpeggiatoInter.class);
-        map(HeadChordInter.class, ChordArticulationRelation.class, ArticulationInter.class);
-        map(HeadChordInter.class, ChordGraceRelation.class, GraceChordInter.class);
-        map(HeadChordInter.class, ChordNameRelation.class, ChordNameInter.class);
-        map(HeadChordInter.class, ChordOrnamentRelation.class, OrnamentInter.class);
-        map(HeadChordInter.class, ChordSentenceRelation.class, SentenceInter.class);
-        map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
-        map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);
-
-        map(HeadInter.class, HeadPlayingRelation.class, PlayingInter.class);
-        map(HeadInter.class, HeadStemRelation.class, StemInter.class);
-
-        map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class); // Old
-        map(MarkerInter.class, MarkerBarRelation.class, StaffBarlineInter.class);
-
-        map(MultipleRestInter.class, MultipleRestCountRelation.class, MeasureCountInter.class);
-
-        map(RepeatDotInter.class, RepeatDotBarRelation.class, BarlineInter.class);
-        map(RepeatDotInter.class, RepeatDotPairRelation.class, RepeatDotInter.class);
-
-        map(SlurInter.class, SlurHeadRelation.class, HeadInter.class);
-
-        map(TimeNumberInter.class, TimeTopBottomRelation.class, TimeNumberInter.class);
-        map(TremoloInter.class, TremoloStemRelation.class, StemInter.class);
-    }
-
-    private static Set<Class<? extends Relation>> getSet (
-                                                          Map<Class<? extends Inter>, Set<Class<? extends Relation>>> map,
-                                                          Class<? extends Inter> classe)
-    {
-        Set<Class<? extends Relation>> set = map.get(classe);
-
-        if (set == null) {
-            map.put(classe, set = new LinkedHashSet<>());
-        }
-
-        return set;
-    }
-
-    private static void map (Class<? extends Inter> sourceClass,
-                             Class<? extends Relation> relationClass,
-                             Class<? extends Inter> targetClass)
-    {
-        getSet(src, sourceClass).add(relationClass);
-        getSet(tgt, targetClass).add(relationClass);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------------------//
     // RelationClassPredicate //
     //------------------------//

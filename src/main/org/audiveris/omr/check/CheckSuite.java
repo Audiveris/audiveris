@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,7 +54,6 @@ import java.util.List;
  * (0.8 as of this writing).
  *
  * @param <C> the subtype of Checkable used in the homogeneous collection of checks in the suite.
- *
  * @author Hervé Bitteur
  */
 public class CheckSuite<C>
@@ -64,6 +63,7 @@ public class CheckSuite<C>
     private static final Logger logger = LoggerFactory.getLogger(CheckSuite.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Name of this suite. */
     protected final String name;
 
@@ -83,6 +83,7 @@ public class CheckSuite<C>
     private double totalWeight = 0.0;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a suite of checks with standard threshold values.
      *
@@ -93,9 +94,6 @@ public class CheckSuite<C>
         this(name, Grades.minInterGrade, Grades.goodInterGrade);
     }
 
-    //------------//
-    // CheckSuite //
-    //------------//
     /**
      * Create a suite of checks with specific thresholds.
      *
@@ -113,6 +111,7 @@ public class CheckSuite<C>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // add //
     //-----//
@@ -190,6 +189,18 @@ public class CheckSuite<C>
         }
 
         logger.info(sb.toString());
+    }
+
+    //--------------//
+    // dumpSpecific //
+    //--------------//
+    /**
+     * Just an empty placeholder, meant to be overridden.
+     *
+     * @param sb StringBuilder to populate
+     */
+    protected void dumpSpecific (StringBuilder sb)
+    {
     }
 
     //-----------//
@@ -333,17 +344,5 @@ public class CheckSuite<C>
         }
 
         return grade;
-    }
-
-    //--------------//
-    // dumpSpecific //
-    //--------------//
-    /**
-     * Just an empty placeholder, meant to be overridden.
-     *
-     * @param sb StringBuilder to populate
-     */
-    protected void dumpSpecific (StringBuilder sb)
-    {
     }
 }

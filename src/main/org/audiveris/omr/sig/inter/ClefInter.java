@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,7 +51,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <ul>
  * <li>-4 for top line (Baritone)
  * <li>-2 for Bass and Tenor
- * <li> 0 for Alto
+ * <li>0 for Alto
  * <li>+2 for Treble and Mezzo-Soprano
  * <li>+4 for bottom line (Soprano)
  * </ul>
@@ -75,48 +75,20 @@ public class ClefInter
             +2.0,
             ClefKind.TREBLE);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Clef kind, based on shape and pitch.
-     */
-    public static enum ClefKind
-    {
-        TREBLE(Shape.G_CLEF, 2),
-        BASS(Shape.F_CLEF, -2),
-        ALTO(Shape.C_CLEF, 0),
-        TENOR(Shape.C_CLEF, -2),
-        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
-
-        /** Symbol shape class. (regardless of ottava mark if any) */
-        public final Shape shape;
-
-        /** Pitch of reference line. */
-        public final int pitch;
-
-        ClefKind (Shape shape,
-                  int pitch)
-        {
-            this.shape = shape;
-            this.pitch = pitch;
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Kind of the clef. */
     @XmlAttribute
     private ClefKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a <b>ghost</b> ClefInter object.
-     *
-     * @param shape the possible shape
-     * @param grade the interpretation quality
+     * No-arg constructor needed for JAXB.
      */
-    public ClefInter (Shape shape,
-                      Double grade)
+    private ClefInter ()
     {
-        this(null, shape, grade, null, null, null);
+        super(null, null, null, (Double) null, null, null);
     }
 
     /**
@@ -141,131 +113,18 @@ public class ClefInter
     }
 
     /**
-     * No-arg constructor needed for JAXB.
+     * Creates a <b>ghost</b> ClefInter object.
+     *
+     * @param shape the possible shape
+     * @param grade the interpretation quality
      */
-    private ClefInter ()
+    public ClefInter (Shape shape,
+                      Double grade)
     {
-        super(null, null, null, (Double) null, null, null);
+        this(null, shape, grade, null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // absolutePitchOf //
-    //-----------------//
-    /**
-     * Report an absolute pitch value, using the current clef if any,
-     * otherwise using the default clef (G_CLEF)
-     *
-     * @param clef          the provided current clef
-     * @param pitchPosition the pitch position of the provided note
-     * @return the corresponding absolute
-     */
-    public static int absolutePitchOf (ClefInter clef,
-                                       int pitchPosition)
-    {
-        if (clef == null) {
-            return defaultClef.absolutePitchOf(pitchPosition);
-        } else {
-            return clef.absolutePitchOf(pitchPosition);
-        }
-    }
-
-    //-------//
-    // added //
-    //-------//
-    @Override
-    public void added ()
-    {
-        super.added();
-
-        // Add it to containing measure stack
-        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
-
-        if (stack != null) {
-            stack.addInter(this);
-        }
-
-        if (kind == null) {
-            kind = kindOf(getCenter(), shape, staff);
-            pitch = Double.valueOf(kind.pitch);
-        }
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //---------//
-    // getKind //
-    //---------//
-    /**
-     * @return the kind
-     */
-    public ClefKind getKind ()
-    {
-        return kind;
-    }
-
-    //--------//
-    // remove //
-    //--------//
-    /**
-     * Remove it from containing measure.
-     *
-     * @param extensive true for non-manual removals only
-     * @see #added()
-     */
-    @Override
-    public void remove (boolean extensive)
-    {
-        if (isRemoved()) {
-            return;
-        }
-
-        // Remove from staff header if relevant
-        final StaffHeader header = staff.getHeader();
-
-        if ((header != null) && (header.clef == this)) {
-            header.clef = null;
-            staff.getSystem().updateHeadersStop();
-        }
-
-        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
-
-        if (stack != null) {
-            stack.removeInter(this);
-        }
-
-        super.remove(extensive);
-    }
-
-    //-----------//
-    // replicate //
-    //-----------//
-    /**
-     * Replicate this clef in a target staff.
-     *
-     * @param targetStaff the target staff
-     * @return the replicated clef, whose bounds may need an update
-     */
-    public ClefInter replicate (Staff targetStaff)
-    {
-        return new ClefInter(null, shape, getGrade(), targetStaff, pitch, kind);
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + kind;
-    }
 
     //-----------------//
     // absolutePitchOf //
@@ -314,6 +173,56 @@ public class ClefInter
 
             return 0; // To keep compiler happy
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        // Add it to containing measure stack
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+
+        if (kind == null) {
+            kind = kindOf(getCenter(), shape, staff);
+            pitch = Double.valueOf(kind.pitch);
+        }
+    }
+
+    //---------//
+    // getKind //
+    //---------//
+    /**
+     * @return the kind
+     */
+    public ClefKind getKind ()
+    {
+        return kind;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + kind;
     }
 
     //------------//
@@ -403,6 +312,76 @@ public class ClefInter
     }
 
     //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing measure.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (isRemoved()) {
+            return;
+        }
+
+        // Remove from staff header if relevant
+        final StaffHeader header = staff.getHeader();
+
+        if ((header != null) && (header.clef == this)) {
+            header.clef = null;
+            staff.getSystem().updateHeadersStop();
+        }
+
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.remove(extensive);
+    }
+
+    //-----------//
+    // replicate //
+    //-----------//
+    /**
+     * Replicate this clef in a target staff.
+     *
+     * @param targetStaff the target staff
+     * @return the replicated clef, whose bounds may need an update
+     */
+    public ClefInter replicate (Staff targetStaff)
+    {
+        return new ClefInter(null, shape, getGrade(), targetStaff, pitch, kind);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // absolutePitchOf //
+    //-----------------//
+    /**
+     * Report an absolute pitch value, using the current clef if any,
+     * otherwise using the default clef (G_CLEF)
+     *
+     * @param clef          the provided current clef
+     * @param pitchPosition the pitch position of the provided note
+     * @return the corresponding absolute
+     */
+    public static int absolutePitchOf (ClefInter clef,
+                                       int pitchPosition)
+    {
+        if (clef == null) {
+            return defaultClef.absolutePitchOf(pitchPosition);
+        } else {
+            return clef.absolutePitchOf(pitchPosition);
+        }
+    }
+
+    //--------//
     // create //
     //--------//
     /**
@@ -454,6 +433,46 @@ public class ClefInter
     // kindOf //
     //--------//
     /**
+     * Report the ClefKind for a provided OmrShape
+     *
+     * @param omrShape provided OmrShape
+     * @return related ClefKind
+     * @throws IllegalArgumentException if provided omrShape is not mapped
+     */
+    public static ClefKind kindOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+            return ClefKind.TREBLE;
+
+        case cClefAlto:
+            return ClefKind.ALTO;
+
+        case cClefTenor:
+            return ClefKind.TENOR;
+
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+            return ClefKind.BASS;
+
+        case unpitchedPercussionClef1:
+            return ClefKind.PERCUSSION;
+        }
+
+        throw new IllegalArgumentException("No ClefKind for " + omrShape);
+    }
+
+    //--------//
+    // kindOf //
+    //--------//
+    /**
      * Guess the clef kind, based on shape and location.
      *
      * @param center area center of the clef
@@ -491,46 +510,6 @@ public class ClefInter
         default:
             return null;
         }
-    }
-
-    //--------//
-    // kindOf //
-    //--------//
-    /**
-     * Report the ClefKind for a provided OmrShape
-     *
-     * @param omrShape provided OmrShape
-     * @return related ClefKind
-     * @throws IllegalArgumentException if provided omrShape is not mapped
-     */
-    public static ClefKind kindOf (OmrShape omrShape)
-    {
-        switch (omrShape) {
-        case gClef:
-        case gClef8vb:
-        case gClef8va:
-        case gClef15mb:
-        case gClef15ma:
-            return ClefKind.TREBLE;
-
-        case cClefAlto:
-            return ClefKind.ALTO;
-
-        case cClefTenor:
-            return ClefKind.TENOR;
-
-        case fClef:
-        case fClef8vb:
-        case fClef8va:
-        case fClef15mb:
-        case fClef15ma:
-            return ClefKind.BASS;
-
-        case unpitchedPercussionClef1:
-            return ClefKind.PERCUSSION;
-        }
-
-        throw new IllegalArgumentException("No ClefKind for " + omrShape);
     }
 
     //------------//
@@ -573,6 +552,33 @@ public class ClefInter
             return defaultClef.octaveOf(pitch);
         } else {
             return clef.octaveOf(pitch);
+        }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Clef kind, based on shape and pitch.
+     */
+    public static enum ClefKind
+    {
+        TREBLE(Shape.G_CLEF, 2),
+        BASS(Shape.F_CLEF, -2),
+        ALTO(Shape.C_CLEF, 0),
+        TENOR(Shape.C_CLEF, -2),
+        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
+
+        /** Symbol shape class. (regardless of ottava mark if any) */
+        public final Shape shape;
+
+        /** Pitch of reference line. */
+        public final int pitch;
+
+        ClefKind (Shape shape,
+                  int pitch)
+        {
+            this.shape = shape;
+            this.pitch = pitch;
         }
     }
 }

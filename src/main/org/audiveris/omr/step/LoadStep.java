@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,6 +49,7 @@ public class LoadStep
     private static final Logger logger = LoggerFactory.getLogger(LoadStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LoadStep object.
      */
@@ -57,12 +58,13 @@ public class LoadStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // doit //
     //------//
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         final SheetStub stub = sheet.getStub();
         final Book book = stub.getBook();
@@ -80,7 +82,7 @@ public class LoadStep
 
                 ///logger.info("Occupied memory: {}", Memory.getValue());
                 final String msg = "Too large image: " + String.format("%,d", count)
-                                           + " pixels (vs " + String.format("%,d", max) + " max)";
+                        + " pixels (vs " + String.format("%,d", max) + " max)";
                 stub.decideOnRemoval(msg, false); // This may throw StepException
             }
 
@@ -98,6 +100,7 @@ public class LoadStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

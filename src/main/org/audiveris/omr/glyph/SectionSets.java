@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,6 +55,7 @@ public class SectionSets
     private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The collection of sections sets. */
     protected Collection<Collection<Section>> sets;
 
@@ -63,6 +64,12 @@ public class SectionSets
     private Collection<SectionDescSet> descSets;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    // No-arg constructor needed by JAXB
+    private SectionSets ()
+    {
+    }
+
     /**
      * Creates a new SectionSets object.
      *
@@ -73,14 +80,34 @@ public class SectionSets
         this.sets = sets;
     }
 
-    //-------------//
-    // SectionSets // No-arg constructor needed by JAXB
-    //-------------//
-    private SectionSets ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins.
+     */
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
     {
+        // Convert sections -> ids
+        if (sets != null) {
+            descSets = new ArrayList<>();
+
+            for (Collection<Section> set : sets) {
+                SectionDescSet descSet = new SectionDescSet();
+
+                for (Section section : set) {
+                    descSet.sections.add(
+                            new SectionDesc(section.getId(), section.getOrientation()));
+                }
+
+                descSets.add(descSet);
+            }
+        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getSets //
     //---------//
@@ -100,7 +127,8 @@ public class SectionSets
 
                 for (SectionDesc sectionId : idSet.sections) {
                     Lag lag = sheet.getLagManager().getLag(
-                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
+                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG
+                                    : Lags.HLAG);
                     Section section = lag.getEntity(sectionId.id);
 
                     if (section == null) {
@@ -141,31 +169,7 @@ public class SectionSets
         return "";
     }
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        // Convert sections -> ids
-        if (sets != null) {
-            descSets = new ArrayList<>();
-
-            for (Collection<Section> set : sets) {
-                SectionDescSet descSet = new SectionDescSet();
-
-                for (Section section : set) {
-                    descSet.sections.add(
-                            new SectionDesc(section.getId(), section.getOrientation()));
-                }
-
-                descSets.add(descSet);
-            }
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // createFromGlyphs //
@@ -211,6 +215,7 @@ public class SectionSets
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // SectionDesc //
     //-------------//

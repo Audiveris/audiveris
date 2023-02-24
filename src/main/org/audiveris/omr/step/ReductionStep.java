@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class ReductionStep
     private static final Logger logger = LoggerFactory.getLogger(ReductionStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ReductionStep object.
      */
@@ -60,32 +61,6 @@ public class ReductionStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Void context)
-            throws StepException
-    {
-        new SigReducer(system, true).reduceFoundations();
-
-        if (constants.refineStemHeadEnd.isSet()) {
-            // Refine precise stem head end, based on leading head
-            for (Inter s : system.getSig().inters(StemInter.class)) {
-                final StemInter stem = (StemInter) s;
-                stem.refineHeadEnd();
-            }
-        }
-
-        if (constants.refineStemTailEnd.isSet()) {
-            // Refine precise stem tail end, based on last beam if any
-            for (Inter s : system.getSig().inters(StemInter.class)) {
-                final StemInter stem = (StemInter) s;
-                stem.refineTailEnd();
-            }
-        }
-    }
 
     //----------//
     // doEpilog //
@@ -93,7 +68,7 @@ public class ReductionStep
     @Override
     protected void doEpilog (Sheet sheet,
                              Void context)
-            throws StepException
+        throws StepException
     {
         // Measure typical length of stem free portion
         final List<Integer> lengths = new ArrayList<>();
@@ -115,12 +90,42 @@ public class ReductionStep
             final int medianValue = lengths.get(lengths.size() / 2);
             final double medianFraction = sheet.getScale().pixelsToFrac(medianValue);
 
-            logger.info("Stems free length median value: {} pixels, {} interlines",
-                        medianValue, String.format("%.1f", medianFraction));
+            logger.info(
+                    "Stems free length median value: {} pixels, {} interlines",
+                    medianValue,
+                    String.format("%.1f", medianFraction));
+        }
+    }
+
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Void context)
+        throws StepException
+    {
+        new SigReducer(system, true).reduceFoundations();
+
+        if (constants.refineStemHeadEnd.isSet()) {
+            // Refine precise stem head end, based on leading head
+            for (Inter s : system.getSig().inters(StemInter.class)) {
+                final StemInter stem = (StemInter) s;
+                stem.refineHeadEnd();
+            }
+        }
+
+        if (constants.refineStemTailEnd.isSet()) {
+            // Refine precise stem tail end, based on last beam if any
+            for (Inter s : system.getSig().inters(StemInter.class)) {
+                final StemInter stem = (StemInter) s;
+                stem.refineTailEnd();
+            }
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

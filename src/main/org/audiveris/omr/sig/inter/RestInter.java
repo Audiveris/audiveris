@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -66,6 +66,14 @@ public class RestInter
     private static final Logger logger = LoggerFactory.getLogger(RestInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB (and dummy measure).
+     */
+    protected RestInter ()
+    {
+    }
+
     /**
      * Creates a new RestInter object.
      *
@@ -84,14 +92,8 @@ public class RestInter
         super(glyph, null, shape, grade, staff, pitch);
     }
 
-    /**
-     * No-arg constructor meant for JAXB (and dummy measure).
-     */
-    protected RestInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -139,6 +141,8 @@ public class RestInter
 
         return tasks;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // createValid //
@@ -221,6 +225,7 @@ public class RestInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

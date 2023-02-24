@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,12 +47,14 @@ public class WindowsRegistry
     private static final Logger logger = LoggerFactory.getLogger(WindowsRegistry.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private WindowsRegistry ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------//
     // query //
     //-------//
@@ -84,7 +86,7 @@ public class WindowsRegistry
             InputStream is = process.getInputStream();
 
             try (InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
-                 BufferedReader br = new BufferedReader(isr)) {
+                    BufferedReader br = new BufferedReader(isr)) {
                 String line;
 
                 while ((line = br.readLine()) != null) {
@@ -97,8 +99,7 @@ public class WindowsRegistry
             }
         } catch (RuntimeException rex) {
             throw rex;
-        } catch (IOException |
-                 InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             logger.warn("Error running " + cmdArgs, ex);
         }
 

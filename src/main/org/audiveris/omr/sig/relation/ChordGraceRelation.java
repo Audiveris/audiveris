@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,26 +42,10 @@ public class ChordGraceRelation
 {
 
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
 
     //---------------//
     // getXOutGapMax //
@@ -81,6 +65,26 @@ public class ChordGraceRelation
         return getYGapMaximum(profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -98,6 +102,7 @@ public class ChordGraceRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -251,21 +251,28 @@ public class Sheet
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>Sheet</code> object with a binary table.
-     *
-     * @param stub        the related sheet stub
-     * @param binaryTable the binary table, if any
+     * No-arg constructor needed for JAXB.
      */
-    public Sheet (SheetStub stub,
-                  RunTable binaryTable)
+    private Sheet ()
     {
-        this(stub);
+    }
 
-        if (binaryTable != null) {
-            setBinary(binaryTable);
-        }
+    /**
+     * Create a new <code>Sheet</code> instance within a book.
+     *
+     * @param stub the related sheet stub
+     */
+    private Sheet (SheetStub stub)
+    {
+        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
+
+        glyphIndex = new GlyphIndex();
+
+        initTransients(stub);
+
+        interIndex = new InterIndex();
+        interIndex.initTransients(this);
     }
 
     /**
@@ -288,31 +295,26 @@ public class Sheet
         }
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Create a new <code>Sheet</code> instance within a book.
+     * Creates a new <code>Sheet</code> object with a binary table.
      *
-     * @param stub the related sheet stub
+     * @param stub        the related sheet stub
+     * @param binaryTable the binary table, if any
      */
-    private Sheet (SheetStub stub)
+    public Sheet (SheetStub stub,
+                  RunTable binaryTable)
     {
-        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
+        this(stub);
 
-        glyphIndex = new GlyphIndex();
-
-        initTransients(stub);
-
-        interIndex = new InterIndex();
-        interIndex.initTransients(this);
-    }
-
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private Sheet ()
-    {
+        if (binaryTable != null) {
+            setBinary(binaryTable);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // addItemRenderer //
     //-----------------//
@@ -335,19 +337,6 @@ public class Sheet
     // addPage //
     //---------//
     /**
-     * Add a related page to this sheet.
-     *
-     * @param page the detected page
-     */
-    public void addPage (Page page)
-    {
-        pages.add(page);
-    }
-
-    //---------//
-    // addPage //
-    //---------//
-    /**
      * Add a related page to this sheet at the provided index.
      *
      * @param index the provided index
@@ -357,6 +346,19 @@ public class Sheet
                          Page page)
     {
         pages.add(index, page);
+    }
+
+    //---------//
+    // addPage //
+    //---------//
+    /**
+     * Add a related page to this sheet.
+     *
+     * @param page the detected page
+     */
+    public void addPage (Page page)
+    {
+        pages.add(page);
     }
 
     //-------------//
@@ -578,6 +580,15 @@ public class Sheet
         }
     }
 
+    //------------------------//
+    // createGlyphsController //
+    //------------------------//
+    private void createGlyphsController ()
+    {
+        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
+        glyphsController = new GlyphsController(model);
+    }
+
     //----------------//
     // createGrayView //
     //----------------//
@@ -631,6 +642,19 @@ public class Sheet
         if (!stub.isValid()) {
             StubsController.getInstance().markTab(stub, Colors.SHEET_INVALID);
         }
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private void done (OmrStep step)
+    {
+        stub.done(step);
     }
 
     //-----------------//
@@ -720,6 +744,14 @@ public class Sheet
         }
     }
 
+    //---------//
+    // getBook //
+    //---------//
+    private Book getBook ()
+    {
+        return stub.getBook();
+    }
+
     //-----------------//
     // getErrorsEditor //
     //-----------------//
@@ -765,6 +797,25 @@ public class Sheet
         }
 
         return glyphIndex;
+    }
+
+    //----------------------//
+    // getGlyphIndexContent // Needed for JAXB
+    //----------------------//
+    /**
+     * This is the index of all <code>Glyph</code> instances registered in
+     * the containing sheet.
+     */
+    @SuppressWarnings("unused")
+    @XmlElement(name = "glyph-index")
+    @XmlJavaTypeAdapter(GlyphListAdapter.class)
+    private ArrayList<Glyph> getGlyphIndexContent ()
+    {
+        if (glyphIndex == null) {
+            return null;
+        }
+
+        return glyphIndex.getEntities();
     }
 
     //---------------------//
@@ -963,61 +1014,6 @@ public class Sheet
         return scale;
     }
 
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * Remember scale information to this sheet
-     *
-     * @param scale the computed sheet global scale
-     */
-    public void setScale (Scale scale)
-    {
-        this.scale = scale;
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    /**
-     * Assign the related image to this sheet
-     *
-     * @param image       the loaded image
-     * @param adjustImage true to check and adjust image format
-     * @throws StepException if processing failed at this step
-     */
-    public final void setImage (BufferedImage image,
-                                boolean adjustImage)
-        throws StepException
-    {
-        try {
-            if (picture == null) {
-                picture = new Picture(this, image, adjustImage);
-            } else {
-                picture.setImage(Picture.ImageKey.GRAY, image, adjustImage);
-            }
-
-            if (OMR.gui != null) {
-                createGrayView();
-            }
-
-            done(OmrStep.LOAD);
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
-                    + ex.getMessage();
-
-            if (OMR.gui != null) {
-                OMR.gui.displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
-    }
-
     //---------------//
     // getSheetDelta //
     //---------------//
@@ -1031,17 +1027,23 @@ public class Sheet
         return sheetDelta;
     }
 
-    //---------------//
-    // setSheetDelta //
-    //---------------//
+    //----------------//
+    // getSheetEditor //
+    //----------------//
     /**
-     * Remember the sheet delta in sheet
+     * In non batch mode, report the editor dedicated to this sheet
      *
-     * @param sheetDelta difference between input (pixels) and output (recognized entities)
+     * @return the sheet editor, or null
      */
-    public void setSheetDelta (SheetDiff sheetDelta)
+    public SheetEditor getSheetEditor ()
     {
-        this.sheetDelta = sheetDelta;
+        if (sheetEditor == null) {
+            interController = new InterController(this);
+            sheetEditor = new SheetEditor(this, getGlyphsController(), interController);
+            interController.setSheetEditor(sheetEditor);
+        }
+
+        return sheetEditor;
     }
 
     //---------//
@@ -1055,19 +1057,6 @@ public class Sheet
     public Skew getSkew ()
     {
         return skew;
-    }
-
-    //---------//
-    // setSkew //
-    //---------//
-    /**
-     * Link skew information to this sheet
-     *
-     * @param skew the skew information
-     */
-    public void setSkew (Skew skew)
-    {
-        this.skew = skew;
     }
 
     //-----------------//
@@ -1096,23 +1085,21 @@ public class Sheet
         return stub;
     }
 
-    //----------------//
-    // getSheetEditor //
-    //----------------//
+    //-----------//
+    // getSymbol //
+    //-----------//
     /**
-     * In non batch mode, report the editor dedicated to this sheet
+     * Report proper symbol for the provided shape, according to sheet preferred music font.
      *
-     * @return the sheet editor, or null
+     * @param shape the provided shape
+     * @return the proper symbol, perhaps null
      */
-    public SheetEditor getSheetEditor ()
+    public ShapeSymbol getSymbol (Shape shape)
     {
-        if (sheetEditor == null) {
-            interController = new InterController(this);
-            sheetEditor = new SheetEditor(this, getGlyphsController(), interController);
-            interController.setSheetEditor(sheetEditor);
-        }
+        final MusicFamily family = getStub().getMusicFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, getScale().getInterline());
 
-        return sheetEditor;
+        return font.getSymbol(shape);
     }
 
     //------------------//
@@ -1141,23 +1128,6 @@ public class Sheet
         return systemManager.getSystems();
     }
 
-    //-----------//
-    // getSymbol //
-    //-----------//
-    /**
-     * Report proper symbol for the provided shape, according to sheet preferred music font.
-     *
-     * @param shape the provided shape
-     * @return the proper symbol, perhaps null
-     */
-    public ShapeSymbol getSymbol (Shape shape)
-    {
-        final MusicFamily family = getStub().getMusicFamily();
-        final MusicFont font = MusicFont.getBaseFont(family, getScale().getInterline());
-
-        return font.getSymbol(shape);
-    }
-
     //----------//
     // getWidth //
     //----------//
@@ -1182,226 +1152,6 @@ public class Sheet
     public boolean hasPicture ()
     {
         return picture != null;
-    }
-
-    //-------//
-    // print //
-    //-------//
-    /**
-     * Print the sheet physical appearance using PDF format.
-     *
-     * @param sheetPrintPath path of sheet print file
-     */
-    public void print (Path sheetPrintPath)
-    {
-        // Actually write the PDF
-        try {
-            Path parent = sheetPrintPath.getParent();
-
-            if (!Files.exists(parent)) {
-                Files.createDirectories(parent);
-            }
-
-            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
-                    Arrays.asList(getStub()),
-                    new SheetResultPainter.PdfResultPainter());
-            logger.info("Sheet printed to {}", sheetPrintPath);
-        } catch (Exception ex) {
-            logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
-        }
-    }
-
-    //------------//
-    // removePage //
-    //------------//
-    /**
-     * Remove the provided page.
-     *
-     * @param page the page to be removed
-     */
-    public void removePage (Page page)
-    {
-        pages.remove(page);
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * In non batch mode, apply the registered item renderings on the provided graphics.
-     *
-     * @param g the graphics context
-     */
-    public void renderItems (Graphics2D g)
-    {
-        if (OMR.gui != null) {
-            for (ItemRenderer renderer : itemRenderers) {
-                renderer.renderItems(g);
-            }
-        }
-    }
-
-    //--------//
-    // sample //
-    //--------//
-    /**
-     * Save sheet samples into book repository.
-     */
-    public void sample ()
-    {
-        final Book book = getBook();
-        final SampleRepository repository = book.getSpecificSampleRepository();
-        final SampleSheet sampleSheet = repository.findSampleSheet(this);
-
-        for (SystemInfo system : getSystems()) {
-            SIGraph sig = system.getSig();
-
-            for (Inter inter : sig.vertexSet()) {
-                Shape shape = inter.getShape();
-                Staff staff = inter.getStaff();
-                Glyph glyph = inter.getGlyph();
-
-                if ((shape != null) && (staff != null) && (glyph != null)) {
-                    Double pitch = (inter instanceof AbstractPitchedInter)
-                            ? ((AbstractPitchedInter) inter).getPitch()
-                            : null;
-                    repository.addSample(
-                            inter.getShape(),
-                            glyph,
-                            staff.getSpecificInterline(),
-                            sampleSheet,
-                            pitch);
-                } else {
-                    logger.debug(
-                            "No sample for {} shape:{} staff:{} glyph:{}",
-                            inter,
-                            shape,
-                            staff,
-                            glyph);
-                }
-            }
-        }
-    }
-
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Store sheet internals into book file system.
-     *
-     * @param sheetFolder    path of sheet folder in (new) book file
-     * @param oldSheetFolder path of sheet folder in old book file, if any
-     */
-    public void store (Path sheetFolder,
-                       Path oldSheetFolder)
-    {
-        // Picture internals, if any
-        if (picture != null) {
-            try {
-                // Make sure the folder exists for sheet internals
-                Files.createDirectories(sheetFolder);
-
-                // Save picture images (and remove tables if any)
-                picture.store(sheetFolder, oldSheetFolder);
-            } catch (IOException ex) {
-                logger.warn("IOException on storing " + this, ex);
-            }
-        }
-
-        // Sheet structure (sheet#n.xml)
-        try {
-            Path structurePath = sheetFolder.resolve(sheetFolder.getFileName() + ".xml");
-            Files.deleteIfExists(structurePath);
-            Files.createDirectories(sheetFolder);
-
-            Jaxb.marshal(this, structurePath, getJaxbContext());
-
-            stub.setModified(false);
-            stub.setUpgraded(false);
-            logger.info("Stored {}", structurePath);
-        } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.warn("Error in saving sheet structure " + ex, ex);
-        }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        final StringBuilder sb = new StringBuilder("Sheet{");
-
-        if (getId() != null) {
-            sb.append(getId());
-        }
-
-        sb.append('}');
-
-        return sb.toString();
-    }
-
-    //------------------------//
-    // createGlyphsController //
-    //------------------------//
-    private void createGlyphsController ()
-    {
-        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
-        glyphsController = new GlyphsController(model);
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private void done (OmrStep step)
-    {
-        stub.done(step);
-    }
-
-    //---------//
-    // getBook //
-    //---------//
-    private Book getBook ()
-    {
-        return stub.getBook();
-    }
-
-    //----------------------//
-    // getGlyphIndexContent // Needed for JAXB
-    //----------------------//
-    /**
-     * This is the index of all <code>Glyph</code> instances registered in
-     * the containing sheet.
-     */
-    @SuppressWarnings("unused")
-    @XmlElement(name = "glyph-index")
-    @XmlJavaTypeAdapter(GlyphListAdapter.class)
-    private ArrayList<Glyph> getGlyphIndexContent ()
-    {
-        if (glyphIndex == null) {
-            return null;
-        }
-
-        return glyphIndex.getEntities();
-    }
-
-    //----------------------//
-    // setGlyphIndexContent // Needed for JAXB
-    //----------------------//
-    /**
-     * Meant for JAXB unmarshalling only.
-     *
-     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
-     */
-    @SuppressWarnings("unused")
-    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
-    {
-        getGlyphIndex().setEntities(glyphs);
     }
 
     //----------------//
@@ -1475,23 +1225,61 @@ public class Sheet
         lagManager = new LagManager(this);
     }
 
-    //-----------//
-    // setBinary //
-    //-----------//
-    private void setBinary (RunTable binaryTable)
+    //-------//
+    // print //
+    //-------//
+    /**
+     * Print the sheet physical appearance using PDF format.
+     *
+     * @param sheetPrintPath path of sheet print file
+     */
+    public void print (Path sheetPrintPath)
     {
-        if (picture == null) {
-            picture = new Picture(this, binaryTable);
-        } else {
-            picture.setTable(Picture.TableKey.BINARY, binaryTable, true);
-        }
+        // Actually write the PDF
+        try {
+            Path parent = sheetPrintPath.getParent();
 
+            if (!Files.exists(parent)) {
+                Files.createDirectories(parent);
+            }
+
+            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
+                    Arrays.asList(getStub()),
+                    new SheetResultPainter.PdfResultPainter());
+            logger.info("Sheet printed to {}", sheetPrintPath);
+        } catch (Exception ex) {
+            logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
+        }
+    }
+
+    //------------//
+    // removePage //
+    //------------//
+    /**
+     * Remove the provided page.
+     *
+     * @param page the page to be removed
+     */
+    public void removePage (Page page)
+    {
+        pages.remove(page);
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * In non batch mode, apply the registered item renderings on the provided graphics.
+     *
+     * @param g the graphics context
+     */
+    public void renderItems (Graphics2D g)
+    {
         if (OMR.gui != null) {
-            createBinaryView();
+            for (ItemRenderer renderer : itemRenderers) {
+                renderer.renderItems(g);
+            }
         }
-
-        done(OmrStep.LOAD);
-        done(OmrStep.BINARY);
     }
 
     //-------//
@@ -1542,6 +1330,236 @@ public class Sheet
         }
     }
 
+    //--------//
+    // sample //
+    //--------//
+    /**
+     * Save sheet samples into book repository.
+     */
+    public void sample ()
+    {
+        final Book book = getBook();
+        final SampleRepository repository = book.getSpecificSampleRepository();
+        final SampleSheet sampleSheet = repository.findSampleSheet(this);
+
+        for (SystemInfo system : getSystems()) {
+            SIGraph sig = system.getSig();
+
+            for (Inter inter : sig.vertexSet()) {
+                Shape shape = inter.getShape();
+                Staff staff = inter.getStaff();
+                Glyph glyph = inter.getGlyph();
+
+                if ((shape != null) && (staff != null) && (glyph != null)) {
+                    Double pitch = (inter instanceof AbstractPitchedInter)
+                            ? ((AbstractPitchedInter) inter).getPitch()
+                            : null;
+                    repository.addSample(
+                            inter.getShape(),
+                            glyph,
+                            staff.getSpecificInterline(),
+                            sampleSheet,
+                            pitch);
+                } else {
+                    logger.debug(
+                            "No sample for {} shape:{} staff:{} glyph:{}",
+                            inter,
+                            shape,
+                            staff,
+                            glyph);
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // setBinary //
+    //-----------//
+    private void setBinary (RunTable binaryTable)
+    {
+        if (picture == null) {
+            picture = new Picture(this, binaryTable);
+        } else {
+            picture.setTable(Picture.TableKey.BINARY, binaryTable, true);
+        }
+
+        if (OMR.gui != null) {
+            createBinaryView();
+        }
+
+        done(OmrStep.LOAD);
+        done(OmrStep.BINARY);
+    }
+
+    //----------------------//
+    // setGlyphIndexContent // Needed for JAXB
+    //----------------------//
+    /**
+     * Meant for JAXB unmarshalling only.
+     *
+     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unused")
+    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
+    {
+        getGlyphIndex().setEntities(glyphs);
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    /**
+     * Assign the related image to this sheet
+     *
+     * @param image       the loaded image
+     * @param adjustImage true to check and adjust image format
+     * @throws StepException if processing failed at this step
+     */
+    public final void setImage (BufferedImage image,
+                                boolean adjustImage)
+        throws StepException
+    {
+        try {
+            if (picture == null) {
+                picture = new Picture(this, image, adjustImage);
+            } else {
+                picture.setImage(Picture.ImageKey.GRAY, image, adjustImage);
+            }
+
+            if (OMR.gui != null) {
+                createGrayView();
+            }
+
+            done(OmrStep.LOAD);
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
+                    + ex.getMessage();
+
+            if (OMR.gui != null) {
+                OMR.gui.displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
+    }
+
+    //----------//
+    // setScale //
+    //----------//
+    /**
+     * Remember scale information to this sheet
+     *
+     * @param scale the computed sheet global scale
+     */
+    public void setScale (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //---------------//
+    // setSheetDelta //
+    //---------------//
+    /**
+     * Remember the sheet delta in sheet
+     *
+     * @param sheetDelta difference between input (pixels) and output (recognized entities)
+     */
+    public void setSheetDelta (SheetDiff sheetDelta)
+    {
+        this.sheetDelta = sheetDelta;
+    }
+
+    //---------//
+    // setSkew //
+    //---------//
+    /**
+     * Link skew information to this sheet
+     *
+     * @param skew the skew information
+     */
+    public void setSkew (Skew skew)
+    {
+        this.skew = skew;
+    }
+
+    //-------//
+    // store //
+    //-------//
+    /**
+     * Store sheet internals into book file system.
+     *
+     * @param sheetFolder    path of sheet folder in (new) book file
+     * @param oldSheetFolder path of sheet folder in old book file, if any
+     */
+    public void store (Path sheetFolder,
+                       Path oldSheetFolder)
+    {
+        // Picture internals, if any
+        if (picture != null) {
+            try {
+                // Make sure the folder exists for sheet internals
+                Files.createDirectories(sheetFolder);
+
+                // Save picture images (and remove tables if any)
+                picture.store(sheetFolder, oldSheetFolder);
+            } catch (IOException ex) {
+                logger.warn("IOException on storing " + this, ex);
+            }
+        }
+
+        // Sheet structure (sheet#n.xml)
+        try {
+            Path structurePath = sheetFolder.resolve(sheetFolder.getFileName() + ".xml");
+            Files.deleteIfExists(structurePath);
+            Files.createDirectories(sheetFolder);
+
+            Jaxb.marshal(this, structurePath, getJaxbContext());
+
+            stub.setModified(false);
+            stub.setUpgraded(false);
+            logger.info("Stored {}", structurePath);
+        } catch (IOException | JAXBException | XMLStreamException ex) {
+            logger.warn("Error in saving sheet structure " + ex, ex);
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        final StringBuilder sb = new StringBuilder("Sheet{");
+
+        if (getId() != null) {
+            sb.append(getId());
+        }
+
+        sb.append('}');
+
+        return sb.toString();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    public static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Sheet.class);
+        }
+
+        return jaxbContext;
+    }
+
     //------------------//
     // getSheetFileName //
     //------------------//
@@ -1582,21 +1600,8 @@ public class Sheet
         return sheet;
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    public static JAXBContext getJaxbContext ()
-        throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Sheet.class);
-        }
-
-        return jaxbContext;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

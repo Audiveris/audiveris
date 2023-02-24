@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,9 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.key;
-
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
@@ -43,6 +40,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
+
 /**
  * Class <code>KeyRoi</code> handles the region of interest for key retrieval,
  * split horizontally into vertical slices.
@@ -57,6 +57,7 @@ public class KeyRoi
     private static final Logger logger = LoggerFactory.getLogger(KeyRoi.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying staff. */
     private final Staff staff;
 
@@ -73,6 +74,7 @@ public class KeyRoi
     private final int maxSliceDist;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>KeyRoi</code> object.
      *
@@ -96,6 +98,7 @@ public class KeyRoi
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // attachmentKey //
     //---------------//
@@ -272,8 +275,10 @@ public class KeyRoi
                                          boolean cropNeighbors)
     {
         Rectangle sRect = slice.getRect();
-        BufferedImage sImage = new BufferedImage(sRect.width, sRect.height,
-                                                 BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage sImage = new BufferedImage(
+                sRect.width,
+                sRect.height,
+                BufferedImage.TYPE_BYTE_GRAY);
         ByteProcessor sBuffer = new ByteProcessor(sImage);
         sBuffer.copyBits(source, -sRect.x, -sRect.y, Blitter.COPY);
 
@@ -284,7 +289,8 @@ public class KeyRoi
             final Integer nextIdx = (idx < (size() - 1)) ? (idx + 1) : null;
             Graphics2D g = null;
 
-            for (Integer i : new Integer[]{prevIdx, nextIdx}) {
+            for (Integer i : new Integer[]
+            { prevIdx, nextIdx }) {
                 if (i != null) {
                     final KeySlice sl = get(i);
 
@@ -297,8 +303,9 @@ public class KeyRoi
                                 g.setColor(Color.white);
                             }
 
-                            final Point offset = new Point(glyph.getLeft() - sRect.x,
-                                                           glyph.getTop() - sRect.y);
+                            final Point offset = new Point(
+                                    glyph.getLeft() - sRect.x,
+                                    glyph.getTop() - sRect.y);
                             logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
                             glyph.getRunTable().render(g, offset);
                         }
@@ -344,42 +351,6 @@ public class KeyRoi
         }
 
         return starts;
-    }
-
-    //---------//
-    // sliceOf //
-    //---------//
-    /**
-     * Report the containing slice at provided abscissa value
-     *
-     * @param x the provided abscissa value
-     * @return the slice found, or null
-     */
-    public KeySlice sliceOf (int x)
-    {
-        for (KeySlice slice : this) {
-            if (GeoUtil.xEmbraces(slice.getRect(), x)) {
-                return slice;
-            }
-        }
-
-        return null;
-    }
-
-    //-----------------//
-    // stuffSlicesFrom //
-    //-----------------//
-    /**
-     * Stuff all remaining slices, starting at provided index
-     *
-     * @param index provided index
-     */
-    public void stuffSlicesFrom (int index)
-    {
-        for (KeySlice slice : subList(index, size())) {
-            slice.deleteAlter();
-            slice.setStuffed();
-        }
     }
 
     //---------------//
@@ -440,6 +411,42 @@ public class KeyRoi
             return bestSlice;
         } else {
             return null;
+        }
+    }
+
+    //---------//
+    // sliceOf //
+    //---------//
+    /**
+     * Report the containing slice at provided abscissa value
+     *
+     * @param x the provided abscissa value
+     * @return the slice found, or null
+     */
+    public KeySlice sliceOf (int x)
+    {
+        for (KeySlice slice : this) {
+            if (GeoUtil.xEmbraces(slice.getRect(), x)) {
+                return slice;
+            }
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // stuffSlicesFrom //
+    //-----------------//
+    /**
+     * Stuff all remaining slices, starting at provided index
+     *
+     * @param index provided index
+     */
+    public void stuffSlicesFrom (int index)
+    {
+        for (KeySlice slice : subList(index, size())) {
+            slice.deleteAlter();
+            slice.setStuffed();
         }
     }
 }

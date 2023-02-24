@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
-import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
+
+import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -51,6 +51,7 @@ public class ArticulationSymbol
     private static final double dyRatio = -0.25;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>ArticulationSymbol</code> standard size, with no decoration.
      *
@@ -64,6 +65,7 @@ public class ArticulationSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getParams //
     //-----------//
@@ -128,6 +130,7 @@ public class ArticulationSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

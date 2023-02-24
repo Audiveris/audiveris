@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,7 +44,6 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker;
 import org.audiveris.omr.sheet.stem.HeadLinker.SLinker.CLinker;
-import static org.audiveris.omr.sheet.stem.StemHalfLinker.updateStemLine;
 import org.audiveris.omr.sheet.stem.StemItem.GapItem;
 import org.audiveris.omr.sheet.stem.StemItem.GlyphItem;
 import org.audiveris.omr.sheet.stem.StemItem.LinkerItem;
@@ -59,13 +58,14 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,6 +129,7 @@ public class HeadLinker
     private static final Logger logger = LoggerFactory.getLogger(HeadLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The head being processed. */
     @Navigable(false)
     private final HeadInter head;
@@ -147,6 +148,7 @@ public class HeadLinker
 
     // System-level information
     // ------------------------
+
     @Navigable(false)
     private final StemsRetriever retriever;
 
@@ -162,6 +164,7 @@ public class HeadLinker
     private final StemsRetriever.Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadLinker</code> object.
      *
@@ -189,6 +192,7 @@ public class HeadLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // getCornerLinker //
     //-----------------//
@@ -298,8 +302,12 @@ public class HeadLinker
                               boolean append)
     {
         if (head.isVip()) {
-            logger.info("VIP {} linkSides sp:{} lp:{} append:{}",
-                        this, stemProfile, linkProfile, append);
+            logger.info(
+                    "VIP {} linkSides sp:{} lp:{} append:{}",
+                    this,
+                    stemProfile,
+                    linkProfile,
+                    append);
         }
 
         boolean linked = false;
@@ -324,8 +332,12 @@ public class HeadLinker
             final boolean botOk = clBot.canLink(stemProfile, append);
 
             if (head.isVip()) {
-                logger.info("VIP {} stemProfile:{} top:{} bottom:{}",
-                            sLinker, stemProfile, topOk, botOk);
+                logger.info(
+                        "VIP {} stemProfile:{} top:{} bottom:{}",
+                        sLinker,
+                        stemProfile,
+                        topOk,
+                        botOk);
             }
 
             if (topOk) {
@@ -395,6 +407,18 @@ public class HeadLinker
         }
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder(getClass().getSimpleName()).append("{head#").append(head.getId())
+                .append('}').toString();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // lookupBeamGroups //
     //------------------//
@@ -424,8 +448,8 @@ public class HeadLinker
             final AbstractBeamInter b = (AbstractBeamInter) it.next();
             final Line2D limit = b.getBorder(VerticalSide.of(-yDir));
 
-            if ((yDir * (StemsRetriever.getTargetPt(refPt, limit, slope).getY() - refPt.getY()))
-                        <= 0) {
+            if ((yDir * (StemsRetriever.getTargetPt(refPt, limit, slope).getY() - refPt
+                    .getY())) <= 0) {
                 it.remove();
             }
         }
@@ -454,64 +478,54 @@ public class HeadLinker
 
         return new ArrayList<>(groups);
     }
-//
-//    //------------------//
-//    // saveHeadVicinity //
-//    //------------------//
-//    /**
-//     * An attempt to check usable chunks in head vicinity.
-//     * <p>
-//     * We erase head glyph before looking for suitable vertical sections as stem chunks.
-//     */
-//    private void saveHeadVicinity ()
-//    {
-//        final Sheet sheet = head.getSig().getSystem().getSheet();
-//        final ByteProcessor noStaff = sheet.getPicture().getSource(NO_STAFF);
-//        final Rectangle bounds = head.getBounds();
-//        final Rectangle box = new Rectangle(bounds);
-//
-//        final int interline = sheet.getInterline();
-//        box.grow(interline, 2 * interline);
-//        final Point offset = box.getLocation();
-//
-//        noStaff.setRoi(box);
-//        final ByteProcessor bp = (ByteProcessor) noStaff.crop();
-//        noStaff.resetRoi();
-//
-//        // Erase head glyph pixels
-//        final Glyph headGlyph = head.getGlyph();
-//        for (int y = 0; y < box.height; y++) {
-//            for (int x = 0; x < box.width; x++) {
-//                final Point p = new Point(offset.x + x, offset.y + y);
-//                if (headGlyph.contains(p)) {
-//                    bp.putPixel(x, y, 255);
-////                    bp.putPixel(x - 1, y, 255);
-////                    bp.putPixel(x + 1, y, 255);
-//                }
-//            }
-//        }
-//
-//        final int zoom = 20;
-//        final BufferedImage img = new BufferedImage(zoom * box.width,
-//                                                    zoom * box.height,
-//                                                    BufferedImage.TYPE_INT_RGB);
-//        final Graphics2D g = img.createGraphics();
-//        final AffineTransform at = AffineTransform.getScaleInstance(zoom, zoom);
-//        g.drawImage(bp.getBufferedImage(), at, null);
-//
-//        ImageUtil.saveOnDisk(img, sheet.getStub().getId(), "head#" + head.getId());
-//    }
-//
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("{head#").append(head.getId()).append('}').toString();
-    }
+    //
+    //    //------------------//
+    //    // saveHeadVicinity //
+    //    //------------------//
+    //    /**
+    //     * An attempt to check usable chunks in head vicinity.
+    //     * <p>
+    //     * We erase head glyph before looking for suitable vertical sections as stem chunks.
+    //     */
+    //    private void saveHeadVicinity ()
+    //    {
+    //        final Sheet sheet = head.getSig().getSystem().getSheet();
+    //        final ByteProcessor noStaff = sheet.getPicture().getSource(NO_STAFF);
+    //        final Rectangle bounds = head.getBounds();
+    //        final Rectangle box = new Rectangle(bounds);
+    //
+    //        final int interline = sheet.getInterline();
+    //        box.grow(interline, 2 * interline);
+    //        final Point offset = box.getLocation();
+    //
+    //        noStaff.setRoi(box);
+    //        final ByteProcessor bp = (ByteProcessor) noStaff.crop();
+    //        noStaff.resetRoi();
+    //
+    //        // Erase head glyph pixels
+    //        final Glyph headGlyph = head.getGlyph();
+    //        for (int y = 0; y < box.height; y++) {
+    //            for (int x = 0; x < box.width; x++) {
+    //                final Point p = new Point(offset.x + x, offset.y + y);
+    //                if (headGlyph.contains(p)) {
+    //                    bp.putPixel(x, y, 255);
+    ////                    bp.putPixel(x - 1, y, 255);
+    ////                    bp.putPixel(x + 1, y, 255);
+    //                }
+    //            }
+    //        }
+    //
+    //        final int zoom = 20;
+    //        final BufferedImage img = new BufferedImage(zoom * box.width,
+    //                                                    zoom * box.height,
+    //                                                    BufferedImage.TYPE_INT_RGB);
+    //        final Graphics2D g = img.createGraphics();
+    //        final AffineTransform at = AffineTransform.getScaleInstance(zoom, zoom);
+    //        g.drawImage(bp.getBufferedImage(), at, null);
+    //
+    //        ImageUtil.saveOnDisk(img, sheet.getStub().getId(), "head#" + head.getId());
+    //    }
+    //
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
@@ -554,18 +568,6 @@ public class HeadLinker
             for (VerticalSide vSide : VerticalSide.values()) {
                 cLinkers.put(vSide, new CLinker(vSide));
             }
-        }
-
-        @Override
-        public Point2D getReferencePoint ()
-        {
-            throw new UnsupportedOperationException("Not supported. Use CLinker ref point instead.");
-        }
-
-        @Override
-        public Glyph getStump ()
-        {
-            throw new UnsupportedOperationException("Not supported. Use CLinker stump instead.");
         }
 
         //-----------------//
@@ -615,11 +617,16 @@ public class HeadLinker
         public String getId ()
         {
             final StringBuilder sb = new StringBuilder();
-            sb.append("head#").append(head.getId())
-                    .append("-Slnk-")
-                    .append(hSide.name().charAt(0));
+            sb.append("head#").append(head.getId()).append("-Slnk-").append(hSide.name().charAt(0));
 
             return sb.toString();
+        }
+
+        @Override
+        public Point2D getReferencePoint ()
+        {
+            throw new UnsupportedOperationException(
+                    "Not supported. Use CLinker ref point instead.");
         }
 
         //-----------//
@@ -629,6 +636,12 @@ public class HeadLinker
         public HeadInter getSource ()
         {
             return head;
+        }
+
+        @Override
+        public Glyph getStump ()
+        {
+            throw new UnsupportedOperationException("Not supported. Use CLinker stump instead.");
         }
 
         //----------//
@@ -673,8 +686,8 @@ public class HeadLinker
         @Override
         public String toString ()
         {
-            final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
-                    .append('{').append(getId());
+            final StringBuilder asb = new StringBuilder(getClass().getSimpleName()).append('{')
+                    .append(getId());
 
             return asb.append('}').toString();
         }
@@ -748,7 +761,9 @@ public class HeadLinker
 
                 // Look for beams and beam hooks in the corner
                 List<Inter> beamCandidates = Inters.intersectedInters(
-                        neighborBeams, GeoOrder.BY_ABSCISSA, luArea);
+                        neighborBeams,
+                        GeoOrder.BY_ABSCISSA,
+                        luArea);
 
                 // Look for suitable beam groups
                 beamGroups = lookupBeamGroups(beamCandidates);
@@ -833,12 +848,12 @@ public class HeadLinker
                         Sections.intersectedSections(getStumpArea(), system.getVerticalSections()));
 
                 // Sort by horizontal distance of section area center WRT refPt
-                Collections.sort(sections, (s1, s2)
-                                 -> Double.compare(Math
-                                .abs(s1.getAreaCenter().getX() - refPt.getX()),
-                                                   Math
-                                                           .abs(s2.getAreaCenter().getX() - refPt
-                                                                   .getX())));
+                Collections.sort(
+                        sections,
+                        (s1,
+                         s2) -> Double.compare(
+                                 Math.abs(s1.getAreaCenter().getX() - refPt.getX()),
+                                 Math.abs(s2.getAreaCenter().getX() - refPt.getX())));
 
                 if (sections.isEmpty()) {
                     return null;
@@ -947,7 +962,8 @@ public class HeadLinker
 
                 // Gap: let's check other head corner in opposite horizontal side
                 final CLinker diag = cl.getSource().getLinker().getCornerLinker(
-                        hSide.opposite(), vSide);
+                        hSide.opposite(),
+                        vSide);
                 if (diag.canLink(Profiles.STRICT, false)) {
                     // Use length just before gap
                     return sb.getLengthAt(gapIndex - 1) >= params.minLinkerLength;
@@ -963,6 +979,19 @@ public class HeadLinker
                                                        int profile)
             {
                 return HeadStemRelation.checkRelation(head, stemLine, stump, vSide, scale, profile);
+            }
+
+            //-------//
+            // cName //
+            //-------//
+            /**
+             * Report corner name (TR, BL, TL or BR).
+             *
+             * @return corner name
+             */
+            public final String cName ()
+            {
+                return "" + vSide.name().charAt(0) + hSide.name().charAt(0);
             }
 
             //--------------------//
@@ -1108,7 +1137,7 @@ public class HeadLinker
                             }
                         }
                     } else if (ev instanceof LinkerItem
-                                       && ((LinkerItem) ev).linker instanceof CLinker) {
+                            && ((LinkerItem) ev).linker instanceof CLinker) {
                         // Head encountered
                         final CLinker cl = (CLinker) ((LinkerItem) ev).linker;
                         final HeadInter clHead = cl.getHead();
@@ -1119,16 +1148,18 @@ public class HeadLinker
 
                             if (gap != null) {
                                 final double y = cl.getReferencePoint().getY();
-                                final double dy = (yDir > 0)
-                                        ? y - gap.line.getY2()
+                                final double dy = (yDir > 0) ? y - gap.line.getY2()
                                         : gap.line.getY1() - y;
                                 if (dy < params.minLinkerLength) {
                                     // We include this coming head only if not tied on other vSide
                                     final CLinker clOpp = clHead.getLinker().getCornerLinker(
-                                            cl.getSLinker().getHorizontalSide().opposite(), vSide);
+                                            cl.getSLinker().getHorizontalSide().opposite(),
+                                            vSide);
                                     if (clOpp.hasConcreteStart(linkProfile)) {
-                                        logger.debug("{} separated from head#{}",
-                                                     this, clHead.getId());
+                                        logger.debug(
+                                                "{} separated from head#{}",
+                                                this,
+                                                clHead.getId());
                                         return sb.indexOf(gap) - 1;
                                     }
                                 }
@@ -1146,30 +1177,33 @@ public class HeadLinker
 
                         // Check that resulting contextual head grade is sufficient
                         // to reset stem free soft portion at this head ordinate
-                        final double cg = retriever.getMaxHeadContextualGrade(cl.getHead(),
-                                                                              hsRel);
+                        final double cg = retriever.getMaxHeadContextualGrade(cl.getHead(), hsRel);
                         if (cg >= Grades.minContextualGrade) {
                             final double cly = cl.getReferencePoint().getY();
                             ySoft = cly + yDir * params.bestStemTailLg;
 
-//                            // Allow to push yHard to include new segments
-//                            // But, if last segment fails, we should step back to the last good one
-//                            if (stemProfile < Profiles.MAX_VALUE) {
-//                                final double yHardNew = cly + yDir * params.minStemTailLg;
-//
-//                                if (yDir * Double.compare(yHardNew, yHard) > 0) {
-//                                    yHard = yHardNew;
-//                                }
-//                            }
+                            //                            // Allow to push yHard to include new segments
+                            //                            // But, if last segment fails, we should step back to the last good one
+                            //                            if (stemProfile < Profiles.MAX_VALUE) {
+                            //                                final double yHardNew = cly + yDir * params.minStemTailLg;
+                            //
+                            //                                if (yDir * Double.compare(yHardNew, yHard) > 0) {
+                            //                                    yHard = yHardNew;
+                            //                                }
+                            //                            }
                         }
                     } else if (ev instanceof LinkerItem
-                                       && ((LinkerItem) ev).linker instanceof BLinker) {
+                            && ((LinkerItem) ev).linker instanceof BLinker) {
                         // Beam encountered
                         final BLinker bl = (BLinker) ((LinkerItem) ev).linker;
                         final AbstractBeamInter beam = bl.getSource();
                         updateStemLine(ev.glyph, glyphs, stemLine, null);
                         final BeamStemRelation bsRel = BeamStemRelation.checkRelation(
-                                beam, stemLine, vSide, scale, stemProfile);
+                                beam,
+                                stemLine,
+                                vSide,
+                                scale,
+                                stemProfile);
                         relations.put(bl, bsRel);
 
                         // If there are other reachable beams in the same beam group,
@@ -1179,7 +1213,7 @@ public class HeadLinker
                         for (int j = i + 1; j <= maxIndex; j++) {
                             final StemItem ev2 = sb.get(i);
                             if (ev2 instanceof LinkerItem
-                                        && ((LinkerItem) ev2).linker instanceof BLinker) {
+                                    && ((LinkerItem) ev2).linker instanceof BLinker) {
                                 final BLinker bl2 = (BLinker) ((LinkerItem) ev2).linker;
                                 final AbstractBeamInter beam2 = bl2.getSource();
                                 if (beam2.getGroup() == group) {
@@ -1201,8 +1235,7 @@ public class HeadLinker
                     }
 
                     if (!(ev instanceof GapItem) && (ev != null) && (ev.line != null)) {
-                        lastY = (yDir > 0)
-                                ? Math.max(lastY, ev.line.getY2())
+                        lastY = (yDir > 0) ? Math.max(lastY, ev.line.getY2())
                                 : Math.min(lastY, ev.line.getY1());
                     }
                 }
@@ -1281,19 +1314,6 @@ public class HeadLinker
             }
 
             //-------//
-            // cName //
-            //-------//
-            /**
-             * Report corner name (TR, BL, TL or BR).
-             *
-             * @return corner name
-             */
-            public final String cName ()
-            {
-                return "" + vSide.name().charAt(0) + hSide.name().charAt(0);
-            }
-
-            //-------//
             // getId //
             //-------//
             /**
@@ -1305,9 +1325,7 @@ public class HeadLinker
             public String getId ()
             {
                 final StringBuilder sb = new StringBuilder();
-                sb.append("head#").append(head.getId())
-                        .append("-Clnk-")
-                        .append(cName());
+                sb.append("head#").append(head.getId()).append("-Clnk-").append(cName());
 
                 return sb.toString();
             }
@@ -1360,7 +1378,9 @@ public class HeadLinker
              */
             private Point2D getOutPoint ()
             {
-                return new Point2D.Double(refPt.getX() + (xDir * params.maxHeadOutDx), refPt.getY());
+                return new Point2D.Double(
+                        refPt.getX() + (xDir * params.maxHeadOutDx),
+                        refPt.getY());
             }
 
             //-------------------//
@@ -1390,10 +1410,11 @@ public class HeadLinker
                 final double dy = params.maxHeadSeedDy;
                 final Point2D left = (xDir > 0) ? inPt : outPt;
                 final Point2D right = (xDir > 0) ? outPt : inPt;
-                final Rectangle2D rect = new Rectangle2D.Double(left.getX(),
-                                                                left.getY() - dy,
-                                                                right.getX() - left.getX(),
-                                                                2 * dy);
+                final Rectangle2D rect = new Rectangle2D.Double(
+                        left.getX(),
+                        left.getY() - dy,
+                        right.getX() - left.getX(),
+                        2 * dy);
                 head.addAttachment("seed-" + cName(), rect);
                 return new Area(rect);
             }
@@ -1446,17 +1467,12 @@ public class HeadLinker
             {
                 final double rx = refPt.getX();
                 final double height = params.stumpAreaDy;
-                final double left = (xDir > 0)
-                        ? rx - params.stumpAreaDxIn
+                final double left = (xDir > 0) ? rx - params.stumpAreaDxIn
                         : rx - params.stumpAreaDxOut;
-                final double right = (xDir > 0)
-                        ? rx + params.stumpAreaDxOut
+                final double right = (xDir > 0) ? rx + params.stumpAreaDxOut
                         : rx + params.stumpAreaDxIn;
                 final double top = (yDir > 0) ? refPt.getY() : refPt.getY() - height;
-                final Rectangle2D rect = new Rectangle2D.Double(left,
-                                                                top,
-                                                                right - left,
-                                                                height);
+                final Rectangle2D rect = new Rectangle2D.Double(left, top, right - left, height);
                 head.addAttachment("stump-" + cName(), rect);
                 return new Area(rect);
             }
@@ -1505,7 +1521,9 @@ public class HeadLinker
             private Point2D getTargetPt (Line2D limit)
             {
                 return StemsRetriever.getTargetPt(
-                        refPt, limit, system.getSheet().getSkew().getSlope());
+                        refPt,
+                        limit,
+                        system.getSheet().getSkew().getSlope());
             }
 
             //--------------------//
@@ -1569,8 +1587,7 @@ public class HeadLinker
 
                 // Beam linker at end?
                 if (targetBeam != null) {
-                    if ((head.getShape() != Shape.NOTEHEAD_VOID)
-                                || yDir != hSide.direction()) {
+                    if ((head.getShape() != Shape.NOTEHEAD_VOID) || yDir != hSide.direction()) {
                         // Include all relevant beams in beam group
                         final Point2D xp = LineUtil.intersection(targetBeam.getMedian(), theoLine);
                         final List<AbstractBeamInter> siblings = targetBeam.getLinker()
@@ -1636,8 +1653,13 @@ public class HeadLinker
                 final double ySoft = refPt.getY() + yDir * params.bestStemTailLg;
                 final Map<StemLinker, Relation> relations = new LinkedHashMap<>();
                 final Set<Glyph> glyphs = new LinkedHashSet<>();
-                final int lastIndex = expand(yHard, ySoft, stemProfile, linkProfile,
-                                             relations, glyphs);
+                final int lastIndex = expand(
+                        yHard,
+                        ySoft,
+                        stemProfile,
+                        linkProfile,
+                        relations,
+                        glyphs);
                 if (lastIndex == -1) {
                     return false;
                 }
@@ -1746,7 +1768,9 @@ public class HeadLinker
 
                 // Filter head candidates
                 final List<Inter> headCandidates = Inters.intersectedInters(
-                        retriever.getSystemHeads(), GeoOrder.BY_ABSCISSA, luArea);
+                        retriever.getSystemHeads(),
+                        GeoOrder.BY_ABSCISSA,
+                        luArea);
                 headCandidates.remove(head);
                 headCandidates.removeAll(sig.getCompetingInters(head));
                 final Rational headDuration = head.getShape().getNoteDuration();
@@ -1813,8 +1837,12 @@ public class HeadLinker
                 // In case of seeds overlap, simply keep the most contributive
                 final List<Glyph> kept = new ArrayList<>();
                 final List<Glyph> list = new ArrayList<>(set);
-                Collections.sort(list, (g1, g2) -> Integer.compare(
-                        getContrib(g2.getBounds()), getContrib(g1.getBounds())));
+                Collections.sort(
+                        list,
+                        (g1,
+                         g2) -> Integer.compare(
+                                 getContrib(g2.getBounds()),
+                                 getContrib(g1.getBounds())));
 
                 StemLoop:
                 for (Glyph seed : list) {
@@ -1849,13 +1877,16 @@ public class HeadLinker
                 }
 
                 // Look for suitable stem seed if any
-                final List<Glyph> theSeeds = new ArrayList<>(Glyphs.intersectedGlyphs(neighborSeeds,
-                                                                                      getSeedArea()));
+                final List<Glyph> theSeeds = new ArrayList<>(
+                        Glyphs.intersectedGlyphs(neighborSeeds, getSeedArea()));
                 if (theSeeds.size() > 1) {
                     // Prefer the closest to refPt
-                    Collections.sort(theSeeds, (g1, g2) -> Double.compare(
-                            g1.getCenterLine().ptSegDistSq(refPt),
-                            g2.getCenterLine().ptSegDistSq(refPt)));
+                    Collections.sort(
+                            theSeeds,
+                            (g1,
+                             g2) -> Double.compare(
+                                     g1.getCenterLine().ptSegDistSq(refPt),
+                                     g2.getCenterLine().ptSegDistSq(refPt)));
                 }
 
                 for (Glyph seed : theSeeds) {
@@ -1863,8 +1894,8 @@ public class HeadLinker
                     final double seedX = LineUtil.xAtY(seed.getCenterLine(), refPt.getY());
                     final int dx = (int) Math.round(xDir * (seedX - refPt.getX()));
 
-                    if (((dx >= 0) && (dx <= params.maxHeadOutDx))
-                                || ((dx <= 0) && (-dx <= params.maxHeadInDx))) {
+                    if (((dx >= 0) && (dx <= params.maxHeadOutDx)) || ((dx <= 0)
+                            && (-dx <= params.maxHeadInDx))) {
                         if (standsOut(seed)) {
                             return seed;
                         }
@@ -1982,8 +2013,7 @@ public class HeadLinker
             {
                 final Rectangle glyphBox = stump.getBounds();
                 final int refY = (int) Math.rint(refPt.getY());
-                final int extDy = (yDir > 0)
-                        ? glyphBox.y + glyphBox.height - 1 - refY
+                final int extDy = (yDir > 0) ? glyphBox.y + glyphBox.height - 1 - refY
                         : refY - glyphBox.y;
 
                 return extDy >= params.minHeadStumpDy;
@@ -1995,8 +2025,8 @@ public class HeadLinker
             @Override
             public String toString ()
             {
-                final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
-                        .append('{').append(getId());
+                final StringBuilder asb = new StringBuilder(getClass().getSimpleName()).append('{')
+                        .append(getId());
 
                 if (stump != null) {
                     asb.append(' ').append(stump);

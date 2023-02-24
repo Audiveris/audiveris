@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -89,60 +89,14 @@ public abstract class AdvancedTopics
 
     private static final ResourceMap resource = context.getResourceMap(AdvancedTopics.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //-------//
-    // Topic //
-    //-------//
-    /**
-     * All advanced topics.
-     */
-    public static enum Topic
-    {
-        SAMPLES(constants.useSamples),
-        ANNOTATIONS(constants.useAnnotations),
-        PLOTS(constants.usePlots),
-        SPECIFIC_VIEWS(constants.useSpecificViews),
-        SPECIFIC_ITEMS(constants.useSpecificItems),
-        DEBUG(constants.useDebug);
-
-        /** Underlying constant. */
-        private final Constant.Boolean constant;
-
-        Topic (Constant.Boolean constant)
-        {
-            this.constant = constant;
-        }
-
-        public String getDescription ()
-        {
-            return constant.getDescription();
-        }
-
-        public boolean isSet ()
-        {
-            return constant.isSet();
-        }
-
-        public void set (boolean val)
-        {
-            constant.setValue(val);
-        }
-    }
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private AdvancedTopics ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // show //
-    //------//
-    public static void show ()
-    {
-        OMR.gui.displayMessage(getMessage(), resource.getString("AdvancedTopics.title"));
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------//
     // getMessage //
@@ -175,7 +129,16 @@ public abstract class AdvancedTopics
         return panel;
     }
 
+    //------//
+    // show //
+    //------//
+    public static void show ()
+    {
+        OMR.gui.displayMessage(getMessage(), resource.getString("AdvancedTopics.title"));
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // AllTopicsPane //
     //---------------//
@@ -340,6 +303,51 @@ public abstract class AdvancedTopics
         }
     }
 
+    //------------//
+    // OutputPane //
+    //------------//
+    /**
+     * Handling of output switch.
+     */
+    private static abstract class OutputPane
+            extends Panel
+            implements ActionListener
+    {
+
+        final JCheckBox box;
+
+        final JLabel name;
+
+        final JLabel desc;
+
+        OutputPane ()
+        {
+            box = new JCheckBox();
+            box.addActionListener(this);
+
+            final String className = getClass().getSimpleName();
+            name = new JLabel(resource.getString(className + ".text"));
+            desc = new JLabel(resource.getString(className + ".desc"));
+            name.setToolTipText(resource.getString(className + ".toolTipText"));
+
+            // Layout
+            PanelBuilder builder = new PanelBuilder(layout3, this);
+            CellConstraints cst = new CellConstraints();
+            builder.add(box, cst.xy(1, 1));
+            builder.add(name, cst.xy(3, 1));
+            builder.add(desc, cst.xy(5, 1));
+        }
+
+        @Override
+        public void setEnabled (boolean enabled)
+        {
+            super.setEnabled(enabled);
+            box.setEnabled(enabled);
+            name.setEnabled(enabled);
+            desc.setEnabled(enabled);
+        }
+    }
+
     //-------------//
     // OutputsPane //
     //-------------//
@@ -470,11 +478,12 @@ public abstract class AdvancedTopics
             adjustLabelFont(ratio);
         }
 
-        @Override
-        public void stateChanged (ChangeEvent e)
+        private void adjustLabelFont (double ratio)
         {
-            final double ratio = ratioOf(slider.getValue());
-            adjustLabelFont(ratio);
+            label.setFont(label.getFont().deriveFont((float) ratio * defaultSize));
+
+            final int percent = (int) Math.rint(ratio * 100);
+            label.setText(sliderText + " " + percent + "%");
         }
 
         private double ratioOf (int tick)
@@ -482,17 +491,107 @@ public abstract class AdvancedTopics
             return min + ((tick * (max - min)) / 100);
         }
 
+        @Override
+        public void stateChanged (ChangeEvent e)
+        {
+            final double ratio = ratioOf(slider.getValue());
+            adjustLabelFont(ratio);
+        }
+
         private int tickOf (double ratio)
         {
             return (int) Math.rint((100 * (ratio - min)) / (max - min));
         }
+    }
 
-        private void adjustLabelFont (double ratio)
+    //--------------//
+    // SeparatePane //
+    //--------------//
+    /**
+     * Handling of separate switch.
+     */
+    private static class SeparatePane
+            extends OutputPane
+    {
+        SeparatePane ()
         {
-            label.setFont(label.getFont().deriveFont((float) ratio * defaultSize));
+            box.setSelected(BookManager.useSeparateBookFolders().isSet());
+        }
 
-            final int percent = (int) Math.rint(ratio * 100);
-            label.setText(sliderText + " " + percent + "%");
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            BookManager.useSeparateBookFolders().setValue(box.isSelected());
+        }
+    }
+
+    //-------------//
+    // SiblingPane //
+    //-------------//
+    /**
+     * Handling of sibling switch.
+     */
+    private static class SiblingPane
+            extends OutputPane
+    {
+
+        final SeparatePane separatePane;
+
+        SiblingPane (SeparatePane separatePane)
+        {
+            this.separatePane = separatePane;
+            final boolean isSet = BookManager.useInputBookFolder().isSet();
+            box.setSelected(isSet);
+            separatePane.setEnabled(!isSet);
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final boolean isSet = box.isSelected();
+            BookManager.useInputBookFolder().setValue(isSet);
+            separatePane.setEnabled(!isSet);
+        }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //-------//
+    // Topic //
+    //-------//
+    /**
+     * All advanced topics.
+     */
+    public static enum Topic
+    {
+        SAMPLES(constants.useSamples),
+        ANNOTATIONS(constants.useAnnotations),
+        PLOTS(constants.usePlots),
+        SPECIFIC_VIEWS(constants.useSpecificViews),
+        SPECIFIC_ITEMS(constants.useSpecificItems),
+        DEBUG(constants.useDebug);
+
+        /** Underlying constant. */
+        private final Constant.Boolean constant;
+
+        Topic (Constant.Boolean constant)
+        {
+            this.constant = constant;
+        }
+
+        public String getDescription ()
+        {
+            return constant.getDescription();
+        }
+
+        public boolean isSet ()
+        {
+            return constant.isSet();
+        }
+
+        public void set (boolean val)
+        {
+            constant.setValue(val);
         }
     }
 
@@ -544,101 +643,6 @@ public abstract class AdvancedTopics
         {
             JCheckBox box = (JCheckBox) e.getSource();
             topic.set(box.isSelected());
-        }
-    }
-
-    //------------//
-    // OutputPane //
-    //------------//
-    /**
-     * Handling of output switch.
-     */
-    private static abstract class OutputPane
-            extends Panel
-            implements ActionListener
-    {
-
-        final JCheckBox box;
-
-        final JLabel name;
-
-        final JLabel desc;
-
-        OutputPane ()
-        {
-            box = new JCheckBox();
-            box.addActionListener(this);
-
-            final String className = getClass().getSimpleName();
-            name = new JLabel(resource.getString(className + ".text"));
-            desc = new JLabel(resource.getString(className + ".desc"));
-            name.setToolTipText(resource.getString(className + ".toolTipText"));
-
-            // Layout
-            PanelBuilder builder = new PanelBuilder(layout3, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(box, cst.xy(1, 1));
-            builder.add(name, cst.xy(3, 1));
-            builder.add(desc, cst.xy(5, 1));
-        }
-
-        @Override
-        public void setEnabled (boolean enabled)
-        {
-            super.setEnabled(enabled);
-            box.setEnabled(enabled);
-            name.setEnabled(enabled);
-            desc.setEnabled(enabled);
-        }
-    }
-
-    //-------------//
-    // SiblingPane //
-    //-------------//
-    /**
-     * Handling of sibling switch.
-     */
-    private static class SiblingPane
-            extends OutputPane
-    {
-
-        final SeparatePane separatePane;
-
-        SiblingPane (SeparatePane separatePane)
-        {
-            this.separatePane = separatePane;
-            final boolean isSet = BookManager.useInputBookFolder().isSet();
-            box.setSelected(isSet);
-            separatePane.setEnabled(!isSet);
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final boolean isSet = box.isSelected();
-            BookManager.useInputBookFolder().setValue(isSet);
-            separatePane.setEnabled(!isSet);
-        }
-    }
-
-    //--------------//
-    // SeparatePane //
-    //--------------//
-    /**
-     * Handling of separate switch.
-     */
-    private static class SeparatePane
-            extends OutputPane
-    {
-        SeparatePane ()
-        {
-            box.setSelected(BookManager.useSeparateBookFolders().isSet());
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            BookManager.useSeparateBookFolders().setValue(box.isSelected());
         }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,13 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
+
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -41,11 +48,9 @@ import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.stem.BeamLinker.BLinker;
 import org.audiveris.omr.sheet.stem.BeamLinker.BLinker.VLinker;
 import org.audiveris.omr.sheet.stem.HeadLinker.SLinker;
 import org.audiveris.omr.sheet.stem.HeadLinker.SLinker.CLinker;
-import static org.audiveris.omr.sheet.stem.StemHalfLinker.updateStemLine;
 import org.audiveris.omr.sheet.stem.StemItem.GapItem;
 import org.audiveris.omr.sheet.stem.StemItem.LinkerItem;
 import org.audiveris.omr.sig.SIGraph;
@@ -63,13 +68,10 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +113,7 @@ public class BeamLinker
     private static final Logger logger = LoggerFactory.getLogger(BeamLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The beam being processed. */
     @Navigable(false)
     private final AbstractBeamInter beam;
@@ -156,6 +159,7 @@ public class BeamLinker
     private final StemsRetriever.Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BeamLinker</code> object and populates beam stumps.
      *
@@ -186,6 +190,7 @@ public class BeamLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // buildSideStump //
     //----------------//
@@ -209,9 +214,12 @@ public class BeamLinker
         final int xDir = hSide.direction();
         final double sideX = (xDir < 0) ? median.getX1() : median.getX2();
         final double refX = sideX - xDir * params.maxStemThickness / 2.0;
-        Collections.sort(sections, (s1, s2)
-                         -> Double.compare(Math.abs(s1.getAreaCenter().getX() - refX),
-                                           Math.abs(s2.getAreaCenter().getX() - refX)));
+        Collections.sort(
+                sections,
+                (s1,
+                 s2) -> Double.compare(
+                         Math.abs(s1.getAreaCenter().getX() - refX),
+                         Math.abs(s2.getAreaCenter().getX() - refX)));
 
         if (sections.isEmpty()) {
             return null;
@@ -370,8 +378,8 @@ public class BeamLinker
         final double slope = (median.getY2() - median.getY1()) / (median.getX2() - median.getX1());
         final double dx = params.maxBeamSeedDx;
         final int profile = Math.max(beam.getProfile(), system.getProfile());
-        final double dy = params.maxBeamSeedDyRatio
-                                  * scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
+        final double dy = params.maxBeamSeedDyRatio * scale.toPixels(
+                BeamStemRelation.getYGapMaximum(profile));
         final Path2D path = AreaUtil.horizontalParallelogramPath(
                 new Point2D.Double(median.getX1() - dx, median.getY1() - slope * dx),
                 new Point2D.Double(median.getX2() + dx, median.getY2() + slope * dx),
@@ -409,9 +417,12 @@ public class BeamLinker
         }
 
         // Sort beams top down along the vertical line
-        Collections.sort(beams, (b1, b2)
-                         -> Double.compare(LineUtil.intersection(vertical, b1.getMedian()).getY(),
-                                           LineUtil.intersection(vertical, b2.getMedian()).getY()));
+        Collections.sort(
+                beams,
+                (b1,
+                 b2) -> Double.compare(
+                         LineUtil.intersection(vertical, b1.getMedian()).getY(),
+                         LineUtil.intersection(vertical, b2.getMedian()).getY()));
         return beams;
     }
 
@@ -429,8 +440,10 @@ public class BeamLinker
         final double xSide = (xDir < 0) ? median.getX1() : median.getX2();
         final double width = params.maxStemThickness;
         final Point2D innerPt = LineUtil.intersectionAtX(median, xSide - xDir * width);
-        final Path2D path = (xDir < 0)
-                ? AreaUtil.horizontalParallelogramPath(median.getP1(), innerPt, beam.getHeight())
+        final Path2D path = (xDir < 0) ? AreaUtil.horizontalParallelogramPath(
+                median.getP1(),
+                innerPt,
+                beam.getHeight())
                 : AreaUtil.horizontalParallelogramPath(innerPt, median.getP2(), beam.getHeight());
         final String tag = "stump-" + ((xDir > 0) ? "R" : "L");
         beam.addAttachment(tag, path);
@@ -461,8 +474,7 @@ public class BeamLinker
         // Beware: we can have beam and beam hook from the same glyph, at end of group
         // Pure list extrema are not reliable, hence we check underlying glyph
         final Glyph glyph = beam.getGlyph();
-        if ((beam != b1) && (beam != b2)
-                    && (glyph != b1.getGlyph()) && (glyph != b2.getGlyph())) {
+        if ((beam != b1) && (beam != b2) && (glyph != b1.getGlyph()) && (glyph != b2.getGlyph())) {
             return null; // beam is located inside beam group
         }
 
@@ -492,8 +504,7 @@ public class BeamLinker
         for (BLinker bLinker : allBLinkers) {
             if (!bLinker.isAnchor) {
                 // Maximum possible stemProfile
-                final int stemProfile = (bLinker.hSide != null)
-                        ? Profiles.BEAM_SIDE
+                final int stemProfile = (bLinker.hSide != null) ? Profiles.BEAM_SIDE
                         : Profiles.BEAM_SEED;
 
                 for (VLinker vLinker : bLinker.vLinkers.values()) {
@@ -532,8 +543,7 @@ public class BeamLinker
             if (bLinker.isLinked()) {
                 linkedSides.add(hSide);
             } else {
-                final int stemProfile = (beam.isHook() || (oppoHook != null))
-                        ? linkProfile
+                final int stemProfile = (beam.isHook() || (oppoHook != null)) ? linkProfile
                         : Profiles.BEAM_SIDE;
                 final boolean ok = bLinker.link(stemProfile, linkProfile);
 
@@ -631,8 +641,7 @@ public class BeamLinker
      */
     private void purgeSeeds (List<Glyph> seeds)
     {
-        NextSeed:
-        for (int i = 0; i < seeds.size(); i++) {
+        NextSeed: for (int i = 0; i < seeds.size(); i++) {
             final Glyph s1 = seeds.get(i);
             final Line2D l1 = s1.getCenterLine();
             final Point2D p1 = LineUtil.intersection(l1, median);
@@ -686,11 +695,14 @@ public class BeamLinker
             logger.info("VIP {} retrieveStumps", this);
         }
 
-        final List<Glyph> list = new ArrayList<>(Glyphs.intersectedGlyphs(neighborSeeds,
-                                                                          getSeedArea()));
-        Collections.sort(list, (g1, g2) -> Double.compare(
-                LineUtil.intersection(g1.getCenterLine(), median).getX(),
-                LineUtil.intersection(g2.getCenterLine(), median).getX()));
+        final List<Glyph> list = new ArrayList<>(
+                Glyphs.intersectedGlyphs(neighborSeeds, getSeedArea()));
+        Collections.sort(
+                list,
+                (g1,
+                 g2) -> Double.compare(
+                         LineUtil.intersection(g1.getCenterLine(), median).getX(),
+                         LineUtil.intersection(g2.getCenterLine(), median).getX()));
 
         // Perhaps some seeds need to be merged or purged
         purgeSeeds(list);
@@ -737,11 +749,12 @@ public class BeamLinker
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("{beam#").append(beam.getId()).append('}').toString();
+        return new StringBuilder(getClass().getSimpleName()).append("{beam#").append(beam.getId())
+                .append('}').toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // BLinker //
     //---------//
@@ -846,10 +859,8 @@ public class BeamLinker
         public String getId ()
         {
             final StringBuilder sb = new StringBuilder();
-            sb.append("beam#").append(beam.getId())
-                    .append("-Blnk-")
-                    .append(hSide != null ? hSide.name().charAt(0) : 'C')
-                    .append('-').append(id);
+            sb.append("beam#").append(beam.getId()).append("-Blnk-").append(
+                    hSide != null ? hSide.name().charAt(0) : 'C').append('-').append(id);
 
             return sb.toString();
         }
@@ -960,8 +971,8 @@ public class BeamLinker
         @Override
         public String toString ()
         {
-            final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
-                    .append('{').append(getId());
+            final StringBuilder asb = new StringBuilder(getClass().getSimpleName()).append('{')
+                    .append(getId());
 
             if (isAnchor) {
                 asb.append(" ANCHOR");
@@ -1094,8 +1105,7 @@ public class BeamLinker
 
                     for (Staff staff : staves) {
                         final Rectangle partBox = staff.getPart().getAreaBounds();
-                        yLimit = (yDir > 0)
-                                ? Math.max(yLimit, partBox.y + partBox.height - 1)
+                        yLimit = (yDir > 0) ? Math.max(yLimit, partBox.y + partBox.height - 1)
                                 : Math.min(yLimit, partBox.y);
                     }
                 } else {
@@ -1170,7 +1180,7 @@ public class BeamLinker
                             return sb.indexOf(stoppingHeadItem);
                         }
                     } else if (ev instanceof LinkerItem
-                                       && ((LinkerItem) ev).linker instanceof CLinker) {
+                            && ((LinkerItem) ev).linker instanceof CLinker) {
                         // Head encountered
                         final CLinker cl = (CLinker) ((LinkerItem) ev).linker;
                         final HeadInter clHead = cl.getHead();
@@ -1182,16 +1192,18 @@ public class BeamLinker
 
                             if (gap != null) {
                                 final double y = cl.getReferencePoint().getY();
-                                final double dy = (yDir > 0)
-                                        ? y - gap.line.getY2()
+                                final double dy = (yDir > 0) ? y - gap.line.getY2()
                                         : gap.line.getY1() - y;
                                 if (dy < params.minLinkerLength) {
                                     // We include this coming head only if not tied on other vSide
                                     final CLinker clOpp = clHead.getLinker().getCornerLinker(
-                                            cl.getSLinker().getHorizontalSide().opposite(), vSide);
+                                            cl.getSLinker().getHorizontalSide().opposite(),
+                                            vSide);
                                     if (clOpp.hasConcreteStart(linkProfile)) {
-                                        logger.debug("{} separated from head#{}",
-                                                     this, clHead.getId());
+                                        logger.debug(
+                                                "{} separated from head#{}",
+                                                this,
+                                                clHead.getId());
                                         glyphs.clear();
                                         glyphs.addAll(stoppingGlyphs);
                                         return sb.indexOf(stoppingHeadItem);
@@ -1211,8 +1223,8 @@ public class BeamLinker
 
                         // Could this head be a stopping head?
                         if ((hsRel.getHeadSide() == stoppingHeadSide) && !glyphs.isEmpty()) {
-                            final Glyph stemGlyph = (glyphs.size() > 1)
-                                    ? GlyphFactory.buildGlyph(glyphs) : glyphs.iterator().next();
+                            final Glyph stemGlyph = (glyphs.size() > 1) ? GlyphFactory.buildGlyph(
+                                    glyphs) : glyphs.iterator().next();
                             final Line2D line = stemGlyph.getCenterLine();
                             final StemPortion sp = hsRel.getStemPortion(clHead, line, scale);
                             final boolean isEnd = (sp == ((yDir > 0) ? STEM_BOTTOM : STEM_TOP));
@@ -1280,13 +1292,14 @@ public class BeamLinker
                 }
 
                 // Last beam border before heads
-                final Line2D lastBorder = (yDir > 0)
-                        ? siblings.get(siblings.size() - 1).getBorder(BOTTOM)
-                        : siblings.get(0).getBorder(TOP);
+                final Line2D lastBorder = (yDir > 0) ? siblings.get(siblings.size() - 1).getBorder(
+                        BOTTOM) : siblings.get(0).getBorder(TOP);
                 final double yLastBorder = LineUtil.yAtX(lastBorder, refPt.getX());
 
                 final List<Inter> headCandidates = Inters.intersectedInters(
-                        retriever.getSystemHeads(), GeoOrder.BY_ABSCISSA, luArea);
+                        retriever.getSystemHeads(),
+                        GeoOrder.BY_ABSCISSA,
+                        luArea);
 
                 for (AbstractBeamInter b : siblings) {
                     headCandidates.removeAll(beam.getSig().getCompetingInters(b));
@@ -1317,8 +1330,8 @@ public class BeamLinker
                         final CLinker cLinker = sLinker.getCornerLinker(vSide.opposite());
                         if (luArea.contains(cLinker.getReferencePoint())) {
                             // For void shapes, check head hSide
-                            if (!ShapeSet.HalfHeads.contains(headShape)
-                                        || (cLinker.getHorizontalSide() == imposedVoidHeadHoriSide)) {
+                            if (!ShapeSet.HalfHeads.contains(headShape) || (cLinker
+                                    .getHorizontalSide() == imposedVoidHeadHoriSide)) {
                                 // TODO: Check possible relation between head and stem/theo line?
                                 cLinkers.add(cLinker);
                             }
@@ -1350,8 +1363,9 @@ public class BeamLinker
              */
             private Line2D getCloserLimit ()
             {
-                final List<Inter> aliens = retriever
-                        .getNeighboringInters(retriever.getSystemBeams(), beamBox);
+                final List<Inter> aliens = retriever.getNeighboringInters(
+                        retriever.getSystemBeams(),
+                        beamBox);
                 aliens.removeAll(beam.getGroup().getMembers());
 
                 // Check concrete beam (no hook) intersection with theoLine
@@ -1408,11 +1422,10 @@ public class BeamLinker
             public String getId ()
             {
                 final StringBuilder sb = new StringBuilder();
-                sb.append("beam#").append(beam.getId())
-                        .append("-Vlnk-")
-                        .append((vSide != null) ? vSide.name().charAt(0) : "")
-                        .append((hSide != null) ? hSide.name().charAt(0) : 'C')
-                        .append('-').append(id);
+                sb.append("beam#").append(beam.getId()).append("-Vlnk-").append(
+                        (vSide != null) ? vSide.name().charAt(0) : "").append(
+                                (hSide != null) ? hSide.name().charAt(0) : 'C').append('-').append(
+                                        id);
 
                 return sb.toString();
             }
@@ -1594,7 +1607,11 @@ public class BeamLinker
 
                 // Link between starting beam and stem?
                 final Link bsLink = BeamStemRelation.checkLink(
-                        beam, stem, vSide.opposite(), scale, stemProfile);
+                        beam,
+                        stem,
+                        vSide.opposite(),
+                        scale,
+                        stemProfile);
                 if (bsLink == null) {
                     if (beam.isVip()) {
                         logger.info(" VIP {} no beam link", this);
@@ -1665,8 +1682,7 @@ public class BeamLinker
 
                     if (sig.getRelation(b, stem, BeamStemRelation.class) == null) {
                         final BeamStemRelation r = new BeamStemRelation();
-                        final Point2D crossPt = LineUtil.intersection(stemMedian,
-                                                                      b.getMedian());
+                        final Point2D crossPt = LineUtil.intersection(stemMedian, b.getMedian());
 
                         // Check whether sibling b is significantly shorter than base beam
                         final double bLength = b.getMedian().getX2() - b.getMedian().getX1();
@@ -1680,13 +1696,14 @@ public class BeamLinker
                             }
                         }
 
-                        r.setExtensionPoint(new Point2D.Double(
-                                crossPt.getX(),
-                                crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
+                        r.setExtensionPoint(
+                                new Point2D.Double(
+                                        crossPt.getX(),
+                                        crossPt.getY() - (yDir * (b.getHeight() / 2.0))));
 
                         // Portion depends on x location of stem WRT beam
-                        r.setBeamPortion(BeamStemRelation.computeBeamPortion(
-                                b, crossPt.getX(), scale));
+                        r.setBeamPortion(
+                                BeamStemRelation.computeBeamPortion(b, crossPt.getX(), scale));
 
                         r.setGrade(relGrade);
                         sig.addEdge(b, stem, r);
@@ -1723,8 +1740,8 @@ public class BeamLinker
             @Override
             public String toString ()
             {
-                final StringBuilder asb = new StringBuilder(getClass().getSimpleName())
-                        .append('{').append(getId());
+                final StringBuilder asb = new StringBuilder(getClass().getSimpleName()).append('{')
+                        .append(getId());
 
                 if (isAnchor) {
                     asb.append(" ANCHOR");

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,7 +27,8 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -48,10 +49,11 @@ public class EndingBarRelation
 
     private static final Constants constants = new Constants();
 
-    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
-                                                         constants.yWeight.getValue()};
+    private static final double[] WEIGHTS = new double[]
+    { constants.xWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * This attribute indicates which side of the ending sign is used.
      */
@@ -59,6 +61,14 @@ public class EndingBarRelation
     private HorizontalSide endingSide;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB and user allocation.
+     */
+    public EndingBarRelation ()
+    {
+    }
+
     /**
      * Creates a new EndingBarRelation object.
      *
@@ -69,21 +79,7 @@ public class EndingBarRelation
         this.endingSide = endingSide;
     }
 
-    /**
-     * No-arg constructor meant for JAXB and user allocation.
-     */
-    public EndingBarRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getXGapMaximum //
-    //----------------//
-    public static Scale.Fraction getXGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
-    }
 
     //-------//
     // added //
@@ -113,51 +109,6 @@ public class EndingBarRelation
     public HorizontalSide getEndingSide ()
     {
         return endingSide;
-    }
-
-    //--------------//
-    // getXInGapMax //
-    //--------------//
-    @Override
-    public Scale.Fraction getXInGapMax (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
-    }
-
-    //---------------//
-    // getXOutGapMax //
-    //---------------//
-    @Override
-    public Scale.Fraction getXOutGapMax (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
-    }
-
-    //------------//
-    // getYGapMax //
-    //------------//
-    @Override
-    public Scale.Fraction getYGapMax (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return false;
     }
 
     //--------------//
@@ -198,6 +149,33 @@ public class EndingBarRelation
         return 0.0;
     }
 
+    //--------------//
+    // getXInGapMax //
+    //--------------//
+    @Override
+    public Scale.Fraction getXInGapMax (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
+    }
+
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
+    @Override
+    public Scale.Fraction getXOutGapMax (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
+    }
+
+    //------------//
+    // getYGapMax //
+    //------------//
+    @Override
+    public Scale.Fraction getYGapMax (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -209,6 +187,24 @@ public class EndingBarRelation
         sb.append(endingSide).append("@(").append(String.format("%.2f", dx)).append(")");
 
         return sb.toString();
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
     }
 
     //---------//
@@ -224,7 +220,16 @@ public class EndingBarRelation
         }
     }
 
+    //----------------//
+    // getXGapMaximum //
+    //----------------//
+    public static Scale.Fraction getXGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

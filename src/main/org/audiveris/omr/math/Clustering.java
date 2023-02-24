@@ -31,12 +31,14 @@ public class Clustering
     private static final int MAX_ITER = 10;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     // Not meant to be instantiated.
     private Clustering ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Compute the mixture coefficients using Expectation-Maximization algorithm.
      *
@@ -111,32 +113,8 @@ public class Clustering
         return pi;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    /**
-     * Model description.
-     */
-    public static interface Law
-    {
-
-        /**
-         * improve law parameters
-         *
-         * @param N  number of samples
-         * @param x  samples
-         * @param tk probability of each sample
-         */
-        void improveParameters (int N,
-                                double[] x,
-                                double[] tk);
-
-        /**
-         * @param x some value
-         * @return the probability of the value x
-         */
-        double proba (double x);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     /**
      * Gaussian implementation of Law.
      */
@@ -219,5 +197,31 @@ public class Clustering
         {
             return String.format("Gaussian (mean=%.3f, sigma=%.3f)", mean, sigma);
         }
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+
+    /**
+     * Model description.
+     */
+    public static interface Law
+    {
+
+        /**
+         * improve law parameters
+         *
+         * @param N  number of samples
+         * @param x  samples
+         * @param tk probability of each sample
+         */
+        void improveParameters (int N,
+                                double[] x,
+                                double[] tk);
+
+        /**
+         * @param x some value
+         * @return the probability of the value x
+         */
+        double proba (double x);
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,11 +49,16 @@ public class SlurHeadLink
     /**
      * To sort by increasing euclidean distance.
      */
-    public static final Comparator<SlurHeadLink> byEuclidean = (SlurHeadLink o1, SlurHeadLink o2)
-            -> Double.compare(((SlurHeadRelation) o1.relation).getEuclidean(),
-                              ((SlurHeadRelation) o2.relation).getEuclidean());
+    public static final Comparator<SlurHeadLink> byEuclidean = (o1,
+                                                                o2) ->
+    {
+        return Double.compare(
+                ((SlurHeadRelation) o1.relation).getEuclidean(),
+                ((SlurHeadRelation) o2.relation).getEuclidean());
+    };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SlurHeadLink</code> object.
      *
@@ -67,6 +72,7 @@ public class SlurHeadLink
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the HeadChord which contains the linked head.
      *
@@ -76,6 +82,8 @@ public class SlurHeadLink
     {
         return ((HeadInter) partner).getChord();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Build proper SlurHeadRelation object.
@@ -95,8 +103,11 @@ public class SlurHeadLink
 
         // Define middle vertical line of chord box
         Rectangle box = chord.getBounds();
-        Line2D vert = new Line2D.Double(box.x + (box.width / 2), box.y,
-                                        box.x + (box.width / 2), box.y + box.height);
+        Line2D vert = new Line2D.Double(
+                box.x + (box.width / 2),
+                box.y,
+                box.x + (box.width / 2),
+                box.y + box.height);
         rel.setEuclidean(vert.ptSegDist(slurEnd));
 
         return new SlurHeadLink(head, rel);

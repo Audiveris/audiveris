@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -75,21 +75,8 @@ public abstract class TimeBuilder
     /** Possible shapes for top or bottom half of time signatures. */
     protected static final EnumSet<Shape> halfShapes = EnumSet.copyOf(ShapeSet.PartialTimes);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * The different parts of a time signature.
-     */
-    public static enum TimeKind
-    {
-        /** Whole signature (common or cut or combo). */
-        WHOLE,
-        /** Upper half (numerator number). */
-        NUM,
-        /** Lower half (denominator number). */
-        DEN;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Dedicated staff to analyze. */
     protected final Staff staff;
 
@@ -122,6 +109,7 @@ public abstract class TimeBuilder
     protected AbstractTimeInter timeInter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TimeBuilder</code> object.
      *
@@ -142,33 +130,12 @@ public abstract class TimeBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * This is called when we discover that a candidate is wrong,
      * so that all related data inserted in sig is removed.
      */
     public abstract void cleanup ();
-
-    //--------------//
-    // getTimeInter //
-    //--------------//
-    /**
-     * Report the time sig instance, if any, for the staff.
-     *
-     * @return the timeInter or null
-     */
-    public AbstractTimeInter getTimeInter ()
-    {
-        return timeInter;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return getClass().getSimpleName() + "#" + staff.getId();
-    }
 
     //---------------//
     // createTimeSig //
@@ -254,14 +221,6 @@ public abstract class TimeBuilder
         }
     }
 
-    /**
-     * Retrieve all acceptable candidates (whole or half) for this staff.
-     * <p>
-     * All candidates are stored as Inter instances in system sig, and in dedicated builder lists
-     * (wholes, nums or dens).
-     */
-    protected abstract void findCandidates ();
-
     //------------------//
     // filterCandidates //
     //------------------//
@@ -322,7 +281,101 @@ public abstract class TimeBuilder
         return !wholes.isEmpty() || !nums.isEmpty();
     }
 
+    /**
+     * Retrieve all acceptable candidates (whole or half) for this staff.
+     * <p>
+     * All candidates are stored as Inter instances in system sig, and in dedicated builder lists
+     * (wholes, nums or dens).
+     */
+    protected abstract void findCandidates ();
+
+    //--------------//
+    // getTimeInter //
+    //--------------//
+    /**
+     * Report the time sig instance, if any, for the staff.
+     *
+     * @return the timeInter or null
+     */
+    public AbstractTimeInter getTimeInter ()
+    {
+        return timeInter;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getClass().getSimpleName() + "#" + staff.getId();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer maxEvalRank = new Constant.Integer(
+                "none",
+                3,
+                "Maximum acceptable rank in time evaluation");
+
+        private final Scale.Fraction roiWidth = new Scale.Fraction(
+                4.0,
+                "Width of region of interest for time signature");
+
+        private final Scale.Fraction yMargin = new Scale.Fraction(
+                0.10,
+                "Vertical white margin on raw rectangle");
+
+        private final Scale.Fraction minTimeWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a time signature");
+
+        private final Scale.Fraction maxTimeWidth = new Scale.Fraction(
+                2.0,
+                "Maximum width for a time signature");
+
+        private final Scale.Fraction maxHalvesDx = new Scale.Fraction(
+                1,
+                "Maximum abscissa shift between top & bottom halves of a time signature");
+
+        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight for a glyph part");
+
+        private final Scale.Fraction maxPartGap = new Scale.Fraction(
+                1.0,
+                "Maximum distance between two glyph parts of a single time symbol");
+
+        private final Scale.AreaFraction minWholeTimeWeight = new Scale.AreaFraction(
+                1.0,
+                "Minimum weight for a whole time signature");
+
+        private final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(
+                0.75,
+                "Minimum weight for a half time signature");
+
+        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
+                0.4,
+                "Maximum cumul value in space");
+
+        // Beware: A too small value might miss the whole time-sig
+        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
+                2.5,
+                "Maximum initial space before time signature");
+
+        // Beware: A too small value might miss some time-sig items
+        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
+                0.5,
+                "Maximum inner space within time signature");
+    }
+
     //------------//
     // Parameters //
     //------------//
@@ -398,66 +451,18 @@ public abstract class TimeBuilder
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * The different parts of a time signature.
+     */
+    public static enum TimeKind
     {
-
-        private final Constant.Integer maxEvalRank = new Constant.Integer(
-                "none",
-                3,
-                "Maximum acceptable rank in time evaluation");
-
-        private final Scale.Fraction roiWidth = new Scale.Fraction(
-                4.0,
-                "Width of region of interest for time signature");
-
-        private final Scale.Fraction yMargin = new Scale.Fraction(
-                0.10,
-                "Vertical white margin on raw rectangle");
-
-        private final Scale.Fraction minTimeWidth = new Scale.Fraction(
-                1.0,
-                "Minimum width for a time signature");
-
-        private final Scale.Fraction maxTimeWidth = new Scale.Fraction(
-                2.0,
-                "Maximum width for a time signature");
-
-        private final Scale.Fraction maxHalvesDx = new Scale.Fraction(
-                1,
-                "Maximum abscissa shift between top & bottom halves of a time signature");
-
-        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
-                0.01,
-                "Minimum weight for a glyph part");
-
-        private final Scale.Fraction maxPartGap = new Scale.Fraction(
-                1.0,
-                "Maximum distance between two glyph parts of a single time symbol");
-
-        private final Scale.AreaFraction minWholeTimeWeight = new Scale.AreaFraction(
-                1.0,
-                "Minimum weight for a whole time signature");
-
-        private final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(
-                0.75,
-                "Minimum weight for a half time signature");
-
-        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
-                0.4,
-                "Maximum cumul value in space");
-
-        // Beware: A too small value might miss the whole time-sig
-        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
-                2.5,
-                "Maximum initial space before time signature");
-
-        // Beware: A too small value might miss some time-sig items
-        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
-                0.5,
-                "Maximum inner space within time signature");
+        /** Whole signature (common or cut or combo). */
+        WHOLE,
+        /** Upper half (numerator number). */
+        NUM,
+        /** Lower half (denominator number). */
+        DEN;
     }
 }

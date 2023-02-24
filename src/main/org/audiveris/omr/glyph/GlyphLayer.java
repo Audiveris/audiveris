@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,9 @@ public enum GlyphLayer
     /** Glyph instances unmarshalled from XML file. */
     XML("X", "Sample glyphs unmarshalled from XML file");
 
+    private static final GlyphLayer[] concreteValues = new GlyphLayer[]
+    { DEFAULT, LEDGER, SPOT };
+
     /** Simple key to refer to the layer. */
     public final String key;
 
@@ -57,6 +60,8 @@ public enum GlyphLayer
         this.desc = desc;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // concreteValues //
     //----------------//
@@ -69,6 +74,4 @@ public enum GlyphLayer
     {
         return concreteValues;
     }
-
-    private static final GlyphLayer[] concreteValues = new GlyphLayer[]{DEFAULT, LEDGER, SPOT};
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,16 +60,19 @@ public class Alignment
     public static final Alignment BASELINE_LEFT = new Alignment(Vertical.BASELINE, Horizontal.LEFT);
 
     /** Pre-defined alignment on baseline center of symbol (for text) */
-    public static final Alignment BASELINE_CENTER = new Alignment(Vertical.BASELINE,
-                                                                  Horizontal.CENTER);
+    public static final Alignment BASELINE_CENTER = new Alignment(
+            Vertical.BASELINE,
+            Horizontal.CENTER);
 
     /** Pre-defined alignment on baseline right of symbol (for text) */
-    public static final Alignment BASELINE_RIGHT
-            = new Alignment(Vertical.BASELINE, Horizontal.RIGHT);
+    public static final Alignment BASELINE_RIGHT = new Alignment(
+            Vertical.BASELINE,
+            Horizontal.RIGHT);
 
     /** Pre-defined alignment on baseline origin of symbol (for text) */
-    public static final Alignment BASELINE_XORIGIN = new Alignment(Vertical.BASELINE,
-                                                                   Horizontal.XORIGIN);
+    public static final Alignment BASELINE_XORIGIN = new Alignment(
+            Vertical.BASELINE,
+            Horizontal.XORIGIN);
 
     /** Pre-defined alignment on bottom left of symbol */
     public static final Alignment BOTTOM_LEFT = new Alignment(Vertical.BOTTOM, Horizontal.LEFT);
@@ -80,144 +83,8 @@ public class Alignment
     /** Pre-defined alignment on bottom right of symbol */
     public static final Alignment BOTTOM_RIGHT = new Alignment(Vertical.BOTTOM, Horizontal.RIGHT);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //----------//
-    // Vertical //
-    //----------//
-    /**
-     * The reference y line for this symbol.
-     */
-    public static enum Vertical
-    {
-        TOP,
-        MIDDLE,
-        BOTTOM,
-        BASELINE;
-
-        //-----------//
-        // dyToPoint //
-        //-----------//
-        public int dyToPoint (Vertical that,
-                              Rectangle rect)
-        {
-            if (this == BASELINE) {
-                if (that == BASELINE) {
-                    return 0;
-                } else {
-                    return rect.y + (((that.ordinal() - TOP.ordinal()) * rect.height) / 2);
-                }
-            } else if (that == BASELINE) {
-                return -rect.y + (((TOP.ordinal() - this.ordinal()) * rect.height) / 2);
-            } else {
-                return ((that.ordinal() - this.ordinal()) * rect.height) / 2;
-            }
-        }
-
-        //-----------//
-        // dyToPoint //
-        //-----------//
-        public double dyToPoint (Vertical that,
-                                 Rectangle2D rect)
-        {
-            if (this == BASELINE) {
-                if (that == BASELINE) {
-                    return 0;
-                } else {
-                    return rect.getY() + (((that.ordinal() - TOP.ordinal()) * rect.getHeight()) / 2);
-                }
-            } else if (that == BASELINE) {
-                return -rect.getY() + (((TOP.ordinal() - this.ordinal()) * rect.getHeight()) / 2);
-            } else {
-                return ((that.ordinal() - this.ordinal()) * rect.getHeight()) / 2;
-            }
-        }
-
-        //----------------//
-        // dyToTextOrigin //
-        //----------------//
-        public int dyToTextOrigin (Rectangle rect)
-        {
-            return dyToPoint(BASELINE, rect);
-        }
-
-        //----------------//
-        // dyToTextOrigin //
-        //----------------//
-        public double dyToTextOrigin (Rectangle2D rect)
-        {
-            return dyToPoint(BASELINE, rect);
-        }
-    }
-
-    //------------//
-    // Horizontal //
-    //------------//
-    /**
-     * The reference x line for this symbol.
-     */
-    public static enum Horizontal
-    {
-        LEFT,
-        CENTER,
-        RIGHT,
-        XORIGIN;
-
-        //-----------//
-        // dxToPoint //
-        //-----------//
-        public int dxToPoint (Horizontal that,
-                              Rectangle rect)
-        {
-            if (this == XORIGIN) {
-                if (that == XORIGIN) {
-                    return 0;
-                } else {
-                    return rect.x + (((that.ordinal() - LEFT.ordinal()) * rect.width) / 2);
-                }
-            } else if (that == XORIGIN) {
-                return -rect.x + (((LEFT.ordinal() - this.ordinal()) * rect.width) / 2);
-            } else {
-                return ((that.ordinal() - this.ordinal()) * rect.width) / 2;
-            }
-        }
-
-        //-----------//
-        // dxToPoint //
-        //-----------//
-        public double dxToPoint (Horizontal that,
-                                 Rectangle2D rect)
-        {
-            if (this == XORIGIN) {
-                if (that == XORIGIN) {
-                    return 0;
-                } else {
-                    return rect.getX() + (((that.ordinal() - LEFT.ordinal()) * rect.getWidth()) / 2);
-                }
-            } else if (that == XORIGIN) {
-                return -rect.getX() + (((LEFT.ordinal() - this.ordinal()) * rect.getWidth()) / 2);
-            } else {
-                return ((that.ordinal() - this.ordinal()) * rect.getWidth()) / 2;
-            }
-        }
-
-        //----------------//
-        // dxToTextOrigin //
-        //----------------//
-        public int dxToTextOrigin (Rectangle rect)
-        {
-            return dxToPoint(XORIGIN, rect);
-        }
-
-        //----------------//
-        // dxToTextOrigin //
-        //----------------//
-        public double dxToTextOrigin (Rectangle2D rect)
-        {
-            return dxToPoint(XORIGIN, rect);
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The vertical alignment */
     public final Vertical vertical;
 
@@ -225,6 +92,7 @@ public class Alignment
     public final Horizontal horizontal;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an Alignment instance
      *
@@ -243,6 +111,7 @@ public class Alignment
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // equals //
     //--------//
@@ -285,8 +154,9 @@ public class Alignment
     public Point toPoint (Alignment that,
                           Rectangle rect)
     {
-        return new Point(horizontal.dxToPoint(that.horizontal, rect),
-                         vertical.dyToPoint(that.vertical, rect));
+        return new Point(
+                horizontal.dxToPoint(that.horizontal, rect),
+                vertical.dyToPoint(that.vertical, rect));
     }
 
     //---------//
@@ -303,8 +173,9 @@ public class Alignment
     public Point2D toPoint (Alignment that,
                             Rectangle2D rect)
     {
-        return new Point2D.Double(horizontal.dxToPoint(that.horizontal, rect),
-                                  vertical.dyToPoint(that.vertical, rect));
+        return new Point2D.Double(
+                horizontal.dxToPoint(that.horizontal, rect),
+                vertical.dyToPoint(that.vertical, rect));
     }
 
     //----------//
@@ -368,6 +239,146 @@ public class Alignment
             return toOrigin;
         } else {
             return new Point2D.Double(location.getX(), location.getY());
+        }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //------------//
+    // Horizontal //
+    //------------//
+    /**
+     * The reference x line for this symbol.
+     */
+    public static enum Horizontal
+    {
+        LEFT,
+        CENTER,
+        RIGHT,
+        XORIGIN;
+
+        //-----------//
+        // dxToPoint //
+        //-----------//
+        public int dxToPoint (Horizontal that,
+                              Rectangle rect)
+        {
+            if (this == XORIGIN) {
+                if (that == XORIGIN) {
+                    return 0;
+                } else {
+                    return rect.x + (((that.ordinal() - LEFT.ordinal()) * rect.width) / 2);
+                }
+            } else if (that == XORIGIN) {
+                return -rect.x + (((LEFT.ordinal() - this.ordinal()) * rect.width) / 2);
+            } else {
+                return ((that.ordinal() - this.ordinal()) * rect.width) / 2;
+            }
+        }
+
+        //-----------//
+        // dxToPoint //
+        //-----------//
+        public double dxToPoint (Horizontal that,
+                                 Rectangle2D rect)
+        {
+            if (this == XORIGIN) {
+                if (that == XORIGIN) {
+                    return 0;
+                } else {
+                    return rect.getX() + (((that.ordinal() - LEFT.ordinal()) * rect.getWidth())
+                            / 2);
+                }
+            } else if (that == XORIGIN) {
+                return -rect.getX() + (((LEFT.ordinal() - this.ordinal()) * rect.getWidth()) / 2);
+            } else {
+                return ((that.ordinal() - this.ordinal()) * rect.getWidth()) / 2;
+            }
+        }
+
+        //----------------//
+        // dxToTextOrigin //
+        //----------------//
+        public int dxToTextOrigin (Rectangle rect)
+        {
+            return dxToPoint(XORIGIN, rect);
+        }
+
+        //----------------//
+        // dxToTextOrigin //
+        //----------------//
+        public double dxToTextOrigin (Rectangle2D rect)
+        {
+            return dxToPoint(XORIGIN, rect);
+        }
+    }
+
+    //----------//
+    // Vertical //
+    //----------//
+    /**
+     * The reference y line for this symbol.
+     */
+    public static enum Vertical
+    {
+        TOP,
+        MIDDLE,
+        BOTTOM,
+        BASELINE;
+
+        //-----------//
+        // dyToPoint //
+        //-----------//
+        public int dyToPoint (Vertical that,
+                              Rectangle rect)
+        {
+            if (this == BASELINE) {
+                if (that == BASELINE) {
+                    return 0;
+                } else {
+                    return rect.y + (((that.ordinal() - TOP.ordinal()) * rect.height) / 2);
+                }
+            } else if (that == BASELINE) {
+                return -rect.y + (((TOP.ordinal() - this.ordinal()) * rect.height) / 2);
+            } else {
+                return ((that.ordinal() - this.ordinal()) * rect.height) / 2;
+            }
+        }
+
+        //-----------//
+        // dyToPoint //
+        //-----------//
+        public double dyToPoint (Vertical that,
+                                 Rectangle2D rect)
+        {
+            if (this == BASELINE) {
+                if (that == BASELINE) {
+                    return 0;
+                } else {
+                    return rect.getY() + (((that.ordinal() - TOP.ordinal()) * rect.getHeight())
+                            / 2);
+                }
+            } else if (that == BASELINE) {
+                return -rect.getY() + (((TOP.ordinal() - this.ordinal()) * rect.getHeight()) / 2);
+            } else {
+                return ((that.ordinal() - this.ordinal()) * rect.getHeight()) / 2;
+            }
+        }
+
+        //----------------//
+        // dyToTextOrigin //
+        //----------------//
+        public int dyToTextOrigin (Rectangle rect)
+        {
+            return dyToPoint(BASELINE, rect);
+        }
+
+        //----------------//
+        // dyToTextOrigin //
+        //----------------//
+        public double dyToTextOrigin (Rectangle2D rect)
+        {
+            return dyToPoint(BASELINE, rect);
         }
     }
 }

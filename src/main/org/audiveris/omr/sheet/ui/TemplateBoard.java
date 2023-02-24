@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -79,9 +79,11 @@ public class TemplateBoard
     private static final Logger logger = LoggerFactory.getLogger(TemplateBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]
+    { LocationEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -101,10 +103,7 @@ public class TemplateBoard
     private final JTextField evalField = new JTextField(6);
 
     /** Output: raw (non-boosted) grade. */
-    private final LDoubleField rawField = new LDoubleField(
-            "Raw",
-            "Inter grade",
-            "%.3f");
+    private final LDoubleField rawField = new LDoubleField("Raw", "Inter grade", "%.3f");
 
     /** Output: (boosted) grade. */
     private final LDoubleField gradeField = new LDoubleField(
@@ -122,6 +121,7 @@ public class TemplateBoard
     private Point refPoint;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TemplateBoard</code> object.
      *
@@ -162,99 +162,6 @@ public class TemplateBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        try {
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * CallBack triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating spinner
-     */
-    @Override
-    public void stateChanged (ChangeEvent e)
-    {
-        // Notify the new anchor (with current template shape)
-        final Shape shape = (Shape) shapeSpinner.getValue();
-        final Anchor anchor = (Anchor) anchorSpinner.getValue();
-        AnchoredTemplate at = null;
-
-        if (areCompatible(shape, anchor)) {
-            final Scale scale = sheet.getScale();
-            final Template template = TemplateFactory.getInstance().getCatalog(
-                    sheet.getStub().getMusicFamily(),
-                    MusicFont.getHeadPointSize(scale, scale.getInterline())).getTemplate(shape);
-            at = new AnchoredTemplate(anchor, template);
-        }
-
-        templateService.publish(
-                new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
-        tryEvaluate(refPoint, at);
-    }
-
-    //---------------------//
-    // handleLocationEvent //
-    //---------------------//
-    /**
-     * Display rectangle attributes
-     *
-     * @param locEvent the location event
-     */
-    protected void handleLocationEvent (LocationEvent locEvent)
-    {
-        AnchoredTemplate anchoredTemplate = (AnchoredTemplate) templateService.getSelection(
-                AnchoredTemplateEvent.class);
-
-        if (anchoredTemplate == null) {
-            return;
-        }
-
-        Rectangle rect = locEvent.getData();
-
-        if ((rect == null) || (rect.width != 0) || (rect.height != 0)) {
-            return;
-        }
-
-        Point pt = rect.getLocation();
-
-        if (locEvent.hint == SelectionHint.CONTEXT_INIT) {
-            // Template reference point has been changed, re-eval template at this location
-            refPoint = pt;
-            tryEvaluate(refPoint, anchoredTemplate);
-        } else if (locEvent.hint == SelectionHint.LOCATION_INIT) {
-            // User inspects location, display template key point value if any
-            if (refPoint != null) {
-                Template template = anchoredTemplate.template;
-                Anchored.Anchor anchor = anchoredTemplate.anchor;
-                Rectangle tplRect = template.getBoundsAt(refPoint.x, refPoint.y, anchor);
-                pt.translate(-tplRect.x, -tplRect.y);
-
-                for (PixelDistance pix : template.getKeyPoints()) {
-                    if ((pix.x == pt.x) && (pix.y == pt.y)) {
-                        keyPointField.setValue(pix.d / table.getNormalizer());
-
-                        return;
-                    }
-                }
-
-                keyPointField.setText("");
-            }
-        }
-    }
 
     //---------------//
     // areCompatible //
@@ -308,6 +215,100 @@ public class TemplateBoard
         builder.add(keyPointField.getField(), cst.xy(11, r));
     }
 
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent the location event
+     */
+    protected void handleLocationEvent (LocationEvent locEvent)
+    {
+        AnchoredTemplate anchoredTemplate = (AnchoredTemplate) templateService.getSelection(
+                AnchoredTemplateEvent.class);
+
+        if (anchoredTemplate == null) {
+            return;
+        }
+
+        Rectangle rect = locEvent.getData();
+
+        if ((rect == null) || (rect.width != 0) || (rect.height != 0)) {
+            return;
+        }
+
+        Point pt = rect.getLocation();
+
+        if (locEvent.hint == SelectionHint.CONTEXT_INIT) {
+            // Template reference point has been changed, re-eval template at this location
+            refPoint = pt;
+            tryEvaluate(refPoint, anchoredTemplate);
+        } else if (locEvent.hint == SelectionHint.LOCATION_INIT) {
+            // User inspects location, display template key point value if any
+            if (refPoint != null) {
+                Template template = anchoredTemplate.template;
+                Anchored.Anchor anchor = anchoredTemplate.anchor;
+                Rectangle tplRect = template.getBoundsAt(refPoint.x, refPoint.y, anchor);
+                pt.translate(-tplRect.x, -tplRect.y);
+
+                for (PixelDistance pix : template.getKeyPoints()) {
+                    if ((pix.x == pt.x) && (pix.y == pt.y)) {
+                        keyPointField.setValue(pix.d / table.getNormalizer());
+
+                        return;
+                    }
+                }
+
+                keyPointField.setText("");
+            }
+        }
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        try {
+            if (event instanceof LocationEvent) {
+                handleLocationEvent((LocationEvent) event);
+            }
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //--------------//
+    // stateChanged //
+    //--------------//
+    /**
+     * CallBack triggered by a change in one of the spinners.
+     *
+     * @param e the change event, this allows to retrieve the originating spinner
+     */
+    @Override
+    public void stateChanged (ChangeEvent e)
+    {
+        // Notify the new anchor (with current template shape)
+        final Shape shape = (Shape) shapeSpinner.getValue();
+        final Anchor anchor = (Anchor) anchorSpinner.getValue();
+        AnchoredTemplate at = null;
+
+        if (areCompatible(shape, anchor)) {
+            final Scale scale = sheet.getScale();
+            final Template template = TemplateFactory.getInstance().getCatalog(
+                    sheet.getStub().getMusicFamily(),
+                    MusicFont.getHeadPointSize(scale, scale.getInterline())).getTemplate(shape);
+            at = new AnchoredTemplate(anchor, template);
+        }
+
+        templateService.publish(
+                new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
+        tryEvaluate(refPoint, at);
+    }
+
     //-------------//
     // tryEvaluate //
     //-------------//
@@ -320,10 +321,8 @@ public class TemplateBoard
     private void tryEvaluate (Point pt,
                               AnchoredTemplate anchoredTemplate)
     {
-        if ((pt != null)
-                    && (anchoredTemplate != null)
-                    && (pt.x < table.getWidth())
-                    && (pt.y < table.getHeight())) {
+        if ((pt != null) && (anchoredTemplate != null) && (pt.x < table.getWidth()) && (pt.y < table
+                .getHeight())) {
             final Anchor anchor = anchoredTemplate.anchor;
             final Template template = anchoredTemplate.template;
 
@@ -334,9 +333,10 @@ public class TemplateBoard
             rawField.setValue(grade);
 
             final Shape shape = (Shape) shapeSpinner.getValue();
-            final double boosted = (grade == 0) ? 0 : (ShapeSet.StemLessHeads.contains(shape)
-                    ? AbstractInter.increaseGrade(grade, NoteHeadsBuilder.getStemLessBoost())
-                    : grade);
+            final double boosted = (grade == 0) ? 0
+                    : (ShapeSet.StemLessHeads.contains(shape) ? AbstractInter.increaseGrade(
+                            grade,
+                            NoteHeadsBuilder.getStemLessBoost()) : grade);
             gradeField.setValue(boosted);
         } else {
             evalField.setText("");

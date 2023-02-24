@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -79,7 +79,315 @@ public class DrumSet
     /** Context for JAXB unmarshalling. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    /**
+     * Instruments indexed by pitch position.
+     */
+    public final Map<Integer, Set<DrumInstrument>> byPitch = new TreeMap<>();
+
+    //~ Constructors -------------------------------------------------------------------------------
+
+    private DrumSet ()
+    {
+        loadAllConfigurations();
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------------//
+    // dumpResultingDrumSet //
+    //----------------------//
+    /**
+     * Print out the DrumSet that results from loading of system (and possibly user)
+     * configuration(s).
+     */
+    public void dumpResultingDrumSet ()
+    {
+        logger.info("");
+        logger.info("Resulting Drum Set:");
+
+        for (Entry<Integer, Set<DrumInstrument>> entry : byPitch.entrySet()) {
+            logger.info("  pitch-position: {}", entry.getKey());
+
+            final Set<DrumInstrument> set = entry.getValue();
+            final Map<MotifSign, DrumInstrument> map = new LinkedHashMap<>();
+
+            if (set != null && !set.isEmpty()) {
+                for (DrumInstrument inst : set) {
+                    final MotifSign ms = new MotifSign(inst.headMotif, inst.sign);
+                    final DrumInstrument existing = map.get(ms);
+                    logger.info(
+                            "    motif: {}{} sound: {} {}",
+                            String.format("%-8s", inst.headMotif),
+                            inst.sign != null ? String.format(" sign: %-17s", inst.sign) : "",
+                            inst.sound,
+                            existing != null ? "-- conflicting with " + existing : "");
+                    map.put(ms, inst);
+                }
+            }
+        }
+
+        logger.info("");
+    }
+
+    //-----------------------//
+    // loadAllConfigurations //
+    //-----------------------//
+    /**
+     * Load all drum-set files as found in system (and user?) configuration files.
+     */
+    private void loadAllConfigurations ()
+    {
+        // First load system drum-set which must exist
+        // Second load user drum-set if any
+        final URI[] uris = new URI[]
+        {
+                UriUtil.toURI(WellKnowns.RES_URI, fileName),
+                WellKnowns.CONFIG_FOLDER.resolve(fileName).toUri().normalize() };
+
+        for (int i = 0; i < uris.length; i++) {
+            final URI uri = uris[i];
+
+            try {
+                final URL url = uri.toURL();
+                try (InputStream input = url.openStream()) {
+                    logger.info("Loading drum set entries from {}", uri);
+                    loadConfiguration(input);
+                }
+            } catch (IOException ex) {
+                // Item does not exist
+                if (i == 0) {
+                    // Only the first item (system) is mandatory
+                    logger.error("Mandatory file not found {}", uri);
+                }
+            } catch (JAXBException ex) {
+                logger.warn("Error loading drum set from {}", uri, ex);
+            }
+        }
+
+        dumpResultingDrumSet();
+    }
+
+    //-------------------//
+    // loadConfiguration //
+    //------------------//
+    /**
+     * Load Drum Set configuration from the provided input stream.
+     *
+     * @param in input stream
+     * @throws JAXBException
+     */
+    private void loadConfiguration (InputStream in)
+        throws JAXBException
+    {
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(DrumSetEntries.class);
+        }
+
+        final Unmarshaller um = jaxbContext.createUnmarshaller();
+        final DrumSetEntries entries = (DrumSetEntries) um.unmarshal(in);
+
+        for (DrumSetEntry entry : entries.list) {
+            // Populate/update byPitch map
+
+            if (entry.sound == null) {
+                // This entry is a removal
+                if (entry.headMotif == null) {
+                    logger.error("For a removal, motif cannot be null ", entry);
+                    continue;
+                }
+
+                if (entry.pitchPosition == null) {
+                    logger.error("For a removal, pitch-position cannot be null ", entry);
+                    continue;
+                }
+
+                final Set<DrumInstrument> set = byPitch.get(entry.pitchPosition);
+                if (set != null) {
+                    for (Iterator<DrumInstrument> it = set.iterator(); it.hasNext();) {
+                        final DrumInstrument inst = it.next();
+
+                        if (inst.headMotif == entry.headMotif) {
+                            logger.info(
+                                    "  at pitch-position: {} removing {}",
+                                    entry.pitchPosition,
+                                    inst);
+                            it.remove();
+                        }
+                    }
+                }
+            } else {
+                // This entry is an addition
+                if (entry.pitchPosition == null) {
+                    logger.debug("  null pitch-position in {}. Entry skipped.", entry);
+                    continue;
+                }
+
+                if (entry.headMotif == null) {
+                    logger.warn(
+                            "  at pitch-position: {} null motif {}",
+                            entry.pitchPosition,
+                            entry);
+                    continue;
+                }
+
+                Set<DrumInstrument> set = byPitch.get(entry.pitchPosition);
+                if (set == null) {
+                    byPitch.put(entry.pitchPosition, set = new LinkedHashSet<>());
+                }
+
+                final DrumInstrument inst = new DrumInstrument(
+                        entry.headMotif,
+                        entry.sign,
+                        entry.sound);
+                if (set.add(inst)) {
+                    logger.debug("  at pitch-position: {} adding {}", entry.pitchPosition, inst);
+                } else {
+                    logger.warn("  at pitch-position: {} duplicate {}", entry.pitchPosition, inst);
+                }
+            }
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of DrumSet class in Audiveris application.
+     *
+     * @return the DrumSet instance
+     */
+    public static DrumSet getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //----------------//
+    // DrumInstrument //
+    //----------------//
+    /**
+     * Class representing an individual percussion instrument.
+     */
+    public static class DrumInstrument
+    {
+
+        /** Note head motif. */
+        public final HeadMotif headMotif;
+
+        /** Playing technique sign, if any. */
+        public final Shape sign;
+
+        /** Instrument sound name. */
+        public final DrumSound sound;
+
+        public DrumInstrument (HeadMotif headMotif,
+                               Shape sign,
+                               DrumSound sound)
+        {
+            this.headMotif = headMotif;
+            this.sign = sign;
+            this.sound = sound;
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (obj instanceof DrumInstrument that) {
+                return this.headMotif == that.headMotif && this.sign == that.sign
+                        && this.sound == that.sound;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = 29 * hash + Objects.hashCode(this.headMotif);
+            hash = 29 * hash + Objects.hashCode(this.sign);
+            hash = 29 * hash + Objects.hashCode(this.sound);
+            return hash;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder(getClass().getSimpleName()).append('{').append("motif: ")
+                    .append(headMotif).append(" sign: ").append(sign).append(" sound: ").append(
+                            sound).append('}').toString();
+        }
+    }
+
+    //----------------//
+    // DrumSetEntries //
+    //----------------//
+    /**
+     * Flat list of entries, to be unmarshalled from drum-set file.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "drum-set")
+    private static class DrumSetEntries
+    {
+
+        @XmlElement(name = "entry")
+        private final List<DrumSetEntry> list = new ArrayList<>();
+    }
+
+    //--------------//
+    // DrumSetEntry //
+    //--------------//
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "entry")
+    private static class DrumSetEntry
+    {
+
+        /**
+         * Pitch position.
+         * Staff pitch, 0 = middle line, increasing downwards.
+         */
+        @XmlAttribute(name = "pitch-position")
+        @XmlJavaTypeAdapter(PitchAdapter.class)
+        public Integer pitchPosition;
+
+        /**
+         * Note head motif.
+         */
+        @XmlAttribute(name = "motif")
+        @XmlJavaTypeAdapter(MotifAdapter.class)
+        public HeadMotif headMotif;
+
+        /**
+         * Playing technique sign , if any.
+         */
+        @XmlAttribute(name = "sign")
+        public Shape sign;
+
+        /**
+         * Instrument sound name.
+         * A null value removes this entry from drum set.
+         */
+        @XmlAttribute(name = "sound")
+        @XmlJavaTypeAdapter(SoundAdapter.class)
+        public DrumSound sound;
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder(getClass().getSimpleName()).append('{').append(
+                    "pitch-position: ").append(pitchPosition).append(" motif: ").append(headMotif)
+                    .append(" sign: ").append(sign).append(" sound: ").append(sound).append('}')
+                    .toString();
+        }
+    }
+
     //~ Enumerations -------------------------------------------------------------------------------
+
     /**
      * Enum <code>DrumSound</code> provides all drum sound names together with their MIDI value.
      * <p>
@@ -149,239 +457,50 @@ public class DrumSet
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /**
-     * Instruments indexed by pitch position.
-     */
-    public final Map<Integer, Set<DrumInstrument>> byPitch = new TreeMap<>();
-
-    //~ Constructors -------------------------------------------------------------------------------
-    private DrumSet ()
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
     {
-        loadAllConfigurations();
+
+        static final DrumSet INSTANCE = new DrumSet();
+
+        private LazySingleton ()
+        {
+        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------------------//
-    // dumpResultingDrumSet //
-    //----------------------//
+    //--------------//
+    // MotifAdapter //
+    //--------------//
     /**
-     * Print out the DrumSet that results from loading of system (and possibly user)
-     * configuration(s).
+     * Class needed to handle the case of a non recognized head motif name.
      */
-    public void dumpResultingDrumSet ()
+    private static class MotifAdapter
+            extends XmlAdapter<String, HeadMotif>
     {
-        logger.info("");
-        logger.info("Resulting Drum Set:");
 
-        for (Entry<Integer, Set<DrumInstrument>> entry : byPitch.entrySet()) {
-            logger.info("  pitch-position: {}", entry.getKey());
-
-            final Set<DrumInstrument> set = entry.getValue();
-            final Map<MotifSign, DrumInstrument> map = new LinkedHashMap<>();
-
-            if (set != null && !set.isEmpty()) {
-                for (DrumInstrument inst : set) {
-                    final MotifSign ms = new MotifSign(inst.headMotif, inst.sign);
-                    final DrumInstrument existing = map.get(ms);
-                    logger.info("    motif: {}{} sound: {} {}",
-                                String.format("%-8s", inst.headMotif),
-                                inst.sign != null ? String.format(" sign: %-17s", inst.sign) : "",
-                                inst.sound,
-                                existing != null ? "-- conflicting with " + existing : "");
-                    map.put(ms, inst);
-                }
-            }
+        @Override
+        public String marshal (HeadMotif motif)
+            throws Exception
+        {
+            return (motif == null) ? null : motif.name();
         }
 
-        logger.info("");
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of DrumSet class in Audiveris application.
-     *
-     * @return the DrumSet instance
-     */
-    public static DrumSet getInstance ()
-    {
-        return LazySingleton.INSTANCE;
-    }
-
-    //-----------------------//
-    // loadAllConfigurations //
-    //-----------------------//
-    /**
-     * Load all drum-set files as found in system (and user?) configuration files.
-     */
-    private void loadAllConfigurations ()
-    {
-        // First load system drum-set which must exist
-        // Second load user drum-set if any
-        final URI[] uris = new URI[]{
-            UriUtil.toURI(WellKnowns.RES_URI, fileName),
-            WellKnowns.CONFIG_FOLDER.resolve(fileName).toUri().normalize()};
-
-        for (int i = 0; i < uris.length; i++) {
-            final URI uri = uris[i];
-
+        @Override
+        public HeadMotif unmarshal (String str)
+            throws Exception
+        {
             try {
-                final URL url = uri.toURL();
-                try (InputStream input = url.openStream()) {
-                    logger.info("Loading drum set entries from {}", uri);
-                    loadConfiguration(input);
-                }
-            } catch (IOException ex) {
-                // Item does not exist
-                if (i == 0) {
-                    // Only the first item (system) is mandatory
-                    logger.error("Mandatory file not found {}", uri);
-                }
-            } catch (JAXBException ex) {
-                logger.warn("Error loading drum set from {}", uri, ex);
-            }
-        }
-
-        dumpResultingDrumSet();
-    }
-
-    //-------------------//
-    // loadConfiguration //
-    //------------------//
-    /**
-     * Load Drum Set configuration from the provided input stream.
-     *
-     * @param in input stream
-     * @throws JAXBException
-     */
-    private void loadConfiguration (InputStream in)
-            throws JAXBException
-    {
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(DrumSetEntries.class);
-        }
-
-        final Unmarshaller um = jaxbContext.createUnmarshaller();
-        final DrumSetEntries entries = (DrumSetEntries) um.unmarshal(in);
-
-        for (DrumSetEntry entry : entries.list) {
-            // Populate/update byPitch map
-
-            if (entry.sound == null) {
-                // This entry is a removal
-                if (entry.headMotif == null) {
-                    logger.error("For a removal, motif cannot be null ", entry);
-                    continue;
-                }
-
-                if (entry.pitchPosition == null) {
-                    logger.error("For a removal, pitch-position cannot be null ", entry);
-                    continue;
-                }
-
-                final Set<DrumInstrument> set = byPitch.get(entry.pitchPosition);
-                if (set != null) {
-                    for (Iterator<DrumInstrument> it = set.iterator(); it.hasNext();) {
-                        final DrumInstrument inst = it.next();
-
-                        if (inst.headMotif == entry.headMotif) {
-                            logger.info("  at pitch-position: {} removing {}",
-                                        entry.pitchPosition, inst);
-                            it.remove();
-                        }
-                    }
-                }
-            } else {
-                // This entry is an addition
-                if (entry.pitchPosition == null) {
-                    logger.debug("  null pitch-position in {}. Entry skipped.", entry);
-                    continue;
-                }
-
-                if (entry.headMotif == null) {
-                    logger.warn("  at pitch-position: {} null motif {}", entry.pitchPosition, entry);
-                    continue;
-                }
-
-                Set<DrumInstrument> set = byPitch.get(entry.pitchPosition);
-                if (set == null) {
-                    byPitch.put(entry.pitchPosition, set = new LinkedHashSet<>());
-                }
-
-                final DrumInstrument inst = new DrumInstrument(entry.headMotif,
-                                                               entry.sign,
-                                                               entry.sound);
-                if (set.add(inst)) {
-                    logger.debug("  at pitch-position: {} adding {}", entry.pitchPosition, inst);
+                if (str == null || str.equals("null")) {
+                    return null;
                 } else {
-                    logger.warn("  at pitch-position: {} duplicate {}", entry.pitchPosition, inst);
+                    return HeadMotif.valueOf(str);
                 }
+            } catch (Exception ex) {
+                logger.warn("Unknown head motif: {}", str, ex);
+                return null;
             }
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------//
-    // DrumInstrument //
-    //----------------//
-    /**
-     * Class representing an individual percussion instrument.
-     */
-    public static class DrumInstrument
-    {
-
-        /** Note head motif. */
-        public final HeadMotif headMotif;
-
-        /** Playing technique sign, if any. */
-        public final Shape sign;
-
-        /** Instrument sound name. */
-        public final DrumSound sound;
-
-        public DrumInstrument (HeadMotif headMotif,
-                               Shape sign,
-                               DrumSound sound)
-        {
-            this.headMotif = headMotif;
-            this.sign = sign;
-            this.sound = sound;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return new StringBuilder(getClass().getSimpleName())
-                    .append('{')
-                    .append("motif: ").append(headMotif)
-                    .append(" sign: ").append(sign)
-                    .append(" sound: ").append(sound)
-                    .append('}')
-                    .toString();
-        }
-
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (obj instanceof DrumInstrument that) {
-                return this.headMotif == that.headMotif
-                               && this.sign == that.sign
-                               && this.sound == that.sound;
-            }
-
-            return false;
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            int hash = 7;
-            hash = 29 * hash + Objects.hashCode(this.headMotif);
-            hash = 29 * hash + Objects.hashCode(this.sign);
-            hash = 29 * hash + Objects.hashCode(this.sound);
-            return hash;
         }
     }
 
@@ -406,119 +525,6 @@ public class DrumSet
         }
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final DrumSet INSTANCE = new DrumSet();
-
-        private LazySingleton ()
-        {
-        }
-    }
-
-    //----------------//
-    // DrumSetEntries //
-    //----------------//
-    /**
-     * Flat list of entries, to be unmarshalled from drum-set file.
-     */
-    @XmlAccessorType(XmlAccessType.NONE)
-    @XmlRootElement(name = "drum-set")
-    private static class DrumSetEntries
-    {
-
-        @XmlElement(name = "entry")
-        private final List<DrumSetEntry> list = new ArrayList<>();
-    }
-
-    //--------------//
-    // DrumSetEntry //
-    //--------------//
-    @XmlAccessorType(XmlAccessType.NONE)
-    @XmlRootElement(name = "entry")
-    private static class DrumSetEntry
-    {
-
-        /**
-         * Pitch position.
-         * Staff pitch, 0 = middle line, increasing downwards.
-         */
-        @XmlAttribute(name = "pitch-position")
-        @XmlJavaTypeAdapter(PitchAdapter.class)
-        public Integer pitchPosition;
-
-        /**
-         * Note head motif.
-         */
-        @XmlAttribute(name = "motif")
-        @XmlJavaTypeAdapter(MotifAdapter.class)
-        public HeadMotif headMotif;
-
-        /**
-         * Playing technique sign , if any.
-         */
-        @XmlAttribute(name = "sign")
-        public Shape sign;
-
-        /**
-         * Instrument sound name.
-         * A null value removes this entry from drum set.
-         */
-        @XmlAttribute(name = "sound")
-        @XmlJavaTypeAdapter(SoundAdapter.class)
-        public DrumSound sound;
-
-        @Override
-        public String toString ()
-        {
-            return new StringBuilder(getClass().getSimpleName())
-                    .append('{')
-                    .append("pitch-position: ").append(pitchPosition)
-                    .append(" motif: ").append(headMotif)
-                    .append(" sign: ").append(sign)
-                    .append(" sound: ").append(sound)
-                    .append('}')
-                    .toString();
-        }
-    }
-
-    //--------------//
-    // MotifAdapter //
-    //--------------//
-    /**
-     * Class needed to handle the case of a non recognized head motif name.
-     */
-    private static class MotifAdapter
-            extends XmlAdapter<String, HeadMotif>
-    {
-
-        @Override
-        public String marshal (HeadMotif motif)
-                throws Exception
-        {
-            return (motif == null) ? null : motif.name();
-        }
-
-        @Override
-        public HeadMotif unmarshal (String str)
-                throws Exception
-        {
-            try {
-                if (str == null || str.equals("null")) {
-                    return null;
-                } else {
-                    return HeadMotif.valueOf(str);
-                }
-            } catch (Exception ex) {
-                logger.warn("Unknown head motif: {}", str, ex);
-                return null;
-            }
-        }
-    }
-
     //--------------//
     // PitchAdapter //
     //--------------//
@@ -531,7 +537,7 @@ public class DrumSet
 
         @Override
         public String marshal (Integer i)
-                throws Exception
+            throws Exception
         {
             // For the sake of completion
             return (i == null) ? "null" : Integer.toString(i);
@@ -539,7 +545,7 @@ public class DrumSet
 
         @Override
         public Integer unmarshal (String s)
-                throws Exception
+            throws Exception
         {
             return ((s == null) || s.equalsIgnoreCase("null")) ? null : Integer.valueOf(s);
         }
@@ -557,14 +563,14 @@ public class DrumSet
 
         @Override
         public String marshal (DrumSound sound)
-                throws Exception
+            throws Exception
         {
             return (sound == null) ? null : sound.name();
         }
 
         @Override
         public DrumSound unmarshal (String str)
-                throws Exception
+            throws Exception
         {
             try {
                 if (str == null || str.equals("null")) {
@@ -577,6 +583,5 @@ public class DrumSet
                 return null;
             }
         }
-
     }
 }

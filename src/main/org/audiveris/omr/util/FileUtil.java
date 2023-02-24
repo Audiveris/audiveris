@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,11 +60,13 @@ public abstract class FileUtil
     private static final int BACKUP_MAX = 99;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private FileUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------------//
     // avoidExtensions //
     //-----------------//
@@ -143,10 +145,10 @@ public abstract class FileUtil
     @Deprecated
     public static void copy (File source,
                              File target)
-            throws IOException
+        throws IOException
     {
         try (FileChannel input = new FileInputStream(source).getChannel();
-             FileChannel output = new FileOutputStream(target).getChannel()) {
+                FileChannel output = new FileOutputStream(target).getChannel()) {
             MappedByteBuffer buffer = input.map(FileChannel.MapMode.READ_ONLY, 0, input.size());
             output.write(buffer);
         }
@@ -164,16 +166,14 @@ public abstract class FileUtil
      */
     public static void copyTree (final Path sourceDir,
                                  final Path targetDir)
-            throws IOException
+        throws IOException
     {
-        Files.walkFileTree(
-                sourceDir,
-                new SimpleFileVisitor<Path>()
+        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>()
         {
             @Override
             public FileVisitResult preVisitDirectory (Path dir,
                                                       BasicFileAttributes attrs)
-                    throws IOException
+                throws IOException
             {
                 Path target = targetDir.resolve(sourceDir.relativize(dir));
 
@@ -191,7 +191,7 @@ public abstract class FileUtil
             @Override
             public FileVisitResult visitFile (Path file,
                                               BasicFileAttributes attrs)
-                    throws IOException
+                throws IOException
             {
                 Files.copy(file, targetDir.resolve(sourceDir.relativize(file)));
 
@@ -239,7 +239,7 @@ public abstract class FileUtil
      * @throws IOException in case deletion is unsuccessful
      */
     public static void deleteDirectory (Path directory)
-            throws IOException
+        throws IOException
     {
         if (!Files.exists(directory)) {
             throw new IllegalArgumentException(directory + " does not exist");
@@ -249,26 +249,24 @@ public abstract class FileUtil
             throw new IllegalArgumentException(directory + " is not a directory");
         }
 
-        Files.walkFileTree(
-                directory,
-                new SimpleFileVisitor<Path>()
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>()
         {
             @Override
-            public FileVisitResult visitFile (Path file,
-                                              BasicFileAttributes attrs)
-                    throws IOException
+            public FileVisitResult postVisitDirectory (Path dir,
+                                                       IOException exc)
+                throws IOException
             {
-                Files.delete(file);
+                Files.delete(dir);
 
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory (Path dir,
-                                                       IOException exc)
-                    throws IOException
+            public FileVisitResult visitFile (Path file,
+                                              BasicFileAttributes attrs)
+                throws IOException
             {
-                Files.delete(dir);
+                Files.delete(file);
 
                 return FileVisitResult.CONTINUE;
             }
@@ -385,13 +383,13 @@ public abstract class FileUtil
      */
     public static DirectoryStream newDirectoryStream (Path dir,
                                                       String glob)
-            throws IOException
+        throws IOException
     {
         // create a matcher and return a filter that uses it.
         final FileSystem fs = dir.getFileSystem();
         final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-        final DirectoryStream.Filter<Path> filter = (Path entry) -> matcher.matches(entry
-                .getFileName());
+        final DirectoryStream.Filter<Path> filter = (Path entry) -> matcher.matches(
+                entry.getFileName());
 
         return fs.provider().newDirectoryStream(dir, filter);
     }
@@ -444,14 +442,24 @@ public abstract class FileUtil
         }
 
         try {
-            Files.walkFileTree(
-                    folder,
-                    new SimpleFileVisitor<Path>()
+            Files.walkFileTree(folder, new SimpleFileVisitor<Path>()
             {
+                @Override
+                public FileVisitResult postVisitDirectory (Path dir,
+                                                           IOException exc)
+                    throws IOException
+                {
+                    if (dirMatcher.matches(dir)) {
+                        pathsFound.add(dir);
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+
                 @Override
                 public FileVisitResult preVisitDirectory (Path dir,
                                                           BasicFileAttributes attrs)
-                        throws IOException
+                    throws IOException
                 {
                     if (dir.equals(folder) || dirMatcher.matches(dir)) {
                         return FileVisitResult.CONTINUE;
@@ -463,22 +471,10 @@ public abstract class FileUtil
                 @Override
                 public FileVisitResult visitFile (Path file,
                                                   BasicFileAttributes attrs)
-                        throws IOException
+                    throws IOException
                 {
                     if (fileMatcher.matches(file)) {
                         pathsFound.add(file);
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory (Path dir,
-                                                           IOException exc)
-                        throws IOException
-                {
-                    if (dirMatcher.matches(dir)) {
-                        pathsFound.add(dir);
                     }
 
                     return FileVisitResult.CONTINUE;

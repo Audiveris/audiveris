@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,6 +61,7 @@ public class LedgersPostAnalysis
     private static final Logger logger = LoggerFactory.getLogger(LedgersPostAnalysis.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The sheet being processed. */
     private final Sheet sheet;
 
@@ -86,6 +87,7 @@ public class LedgersPostAnalysis
     private final Map<SystemInfo, List<LedgerInter>> discarded = new TreeMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>LedgersPostAnalysis</code>.
      *
@@ -100,31 +102,6 @@ public class LedgersPostAnalysis
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    public void process ()
-    {
-        // Retrieve mean / sigma on ordinate deltas and heights
-        collect();
-
-        // Store filtered out ledgers in discarded map
-        filter();
-
-        // Rebuild ledgers for relevant staves in impacted systems
-        // Discarded intermediate ledgers will lead to the removal of more external ledgers
-        for (Map.Entry<SystemInfo, List<LedgerInter>> entry : discarded.entrySet()) {
-            final SystemInfo system = entry.getKey();
-            builders.get(system).rebuildLedgers(entry.getValue());
-        }
-
-        // Compute ledger lines
-        for (SystemInfo system : sheet.getSystems()) {
-            for (Staff staff : system.getStaves()) {
-                staff.buildAllLedgerLines();
-            }
-        }
-    }
 
     //---------//
     // collect //
@@ -139,10 +116,7 @@ public class LedgersPostAnalysis
 
         for (Staff staff : sheet.getStaffManager().getStaves()) {
             final int il = staff.getSpecificInterline();
-            logger.debug("   staff#{} il:{} {}",
-                         staff.getId(),
-                         il,
-                         staff.isSmall() ? "SMALL" : "");
+            logger.debug("   staff#{} il:{} {}", staff.getId(), il, staff.isSmall() ? "SMALL" : "");
 
             final SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
 
@@ -160,8 +134,16 @@ public class LedgersPostAnalysis
                     final double hRatio = height / il;
                     final double width = median.getX2() - median.getX1();
                     final double wRatio = width / il;
-                    final Info info = new Info(ledger, staff, key,
-                                               delta, dRatio, height, hRatio, width, wRatio);
+                    final Info info = new Info(
+                            ledger,
+                            staff,
+                            key,
+                            delta,
+                            dRatio,
+                            height,
+                            hRatio,
+                            width,
+                            wRatio);
                     infoMap.put(ledger, info);
                     logger.debug("       {}", info);
 
@@ -209,39 +191,38 @@ public class LedgersPostAnalysis
         Double maxHeightRatio = null;
 
         if (popDeltaAbove.getCardinality() > 0) {
-            minDeltaAboveRatio = popDeltaAbove.getMeanValue()
-                                         + constants.minDeltaSigmaCoeff.getValue()
-                                                   * popDeltaAbove.getStandardDeviation();
-            maxDeltaAboveRatio = popDeltaAbove.getMeanValue()
-                                         + constants.maxDeltaSigmaCoeff.getValue()
-                                                   * popDeltaAbove.getStandardDeviation();
+            minDeltaAboveRatio = popDeltaAbove.getMeanValue() + constants.minDeltaSigmaCoeff
+                    .getValue() * popDeltaAbove.getStandardDeviation();
+            maxDeltaAboveRatio = popDeltaAbove.getMeanValue() + constants.maxDeltaSigmaCoeff
+                    .getValue() * popDeltaAbove.getStandardDeviation();
         }
 
         if (popDeltaBelow.getCardinality() > 0) {
-            minDeltaBelowRatio = popDeltaBelow.getMeanValue()
-                                         + constants.minDeltaSigmaCoeff.getValue()
-                                                   * popDeltaBelow.getStandardDeviation();
-            maxDeltaBelowRatio = popDeltaBelow.getMeanValue()
-                                         + constants.maxDeltaSigmaCoeff.getValue()
-                                                   * popDeltaBelow.getStandardDeviation();
+            minDeltaBelowRatio = popDeltaBelow.getMeanValue() + constants.minDeltaSigmaCoeff
+                    .getValue() * popDeltaBelow.getStandardDeviation();
+            maxDeltaBelowRatio = popDeltaBelow.getMeanValue() + constants.maxDeltaSigmaCoeff
+                    .getValue() * popDeltaBelow.getStandardDeviation();
         }
 
         if (popHeight.getCardinality() > 0) {
-            minHeightRatio = popHeight.getMeanValue()
-                                     + constants.minHeightSigmaCoeff.getValue()
-                                               * popHeight.getStandardDeviation();
-            maxHeightRatio = popHeight.getMeanValue()
-                                     + constants.maxHeightSigmaCoeff.getValue()
-                                               * popHeight.getStandardDeviation();
+            minHeightRatio = popHeight.getMeanValue() + constants.minHeightSigmaCoeff.getValue()
+                    * popHeight.getStandardDeviation();
+            maxHeightRatio = popHeight.getMeanValue() + constants.maxHeightSigmaCoeff.getValue()
+                    * popHeight.getStandardDeviation();
         }
 
-        logger.debug("{}", String.format(
-                     "Filter minDeltaAboveRatio:%.2f maxDeltaAboveRatio:%.2f"
-                             + " minDeltaBelowRatio:%.2f maxDeltaBelowRatio:%.2f"
-                             + " minHeightRatio:%.2f maxHeightRatio:%.2f",
-                     minDeltaAboveRatio, maxDeltaAboveRatio,
-                     minDeltaBelowRatio, maxDeltaBelowRatio,
-                     minHeightRatio, maxHeightRatio));
+        logger.debug(
+                "{}",
+                String.format(
+                        "Filter minDeltaAboveRatio:%.2f maxDeltaAboveRatio:%.2f"
+                                + " minDeltaBelowRatio:%.2f maxDeltaBelowRatio:%.2f"
+                                + " minHeightRatio:%.2f maxHeightRatio:%.2f",
+                        minDeltaAboveRatio,
+                        maxDeltaAboveRatio,
+                        minDeltaBelowRatio,
+                        maxDeltaBelowRatio,
+                        minHeightRatio,
+                        maxHeightRatio));
 
         // Infos sorted by ledger ID are much more convenient for user review.
         final List<Info> infos = new ArrayList<>(infoMap.values());
@@ -254,20 +235,24 @@ public class LedgersPostAnalysis
                     (info.key < 0 ? minDeltaAboveRatio : minDeltaBelowRatio) * interline);
             final int maxDelta = (int) Math.ceil(
                     (info.key < 0 ? maxDeltaAboveRatio : maxDeltaBelowRatio) * interline);
-            final String dD = (Math.abs(info.key) == 1)
-                    ? (Math.ceil(info.delta) < minDelta ? "delta"
-                    : (Math.floor(info.delta) > maxDelta ? "DELTA"
-                    : "     "))
-                    : "     ";
+            final String dD = (Math.abs(info.key) == 1) ? (Math.ceil(info.delta) < minDelta
+                    ? "delta"
+                    : (Math.floor(info.delta) > maxDelta ? "DELTA" : "     ")) : "     ";
 
             final int minHeight = (int) Math.floor(minHeightRatio * interline);
             final int maxHeight = (int) Math.ceil(maxHeightRatio * interline);
             final String hH = Math.ceil(info.height) < minHeight ? "height"
-                    : (Math.floor(info.height) > maxHeight ? "HEIGHT"
-                    : "      ");
+                    : (Math.floor(info.height) > maxHeight ? "HEIGHT" : "      ");
 
-            logger.debug("{} {} {} deltaRange:[{}..{}] heightRange:[{}..{}]",
-                         dD, hH, info, minDelta, maxDelta, minHeight, maxHeight);
+            logger.debug(
+                    "{} {} {} deltaRange:[{}..{}] heightRange:[{}..{}]",
+                    dD,
+                    hH,
+                    info,
+                    minDelta,
+                    maxDelta,
+                    minHeight,
+                    maxHeight);
 
             if (!dD.isBlank() || !hH.isBlank()) {
                 final SystemInfo system = info.staff.getSystem();
@@ -282,7 +267,34 @@ public class LedgersPostAnalysis
         }
     }
 
+    //---------//
+    // process //
+    //---------//
+    public void process ()
+    {
+        // Retrieve mean / sigma on ordinate deltas and heights
+        collect();
+
+        // Store filtered out ledgers in discarded map
+        filter();
+
+        // Rebuild ledgers for relevant staves in impacted systems
+        // Discarded intermediate ledgers will lead to the removal of more external ledgers
+        for (Map.Entry<SystemInfo, List<LedgerInter>> entry : discarded.entrySet()) {
+            final SystemInfo system = entry.getKey();
+            builders.get(system).rebuildLedgers(entry.getValue());
+        }
+
+        // Compute ledger lines
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Staff staff : system.getStaves()) {
+                staff.buildAllLedgerLines();
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -324,8 +336,10 @@ public class LedgersPostAnalysis
     private static class Info
     {
 
-        public static Comparator<Info> byId
-                = (Info o1, Info o2) -> Integer.compare(o1.ledger.getId(), o2.ledger.getId());
+        public static Comparator<Info> byId = (Info o1,
+                                               Info o2) -> Integer.compare(
+                                                       o1.ledger.getId(),
+                                                       o2.ledger.getId());
 
         public final LedgerInter ledger; // The ledger
 
@@ -371,8 +385,16 @@ public class LedgersPostAnalysis
         {
             return String.format(
                     "#%d s#%2d(%2d) %2d delta:%.2f/%.2f height:%.2f/%.2f width:%.2f/%.2f",
-                    ledger.getId(), staff.getId(), staff.getSpecificInterline(),
-                    key, delta, deltaRatio, height, heightRatio, width, widthRatio);
+                    ledger.getId(),
+                    staff.getId(),
+                    staff.getSpecificInterline(),
+                    key,
+                    delta,
+                    deltaRatio,
+                    height,
+                    heightRatio,
+                    width,
+                    widthRatio);
         }
     }
 }

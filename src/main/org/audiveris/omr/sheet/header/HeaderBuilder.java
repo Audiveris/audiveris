@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,10 +39,10 @@ import org.audiveris.omr.util.ChartPlotter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import org.audiveris.omr.util.Navigable;
 
-import org.jfree.data.xy.XYSeries;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.jfree.data.xy.XYSeries;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -84,6 +84,7 @@ public class HeaderBuilder
     private static final Logger logger = LoggerFactory.getLogger(HeaderBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -104,6 +105,7 @@ public class HeaderBuilder
     private final HeaderTimeColumn timeColumn;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new HeaderBuilder object.
      *
@@ -121,6 +123,68 @@ public class HeaderBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------------------//
+    // computeHeaderStarts //
+    //---------------------//
+    /**
+     * Computes the starting abscissa for each staff header area, typically the point
+     * right after the right-most bar line of the starting bar group.
+     *
+     * @return measureStart at beginning of staff
+     */
+    private void computeHeaderStarts ()
+    {
+        for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
+            BarlineInter leftBar = staff.getSideBarline(LEFT);
+
+            if (leftBar == null) {
+                // No left bar line found, so use the beginning abscissa of lines
+                staff.setHeader(new StaffHeader(staff.getAbscissa(LEFT)));
+            } else {
+                // Retrieve all bar lines grouped at beginning of staff
+                // And pick up the last (right-most) barline in the group
+                BarlineInter lastBar = leftBar;
+                boolean moved;
+
+                do {
+                    moved = false;
+
+                    for (Relation rel : sig.getRelations(lastBar, BarGroupRelation.class)) {
+                        if (lastBar == sig.getEdgeSource(rel)) {
+                            lastBar = (BarlineInter) sig.getEdgeTarget(rel);
+                            moved = true;
+                        }
+                    }
+                } while (moved);
+
+                int start = lastBar.getCenterRight().x + 1;
+                logger.debug("Staff#{} start:{} bar:{}", staff.getId(), start, lastBar);
+
+                staff.setHeader(new StaffHeader(start));
+            }
+        }
+    }
+
+    //---------------//
+    // freezeHeaders //
+    //---------------//
+    /**
+     * Freeze headers components.
+     */
+    private void freezeHeaders ()
+    {
+        for (Staff staff : system.getStaves()) {
+            if (!staff.isTablature()) {
+                staff.getHeader().freeze();
+            }
+        }
+    }
+
     //------//
     // plot //
     //------//
@@ -216,67 +280,6 @@ public class HeaderBuilder
         freezeHeaders();
     }
 
-    //---------------------//
-    // computeHeaderStarts //
-    //---------------------//
-    /**
-     * Computes the starting abscissa for each staff header area, typically the point
-     * right after the right-most bar line of the starting bar group.
-     *
-     * @return measureStart at beginning of staff
-     */
-    private void computeHeaderStarts ()
-    {
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                continue;
-            }
-
-            BarlineInter leftBar = staff.getSideBarline(LEFT);
-
-            if (leftBar == null) {
-                // No left bar line found, so use the beginning abscissa of lines
-                staff.setHeader(new StaffHeader(staff.getAbscissa(LEFT)));
-            } else {
-                // Retrieve all bar lines grouped at beginning of staff
-                // And pick up the last (right-most) barline in the group
-                BarlineInter lastBar = leftBar;
-                boolean moved;
-
-                do {
-                    moved = false;
-
-                    for (Relation rel : sig.getRelations(lastBar, BarGroupRelation.class)) {
-                        if (lastBar == sig.getEdgeSource(rel)) {
-                            lastBar = (BarlineInter) sig.getEdgeTarget(rel);
-                            moved = true;
-                        }
-                    }
-                } while (moved);
-
-                int start = lastBar.getCenterRight().x + 1;
-                logger.debug("Staff#{} start:{} bar:{}", staff.getId(), start, lastBar);
-
-                staff.setHeader(new StaffHeader(start));
-            }
-        }
-    }
-
-    //---------------//
-    // freezeHeaders //
-    //---------------//
-    /**
-     * Freeze headers components.
-     */
-    private void freezeHeaders ()
-    {
-        for (Staff staff : system.getStaves()) {
-            if (!staff.isTablature()) {
-                staff.getHeader().freeze();
-            }
-        }
-    }
-
     //---------------//
     // purgeBarlines //
     //---------------//
@@ -363,6 +366,7 @@ public class HeaderBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

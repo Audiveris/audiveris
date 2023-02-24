@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,17 @@ public class CircleModel
     private final Circle circle;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new CircleModel object.
+     *
+     * @param circle the provided circle
+     */
+    public CircleModel (Circle circle)
+    {
+        this.circle = circle;
+    }
+
     /**
      * Creates a new CircleModel object.
      *
@@ -69,17 +80,8 @@ public class CircleModel
         circle = new Circle(first, middle, last);
     }
 
-    /**
-     * Creates a new CircleModel object.
-     *
-     * @param circle the provided circle
-     */
-    public CircleModel (Circle circle)
-    {
-        this.circle = circle;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public int above ()
     {
@@ -133,12 +135,6 @@ public class CircleModel
     }
 
     @Override
-    public void setDistance (double dist)
-    {
-        circle.setDistance(dist);
-    }
-
-    @Override
     public Point2D getEndVector (boolean reverse)
     {
         int dir = reverse ? ccw() : (-ccw());
@@ -158,6 +154,14 @@ public class CircleModel
     {
         circle.reverse();
     }
+
+    @Override
+    public void setDistance (double dist)
+    {
+        circle.setDistance(dist);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Factory method to try to create a valuable circle model.

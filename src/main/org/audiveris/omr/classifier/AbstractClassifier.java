@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.apache.commons.io.FileUtils;
-
 import org.audiveris.omr.WellKnowns;
-import static org.audiveris.omr.classifier.Classifier.SHAPE_COUNT;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -39,11 +36,10 @@ import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.ZipFileSystem;
 
-//import org.nd4j.linalg.api.ndarray.INDArray;
-//import org.nd4j.linalg.dataset.DataSet;
-//import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -110,11 +106,11 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    private static final Evaluation[] noiseEvaluations = {new Evaluation(
-        Shape.NOISE,
-        Evaluation.ALGORITHM)};
+    private static final Evaluation[] noiseEvaluations =
+    { new Evaluation(Shape.NOISE, Evaluation.ALGORITHM) };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Features means and standard deviations. */
     protected Norms norms;
 
@@ -124,7 +120,23 @@ public abstract class AbstractClassifier<M extends Object>
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // evaluate //
+    //----------//
+    @Override
+    public Evaluation[] evaluate (Glyph glyph,
+                                  int interline,
+                                  int count,
+                                  double minGrade,
+                                  EnumSet<Condition> conditions)
+    {
+        return evaluate(glyph, null, count, minGrade, conditions, interline);
+    }
+
     //----------//
     // evaluate //
     //----------//
@@ -143,14 +155,46 @@ public abstract class AbstractClassifier<M extends Object>
     //----------//
     // evaluate //
     //----------//
-    @Override
-    public Evaluation[] evaluate (Glyph glyph,
-                                  int interline,
-                                  int count,
-                                  double minGrade,
-                                  EnumSet<Condition> conditions)
+    private Evaluation[] evaluate (Glyph glyph,
+                                   SystemInfo system,
+                                   int count,
+                                   double minGrade,
+                                   EnumSet<Classifier.Condition> conditions,
+                                   int interline)
     {
-        return evaluate(glyph, null, count, minGrade, conditions, interline);
+        List<Evaluation> bests = new ArrayList<>();
+        Evaluation[] evals = getSortedEvaluations(glyph, interline);
+
+        EvalsLoop:
+        for (Evaluation eval : evals) {
+            // Bounding test?
+            if ((bests.size() >= count) || (eval.grade < minGrade)) {
+                break;
+            }
+
+            // Successful checks?
+            if ((conditions != null) && conditions.contains(Condition.CHECKED)) {
+                // This may change the eval shape in only one case:
+                // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
+                glyphChecker.annotate(system, eval, glyph);
+
+                if (eval.failure != null) {
+                    continue;
+                }
+            }
+
+            // Everything is OK, add the shape if not already in the list
+            // (this can happen when checks have modified the eval original shape)
+            for (Evaluation e : bests) {
+                if (e.shape == eval.shape) {
+                    continue EvalsLoop;
+                }
+            }
+
+            bests.add(eval);
+        }
+
+        return bests.toArray(new Evaluation[bests.size()]);
     }
 
     //---------------//
@@ -209,25 +253,6 @@ public abstract class AbstractClassifier<M extends Object>
         return new DataSet(features, labels, null, null);
     }
 
-    //-------------//
-    // isBigEnough //
-    //-------------//
-    @Override
-    public boolean isBigEnough (Glyph glyph,
-                                int interline)
-    {
-        return isBigEnough(glyph.getNormalizedWeight(interline));
-    }
-
-    //-------------//
-    // isBigEnough //
-    //-------------//
-    @Override
-    public boolean isBigEnough (double weight)
-    {
-        return weight >= constants.minWeight.getValue();
-    }
-
     //----------------------//
     // getSortedEvaluations //
     //----------------------//
@@ -251,6 +276,25 @@ public abstract class AbstractClassifier<M extends Object>
 
             return evals;
         }
+    }
+
+    //-------------//
+    // isBigEnough //
+    //-------------//
+    @Override
+    public boolean isBigEnough (double weight)
+    {
+        return weight >= constants.minWeight.getValue();
+    }
+
+    //-------------//
+    // isBigEnough //
+    //-------------//
+    @Override
+    public boolean isBigEnough (Glyph glyph,
+                                int interline)
+    {
+        return isBigEnough(glyph.getNormalizedWeight(interline));
     }
 
     //--------------//
@@ -298,7 +342,7 @@ public abstract class AbstractClassifier<M extends Object>
 
                     if (!isCompatible(model, norms)) {
                         final String msg = "Incompatible classifier user data in " + path
-                                                   + ", trying default data";
+                                + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
@@ -346,7 +390,7 @@ public abstract class AbstractClassifier<M extends Object>
 
             if (!isCompatible(model, norms)) {
                 final String msg = "Obsolete classifier default data in " + uri
-                                           + ", please retrain from scratch";
+                        + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
                 logger.info("Classifier data loaded from default uri {}", uri);
@@ -374,19 +418,7 @@ public abstract class AbstractClassifier<M extends Object>
      * @throws Exception if something goes wrong
      */
     protected abstract M loadModel (Path root)
-            throws Exception;
-
-    //------------//
-    // storeModel //
-    //------------//
-    /**
-     * Store the model to disk.
-     *
-     * @param modelPath path to model file
-     * @throws Exception if something goes wrong
-     */
-    protected abstract void storeModel (Path modelPath)
-            throws Exception;
+        throws Exception;
 
     //-----------//
     // loadNorms //
@@ -400,7 +432,7 @@ public abstract class AbstractClassifier<M extends Object>
      * @throws JAXBException if something goes wrong with XML deserialization
      */
     protected Norms loadNorms (Path root)
-            throws Exception
+        throws Exception
     {
         INDArray means;
         INDArray stds = null;
@@ -462,6 +494,18 @@ public abstract class AbstractClassifier<M extends Object>
     }
 
     //------------//
+    // storeModel //
+    //------------//
+    /**
+     * Store the model to disk.
+     *
+     * @param modelPath path to model file
+     * @throws Exception if something goes wrong
+     */
+    protected abstract void storeModel (Path modelPath)
+        throws Exception;
+
+    //------------//
     // storeNorms //
     //------------//
     /**
@@ -471,7 +515,7 @@ public abstract class AbstractClassifier<M extends Object>
      * @throws IOException if something goes wrong during IO operations
      */
     protected void storeNorms (Path root)
-            throws Exception
+        throws Exception
     {
         Path means = root.resolve(MEANS_ENTRY_NAME);
         try (DataOutputStream dos = new DataOutputStream(
@@ -488,52 +532,24 @@ public abstract class AbstractClassifier<M extends Object>
         }
     }
 
-    //----------//
-    // evaluate //
-    //----------//
-    private Evaluation[] evaluate (Glyph glyph,
-                                   SystemInfo system,
-                                   int count,
-                                   double minGrade,
-                                   EnumSet<Classifier.Condition> conditions,
-                                   int interline)
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
     {
-        List<Evaluation> bests = new ArrayList<>();
-        Evaluation[] evals = getSortedEvaluations(glyph, interline);
 
-        EvalsLoop:
-        for (Evaluation eval : evals) {
-            // Bounding test?
-            if ((bests.size() >= count) || (eval.grade < minGrade)) {
-                break;
-            }
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-            // Successful checks?
-            if ((conditions != null) && conditions.contains(Condition.CHECKED)) {
-                // This may change the eval shape in only one case:
-                // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
-                glyphChecker.annotate(system, eval, glyph);
-
-                if (eval.failure != null) {
-                    continue;
-                }
-            }
-
-            // Everything is OK, add the shape if not already in the list
-            // (this can happen when checks have modified the eval original shape)
-            for (Evaluation e : bests) {
-                if (e.shape == eval.shape) {
-                    continue EvalsLoop;
-                }
-            }
-
-            bests.add(eval);
-        }
-
-        return bests.toArray(new Evaluation[bests.size()]);
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
+                0.04,
+                "Minimum normalized weight to be considered not a noise");
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Norms //
     //-------//
@@ -561,21 +577,5 @@ public abstract class AbstractClassifier<M extends Object>
             this.means = means;
             this.stds = stds;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.04,
-                "Minimum normalized weight to be considered not a noise");
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -79,6 +79,7 @@ public class PluginsManager
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -89,6 +90,7 @@ public class PluginsManager
     private Plugin defaultPlugin;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
      * based on the plugins file discovered in Audiveris user config folder.
@@ -107,23 +109,19 @@ public class PluginsManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin via its id.
-     *
-     * @param pluginId id of new default plugin
-     */
-    public final void setDefaultPlugin (String pluginId)
-    {
-        Plugin plugin = findDefaultPlugin(pluginId);
 
-        if (!pluginId.isEmpty() && (plugin == null)) {
-            logger.warn("Could not find default plugin {}", pluginId);
-        } else {
-            setDefaultPlugin(plugin);
+    //-------------------//
+    // findDefaultPlugin //
+    //-------------------//
+    private Plugin findDefaultPlugin (String pluginId)
+    {
+        for (Plugin plugin : plugins) {
+            if (plugin.getId().equalsIgnoreCase(pluginId)) {
+                return plugin;
+            }
         }
+
+        return null;
     }
 
     //------------------//
@@ -137,19 +135,6 @@ public class PluginsManager
     public Plugin getDefaultPlugin ()
     {
         return defaultPlugin;
-    }
-
-    //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin.
-     *
-     * @param defaultPlugin the new default plugin
-     */
-    public final void setDefaultPlugin (Plugin defaultPlugin)
-    {
-        this.defaultPlugin = defaultPlugin;
     }
 
     //---------//
@@ -198,20 +183,6 @@ public class PluginsManager
         return ids;
     }
 
-    //-------------------//
-    // findDefaultPlugin //
-    //-------------------//
-    private Plugin findDefaultPlugin (String pluginId)
-    {
-        for (Plugin plugin : plugins) {
-            if (plugin.getId().equalsIgnoreCase(pluginId)) {
-                return plugin;
-            }
-        }
-
-        return null;
-    }
-
     //-------------//
     // loadPlugins //
     //-------------//
@@ -242,6 +213,40 @@ public class PluginsManager
         return Collections.emptyList();
     }
 
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     *
+     * @param defaultPlugin the new default plugin
+     */
+    public final void setDefaultPlugin (Plugin defaultPlugin)
+    {
+        this.defaultPlugin = defaultPlugin;
+    }
+
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin via its id.
+     *
+     * @param pluginId id of new default plugin
+     */
+    public final void setDefaultPlugin (String pluginId)
+    {
+        Plugin plugin = findDefaultPlugin(pluginId);
+
+        if (!pluginId.isEmpty() && (plugin == null)) {
+            logger.warn("Could not find default plugin {}", pluginId);
+        } else {
+            setDefaultPlugin(plugin);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // getInstance //
     //-------------//
@@ -259,7 +264,7 @@ public class PluginsManager
     // getJaxbContext //
     //----------------//
     private static JAXBContext getJaxbContext ()
-            throws JAXBException
+        throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -270,6 +275,7 @@ public class PluginsManager
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -338,27 +344,6 @@ public class PluginsManager
         static final PluginsManager INSTANCE = new PluginsManager();
     }
 
-    //---------------//
-    // PluginsHolder //
-    //---------------//
-    /**
-     * Class <code>PluginsHolder</code> is used to unmarshal the plugins root element.
-     */
-    @XmlAccessorType(XmlAccessType.NONE)
-    @XmlRootElement(name = "plugins")
-    private static class PluginsHolder
-    {
-
-        /** List of plugins. */
-        @XmlElementRef
-        private List<Plugin> list = new ArrayList<>();
-
-        /** No-arg constructor meant for JAXB. */
-        private PluginsHolder ()
-        {
-        }
-    }
-
     //----------------//
     // MyMenuListener //
     //----------------//
@@ -394,6 +379,27 @@ public class PluginsManager
                     }
                 }
             }
+        }
+    }
+
+    //---------------//
+    // PluginsHolder //
+    //---------------//
+    /**
+     * Class <code>PluginsHolder</code> is used to unmarshal the plugins root element.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "plugins")
+    private static class PluginsHolder
+    {
+
+        /** List of plugins. */
+        @XmlElementRef
+        private List<Plugin> list = new ArrayList<>();
+
+        /** No-arg constructor meant for JAXB. */
+        private PluginsHolder ()
+        {
         }
     }
 }

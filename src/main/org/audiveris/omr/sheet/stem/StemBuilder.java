@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,7 +36,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -53,8 +53,8 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -98,6 +98,7 @@ public class StemBuilder
     private static final Logger logger = LoggerFactory.getLogger(StemBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing system. */
     private final SystemInfo system;
 
@@ -132,6 +133,7 @@ public class StemBuilder
     private final TreeMap<Integer, Integer> lengthMap = new TreeMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>StemBuilder</code> object.
      *
@@ -166,6 +168,37 @@ public class StemBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------//
+    // areAligned //
+    //------------//
+    /**
+     * Check whether the two provided glyphs are rather aligned vertically, taking the
+     * global sheet slope into account.
+     *
+     * @param g1 one glyph
+     * @param g2 other glyph
+     * @return true if OK
+     */
+    private boolean areAligned (Glyph g1,
+                                Glyph g2)
+    {
+        // Use deskewed centroids
+        final Skew skew = system.getSkew();
+        final Point2D dsk1 = skew.deskewed(g1.getCentroidDouble());
+        final Point2D dsk2 = skew.deskewed(g2.getCentroidDouble());
+
+        // If the two glyphs are too distant in ordinate, the abscissa check is not reliable at all
+        final double dy = Math.abs(dsk2.getY() - dsk1.getY());
+        if (dy > params.maxStemAlignmentDy) {
+            return true;
+        }
+
+        final double dx = Math.abs(dsk2.getX() - dsk1.getX());
+
+        return dx <= params.maxStemAlignmentDx;
+    }
+
     //------------//
     // createStem //
     //------------//
@@ -179,8 +212,8 @@ public class StemBuilder
     public StemInter createStem (Collection<Glyph> glyphs,
                                  int profile)
     {
-        Glyph stemGlyph = (glyphs.size() == 1)
-                ? glyphs.iterator().next() : GlyphFactory.buildGlyph(glyphs);
+        Glyph stemGlyph = (glyphs.size() == 1) ? glyphs.iterator().next()
+                : GlyphFactory.buildGlyph(glyphs);
         stemGlyph = system.getSheet().getGlyphIndex().registerOriginal(stemGlyph);
 
         if (stemGlyph.isVip()) {
@@ -210,361 +243,6 @@ public class StemBuilder
         }
 
         return null;
-    }
-
-    //-----//
-    // get //
-    //-----//
-    /**
-     * Report item at index value.
-     *
-     * @param index provided index value
-     * @return corresponding item
-     */
-    public StemItem get (int index)
-    {
-        return items.get(index);
-    }
-
-    //-------------//
-    // getCLinkers //
-    //-------------//
-    /**
-     * Report the ordered sequence of head corner linkers.
-     *
-     * @param maxIndex maximum item index or null
-     * @return the list of head linkers, perhaps empty
-     */
-    public List<CLinker> getCLinkers (Integer maxIndex)
-    {
-        final List<CLinker> found = new ArrayList<>();
-        final int iMax = (maxIndex != null) ? maxIndex : items.size() - 1;
-
-        for (int i = 0; i <= iMax; i++) {
-            final StemItem ev = items.get(i);
-
-            if (ev instanceof LinkerItem) {
-                final StemLinker linker = ((LinkerItem) ev).linker;
-
-                if (linker instanceof CLinker) {
-                    found.add((CLinker) linker);
-                }
-            }
-        }
-
-        return found;
-    }
-
-    //----------------------//
-    // getFirstCLinkerAfter //
-    //----------------------//
-    /**
-     * Report the first occurrence of a CLinker in items after provided index.
-     *
-     * @param index       the provided index
-     * @param stemProfile current profile for stem
-     * @return the first head CLinker found or null
-     */
-    public CLinker getFirstCLinkerAfter (int index,
-                                         int stemProfile)
-    {
-        final Scale scale = system.getSheet().getScale();
-        final int maxYGap = scale.toPixels(StemChecker.getMaxYGap(stemProfile));
-
-        for (int i = index + 1; i < items.size(); i++) {
-            final StemItem ev = items.get(i);
-
-            // Too wide gap?
-            if ((ev instanceof StemItem.GapItem)
-                        && ((StemItem.GapItem) ev).contrib > maxYGap) {
-                return null;
-            }
-
-            if ((ev instanceof StemItem.LinkerItem)
-                        && (((StemItem.LinkerItem) ev).linker instanceof CLinker)) {
-                return (CLinker) ((StemItem.LinkerItem) ev).linker;
-            }
-        }
-
-        return null;
-    }
-
-    //-----------------//
-    // getSourceLinker //
-    //-----------------//
-    /**
-     * Report the source linker if any.
-     *
-     * @return the source linker or null
-     */
-    public StemLinker getSourceLinker ()
-    {
-        for (int i = 0; i < items.size(); i++) {
-            final StemItem ev = items.get(i);
-
-            if ((i <= 1) && (ev instanceof LinkerItem)) {
-                return ((LinkerItem) ev).linker;
-            }
-        }
-
-        return null;
-    }
-
-    //------------------//
-    // getTargetLinkers //
-    //------------------//
-    /**
-     * Report the ordered sequence of target linkers (all linkers past the source one).
-     *
-     * @return the list of target linkers, perhaps empty
-     */
-    public List<StemLinker> getTargetLinkers ()
-    {
-        final List<StemLinker> targets = new ArrayList<>();
-        final StemLinker source = getSourceLinker();
-
-        if (source == null) {
-            return targets;
-        }
-
-        for (StemItem ev : items) {
-            if (ev instanceof LinkerItem) {
-                final StemLinker linker = ((LinkerItem) ev).linker;
-
-                if (linker != source) {
-                    targets.add(linker);
-                }
-            }
-        }
-
-        return targets;
-    }
-
-    //----------------------//
-    // headHasConcreteStart //
-    //----------------------//
-    /**
-     * Report whether this CLinker has a concrete start with significant length
-     * before first gap if any.
-     * <p>
-     * This tells if there is really a stem departing directly from the head in this corner.
-     *
-     * @param profile desired profile level
-     * @return true if a concrete start exists
-     */
-    public boolean headHasConcreteStart (int profile)
-    {
-        final int lg0 = getLength(profile);
-        return lg0 >= params.minLinkerLength;
-    }
-
-    //---------------//
-    // headHasLength //
-    //---------------//
-    /**
-     * Check if, under the provided profile to filter gaps, there is enough length to
-     * try building a stem.
-     *
-     * @param profile provided profile level
-     * @return true if OK
-     */
-    public boolean headHasLength (int profile)
-    {
-        return getLength(profile) >= params.minLinkerLength;
-    }
-
-    //------------------//
-    // getLastGapBefore //
-    //------------------//
-    /**
-     * Report the last gap if any found before the provided index.
-     *
-     * @param index upper bound
-     * @return the gap found or null
-     */
-    public GapItem getLastGapBefore (int index)
-    {
-        for (int i = index - 1; i >= 0; i--) {
-            final StemItem ev = items.get(i);
-
-            if (ev instanceof GapItem gapItem) {
-                return gapItem;
-            }
-        }
-
-        return null;
-    }
-
-    //-----------//
-    // getLength //
-    //-----------//
-    /**
-     * Report the possible stem length, before hitting a too large gap.
-     *
-     * @param profile desired profile level for max gap value
-     * @return possible stem length
-     */
-    public int getLength (int profile)
-    {
-        return lengthMap.get(profile);
-    }
-
-    //----------------//
-    // getTotalLength //
-    //----------------//
-    /**
-     * Report the total possible stem length, skipping any gap.
-     *
-     * @return total length of all items
-     */
-    public int getTotalLength ()
-    {
-        return lengthMap.get(Profiles.MAX_VALUE);
-    }
-
-    //----------------//
-    // getGlyphsUntil //
-    //----------------//
-    /**
-     * Report the sequence of glyphs until the provided event index.
-     *
-     * @param lastIndex index for sequence end
-     * @return the sequence of glyphs until lastIndex
-     */
-    public List<Glyph> getGlyphsUntil (int lastIndex)
-    {
-        final Set<Glyph> glyphs = new LinkedHashSet<>();
-
-        for (int i = 0; i <= lastIndex; i++) {
-            final StemItem ev = items.get(i);
-
-            if (ev.glyph != null) {
-                glyphs.add(ev.glyph);
-            }
-        }
-
-        return new ArrayList<>(glyphs);
-    }
-
-    //-------------//
-    // getLengthAt //
-    //-------------//
-    public int getLengthAt (int lastIndex)
-    {
-        Rectangle rect = null;
-
-        for (int i = 0; i <= lastIndex; i++) {
-            final StemItem ev = items.get(i);
-
-            if ((ev != null) && !(ev instanceof GapItem) && (ev.line != null)) {
-                if (rect == null) {
-                    rect = ev.line.getBounds();
-                } else {
-                    rect.add(ev.line.getBounds());
-                }
-
-                if (ev instanceof LinkerItem
-                            && ((LinkerItem) ev).linker instanceof CLinker) {
-                    final HeadInter head = (HeadInter) ((LinkerItem) ev).linker.getSource();
-                    rect.add(head.getBounds());
-                }
-            }
-        }
-
-        if (rect == null) {
-            return 0;
-        }
-
-        if (yDir > 0) {
-            return rect.y + rect.height - (int) theoLine.getY1();
-        } else {
-            return (int) theoLine.getY1() - rect.y;
-        }
-    }
-
-    //-------------//
-    // getLinkerOf //
-    //-------------//
-    /**
-     * Report the linker that corresponds to the provided (beam or head) inter.
-     *
-     * @param inter the inter at hand
-     * @return the corresponding linker found in items
-     */
-    public StemLinker getLinkerOf (Inter inter)
-    {
-        for (StemItem ev : items) {
-            if (ev instanceof LinkerItem) {
-                final StemLinker sl = ((LinkerItem) ev).linker;
-
-                if (sl.getSource() == inter) {
-                    return sl;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //---------//
-    // indexOf //
-    //---------//
-    /**
-     * Report index of provided item in items sequence (or -1 if not found).
-     *
-     * @param item provided item
-     * @return index in items sequence
-     */
-    public int indexOf (StemItem item)
-    {
-        return items.indexOf(item);
-    }
-
-    //---------//
-    // indexOf //
-    //---------//
-    /**
-     * Report index of provided linker in items sequence (or -1 if not found).
-     *
-     * @param linker provided linker
-     * @return index in items sequence
-     */
-    public int indexOf (StemLinker linker)
-    {
-        for (int i = 0; i < items.size(); i++) {
-            final StemItem ev = items.get(i);
-
-            if ((ev instanceof LinkerItem) && (((LinkerItem) ev).linker == linker)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    //----------//
-    // maxIndex //
-    //----------//
-    /**
-     * Report max index value in items sequence.
-     *
-     * @return max index
-     */
-    public int maxIndex ()
-    {
-        return items.size() - 1;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return new StringBuilder("sb{")
-                .append(getTotalLength())
-                .append(' ').append(items)
-                .append('}').toString();
     }
 
     //--------//
@@ -602,8 +280,8 @@ public class StemBuilder
             }
 
             if (linker instanceof StemHalfLinker stemHalfLinker) {
-                final int contrib = (linker.getStump() != null)
-                        ? getContrib(linker.getStump().getBounds()) : 0;
+                final int contrib = (linker.getStump() != null) ? getContrib(
+                        linker.getStump().getBounds()) : 0;
                 list.add(new HalfLinkerItem(stemHalfLinker, contrib));
             } else {
                 list.add(new LinkerItem(linker));
@@ -698,8 +376,13 @@ public class StemBuilder
 
             if (remain < 15) {
                 if (cLinker.getHead().isVip()) {
-                    logger.info("{} chunk:{} weight:{} removed:{} remain:{}",
-                                cLinker.getId(), chunk, weight, removed, remain);
+                    logger.info(
+                            "{} chunk:{} weight:{} removed:{} remain:{}",
+                            cLinker.getId(),
+                            chunk,
+                            weight,
+                            removed,
+                            remain);
                     it.remove();
                 }
             }
@@ -746,34 +429,47 @@ public class StemBuilder
         return removed;
     }
 
-    //------------//
-    // areAligned //
-    //------------//
+    //-----//
+    // get //
+    //-----//
     /**
-     * Check whether the two provided glyphs are rather aligned vertically, taking the
-     * global sheet slope into account.
+     * Report item at index value.
      *
-     * @param g1 one glyph
-     * @param g2 other glyph
-     * @return true if OK
+     * @param index provided index value
+     * @return corresponding item
      */
-    private boolean areAligned (Glyph g1,
-                                Glyph g2)
+    public StemItem get (int index)
     {
-        // Use deskewed centroids
-        final Skew skew = system.getSkew();
-        final Point2D dsk1 = skew.deskewed(g1.getCentroidDouble());
-        final Point2D dsk2 = skew.deskewed(g2.getCentroidDouble());
+        return items.get(index);
+    }
 
-        // If the two glyphs are too distant in ordinate, the abscissa check is not reliable at all
-        final double dy = Math.abs(dsk2.getY() - dsk1.getY());
-        if (dy > params.maxStemAlignmentDy) {
-            return true;
+    //-------------//
+    // getCLinkers //
+    //-------------//
+    /**
+     * Report the ordered sequence of head corner linkers.
+     *
+     * @param maxIndex maximum item index or null
+     * @return the list of head linkers, perhaps empty
+     */
+    public List<CLinker> getCLinkers (Integer maxIndex)
+    {
+        final List<CLinker> found = new ArrayList<>();
+        final int iMax = (maxIndex != null) ? maxIndex : items.size() - 1;
+
+        for (int i = 0; i <= iMax; i++) {
+            final StemItem ev = items.get(i);
+
+            if (ev instanceof LinkerItem) {
+                final StemLinker linker = ((LinkerItem) ev).linker;
+
+                if (linker instanceof CLinker) {
+                    found.add((CLinker) linker);
+                }
+            }
         }
 
-        final double dx = Math.abs(dsk2.getX() - dsk1.getX());
-
-        return dx <= params.maxStemAlignmentDx;
+        return found;
     }
 
     //------------//
@@ -789,6 +485,85 @@ public class StemBuilder
     private int getContrib (Rectangle box)
     {
         return Math.max(0, GeoUtil.yOverlap(yRange, box));
+    }
+
+    //----------------------//
+    // getFirstCLinkerAfter //
+    //----------------------//
+    /**
+     * Report the first occurrence of a CLinker in items after provided index.
+     *
+     * @param index       the provided index
+     * @param stemProfile current profile for stem
+     * @return the first head CLinker found or null
+     */
+    public CLinker getFirstCLinkerAfter (int index,
+                                         int stemProfile)
+    {
+        final Scale scale = system.getSheet().getScale();
+        final int maxYGap = scale.toPixels(StemChecker.getMaxYGap(stemProfile));
+
+        for (int i = index + 1; i < items.size(); i++) {
+            final StemItem ev = items.get(i);
+
+            // Too wide gap?
+            if ((ev instanceof StemItem.GapItem) && ((StemItem.GapItem) ev).contrib > maxYGap) {
+                return null;
+            }
+
+            if ((ev instanceof StemItem.LinkerItem)
+                    && (((StemItem.LinkerItem) ev).linker instanceof CLinker)) {
+                return (CLinker) ((StemItem.LinkerItem) ev).linker;
+            }
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // getGlyphsUntil //
+    //----------------//
+    /**
+     * Report the sequence of glyphs until the provided event index.
+     *
+     * @param lastIndex index for sequence end
+     * @return the sequence of glyphs until lastIndex
+     */
+    public List<Glyph> getGlyphsUntil (int lastIndex)
+    {
+        final Set<Glyph> glyphs = new LinkedHashSet<>();
+
+        for (int i = 0; i <= lastIndex; i++) {
+            final StemItem ev = items.get(i);
+
+            if (ev.glyph != null) {
+                glyphs.add(ev.glyph);
+            }
+        }
+
+        return new ArrayList<>(glyphs);
+    }
+
+    //------------------//
+    // getLastGapBefore //
+    //------------------//
+    /**
+     * Report the last gap if any found before the provided index.
+     *
+     * @param index upper bound
+     * @return the gap found or null
+     */
+    public GapItem getLastGapBefore (int index)
+    {
+        for (int i = index - 1; i >= 0; i--) {
+            final StemItem ev = items.get(i);
+
+            if (ev instanceof GapItem gapItem) {
+                return gapItem;
+            }
+        }
+
+        return null;
     }
 
     //--------------//
@@ -815,6 +590,212 @@ public class StemBuilder
         }
 
         return null;
+    }
+
+    //-----------//
+    // getLength //
+    //-----------//
+    /**
+     * Report the possible stem length, before hitting a too large gap.
+     *
+     * @param profile desired profile level for max gap value
+     * @return possible stem length
+     */
+    public int getLength (int profile)
+    {
+        return lengthMap.get(profile);
+    }
+
+    //-------------//
+    // getLengthAt //
+    //-------------//
+    public int getLengthAt (int lastIndex)
+    {
+        Rectangle rect = null;
+
+        for (int i = 0; i <= lastIndex; i++) {
+            final StemItem ev = items.get(i);
+
+            if ((ev != null) && !(ev instanceof GapItem) && (ev.line != null)) {
+                if (rect == null) {
+                    rect = ev.line.getBounds();
+                } else {
+                    rect.add(ev.line.getBounds());
+                }
+
+                if (ev instanceof LinkerItem && ((LinkerItem) ev).linker instanceof CLinker) {
+                    final HeadInter head = (HeadInter) ((LinkerItem) ev).linker.getSource();
+                    rect.add(head.getBounds());
+                }
+            }
+        }
+
+        if (rect == null) {
+            return 0;
+        }
+
+        if (yDir > 0) {
+            return rect.y + rect.height - (int) theoLine.getY1();
+        } else {
+            return (int) theoLine.getY1() - rect.y;
+        }
+    }
+
+    //-------------//
+    // getLinkerOf //
+    //-------------//
+    /**
+     * Report the linker that corresponds to the provided (beam or head) inter.
+     *
+     * @param inter the inter at hand
+     * @return the corresponding linker found in items
+     */
+    public StemLinker getLinkerOf (Inter inter)
+    {
+        for (StemItem ev : items) {
+            if (ev instanceof LinkerItem) {
+                final StemLinker sl = ((LinkerItem) ev).linker;
+
+                if (sl.getSource() == inter) {
+                    return sl;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getSourceLinker //
+    //-----------------//
+    /**
+     * Report the source linker if any.
+     *
+     * @return the source linker or null
+     */
+    public StemLinker getSourceLinker ()
+    {
+        for (int i = 0; i < items.size(); i++) {
+            final StemItem ev = items.get(i);
+
+            if ((i <= 1) && (ev instanceof LinkerItem)) {
+                return ((LinkerItem) ev).linker;
+            }
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // getTargetLinkers //
+    //------------------//
+    /**
+     * Report the ordered sequence of target linkers (all linkers past the source one).
+     *
+     * @return the list of target linkers, perhaps empty
+     */
+    public List<StemLinker> getTargetLinkers ()
+    {
+        final List<StemLinker> targets = new ArrayList<>();
+        final StemLinker source = getSourceLinker();
+
+        if (source == null) {
+            return targets;
+        }
+
+        for (StemItem ev : items) {
+            if (ev instanceof LinkerItem) {
+                final StemLinker linker = ((LinkerItem) ev).linker;
+
+                if (linker != source) {
+                    targets.add(linker);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    //----------------//
+    // getTotalLength //
+    //----------------//
+    /**
+     * Report the total possible stem length, skipping any gap.
+     *
+     * @return total length of all items
+     */
+    public int getTotalLength ()
+    {
+        return lengthMap.get(Profiles.MAX_VALUE);
+    }
+
+    //----------------------//
+    // headHasConcreteStart //
+    //----------------------//
+    /**
+     * Report whether this CLinker has a concrete start with significant length
+     * before first gap if any.
+     * <p>
+     * This tells if there is really a stem departing directly from the head in this corner.
+     *
+     * @param profile desired profile level
+     * @return true if a concrete start exists
+     */
+    public boolean headHasConcreteStart (int profile)
+    {
+        final int lg0 = getLength(profile);
+        return lg0 >= params.minLinkerLength;
+    }
+
+    //---------------//
+    // headHasLength //
+    //---------------//
+    /**
+     * Check if, under the provided profile to filter gaps, there is enough length to
+     * try building a stem.
+     *
+     * @param profile provided profile level
+     * @return true if OK
+     */
+    public boolean headHasLength (int profile)
+    {
+        return getLength(profile) >= params.minLinkerLength;
+    }
+
+    //---------//
+    // indexOf //
+    //---------//
+    /**
+     * Report index of provided item in items sequence (or -1 if not found).
+     *
+     * @param item provided item
+     * @return index in items sequence
+     */
+    public int indexOf (StemItem item)
+    {
+        return items.indexOf(item);
+    }
+
+    //---------//
+    // indexOf //
+    //---------//
+    /**
+     * Report index of provided linker in items sequence (or -1 if not found).
+     *
+     * @param linker provided linker
+     * @return index in items sequence
+     */
+    public int indexOf (StemLinker linker)
+    {
+        for (int i = 0; i < items.size(); i++) {
+            final StemItem ev = items.get(i);
+
+            if ((ev instanceof LinkerItem) && (((LinkerItem) ev).linker == linker)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     //-----------------//
@@ -854,8 +835,11 @@ public class StemBuilder
 
                 if (gap > 0.01) {
                     // Insert a gap within the item sequence
-                    items.add(i++, new GapItem((yDir > 0) ? new Line2D.Double(lastPt, start)
-                              : new Line2D.Double(start, lastPt)));
+                    items.add(
+                            i++,
+                            new GapItem(
+                                    (yDir > 0) ? new Line2D.Double(lastPt, start)
+                                            : new Line2D.Double(start, lastPt)));
                 }
             }
 
@@ -1031,6 +1015,19 @@ public class StemBuilder
         return sections;
     }
 
+    //----------//
+    // maxIndex //
+    //----------//
+    /**
+     * Report max index value in items sequence.
+     *
+     * @return max index
+     */
+    public int maxIndex ()
+    {
+        return items.size() - 1;
+    }
+
     //------------------//
     // retrieveAllItems //
     //------------------//
@@ -1060,8 +1057,7 @@ public class StemBuilder
             startBox = startGlyph.getBounds();
         }
 
-        items.add(new HalfLinkerItem(startLinker,
-                                     (startGlyph != null) ? getContrib(startBox) : 0));
+        items.add(new HalfLinkerItem(startLinker, (startGlyph != null) ? getContrib(startBox) : 0));
 
         // Include filtered seeds and stumps
         items.addAll(filter(startBox, seeds, targetLinkers));
@@ -1135,6 +1131,86 @@ public class StemBuilder
         }
     }
 
+    //-----------//
+    // sortItems //
+    //-----------//
+    /**
+     * Sort the list items according to yDir.
+     *
+     * @param list items to sort
+     */
+    private void sortItems (List<? extends StemItem> list)
+    {
+        //        logger.info("StemBuilder {}", this);
+        //        for (StemItem item : list) {
+        //            logger.info("   {}", item);
+        //        }
+        Collections.sort(
+                list,
+                (se1,
+                 se2) ->
+                {
+                    // Linker pairs are sorted on their refPt ordinate
+                    if (se1 instanceof HalfLinkerItem hl1) {
+                        if (se2 instanceof HalfLinkerItem hl2) {
+                            final Point2D p1 = hl1.linker.getReferencePoint();
+                            final Point2D p2 = hl2.linker.getReferencePoint();
+                            return yDir * Double.compare(p1.getY(), p2.getY());
+                        }
+                    }
+
+                    // Others are sorted on their line starting ordinate
+                    return (yDir > 0) ? Double.compare(se1.line.getY1(), se2.line.getY1())
+                            : Double.compare(se2.line.getY2(), se1.line.getY2());
+                });
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder("sb{").append(getTotalLength()).append(' ').append(items).append(
+                '}').toString();
+    }
+
+    //---------------//
+    // trimWideChunk //
+    //---------------//
+    /**
+     * Shrink a too-wide section compound, by incrementally removing side sections most
+     * distant from theoretical line.
+     *
+     * @param wide the compound to shrink
+     * @return the shrunk compound, or null if the last section left is still too wide
+     */
+    private SectionCompound trimWideChunk (SectionCompound wide)
+    {
+        final List<Section> members = new ArrayList<>(wide.getMembers());
+
+        // Sort by decreasing distance to theoretical line
+        Collections.sort(
+                members,
+                (s1,
+                 s2) -> Double.compare(
+                         theoLine.ptLineDistSq(s2.getCentroid2D()),
+                         theoLine.ptLineDistSq(s1.getCentroid2D())));
+
+        for (Section section : members) {
+            wide.removeSection(section);
+            final int newWidth = (int) Math.rint(wide.getMeanThickness(VERTICAL));
+
+            if (newWidth <= params.maxStemThickness) {
+                return wide;
+            }
+        }
+
+        return null;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // saveConnection //
     //----------------//
@@ -1154,14 +1230,16 @@ public class StemBuilder
         final Rectangle box = new Rectangle(bounds);
         final Sheet sheet = inter.getSig().getSystem().getSheet();
         final Scale scale = sheet.getScale();
-        box.grow(scale.toPixels(constants.displayHorizontalMargin),
-                 scale.toPixels(constants.displayVerticalMargin));
+        box.grow(
+                scale.toPixels(constants.displayHorizontalMargin),
+                scale.toPixels(constants.displayVerticalMargin));
 
         // Background
         final int zoom = (int) Math.rint(constants.displayZoom.getValue());
-        final BufferedImage img = new BufferedImage(zoom * box.width,
-                                                    zoom * box.height,
-                                                    BufferedImage.TYPE_INT_RGB);
+        final BufferedImage img = new BufferedImage(
+                zoom * box.width,
+                zoom * box.height,
+                BufferedImage.TYPE_INT_RGB);
         final Graphics2D g = img.createGraphics();
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, img.getWidth(), img.getHeight());
@@ -1220,67 +1298,7 @@ public class StemBuilder
         return constants.saveConnections.isSet();
     }
 
-    //-----------//
-    // sortItems //
-    //-----------//
-    /**
-     * Sort the list items according to yDir.
-     *
-     * @param list items to sort
-     */
-    private void sortItems (List<? extends StemItem> list)
-    {
-//        logger.info("StemBuilder {}", this);
-//        for (StemItem item : list) {
-//            logger.info("   {}", item);
-//        }
-        Collections.sort(list, (se1, se2) -> {
-                     // Linker pairs are sorted on their refPt ordinate
-                     if (se1 instanceof HalfLinkerItem hl1) {
-                         if (se2 instanceof HalfLinkerItem hl2) {
-                             final Point2D p1 = hl1.linker.getReferencePoint();
-                             final Point2D p2 = hl2.linker.getReferencePoint();
-                             return yDir * Double.compare(p1.getY(), p2.getY());
-                         }
-                     }
-
-                     // Others are sorted on their line starting ordinate
-                     return (yDir > 0)
-                             ? Double.compare(se1.line.getY1(), se2.line.getY1())
-                             : Double.compare(se2.line.getY2(), se1.line.getY2());
-                 });
-    }
-
-    //---------------//
-    // trimWideChunk //
-    //---------------//
-    /**
-     * Shrink a too-wide section compound, by incrementally removing side sections most
-     * distant from theoretical line.
-     *
-     * @param wide the compound to shrink
-     * @return the shrunk compound, or null if the last section left is still too wide
-     */
-    private SectionCompound trimWideChunk (SectionCompound wide)
-    {
-        final List<Section> members = new ArrayList<>(wide.getMembers());
-
-        // Sort by decreasing distance to theoretical line
-        Collections.sort(members, (s1, s2) -> Double.compare(
-                theoLine.ptLineDistSq(s2.getCentroid2D()),
-                theoLine.ptLineDistSq(s1.getCentroid2D())));
-
-        for (Section section : members) {
-            wide.removeSection(section);
-            final int newWidth = (int) Math.rint(wide.getMeanThickness(VERTICAL));
-
-            if (newWidth <= params.maxStemThickness) {
-                return wide;
-            }
-        }
-
-        return null;
-    }
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -1288,7 +1306,6 @@ public class StemBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean saveConnections = new Constant.Boolean(
                 false,
                 "(debug) Should we save VIP stem connections to disk?");

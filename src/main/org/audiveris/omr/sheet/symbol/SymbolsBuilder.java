@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -76,6 +76,7 @@ public class SymbolsBuilder
     private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -100,6 +101,7 @@ public class SymbolsBuilder
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SymbolsBuilder object.
      *
@@ -118,6 +120,7 @@ public class SymbolsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // buildSymbols //
     //--------------//
@@ -378,6 +381,7 @@ public class SymbolsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

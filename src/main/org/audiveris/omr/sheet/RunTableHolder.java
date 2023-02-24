@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,7 +52,14 @@ public class RunTableHolder
 
     private static JAXBContext jaxbContext;
 
+    /** No-arg constructor needed for JAXB. */
+    private RunTableHolder ()
+    {
+        super();
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>RunTableHolder</code> object.
      *
@@ -63,32 +70,7 @@ public class RunTableHolder
         super(key + ".xml");
     }
 
-    /** No-arg constructor needed for JAXB. */
-    private RunTableHolder ()
-    {
-        super();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // load //
-    //------//
-    @Override
-    protected RunTable load (InputStream is)
-            throws Exception
-    {
-        return (RunTable) Jaxb.unmarshal(is, getJaxbContext());
-    }
-
-    //-------//
-    // store //
-    //-------//
-    @Override
-    protected void store (OutputStream os)
-            throws Exception
-    {
-        Jaxb.marshal(data, os, getJaxbContext());
-    }
 
     //----------------//
     // getJaxbContext //
@@ -104,5 +86,25 @@ public class RunTableHolder
         }
 
         return jaxbContext;
+    }
+
+    //------//
+    // load //
+    //------//
+    @Override
+    protected RunTable load (InputStream is)
+        throws Exception
+    {
+        return (RunTable) Jaxb.unmarshal(is, getJaxbContext());
+    }
+
+    //-------//
+    // store //
+    //-------//
+    @Override
+    protected void store (OutputStream os)
+        throws Exception
+    {
+        Jaxb.marshal(data, os, getJaxbContext());
     }
 }

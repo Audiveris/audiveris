@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -70,22 +70,13 @@ public class BarlineInter
     private HorizontalSide staffEnd;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new BarlineInter object.
-     *
-     * @param glyph   the underlying glyph
-     * @param shape   the assigned shape
-     * @param impacts the assignment details
-     * @param median  the median line
-     * @param width   the bar line width
+     * No-arg constructor meant for JAXB.
      */
-    public BarlineInter (Glyph glyph,
-                         Shape shape,
-                         GradeImpacts impacts,
-                         Line2D median,
-                         Double width)
+    private BarlineInter ()
     {
-        super(glyph, shape, impacts, median, width);
+        super(null, null, (Double) null, null, null);
     }
 
     /**
@@ -107,14 +98,25 @@ public class BarlineInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new BarlineInter object.
+     *
+     * @param glyph   the underlying glyph
+     * @param shape   the assigned shape
+     * @param impacts the assignment details
+     * @param median  the median line
+     * @param width   the bar line width
      */
-    private BarlineInter ()
+    public BarlineInter (Glyph glyph,
+                         Shape shape,
+                         GradeImpacts impacts,
+                         Line2D median,
+                         Double width)
     {
-        super(null, null, (Double) null, null, null);
+        super(glyph, shape, impacts, median, width);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -140,6 +142,28 @@ public class BarlineInter
 
         if (staff != null) {
             staff.addBarline(this);
+        }
+    }
+
+    //-------------//
+    // browseGroup //
+    //-------------//
+    private void browseGroup (BarlineInter bar,
+                              SortedSet<Inter> items)
+    {
+        for (Relation rel : sig.getRelations(
+                bar,
+                BarGroupRelation.class,
+                RepeatDotBarRelation.class)) {
+            Inter other = sig.getOppositeInter(bar, rel);
+
+            if (!items.contains(other)) {
+                items.add(other);
+
+                if (other instanceof BarlineInter) {
+                    browseGroup((BarlineInter) other, items);
+                }
+            }
         }
     }
 
@@ -216,19 +240,6 @@ public class BarlineInter
         }
 
         return null;
-    }
-
-    //----------//
-    // setShape //
-    //----------//
-    /**
-     * Allows to modify the barline shape (THIN_BARLINE or THIN_BARLINE).
-     *
-     * @param shape the new shape
-     */
-    public void setShape (Shape shape)
-    {
-        this.shape = shape;
     }
 
     //-----------------//
@@ -362,6 +373,19 @@ public class BarlineInter
         super.remove(extensive);
     }
 
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Allows to modify the barline shape (THIN_BARLINE or THIN_BARLINE).
+     *
+     * @param shape the new shape
+     */
+    public void setShape (Shape shape)
+    {
+        this.shape = shape;
+    }
+
     //-------------//
     // setStaffEnd //
     //-------------//
@@ -374,6 +398,8 @@ public class BarlineInter
     {
         staffEnd = side;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------------//
     // getClosestBarline //
@@ -402,27 +428,5 @@ public class BarlineInter
         }
 
         return bestBar;
-    }
-
-    //-------------//
-    // browseGroup //
-    //-------------//
-    private void browseGroup (BarlineInter bar,
-                              SortedSet<Inter> items)
-    {
-        for (Relation rel : sig.getRelations(
-                bar,
-                BarGroupRelation.class,
-                RepeatDotBarRelation.class)) {
-            Inter other = sig.getOppositeInter(bar, rel);
-
-            if (!items.contains(other)) {
-                items.add(other);
-
-                if (other instanceof BarlineInter) {
-                    browseGroup((BarlineInter) other, items);
-                }
-            }
-        }
     }
 }

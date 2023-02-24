@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class SelectionService
     private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Name of this service. */
     private final String name;
 
@@ -59,6 +60,7 @@ public class SelectionService
     private final Class[] eventsAllowed;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SelectionService object.
      *
@@ -76,6 +78,7 @@ public class SelectionService
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // dumpSubscribers //
     //-----------------//
@@ -111,6 +114,19 @@ public class SelectionService
         }
     }
 
+    //------------------//
+    // getEventsAllowed //
+    //------------------//
+    /**
+     * Report the event classes that can be published on this service.
+     *
+     * @return the allowed classes of event
+     */
+    protected Class[] getEventsAllowed ()
+    {
+        return eventsAllowed;
+    }
+
     //---------//
     // getName //
     //---------//
@@ -144,6 +160,20 @@ public class SelectionService
         }
     }
 
+    //-----------//
+    // isAllowed //
+    //-----------//
+    private boolean isAllowed (Class<?> classe)
+    {
+        for (Class<?> cl : eventsAllowed) {
+            if (cl.isAssignableFrom(classe)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //---------//
     // publish //
     //---------//
@@ -164,6 +194,21 @@ public class SelectionService
         } else {
             logger.error("Unexpected event {} published on {}", event, name);
         }
+    }
+
+    //------------------//
+    // subscribersCount //
+    //------------------//
+    /**
+     * Convenient method to retrieve the number of subscribers on the
+     * selection service for a specific class.
+     *
+     * @param classe the specific class
+     * @return the number of subscribers found
+     */
+    public int subscribersCount (Class<? extends UserEvent> classe)
+    {
+        return getSubscribers(classe).size();
     }
 
     //-------------------//
@@ -198,21 +243,6 @@ public class SelectionService
         }
     }
 
-    //------------------//
-    // subscribersCount //
-    //------------------//
-    /**
-     * Convenient method to retrieve the number of subscribers on the
-     * selection service for a specific class.
-     *
-     * @param classe the specific class
-     * @return the number of subscribers found
-     */
-    public int subscribersCount (Class<? extends UserEvent> classe)
-    {
-        return getSubscribers(classe).size();
-    }
-
     //----------//
     // toString //
     //----------//
@@ -241,34 +271,8 @@ public class SelectionService
         return res;
     }
 
-    //------------------//
-    // getEventsAllowed //
-    //------------------//
-    /**
-     * Report the event classes that can be published on this service.
-     *
-     * @return the allowed classes of event
-     */
-    protected Class[] getEventsAllowed ()
-    {
-        return eventsAllowed;
-    }
-
-    //-----------//
-    // isAllowed //
-    //-----------//
-    private boolean isAllowed (Class<?> classe)
-    {
-        for (Class<?> cl : eventsAllowed) {
-            if (cl.isAssignableFrom(classe)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -203,6 +203,13 @@ public class SystemInfo
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SystemInfo ()
+    {
+    }
+
+    /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
      * @param id     the unique identity
@@ -220,13 +227,6 @@ public class SystemInfo
 
         sig = new SIGraph(this);
         sig.addGraphListener(new SigListener(sig));
-    }
-
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private SystemInfo ()
-    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -2021,6 +2021,8 @@ public class SystemInfo
 
         return commonBottom > commonTop;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // toString //

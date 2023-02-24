@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,31 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
-import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.inter.BeamGroupInter;
-import org.audiveris.omr.sig.inter.HeadInter;
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.HeadStemRelation;
-import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.Point;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class <code>ChordsStep</code> gathers notes into chords and handle their relationships.
@@ -60,6 +41,7 @@ public class ChordsStep
     private static final Logger logger = LoggerFactory.getLogger(ChordsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ChordsStep object.
      */
@@ -68,13 +50,14 @@ public class ChordsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system,
                           Void context)
-            throws StepException
+        throws StepException
     {
         // Gather all system notes (heads & rests) into chords
         new ChordsBuilder(system).buildHeadChords();

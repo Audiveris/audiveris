@@ -5,4 +5,3 @@
  * JTreeTable entity when available.
  */
 package org.audiveris.omr.ui.treetable;
-

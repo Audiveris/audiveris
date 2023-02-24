@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,15 +21,16 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.rhythm.Slot.MeasureSlot;
-import static org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel.*;
+import static org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel.AFTER;
+import static org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel.BEFORE;
+import static org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel.CLOSE;
+import static org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel.EQUAL;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -41,8 +42,8 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
@@ -53,6 +54,8 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -102,59 +105,8 @@ public class SlotsRetriever
 
     private static final Logger logger = LoggerFactory.getLogger(SlotsRetriever.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //-----//
-    // Rel //
-    //-----//
-    /**
-     * Describes the oriented relationship between two chords of the measure.
-     */
-    public static enum Rel
-    {
-        /**
-         * Strongly before.
-         * Stem-located before in the same beam group.
-         * Abscissa-located before the vertically overlapping chord.
-         * Important abscissa difference in different staves.
-         */
-        BEFORE("B"),
-
-        /**
-         * Strongly after.
-         * Stem-located after in the same beam group.
-         * Abscissa-located after the vertically overlapping chord.
-         * Important abscissa difference in different staves.
-         */
-        AFTER("A"),
-
-        /**
-         * Strongly equal.
-         * Identical thanks to an originating glyph in common.
-         * Adjacency detected in same staff.
-         */
-        EQUAL("="),
-
-        /**
-         * Weakly close.
-         * No important difference, use other separation criteria.
-         */
-        CLOSE("~");
-
-        private final String mnemo;
-
-        Rel (String mnemo)
-        {
-            this.mnemo = mnemo;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return mnemo;
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated measure. */
     private final Measure measure;
 
@@ -169,7 +121,9 @@ public class SlotsRetriever
             Edge.class);
 
     /** Comparator based on inter-chord relationships, then on timeOffset when known. */
-    private final Comparator<AbstractChordInter> byRel = (c1, c2) -> {
+    private final Comparator<AbstractChordInter> byRel = (c1,
+                                                          c2) ->
+    {
         if (c1 == c2) {
             return 0;
         }
@@ -202,6 +156,7 @@ public class SlotsRetriever
     private final List<AbstractChordInter> candidateChords;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SlotsBuilder</code> object for a measure.
      *
@@ -226,45 +181,6 @@ public class SlotsRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // getMaxMergeDx //
-    //---------------//
-    public static Fraction getMaxMergeDx ()
-    {
-        return constants.maxMergeDx;
-    }
-
-    //------------------//
-    // getEqualPartners //
-    //------------------//
-    /**
-     * Report the chords that are in EQUAL relationship with the provided chord.
-     *
-     * @param chord the provided chord
-     * @return the chords linked by EQUAL relationship
-     */
-    public Set<AbstractChordInter> getEqualPartners (AbstractChordInter chord)
-    {
-        Set<AbstractChordInter> found = null;
-
-        for (Edge edge : graph.outgoingEdgesOf(chord)) {
-            if (edge.rel == Rel.EQUAL) {
-                AbstractChordInter ch = graph.getEdgeTarget(edge);
-
-                if (found == null) {
-                    found = new LinkedHashSet<>();
-                }
-
-                found.add(ch);
-            }
-        }
-
-        if (found == null) {
-            return Collections.emptySet();
-        }
-
-        return found;
-    }
 
     //-------------//
     // areAdjacent //
@@ -374,9 +290,8 @@ public class SlotsRetriever
         rels.addAll(sig.getAllEdges(ch2, ch1));
 
         for (Relation rel : rels) {
-            if ((rel instanceof SeparateTimeRelation)
-                        || (rel instanceof NextInVoiceRelation)
-                        || (rel instanceof SameVoiceRelation)) {
+            if ((rel instanceof SeparateTimeRelation) || (rel instanceof NextInVoiceRelation)
+                    || (rel instanceof SameVoiceRelation)) {
                 return true;
             }
         }
@@ -555,6 +470,38 @@ public class SlotsRetriever
         }
 
         return candidates;
+    }
+
+    //------------------//
+    // getEqualPartners //
+    //------------------//
+    /**
+     * Report the chords that are in EQUAL relationship with the provided chord.
+     *
+     * @param chord the provided chord
+     * @return the chords linked by EQUAL relationship
+     */
+    public Set<AbstractChordInter> getEqualPartners (AbstractChordInter chord)
+    {
+        Set<AbstractChordInter> found = null;
+
+        for (Edge edge : graph.outgoingEdgesOf(chord)) {
+            if (edge.rel == Rel.EQUAL) {
+                AbstractChordInter ch = graph.getEdgeTarget(edge);
+
+                if (found == null) {
+                    found = new LinkedHashSet<>();
+                }
+
+                found.add(ch);
+            }
+        }
+
+        if (found == null) {
+            return Collections.emptySet();
+        }
+
+        return found;
     }
 
     //-----------//
@@ -1049,26 +996,17 @@ public class SlotsRetriever
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------//
-    // Edge //
-    //------//
-    /**
-     * Meant to store a relation instance (edge) between two chords (vertices).
-     */
-    protected static class Edge
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------------//
+    // getMaxMergeDx //
+    //---------------//
+    public static Fraction getMaxMergeDx ()
     {
-
-        Rel rel; // Relationship carried by the concrete edge
-
-        /**
-         * @param rel
-         */
-        Edge (Rel rel)
-        {
-            this.rel = rel;
-        }
+        return constants.maxMergeDx;
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -1102,6 +1040,26 @@ public class SlotsRetriever
                 "(debug) Dump matrix of chords relationships");
     }
 
+    //------//
+    // Edge //
+    //------//
+    /**
+     * Meant to store a relation instance (edge) between two chords (vertices).
+     */
+    protected static class Edge
+    {
+
+        Rel rel; // Relationship carried by the concrete edge
+
+        /**
+         * @param rel
+         */
+        Edge (Rel rel)
+        {
+            this.rel = rel;
+        }
+    }
+
     //------------//
     // Parameters //
     //------------//
@@ -1122,6 +1080,59 @@ public class SlotsRetriever
             maxSlotDxLow = scale.toPixels(constants.maxSlotDxLow);
             maxAdjacencyXGap = scale.toPixels(constants.maxAdjacencyXGap);
             maxVerticalOverlap = scale.toPixels(constants.maxVerticalOverlap);
+        }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //-----//
+    // Rel //
+    //-----//
+    /**
+     * Describes the oriented relationship between two chords of the measure.
+     */
+    public static enum Rel
+    {
+        /**
+         * Strongly before.
+         * Stem-located before in the same beam group.
+         * Abscissa-located before the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        BEFORE("B"),
+
+        /**
+         * Strongly after.
+         * Stem-located after in the same beam group.
+         * Abscissa-located after the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        AFTER("A"),
+
+        /**
+         * Strongly equal.
+         * Identical thanks to an originating glyph in common.
+         * Adjacency detected in same staff.
+         */
+        EQUAL("="),
+
+        /**
+         * Weakly close.
+         * No important difference, use other separation criteria.
+         */
+        CLOSE("~");
+
+        private final String mnemo;
+
+        Rel (String mnemo)
+        {
+            this.mnemo = mnemo;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return mnemo;
         }
     }
 }

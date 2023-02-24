@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
-import static org.audiveris.omr.sig.inter.AlterInter.computePitch;
 import org.audiveris.omr.sig.ui.HorizontalEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
 
@@ -50,6 +49,14 @@ public class KeyAlterInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed for JAXB.
+     */
+    private KeyAlterInter ()
+    {
+        super((Glyph) null, null, 0.0, null, null, null);
+    }
+
+    /**
      * Creates a new KeyAlterInter object.
      *
      * @param glyph         underlying glyph
@@ -69,15 +76,8 @@ public class KeyAlterInter
         super(glyph, shape, grade, staff, pitch, measuredPitch);
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private KeyAlterInter ()
-    {
-        super((Glyph) null, null, 0.0, null, null, null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -96,15 +96,6 @@ public class KeyAlterInter
         removed = false; // Skip AlterInter
     }
 
-    //-----------//
-    // getEditor //
-    //-----------//
-    @Override
-    public InterEditor getEditor ()
-    {
-        return new HorizontalEditor(this);
-    }
-
     //---------------//
     // checkAbnormal //
     //---------------//
@@ -114,6 +105,17 @@ public class KeyAlterInter
         // Skip AlterInder
         return isAbnormal();
     }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new HorizontalEditor(this);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // create //

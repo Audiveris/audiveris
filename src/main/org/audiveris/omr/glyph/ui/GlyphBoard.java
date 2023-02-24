@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.ui.Board;
@@ -37,6 +34,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.util.EnumSet;
 
@@ -57,35 +57,15 @@ public class GlyphBoard
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(
-                    GlyphBoard.class);
+            .getResourceMap(GlyphBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related glyph model. */
     protected final GlyphsController controller;
 
     /** Output : group info. */
     protected final JLabel groupField = new JLabel();
-
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Basic constructor, to set common characteristics.
-     *
-     * @param controller the related glyphs controller, if any
-     * @param selected   true if board must be initially selected
-     */
-    public GlyphBoard (GlyphsController controller,
-                       boolean selected)
-    {
-        super(Board.GLYPH, controller.getGlyphService(), selected);
-
-        this.controller = controller;
-
-        groupField.setHorizontalAlignment(SwingConstants.CENTER);
-        groupField.setToolTipText(resources.getString("groupField.toolTipText"));
-
-        defineLayout();
-    }
 
     /**
      * A basic GlyphBoard, with just a glyph service
@@ -106,7 +86,44 @@ public class GlyphBoard
         defineLayout();
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Basic constructor, to set common characteristics.
+     *
+     * @param controller the related glyphs controller, if any
+     * @param selected   true if board must be initially selected
+     */
+    public GlyphBoard (GlyphsController controller,
+                       boolean selected)
+    {
+        super(Board.GLYPH, controller.getGlyphService(), selected);
+
+        this.controller = controller;
+
+        groupField.setHorizontalAlignment(SwingConstants.CENTER);
+        groupField.setToolTipText(resources.getString("groupField.toolTipText"));
+
+        defineLayout();
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout for common fields of all GlyphBoard classes.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+
+        builder.add(groupField, cst.xyw(5, r, 3));
+    }
+
     //---------------//
     // getFormLayout //
     //---------------//
@@ -145,20 +162,5 @@ public class GlyphBoard
             // Group
             groupField.setText("");
         }
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout for common fields of all GlyphBoard classes.
-     */
-    private void defineLayout ()
-    {
-        final CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-
-        builder.add(groupField, cst.xyw(5, r, 3));
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,6 +49,7 @@ public class HistoryMenu
     private static final Logger logger = LoggerFactory.getLogger(HistoryMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying path history. */
     protected final AbstractHistory history;
 
@@ -59,6 +60,7 @@ public class HistoryMenu
     protected JMenu menu;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HistoryMenu</code> object.
      *
@@ -74,6 +76,7 @@ public class HistoryMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // populate //
     //----------//
@@ -86,26 +89,26 @@ public class HistoryMenu
     public void populate (JMenu menu,
                           Class<?> resourceClass)
     {
-        history.feedMenu(menu, (ActionEvent e) -> {
-                     try {
-                         final String str = e.getActionCommand().trim();
+        history.feedMenu(menu, (ActionEvent e) ->
+        {
+            try {
+                final String str = e.getActionCommand().trim();
 
-                         if (!str.isEmpty()) {
-                             final PathTask task = pathTaskClass.newInstance();
+                if (!str.isEmpty()) {
+                    final PathTask task = pathTaskClass.newInstance();
 
-                             if (pathTaskClass.isAssignableFrom(LoadBookTask.class)) {
-                                 ((LoadBookTask) task).setPath(SheetPath.decode(str));
-                             } else {
-                                 task.setPath(Paths.get(str));
-                             }
+                    if (pathTaskClass.isAssignableFrom(LoadBookTask.class)) {
+                        ((LoadBookTask) task).setPath(SheetPath.decode(str));
+                    } else {
+                        task.setPath(Paths.get(str));
+                    }
 
-                             task.execute();
-                         }
-                     } catch (IllegalAccessException |
-                              InstantiationException ex) {
-                         logger.warn("Error in HistoryMenu " + ex, ex);
-                     }
-                 });
+                    task.execute();
+                }
+            } catch (IllegalAccessException | InstantiationException ex) {
+                logger.warn("Error in HistoryMenu " + ex, ex);
+            }
+        });
 
         // Resource injection
         ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(resourceClass);

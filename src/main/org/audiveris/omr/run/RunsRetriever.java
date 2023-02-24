@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,7 @@ public class RunsRetriever
     private static final Logger logger = LoggerFactory.getLogger(RunsRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The orientation of desired runs */
     private final Orientation orientation;
 
@@ -55,6 +56,7 @@ public class RunsRetriever
     private final RunAdapter adapter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new RunsRetriever object.
      *
@@ -70,24 +72,6 @@ public class RunsRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // retrieveRuns //
-    //--------------//
-    /**
-     * Build the runs on the fly, by providing a given absolute rectangle.
-     *
-     * @param area the ABSOLUTE rectangular area to explore
-     */
-    public void retrieveRuns (Rectangle area)
-    {
-        Rectangle rect = orientation.oriented(area);
-        final int cMin = rect.x;
-        final int cMax = (rect.x + rect.width) - 1;
-        final int pMin = rect.y;
-        final int pMax = (rect.y + rect.height) - 1;
-
-        rowBasedRetrieval(pMin, pMax, cMin, cMax);
-    }
 
     //-----------------//
     // processPosition //
@@ -156,6 +140,25 @@ public class RunsRetriever
         adapter.endPosition(pos, posRuns);
     }
 
+    //--------------//
+    // retrieveRuns //
+    //--------------//
+    /**
+     * Build the runs on the fly, by providing a given absolute rectangle.
+     *
+     * @param area the ABSOLUTE rectangular area to explore
+     */
+    public void retrieveRuns (Rectangle area)
+    {
+        Rectangle rect = orientation.oriented(area);
+        final int cMin = rect.x;
+        final int cMax = (rect.x + rect.width) - 1;
+        final int pMin = rect.y;
+        final int pMax = (rect.y + rect.height) - 1;
+
+        rowBasedRetrieval(pMin, pMax, cMin, cMax);
+    }
+
     //-------------------//
     // rowBasedRetrieval //
     //-------------------//
@@ -182,7 +185,8 @@ public class RunsRetriever
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
-                    tasks.add(() -> {
+                    tasks.add( () ->
+                    {
                         processPosition(pp, cMin, cMax);
 
                         return null;
@@ -204,6 +208,7 @@ public class RunsRetriever
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //------------//
     // RunAdapter //
     //------------//

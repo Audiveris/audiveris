@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,15 +32,7 @@ public enum VerticalSide
     TOP,
     BOTTOM;
 
-    /**
-     * Report the opposite of this side
-     *
-     * @return the opposite side
-     */
-    public VerticalSide opposite ()
-    {
-        return (this == TOP) ? BOTTOM : TOP;
-    }
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the ordinate direction when going on this side.
@@ -51,6 +43,18 @@ public enum VerticalSide
     {
         return (this == TOP) ? (-1) : 1;
     }
+
+    /**
+     * Report the opposite of this side
+     *
+     * @return the opposite side
+     */
+    public VerticalSide opposite ()
+    {
+        return (this == TOP) ? BOTTOM : TOP;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Report the VerticalSide for the provided ordinate direction

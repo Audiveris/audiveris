@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class LedgersStep
     private static final Logger logger = LoggerFactory.getLogger(LedgersStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LedgersStep object.
      */
@@ -58,6 +59,7 @@ public class LedgersStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // displayUI //
     //-----------//
@@ -87,22 +89,9 @@ public class LedgersStep
     @Override
     protected void doEpilog (Sheet sheet,
                              Context context)
-            throws StepException
+        throws StepException
     {
         new LedgersPostAnalysis(sheet, context).process();
-    }
-
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
-    {
-        final LedgersBuilder builder = new LedgersBuilder(system);
-        context.builders.put(system, builder);
-        builder.buildLedgers(context.sectionMap.get(system));
     }
 
     //----------//
@@ -117,12 +106,26 @@ public class LedgersStep
      */
     @Override
     protected Context doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         return new Context(new LedgersFilter(sheet).process());
     }
 
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        final LedgersBuilder builder = new LedgersBuilder(system);
+        context.builders.put(system, builder);
+        builder.buildLedgers(context.sectionMap.get(system));
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//

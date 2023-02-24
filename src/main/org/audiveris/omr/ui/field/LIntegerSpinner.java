@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,6 +49,7 @@ public class LIntegerSpinner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------------//
     // addChangeListener //
     //-------------------//
@@ -77,19 +78,6 @@ public class LIntegerSpinner
     }
 
     //----------//
-    // setValue //
-    //----------//
-    /**
-     * Modify the content of the spinner
-     *
-     * @param value new value to set
-     */
-    public void setValue (Integer value)
-    {
-        spinner.setValue(value);
-    }
-
-    //----------//
     // setModel //
     //----------//
     /**
@@ -100,5 +88,18 @@ public class LIntegerSpinner
     void setModel (SpinnerNumberModel model)
     {
         spinner.setModel(model);
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the content of the spinner
+     *
+     * @param value new value to set
+     */
+    public void setValue (Integer value)
+    {
+        spinner.setValue(value);
     }
 }

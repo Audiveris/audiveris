@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,6 +51,7 @@ public class SymbolSample
     private static final Logger logger = LoggerFactory.getLogger(SymbolSample.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Build an (artificial) sample out of a symbol icon.
      * This is meant to populate and train on shapes for which we have no real sample yet.
@@ -66,7 +67,8 @@ public class SymbolSample
         super(0, 0, runTable, interline, 0, shape, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------//
     // create //
     //--------//

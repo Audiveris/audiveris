@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,6 +55,7 @@ public class SampleMenu
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing sheet. */
     private final Sheet sheet;
 
@@ -62,6 +63,7 @@ public class SampleMenu
     private final Glyph glyph;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleMenu</code> object.
      *
@@ -78,16 +80,6 @@ public class SampleMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * @return the glyph
-     */
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
 
     //-----------//
     // addSample //
@@ -98,6 +90,17 @@ public class SampleMenu
         final Book book = sheet.getStub().getBook();
         final SampleRepository repository = book.getSampleRepository();
         repository.addSample(shape, glyph, sheet);
+    }
+
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * @return the glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
     }
 
     //-----------//
@@ -135,6 +138,7 @@ public class SampleMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // AssignMenu //
     //------------//

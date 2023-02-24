@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,15 +22,16 @@
 package org.audiveris.omr.ui.symbol;
 
 import static org.audiveris.omr.classifier.SampleRepository.STANDARD_INTERLINE;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
+import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
-import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,6 +124,7 @@ public class ShapeSymbol
             0.15f);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** MusicFont family. */
     protected final MusicFamily family;
 
@@ -151,6 +153,7 @@ public class ShapeSymbol
     protected ShapeSymbol decoratedVersion;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a standard ShapeSymbol with the provided shape and font family.
      *
@@ -165,6 +168,7 @@ public class ShapeSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // buildImage //
     //------------//
@@ -768,6 +772,7 @@ public class ShapeSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

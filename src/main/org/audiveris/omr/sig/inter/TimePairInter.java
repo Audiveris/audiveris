@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,7 +30,8 @@ import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,15 @@ public class TimePairInter
     private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimePairInter ()
+    {
+        super((Glyph) null, null, 0.0);
+    }
+
     /**
      * Creates a new <code>TimePairInter</code> object.
      *
@@ -74,15 +84,8 @@ public class TimePairInter
         super(null, null, timeRational, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private TimePairInter ()
-    {
-        super((Glyph) null, null, 0.0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -107,36 +110,6 @@ public class TimePairInter
         }
 
         EnsembleHelper.addMember(this, member);
-    }
-
-    //-------------//
-    // createAdded //
-    //-------------//
-    /**
-     * Create and add a <code>TimePairInter</code> object from its two halves.
-     *
-     * @param num numerator: non-null, registered in sig
-     * @param den denominator: non-null, registered in sig
-     * @return the created instance, already added to sig
-     */
-    public static TimePairInter createAdded (TimeNumberInter num,
-                                             TimeNumberInter den)
-    {
-        final TimePairInter pair = new TimePairInter(null, null);
-        final SIGraph sig = num.getSig();
-        sig.addVertex(pair);
-        pair.addMember(num);
-        pair.addMember(den);
-
-        // Safer
-        pair.getBounds();
-        pair.setStaff(num.getStaff());
-
-        if (pair.isVip()) {
-            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
-        }
-
-        return pair;
     }
 
     //-----------//
@@ -329,5 +302,37 @@ public class TimePairInter
         inter.setStaff(targetStaff);
 
         return inter;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // createAdded //
+    //-------------//
+    /**
+     * Create and add a <code>TimePairInter</code> object from its two halves.
+     *
+     * @param num numerator: non-null, registered in sig
+     * @param den denominator: non-null, registered in sig
+     * @return the created instance, already added to sig
+     */
+    public static TimePairInter createAdded (TimeNumberInter num,
+                                             TimeNumberInter den)
+    {
+        final TimePairInter pair = new TimePairInter(null, null);
+        final SIGraph sig = num.getSig();
+        sig.addVertex(pair);
+        pair.addMember(num);
+        pair.addMember(den);
+
+        // Safer
+        pair.getBounds();
+        pair.setStaff(num.getStaff());
+
+        if (pair.isVip()) {
+            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
+        }
+
+        return pair;
     }
 }

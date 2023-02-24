@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
@@ -31,7 +33,6 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.relation.Support;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -61,6 +62,7 @@ public class SelectionPainter
     private static final Logger logger = LoggerFactory.getLogger(SelectionPainter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SelectionPainter</code> object.
      *
@@ -76,6 +78,7 @@ public class SelectionPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // drawLink //
     //----------//
@@ -95,8 +98,10 @@ public class SelectionPainter
         // Draw link line
         final Stroke oldStroke = UIUtil.setAbsoluteDashedStroke(g, 1f);
         final Class<? extends Relation> linkClass = relation.getClass();
-        g.setColor(NoExclusion.class.isAssignableFrom(linkClass) ? Color.GRAY
-                : Support.class.isAssignableFrom(linkClass) ? Color.GREEN.darker() : Color.ORANGE);
+        g.setColor(
+                NoExclusion.class.isAssignableFrom(linkClass) ? Color.GRAY
+                        : Support.class.isAssignableFrom(linkClass) ? Color.GREEN.darker()
+                                : Color.ORANGE);
 
         final double r = 2 / zoom; // Radius
         final Point2D oneCenter = one.getRelationCenter(relation);
@@ -119,6 +124,15 @@ public class SelectionPainter
         }
     }
 
+    //---------------//
+    // getSigPainter //
+    //---------------//
+    @Override
+    protected SigPainter getSigPainter ()
+    {
+        return sigPainter;
+    }
+
     //--------//
     // render //
     //--------//
@@ -132,16 +146,8 @@ public class SelectionPainter
         inter.accept(sigPainter);
     }
 
-    //---------------//
-    // getSigPainter //
-    //---------------//
-    @Override
-    protected SigPainter getSigPainter ()
-    {
-        return sigPainter;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

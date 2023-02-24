@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,7 +39,9 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.header.StaffHeader;
-import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.*;
+import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.DEN;
+import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.NUM;
+import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.WHOLE;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -86,6 +88,7 @@ public class HeaderTimeBuilder
     private static final Logger logger = LoggerFactory.getLogger(HeaderTimeBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Time range info. */
     private final StaffHeader.Range range;
 
@@ -99,6 +102,7 @@ public class HeaderTimeBuilder
     final Map<TimeKind, TimeAdapter> adapters = new EnumMap<>(TimeKind.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an instance of {code HeaderTimeBuilder}.
      *
@@ -128,52 +132,6 @@ public class HeaderTimeBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // cleanup //
-    //---------//
-    @Override
-    public void cleanup ()
-    {
-        //        for (TimeBuilder.TimeKind kind : TimeBuilder.TimeKind.values()) {
-        //            TimeAdapter adapter = adapters.get(kind);
-        //
-        //            if (adapter != null) {
-        //                adapter.cleanup();
-        //            }
-        //        }
-    }
-
-    //------------//
-    // lookupTime //
-    //------------//
-    /**
-     * Look up for an existing time inter at proper location
-     *
-     * @return time inter or null
-     */
-    public AbstractTimeInter lookupTime ()
-    {
-        // In staff
-        final List<Inter> staffTimes = sig.inters(staff, AbstractTimeInter.class);
-
-        // In staff header
-        final List<Inter> headerTimes = Inters.intersectedInters(staffTimes, GeoOrder.NONE, roi);
-
-        if (!headerTimes.isEmpty()) {
-            final StaffHeader header = staff.getHeader();
-            timeInter = (AbstractTimeInter) headerTimes.get(0);
-            header.time = timeInter;
-
-            final Rectangle bounds = timeInter.getBounds();
-            range.valid = true;
-            range.setStart(bounds.x);
-            range.setStop((bounds.x + bounds.width) - 1);
-
-            return timeInter;
-        }
-
-        return null;
-    }
 
     //---------//
     // addPlot //
@@ -203,58 +161,6 @@ public class HeaderTimeBuilder
             series.add(stop, 0);
             plotter.add(series, Color.BLUE);
         }
-    }
-
-    //---------------//
-    // createTimeSig //
-    //---------------//
-    @Override
-    protected void createTimeSig (AbstractTimeInter bestTimeInter)
-    {
-        super.createTimeSig(bestTimeInter);
-
-        // Expend header info
-        if (bestTimeInter != null) {
-            Rectangle timeBox = bestTimeInter.getSymbolBounds(staff.getSpecificInterline());
-            int end = timeBox.x + timeBox.width;
-            staff.setTimeStop(end);
-            staff.getHeader().time = bestTimeInter;
-        }
-    }
-
-    //----------------//
-    // findCandidates //
-    //----------------//
-    @Override
-    protected void findCandidates ()
-    {
-        // Projection can help refine the abscissa range
-        browseProjection();
-
-        if (range.hasStart() && (range.getWidth() >= params.minTimeWidth)) {
-            processWhole(); //   Look for whole time sigs (common, cut or combo like 6/8)
-            processHalf(NUM); // Look for top halves      (like 6/)
-            processHalf(DEN); // Look for bottom halves   (like /8)
-        }
-    }
-
-    //--------//
-    // getRoi //
-    //--------//
-    /**
-     * Define the region of interest to browse for time signature.
-     *
-     * @return the Region Of Interest rectangle
-     */
-    private Rectangle getRoi ()
-    {
-        final int start = range.browseStart;
-        final int stop = staff.getBrowseStop(start, (start + params.roiWidth) - 1);
-        final int top = Math.min(staff.getFirstLine().yAt(start), staff.getFirstLine().yAt(stop));
-        final int bottom = Math.max(staff.getLastLine().yAt(stop), staff.getLastLine().yAt(stop));
-        range.browseStop = stop;
-
-        return new Rectangle(start, top, stop - start + 1, bottom - top + 1);
     }
 
     //------------------//
@@ -293,6 +199,54 @@ public class HeaderTimeBuilder
 
         range.setStart(first.stop);
         range.setStop(spaces.get(spaces.size() - 1).start);
+    }
+
+    //---------//
+    // cleanup //
+    //---------//
+    @Override
+    public void cleanup ()
+    {
+        //        for (TimeBuilder.TimeKind kind : TimeBuilder.TimeKind.values()) {
+        //            TimeAdapter adapter = adapters.get(kind);
+        //
+        //            if (adapter != null) {
+        //                adapter.cleanup();
+        //            }
+        //        }
+    }
+
+    //---------------//
+    // createTimeSig //
+    //---------------//
+    @Override
+    protected void createTimeSig (AbstractTimeInter bestTimeInter)
+    {
+        super.createTimeSig(bestTimeInter);
+
+        // Expend header info
+        if (bestTimeInter != null) {
+            Rectangle timeBox = bestTimeInter.getSymbolBounds(staff.getSpecificInterline());
+            int end = timeBox.x + timeBox.width;
+            staff.setTimeStop(end);
+            staff.getHeader().time = bestTimeInter;
+        }
+    }
+
+    //----------------//
+    // findCandidates //
+    //----------------//
+    @Override
+    protected void findCandidates ()
+    {
+        // Projection can help refine the abscissa range
+        browseProjection();
+
+        if (range.hasStart() && (range.getWidth() >= params.minTimeWidth)) {
+            processWhole(); //   Look for whole time sigs (common, cut or combo like 6/8)
+            processHalf(NUM); // Look for top halves      (like 6/)
+            processHalf(DEN); // Look for bottom halves   (like /8)
+        }
     }
 
     //----------//
@@ -363,6 +317,25 @@ public class HeaderTimeBuilder
         return function;
     }
 
+    //--------//
+    // getRoi //
+    //--------//
+    /**
+     * Define the region of interest to browse for time signature.
+     *
+     * @return the Region Of Interest rectangle
+     */
+    private Rectangle getRoi ()
+    {
+        final int start = range.browseStart;
+        final int stop = staff.getBrowseStop(start, (start + params.roiWidth) - 1);
+        final int top = Math.min(staff.getFirstLine().yAt(start), staff.getFirstLine().yAt(stop));
+        final int bottom = Math.max(staff.getLastLine().yAt(stop), staff.getLastLine().yAt(stop));
+        range.browseStop = stop;
+
+        return new Rectangle(start, top, stop - start + 1, bottom - top + 1);
+    }
+
     //-----------//
     // getSpaces //
     //-----------//
@@ -400,6 +373,38 @@ public class HeaderTimeBuilder
         }
 
         return spaces;
+    }
+
+    //------------//
+    // lookupTime //
+    //------------//
+    /**
+     * Look up for an existing time inter at proper location
+     *
+     * @return time inter or null
+     */
+    public AbstractTimeInter lookupTime ()
+    {
+        // In staff
+        final List<Inter> staffTimes = sig.inters(staff, AbstractTimeInter.class);
+
+        // In staff header
+        final List<Inter> headerTimes = Inters.intersectedInters(staffTimes, GeoOrder.NONE, roi);
+
+        if (!headerTimes.isEmpty()) {
+            final StaffHeader header = staff.getHeader();
+            timeInter = (AbstractTimeInter) headerTimes.get(0);
+            header.time = timeInter;
+
+            final Rectangle bounds = timeInter.getBounds();
+            range.valid = true;
+            range.setStart(bounds.x);
+            range.setStop((bounds.x + bounds.width) - 1);
+
+            return timeInter;
+        }
+
+        return null;
     }
 
     //-------------//
@@ -520,47 +525,6 @@ public class HeaderTimeBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // TimeAdapter //
-    //-------------//
-    private abstract class TimeAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        /** Best inter per time shape. */
-        public Map<Shape, Inter> bestMap = new EnumMap<>(Shape.class);
-
-        public TimeAdapter (List<Glyph> parts)
-        {
-            super(parts, params.maxPartGap);
-        }
-
-        public void cleanup ()
-        {
-            for (Inter inter : bestMap.values()) {
-                inter.remove();
-            }
-        }
-
-        public Inter getSingleInter ()
-        {
-            for (Inter inter : bestMap.values()) {
-                if (!inter.isRemoved()) {
-                    return inter;
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return bounds.width > params.maxTimeWidth;
-        }
-    }
-
     //-------------//
     // HalfAdapter //
     //-------------//
@@ -627,6 +591,8 @@ public class HeaderTimeBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Space //
     //-------//
@@ -654,6 +620,46 @@ public class HeaderTimeBuilder
             sb.append("Space(").append(start).append("-").append(stop).append(")");
 
             return sb.toString();
+        }
+    }
+
+    //-------------//
+    // TimeAdapter //
+    //-------------//
+    private abstract class TimeAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        /** Best inter per time shape. */
+        public Map<Shape, Inter> bestMap = new EnumMap<>(Shape.class);
+
+        public TimeAdapter (List<Glyph> parts)
+        {
+            super(parts, params.maxPartGap);
+        }
+
+        public void cleanup ()
+        {
+            for (Inter inter : bestMap.values()) {
+                inter.remove();
+            }
+        }
+
+        public Inter getSingleInter ()
+        {
+            for (Inter inter : bestMap.values()) {
+                if (!inter.isRemoved()) {
+                    return inter;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return bounds.width > params.maxTimeWidth;
         }
     }
 

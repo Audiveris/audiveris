@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -71,6 +71,7 @@ public class SegmentsBuilder
     private static final Color SEGMENT = Color.CYAN;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Scale-dependent parameters. */
     private final Parameters params;
 
@@ -78,6 +79,7 @@ public class SegmentsBuilder
     private final List<SegmentInter> segments;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SegmentsBuilder object.
      *
@@ -91,60 +93,6 @@ public class SegmentsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // buildSegments //
-    //---------------//
-    /**
-     * Build segments (for wedges and endings).
-     */
-    public void buildSegments ()
-    {
-        try {
-            List<Arc> relevants = getSeedArcs();
-
-            for (Arc arc : relevants) {
-                ///logger.info("buildSegments for {}", arc);
-                buildCurve(arc);
-            }
-
-            // Purge duplicates
-            ///logger.info("purgeDuplicates...");
-            purgeDuplicates();
-
-            logger.info("Segments: {}", segments.size());
-            logger.debug("Segment maxClumpSize: {}", maxClumpSize);
-        } catch (Throwable ex) {
-            logger.warn("Error in SegmentsBuilder: " + ex, ex);
-        }
-    }
-
-    @Override
-    public void renderItems (Graphics2D g)
-    {
-        final Rectangle clip = g.getClipBounds();
-
-        // Render info attachments
-        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-
-        for (SegmentInter segment : segments) {
-            segment.getInfo().renderAttachments(g);
-        }
-
-        // Render segments
-        g.setColor(SEGMENT);
-
-        for (SegmentInter segment : segments) {
-            Shape curve = segment.getInfo().getModel().getCurve();
-
-            if (curve != null) {
-                if ((clip == null) || clip.intersects(curve.getBounds())) {
-                    g.draw(curve);
-                }
-            }
-        }
-
-        g.setStroke(oldStroke);
-    }
 
     //--------//
     // addArc //
@@ -181,6 +129,33 @@ public class SegmentsBuilder
             logger.debug("{} could not add {} dist:{}", segment, arc, dist);
 
             return null;
+        }
+    }
+
+    //---------------//
+    // buildSegments //
+    //---------------//
+    /**
+     * Build segments (for wedges and endings).
+     */
+    public void buildSegments ()
+    {
+        try {
+            List<Arc> relevants = getSeedArcs();
+
+            for (Arc arc : relevants) {
+                ///logger.info("buildSegments for {}", arc);
+                buildCurve(arc);
+            }
+
+            // Purge duplicates
+            ///logger.info("purgeDuplicates...");
+            purgeDuplicates();
+
+            logger.info("Segments: {}", segments.size());
+            logger.debug("Segment maxClumpSize: {}", maxClumpSize);
+        } catch (Throwable ex) {
+            logger.warn("Error in SegmentsBuilder: " + ex, ex);
         }
     }
 
@@ -248,21 +223,6 @@ public class SegmentsBuilder
         return curve.getModel().getEndVector(reverse);
     }
 
-    @Override
-    protected void pruneClump (Set<Inter> clump)
-    {
-    }
-
-    @Override
-    protected void weed (Set<Curve> clump)
-    {
-        // Simply keep the one with longest X range.
-        List<Curve> list = new ArrayList<>(clump);
-        Collections.sort(list, Curve.byReverseXLength);
-        clump.clear();
-        clump.add(list.get(0));
-    }
-
     //-------------//
     // getSeedArcs //
     //-------------//
@@ -300,7 +260,8 @@ public class SegmentsBuilder
             }
 
             // Check location with respect to staves
-            for (boolean rev : new boolean[]{true, false}) {
+            for (boolean rev : new boolean[]
+            { true, false }) {
                 Point end = arc.getEnd(rev);
                 Staff staff = staffManager.getClosestStaff(end);
                 double dist = staff.distanceTo(end);
@@ -317,6 +278,11 @@ public class SegmentsBuilder
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
+    }
+
+    @Override
+    protected void pruneClump (Set<Inter> clump)
+    {
     }
 
     //-----------------//
@@ -346,7 +312,46 @@ public class SegmentsBuilder
         }
     }
 
+    @Override
+    public void renderItems (Graphics2D g)
+    {
+        final Rectangle clip = g.getClipBounds();
+
+        // Render info attachments
+        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+
+        for (SegmentInter segment : segments) {
+            segment.getInfo().renderAttachments(g);
+        }
+
+        // Render segments
+        g.setColor(SEGMENT);
+
+        for (SegmentInter segment : segments) {
+            Shape curve = segment.getInfo().getModel().getCurve();
+
+            if (curve != null) {
+                if ((clip == null) || clip.intersects(curve.getBounds())) {
+                    g.draw(curve);
+                }
+            }
+        }
+
+        g.setStroke(oldStroke);
+    }
+
+    @Override
+    protected void weed (Set<Curve> clump)
+    {
+        // Simply keep the one with longest X range.
+        List<Curve> list = new ArrayList<>(clump);
+        Collections.sort(list, Curve.byReverseXLength);
+        clump.clear();
+        clump.add(list.get(0));
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -65,6 +65,15 @@ public class ArpeggiatoInter
     public static final double DEFAULT_THICKNESS = 10.0;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private ArpeggiatoInter ()
+    {
+        super(null, null, (Double) null);
+    }
+
     /**
      * Creates a new <code>ArpeggiatoInter</code> object.
      *
@@ -77,15 +86,8 @@ public class ArpeggiatoInter
         super(glyph, Shape.ARPEGGIATO, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private ArpeggiatoInter ()
-    {
-        super(null, null, (Double) null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -164,66 +166,6 @@ public class ArpeggiatoInter
         return DEFAULT_THICKNESS;
     }
 
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
-        final int profile = Math.max(getProfile(), system.getProfile());
-        Link link = lookupLink(systemHeadChords, system, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, ChordArpeggiatoRelation.class);
-    }
-
-    //-----------------//
-    // upgradeOldStuff //
-    //-----------------//
-    @Override
-    public boolean upgradeOldStuff (List<Version> upgrades)
-    {
-        boolean upgraded = false;
-
-        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
-            if (median == null) {
-                getBounds();
-
-                if (bounds != null) {
-                    Rectangle b = bounds;
-                    median = new Line2D.Double(b.x + b.width / 2.0, b.y,
-                                               b.x + b.width / 2.0, b.y + b.height);
-                    upgraded = true;
-                }
-            }
-
-            if (width == null) {
-                if (glyph != null) {
-                    width = glyph.getMeanThickness(VERTICAL);
-                    upgraded = true;
-                }
-            }
-
-            if (upgraded) {
-                computeArea();
-            }
-        }
-
-        return upgraded;
-    }
-
     //------------//
     // lookupLink //
     //------------//
@@ -282,6 +224,71 @@ public class ArpeggiatoInter
 
         return new Link(bestChord, rel, false);
     }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        final int profile = Math.max(getProfile(), system.getProfile());
+        Link link = lookupLink(systemHeadChords, system, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordArpeggiatoRelation.class);
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            if (median == null) {
+                getBounds();
+
+                if (bounds != null) {
+                    Rectangle b = bounds;
+                    median = new Line2D.Double(
+                            b.x + b.width / 2.0,
+                            b.y,
+                            b.x + b.width / 2.0,
+                            b.y + b.height);
+                    upgraded = true;
+                }
+            }
+
+            if (width == null) {
+                if (glyph != null) {
+                    width = glyph.getMeanThickness(VERTICAL);
+                    upgraded = true;
+                }
+            }
+
+            if (upgraded) {
+                computeArea();
+            }
+        }
+
+        return upgraded;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // createValidAdded //

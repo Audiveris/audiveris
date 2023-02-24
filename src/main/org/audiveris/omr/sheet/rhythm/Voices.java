@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,9 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
+
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
@@ -43,7 +46,6 @@ import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
-import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,20 +164,6 @@ public abstract class Voices
     // colorOf //
     //---------//
     /**
-     * Report the color to use when painting elements related to the provided voice.
-     *
-     * @param voice the provided voice
-     * @return the color to use
-     */
-    public static Color colorOf (Voice voice)
-    {
-        return colorOf(voice.getId());
-    }
-
-    //---------//
-    // colorOf //
-    //---------//
-    /**
      * Report the color to use when painting elements related to the provided voice ID.
      *
      * @param id the provided voice id
@@ -189,6 +177,20 @@ public abstract class Voices
         return voiceColors[index];
     }
 
+    //---------//
+    // colorOf //
+    //---------//
+    /**
+     * Report the color to use when painting elements related to the provided voice.
+     *
+     * @param voice the provided voice
+     * @return the color to use
+     */
+    public static Color colorOf (Voice voice)
+    {
+        return colorOf(voice.getId());
+    }
+
     //---------------//
     // getColorCount //
     //---------------//
@@ -200,6 +202,62 @@ public abstract class Voices
     public static int getColorCount ()
     {
         return voiceColors.length;
+    }
+
+    //-----------//
+    // getTiedId //
+    //-----------//
+    /**
+     * Check whether the provided voice is tied (via a tie slur) to a previous voice
+     * and thus must use the same ID.
+     *
+     * @param voice       the voice to check
+     * @param slurAdapter to provide the linked slur at previous location
+     * @return the imposed ID if any, null otherwise
+     */
+    private static Integer getTiedId (Voice voice,
+                                      SlurAdapter slurAdapter)
+    {
+        final AbstractChordInter firstChord = voice.getFirstChord();
+
+        if (firstChord == null) {
+            return null;
+        }
+
+        final SIGraph sig = firstChord.getSig();
+
+        // Is there an incoming tie on a head of this chord?
+        for (Inter note : firstChord.getNotes()) {
+            if (note instanceof HeadInter) {
+                for (Relation r : sig.getRelations(note, SlurHeadRelation.class)) {
+                    SlurHeadRelation shRel = (SlurHeadRelation) r;
+
+                    if (shRel.getSide() == RIGHT) {
+                        SlurInter slur = (SlurInter) sig.getOppositeInter(note, r);
+
+                        if (slur.isTie()) {
+                            SlurInter prevSlur = slurAdapter.getInitialSlur(slur);
+
+                            if (prevSlur != null) {
+                                HeadInter left = prevSlur.getHead(LEFT);
+
+                                if (left != null) {
+                                    final Voice leftVoice = left.getVoice();
+                                    logger.debug("{} ties {} over to {}", slur, voice, leftVoice);
+
+                                    // Can be null if rhythm could not process the whole measure
+                                    if (leftVoice != null) {
+                                        return leftVoice.getId();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     //------------//
@@ -453,62 +511,6 @@ public abstract class Voices
                 prevMeasure = measure;
             }
         }
-    }
-
-    //-----------//
-    // getTiedId //
-    //-----------//
-    /**
-     * Check whether the provided voice is tied (via a tie slur) to a previous voice
-     * and thus must use the same ID.
-     *
-     * @param voice       the voice to check
-     * @param slurAdapter to provide the linked slur at previous location
-     * @return the imposed ID if any, null otherwise
-     */
-    private static Integer getTiedId (Voice voice,
-                                      SlurAdapter slurAdapter)
-    {
-        final AbstractChordInter firstChord = voice.getFirstChord();
-
-        if (firstChord == null) {
-            return null;
-        }
-
-        final SIGraph sig = firstChord.getSig();
-
-        // Is there an incoming tie on a head of this chord?
-        for (Inter note : firstChord.getNotes()) {
-            if (note instanceof HeadInter) {
-                for (Relation r : sig.getRelations(note, SlurHeadRelation.class)) {
-                    SlurHeadRelation shRel = (SlurHeadRelation) r;
-
-                    if (shRel.getSide() == RIGHT) {
-                        SlurInter slur = (SlurInter) sig.getOppositeInter(note, r);
-
-                        if (slur.isTie()) {
-                            SlurInter prevSlur = slurAdapter.getInitialSlur(slur);
-
-                            if (prevSlur != null) {
-                                HeadInter left = prevSlur.getHead(LEFT);
-
-                                if (left != null) {
-                                    final Voice leftVoice = left.getVoice();
-                                    logger.debug("{} ties {} over to {}", slur, voice, leftVoice);
-
-                                    // Can be null if rhythm could not process the whole measure
-                                    if (leftVoice != null) {
-                                        return leftVoice.getId();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------

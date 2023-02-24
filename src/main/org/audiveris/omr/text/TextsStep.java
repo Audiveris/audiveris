@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,12 +34,12 @@ import org.audiveris.omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ij.process.ByteProcessor;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>TextsStep</code> discovers text items in a system area.

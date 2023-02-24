@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,6 +54,13 @@ public class ImageHolder
     public static final String IMAGE_FORMAT = "png";
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /** No-arg constructor needed for JAXB. */
+    private ImageHolder ()
+    {
+        super();
+    }
+
     /**
      * Creates a new <code>ImageHolder</code> object.
      *
@@ -64,19 +71,14 @@ public class ImageHolder
         super(key + "." + IMAGE_FORMAT);
     }
 
-    /** No-arg constructor needed for JAXB. */
-    private ImageHolder ()
-    {
-        super();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // load //
     //------//
     @Override
     protected BufferedImage load (InputStream is)
-            throws Exception
+        throws Exception
     {
         return ImageIO.read(is);
     }
@@ -86,7 +88,7 @@ public class ImageHolder
     //-------//
     @Override
     protected void store (OutputStream os)
-            throws Exception
+        throws Exception
     {
         ImageIO.write(data, IMAGE_FORMAT, os);
     }

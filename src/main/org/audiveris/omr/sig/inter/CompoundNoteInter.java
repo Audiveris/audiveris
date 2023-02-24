@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,7 +23,12 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
+import static org.audiveris.omr.glyph.Shape.HALF_NOTE_UP;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_BLACK;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
+import static org.audiveris.omr.glyph.Shape.QUARTER_NOTE_DOWN;
+import static org.audiveris.omr.glyph.Shape.QUARTER_NOTE_UP;
+import static org.audiveris.omr.glyph.Shape.STEM;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
@@ -75,9 +80,11 @@ public class CompoundNoteInter
 {
 
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(CompoundNoteInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Included head. */
     private final HeadInter head;
 
@@ -88,6 +95,7 @@ public class CompoundNoteInter
     private Model model;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>CompoundNoteInter</code> object.
      *
@@ -111,6 +119,37 @@ public class CompoundNoteInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // getModel //
+    //----------//
+    /**
+     * Build a poor-man model, just from staff and bounds (from glyph?).
+     *
+     * @return the created model
+     */
+    private Model buildModel ()
+    {
+        if (bounds == null || staff == null) {
+            return null;
+        }
+
+        final Point center = getCenter();
+        final int staffInterline = staff.getSpecificInterline();
+        final int halfInterline = staffInterline / 2;
+        final Point hCenter = new Point(
+                center.x,
+                isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
+        final Sheet sheet = staff.getSystem().getSheet();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, staffInterline);
+        final CompoundNoteSymbol symbol = (CompoundNoteSymbol) font.getSymbol(shape);
+        deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter);
+        logger.debug("{}", model);
+
+        return model;
+    }
+
     //------------//
     // deriveFrom //
     //------------//
@@ -171,34 +210,20 @@ public class CompoundNoteInter
         return new HeadInter.Tracker(this, sheet);
     }
 
-    //----------//
-    // getModel //
-    //----------//
-    /**
-     * Build a poor-man model, just from staff and bounds (from glyph?).
-     *
-     * @return the created model
-     */
-    private Model buildModel ()
+    //-----------//
+    // isQuarter //
+    //-----------//
+    private boolean isQuarter ()
     {
-        if (bounds == null || staff == null) {
-            return null;
-        }
+        return (shape == QUARTER_NOTE_UP) || (shape == QUARTER_NOTE_DOWN);
+    }
 
-        final Point center = getCenter();
-        final int staffInterline = staff.getSpecificInterline();
-        final int halfInterline = staffInterline / 2;
-        final Point hCenter = new Point(
-                center.x,
-                isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
-        final Sheet sheet = staff.getSystem().getSheet();
-        final MusicFamily family = sheet.getStub().getMusicFamily();
-        final MusicFont font = MusicFont.getBaseFont(family, staffInterline);
-        final CompoundNoteSymbol symbol = (CompoundNoteSymbol) font.getSymbol(shape);
-        deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter);
-        logger.debug("{}", model);
-
-        return model;
+    //------//
+    // isUp //
+    //------//
+    private boolean isUp ()
+    {
+        return (shape == QUARTER_NOTE_UP) || (shape == HALF_NOTE_UP);
     }
 
     //--------//
@@ -284,23 +309,8 @@ public class CompoundNoteInter
         return stem.lookupBeamLinks(system, profile);
     }
 
-    //-----------//
-    // isQuarter //
-    //-----------//
-    private boolean isQuarter ()
-    {
-        return (shape == QUARTER_NOTE_UP) || (shape == QUARTER_NOTE_DOWN);
-    }
-
-    //------//
-    // isUp //
-    //------//
-    private boolean isUp ()
-    {
-        return (shape == QUARTER_NOTE_UP) || (shape == HALF_NOTE_UP);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Model //
     //-------//
@@ -317,6 +327,13 @@ public class CompoundNoteInter
         public Point2D headCenter; // Head center
 
         @Override
+        public String toString ()
+        {
+            return new StringBuilder("noteModel{").append(" box:").append(box).append(
+                    " headCenter:").append(headCenter).append('}').toString();
+        }
+
+        @Override
         public void translate (double dx,
                                double dy)
         {
@@ -324,13 +341,6 @@ public class CompoundNoteInter
             GeoUtil.translate2D(box, dx, dy);
             GeoUtil.translate2D(headBox, dx, dy);
             GeoUtil.translate2D(stemBox, dx, dy);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return new StringBuilder("noteModel{").append(" box:").append(box).append(
-                    " headCenter:").append(headCenter).append('}').toString();
         }
     }
 }

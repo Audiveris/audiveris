@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,20 +47,6 @@ public abstract class AbstractStemConnection
     protected Point2D extensionPoint;
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getStemPortion //
-    //----------------//
-    /**
-     * Report the portion of the stem the provided source is connected to
-     *
-     * @param source   the item connected to the stem (head, beam, flag)
-     * @param stemLine logical range of the stem
-     * @param scale    global scale
-     * @return the stem Portion
-     */
-    public abstract StemPortion getStemPortion (Inter source,
-                                                Line2D stemLine,
-                                                Scale scale);
 
     //-------------------//
     // getExtensionPoint //
@@ -81,18 +67,20 @@ public abstract class AbstractStemConnection
         return extensionPoint;
     }
 
-    //-------------------//
-    // setExtensionPoint //
-    //-------------------//
+    //----------------//
+    // getStemPortion //
+    //----------------//
     /**
-     * Set the logical extension point.
+     * Report the portion of the stem the provided source is connected to
      *
-     * @param extensionPoint the extension point to set
+     * @param source   the item connected to the stem (head, beam, flag)
+     * @param stemLine logical range of the stem
+     * @param scale    global scale
+     * @return the stem Portion
      */
-    public void setExtensionPoint (Point2D extensionPoint)
-    {
-        this.extensionPoint = extensionPoint;
-    }
+    public abstract StemPortion getStemPortion (Inter source,
+                                                Line2D stemLine,
+                                                Scale scale);
 
     //-----------//
     // internals //
@@ -111,5 +99,18 @@ public abstract class AbstractStemConnection
         }
 
         return sb.toString();
+    }
+
+    //-------------------//
+    // setExtensionPoint //
+    //-------------------//
+    /**
+     * Set the logical extension point.
+     *
+     * @param extensionPoint the extension point to set
+     */
+    public void setExtensionPoint (Point2D extensionPoint)
+    {
+        this.extensionPoint = extensionPoint;
     }
 }

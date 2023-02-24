@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,13 +42,14 @@ public class InputQualityParam
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     public static class JaxbAdapter
             extends XmlAdapter<InputQuality, InputQualityParam>
     {
 
         @Override
         public InputQuality marshal (InputQualityParam iqp)
-                throws Exception
+            throws Exception
         {
             if (iqp == null) {
                 return null;
@@ -59,7 +60,7 @@ public class InputQualityParam
 
         @Override
         public InputQualityParam unmarshal (InputQuality value)
-                throws Exception
+            throws Exception
         {
             if (value == null) {
                 return null;

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -29,7 +31,6 @@ import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +59,12 @@ public class BeamSymbol
     private static final Logger logger = LoggerFactory.getLogger(BeamSymbol.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Specified beam thickness, if any, as a ratio of interline. */
     protected Double thicknessFraction;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a BeamSymbol.
      *
@@ -85,6 +88,7 @@ public class BeamSymbol
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
@@ -96,49 +100,6 @@ public class BeamSymbol
         p.model.translate(p.vectorTo(location));
 
         return p.model;
-    }
-
-    //-------------//
-    // updateModel //
-    //-------------//
-    @Override
-    public void updateModel (Sheet sheet)
-    {
-        // We use this call to precisely adapt beam thickness using sheet scale info on beams
-        final Scale scale = sheet.getScale();
-        final BeamScale beamScale = scale.getBeamScale();
-
-        if (!beamScale.isExtrapolated()) {
-            thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
-        }
-    }
-
-    //-------------//
-    // updateModel //
-    //-------------//
-    @Override
-    public void updateModel (Staff staff)
-    {
-        // We use this call to precisely adapt beam thickness using staff scale info on beams
-        final Scale scale = staff.getSystem().getSheet().getScale();
-
-        // Special case for small beam (in small staff)
-        if (staff.isSmall()) {
-            final BeamScale smallBeamScale = scale.getSmallBeamScale();
-            if (smallBeamScale != null) {
-                thicknessFraction = (double) smallBeamScale.getMain() / scale.getInterline();
-                logger.debug("small thicknessFraction: {}", thicknessFraction);
-                return;
-            }
-        }
-
-        // Default beam
-        final BeamScale beamScale = scale.getBeamScale();
-
-        if (!beamScale.isExtrapolated()) {
-            thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
-            logger.debug("thicknessFraction: {}", thicknessFraction);
-        }
     }
 
     //-----------//
@@ -242,7 +203,51 @@ public class BeamSymbol
         }
     }
 
+    //-------------//
+    // updateModel //
+    //-------------//
+    @Override
+    public void updateModel (Sheet sheet)
+    {
+        // We use this call to precisely adapt beam thickness using sheet scale info on beams
+        final Scale scale = sheet.getScale();
+        final BeamScale beamScale = scale.getBeamScale();
+
+        if (!beamScale.isExtrapolated()) {
+            thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
+        }
+    }
+
+    //-------------//
+    // updateModel //
+    //-------------//
+    @Override
+    public void updateModel (Staff staff)
+    {
+        // We use this call to precisely adapt beam thickness using staff scale info on beams
+        final Scale scale = staff.getSystem().getSheet().getScale();
+
+        // Special case for small beam (in small staff)
+        if (staff.isSmall()) {
+            final BeamScale smallBeamScale = scale.getSmallBeamScale();
+            if (smallBeamScale != null) {
+                thicknessFraction = (double) smallBeamScale.getMain() / scale.getInterline();
+                logger.debug("small thicknessFraction: {}", thicknessFraction);
+                return;
+            }
+        }
+
+        // Default beam
+        final BeamScale beamScale = scale.getBeamScale();
+
+        if (!beamScale.isExtrapolated()) {
+            thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
+            logger.debug("thicknessFraction: {}", thicknessFraction);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//

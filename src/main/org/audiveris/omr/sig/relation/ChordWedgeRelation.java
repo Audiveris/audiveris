@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,12 +48,20 @@ public class ChordWedgeRelation
 
     // Persistent data
     //----------------
-    //
+
     /** Left or right side of the wedge. */
     @XmlAttribute
     private HorizontalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB and user allocation.
+     */
+    public ChordWedgeRelation ()
+    {
+    }
+
     /**
      * Creates a new <code>ChordWedgeRelation</code> object.
      *
@@ -64,14 +72,8 @@ public class ChordWedgeRelation
         this.side = side;
     }
 
-    /**
-     * No-arg constructor meant for JAXB and user allocation.
-     */
-    public ChordWedgeRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//

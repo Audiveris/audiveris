@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,6 +57,13 @@ public class SmallChordInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected SmallChordInter ()
+    {
+    }
+
+    /**
      * Creates a new <code>SmallChordInter</code> object.
      *
      * @param grade the intrinsic grade
@@ -80,14 +87,8 @@ public class SmallChordInter
         super(glyph, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    protected SmallChordInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -118,21 +119,6 @@ public class SmallChordInter
         }
 
         return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
-        final HeadInter head = getLeadingNote();
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final Link link = lookupLink(system, systemHeadChords, head.getCenter(), profile);
-        return (link != null) ? Arrays.asList(link) : Collections.emptyList();
     }
 
     //------------//
@@ -213,5 +199,20 @@ public class SmallChordInter
         }
 
         return (bestRel != null) ? new Link(bestChord, bestRel, false) : null;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        final HeadInter head = getLeadingNote();
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(system, systemHeadChords, head.getCenter(), profile);
+        return (link != null) ? Arrays.asList(link) : Collections.emptyList();
     }
 }

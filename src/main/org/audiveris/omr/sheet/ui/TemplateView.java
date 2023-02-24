@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import static org.audiveris.omr.ui.selection.SelectionHint.CONTEXT_INIT;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.Anchored;
@@ -34,12 +36,11 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
-import static org.audiveris.omr.ui.selection.SelectionHint.CONTEXT_INIT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.UIUtil;
 
@@ -84,6 +85,7 @@ public class TemplateView
             0.25f);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final Sheet sheet;
 
     private final DistanceTable table;
@@ -95,6 +97,7 @@ public class TemplateView
     private Point refPoint;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TemplateView</code> object.
      *
@@ -117,6 +120,7 @@ public class TemplateView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // contextSelected //
     //-----------------//
@@ -270,6 +274,7 @@ public class TemplateView
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class GlyphsController
     private static final Logger logger = LoggerFactory.getLogger(GlyphsController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related model. */
     protected final GlyphsModel model;
 
@@ -57,6 +58,7 @@ public class GlyphsController
     protected final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an instance of GlyphsController, with its underlying GlyphsModel instance.
      *
@@ -70,6 +72,7 @@ public class GlyphsController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------------//
     // asyncAssignGlyphs //
     //-------------------//
