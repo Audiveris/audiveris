@@ -32,8 +32,6 @@ import org.audiveris.omr.sig.SIGraph;
  */
 public abstract class UITask
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** A name for task action. */

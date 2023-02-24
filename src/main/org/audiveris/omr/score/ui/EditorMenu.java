@@ -151,6 +151,10 @@ public class EditorMenu
     //----------------//
     private Page getCurrentPage (Point2D point)
     {
+        if (sheet.getPages().size() == 1) {
+            return sheet.getPages().get(0);
+        }
+
         List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(point);
 
         Page p = null;
