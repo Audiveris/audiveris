@@ -828,7 +828,7 @@ public abstract class SheetPainter
                     center.getX(),
                     staff.pitchToOrdinate(center.getX(), inter.getPitch()));
 
-            final FontSymbol fs = shape.getFontSymbol(getMusicFont(staff));
+            final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
 
             if (fs != null) {
                 final TextLayout layout = fs.getLayout();

@@ -21,13 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-import static org.audiveris.omr.util.VerticalSide.BOTTOM;
-import static org.audiveris.omr.util.VerticalSide.TOP;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -68,10 +61,16 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -641,7 +640,8 @@ public class BeamLinker
      */
     private void purgeSeeds (List<Glyph> seeds)
     {
-        NextSeed: for (int i = 0; i < seeds.size(); i++) {
+        NextSeed:
+        for (int i = 0; i < seeds.size(); i++) {
             final Glyph s1 = seeds.get(i);
             final Line2D l1 = s1.getCenterLine();
             final Point2D p1 = LineUtil.intersection(l1, median);
@@ -1614,7 +1614,7 @@ public class BeamLinker
                         stemProfile);
                 if (bsLink == null) {
                     if (beam.isVip()) {
-                        logger.info(" VIP {} no beam link", this);
+                        logger.info("VIP {} no beam link", this);
                     }
                     return false;
                 }

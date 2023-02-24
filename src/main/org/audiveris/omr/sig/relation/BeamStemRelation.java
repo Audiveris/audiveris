@@ -362,9 +362,10 @@ public class BeamStemRelation
         bRel.setBeamPortion(portion);
 
         // Abscissa
+        final double halfStemWidth = scale.getStemThickness() / 2.0;
         final double xGap = (portion == BeamPortion.CENTER) ? 0
-                : ((portion == BeamPortion.LEFT) ? beamBorder.getX1() - xStem
-                        : xStem - beamBorder.getX2());
+                : ((portion == BeamPortion.LEFT) ? beamBorder.getX1() + halfStemWidth - xStem
+                        : xStem - beamBorder.getX2() + halfStemWidth);
 
         // Ordinate
         final double yGap = Math.max(
