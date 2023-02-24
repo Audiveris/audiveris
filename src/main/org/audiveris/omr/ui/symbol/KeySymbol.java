@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.KeyInter;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -41,6 +43,10 @@ import java.awt.geom.Rectangle2D;
 public abstract class KeySymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(KeySymbol.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /**

@@ -1264,25 +1264,21 @@ public abstract class SheetPainter
             // Normally, key ensemble is painted via its alter members
             // But for a manual key, there are no members available, so we paint the symbol
             if (key.isManual()) {
-                if (key.isCancel()) {
-                    final Rectangle bounds = key.getBounds();
+                final Rectangle bounds = key.getBounds();
 
-                    if (bounds != null) {
-                        final Point2D center = GeoUtil.center2D(bounds);
-                        final Staff staff = key.getStaff();
-                        setColor(key);
+                if (bounds != null) {
+                    final Point2D center = GeoUtil.center2D(bounds);
+                    final Staff staff = key.getStaff();
+                    setColor(key);
 
-                        final MusicFont font = getMusicFont(staff);
-                        ShapeSymbol symbol = key.getSymbolToDraw(font);
+                    final MusicFont font = getMusicFont(staff);
+                    ShapeSymbol symbol = key.getSymbolToDraw(font);
 
-                        if (symbol == null) {
-                            symbol = font.getSymbol(Shape.NON_DRAGGABLE);
-                        }
-
-                        symbol.paintSymbol(g, font, center, AREA_CENTER);
+                    if (symbol == null) {
+                        symbol = font.getSymbol(Shape.NON_DRAGGABLE);
                     }
-                } else {
-                    visit((Inter) key);
+
+                    symbol.paintSymbol(g, font, center, AREA_CENTER);
                 }
             }
         }

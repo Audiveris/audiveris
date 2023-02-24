@@ -119,6 +119,8 @@ public class KeyInter
     @XmlAttribute(name = "fifths")
     private Integer fifths;
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * No-arg constructor needed for JAXB.
      */
@@ -126,8 +128,6 @@ public class KeyInter
     {
         super(null, null, null, (Double) null, null, null);
     }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new KeyInter object.
@@ -225,11 +225,12 @@ public class KeyInter
             // First call, needed to get bounds of new key symbol
             super.deriveFrom(keySymbol, sheet, font, dropLocation);
 
-            // Modify dropLocation to snap vertically on staff lines
+            // Modify dropLocation to snap vertically on staff lines according to effective clef
             Double y = getSnapOrdinate(keySymbol.fifths, effectiveClef.getKind());
 
             if (y != null) {
                 dropLocation.y = (int) Math.rint(y);
+
                 // Second call, to update KeyInter ghost using refined location
                 super.deriveFrom(keySymbol, sheet, font, dropLocation);
             }
