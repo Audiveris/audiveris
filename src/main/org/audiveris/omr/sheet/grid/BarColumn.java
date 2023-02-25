@@ -156,15 +156,13 @@ public class BarColumn
     //---------------//
     private boolean computeStatus ()
     {
-        int nb = 0;
-
         for (StaffPeak peak : peaks) {
-            if ((peak != null) && !peak.isBrace()) {
-                nb++;
+            if (peak == null || peak.isBrace()) {
+                return false;
             }
         }
 
-        return nb == peaks.length;
+        return true;
     }
 
     //----------//

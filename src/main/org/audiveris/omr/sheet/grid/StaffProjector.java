@@ -672,6 +672,21 @@ public class StaffProjector
         return null;
     }
 
+    //------//
+    // dump //
+    //------//
+    public void dump ()
+    {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(this);
+
+        for (StaffPeak peak : peaks) {
+            sb.append("\n   ").append(peak);
+        }
+
+        logger.info(sb.toString());
+    }
+
     //---------------//
     // findAllBlanks //
     //---------------//

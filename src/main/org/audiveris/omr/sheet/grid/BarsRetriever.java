@@ -2492,9 +2492,8 @@ public class BarsRetriever
 
         // Draw Connections (outside of staff height)
         for (BarAlignment align : peakGraph.edgeSet()) {
-            if (align instanceof BarConnection) {
-                BarConnection connection = (BarConnection) align;
-                Line2D median = connection.getMedian();
+            if (align instanceof BarConnection connection) {
+                final Line2D median = connection.getMedian();
 
                 if (median.intersects(clip)) {
                     g.draw(median);
@@ -2612,7 +2611,7 @@ public class BarsRetriever
                 "Maximum abscissa shift within a column");
 
         // For C-clefs -----------------------------------------------------------------------------
-        //
+
         private final Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(
                 0.3,
                 "Minimum width for first peak of C-Clef");
@@ -2626,7 +2625,7 @@ public class BarsRetriever
                 "Typical width for tail of C-Clef, from second peak to right end");
 
         // For braces ------------------------------------------------------------------------------
-        //
+
         private final Scale.Fraction braceLeftMargin = new Scale.Fraction(
                 0.5,
                 "Margin on left side of brace peak to retrieve full glyph");
@@ -2676,7 +2675,7 @@ public class BarsRetriever
                 "Minimum vertical gap between two part staves to be separated");
 
         // For brackets ----------------------------------------------------------------------------
-        //
+
         private final Scale.Fraction minBracketWidth = new Scale.Fraction(
                 0.25,
                 "Minimum width for a bracket peak");

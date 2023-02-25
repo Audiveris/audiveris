@@ -1074,7 +1074,7 @@ public class FilamentFactory<F extends Filament>
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
-        //
+
         private final Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
                 1.5,
                 "Maximum filament thickness WRT mean line height");
@@ -1085,7 +1085,7 @@ public class FilamentFactory<F extends Filament>
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        //
+
         private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
                 1,
                 "Minimum length for a section to be considered as core");

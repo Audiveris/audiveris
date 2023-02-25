@@ -266,13 +266,17 @@ public class LinesRetriever
             List<StaffFilament> lines = new ArrayList<>(cluster.getLines());
 
             // Determine rough abscissa values for left & right sides
-            double left = Integer.MAX_VALUE;
-            double right = Integer.MIN_VALUE;
-
+            // Rather than extrema, we use median values
+            final List<Double> lefts = new ArrayList<>();
+            final List<Double> rights = new ArrayList<>();
             for (StaffFilament line : lines) {
-                left = Math.min(left, line.getStartPoint().getX());
-                right = Math.max(right, line.getStopPoint().getX());
+                lefts.add(line.getStartPoint().getX());
+                rights.add(line.getStopPoint().getX());
             }
+            Collections.sort(lefts);
+            Collections.sort(rights);
+            final double left = lefts.get(lefts.size() / 2);
+            final double right = rights.get(rights.size() / 2);
 
             // Allocate Staff (or Tablature) instance
             List<LineInfo> infos = new ArrayList<>(lines.size());
@@ -489,6 +493,7 @@ public class LinesRetriever
     //---------------//
     // completeLines //
     //---------------//
+    // @formatter:off
     /**
      * Complete the retrieved staff lines whenever possible with filaments and short
      * sections left over.
@@ -508,13 +513,21 @@ public class LinesRetriever
      * <p>
      * <b>Synopsis:</b>
      * <br>
-     *
      * <pre>
-     * +defineEndPoints() + includeDiscardedFilaments() + canIncludeFilament(fil1, fil2) + fil1
-     *         .stealSections(fil2) + fillHoles() + includeSections() + canIncludeSection(fil, sct)
-     *         + fil.addSection(sct) + polishCurvature() + fillHoles() + includeStickers()
+     *      + defineEndPoints()
+     *      + includeDiscardedFilaments()
+     *          + canIncludeFilament(fil1, fil2)
+     *          + fil1.stealSections(fil2)
+     *      + fillHoles()
+     *      + includeSections()
+     *          + canIncludeSection(fil, sct)
+     *          + fil.addSection(sct)
+     *      + polishCurvature()
+     *      + fillHoles()
+     *      + includeStickers()
      * </pre>
      */
+    // @formatter:on
     public void completeLines ()
     {
         StopWatch watch = new StopWatch("completeLines");
@@ -1426,6 +1439,7 @@ public class LinesRetriever
     //---------------//
     // retrieveLines //
     //---------------//
+    // @formatter:off
     /**
      * Organize the long and thin horizontal sections into filaments that will be good
      * candidates for staff lines.
@@ -1437,14 +1451,17 @@ public class LinesRetriever
      * <p>
      * <b>Synopsis:</b>
      * <br>
-     *
      * <pre>
-     * +filamentFactory.retrieveFilaments() + retrieveGlobalSlope() + clustersRetriever.buildInfo()
-     *         + secondClustersRetriever.buildInfo() + buildStaves()
+     *      + filamentFactory.retrieveFilaments()
+     *      + retrieveGlobalSlope()
+     *      + clustersRetriever.buildInfo()
+     *      + secondClustersRetriever.buildInfo()
+     *      + buildStaves()
      * </pre>
      *
      * @throws StepException if processing failed at this step
      */
+    // @formatter:on
     public void retrieveLines ()
         throws StepException
     {

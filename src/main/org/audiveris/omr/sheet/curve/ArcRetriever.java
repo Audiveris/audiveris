@@ -683,7 +683,6 @@ public class ArcRetriever
      */
     private static class Parameters
     {
-
         final int arcMinQuorum;
 
         final int minStaffArcLength;
