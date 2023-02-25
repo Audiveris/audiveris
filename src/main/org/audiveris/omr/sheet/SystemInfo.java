@@ -998,6 +998,16 @@ public class SystemInfo
         if (systemRef == null) {
             final int systemIndex = getIndexInPage();
             final PageRef pageRef = page.getRef();
+
+            if (pageRef.getSystems().isEmpty()) {
+                // Case of old .omr files
+                final List<SystemRef> systemRefs = new ArrayList<>();
+                for (SystemInfo system : page.getSystems()) {
+                    systemRefs.add(system.buildRef());
+                }
+                pageRef.setSystems(systemRefs);
+            }
+
             systemRef = pageRef.getSystems().get(systemIndex);
         }
 
