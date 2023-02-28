@@ -34,6 +34,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.relation.Exclusion;
@@ -44,6 +45,7 @@ import org.audiveris.omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -278,6 +280,15 @@ public abstract class TimeBuilder
             }
         }
 
+        // Conflicts with existing inters?
+        final List<Inter> all = new ArrayList<>();
+        all.addAll(wholes);
+        all.addAll(nums);
+        all.addAll(dens);
+        settleConflicts(all);
+        wholes.retainAll(all);
+        nums.retainAll(all);
+
         return !wholes.isEmpty() || !nums.isEmpty();
     }
 
@@ -300,6 +311,49 @@ public abstract class TimeBuilder
     public AbstractTimeInter getTimeInter ()
     {
         return timeInter;
+    }
+
+    //-----------------//
+    // settleConflicts //
+    //-----------------//
+    /**
+     * Resolve conflicts with other inters.
+     *
+     * @param times time (whole or part) candidates
+     */
+    private void settleConflicts (List<Inter> times)
+    {
+        TimeLoop:
+        for (Iterator<Inter> itt = times.iterator(); itt.hasNext();) {
+            final Inter time = itt.next();
+            final double timeGrade = time.getGrade();
+            final Rectangle box = time.getBounds();
+            final List<Inter> neighbors = sig.inters(
+                    (inter) -> inter.getBounds().intersects(box)
+                            && !(inter instanceof InterEnsemble));
+            neighbors.removeAll(times);
+
+            for (Iterator<Inter> itn = neighbors.iterator(); itn.hasNext();) {
+                final Inter neighbor = itn.next();
+
+                if (neighbor.overlaps(time)) {
+                    if (neighbor.getGrade() <= timeGrade) {
+                        if (neighbor.isVip()) {
+                            logger.info("VIP Deleting {} overlapping {}", neighbor, time);
+                        }
+                        neighbor.remove();
+                        itn.remove();
+                    } else {
+                        if (time.isVip()) {
+                            logger.info("VIP Deleting {} overlapping {}", time, neighbor);
+                        }
+                        time.remove();
+                        itt.remove();
+                        continue TimeLoop;
+                    }
+                }
+            }
+        }
     }
 
     //----------//
