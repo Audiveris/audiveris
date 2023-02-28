@@ -53,15 +53,14 @@
     
     <!-- -5 -->
     <entry pitch-position="-5" motif="cross"    sign="PLAYING_OPEN"   sound="Open_Hi_Hat"/>
+    <entry pitch-position="-5" motif="circle"                         sound="Open_Hi_Hat"/>
     <entry pitch-position="-5" motif="cross"    sign="PLAYING_CLOSED" sound="Closed_Hi_Hat"/>   
-    <entry pitch-position="-5" motif="circle"   sound="Open_Hi_Hat"/>
-    
+    <entry pitch-position="-5" motif="cross"                          sound="Closed_Hi_Hat"/>
+
     <!-- -4 -->
     <entry pitch-position="-4" motif="oval"     sound="High_Tom"/>
-    <entry pitch-position="-4" motif="oval"     sound="Hand_Clap"/> <!-- Conflict -->
     <entry pitch-position="-4" motif="cross"    sound="Ride_Cymbal_1"/>
     <entry pitch-position="-4" motif="circle"   sound="Ride_Cymbal_1"/>
-    <entry pitch-position="-4" motif="circle"   sound="Vibraslap"/>  <!-- Conflict -->
     <entry pitch-position="-4" motif="diamond"  sound="Ride_Bell"/> <!-- Or Ride_Cymbal_1 or 2 -->
     
     <!-- -3 -->
@@ -80,7 +79,6 @@
     <!-- -1 -->
     <entry pitch-position="-1" motif="oval"     sound="Acoustic_Snare"/>
     <entry pitch-position="-1" motif="small"    sound="Acoustic_Snare"/>
-    <entry pitch-position="-1" motif="oval"     sound="Electric_Snare"/> <!-- Conflict -->
     <entry pitch-position="-1" motif="cross"    sound="Side_Stick"/>
     <entry pitch-position="-1" motif="circle"   sound="Side_Stick"/>
     
@@ -88,7 +86,7 @@
     <entry pitch-position="0" motif="oval"      sound="Low_Tom"/>
     
     <!-- 1 -->
-    <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/> <!-- Conflict -->
+    <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/>
     
     <!-- 2 -->
     <entry pitch-position="1" motif="oval"      sound="Low_Floor_Tom"/>
@@ -113,6 +111,8 @@
     To actually assign one sound, replace the "null" values by actual pitch-position and motif
     -->
     <entry pitch-position="null" motif="null" sound="Hand_Clap"/>
+    <entry pitch-position="null" motif="null" sound="Vibraslap"/>
+    <entry pitch-position="null" motif="null" sound="Electric_Snare"/>
     <entry pitch-position="null" motif="null" sound="Hi_Bongo"/>
     <entry pitch-position="null" motif="null" sound="Low_Bongo"/>
     <entry pitch-position="null" motif="null" sound="Mute_Hi_Conga"/>
