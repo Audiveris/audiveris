@@ -566,6 +566,11 @@ public class EditorMenu
         public void updateUserLocation (Rectangle rect)
         {
             final Page page = getCurrentPage(GeoUtil.center2D(rect));
+
+            if (page == null) {
+                return;
+            }
+
             score = page.getScore();
 
             setVisible(score != null);
