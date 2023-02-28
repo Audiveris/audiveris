@@ -159,15 +159,18 @@ public class RubberPanel
 
         // Zoom modifications
         inputMap.put(KeyStroke.getKeyStroke("ctrl ADD"), "ZoomInAction");
-        inputMap.put(KeyStroke.getKeyStroke("ctrl PLUS"), "ZoomInAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl EQUALS"), "ZoomInAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift EQUALS"), "ZoomInAction");
         actionMap.put("ZoomInAction", new ZoomAction(1));
 
         inputMap.put(KeyStroke.getKeyStroke("ctrl SUBTRACT"), "ZoomOutAction");
         inputMap.put(KeyStroke.getKeyStroke("ctrl MINUS"), "ZoomOutAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift MINUS"), "ZoomOutAction");
         actionMap.put("ZoomOutAction", new ZoomAction(-1));
 
         inputMap.put(KeyStroke.getKeyStroke("ctrl NUMPAD0"), "ZoomResetAction");
         inputMap.put(KeyStroke.getKeyStroke("ctrl 0"), "ZoomResetAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift 0"), "ZoomResetAction");
         actionMap.put("ZoomResetAction", new ZoomAction(0));
     }
 
