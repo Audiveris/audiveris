@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageNumber;
@@ -46,6 +43,8 @@ import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -388,31 +387,6 @@ public abstract class Voices
         }
 
         return modifs;
-    }
-
-    //-------------//
-    // refineStack //
-    //-------------//
-    /**
-     * Refine voice IDs within a stack. (METHOD NOT USED)
-     * <p>
-     * When this method is called, initial IDs have been assigned according to voice creation
-     * (measure-long voices first, then slot voices, with each voice remaining in its part).
-     * <p>
-     * Here we simply rename the IDs from top to bottom (roughly), within each staff.
-     * <p>
-     * We then extend each chord voice to its preceding cue chords.
-     *
-     * @param stack the stack to process
-     */
-    public static void refineStack (MeasureStack stack)
-    {
-        // Within each measure, sort voices vertically and rename them accordingly per staff.
-        for (Measure measure : stack.getMeasures()) {
-            measure.sortVoices();
-            measure.renameVoices();
-            measure.setCueVoices();
-        }
     }
 
     //--------------//

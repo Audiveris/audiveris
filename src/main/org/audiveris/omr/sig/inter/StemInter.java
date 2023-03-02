@@ -750,11 +750,14 @@ public class StemInter
         final Rectangle luBox = getBounds();
         luBox.grow(maxHeadOutDx, maxYGap);
 
+        // @formatter:off
         final Set<Inter> heads = new LinkedHashSet<>(
                 system.getSig().inters(
-                        (Inter inter) -> !inter.isRemoved() && ShapeSet.StemHeads.contains(
-                                inter.getShape()) && inter.getBounds().intersects(luBox)
-                                && ((HeadInter) inter).getStems().isEmpty()));
+                        (inter) -> !inter.isRemoved()
+                                   && ShapeSet.StemHeads.contains(inter.getShape())
+                                   && inter.getBounds().intersects(luBox)
+                                   && ((HeadInter) inter).getStems().isEmpty()));
+        // @formatter:on
 
         // Include also the heads already connected to the stem
         if (sig != null) {

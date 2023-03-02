@@ -1693,11 +1693,12 @@ public class HeadLinker
                 for (Entry<StemLinker, Relation> entry : relations.entrySet()) {
                     final Relation relation = entry.getValue();
 
-                    if (relation instanceof HeadStemRelation) {
+                    if (relation instanceof HeadStemRelation headStemRelation) {
                         final CLinker cl = (CLinker) entry.getKey();
                         final HeadInter h = cl.getSource();
 
                         if (null == sig.getRelation(h, stem, HeadStemRelation.class)) {
+                            headStemRelation.setConsistency(head, stem);
                             sig.addEdge(h, stem, relation);
                         }
 

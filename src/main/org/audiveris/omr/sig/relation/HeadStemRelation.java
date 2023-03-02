@@ -44,6 +44,7 @@ import org.audiveris.omr.sig.ui.UnlinkTask;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -64,6 +65,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>HeadStemRelation</code> represents the relation support between a head and a
@@ -83,6 +85,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  *  |
  *  |
  * </pre>
+ * <p>
+ * A rather long stem will boost a standard-size head while a rather short stem will boost a
+ * small-size head.
+ * This is implemented as a "consistency" attribute between head size and stem length.
  *
  * @author Hervé Bitteur
  */
@@ -101,6 +107,11 @@ public class HeadStemRelation
     /** Which side of head is used?. */
     @XmlAttribute(name = "head-side")
     private HorizontalSide headSide;
+
+    /** Consistency between head size and stem length. */
+    @XmlAttribute(name = "consistency")
+    @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
+    private Double consistency;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -192,6 +203,21 @@ public class HeadStemRelation
         return stemChord;
     }
 
+    //----------------//
+    // getConsistency //
+    //----------------//
+    /**
+     * Report consistency between head and stem sizes.
+     * <p>
+     * Neutral value (1.0) is returned if information is not available.
+     *
+     * @return a ratio measuring consistency
+     */
+    public double getConsistency ()
+    {
+        return (consistency != null) ? consistency : 1.0;
+    }
+
     //-------------//
     // getHeadSide //
     //-------------//
@@ -209,7 +235,8 @@ public class HeadStemRelation
     @Override
     protected double getSourceCoeff ()
     {
-        return constants.headSupportCoeff.getValue();
+        // Coeff is higher if stem and heads are both small or both large
+        return constants.headSupportCoeff.getValue() * getConsistency();
     }
 
     //----------------//
@@ -322,12 +349,12 @@ public class HeadStemRelation
         HeadChordInter stemChord = (!stemChords.isEmpty()) ? stemChords.get(0) : null;
 
         // Check for a canonical head share, to share head
-        final HorizontalSide headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        final HorizontalSide theHeadSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
         final StemInter headStem = headChord.getStem();
 
         final boolean sharing;
 
-        if (headSide == LEFT) {
+        if (theHeadSide == LEFT) {
             sharing = HeadStemRelation.isCanonicalShare(stem, head, headStem);
         } else {
             sharing = HeadStemRelation.isCanonicalShare(headStem, head, stem);
@@ -400,10 +427,58 @@ public class HeadStemRelation
         }
     }
 
+    //----------------//
+    // setConsistency //
+    //----------------//
+    /**
+     * Set relation consistency, based on information about head and stem sizes.
+     *
+     * @param headIsSmall      true for a small head
+     * @param scaledStemLength stem length specified in interline fraction
+     */
+    public void setConsistency (boolean headIsSmall,
+                                double scaledStemLength)
+    {
+        final double neutral = constants.neutralStemLength.getValue();
+        final double ratio = scaledStemLength / neutral;
+
+        consistency = headIsSmall ? 1.0 / ratio : ratio;
+
+        if (logger.isDebugEnabled())
+            logger.debug(
+                    String.format(
+                            "isSmall:%6s lg:%4.1f consistency:%4.1f",
+                            headIsSmall,
+                            scaledStemLength,
+                            consistency));
+    }
+
+    //----------------//
+    // setConsistency //
+    //----------------//
+    /**
+     * Set relation consistency, based on involved head and stem.
+     *
+     * @param head involved head
+     * @param stem involved stem
+     */
+    public void setConsistency (HeadInter head,
+                                StemInter stem)
+    {
+        final boolean isSmall = head.getShape().isSmallHead();
+        final Scale scale = head.getSig().getSystem().getSheet().getScale();
+        final Line2D line = stem.getMedian();
+        final int interline = scale.getInterline();
+        final double scaledStemLength = (line.getY2() - line.getY1()) / interline;
+        setConsistency(isSmall, scaledStemLength);
+    }
+
     //-------------//
     // setHeadSide //
     //-------------//
     /**
+     * Set relation head horizontal side.
+     *
      * @param headSide the headSide to set
      */
     public void setHeadSide (HorizontalSide headSide)
@@ -531,6 +606,9 @@ public class HeadStemRelation
         return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
+    //------------------//
+    // isCanonicalShare //
+    //------------------//
     /**
      * Check whether this is the canonical "shared" configuration.
      * It uses relations to stems.
@@ -547,6 +625,9 @@ public class HeadStemRelation
         return isCanonicalShare(null, leftRel, head, rightRel, null);
     }
 
+    //------------------//
+    // isCanonicalShare //
+    //------------------//
     /**
      * Check whether this is the canonical "shared" configuration.
      * It uses stems.
@@ -563,6 +644,9 @@ public class HeadStemRelation
         return isCanonicalShare(leftStem, null, head, null, rightStem);
     }
 
+    //------------------//
+    // isCanonicalShare //
+    //------------------//
     /**
      * Check whether this is the canonical "shared" configuration.
      * It uses stems and/or relations to stems.
@@ -670,5 +754,9 @@ public class HeadStemRelation
         private final Scale.Fraction maxInvadingDy = new Scale.Fraction(
                 0.0,
                 "Maximum invading vertical gap between stem & head");
+
+        private final Scale.Fraction neutralStemLength = new Scale.Fraction(
+                2.8,
+                "Neutral stem length between small and standard");
     }
 }

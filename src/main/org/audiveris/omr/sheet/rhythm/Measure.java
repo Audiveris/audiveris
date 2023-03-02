@@ -1997,19 +1997,19 @@ public class Measure
     // setCueVoices //
     //--------------//
     /**
-     * Voice of every (standard) head chord is extended to its related preceding cue
+     * Voice of every (standard) head chord is pushed to its related preceding cue
      * chord(s) if any.
      */
     public void setCueVoices ()
     {
         for (HeadChordInter ch : headChords) {
             if (!(ch instanceof SmallChordInter)) {
-                SmallChordInter small = ch.getGraceChord();
+                final Voice voice = ch.getVoice();
 
-                if (small != null) {
-                    final Voice voice = ch.getVoice();
+                if (voice != null) {
+                    final SmallChordInter small = ch.getGraceChord();
 
-                    if (voice != null) {
+                    if (small != null) {
                         small.setVoice(voice);
                     }
                 }

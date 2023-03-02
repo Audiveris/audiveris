@@ -27,10 +27,8 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.sig.relation.Relation;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -105,20 +103,6 @@ public class SmallChordInter
     public String getShapeString ()
     {
         return "SmallChord";
-    }
-
-    //----------//
-    // getVoice //
-    //----------//
-    @Override
-    public Voice getVoice ()
-    {
-        for (Relation rel : sig.getRelations(this, ChordGraceRelation.class)) {
-            AbstractChordInter stdChord = (AbstractChordInter) sig.getOppositeInter(this, rel);
-            return stdChord.getVoice();
-        }
-
-        return null;
     }
 
     //------------//

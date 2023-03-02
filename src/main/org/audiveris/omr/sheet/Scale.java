@@ -389,28 +389,21 @@ public class Scale
      */
     public Integer getItemValue (Item item)
     {
-        switch (item) {
-        case line:
-            return getFore();
+        return switch (item) {
+        case line -> getFore();
 
-        case interline:
-            return getInterline();
+        case interline -> getInterline();
 
-        case smallInterline:
-            return getSmallInterline();
+        case smallInterline -> getSmallInterline();
 
-        case beam:
-            return getBeamThickness();
+        case beam -> getBeamThickness();
 
-        case smallBeam:
-            return (smallBeamScale != null) ? smallBeamScale.getMain() : null;
+        case smallBeam -> (smallBeamScale != null) ? smallBeamScale.getMain() : null;
 
-        case stem:
-            return getStemThickness();
+        case stem -> getStemThickness();
 
-        default:
-            throw new IllegalArgumentException("No value defined for scaling item " + item);
-        }
+        default -> throw new IllegalArgumentException("No value defined for scaling item " + item);
+        };
     }
 
     //------------------------//

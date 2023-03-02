@@ -39,8 +39,8 @@ import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.stem.HeadLinker;
@@ -119,11 +119,11 @@ public class BeamsBuilder
     /** Scale-dependent global constants. */
     private final Parameters params;
 
-    /** Parameters to build items (cue or standard). */
-    private ItemParameters itemParams;
+    /** Parameters to build standard beam items. */
+    private ItemParameters stdParams;
 
-    /** Parameters to build second (standard) beams, if so needed. */
-    private ItemParameters secondItemParams;
+    /** Parameters to build small beam items, if so needed. */
+    private ItemParameters smallParams;
 
     /**
      * Beams (and hooks) for this system.
@@ -198,6 +198,10 @@ public class BeamsBuilder
 
         // Look for a parallel beam just above or below
         final ItemParameters itemParams = getItemParams(beam);
+        if (itemParams.isSmall) {
+            return;
+        }
+
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight();
         final double dy = 1.5 * ((side == TOP) ? (-height) : height);
@@ -228,11 +232,15 @@ public class BeamsBuilder
         final Scale scale = sheet.getScale();
 
         // Select parameters for standard items
-        itemParams = new ItemParameters(scale, scale.getBeamThickness());
+        stdParams = new ItemParameters(scale, scale.getItemValue(Scale.Item.beam), false);
 
-        final BeamScale secondBeamScale = scale.getSmallBeamScale();
-        if (secondBeamScale != null) {
-            secondItemParams = new ItemParameters(scale, secondBeamScale.getMain());
+        // Select parameters for small items?
+        Integer smallHeight = scale.getItemValue(Scale.Item.smallBeam);
+        if (smallHeight == null && sheet.getStub().getProcessingSwitches().getValue(smallBeams)) {
+            smallHeight = (int) Math.rint(scale.getBeamThickness() * getCueBeamRatio());
+        }
+        if (smallHeight != null) {
+            smallParams = new ItemParameters(scale, smallHeight, true);
         }
 
         // Cache input image
@@ -263,21 +271,22 @@ public class BeamsBuilder
     /**
      * Find possible cue beams interpretations around identified cue notes and stems.
      *
-     * @param spots candidate spots for cue beams
+     * @param spots (output) candidate spots for cue beams
      */
     public void buildCueBeams (List<Glyph> spots)
     {
         final Scale scale = sheet.getScale();
 
         // Select parameters for cue items
-        itemParams = new ItemParameters(
+        stdParams = new ItemParameters(
                 scale,
-                scale.getBeamThickness() * constants.cueBeamRatio.getValue());
+                scale.getBeamThickness() * constants.cueBeamRatio.getValue(),
+                true);
 
         // Cache input image
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
-        List<CueAggregate> aggregates = getCueAggregates();
+        final List<CueAggregate> aggregates = getCueAggregates();
 
         for (CueAggregate aggregate : aggregates) {
             aggregate.process(spots);
@@ -482,8 +491,7 @@ public class BeamsBuilder
     // computeBeamImpacts //
     //--------------------//
     /**
-     * Compute the grade details for the provided BeamItem, targeting
-     * a BeamInter.
+     * Compute the grade details for the provided BeamItem, targeting a BeamInter.
      *
      * @param item       the isolated beam item
      * @param above      true to check above beam item
@@ -643,7 +651,7 @@ public class BeamsBuilder
                 double itemWidth = item.median.getX2() - item.median.getX1();
                 BeamHookInter hook = null;
 
-                if (itemWidth <= itemParams.maxHookWidth) {
+                if (!itemParams.isSmall && (itemWidth <= itemParams.maxHookWidth)) {
                     logger.debug("Create hook with {}", line);
 
                     Impacts impacts = computeHookImpacts(item, distImpact, itemParams);
@@ -673,7 +681,10 @@ public class BeamsBuilder
 
                     if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
                         success = true;
-                        BeamInter beam = new BeamInter(impacts, item.median, item.height);
+                        final AbstractBeamInter beam = itemParams.isSmall ? new SmallBeamInter(
+                                impacts,
+                                item.median,
+                                item.height) : new BeamInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
                             beam.setVip(true);
@@ -708,11 +719,11 @@ public class BeamsBuilder
     {
         for (Glyph glyph : sortedBeamSpots) {
             // First attempt with standard height
-            String failure = checkBeamGlyph(glyph, false, itemParams, null);
+            String failure = checkBeamGlyph(glyph, false, stdParams, null);
 
             // Second attempt with second height, if any
-            if ((failure != null) && (secondItemParams != null)) {
-                failure = checkBeamGlyph(glyph, false, secondItemParams, null);
+            if ((failure != null) && (smallParams != null)) {
+                failure = checkBeamGlyph(glyph, false, smallParams, null);
             }
 
             if ((failure != null) && glyph.isVip()) {
@@ -955,7 +966,7 @@ public class BeamsBuilder
             }
         }
 
-        BeamInter newBeam = mergeOf(beam, other);
+        final AbstractBeamInter newBeam = mergeOf(beam, other);
 
         if (newBeam == null) {
             return false;
@@ -968,12 +979,12 @@ public class BeamsBuilder
             newBeam.setVip(true);
         }
 
-        beam.remove();
-        other.remove();
-
         if (newBeam.isVip() || logger.isDebugEnabled()) {
             logger.info("VIP Merged {} & {} into {}", beam, other, newBeam);
         }
+
+        beam.remove();
+        other.remove();
 
         return true;
     }
@@ -1048,7 +1059,10 @@ public class BeamsBuilder
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, itemParams);
 
         if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
-            BeamInter newBeam = new BeamInter(impacts, newMedian, height);
+            final AbstractBeamInter newBeam = itemParams.isSmall ? new SmallBeamInter(
+                    impacts,
+                    newMedian,
+                    height) : new BeamInter(impacts, newMedian, height);
 
             if (beam.isVip()) {
                 newBeam.setVip(true);
@@ -1249,16 +1263,16 @@ public class BeamsBuilder
     //---------------//
     private ItemParameters getItemParams (AbstractBeamInter beam)
     {
-        if (secondItemParams == null) {
-            return itemParams;
+        if (smallParams == null) {
+            return stdParams;
         }
 
         // We have 2 height populations
         final double height = beam.getHeight();
-        final double h = itemParams.typicalHeight;
-        final double sh = secondItemParams.typicalHeight;
+        final double h = stdParams.typicalHeight;
+        final double sh = smallParams.typicalHeight;
 
-        return (Math.abs(height - h) <= Math.abs(height - sh)) ? itemParams : secondItemParams;
+        return (Math.abs(height - h) <= Math.abs(height - sh)) ? stdParams : smallParams;
     }
 
     //-------------//
@@ -1370,8 +1384,8 @@ public class BeamsBuilder
      * @param two another beam
      * @return the resulting beam, or null if failed
      */
-    private BeamInter mergeOf (AbstractBeamInter one,
-                               AbstractBeamInter two)
+    private AbstractBeamInter mergeOf (AbstractBeamInter one,
+                                       AbstractBeamInter two)
     {
         final Line2D oneMedian = one.getMedian();
         final Line2D twoMedian = two.getMedian();
@@ -1405,7 +1419,8 @@ public class BeamsBuilder
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, itemParams);
 
         if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
-            return new BeamInter(impacts, median, height);
+            return itemParams.isSmall ? new SmallBeamInter(impacts, median, height)
+                    : new BeamInter(impacts, median, height);
         } else {
             return null;
         }
@@ -1601,6 +1616,21 @@ public class BeamsBuilder
         }
 
         return null;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getCueBeamRatio //
+    //-----------------//
+    /**
+     * Report the ratio of cue beam height over standard beam height.
+     *
+     * @return the cue beam ratio
+     */
+    public static double getCueBeamRatio ()
+    {
+        return constants.cueBeamRatio.getValue();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1889,7 +1919,7 @@ public class BeamsBuilder
         private List<Glyph> getCueGlyphs ()
         {
             // Expand aggregate bounds using global direction
-            Rectangle box = new Rectangle(bounds);
+            final Rectangle box = new Rectangle(bounds);
             box.grow(params.cueBoxDx, 0);
 
             if (globalDir != 0) {
@@ -1898,19 +1928,17 @@ public class BeamsBuilder
                 box.grow(0, params.cueBoxDy);
             }
 
-            // Take a small *COPY* of binary image and apply morphology
-            Picture picture = sheet.getPicture();
-            ByteProcessor whole = picture.getSource(Picture.SourceKey.BINARY);
-            ByteProcessor buf = new ByteProcessor(box.width, box.height);
+            // Take a small *COPY* of NO_STAFF image and apply morphology
+            final ByteProcessor buf = new ByteProcessor(box.width, box.height);
 
             for (int y = 0; y < box.height; y++) {
                 for (int x = 0; x < box.width; x++) {
-                    int val = whole.get(box.x + x, box.y + y);
+                    int val = pixelFilter.get(box.x + x, box.y + y);
                     buf.set(x, y, val);
                 }
             }
 
-            double beam = params.cueBeamRatio * sheet.getScale().getBeamThickness();
+            final double beam = params.cueBeamRatio * sheet.getScale().getBeamThickness();
 
             return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
         }
@@ -2013,6 +2041,12 @@ public class BeamsBuilder
             }
         }
 
+        /**
+         * Process the small head aggregate, to retrieve candidate beam glyphs and connect them
+         * to cue stems and heads.
+         *
+         * @param spots (output) the retrieved candidate beam glyphs
+         */
         private void process (List<Glyph> spots)
         {
             // Determine stem direction in the aggregate
@@ -2032,7 +2066,7 @@ public class BeamsBuilder
                 glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
                 spots.add(glyph);
                 final List<Inter> createdCues = new ArrayList<>();
-                final String failure = checkBeamGlyph(glyph, true, itemParams, createdCues);
+                final String failure = checkBeamGlyph(glyph, true, stdParams, createdCues);
                 if (failure != null) {
                     if (glyph.isVip()) {
                         logger.info("VIP cue#{} {}", glyph.getId(), failure);
@@ -2086,6 +2120,7 @@ public class BeamsBuilder
     /** Parameters that govern beam/hook items, sometimes dependent on cue/standard. */
     public static class ItemParameters
     {
+        final boolean isSmall;
 
         final double minBeamWidthLow;
 
@@ -2112,12 +2147,16 @@ public class BeamsBuilder
         /**
          * Create an ItemParameters object
          *
-         * @param scale  global sheet scale
-         * @param height expected beam height in pixels
+         * @param scale   global sheet scale
+         * @param height  expected beam height in pixels
+         * @param isSmall true for a small beam height
          */
         public ItemParameters (Scale scale,
-                               double height)
+                               double height,
+                               boolean isSmall)
         {
+            this.isSmall = isSmall;
+
             minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
             minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
             minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);

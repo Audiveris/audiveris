@@ -1389,7 +1389,7 @@ public abstract class AbstractChordInter
     // setVoice //
     //----------//
     /**
-     * Set a voice to this chord, and recursively propagate to the following chords
+     * Set a voice to this chord, and recursively propagate to the other chords
      * related by beam or tie.
      *
      * @see #justAssignVoice(Voice)
@@ -1397,7 +1397,12 @@ public abstract class AbstractChordInter
      */
     public void setVoice (Voice voice)
     {
+
         if (this.voice != voice) {
+            if (isVip()) {
+                logger.info("VIP {} setVoice from {} to {}", this, this.voice, voice);
+            }
+
             this.voice = voice;
 
             // Update the voice entity
@@ -1406,7 +1411,7 @@ public abstract class AbstractChordInter
             }
 
             // Extend to other grouped chords if any
-            BeamGroupInter group = getBeamGroup();
+            final BeamGroupInter group = getBeamGroup();
 
             if (group != null) {
                 group.setVoice(voice);

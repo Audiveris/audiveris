@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
@@ -190,6 +191,8 @@ public class SymbolsLinker
     //------------//
     /**
      * Link grace chords at their standard chord with a ChordGraceRelation.
+     * <p>
+     * This applies only to the right-most chord of a grace group.
      */
     private void linkGraces ()
     {
@@ -201,17 +204,29 @@ public class SymbolsLinker
                 logger.info("VIP linkGraces for {}", smallChord);
             }
 
+            // If part of a beam group, focus only on the right-most small chord
+            final BeamGroupInter beamGroup = smallChord.getBeamGroup();
+            if (beamGroup != null) {
+                final List<AbstractChordInter> siblings = beamGroup.getAllChords();
+                if (!siblings.isEmpty() && (smallChord != siblings.get(siblings.size() - 1))) {
+                    continue;
+                }
+            }
+
             try {
-                // Check indirect relation: chord-head -> slur -> grace-head
+                // Check indirect relation: grace-head <- slur <- chord-head
                 for (Inter interNote : smallChord.getNotes()) {
                     for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
-                        final SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                        final HeadInter head = slur.getHead(HorizontalSide.RIGHT);
+                        final SlurHeadRelation shRel = (SlurHeadRelation) rel;
+                        if (shRel.getSide() == HorizontalSide.LEFT) {
+                            final SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                            final HeadInter head = slur.getHead(HorizontalSide.RIGHT);
 
-                        if (head != null) {
-                            final HeadChordInter ch = head.getChord();
-                            sig.addEdge(ch, smallChord, new ChordGraceRelation());
-                            continue SmallLoop;
+                            if (head != null) {
+                                final HeadChordInter ch = head.getChord();
+                                sig.addEdge(ch, smallChord, new ChordGraceRelation());
+                                continue SmallLoop;
+                            }
                         }
                     }
                 }

@@ -36,6 +36,7 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -52,12 +53,12 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>SpotsBuilder</code> performs morphology analysis to retrieve the major spots
@@ -120,7 +121,7 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            // Select smaller between main beam thickness and second beam thickness
+            // Select smaller value between main beam thickness and second beam thickness
             final Scale scale = sheet.getScale();
             Integer beam = scale.getItemValue(Scale.Item.beam);
 
@@ -128,7 +129,10 @@ public class SpotsBuilder
                 throw new RuntimeException("No scale information on beam thickness");
             }
 
-            final Integer beam2 = scale.getItemValue(Scale.Item.smallBeam);
+            Integer beam2 = scale.getItemValue(Scale.Item.smallBeam);
+            if (beam2 == null && sheet.getStub().getProcessingSwitches().getValue(smallBeams)) {
+                beam2 = (int) Math.rint(beam * BeamsBuilder.getCueBeamRatio());
+            }
             if (beam2 != null) {
                 beam = Math.min(beam, beam2);
             }

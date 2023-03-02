@@ -1145,7 +1145,7 @@ public class BeamLinker
              * @param stemProfile desired profile for inclusion of additional items
              * @param linkProfile desired profile for head-stem link
              * @param relations   (output) to be populated by head-stem relations
-             * @param glyphs      (output) to be populated that glyphs that do compose the stem
+             * @param glyphs      (output) to be populated with glyphs that do compose the stem
              * @return index of last item to pick, or -1 if failed
              */
             private int expand (int stemProfile,
@@ -1638,7 +1638,13 @@ public class BeamLinker
                     cl.getSLinker().setLinked(true);
 
                     if (null == sig.getRelation(head, stem, HeadStemRelation.class)) {
-                        sig.addEdge(head, stem, entry.getValue());
+                        final boolean isSmall = head.getShape().isSmallHead();
+                        final Line2D line = stem.getMedian();
+                        final int interline = scale.getInterline();
+                        final double scaledStemLg = (line.getY2() - line.getY1()) / interline;
+                        final HeadStemRelation hsRel = (HeadStemRelation) entry.getValue();
+                        hsRel.setConsistency(isSmall, scaledStemLg);
+                        sig.addEdge(head, stem, hsRel);
                     }
                 }
 

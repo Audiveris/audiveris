@@ -36,6 +36,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Class <code>BeamsStep</code> implements <b>BEAMS</b> step, which uses the spots
  * produced by an image closing operation to retrieve all possible beam interpretations.
+ * <p>
+ * Typical beam height should have been detected by SCALE step.
+ * If not, the end-user can still force a beam height via menu Sheet | Set scaling data.
+ * <p>
+ * A secondary (small) height may have been detected by SCALE step, or forced by end-user.
+ * If the switch {@link ProcessingSwitch#smallBeams} is set, and if no secondary height is known,
+ * a default value is used (about 2/3 of typical height).
  *
  * @author Hervé Bitteur
  */
