@@ -490,16 +490,19 @@ public abstract class Curve
      *
      * @param sheet          the containing sheet
      * @param maxRunDistance maximum acceptable distance from any run extrema to curve points
+     * @param minRunRatio    minimum count of runs with respect to curve width
      * @return the curve glyph, or null
      */
     public Glyph retrieveGlyph (Sheet sheet,
-                                double maxRunDistance)
+                                double maxRunDistance,
+                                double minRunRatio)
     {
         // Sheet global vertical run table
-        RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        final RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
         // Allocate a curve run table with proper dimension
-        Rectangle fatBox = getBounds();
+        final Rectangle fatBox = getBounds();
+        final int curveWidth = fatBox.width;
         fatBox.grow(0, (int) Math.ceil(maxRunDistance)); // Slight extension above & below
 
         if (fatBox.y < 0) {
@@ -507,7 +510,7 @@ public abstract class Curve
             fatBox.y = 0;
         }
 
-        RunTable curveTable = new RunTable(VERTICAL, fatBox.width, fatBox.height);
+        final RunTable curveTable = new RunTable(VERTICAL, fatBox.width, fatBox.height);
 
         // Populate the curve run table
         for (int index = 0; index < points.size(); index++) {
@@ -524,8 +527,9 @@ public abstract class Curve
         }
 
         // Build glyph (TODO: table a bit too high, should be trimmed?)
-        if (curveTable.getSize() > 0) {
-            Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
+        final int minRunCount = (int) Math.rint(minRunRatio * curveWidth);
+        if (curveTable.getTotalRunCount() >= minRunCount) {
+            final Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
                     new Glyph(fatBox.x, fatBox.y, curveTable));
             setGlyph(curveGlyph);
             logger.debug("{} -> {}", this, curveGlyph);

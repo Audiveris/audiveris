@@ -202,7 +202,7 @@ public class SegmentsBuilder
 
         GradeImpacts impacts = computeImpacts(segment, true);
         SegmentInter inter = new SegmentInter(segment, impacts);
-        Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
+        Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance, params.minRunRatio);
 
         if (glyph != null) {
             inter.setGlyph(glyph);
@@ -383,6 +383,10 @@ public class SegmentsBuilder
         private final Scale.Fraction maxRunDistance = new Scale.Fraction(
                 0.2,
                 "Maximum distance from any run end to curve points");
+
+        private final Constant.Ratio minRunRatio = new Constant.Ratio(
+                0.75,
+                "Minimum runs count as ratio of segment width");
     }
 
     //------------//
@@ -406,6 +410,8 @@ public class SegmentsBuilder
 
         final double maxRunDistance;
 
+        final double minRunRatio;
+
         Parameters (Scale scale)
         {
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
@@ -414,6 +420,7 @@ public class SegmentsBuilder
             maxSegmentDistance = scale.toPixelsDouble(constants.maxSegmentDistance);
             minProjection = scale.toPixelsDouble(constants.minProjection);
             maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
+            minRunRatio = constants.minRunRatio.getValue();
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

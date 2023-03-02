@@ -497,7 +497,7 @@ public class SlursBuilder
 
         if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade()) && (slur
                 .getCurve() != null)) {
-            slur.retrieveGlyph(sheet, params.maxRunDistance);
+            slur.retrieveGlyph(sheet, params.maxRunDistance, params.minRunRatio);
 
             if (slur.getGlyph() != null) {
                 inters.add(new SlurInter(slur, impacts));
@@ -1187,6 +1187,10 @@ public class SlursBuilder
         private final Scale.Fraction maxRunDistance = new Scale.Fraction(
                 0.25,
                 "Maximum distance from any run end to curve points");
+
+        private final Constant.Ratio minRunRatio = new Constant.Ratio(
+                0.75,
+                "Minimum runs count as ratio of slur width");
     }
 
     //------------//
@@ -1244,6 +1248,8 @@ public class SlursBuilder
 
         final double maxRunDistance;
 
+        final double minRunRatio;
+
         /**
          * Creates a new Parameters object.
          *
@@ -1274,6 +1280,7 @@ public class SlursBuilder
             quorumRatio = constants.quorumRatio.getValue();
             minProjection = scale.toPixelsDouble(constants.minProjection);
             maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
+            minRunRatio = constants.minRunRatio.getValue();
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);
