@@ -64,6 +64,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
+import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -682,6 +683,43 @@ public abstract class SheetPainter
             return textFont;
         }
 
+        //-------------//
+        // paintCenter //
+        //-------------//
+        /**
+         * Paint an Inter, using the color of provided colorRef inter, at inter center.
+         *
+         * @param inter    the inter to paint
+         * @param colorRef the inter from which color must be taken
+         */
+        private void paintCenter (Inter inter,
+                                  Inter colorRef)
+        {
+            final Shape shape = inter.getShape();
+
+            if (shape == null) {
+                logger.warn("SigPainter.paintCenter no shape for {}", inter);
+
+                return;
+            }
+
+            final Rectangle bounds = inter.getBounds();
+
+            if (bounds != null) {
+                final Point2D center = GeoUtil.center2D(bounds);
+                final Staff staff = inter.getStaff();
+                setColor(colorRef);
+
+                final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
+
+                if (fs != null) {
+                    fs.paintSymbol(g, center, AREA_CENTER);
+                } else {
+                    logger.error("No symbol to paint {}", inter);
+                }
+            }
+        }
+
         //-----------//
         // paintHalf //
         //-----------//
@@ -775,29 +813,7 @@ public abstract class SheetPainter
             if (inter instanceof AbstractPitchedInter pitched) {
                 paintPitched(pitched, colorRef);
             } else {
-                final Shape shape = inter.getShape();
-
-                if (shape == null) {
-                    logger.warn("SigPainter.paintInter no shape for {}", inter);
-
-                    return;
-                }
-
-                final Rectangle bounds = inter.getBounds();
-
-                if (bounds != null) {
-                    final Point2D center = GeoUtil.center2D(bounds);
-                    final Staff staff = inter.getStaff();
-                    setColor(colorRef);
-
-                    final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
-
-                    if (fs != null) {
-                        fs.paintSymbol(g, center, AREA_CENTER);
-                    } else {
-                        logger.error("No symbol to paint {}", inter);
-                    }
-                }
+                paintCenter(inter, colorRef);
             }
         }
 
@@ -1371,6 +1387,19 @@ public abstract class SheetPainter
             final Point2D hookEnd = os.getHookCopy();
             if (hookEnd != null) {
                 g.draw(new Line2D.Double(os.getLine().getP2(), hookEnd));
+            }
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (RestInter rest)
+        {
+            switch (rest.getShape()) {
+            default -> paintPitched(rest, rest);
+            // Symbols for these shapes are not aligned with pitch ordinate, so we use area center
+            case HALF_REST, WHOLE_REST, BREVE_REST -> paintCenter(rest, rest);
             }
         }
 
