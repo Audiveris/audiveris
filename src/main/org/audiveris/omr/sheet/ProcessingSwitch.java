@@ -46,29 +46,33 @@ import java.util.EnumSet;
  */
 public enum ProcessingSwitch
 {
+    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
     indentations(ProcessingSwitches.constants.indentations),
     bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
-    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
-    articulations(ProcessingSwitches.constants.articulations),
-    chordNames(ProcessingSwitches.constants.chordNames),
+
+    oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
+    fourStringTablatures(ProcessingSwitches.constants.fourStringTablatures),
+    drumNotation(ProcessingSwitches.constants.drumNotation),
+    sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
+
+    smallHeads(ProcessingSwitches.constants.smallHeads),
+    smallBeams(ProcessingSwitches.constants.smallBeams),
+    crossHeads(ProcessingSwitches.constants.crossHeads),
+    tremolos(ProcessingSwitches.constants.tremolos),
     fingerings(ProcessingSwitches.constants.fingerings),
     frets(ProcessingSwitches.constants.frets),
     pluckings(ProcessingSwitches.constants.pluckings),
-    lyrics(ProcessingSwitches.constants.lyrics),
-    lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
-    tremolos(ProcessingSwitches.constants.tremolos),
-    smallHeads(ProcessingSwitches.constants.smallHeads),
-    crossHeads(ProcessingSwitches.constants.crossHeads),
-    implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
-    sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
-    fourStringTablatures(ProcessingSwitches.constants.fourStringTablatures),
-    oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
-    drumNotation(ProcessingSwitches.constants.drumNotation),
     partialWholeRests(ProcessingSwitches.constants.partialWholeRests),
     multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords),
-    //
-    // OBSOLETE SWITCHES FOLLOW
-    //
+
+    chordNames(ProcessingSwitches.constants.chordNames),
+    lyrics(ProcessingSwitches.constants.lyrics),
+    lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
+
+    articulations(ProcessingSwitches.constants.articulations),
+    implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
+
+    // Obsolete switches:
     poorInputMode(null),
     smallBlackHeads(null),
     smallVoidHeads(null),
@@ -78,8 +82,8 @@ public enum ProcessingSwitch
      * The switches currently supported.
      */
     public static EnumSet<ProcessingSwitch> supportedSwitches = EnumSet.range(
-            indentations,
-            multiWholeHeadChords);
+            keepGrayImages,
+            implicitTuplets);
 
     /**
      * The switches now obsolete.

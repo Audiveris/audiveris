@@ -177,7 +177,9 @@ public class ProcessingSwitches
             extends ConstantSet
     {
 
-        final Constant.Boolean poorInputMode = new Constant.Boolean(false, "Use poor input mode");
+        final Constant.Boolean keepGrayImages = new Constant.Boolean(
+                false,
+                "Keep loaded gray images");
 
         final Constant.Boolean indentations = new Constant.Boolean(
                 true,
@@ -187,69 +189,57 @@ public class ProcessingSwitches
                 false,
                 "Link augmentation dot to both shared heads");
 
-        final Constant.Boolean keepGrayImages = new Constant.Boolean(
+        final Constant.Boolean oneLineStaves = new Constant.Boolean(
                 false,
-                "Keep loaded gray images");
-
-        final Constant.Boolean articulations = new Constant.Boolean(
-                true,
-                "Support for articulations");
-
-        final Constant.Boolean chordNames = new Constant.Boolean(false, "Support for chord names");
-
-        final Constant.Boolean fingerings = new Constant.Boolean(
-                false,
-                "Support for fingering digits");
-
-        final Constant.Boolean frets = new Constant.Boolean(
-                false,
-                "Support for frets roman digits (I, II, IV...)");
-
-        final Constant.Boolean pluckings = new Constant.Boolean(
-                false,
-                "Support for plucking (p, i, m, a)");
-
-        final Constant.Boolean lyrics = new Constant.Boolean(true, "Support for lyrics");
-
-        final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
-                false,
-                "Support for lyrics even located above staff");
-
-        final Constant.Boolean tremolos = new Constant.Boolean(false, "Support for tremolos");
-
-        final Constant.Boolean smallHeads = new Constant.Boolean(false, "Support for small heads");
-
-        final Constant.Boolean crossHeads = new Constant.Boolean(
-                false,
-                "Support for cross note heads");
-
-        final Constant.Boolean implicitTuplets = new Constant.Boolean(
-                false,
-                "Support for implicit tuplets");
-
-        final Constant.Boolean sixStringTablatures = new Constant.Boolean(
-                false,
-                "Support for guitar tablatures (6 lines)");
+                "1-line percussion staves");
 
         final Constant.Boolean fourStringTablatures = new Constant.Boolean(
                 false,
-                "Support for bass tablatures (4 lines)");
-
-        final Constant.Boolean oneLineStaves = new Constant.Boolean(
-                false,
-                "Support for percussion staves (1 line)");
+                "4-line bass tablatures");
 
         final Constant.Boolean drumNotation = new Constant.Boolean(
                 false,
-                "Support for unpitched percussion (5-line) notation");
+                "5-line unpitched percussion staves");
+
+        final Constant.Boolean sixStringTablatures = new Constant.Boolean(
+                false,
+                "6-line guitar tablatures");
+
+        final Constant.Boolean smallHeads = new Constant.Boolean(false, "Small heads");
+
+        final Constant.Boolean smallBeams = new Constant.Boolean(false, "Small beams");
+
+        final Constant.Boolean crossHeads = new Constant.Boolean(false, "Cross note heads");
+
+        final Constant.Boolean tremolos = new Constant.Boolean(false, "Tremolos");
+
+        final Constant.Boolean fingerings = new Constant.Boolean(false, "Fingering digits");
+
+        final Constant.Boolean frets = new Constant.Boolean(
+                false,
+                "Frets roman digits (I, II, IV...)");
+
+        final Constant.Boolean pluckings = new Constant.Boolean(false, "Plucking (p, i, m, a)");
 
         final Constant.Boolean partialWholeRests = new Constant.Boolean(
                 false,
-                "Support for partial whole rests");
+                "Partial whole rests");
 
         final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
                 false,
-                "Support for multi-whole head chords");
+                "Multi-whole head chords");
+
+        final Constant.Boolean chordNames = new Constant.Boolean(false, "Chord names");
+
+        final Constant.Boolean lyrics = new Constant.Boolean(true, "Lyrics");
+
+        final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
+                false,
+                "Lyrics even located above staff");
+
+        final Constant.Boolean articulations = new Constant.Boolean(true, "Articulations");
+
+        final Constant.Boolean implicitTuplets = new Constant.Boolean(false, "Implicit tuplets");
     }
 
     //-----------------//
