@@ -404,7 +404,7 @@ public class ShapeSet
             BEAM,
             Colors.SCORE_NOTES,
             shapesOf(
-                    Arrays.asList(BEAM, BEAM_HOOK),
+                    Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK),
                     Tremolos,
                     Arrays.asList(TUPLET_THREE, TUPLET_SIX)));
 

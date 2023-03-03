@@ -81,6 +81,7 @@ import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
@@ -834,6 +835,9 @@ public class InterFactory
         // Beams
         case BEAM:
             return new BeamInter(GRADE);
+
+        case BEAM_SMALL:
+            return new SmallBeamInter(GRADE);
 
         case BEAM_HOOK:
             return new BeamHookInter(GRADE);

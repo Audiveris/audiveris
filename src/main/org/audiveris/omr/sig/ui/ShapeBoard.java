@@ -539,7 +539,7 @@ public class ShapeBoard
         final MusicFamily family = sheet.getStub().getMusicFamily();
         final FontSymbol fs = shape.getFontSymbol(family);
 
-        if (fs.symbol == null) {
+        if (fs == null) {
             logger.warn("No symbol for {}", shape);
             return null;
         }

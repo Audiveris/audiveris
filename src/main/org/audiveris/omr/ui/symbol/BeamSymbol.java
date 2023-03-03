@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -31,6 +29,7 @@ import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,7 @@ public class BeamSymbol
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a BeamSymbol.
+     * Create a BeamSymbol with BEAM shape.
      *
      * @param family the musicFont family
      */
@@ -76,7 +75,7 @@ public class BeamSymbol
     }
 
     /**
-     * Create a BeamSymbol.
+     * Create a BeamSymbol with provided shape.
      *
      * @param shape  the precise shape
      * @param family the musicFont family

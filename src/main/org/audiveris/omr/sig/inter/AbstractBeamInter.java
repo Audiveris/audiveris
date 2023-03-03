@@ -581,6 +581,19 @@ public abstract class AbstractBeamInter
         return false;
     }
 
+    //---------//
+    // isSmall //
+    //---------//
+    /**
+     * Report whether this beam is a small beam.
+     *
+     * @return true if so
+     */
+    public boolean isSmall ()
+    {
+        return false;
+    }
+
     //-------------//
     // lookupLinks //
     //-------------//

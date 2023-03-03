@@ -70,9 +70,12 @@ public class TransformedSymbol
     @Override
     protected Params getParams (MusicFont font)
     {
-        Params p = new Params();
+        final FontSymbol fs = root.getFontSymbol(font);
+        final Params p = new Params();
 
-        p.layout = font.layoutShapeByCode(root, at);
+        final MusicFont atFont = (at == null) ? fs.font
+                : fs.font.deriveFont((float) at.getScaleX() * fs.font.getSize2D());
+        p.layout = fs.symbol.getLayout(atFont);
         p.rect = p.layout.getBounds();
 
         return p;

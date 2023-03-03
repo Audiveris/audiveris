@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   S m a l l B e a m I n t e r                                  //
+//                                  S m a l l B e a m S y m b o l                                 //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,77 +19,43 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.inter;
+package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.GradeImpacts;
-
-import java.awt.geom.Line2D;
-
-import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.sheet.beam.BeamsBuilder;
 
 /**
- * Class <code>SmallBeamInter</code> represents a small (cue) beam, with a height smaller than
- * standard beams.
+ * Class <code>SmallBeamSymbol</code> implements a decorated small beam symbol.
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "small-beam")
-public class SmallBeamInter
-        extends AbstractBeamInter
+public class SmallBeamSymbol
+        extends BeamSymbol
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
-     */
-    @SuppressWarnings("unused")
-    private SmallBeamInter ()
-    {
-        super((Shape) null, (GradeImpacts) null, null, 0);
-    }
-
-    /**
-     * Creates manually a new SmallBeamInter ghost object.
+     * Create a SmallBeamSymbol.
      *
-     * @param grade quality grade
+     * @param family the musicFont family
      */
-    public SmallBeamInter (Double grade)
+    public SmallBeamSymbol (MusicFamily family)
     {
-        super(Shape.BEAM_SMALL, grade);
-    }
-
-    /**
-     * Creates a new SmallBeamInter object.
-     *
-     * @param impacts the grade details
-     * @param median  median beam line
-     * @param height  beam height
-     */
-    public SmallBeamInter (GradeImpacts impacts,
-                           Line2D median,
-                           double height)
-    {
-        super(Shape.BEAM_SMALL, impacts, median, height);
+        super(Shape.BEAM_SMALL, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
+    //-----------//
+    // getParams //
+    //-----------//
     @Override
-    public void accept (InterVisitor visitor)
+    protected MyParams getParams (MusicFont font)
     {
-        visitor.visit(this);
-    }
+        // Apply size ratio for small beam
+        final float smallFontSize = (float) BeamsBuilder.getCueBeamRatio() * font.getSize2D();
+        final MusicFont smallFont = font.deriveFont(smallFontSize);
 
-    //---------//
-    // isSmall //
-    //---------//
-    @Override
-    public boolean isSmall ()
-    {
-        return true;
+        return super.getParams(smallFont);
     }
 }

@@ -626,20 +626,25 @@ public class TemplateFactory
                                      Rectangle slimBox,
                                      HorizontalSide hSide)
     {
+        // @formatter:off
         return switch (shape) {
-        case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL -> switch (hSide) {
-        case LEFT -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
-        case RIGHT -> slimBox.y + 0.5 * slimBox.height;
-        };
-        case NOTEHEAD_CROSS -> switch (hSide) {
-        case LEFT -> slimBox.y + slimBox.height;
-        case RIGHT -> slimBox.y + (1 - 0.2) * slimBox.height;
-        };
+        case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL ->
+                switch (hSide) {
+                case LEFT -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+                case RIGHT -> slimBox.y + 0.5 * slimBox.height;
+                };
+        case NOTEHEAD_CROSS ->
+                switch (hSide) {
+                case LEFT -> slimBox.y + slimBox.height;
+                case RIGHT -> slimBox.y + (1 - 0.2) * slimBox.height;
+                };
         case NOTEHEAD_CROSS_VOID -> slimBox.y + slimBox.height;
         case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
         case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
+            
         default -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
         };
+        // @formatter:on
     }
 
     //-------------//

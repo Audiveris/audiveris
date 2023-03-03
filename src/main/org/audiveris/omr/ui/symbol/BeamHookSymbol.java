@@ -57,7 +57,7 @@ public class BeamHookSymbol
     {
         MyParams p = super.getParams(font);
 
-        // Cut standard beam dimension by 2
+        // Cut standard beam length by 2
         final double width = (p.model.p2.getX() - p.model.p1.getX()) / 2;
         final double yShift = (p.model.p2.getY() - p.model.p1.getY()) / 2;
         final double absShift = Math.abs(yShift);

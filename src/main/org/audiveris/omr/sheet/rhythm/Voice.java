@@ -236,7 +236,7 @@ public class Voice
             if (isMeasureRest()) {
                 setTermination(null); // we can't tell anything
             } else if ((chords != null) && !chords.isEmpty()) {
-                AbstractChordInter last = chords.get(chords.size() - 1);
+                AbstractChordInter last = getLastChord();
 
                 if (last.getTimeOffset() == null) {
                     measure.setAbnormal(true);

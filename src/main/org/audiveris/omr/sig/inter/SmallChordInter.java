@@ -27,8 +27,10 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -103,6 +105,35 @@ public class SmallChordInter
     public String getShapeString ()
     {
         return "SmallChord";
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, a cue chord can't be part of voice chords.
+     * So, we have to use a pull approach, to retrieve cue voice on demand only
+     */
+    @Override
+    public Voice getVoice ()
+    {
+        AbstractChordInter lastChord = this;
+
+        // If grouped via a beam, only the righ-most cue chord is linked to a standard chord
+        final BeamGroupInter beamGroup = getBeamGroup();
+        if (beamGroup != null) {
+            final List<AbstractChordInter> siblings = beamGroup.getAllChords();
+            lastChord = siblings.get(siblings.size() - 1);
+        }
+
+        for (Relation rel : sig.getRelations(lastChord, ChordGraceRelation.class)) {
+            AbstractChordInter stdChord = (AbstractChordInter) sig.getOppositeInter(lastChord, rel);
+            return stdChord.getVoice();
+        }
+
+        return null;
     }
 
     //------------//

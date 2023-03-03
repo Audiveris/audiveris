@@ -227,6 +227,7 @@ public abstract class Symbols
         symbolMap.put(AUGMENTATION_DOT, new AugmentationSymbol(family()));
 
         symbolMap.put(BEAM, new BeamSymbol(family()));
+        symbolMap.put(BEAM_SMALL, new SmallBeamSymbol(family()));
         symbolMap.put(BEAM_HOOK, new BeamHookSymbol(family()));
 
         symbolMap.put(FERMATA_ARC, new FermataArcSymbol(FERMATA_ARC, family()));

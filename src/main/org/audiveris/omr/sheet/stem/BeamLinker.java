@@ -1315,8 +1315,11 @@ public class BeamLinker
                     final HeadInter head = (HeadInter) hInter;
                     final Shape headShape = head.getShape();
 
-                    // Today, standard beams can't link small heads
-                    if (headShape.isSmallHead()) {
+                    // Today, beam size and head size must match
+                    if (beam.isSmall() != headShape.isSmallHead()) {
+                        if (beam.isVip() || head.isVip()) {
+                            logger.info("VIP no size match between {} and {}", beam, head);
+                        }
                         continue;
                     }
 
