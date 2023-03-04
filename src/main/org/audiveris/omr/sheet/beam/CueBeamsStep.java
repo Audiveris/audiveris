@@ -62,7 +62,6 @@ public class CueBeamsStep
     private static final Logger logger = LoggerFactory.getLogger(CueBeamsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new CueBeamsStep object.
      */
@@ -71,7 +70,6 @@ public class CueBeamsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //----------//
     // doProlog //
     //----------//
@@ -84,7 +82,7 @@ public class CueBeamsStep
             return null;
         }
 
-        if (sheet.getScale().getSmallBeamScale() == null) {
+        if (sheet.getScale().getSmallBeamScale() != null) {
             logger.info("Step CUE_BEAMS is skipped because small beams have been processed");
             return null;
         }
@@ -107,7 +105,7 @@ public class CueBeamsStep
     @Override
     public void doSystem (SystemInfo system,
                           Context context)
-        throws StepException
+            throws StepException
     {
         if (context != null) {
             new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
@@ -115,7 +113,6 @@ public class CueBeamsStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//

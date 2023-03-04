@@ -77,8 +77,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>STEM_TOP on head LEFT side
  * <li>STEM_BOTTOM on head RIGHT side
  * </ul>
- *
- * <pre>
+ * <p>
+ * <
+ * pre>
  *    |
  *    |
  *  +O+
@@ -103,7 +104,6 @@ public class HeadStemRelation
     private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     /** Which side of head is used?. */
     @XmlAttribute(name = "head-side")
     private HorizontalSide headSide;
@@ -114,7 +114,6 @@ public class HeadStemRelation
     private Double consistency;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new <code>HeadStemRelation</code> object.
      */
@@ -123,7 +122,6 @@ public class HeadStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //-------//
     // added //
     //-------//
@@ -384,8 +382,10 @@ public class HeadStemRelation
         }
 
         // If resulting chords are not compatible, move head to stemChord
-        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
-                && !stemChords.contains(headChord))) {
+        // @formatter:off
+        if ((stemChords.isEmpty() && (headChord.getStem() != null))
+                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+            // @formatter:on
             // Extract head from headChord
             tasks.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
 
@@ -444,13 +444,14 @@ public class HeadStemRelation
 
         consistency = headIsSmall ? 1.0 / ratio : ratio;
 
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug(
                     String.format(
                             "isSmall:%6s lg:%4.1f consistency:%4.1f",
                             headIsSmall,
                             scaledStemLength,
                             consistency));
+        }
     }
 
     //----------------//
@@ -487,7 +488,6 @@ public class HeadStemRelation
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
-
     //---------------//
     // checkRelation //
     //---------------//
@@ -706,7 +706,6 @@ public class HeadStemRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
