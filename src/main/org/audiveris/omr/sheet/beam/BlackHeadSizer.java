@@ -65,14 +65,12 @@ public class BlackHeadSizer
     private static final Logger logger = LoggerFactory.getLogger(BlackHeadSizer.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-
     private final Sheet sheet;
 
     /** Scale-dependent global constants. */
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new <code>BlackHeadSizer</code> object.
      *
@@ -85,7 +83,6 @@ public class BlackHeadSizer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     //-----------//
     // checkSpot //
     //-----------//
@@ -188,14 +185,14 @@ public class BlackHeadSizer
                 heights.getMeanValue(),
                 heights.getStandardDeviation());
         sheet.getScale().setBlackHeadScale(blackHeadScale);
-        logger.info("Core black head count: {} {}", core.size(), blackHeadScale);
+        logger.debug("Core black head count: {} {}", core.size(), blackHeadScale);
 
         final double w = blackHeadScale.getWidthMean();
         final MusicFamily family = sheet.getStub().getMusicFamily();
         final MusicFont font = MusicFont.getHeadFont(family, sheet.getScale(), 0);
         final MusicFontScale musicFontScale = font.buildMusicFontScale(w);
         sheet.getScale().setMusicFontScale(musicFontScale);
-        logger.info("{}", musicFontScale);
+        logger.debug("{}", musicFontScale);
     }
 
     //---------//
@@ -212,12 +209,11 @@ public class BlackHeadSizer
     public void process (List<Glyph> spots)
     {
         final float radius = (float) (params.diameter - 1) / 2;
-        logger.info(
+        logger.debug(
                 "Spots black-head retrieval diameter: {}",
                 String.format("%.1f", params.diameter));
 
-        final int[] seOffset =
-        { 0, 0 };
+        final int[] seOffset = {0, 0};
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);
         final MorphoProcessor mp = new MorphoProcessor(se);
 
@@ -260,7 +256,6 @@ public class BlackHeadSizer
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//

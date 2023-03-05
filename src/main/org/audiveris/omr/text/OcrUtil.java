@@ -54,14 +54,12 @@ public abstract class OcrUtil
     private static final OCR ocr = TesseractOCR.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /** Not meant to be instantiated. */
     private OcrUtil ()
     {
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
-
     //--------//
     // getOcr //
     //--------//
@@ -124,6 +122,12 @@ public abstract class OcrUtil
         }
 
         final List<TextLine> lines = ocr.recognize(sheet, bi, origin, language, layoutMode, label);
+
+        if (lines == null) {
+            logger.info("No OCR'ed lines");
+            return Collections.emptyList();
+        }
+        
         Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
 
         if (logger.isDebugEnabled()) {
@@ -134,7 +138,6 @@ public abstract class OcrUtil
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
