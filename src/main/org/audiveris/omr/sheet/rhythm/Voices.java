@@ -416,7 +416,6 @@ public abstract class Voices
                 measure.purgeVoices();
                 measure.sortVoices();
                 measure.renameVoices();
-                measure.setCueVoices();
 
                 final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
 

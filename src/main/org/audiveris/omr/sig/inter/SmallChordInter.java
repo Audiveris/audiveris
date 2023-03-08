@@ -230,4 +230,19 @@ public class SmallChordInter
         final Link link = lookupLink(system, systemHeadChords, head.getCenter(), profile);
         return (link != null) ? Arrays.asList(link) : Collections.emptyList();
     }
+
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * We should not explicitly set a voice to a cue chord, because its voice is determined
+     * dynamically (pull approach) in getVoice() method.
+     *
+     * @see #getVoice()
+     */
+    @Override
+    public void setVoice (Voice voice)
+    {
+        throw new IllegalStateException("Attempt to setVoice() on a SmallChordInter");
+    }
 }

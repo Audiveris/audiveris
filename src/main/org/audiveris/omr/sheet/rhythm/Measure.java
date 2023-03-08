@@ -1809,8 +1809,9 @@ public class Measure
     public void purgeVoices ()
     {
         for (Iterator<Voice> it = voices.iterator(); it.hasNext();) {
-            if (it.next().getFirstChord() == null)
+            if (it.next().getFirstChord() == null) {
                 it.remove();
+            }
         }
     }
 
@@ -1991,30 +1992,6 @@ public class Measure
     public void setAbnormal (boolean abnormal)
     {
         this.abnormal = abnormal;
-    }
-
-    //--------------//
-    // setCueVoices //
-    //--------------//
-    /**
-     * Voice of every (standard) head chord is pushed to its related preceding cue
-     * chord(s) if any.
-     */
-    public void setCueVoices ()
-    {
-        for (HeadChordInter ch : headChords) {
-            if (!(ch instanceof SmallChordInter)) {
-                final Voice voice = ch.getVoice();
-
-                if (voice != null) {
-                    final SmallChordInter small = ch.getGraceChord();
-
-                    if (small != null) {
-                        small.setVoice(voice);
-                    }
-                }
-            }
-        }
     }
 
     //----------//

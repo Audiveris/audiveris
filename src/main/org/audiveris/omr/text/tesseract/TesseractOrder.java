@@ -389,7 +389,7 @@ public class TesseractOrder
             }
 
             if (api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY) != 0) {
-                logger.warn("Could not initialize Tesseract with lang {}", lang);
+                logger.warn("Could not initialize Tesseract with language {}", lang);
 
                 return finish(null);
             }
