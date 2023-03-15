@@ -206,7 +206,7 @@ public class PartBarline
         if (bar != null) {
             return bar.getRightX();
         } else {
-            throw new IllegalStateException("Part Barline with no proper StaffBarline");
+            throw new IllegalStateException("PartBarline with no proper StaffBarline in " + staff);
         }
     }
 

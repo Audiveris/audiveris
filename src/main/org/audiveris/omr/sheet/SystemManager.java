@@ -21,11 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-import static org.audiveris.omr.util.VerticalSide.BOTTOM;
-import static org.audiveris.omr.util.VerticalSide.TOP;
-
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.lag.Lags;
@@ -36,8 +31,12 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,12 +135,15 @@ public class SystemManager
         Page page = null;
         PageRef pageRef = null;
 
-        // Look at left indentation of (deskewed) systems
-        checkIndentations();
+        if (useIndentation) {
+            // Look at left indentation of (deskewed) systems
+            checkIndentations();
+        }
 
         // Allocate systems and pages
         for (SystemInfo system : systems) {
-            if (system.isIndented() && useIndentation) {
+            if (system.isIndented()) {
+                logger.info("Indentation detected for system#{}", system.getId());
                 final int systId = system.getId();
 
                 // We have a movement start
@@ -204,7 +206,6 @@ public class SystemManager
 
                     if ((ul.getX() - ulOther.getX()) >= minIndentation) {
                         system.setIndented(true);
-                        logger.info("Indentation detected for system#{}", system.getId());
 
                         break;
                     }

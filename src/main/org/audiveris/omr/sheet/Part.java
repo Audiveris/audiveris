@@ -1167,8 +1167,15 @@ public class Part
         for (Staff staff : below.getStaves()) {
             addStaff(staff);
         }
+        final PartRef ref = getRef();
+        ref.computeLineCounts(staves);
 
+        final SystemRef systemRef = system.getRef();
+        final PartRef belowRef = below.getRef();
         system.removePart(below);
+        systemRef.getParts().remove(belowRef);
+
+        system.getSheet().getStub().setModified(true);
     }
 
     //-----------------//
@@ -1504,6 +1511,7 @@ public class Part
     {
         logger.info("Splitting {} before {}", this, pivotStaff);
 
+        final SystemRef systemRef = system.getRef();
         final int staffIndex = staves.indexOf(pivotStaff);
         final Part partBelow = new Part(system);
 
@@ -1513,13 +1521,19 @@ public class Part
 
         staves.removeAll(partBelow.staves);
 
+        final PartRef ref = getRef();
+        ref.computeLineCounts(staves);
+
         for (int im = 0; im < measures.size(); im++) {
             final Measure measure = measures.get(im);
             measure.splitBefore(pivotStaff, partBelow);
         }
 
-        int myIndex = getIndex();
+        final int myIndex = getIndex();
         system.addPart(myIndex + 1, partBelow);
+
+        final PartRef belowRef = new PartRef(systemRef, partBelow.staves);
+        systemRef.getParts().add(myIndex + 1, belowRef);
 
         // Part numbering (to be refined)
         int theId = id + 1;
@@ -1527,6 +1541,8 @@ public class Part
         for (Part part : system.getParts().subList(myIndex + 1, system.getParts().size())) {
             part.setId(theId++);
         }
+
+        system.getSheet().getStub().setModified(true);
     }
 
     //-------------//

@@ -393,13 +393,7 @@ public class SystemInfo
         systemRef.setPage(page.getRef());
 
         for (Part part : getParts()) {
-            final PartRef partRef = new PartRef();
-            partRef.setSystem(systemRef);
-
-            for (Staff staff : part.getStaves()) {
-                partRef.getLineCounts().add(staff.getLineCount());
-            }
-
+            final PartRef partRef = new PartRef(systemRef, part.getStaves());
             systemRef.getParts().add(partRef);
         }
 
@@ -1558,6 +1552,8 @@ public class SystemInfo
         // sig
         sig.includeSig(systemBelow.getSig());
 
+        sheet.getStub().setModified(true);
+
         return removedPageRef;
     }
 
@@ -1923,6 +1919,8 @@ public class SystemInfo
 
         // sig
         sig.excludeSig(systemBelow.getSig());
+
+        sheet.getStub().setModified(true);
     }
 
     //-------------------//

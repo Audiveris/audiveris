@@ -22,6 +22,7 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Jaxb;
@@ -85,6 +86,28 @@ public class PartRef
 
     //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Zero-arg constructor needed for JAXB.
+     */
+    @SuppressWarnings(value = "unused")
+    private PartRef ()
+    {
+
+    }
+
+    /**
+     * Creates a PartRef instance.
+     *
+     * @param systemRef soft reference of containing system
+     * @param staves    list of staves in part
+     */
+    public PartRef (SystemRef systemRef,
+                    List<Staff> staves)
+    {
+        this.systemRef = systemRef;
+        computeLineCounts(staves);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
 
     @SuppressWarnings(value = "unused")
@@ -92,6 +115,23 @@ public class PartRef
                                  Object parent)
     {
         systemRef = (SystemRef) parent;
+    }
+
+    //-------------------//
+    // computeLineCounts //
+    //-------------------//
+    /**
+     * Compute the staff line counts, according to the provided list of staves.
+     *
+     * @param staves the sequence of staves in part
+     */
+    public final void computeLineCounts (List<Staff> staves)
+    {
+        lineCounts.clear();
+
+        for (Staff staff : staves) {
+            lineCounts.add(staff.getLineCount());
+        }
     }
 
     public int getIndex ()

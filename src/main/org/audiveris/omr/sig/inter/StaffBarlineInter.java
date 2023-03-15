@@ -167,9 +167,9 @@ public final class StaffBarlineInter
     /**
      * Creates a new <code>StaffBarlineInter</code> object from a shape.
      *
-     * @param shape THIN_BARLINE, THICK_BARLINE, DOUBLE_BARLINE,FINAL_BARLINE,
+     * @param shape THIN_BARLINE, THICK_BARLINE, DOUBLE_BARLINE, FINAL_BARLINE,
      *              REVERSE_FINAL_BARLINE, LEFT_REPEAT_SIGN,
-     *              RIGHT_REPEAT_SIGN,BACK_TO_BACK_REPEAT_SIGN
+     *              RIGHT_REPEAT_SIGN, BACK_TO_BACK_REPEAT_SIGN
      * @param grade quality
      */
     public StaffBarlineInter (Shape shape,
@@ -866,6 +866,23 @@ public final class StaffBarlineInter
     }
 
     //--------------//
+    // isBackToBack //
+    //--------------//
+    /**
+     * Report whether this instance corresponds to a back to back configuration of barlines.
+     *
+     * @return true if so
+     */
+    public boolean isBackToBack ()
+    {
+        if (shape == BACK_TO_BACK_REPEAT_SIGN) {
+            return true;
+        }
+
+        return getMembers().size() >= 3;
+    }
+
+    //--------------//
     // isLeftRepeat //
     //--------------//
     /**
@@ -877,8 +894,6 @@ public final class StaffBarlineInter
      */
     public boolean isLeftRepeat ()
     {
-        //        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
-        //                       && hasDotsOnRight();
         if ((shape == LEFT_REPEAT_SIGN) || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
             return true;
         }
@@ -930,8 +945,6 @@ public final class StaffBarlineInter
      */
     public boolean isRightRepeat ()
     {
-        //        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
-        //                       && hasDotsOnLeft();
         if ((shape == RIGHT_REPEAT_SIGN) || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
             return true;
         }
@@ -971,9 +984,35 @@ public final class StaffBarlineInter
         }
     }
 
+    //------------//
+    // isStaffEnd //
+    //------------//
+    /**
+     * Report whether this StaffBarlineInter is on provided side of the staff.
+     *
+     * @param hSide provided horizontal side
+     * @return true if so
+     */
+    public boolean isStaffEnd (HorizontalSide hSide)
+    {
+        final int x = getCenter().x;
+        final int extrema = staff.getAbscissa(hSide);
+        final int dx = Math.abs(extrema - x);
+        final Scale scale = staff.getSystem().getSheet().getScale();
+        final int maxShift = scale.toPixels(StaffBarlineInter.getMaxStaffBarlineShift());
+
+        return dx <= maxShift;
+    }
+
     //--------//
     // preAdd //
     //--------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, when manually adding a StaffBarline, we make sure to add one StaffBarline
+     * for every staff in system.
+     */
     @Override
     public List<? extends UITask> preAdd (WrappedBoolean cancel,
                                           Wrapper<Inter> toPublish)
@@ -982,11 +1021,7 @@ public final class StaffBarlineInter
         final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
         final SystemInfo system = staff.getSystem();
         final Sheet sheet = system.getSheet();
-        //
-        //        if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-        //            return tasks;
-        //        }
-        //
+
         // Include a staffBarline per system staff, properly positioned in abscissa
         final Scale scale = sheet.getScale();
         final int lineThickness = scale.getFore();
@@ -1013,12 +1048,12 @@ public final class StaffBarlineInter
                 final Rectangle box = new Rectangle((int) Math.rint(x), (int) Math.rint(y), 0, 0);
                 box.grow(bounds.width / 2, (int) Math.rint((lineThickness + y2 - y1) / 2));
 
-                final StaffBarlineInter b = new StaffBarlineInter(shape, 1.0);
-                b.setManual(true);
-                b.setStaff(st);
-                b.setBounds(box);
-                bars.add(b);
-                tasks.add(new AdditionTask(theSig, b, box, b.searchLinks(system)));
+                final StaffBarlineInter sb = new StaffBarlineInter(shape, 1.0);
+                sb.setManual(true);
+                sb.setStaff(st);
+                sb.setBounds(box);
+                bars.add(sb);
+                tasks.add(new AdditionTask(theSig, sb, box, sb.searchLinks(system)));
             }
 
             // Staff extension?

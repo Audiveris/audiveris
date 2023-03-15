@@ -85,6 +85,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -1411,7 +1412,7 @@ public class Staff
     // getSideBarline //
     //----------------//
     /**
-     * Report the barline, if any, at the desired extremum side of this staff.
+     * Report the barline, if any, at the desired horizontal side of this staff.
      *
      * @param side desired horizontal side
      * @return the side barline or null
@@ -1439,31 +1440,25 @@ public class Staff
     // getStaffBarlines //
     //------------------//
     /**
-     * @return the barlines
+     * Report the ordered sequence of StaffBarlineInter's in this staff.
+     *
+     * @return the sequence of StaffBarlineInter's found in staff
      */
     public List<StaffBarlineInter> getStaffBarlines ()
     {
-        SIGraph sig = getSystem().getSig();
-
+        final SIGraph sig = getSystem().getSig();
         if (sig == null) {
             return Collections.emptyList();
         }
 
-        List<StaffBarlineInter> found = null;
-
-        for (Inter inter : sig.inters(StaffBarlineInter.class)) {
-            if (inter.getStaff() == this) {
-                if (found == null) {
-                    found = new ArrayList<>();
-                }
-
-                found.add((StaffBarlineInter) inter);
-            }
-        }
-
-        if (found == null) {
-            return Collections.emptyList();
-        }
+        // @formatter:off
+        final List<Inter> inters = sig.inters(StaffBarlineInter.class);
+        final List<StaffBarlineInter> found = inters.stream()
+                .filter(inter -> inter.getStaff() == this)
+                .map(inter -> (StaffBarlineInter) inter)
+                .sorted(Inters.byCenterAbscissa)
+                .collect(Collectors.toList());
+        // @formatter:on
 
         return found;
     }
