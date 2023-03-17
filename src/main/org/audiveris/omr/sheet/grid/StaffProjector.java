@@ -859,7 +859,7 @@ public class StaffProjector
      * @param peakMode          peak detection mode
      * @param minCount          (initial) threshold on cumulated pixels
      * @param minDerivativeUp   (initial) threshold on starting derivative (going up)
-     * @param minDerivatinitial (initial) absolute threshold on ending derivative (going down)
+     * @param minDerivativeDown (initial) absolute threshold on ending derivative (going down)
      * @param addedChunk        additional chunk brought by presence of multiple-rest 'beam'
      * @return the sequence of peaks found
      */
@@ -1669,7 +1669,7 @@ public class StaffProjector
                 "Top number of best derivatives");
 
         private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
-                0.4,
+                0.3, // Was 0.4 found too restrictive
                 "Minimum absolute derivative as ratio of elite derivative");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
@@ -1685,7 +1685,7 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.45,
+                1.2, // Was 0.45 found too restrictive
                 "Maximum cumul value to detect chunk (on top of staff lines)");
 
         private final Constant.Ratio blankThreshold = new Constant.Ratio(
