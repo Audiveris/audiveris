@@ -658,6 +658,20 @@ public class Score
         return null;
     }
 
+    //---------//
+    // getStub //
+    //---------//
+    /**
+     * Report the stub that corresponds to the provided PageNumber.
+     *
+     * @param pageNumber the provided PageNumber
+     * @return the corresponding stub
+     */
+    public SheetStub getStub (PageNumber pageNumber)
+    {
+        return book.getStubs().get(pageNumber.sheetNumber - 1);
+    }
+
     //----------//
     // getStubs //
     //----------//

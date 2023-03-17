@@ -1173,7 +1173,7 @@ public class HeadInter
     public static List<Line2D> getNeededLedgerSegments (Point2D headCenter,
                                                         Staff staff)
     {
-        if (staff == null) {
+        if ((staff == null) || staff.isTablature()) {
             return Collections.emptyList();
         }
 
@@ -1247,7 +1247,7 @@ public class HeadInter
     public static Double getSnapOrdinate (Point2D headCenter,
                                           Staff staff)
     {
-        if (staff == null) {
+        if ((staff == null) || staff.isTablature()) {
             return null;
         }
 

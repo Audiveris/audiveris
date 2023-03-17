@@ -861,11 +861,14 @@ public class SlursBuilder
 
             // Vertical distance from slur end to closest staff line
             Staff staff = sheet.getStaffManager().getClosestStaff(end);
-            LineInfo line = staff.getClosestStaffLine(end);
-            double toLine = line.yAt(end.x) - end.y;
 
-            if (abs(toLine) > params.maxStaffLineDy) {
-                continue;
+            if (!staff.isTablature()) {
+                final LineInfo line = staff.getClosestStaffLine(end);
+                final double toLine = line.yAt(end.x) - end.y;
+
+                if (abs(toLine) > params.maxStaffLineDy) {
+                    continue;
+                }
             }
 
             // Delete slur ending as a STAFF_ARC

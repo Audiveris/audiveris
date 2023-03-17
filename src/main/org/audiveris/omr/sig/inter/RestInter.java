@@ -170,7 +170,7 @@ public class RestInter
         // Pick up the closest staff
         final Staff restStaff = system.getClosestStaff(centroid);
 
-        if (restStaff == null) {
+        if ((restStaff == null) || restStaff.isTablature()) {
             return null;
         }
 

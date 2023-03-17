@@ -467,7 +467,7 @@ public class InterBoard
                     verse.setVisible(true);
                     verse.setValue(lyric.getNumber());
 
-                    boolean isAbove = lyric.getStaff().pitchPositionOf(inter.getCenter()) < 0;
+                    boolean isAbove = lyric.getStaff().isPointAbove(inter.getCenter());
                     aboveBelow.setText(resources.getString(isAbove ? "above" : "below"));
                     aboveBelow.setVisible(true);
 

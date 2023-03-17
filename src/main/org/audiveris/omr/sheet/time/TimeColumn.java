@@ -133,23 +133,31 @@ public abstract class TimeColumn
             final TimeValue time = entry.getKey();
             final AbstractTimeInter[] vector = entry.getValue();
 
-            // Check that this time is present in all staves and compute the time mean grade
+            // Check that this time is present in all standard staves
+            // and compute the time mean grade
             double mean = 0;
+            int count = 0;
 
-            for (Inter inter : vector) {
-                if (inter == null) {
-                    logger.debug(
-                            "System#{} TimeValue {} not found in all staves",
-                            system.getId(),
-                            time);
+            final List<Staff> staves = system.getStaves();
+            for (int idx = 0; idx < staves.size(); idx++) {
+                final Staff staff = staves.get(idx);
+                if (!staff.isTablature()) {
+                    final Inter inter = vector[idx];
+                    if (inter == null) {
+                        logger.debug(
+                                "System#{} TimeValue {} not found in all standard staves",
+                                system.getId(),
+                                time);
 
-                    continue TimeLoop;
+                        continue TimeLoop;
+                    }
+
+                    mean += inter.getGrade(); // TODO: use contextual?????
+                    count++;
                 }
-
-                mean += inter.getGrade(); // TODO: use contextual?????
             }
 
-            mean /= vector.length;
+            mean /= count;
             grades.put(time, mean);
         }
 

@@ -156,7 +156,7 @@ public class TimePairInter
             return (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
 
         case 1:
-            if (staff != null) {
+            if ((staff != null) && !staff.isTablature()) {
                 final TimeNumberInter tni = (TimeNumberInter) members.get(0);
                 final double pp = staff.pitchPositionOf(tni.getCenter());
 

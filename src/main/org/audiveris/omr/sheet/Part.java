@@ -1328,10 +1328,10 @@ public class Part
     public void setLogicalPart (Integer logicalId,
                                 LogicalPart logicalPart)
     {
-        // Update part id
-        setId(logicalId);
-
         if (logicalId != null) {
+            // Update part id
+            setId(logicalId);
+
             // Update part name accordingly
             final Boolean isFirst = system.isFirstInScore();
             if (isFirst != null && isFirst) {
@@ -1483,8 +1483,7 @@ public class Part
 
             for (LyricLineInter line : lyrics) {
                 final Staff staff = line.getStaff();
-                final double pos = staff.pitchPositionOf(line.getCenter());
-                final boolean isAbove = pos <= 0;
+                final boolean isAbove = staff.isPointAbove(line.getCenter());
 
                 if ((staff != lastStaff) || (isAbove != lastIsAbove)) {
                     lyricNumber = 0;

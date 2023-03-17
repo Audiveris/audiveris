@@ -354,7 +354,7 @@ public class LyricItemInter
     {
         final double refX = getReferenceAbscissa();
         final double refY = getLocation().getY();
-        final boolean lookAbove = theStaff.pitchPositionOf(location) >= 0;
+        final boolean lookAbove = theStaff.isPointBelow(location);
 
         final Part thePart = theStaff.getPart();
         final Scale scale = theStaff.getSystem().getSheet().getScale();

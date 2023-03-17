@@ -1557,6 +1557,34 @@ public class Staff
         return false; // By default
     }
 
+    //--------------//
+    // isPointAbove //
+    //--------------//
+    /**
+     * Report whether the provided point lies above the staff.
+     *
+     * @param pt provided point
+     * @return true if above
+     */
+    public boolean isPointAbove (Point2D pt)
+    {
+        return pt.getY() < getFirstLine().yAt(pt.getX());
+    }
+
+    //--------------//
+    // isPointBelow //
+    //--------------//
+    /**
+     * Report whether the provided point lies below the staff.
+     *
+     * @param pt provided point
+     * @return true if below
+     */
+    public boolean isPointBelow (Point2D pt)
+    {
+        return pt.getY() > getLastLine().yAt(pt.getX());
+    }
+
     //---------//
     // isShort //
     //---------//

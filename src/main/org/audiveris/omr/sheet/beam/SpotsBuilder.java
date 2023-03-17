@@ -320,16 +320,24 @@ public class SpotsBuilder
         buffer.setValue(255);
 
         for (SystemInfo system : sheet.getSystems()) {
-            Staff firstStaff = system.getFirstStaff();
-            Staff lastStaff = system.getLastStaff();
-            int start = system.getBounds().x;
-            int stop = firstStaff.getHeaderStop();
-            int top = firstStaff.getFirstLine().yAt(stop) - dmzDyMargin;
-            int bot = lastStaff.getLastLine().yAt(stop) + dmzDyMargin;
+            final Staff firstStaff = system.getFirstStaff();
+            final Staff lastStaff = system.getLastStaff();
+            final int start = system.getBounds().x;
 
-            buffer.setRoi(start, top, stop - start + 1, bot - top + 1);
-            buffer.fill();
-            buffer.resetRoi();
+            for (Staff staff : system.getStaves()) {
+                // Beware of tablature staff without header
+                if (staff.getHeader() != null) {
+                    final int stop = staff.getHeaderStop();
+                    final int top = firstStaff.getFirstLine().yAt(stop) - dmzDyMargin;
+                    final int bot = lastStaff.getLastLine().yAt(stop) + dmzDyMargin;
+
+                    buffer.setRoi(start, top, stop - start + 1, bot - top + 1);
+                    buffer.fill();
+                    buffer.resetRoi();
+
+                    break;
+                }
+            }
         }
 
         buffer.setValue(0);

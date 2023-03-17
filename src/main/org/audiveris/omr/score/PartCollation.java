@@ -23,7 +23,6 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.SheetStub;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,10 +194,6 @@ public class PartCollation
 
             if (iSeq == 0) {
                 dispatch(sequence, records, +1, manuals);
-
-                if (biIndex != -1) {
-                    biRecord = records.get(biIndex);
-                }
             } else {
                 if ((biRecord != null) && (biIndex != -1)) {
                     // Align on the biRecord
@@ -220,6 +215,10 @@ public class PartCollation
                 } else {
                     dispatch(sequence, records, -1, manuals);
                 }
+            }
+
+            if (biRecord == null) {
+                biRecord = getBiRecord();
             }
         }
 
@@ -250,23 +249,25 @@ public class PartCollation
         final int ic2 = (dir > 0) ? sequence.size() : (-1); // Breaking sequence index value
         int recordIndex = (dir > 0) ? (-1) : records.size(); // Current index in defined records
 
-        CandidateLoop: for (int ic = ic1; ic != ic2; ic += dir) {
+        CandidateLoop:
+        for (int ic = ic1; ic != ic2; ic += dir) {
             final PartRef partRef = sequence.get(ic);
             final List<Integer> lineCounts = partRef.getLineCounts();
             logger.debug("\nCandidate {}", partRef.toQualifiedString());
 
             if (partRef.isManual()) {
-                continue CandidateLoop; // Candidate part already assigned manually
+                continue; // Candidate part already assigned manually
             }
 
             // Check against defined records
             recordIndex += dir;
-            RecordLoop: for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
+
+            for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
                     && (recordIndex >= 0)); recordIndex += dir) {
                 final Record record = records.get(recordIndex);
 
                 if (manuals.contains(record)) {
-                    continue RecordLoop; // Candidate part must skip this record
+                    continue; // Candidate part must skip this record
                 }
 
                 final LogicalPart logical = record.logical;
@@ -323,7 +324,7 @@ public class PartCollation
             if (!logicalsLocked) {
                 addRecord(dir, partRef, records); // Create a brand new record for this candidate
             } else {
-                logger.warn("  Cannot map {} to any logical", partRef.toQualifiedString());
+                logger.info("  Cannot map {} to any logical", partRef.toQualifiedString());
             }
         }
     }
@@ -358,6 +359,25 @@ public class PartCollation
         }
 
         logger.info("PartCollation records:{}", sb);
+    }
+
+    //-------------//
+    // getBiRecord //
+    //-------------//
+    /**
+     * Report the (first) record, if any, with 2 staves among the current sequence of records.
+     *
+     * @return the 2-staff record found or null
+     */
+    private Record getBiRecord ()
+    {
+        for (Record record : records) {
+            if (record.logical.getLineCounts().size() == 2) {
+                return record;
+            }
+        }
+
+        return null;
     }
 
     //-----------//

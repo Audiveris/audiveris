@@ -387,6 +387,9 @@ public class InterFactory
         case DOUBLE_FLAT:
         {
             // Staff is very questionable!
+            if (closestStaff.isTablature()) {
+                return null;
+            }
             AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
             sig.addVertex(alter);

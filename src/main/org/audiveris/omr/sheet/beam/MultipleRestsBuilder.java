@@ -302,7 +302,7 @@ public class MultipleRestsBuilder
 
             final Point center = beam.getCenter();
             final Staff staff = system.getStaffAtOrAbove(center);
-            if (staff == null) {
+            if ((staff == null) || staff.isTablature()) {
                 continue;
             }
 

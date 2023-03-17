@@ -450,14 +450,19 @@ public class SystemInfo
      * Make an estimate of pitch position for the provided point.
      * <p>
      * NOTA: this is really error-prone, since a pitch position is relevant only with respect to a
-     * staff, and here we simply pick the "closest" staff which may not be the related staff.
+     * staff, and here we simply pick the "closest" staff which may not be the related staff,
+     * and may even be a tablature.
      *
      * @param point the location to process
      * @return an estimate of point pitch position (WRT closest staff)
      */
-    public double estimatedPitch (Point2D point)
+    public Double estimatedPitch (Point2D point)
     {
         final Staff closestStaff = getClosestStaff(point); // This is just an indication!
+
+        if (closestStaff.isTablature()) {
+            return null;
+        }
 
         return closestStaff.pitchPositionOf(point);
     }
@@ -605,6 +610,25 @@ public class SystemInfo
         return staves.get(0);
     }
 
+    //-----------------------//
+    // getFirstStandardPart //
+    //-----------------------//
+    /**
+     * Report the first non-tablature part of the system.
+     *
+     * @return the first standard part or null if none
+     */
+    public Part getFirstStandardPart ()
+    {
+        for (Part part : parts) {
+            if (!part.getFirstStaff().isTablature()) {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
     //--------------------//
     // getFollowingInPage //
     //--------------------//
@@ -651,6 +675,26 @@ public class SystemInfo
         }
 
         return found;
+    }
+
+    //---------------//
+    // getHeaderStop //
+    //---------------//
+    /**
+     * Report the abscissa at end of first staff header encountered, otherwise first staff left
+     * abscissa.
+     *
+     * @return end of header if known
+     */
+    public int getHeaderStop ()
+    {
+        for (Staff staff : staves) {
+            if (staff.getHeader() != null) {
+                return staff.getHeaderStop();
+            }
+        }
+
+        return getFirstStaff().getAbscissa(LEFT);
     }
 
     //-----------------------//

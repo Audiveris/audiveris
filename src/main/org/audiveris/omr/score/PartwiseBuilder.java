@@ -3023,14 +3023,16 @@ public class PartwiseBuilder
             current.multipleRests = system.getSig().inters(MultipleRestInter.class);
             isFirst.measure = true;
 
-            Part systemPart = system.getPartById(current.logicalPart.getId());
+            final Part systemPart = system.getPartById(current.logicalPart.getId());
 
             if (systemPart != null) {
                 current.isDrumPart = systemPart.isDrumPart();
                 processPart(systemPart);
             } else {
                 // Need to build a dummy system Part on-the-fly
-                Part dummyPart = system.getFirstPart().createDummyPart(current.logicalPart.getId());
+                // Based on the first usable (i.e. not tablature) part
+                final Part dummyPart = system.getFirstStandardPart().createDummyPart(
+                        current.logicalPart.getId());
                 current.isDrumPart = dummyPart.isDrumPart();
                 processPart(dummyPart);
             }

@@ -437,7 +437,11 @@ public class DotFactory
         }
 
         // Allocate inter
-        final double pp = system.estimatedPitch(dotPt);
+        final Double pp = system.estimatedPitch(dotPt);
+        if (pp == null) {
+            return;
+        }
+
         final double pitch = (pp > 0) ? 1 : (-1);
         final Glyph glyph = dot.getGlyph();
         final Staff staff = system.getClosestStaff(dotPt); // Staff is OK

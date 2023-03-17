@@ -247,13 +247,37 @@ public abstract class PageCleaner
     protected void eraseSystemHeader (SystemInfo system,
                                       Scale.Fraction yMargin)
     {
-        int dy = sheet.getScale().toPixels(yMargin);
-        Staff firstStaff = system.getFirstStaff();
-        Staff lastStaff = system.getLastStaff();
-        int dmzEnd = firstStaff.getHeaderStop();
-        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dy;
-        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dy;
-        g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
+        final int dy = sheet.getScale().toPixels(yMargin);
+        final Staff firstStaff = system.getFirstStaff();
+        final Staff lastStaff = system.getLastStaff();
+
+        // Determine abscissa at end of header(s)
+        // Mind the fact that we may encounter a tablature, thus without header
+        for (Staff staff : system.getStaves()) {
+            if (staff.getHeader() != null) {
+                final int dmzEnd = staff.getHeaderStop();
+                final int top = firstStaff.getFirstLine().yAt(dmzEnd) - dy;
+                final int bot = lastStaff.getLastLine().yAt(dmzEnd) + dy;
+                g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
+
+                return;
+            }
+        }
+    }
+
+    //-----------------//
+    // eraseTablatures //
+    //-----------------//
+    /**
+     * Erase tablatures areas in sheet.
+     *
+     * @param yMargin the vertical margin erased above and below each tablature
+     */
+    public void eraseTablatures (Scale.Fraction yMargin)
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            eraseTablatures(system, yMargin);
+        }
     }
 
     //-----------------//

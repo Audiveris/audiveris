@@ -352,6 +352,10 @@ public abstract class AbstractNumberInter
 
             // If within staff height, we snap ordinate to target pitch: -2 or +2
             if (staff != null) {
+                if (staff.isTablature()) {
+                    return false;
+                }
+
                 final Point center = getCenter();
 
                 if (staff.contains(center)) {
@@ -453,7 +457,7 @@ public abstract class AbstractNumberInter
             final Point center = getCenter();
             final Staff theStaff = system.getStaffAtOrBelow(center);
 
-            if (theStaff != null) {
+            if ((theStaff != null) && !theStaff.isTablature()) {
                 if (theStaff.contains(center)) {
                     // If located within a staff height, this can only be a TimeNumberInter.
                     // We simply look for a time partner above or below.
@@ -493,7 +497,7 @@ public abstract class AbstractNumberInter
             final Point center = getCenter();
             final Staff theStaff = system.getStaffAtOrBelow(center);
 
-            if (theStaff.contains(center)) {
+            if (!theStaff.isTablature() && theStaff.contains(center)) {
                 final double pp = theStaff.pitchPositionOf(center);
                 if (TimeNumberInter.isPitchValid(pp)) {
                     return pp < 0 ? TOP : BOTTOM;

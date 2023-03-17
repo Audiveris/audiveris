@@ -242,6 +242,7 @@ public class Skeleton
      * <p>
      * We must keep track of erased shapes at system level.
      * <ul>
+     * <li>Tablatures don't contain curves, we can erase their area.</li>
      * <li>Notes and beams cannot be crossed by a curve.</li>
      * <li>Bar lines, connections and stems can be crossed by a curve.
      * Perhaps another specific background value could be used?</li>
@@ -284,7 +285,7 @@ public class Skeleton
 
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
-        //
+
         // Erase regions too far from staves
         cleaner.eraseDistantRegions();
 
@@ -525,6 +526,10 @@ public class Skeleton
         private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
                 10,
                 "Maximum vertical gap from any staff");
+
+        private final Scale.Fraction maxDyFromTablature = new Scale.Fraction(
+                1,
+                "Maximum vertical gap from any tablature");
     }
 
     //---------------//
@@ -639,6 +644,14 @@ public class Skeleton
             }
 
             return erasedMap;
+        }
+
+        //-----------------//
+        // eraseTablatures //
+        //-----------------//
+        public void eraseTablatures ()
+        {
+            eraseTablatures(constants.maxDyFromTablature);
         }
     }
 }

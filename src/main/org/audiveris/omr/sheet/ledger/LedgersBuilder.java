@@ -824,6 +824,9 @@ public class LedgersBuilder
                         Point2D center = fil.getCenter2D();
                         StaffManager mgr = sheet.getStaffManager();
                         Staff staff = mgr.getClosestStaff(center);
+                        if (staff.isTablature()) {
+                            return;
+                        }
                         LedgersBuilder builder = new LedgersBuilder(staff.getSystem());
                         int interline = staff.getSpecificInterline();
                         CheckSuite<StickContext> suite = builder.suites.getSuite(interline);

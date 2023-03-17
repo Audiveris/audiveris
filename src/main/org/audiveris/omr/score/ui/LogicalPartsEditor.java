@@ -464,7 +464,7 @@ public class LogicalPartsEditor
                         Set<PartRef> updated)
     {
         for (PageNumber pageNumber : score.getPageNumbers()) {
-            final SheetStub stub = score.getStubs().get(pageNumber.sheetNumber - 1);
+            final SheetStub stub = score.getStub(pageNumber);
             final boolean isLoaded = stub.hasSheet();
             final PageRef pageRef = pageNumber.getPageRef(score.getBook());
 

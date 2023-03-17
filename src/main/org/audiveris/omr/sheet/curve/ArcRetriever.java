@@ -282,6 +282,12 @@ public class ArcRetriever
 
         Point p0 = points.get(0);
         Staff staff = sheet.getStaffManager().getClosestStaff(p0);
+
+        if (staff.isTablature()) {
+            // No slur within a tablature area
+            return true;
+        }
+
         LineInfo line = staff.getClosestStaffLine(p0);
         double maxDist = 0;
         double maxDy = Double.MIN_VALUE;
