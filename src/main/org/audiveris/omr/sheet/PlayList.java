@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -182,6 +183,7 @@ public class PlayList
                 }
             }
 
+            tgtBook.updateScores(null);
             tgtBook.setVersionValue(oldestVersion.value);
             tgtBook.storeBookInfo(tgtRoot);
             logger.info("Compound book created as {}", tgtPath);
@@ -261,20 +263,11 @@ public class PlayList
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append('{');
-        boolean first = true;
-
-        for (Excerpt excerpt : excerpts) {
-            if (!first) {
-                sb.append(';');
-            }
-
-            sb.append(excerpt);
-            first = false;
-        }
-
-        return sb.append('}').toString();
+        // @formatter:off
+        return new StringBuilder(getClass().getSimpleName()).append('{')
+                .append(excerpts.stream().map(Excerpt::toString).collect(Collectors.joining(",")))
+                .append('}').toString();
+        // @formatter:on
     }
 
     //~ Static Methods -----------------------------------------------------------------------------

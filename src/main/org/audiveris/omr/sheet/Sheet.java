@@ -379,7 +379,7 @@ public class Sheet
             initTransients(stub);
 
             // Make sure hLag & vLag are available and their sections dispatched to relevant systems
-            if (stub.isDone(OmrStep.GRID)) {
+            if (stub.isValid() && stub.isDone(OmrStep.GRID)) {
                 systemManager.dispatchHorizontalSections();
                 systemManager.dispatchVerticalSections();
             }
@@ -1179,6 +1179,13 @@ public class Sheet
 
         if (picture != null) {
             picture.initTransients(this);
+        }
+
+        // Invalid stub?
+        if (!stub.isValid()) {
+            scale = null;
+            skew = null;
+            pages.clear();
         }
 
         if (glyphIndex != null) {

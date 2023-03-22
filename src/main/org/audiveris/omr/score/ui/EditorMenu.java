@@ -486,6 +486,10 @@ public class EditorMenu
             if ((staves.size() > 1) && (staves.get(1).getPart() != part))
                 return;
 
+            if (system.getPage().getScore() == null) {
+                return;
+            }
+
             if (system.getPage().getScore().getLogicalParts() == null) {
                 return;
             }

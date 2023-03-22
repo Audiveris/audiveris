@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
-
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
@@ -42,6 +40,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
+import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.SheetStub.SheetInput;
 import org.audiveris.omr.sheet.Versions.CheckResult;
 import org.audiveris.omr.sheet.rhythm.Voices;
@@ -560,11 +559,15 @@ public class Book
                     }
 
                     score.addPageNumber(stub.getNumber(), pageRef);
+                    if (stub.hasSheet()) {
+                        final Page page = pageRef.getRealPage();
+                        page.setScore(score);
+                    }
                 }
             }
         }
 
-        logger.debug("Created scores:{}", theScores);
+        logger.info("Created scores: {}", theScores);
     }
 
     //-------------//

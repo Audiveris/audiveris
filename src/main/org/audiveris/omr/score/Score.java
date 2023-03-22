@@ -522,10 +522,10 @@ public class Score
     // getPageNumber //
     //---------------//
     /**
-     * Report the PageNumber that corresponds to the provided Page.
+     * Report the PageNumber if any that corresponds to the provided Page in this score.
      *
      * @param page provided Page
-     * @return Corresponding PageNumber
+     * @return the corresponding PageNumber or null if page is not in this score
      */
     public PageNumber getPageNumber (Page page)
     {
@@ -536,8 +536,6 @@ public class Score
                 return pageNumber;
             }
         }
-
-        logger.error("No page number for " + page);
 
         return null;
     }

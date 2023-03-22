@@ -993,63 +993,6 @@ public class SheetStub
             return sheet;
         }
     }
-    //
-    //    public Sheet getSheet (SheetStub oldStub)
-    //    {
-    //        // Copy BINARY.png
-    //        final ImageHolder holder = new ImageHolder(ImageKey.BINARY);
-    //        holder.storeData(sheetFolder, oldSheetFolder);
-    //
-    //        if (!oldStub.isDone(OmrStep.LOAD)) {
-    //            // LOAD not yet performed: load from book image file
-    //            try {
-    //                sheet = new Sheet(this, null, false);
-    //            } catch (StepException ignored) {
-    //                logger.info("Could not load sheet for stub {}", this);
-    //            }
-    //        } else {
-    //            // Load from old sheet
-    //            try {
-    //                final Path sheetFile;
-    //                // Copy from the old book file system
-    //                final Book oldBook = oldStub.getBook();
-    //                try {
-    //                    oldBook.getLock().lock();
-    //                    sheetFile = oldBook.openSheetFolder(oldStub.number).resolve(
-    //                            Sheet.getSheetFileName(oldStub.number));
-    //
-    //                    try (InputStream is = Files.newInputStream(
-    //                            sheetFile,
-    //                            StandardOpenOption.READ)) {
-    //                        sheet = Sheet.unmarshal(is);
-    //                    }
-    //
-    //                    sheetFile.getFileSystem().close();
-    //                } finally {
-    //                    oldBook.getLock().unlock();
-    //                }
-    //
-    //                // Complete sheet reload
-    //                sheet.afterReload(this);
-    //                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
-    ////
-    ////                if (OMR.gui != null) {
-    ////                    StubsController.getInstance().markTab(
-    ////                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
-    ////                }
-    //                logger.info("Loaded {}", sheetFile);
-    //            } catch (IOException |
-    //                     JAXBException ex) {
-    //                logger.warn("Error in loading sheet structure " + ex, ex);
-    //            }
-    //        }
-    //
-    //        return sheet;
-    //    }
-    //
-    //----------//
-    // hasSheet //
-    //----------//
 
     //---------------//
     // getSheetInput //
@@ -1184,6 +1127,10 @@ public class SheetStub
             logger.trace("{} initTransients", this);
             this.book = book;
 
+            if (!isValid()) {
+                doneSteps.removeIf( (s) -> s.compareTo(OmrStep.BINARY) > 0); // Safer for old .omr
+            }
+
             if (binarizationFilter != null) {
                 binarizationFilter.setParent(book.getBinarizationFilter());
             }
@@ -1227,6 +1174,7 @@ public class SheetStub
     {
         invalid = true;
 
+        doneSteps.removeIf( (s) -> s.compareTo(OmrStep.BINARY) > 0);
         pageRefs.clear();
         book.updateScores(this);
         setModified(true);
