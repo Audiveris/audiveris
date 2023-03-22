@@ -1036,6 +1036,31 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
+    //---------------//
+    // rebuildScores //
+    //---------------//
+    /**
+     * Action to rebuild book score(s) from scratch.
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public void rebuildScores ()
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return;
+        }
+
+        final String msg = format(resources.getString("rebuildScores.pattern"), book.getRadix());
+
+        if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
+            return;
+        }
+
+        book.clearScores();
+        book.updateScores(null);
+    }
+
     //------//
     // redo //
     //------//
