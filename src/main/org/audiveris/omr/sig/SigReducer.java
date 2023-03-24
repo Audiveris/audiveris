@@ -765,7 +765,7 @@ public class SigReducer
     // checkHooksHaveStem //
     //--------------------//
     /**
-     * Perform checks on hooks.
+     * Perform checks on hooks that must have a stem relation on one horizontal side.
      *
      * @return the count of modifications done
      */
@@ -777,13 +777,24 @@ public class SigReducer
         final List<Inter> inters = sig.inters(BeamHookInter.class);
 
         for (Inter inter : inters) {
-            // Check if the hook has a stem relation
-            if (!sig.hasRelation(inter, BeamStemRelation.class)) {
+            BeamPortion sidePortion = null;
+
+            for (Relation rel : sig.getRelations(inter, BeamStemRelation.class)) {
+                final BeamStemRelation bsRel = (BeamStemRelation) rel;
+                final BeamPortion portion = bsRel.getBeamPortion();
+
+                if (portion != BeamPortion.CENTER) {
+                    sidePortion = portion;
+                }
+            }
+
+            if (sidePortion == null) {
                 if (inter.isVip()) {
-                    logger.info("VIP no stem for {}", inter);
+                    logger.info("VIP no side stem for {}", inter);
                 }
 
                 inter.remove();
+                modifs++;
             }
         }
 
