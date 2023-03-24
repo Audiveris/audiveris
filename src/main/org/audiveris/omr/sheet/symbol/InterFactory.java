@@ -475,7 +475,8 @@ public class InterFactory
                     shape,
                     grade,
                     system,
-                    systemStems) : null;
+                    systemStems,
+                    systemHeads) : null;
 
         // Plucked techniques
         case ARPEGGIATO:

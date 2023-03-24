@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              T r e m o l o S t e m R e l a t i o n                             //
+//                             T r e m o l o W h o l e R e l a t i o n                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -22,7 +22,9 @@
 package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.TremoloInter;
 
@@ -31,32 +33,30 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.geom.Line2D;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>TremoloStemRelation</code> represents the support relation between a tremolo
- * and its related stem.
+ * Class <code>TremoloWholeRelation</code> represents the support relation between a tremolo
+ * and its related stemless head (typically a whole note).
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "tremolo-stem")
-public class TremoloStemRelation
-        extends AbstractStemConnection
+@XmlRootElement(name = "tremolo-whole")
+public class TremoloWholeRelation
+        extends AbstractConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(TremoloStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(TremoloWholeRelation.class);
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>TremoloStemRelation</code> object.
+     * Creates a new <code>WholeRelation</code> object.
      */
-    public TremoloStemRelation ()
+    public TremoloWholeRelation ()
     {
     }
 
@@ -71,17 +71,6 @@ public class TremoloStemRelation
         final TremoloInter tremolo = (TremoloInter) e.getEdgeSource();
 
         tremolo.checkAbnormal();
-    }
-
-    //----------------//
-    // getStemPortion //
-    //----------------//
-    @Override
-    public StemPortion getStemPortion (Inter source,
-                                       Line2D stemLine,
-                                       Scale scale)
-    {
-        return StemPortion.STEM_MIDDLE;
     }
 
     //---------------//
@@ -100,6 +89,29 @@ public class TremoloStemRelation
     protected Scale.Fraction getYGapMax (int profile)
     {
         return getYGapMaximum(profile);
+    }
+
+    //-------------//
+    // isForbidden //
+    //-------------//
+    /**
+     * {@inheritDoc }
+     * <p>
+     * Specifically, a TremoloWholeRelation can be targeted only to a stem-less head.
+     */
+    @Override
+    public boolean isForbidden (Inter source,
+                                Inter target)
+    {
+        if (!(source instanceof TremoloInter)) {
+            return true;
+        }
+
+        if (!(target instanceof HeadInter head)) {
+            return true;
+        }
+
+        return !ShapeSet.StemLessHeads.contains(head.getShape());
     }
 
     //----------------//
@@ -152,6 +164,7 @@ public class TremoloStemRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -160,12 +173,12 @@ public class TremoloStemRelation
     {
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0,
-                "Maximum vertical gap between stem & tremolo");
+                2.0,
+                "Maximum vertical gap between whole head & tremolo");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.3,
-                "Maximum horizontal distance between stem & tremolo center");
+                "Maximum horizontal distance between whole head center & tremolo center");
 
     }
 }

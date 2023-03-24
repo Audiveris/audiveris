@@ -157,8 +157,11 @@ public abstract class AbstractConnection
     @Override
     protected String internals ()
     {
-        return new StringBuilder(super.internals()).append("@(").append(String.format("%.2f", dx))
-                .append(",").append(String.format("%.2f", dy)).append(")").toString();
+        // @formatter:off
+        return new StringBuilder(super.internals()).append("@(")
+                .append(String.format("%.2f", dx)).append(",")
+                .append(String.format("%.2f", dy)).append(")").toString();
+        // @formatter:on
     }
 
     /**

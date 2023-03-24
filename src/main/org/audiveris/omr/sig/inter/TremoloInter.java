@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.TremoloStemRelation;
+import org.audiveris.omr.sig.relation.TremoloWholeRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.LinkTask;
@@ -55,7 +56,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,12 +67,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>TremoloInter</code> represents a tremolo, perhaps with several lines,
- * as indicated by the precise shape (TREMOLO_1, TREMOLO_3 or TREMOLO_3).
+ * as indicated by the precise shape (TREMOLO_1, TREMOLO_2 or TREMOLO_3).
  * <p>
  * We don't support line numbers higher than 3 for the time being.
  * <p>
- * These tremolo signs are of "single" type, linked to a single stem, as opposed to "double" type
- * located between two stems.
+ * These tremolo signs are of "single" type, linked to a single stem or a single stemless head,
+ * as opposed to "double" type located between two stems.
  *
  * @author Hervé Bitteur
  */
@@ -101,7 +101,7 @@ public class TremoloInter
      *
      * @param glyph  the glyph to interpret
      * @param bounds object bounds
-     * @param shape  TREMOLO_1, TREMOLO_3 or TREMOLO_3
+     * @param shape  TREMOLO_1, TREMOLO_2 or TREMOLO_3
      * @param grade  evaluation grade
      */
     public TremoloInter (Glyph glyph,
@@ -115,7 +115,7 @@ public class TremoloInter
     /**
      * Creates manually a new TremoloInter ghost object.
      *
-     * @param shape TREMOLO_1, TREMOLO_3 or TREMOLO_3
+     * @param shape TREMOLO_1, TREMOLO_2 or TREMOLO_3
      * @param grade quality grade
      */
     public TremoloInter (Shape shape,
@@ -141,8 +141,11 @@ public class TremoloInter
     @Override
     public boolean checkAbnormal ()
     {
-        // Check if a stem is connected on tremolo abscissa center
-        setAbnormal(!sig.hasRelation(this, TremoloStemRelation.class));
+        // Check if a stem or a whole head is connected on tremolo
+        // @formatter:off
+        setAbnormal(!sig.hasRelation(this, TremoloStemRelation.class)
+                 && !sig.hasRelation(this, TremoloWholeRelation.class));
+        // @formatter:on
 
         return isAbnormal();
     }
@@ -159,7 +162,7 @@ public class TremoloInter
         // First call needed to get tremolo bounds
         super.deriveFrom(symbol, sheet, font, dropLocation);
 
-        // For a tremolo, we snap center abscissa to nearby stem if any
+        // For a tremolo, we snap center abscissa to nearby stem or whole head if any
         if (staff != null) {
             final Double x = getSnapAbscissa();
 
@@ -188,7 +191,7 @@ public class TremoloInter
     //-----------------//
     /**
      * Report the theoretical abscissa of the provided tremolo center when correctly aligned
-     * with a suitable stem in its middle.
+     * with a suitable stem or whole head in its middle.
      *
      * @return the proper abscissa if any, null otherwise
      */
@@ -199,11 +202,17 @@ public class TremoloInter
             return null;
         }
 
-        // Best stem nearby (zero or one stem)
+        // Stem or whole head nearby
         for (Link link : searchLinks(staff.getSystem())) {
-            final StemInter stem = (StemInter) link.partner;
+            if (link.relation instanceof TremoloStemRelation) {
+                final StemInter stem = (StemInter) link.partner;
+                return LineUtil.xAtY(stem.getMedian(), getCenter().y);
+            }
 
-            return LineUtil.xAtY(stem.getMedian(), getCenter().y);
+            if (link.relation instanceof TremoloWholeRelation) {
+                final HeadInter head = (HeadInter) link.partner;
+                return head.getCenter().getX();
+            }
         }
 
         return null;
@@ -213,9 +222,10 @@ public class TremoloInter
     // getStem //
     //---------//
     /**
-     * Report the stem connected to this tremolo.
+     * Report the stem, if any, connected to this tremolo.
      *
      * @return the connected stem, perhaps null
+     * @see #getWhole
      */
     public StemInter getStem ()
     {
@@ -246,12 +256,34 @@ public class TremoloInter
     public Voice getVoice ()
     {
         final StemInter stem = getStem();
-
         if (stem != null) {
             return stem.getVoice();
-        } else {
-            return null;
         }
+
+        final HeadInter whole = getWhole();
+        if (whole != null) {
+            return whole.getVoice();
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getWhole //
+    //----------//
+    /**
+     * Report the whole head, if any, connected to this tremolo.
+     *
+     * @return the connected whole head, perhaps null
+     * @see #getStem
+     */
+    public HeadInter getWhole ()
+    {
+        for (Relation bs : sig.getRelations(this, TremoloWholeRelation.class)) {
+            return (HeadInter) sig.getOppositeInter(this, bs);
+        }
+
+        return null;
     }
 
     //----------------//
@@ -259,21 +291,29 @@ public class TremoloInter
     //----------------//
     /**
      * TremoloInter is an ornament and as such must be linked via a ChordOrnamentRelation
-     * with the stem chord.
+     * with the chord of the related stem or whole head.
      *
-     * @param stem the tremolo stem
+     * @param inter the tremolo stem or whole head
      */
-    private void linkAsOrnament (StemInter stem)
+    private void linkAsOrnament (Inter inter)
     {
-        for (HeadChordInter headChord : stem.getChords()) {
-            sig.addEdge(headChord, this, new ChordOrnamentRelation());
-            return;
+        if (inter instanceof StemInter stem) {
+            for (HeadChordInter headChord : stem.getChords()) {
+                sig.addEdge(headChord, this, new ChordOrnamentRelation());
+            }
+        } else if (inter instanceof HeadInter whole) {
+            final HeadChordInter headChord = whole.getChord();
+            if (headChord != null) {
+                sig.addEdge(headChord, this, new ChordOrnamentRelation());
+            }
+        } else {
+            logger.error("linkAsOrnament called with unexpected {}", inter);
         }
     }
 
-    //------------//
-    // lookupLink //
-    //------------//
+    //----------------//
+    // lookupStemLink //
+    //----------------//
     /**
      * Lookup for a potential Tremolo-Stem link.
      *
@@ -282,16 +322,16 @@ public class TremoloInter
      * @param profile     desired profile level
      * @return the best potential link if any, null otherwise
      */
-    private Link lookupLink (List<Inter> systemStems,
-                             SystemInfo system,
-                             int profile)
+    private Link lookupStemLink (List<Inter> systemStems,
+                                 SystemInfo system,
+                                 int profile)
     {
         if (systemStems.isEmpty()) {
             return null;
         }
 
         if (isVip()) {
-            logger.info("VIP lookupLink for {}", this);
+            logger.info("VIP lookupStemLink for {}", this);
         }
 
         // Lookup area centered on tremolo
@@ -320,10 +360,9 @@ public class TremoloInter
             final Line2D median = stem.getMedian(); // Defined from top to bottom
             final double t1 = tBox.y + yShift;
             final double t2 = tBox.y + tBox.height - 1 - yShift;
-            // Vertical overlap?
-            final double yMin = Math.max(median.getY1(), t1);
-            final double yMax = Math.min(median.getY2(), t2);
-            final double dy = (yMax >= yMin) ? 0 : yMin - yMax;
+            final double y1 = Math.max(median.getY1(), t1);
+            final double y2 = Math.min(median.getY2(), t2);
+            final double dy = (y1 <= y2) ? 0 : y1 - y2;
 
             final TremoloStemRelation tRel = new TremoloStemRelation();
             tRel.setInOutGaps(scale.pixelsToFrac(dx), scale.pixelsToFrac(dy), profile);
@@ -336,6 +375,77 @@ public class TremoloInter
         }
 
         return (bestRel != null) ? new Link(bestStem, bestRel, true) : null;
+    }
+
+    //-----------------//
+    // lookupWholeLink //
+    //-----------------//
+    /**
+     * Lookup for a potential Tremolo-Whole link.
+     *
+     * @param systemHeads all heads in system, sorted by abscissa
+     * @param system      containing system
+     * @param profile     desired profile level
+     * @return the best potential link if any, null otherwise
+     */
+    private Link lookupWholeLink (List<Inter> systemHeads,
+                                  SystemInfo system,
+                                  int profile)
+    {
+        if (systemHeads.isEmpty()) {
+            return null;
+        }
+
+        if (isVip()) {
+            logger.info("VIP lookupWholeLink for {}", this);
+        }
+
+        // Lookup area centered on tremolo
+        final Scale scale = system.getSheet().getScale();
+        final int xOut = scale.toPixels(TremoloWholeRelation.getCenterDxMaximum(profile));
+        final int yGap = scale.toPixels(TremoloWholeRelation.getYGapMaximum(profile));
+        final Rectangle tBox = getBounds();
+        final double yShift = Math.abs(tBox.width * 0.5 * constants.slope.getValue());
+        final Point center = getCenter();
+        final Rectangle luBox = new Rectangle(center.x, center.y, 0, 0);
+        luBox.grow(xOut, (int) Math.rint(tBox.height * 0.5 - yShift + yGap));
+
+        double bestGrade = Double.MAX_VALUE;
+        Relation bestRel = null;
+        HeadInter bestWhole = null;
+
+        final List<Inter> heads = Inters.intersectedInters(systemHeads, GeoOrder.NONE, luBox);
+
+        for (Inter inter : heads) {
+            if (!inter.getShape().isStemLessHead()) {
+                continue;
+            }
+
+            final HeadInter whole = (HeadInter) inter;
+            final Rectangle wBox = whole.getBounds();
+            final Point wholeCenter = whole.getCenter();
+
+            // dx
+            final double dx = Math.abs(center.x - wholeCenter.x);
+
+            // dy
+            final double t1 = tBox.y + yShift;
+            final double t2 = tBox.y + tBox.height - 1 - yShift;
+            final double y1 = Math.min(wBox.y + wBox.height - 1, t2);
+            final double y2 = Math.max(wBox.y, t1);
+            final double dy = (y1 <= y2) ? 0 : y1 - y2;
+
+            final TremoloWholeRelation tRel = new TremoloWholeRelation();
+            tRel.setInOutGaps(scale.pixelsToFrac(dx), scale.pixelsToFrac(dy), profile);
+
+            if ((bestRel == null) || (tRel.getGrade() > bestGrade)) {
+                bestRel = tRel;
+                bestWhole = whole;
+                bestGrade = tRel.getGrade();
+            }
+        }
+
+        return (bestRel != null) ? new Link(bestWhole, bestRel, true) : null;
     }
 
     //--------//
@@ -353,8 +463,17 @@ public class TremoloInter
 
         // Link tremolo as a chord ornament
         for (Link link : links) {
-            final StemInter stem = (StemInter) link.partner;
-            final HeadChordInter chord = stem.getChords().get(0);
+            final HeadChordInter chord;
+
+            if (link.relation instanceof TremoloStemRelation) {
+                final StemInter stem = (StemInter) link.partner;
+                chord = stem.getChords().get(0);
+            } else if (link.relation instanceof TremoloWholeRelation) {
+                final HeadInter head = (HeadInter) link.partner;
+                chord = head.getChord();
+            } else
+                throw new IllegalStateException("Unexpected tremolo link: " + link);
+
             final ChordOrnamentRelation rel = new ChordOrnamentRelation();
             rel.setManual(true);
 
@@ -369,21 +488,24 @@ public class TremoloInter
     // searchLinks //
     //-------------//
     /**
-     * {@inheritDoc}
+     * {@inheritDoc }
      * <p>
-     * Specifically, look for stem to allow center attachment.
-     *
-     * @return stem link, perhaps empty
+     * Specifically, look for stem or whole head to allow attachment.
      */
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
+        final int profile = Math.max(getProfile(), system.getProfile());
 
         final List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
+        Link link = lookupStemLink(systemStems, system, profile);
 
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final Link link = lookupLink(systemStems, system, profile);
+        if (link == null) {
+            final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+            Collections.sort(systemHeads, Inters.byAbscissa);
+            link = lookupWholeLink(systemHeads, system, profile);
+        }
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -395,27 +517,48 @@ public class TremoloInter
     public Collection<Link> searchUnlinks (SystemInfo system,
                                            Collection<Link> links)
     {
-        return searchObsoletelinks(links, TremoloStemRelation.class);
+        return searchObsoletelinks(links, TremoloStemRelation.class, TremoloWholeRelation.class);
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //-------------------//
-    // aggregateTremolos //
-    //-------------------//
+    //-----------//
+    // aggregate //
+    //-----------//
     /**
-     * Aggregate tremolos along the same stem.
+     * Try to aggregate tremolos in the provided system.
      *
      * @param system the containing system
      */
-    public static void aggregateTremolos (SystemInfo system)
+    public static void aggregate (SystemInfo system)
     {
         final SIGraph sig = system.getSig();
 
-        for (Inter inter : sig.inters(StemInter.class)) {
-            final StemInter stem = (StemInter) inter;
+        // Stems
+        aggregateAlong(sig.inters(StemInter.class), TremoloStemRelation.class, sig);
 
-            final Set<Relation> tremRels = sig.getRelations(stem, TremoloStemRelation.class);
+        // Wholes
+        final List<Inter> heads = sig.inters(HeadInter.class);
+        heads.removeIf( (inter) -> !inter.getShape().isStemLessHead());
+        aggregateAlong(heads, TremoloWholeRelation.class, sig);
+    }
+
+    //----------------//
+    // aggregateAlong //
+    //----------------//
+    /**
+     * Aggregate tremolos along the provided population of inters (stems / wholes).
+     *
+     * @param inters        either system stems or system wholes
+     * @param relationClass either TremoloStemRelation or TremoloWholeRelation class
+     * @param sig           the containing SIG
+     */
+    private static void aggregateAlong (List<Inter> inters,
+                                        Class<? extends Relation> relationClass,
+                                        SIGraph sig)
+    {
+        for (Inter inter : inters) {
+            final Set<Relation> tremRels = sig.getRelations(inter, relationClass);
             if (tremRels.size() > 1) {
                 // Tremolo aggregation needed
                 final Set<TremoloInter> trems = new LinkedHashSet<>();
@@ -424,7 +567,7 @@ public class TremoloInter
                 Rectangle bounds = null;
 
                 for (Relation rel : tremRels) {
-                    final TremoloInter trem = (TremoloInter) sig.getOppositeInter(stem, rel);
+                    final TremoloInter trem = (TremoloInter) sig.getOppositeInter(inter, rel);
                     trems.add(trem);
                     totalGrade += trem.getGrade();
                     count += trem.getTremoloValue();
@@ -440,15 +583,16 @@ public class TremoloInter
                     final Shape shape = TremoloInter.getTremoloShape(count);
                     final TremoloInter compound = new TremoloInter(null, bounds, shape, grade);
                     sig.addVertex(compound);
-                    sig.addEdge(compound, stem, new TremoloStemRelation());
-                    compound.linkAsOrnament(stem);
+                    final Relation rel = relationClass.getDeclaredConstructor().newInstance();
+                    sig.addEdge(compound, inter, rel);
+                    compound.linkAsOrnament(inter);
 
                     // Clean up
                     for (TremoloInter trem : trems) {
                         trem.remove();
                     }
                 } catch (Exception ex) {
-                    logger.warn("Could not aggregate tremolos around " + stem, ex);
+                    logger.warn("Could not aggregate tremolos around " + inter, ex);
                 }
             }
         }
@@ -465,36 +609,69 @@ public class TremoloInter
      * @param grade       assigned grade
      * @param system      containing system
      * @param systemStems system stems, ordered by abscissa
+     * @param systemHeads system heads, ordered by abscissa
      * @return the created tremolo or null
      */
     public static TremoloInter createValidAdded (Glyph glyph,
                                                  Shape shape,
                                                  double grade,
                                                  SystemInfo system,
-                                                 List<Inter> systemStems)
+                                                 List<Inter> systemStems,
+                                                 List<Inter> systemHeads)
     {
         if (glyph.isVip()) {
             logger.info("VIP TremoloInter create {} as {}", glyph, shape);
         }
 
-        TremoloInter tremolo = new TremoloInter(glyph, glyph.getBounds(), shape, grade);
-        Link link = tremolo.lookupLink(systemStems, system, system.getProfile());
+        final TremoloInter tremolo = new TremoloInter(glyph, glyph.getBounds(), shape, grade);
+
+        Link link = tremolo.lookupStemLink(systemStems, system, system.getProfile());
 
         if (link != null) {
-            final SIGraph sig = system.getSig();
-            sig.addVertex(tremolo);
-            link.applyTo(tremolo);
-            tremolo.linkAsOrnament((StemInter) link.partner);
+            return createWithLink(tremolo, link, system);
+        }
 
-            return tremolo;
+        link = tremolo.lookupWholeLink(systemHeads, system, system.getProfile());
+
+        if (link != null) {
+            return createWithLink(tremolo, link, system);
         }
 
         return null;
     }
 
+    //----------------//
+    // createWithLink //
+    //----------------//
+    /**
+     * Apply the provided link of the created tremolo.
+     *
+     * @param tremolo the tremolo just created
+     * @param link    the link to apply
+     * @param system  the containing system
+     * @return the (properly linked) tremolo
+     */
+    private static TremoloInter createWithLink (TremoloInter tremolo,
+                                                Link link,
+                                                SystemInfo system)
+    {
+        final SIGraph sig = system.getSig();
+        sig.addVertex(tremolo);
+        link.applyTo(tremolo);
+        tremolo.linkAsOrnament(link.partner);
+
+        return tremolo;
+    }
+
     //-----------------//
     // getTremoloShape //
     //-----------------//
+    /**
+     * Report the precise tremolo shape, knowing its number of lines.
+     *
+     * @param value number of lines
+     * @return the corresponding tremolo shape
+     */
     public static Shape getTremoloShape (int value)
     {
         return switch (value) {
@@ -539,7 +716,8 @@ public class TremoloInter
     {
         final double typicalWidth = scale.toPixelsDouble(constants.width);
         final double widthMargin = scale.toPixelsDouble(constants.widthMargin);
-        return !(width < typicalWidth - widthMargin || width > typicalWidth + widthMargin);
+
+        return Math.abs(width - typicalWidth) <= widthMargin;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -569,7 +747,8 @@ public class TremoloInter
     /**
      * User editor for a tremolo.
      * <p>
-     * The middle handle can move in any direction, but horizontally it tries to snap to a stem.
+     * The middle handle can move in any direction, but horizontally it tries to snap to a stem
+     * or a whole head.
      */
     private static class Editor
             extends InterEditor
@@ -598,10 +777,9 @@ public class TremoloInter
                                      int dy)
                 {
                     // Handle
-                    PointUtil.add(selectedHandle.getPoint(), dx, dy);
+                    PointUtil.add(center, dx, dy);
 
                     // Data
-                    Point2D center = selectedHandle.getPoint();
                     latestBounds.x = (int) Math.rint(center.getX() - halfWidth);
                     latestBounds.y = (int) Math.rint(center.getY() - halfHeight);
                     tremolo.setBounds(latestBounds);

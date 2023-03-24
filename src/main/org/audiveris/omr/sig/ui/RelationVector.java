@@ -196,16 +196,19 @@ public class RelationVector
                     logger.debug("src:{} tgt:{} suggestions:{}", source, target, suggestions);
 
                     try {
-                        SIGraph sig = source.getSig();
-                        Class<? extends Relation> relClass = suggestions.iterator().next();
+                        final SIGraph sig = source.getSig();
+                        final Class<? extends Relation> relClass = suggestions.iterator().next();
 
                         // Allocate relation to be added
-                        Relation relation = relClass.getDeclaredConstructor().newInstance();
-                        relation.setManual(true);
+                        final Relation relation = relClass.getDeclaredConstructor().newInstance();
 
-                        sheet.getInterController().link(sig, source, target, relation);
-
-                        return;
+                        if (relation.isForbidden(source, target)) {
+                            logger.debug("Not allowed {} src:{} tgt:{}", relClass, source, target);
+                        } else {
+                            relation.setManual(true);
+                            sheet.getInterController().link(sig, source, target, relation);
+                            return;
+                        }
                     } catch (Exception ex) {
                         logger.warn("Error linking {}", ex.toString(), ex);
                     }

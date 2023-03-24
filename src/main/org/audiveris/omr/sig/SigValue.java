@@ -142,6 +142,7 @@ import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.sig.relation.TremoloStemRelation;
+import org.audiveris.omr.sig.relation.TremoloWholeRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -439,7 +440,8 @@ public class SigValue
                 @XmlElementRef(type = SlurHeadRelation.class),
                 @XmlElementRef(type = StemAlignmentRelation.class),
                 @XmlElementRef(type = TimeTopBottomRelation.class),
-                @XmlElementRef(type = TremoloStemRelation.class) })
+                @XmlElementRef(type = TremoloStemRelation.class),
+                @XmlElementRef(type = TremoloWholeRelation.class) })
         public Relation relation;
 
         /**

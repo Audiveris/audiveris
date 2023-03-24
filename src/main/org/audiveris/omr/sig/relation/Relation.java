@@ -160,6 +160,25 @@ public abstract class Relation
         return isManual() ? "MANUAL" : "";
     }
 
+    //-------------//
+    // isForbidden //
+    //-------------//
+    /**
+     * Report whether this relation is <b>explicitly</b> forbidden between the provided
+     * source and target Inter instances.
+     * <p>
+     * <b>WARNING</b>: Not being explicitly forbidden does not imply being allowed.
+     *
+     * @param source source Inter instance
+     * @param target target Inter instance
+     * @return true if forbidden
+     */
+    public boolean isForbidden (Inter source,
+                                Inter target)
+    {
+        return false;
+    }
+
     //----------//
     // isManual //
     //----------//

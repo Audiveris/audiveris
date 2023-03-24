@@ -132,7 +132,7 @@ public class LinksStep
         new SigReducer(system, true).reduceLinks();
 
         // Aggregate tremolos whenever needed
-        TremoloInter.aggregateTremolos(system);
+        TremoloInter.aggregate(system);
 
         // Complete each measure with clef(s) and key if any
         new MeasureFiller(system).process();

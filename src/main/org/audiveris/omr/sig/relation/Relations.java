@@ -105,8 +105,11 @@ public abstract class Relations
 
     //~ Static Methods -----------------------------------------------------------------------------
 
+    //-----------//
+    // buildMaps //
+    //-----------//
     /**
-     * Build the maps of possible support classes for a source inter class and for a
+     * Build the maps of possible relation classes for a source inter class and for a
      * target inter class.
      * <p>
      * A few relations are used only for support during reduction, rather than symbolic relation.
@@ -173,20 +176,26 @@ public abstract class Relations
         map(SlurInter.class, SlurHeadRelation.class, HeadInter.class);
 
         map(TimeNumberInter.class, TimeTopBottomRelation.class, TimeNumberInter.class);
+
         map(TremoloInter.class, TremoloStemRelation.class, StemInter.class);
+        map(TremoloInter.class, TremoloWholeRelation.class, HeadInter.class);
     }
 
+    //-------------------------//
+    // definedRelationsBetween //
+    //-------------------------//
     /**
-     * Report the defined relation classes between the provided source and target
-     * inter classes.
+     * Report the defined relation classes between the provided source and target inter classes.
      *
      * @param sourceClass provided inter class as source
      * @param targetClass provided inter class as target
      * @return the list of defined relation classes, perhaps empty
      */
-    public static Set<Class<? extends Relation>> definedRelationsBetween (
-                                                                          Class<? extends Inter> sourceClass,
-                                                                          Class<? extends Inter> targetClass)
+    private static Set<Class<? extends Relation>> definedRelationsBetween (
+    // @formatter:off
+        Class<? extends Inter> sourceClass,
+        Class<? extends Inter> targetClass)
+    // @formatter:on
     {
         final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Set<Class<? extends Relation>> from = definedRelationsFrom(sourceClass);
@@ -194,33 +203,35 @@ public abstract class Relations
         defined.addAll(from);
         defined.retainAll(to);
 
-        if (defined.isEmpty()) {
-            return Collections.emptySet();
-        } else {
-            return defined;
-        }
+        return !defined.isEmpty() ? defined : Collections.emptySet();
     }
 
+    //----------------------//
+    // definedRelationsFrom //
+    //----------------------//
     /**
      * Report the defined relation classes from the provided source inter class.
      *
      * @param sourceClass provided inter class as source
      * @return the list of defined relation classes, perhaps empty
      */
-    public static Set<Class<? extends Relation>> definedRelationsFrom (
-                                                                       Class<? extends Inter> sourceClass)
+    private static Set<Class<? extends Relation>> definedRelationsFrom (
+    // @formatter:off
+        Class<? extends Inter> sourceClass)
+    // @formatter:on
     {
         Objects.requireNonNull(sourceClass, "Source class is null");
 
         final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
-        Class classe = sourceClass;
 
+        // Walk up inheritance hierarchy starting from sourceClass
+        Class classe = sourceClass;
         while (true) {
             if ((classe == null) || !Inter.class.isAssignableFrom(classe)) {
                 break;
             }
 
-            Set<Class<? extends Relation>> set = src.get(classe);
+            final Set<Class<? extends Relation>> set = src.get(classe);
 
             if (set != null) {
                 defined.addAll(set);
@@ -229,21 +240,22 @@ public abstract class Relations
             classe = classe.getSuperclass();
         }
 
-        if (!defined.isEmpty()) {
-            return Collections.unmodifiableSet(defined);
-        } else {
-            return Collections.emptySet();
-        }
+        return !defined.isEmpty() ? Collections.unmodifiableSet(defined) : Collections.emptySet();
     }
 
+    //--------------------//
+    // definedRelationsTo //
+    //--------------------//
     /**
      * Report the defined relation classes to the provided target inter class.
      *
      * @param targetClass provided inter class as target
      * @return the list of defined relation classes, perhaps empty
      */
-    public static Set<Class<? extends Relation>> definedRelationsTo (
-                                                                     Class<? extends Inter> targetClass)
+    private static Set<Class<? extends Relation>> definedRelationsTo (
+    // @formatter:off
+        Class<? extends Inter> targetClass)
+    // @formatter:on
     {
         Objects.requireNonNull(targetClass, "Target class is null");
 
@@ -264,16 +276,17 @@ public abstract class Relations
             classe = classe.getSuperclass();
         }
 
-        if (!defined.isEmpty()) {
-            return Collections.unmodifiableSet(defined);
-        } else {
-            return Collections.emptySet();
-        }
+        return !defined.isEmpty() ? Collections.unmodifiableSet(defined) : Collections.emptySet();
     }
 
+    //--------//
+    // getSet //
+    //--------//
     private static Set<Class<? extends Relation>> getSet (
-                                                          Map<Class<? extends Inter>, Set<Class<? extends Relation>>> map,
-                                                          Class<? extends Inter> classe)
+    // @formatter:off
+        Map<Class<? extends Inter>, Set<Class<? extends Relation>>> map,
+        Class<? extends Inter> classe)
+    // @formatter:on
     {
         Set<Class<? extends Relation>> set = map.get(classe);
 
@@ -284,6 +297,17 @@ public abstract class Relations
         return set;
     }
 
+    //-----//
+    // map //
+    //-----//
+    /**
+     * Register the fact the provided relationClass can have sourceClass as source and
+     * targetClass as target.
+     *
+     * @param sourceClass   source class
+     * @param relationClass relation class
+     * @param targetClass   target class
+     */
     private static void map (Class<? extends Inter> sourceClass,
                              Class<? extends Relation> relationClass,
                              Class<? extends Inter> targetClass)
@@ -292,6 +316,9 @@ public abstract class Relations
         getSet(tgt, targetClass).add(relationClass);
     }
 
+    //--------//
+    // nameOf //
+    //--------//
     /**
      * Report a simple name for the provided relation class.
      *
@@ -303,6 +330,9 @@ public abstract class Relations
         return relationClass.getSimpleName().replaceFirst("Relation", "");
     }
 
+    //-----------//
+    // relations //
+    //-----------//
     /**
      * Lookup for relations for which the provided predicate applies within the
      * provided collection.
@@ -325,9 +355,11 @@ public abstract class Relations
         return found;
     }
 
+    //---------------------------//
+    // suggestedRelationsBetween //
+    //---------------------------//
     /**
-     * Report the suggested relation classes between the provided source and target
-     * inters.
+     * Report the suggested relation classes between the provided source and target inters.
      *
      * @param source provided inter as source
      * @param target provided inter as target
@@ -354,18 +386,12 @@ public abstract class Relations
                 definedRelationsBetween(source.getClass(), target.getClass()));
 
         // Skip existing relation, if any, between source & target
-        Relation edge = sig.getEdge(source, target);
-
+        final Relation edge = sig.getEdge(source, target);
         if (edge != null) {
             suggestions.remove(edge.getClass());
         }
 
-        // Return what we got
-        if (suggestions.isEmpty()) {
-            return Collections.emptySet();
-        } else {
-            return suggestions;
-        }
+        return !suggestions.isEmpty() ? suggestions : Collections.emptySet();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
