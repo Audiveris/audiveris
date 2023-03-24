@@ -395,7 +395,7 @@ public abstract class AbstractNumberInter
                 if (vSide != null) {
                     final TimeNumberInter tn = new TimeNumberInter(glyph, shape, getGrade(), vSide);
                     tn.setManual(true);
-                    tn.setStaff(system.getStaffAtOrBelow(getCenter()));
+                    tn.setStaff(system.getClosestStaff(getCenter()));
                     tasks.add(new AdditionTask(sig, tn, getBounds(), /* empty */ links));
                     toPublish.value = tn;
                 }
@@ -455,7 +455,7 @@ public abstract class AbstractNumberInter
         public Collection<Link> searchLinks (SystemInfo system)
         {
             final Point center = getCenter();
-            final Staff theStaff = system.getStaffAtOrBelow(center);
+            final Staff theStaff = system.getClosestStaff(center);
 
             if ((theStaff != null) && !theStaff.isTablature()) {
                 if (theStaff.contains(center)) {
@@ -472,7 +472,7 @@ public abstract class AbstractNumberInter
                         }
                     }
                 } else {
-                    // Otherwise, it can be a MeasureCountInter and we look into the staff below
+                    // Otherwise, it can be a MeasureCountInter and we look into the staff nearby
                     final Link link = MeasureCountInter.lookupLink(getCenter(), system);
 
                     if (link != null)
@@ -495,7 +495,7 @@ public abstract class AbstractNumberInter
         private VerticalSide timeNumberSide (SystemInfo system)
         {
             final Point center = getCenter();
-            final Staff theStaff = system.getStaffAtOrBelow(center);
+            final Staff theStaff = system.getClosestStaff(center);
 
             if (!theStaff.isTablature() && theStaff.contains(center)) {
                 final double pp = theStaff.pitchPositionOf(center);

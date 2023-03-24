@@ -211,7 +211,7 @@ public class MeasureCountInter
             return null;
         }
 
-        final Staff theStaff = system.getStaffAtOrBelow(center);
+        final Staff theStaff = system.getClosestStaff(center);
         if (theStaff == null) {
             return null;
         }
