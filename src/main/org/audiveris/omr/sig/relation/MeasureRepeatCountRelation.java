@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                        M u l t i p l e R e s t C o u n t R e l a t i o n                       //
+//                       M e a s u r e R e p e a t C o u n t R e l a t i o n                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -23,20 +23,19 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
-import org.audiveris.omr.sig.inter.MultipleRestInter;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>MultipleRestCountRelation</code> implements the link between
- * a multiple rest and the count of measures.
+ * Class <code>MeasureRepeatCountRelation</code> implements the link between
+ * a measure repeat sign and the count of measures.
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "multiple-rest-count")
-public class MultipleRestCountRelation
+@XmlRootElement(name = "measure-repeat-count")
+public class MeasureRepeatCountRelation
         extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
@@ -47,8 +46,10 @@ public class MultipleRestCountRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final MultipleRestInter rest = (MultipleRestInter) e.getEdgeSource();
-        rest.checkAbnormal();
+        // A measure repeat sign does not really require a measure count
+        // since the sign itself already has a number of slashes (1, 2 or 4)
+        /// final MeasureRepeatInter sign = (MeasureRepeatInter) e.getEdgeSource();
+        /// sign.checkAbnormal();
 
         final MeasureCountInter count = (MeasureCountInter) e.getEdgeTarget();
         count.checkAbnormal();
@@ -78,11 +79,11 @@ public class MultipleRestCountRelation
     @Override
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final MultipleRestInter rest = (MultipleRestInter) e.getEdgeSource();
-
-        if (!rest.isRemoved()) {
-            rest.checkAbnormal();
-        }
+        //        final MeasureRepeatInter sign = (MeasureRepeatInter) e.getEdgeSource();
+        //
+        //        if (!sign.isRemoved()) {
+        //            sign.checkAbnormal();
+        //        }
 
         final MeasureCountInter count = (MeasureCountInter) e.getEdgeTarget();
 

@@ -65,13 +65,13 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -1869,7 +1869,7 @@ public class PartwiseBuilder
     private void processMeasure (Measure measure)
     {
         try {
-            logger.debug("Processing {} {}", measure, current.simileCopying ? "Copying" : "");
+            logger.debug("Processing {} {}", measure, current.repeatCopying ? "Copying" : "");
 
             // Very first measure in score?
             final boolean isPageFirstMeasure = isFirst.system && isFirst.measure;
@@ -1881,24 +1881,24 @@ public class PartwiseBuilder
             current.measure = measure;
             tupletNumbers.clear();
 
-            // Simile marks in measure staves?
-            final Set<SimileMarkInter> similes = measure.getSimileMarks();
+            // Measure repeat signs in measure staves?
+            final Set<MeasureRepeatInter> repeats = measure.getMeasureRepeats();
 
-            if (!current.simileCopying) {
+            if (!current.repeatCopying) {
                 // Allocate proxymusic Measure
                 current.pmMeasure = factory.createScorePartwisePartMeasure();
                 current.pmPart.getMeasure().add(current.pmMeasure);
                 current.pmMeasure.setNumber(stack.getScoreId(current.pageMeasureIdOffset));
 
-                if (current.simileStarted && similes.isEmpty()) {
-                    // Stop the simile sequence
+                if (current.repeatStarted && repeats.isEmpty()) {
+                    // Stop the repeat sequence
                     final MeasureStyle measureStyle = factory.createMeasureStyle();
                     final MeasureRepeat repeat = factory.createMeasureRepeat();
                     repeat.setType(StartStop.STOP);
                     measureStyle.setMeasureRepeat(repeat);
                     getAttributes().getMeasureStyle().add(measureStyle);
 
-                    current.simileStarted = false;
+                    current.repeatStarted = false;
                 }
 
                 if (!measure.isDummy()) {
@@ -2077,12 +2077,12 @@ public class PartwiseBuilder
                 insertMultipleRest(stack);
             }
 
-            if (!similes.isEmpty()) {
-                final SimileMarkInter simile = similes.iterator().next();
-                final int slashes = simile.getShape().getSlashCount();
+            if (!repeats.isEmpty()) {
+                final MeasureRepeatInter repeatSign = repeats.iterator().next();
+                final int slashes = repeatSign.getShape().getSlashCount();
 
                 // Insert "measure-repeat" element in measure attributes, unless already started
-                if (!current.simileStarted) {
+                if (!current.repeatStarted) {
                     final MeasureStyle measureStyle = factory.createMeasureStyle();
                     final MeasureRepeat repeat = factory.createMeasureRepeat();
 
@@ -2091,25 +2091,25 @@ public class PartwiseBuilder
                     measureStyle.setMeasureRepeat(repeat);
                     getAttributes().getMeasureStyle().add(measureStyle);
 
-                    current.simileStarted = true;
+                    current.repeatStarted = true;
                 }
 
                 // Copy logical content of proper preceding measure(s), w/o physical info
                 // One measure per slash
-                // TODO: take into account the number symbol if any above the simile mark
+                // TODO: take into account the number symbol if any above the measure repeat sign
                 final List<Measure> toCopy = new ArrayList<>();
 
                 Measure precMeasure = measure.getPrecedingInScore();
                 int countLeft = slashes;
                 while (countLeft > 0 && precMeasure != null) {
-                    if (precMeasure.getSimileMarks().isEmpty()) {
+                    if (precMeasure.getMeasureRepeats().isEmpty()) {
                         toCopy.add(0, precMeasure);
                         if (--countLeft == 0) {
                             break;
                         }
                     } else if (!toCopy.isEmpty()) {
-                        // We need a whole sequence of "normal" measures (w/o simile marks)
-                        logger.warn("Abnormal measure sequence before simile {}", measure);
+                        // We need a whole sequence of "normal" measures (w/o measure repeat signs)
+                        logger.warn("Abnormal measure sequence before repeat sign {}", measure);
                         break; // Safer!
                     }
 
@@ -2118,7 +2118,7 @@ public class PartwiseBuilder
 
                 for (int i = 0, iMax = toCopy.size() - 1; i <= iMax; i++) {
                     final Measure source = toCopy.get(i);
-                    current.simileCopying = true;
+                    current.repeatCopying = true;
                     logger.debug("{} copying {}", measure, source);
                     processMeasure(source);
 
@@ -2130,7 +2130,7 @@ public class PartwiseBuilder
                                 stack.getScoreId(current.pageMeasureIdOffset) + "+" + (i + 1));
                     }
 
-                    current.simileCopying = false;
+                    current.repeatCopying = false;
                 }
             }
         } catch (Exception ex) {
@@ -2167,7 +2167,7 @@ public class PartwiseBuilder
 
             // For first note in chord
             if (isFirstInChord) {
-                if (!current.measure.isDummy() && !current.simileCopying) {
+                if (!current.measure.isDummy() && !current.repeatCopying) {
                     // Chord events (direction, pedal, dynamics, articulation, ornament)
                     for (Relation rel : sig.edgesOf(chord)) {
                         final Inter other = sig.getOppositeInter(chord, rel);
@@ -2286,7 +2286,7 @@ public class PartwiseBuilder
             }
 
             // Default-x (use left side of the note wrt measure)
-            if (!current.measure.isDummy() && !current.simileCopying) {
+            if (!current.measure.isDummy() && !current.repeatCopying) {
                 int noteLeft = note.getCenterLeft().x;
                 current.pmNote.setDefaultX(
                         toTenths(noteLeft - current.measure.getAbscissa(LEFT, staff)));
@@ -2417,7 +2417,7 @@ public class PartwiseBuilder
                 Stem pmStem = factory.createStem();
                 Point tail = chord.getTailLocation();
 
-                if (!staff.isOneLineStaff() && !current.simileCopying) {
+                if (!staff.isOneLineStaff() && !current.repeatCopying) {
                     pmStem.setDefaultY(yOf(tail, staff));
                 }
 
@@ -3524,9 +3524,9 @@ public class PartwiseBuilder
         // Measure dependent
         Measure measure;
 
-        boolean simileStarted; // True when in a sequence of simile measures
+        boolean repeatStarted; // True when in a sequence of repeated measures
 
-        boolean simileCopying; // True when copying measure pure logical content
+        boolean repeatCopying; // True when copying measure pure logical content
 
         ScorePartwise.Part.Measure pmMeasure;
 

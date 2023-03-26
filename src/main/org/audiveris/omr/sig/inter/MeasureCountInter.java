@@ -29,11 +29,8 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.MeasureRepeatCountRelation;
 import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
-import org.audiveris.omr.sig.ui.AdditionTask;
-import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.util.WrappedBoolean;
-import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +46,10 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>MeasureCountInter</code> represents a count of measures for a multiple rest,
- * linked via a MultipleRestCountRelation.
+ * Class <code>MeasureCountInter</code> represents a count of measures
+ * for a {@link MultipleRestInter} linked via a {@link MultipleRestCountRelation} or
+ * for a {@link MeasureRepeatInter} linked via a {@link MeasureRepeatCountRelation}.
  *
- * @see MultipleRestInter
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "measure-count")
@@ -65,6 +62,8 @@ public class MeasureCountInter
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureCountInter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * No-arg constructor meant for JAXB.
      */
@@ -72,22 +71,6 @@ public class MeasureCountInter
     {
         super((Glyph) null, (Integer) null, 0.0);
     }
-
-    /**
-     * Creates a new MeasureCountInter object.
-     *
-     * @param glyph underlying glyph
-     * @param value numerical value
-     * @param grade evaluation value
-     */
-    public MeasureCountInter (Glyph glyph,
-                              Integer value,
-                              Double grade)
-    {
-        super(glyph, value, grade);
-    }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new MeasureCountInter object.
@@ -120,27 +103,12 @@ public class MeasureCountInter
     @Override
     public boolean checkAbnormal ()
     {
-        // Check if this measure count is connected to a multiple rest
-        setAbnormal(!sig.hasRelation(this, MultipleRestCountRelation.class));
+        // Check if this measure count is connected to a multiple rest or a measure repeat sign
+        setAbnormal(
+                !sig.hasRelation(this, MultipleRestCountRelation.class) //
+                        && !sig.hasRelation(this, MeasureRepeatCountRelation.class));
 
         return isAbnormal();
-    }
-
-    //--------//
-    // preAdd //
-    //--------//
-    @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel,
-                                          Wrapper<Inter> toPublish)
-    {
-        // We use standard addition task for this measure number
-        // NOTA: We can't use super (AbstractNumberInter) which has a specific behavior
-        final SystemInfo system = staff.getSystem();
-        final List<UITask> tasks = new ArrayList<>();
-        final Collection<Link> links = searchLinks(system);
-        tasks.add(new AdditionTask(system.getSig(), this, getBounds(), links));
-
-        return tasks;
     }
 
     //-------------//
@@ -149,18 +117,18 @@ public class MeasureCountInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        final Link link = lookupLink(getCenter(), system);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+        return lookupLinks(shape, getCenter(), system);
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //------------------//
-    // createValidAdded //
-    //------------------//
+    //--------//
+    // create //
+    //--------//
     /**
-     * (Try to) create a MeasureCountInter with a related multiple rest.
+     * (Try to) create a MeasureCountInter.
+     * <p>
+     * We simply check that glyph is located outside of staff height but not too far.
      *
      * @param glyph underlying glyph
      * @param shape precise shape (a TIME shape)
@@ -168,26 +136,28 @@ public class MeasureCountInter
      * @param staff related staff
      * @return the created instance or null if failed
      */
-    public static MeasureCountInter createValidAdded (Glyph glyph,
-                                                      Shape shape,
-                                                      double grade,
-                                                      Staff staff)
+    public static MeasureCountInter create (Glyph glyph,
+                                            Shape shape,
+                                            double grade,
+                                            Staff staff)
     {
-        final Point centroid = glyph.getCentroid();
-
-        // Look for a suitable multiple rest below
-        final Link link = lookupLink(centroid, staff.getSystem());
-        if (link == null) {
+        if (staff.isTablature()) {
             return null;
         }
 
-        final SIGraph sig = staff.getSystem().getSig();
+        final Point centroid = glyph.getCentroid();
+        if (staff.contains(centroid)) {
+            return null;
+        }
+
+        final double pitch = staff.pitchPositionOf(centroid);
+        if (Math.abs(pitch) > constants.maxAbsolutePitch.getValue()) {
+            return null;
+        }
+
         final MeasureCountInter number = new MeasureCountInter(glyph, shape, grade);
         number.setStaff(staff);
-        sig.addVertex(number);
-
-        final MultipleRestInter multipleRest = (MultipleRestInter) link.partner;
-        sig.addEdge(multipleRest, number, link.relation);
+        number.setAbnormal(true);
 
         return number;
     }
@@ -196,43 +166,70 @@ public class MeasureCountInter
     // lookupLink //
     //------------//
     /**
-     * Try to detect a link between MeasureCountInter location and a MultipleRestInter nearby.
+     * Try to detect links between MeasureCountInter location and MultipleRestInter
+     * or MeasureRepeatInter instances nearby.
      *
-     * @param center location of number
-     * @param system the containing system
+     * @param countShape measure count shape, perhaps null
+     * @param center     location of number
+     * @param system     the containing system
      * @return the link found or null
      */
-    public static Link lookupLink (Point2D center,
-                                   SystemInfo system)
+    public static List<Link> lookupLinks (Shape countShape,
+                                          Point2D center,
+                                          SystemInfo system)
     {
-        final List<Inter> multipleRests = system.getSig().inters(MultipleRestInter.class);
-        Collections.sort(multipleRests, Inters.byAbscissa); // Not really needed
-        if (multipleRests.isEmpty()) {
-            return null;
-        }
-
         final Staff theStaff = system.getClosestStaff(center);
-        if (theStaff == null) {
-            return null;
+        if ((theStaff == null) || theStaff.isTablature()) {
+            return Collections.emptyList();
         }
 
         final double pitch = theStaff.pitchPositionOf(center);
         if (Math.abs(pitch) > constants.maxAbsolutePitch.getValue()) {
-            return null;
+            return Collections.emptyList();
         }
 
+        final SIGraph sig = system.getSig();
+        final List<Link> links = new ArrayList<>();
+
+        final List<Inter> multipleRests = sig.inters(MultipleRestInter.class);
         for (Inter mRest : multipleRests) {
             if (mRest.getStaff() == theStaff) {
                 final Rectangle mRestBox = mRest.getBounds();
 
                 if (center.getX() >= mRestBox.x && center.getX() < mRestBox.x + mRestBox.width) {
                     final MultipleRestCountRelation rel = new MultipleRestCountRelation();
-                    return new Link(mRest, rel, false);
+                    links.add(new Link(mRest, rel, false));
                 }
             }
         }
 
-        return null;
+        final List<Inter> repeats = sig.inters(MeasureRepeatInter.class);
+        final Integer countValue = valueOf(countShape);
+        for (Inter inter : repeats) {
+            final MeasureRepeatInter repeat = (MeasureRepeatInter) inter;
+            if (repeat.getStaff() == theStaff) {
+                final Rectangle simBox = repeat.getBounds();
+
+                if (center.getX() >= simBox.x && center.getX() < simBox.x + simBox.width) {
+                    // Check consistency between measure count and repeat sign slashes
+                    if ((countValue != null) && (countValue != 0)) {
+                        final Shape simShape = repeat.getShape();
+                        if (simShape != null) {
+                            final int simValue = simShape.getSlashCount();
+                            if (simValue != countValue) {
+                                logger.debug("Non consistent count:{} {}", countValue, repeat);
+                                continue;
+                            }
+                        }
+                    }
+
+                    final MeasureRepeatCountRelation rel = new MeasureRepeatCountRelation();
+                    links.add(new Link(repeat, rel, false));
+                }
+            }
+        }
+
+        return links;
     }
 
     //------------//

@@ -116,7 +116,8 @@ public class MeasureFixer
     // isEmpty //
     //---------//
     /**
-     * Check for an empty stack: perhaps clef and key or time, but no note or rest or simile mark.
+     * Check for an empty stack: perhaps clef and key or time, but no note or rest or
+     * measure repeat sign.
      *
      * @return true if so
      */
@@ -127,7 +128,7 @@ public class MeasureFixer
         }
 
         for (Measure measure : stack.getMeasures()) {
-            if (!measure.getSimileMarks().isEmpty()) {
+            if (!measure.getMeasureRepeats().isEmpty()) {
                 return false;
             }
         }

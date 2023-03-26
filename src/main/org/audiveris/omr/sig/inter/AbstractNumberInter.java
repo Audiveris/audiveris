@@ -65,7 +65,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * <ul>
  * <li>{@link TimeNumberInter} value in upper or lower part of a time signature,
  * <li>{@link MeasureCountInter} to specify the count of measures above a {@link MultipleRestInter}
- * or above a {@link SimileMarkInter} for four bars (this latter case can be ignored).
+ * or above a {@link MeasureRepeatInter} for 2 or 4 bars.
  * <li>An ending number in a volta (to be confirmed)
  * </ul>
  *
@@ -248,14 +248,14 @@ public abstract class AbstractNumberInter
     {
         AbstractNumberInter number;
 
-        // TimeNumber?
+        // TimeNumber (within staff height)?
         number = TimeNumberInter.create(glyph, shape, grade, staff);
         if (number != null) {
             return number;
         }
 
-        // MeasureNumber?
-        number = MeasureCountInter.createValidAdded(glyph, shape, grade, staff);
+        // MeasureNumber (outside staff height)?
+        number = MeasureCountInter.create(glyph, shape, grade, staff);
         if (number != null) {
             return number;
         }
@@ -291,14 +291,14 @@ public abstract class AbstractNumberInter
     // valueOf //
     //---------//
     /**
-     * Report the integer value for the provided shape
+     * Report the integer value for the provided shape.
      *
      * @param shape shape to test
-     * @return supported integer value or IllegalArgumentException is thrown
+     * @return supported integer value or null
      */
-    protected static int valueOf (Shape shape)
+    public static Integer valueOf (Shape shape)
     {
-        return switch (shape) {
+        return (shape == null) ? null : switch (shape) {
         case NUMBER_CUSTOM, TIME_ZERO -> 0;
         case TIME_ONE -> 1;
         case TIME_TWO -> 2;
@@ -312,7 +312,7 @@ public abstract class AbstractNumberInter
         case TIME_TWELVE -> 12;
         case TIME_SIXTEEN -> 16;
 
-        default -> throw new IllegalArgumentException("No integer value defined for " + shape);
+        default -> null;
         };
     }
 
@@ -375,6 +375,8 @@ public abstract class AbstractNumberInter
         // preAdd //
         //--------//
         /**
+         * {@inheritDoc }
+         * <p>
          * This is rather tricky, since this temporary NumberInter instance is to be replaced
          * by an instance of a more relevant class, once the target is known.
          */
@@ -401,13 +403,15 @@ public abstract class AbstractNumberInter
                 }
             } else {
                 final Link link = links.iterator().next();
-                if (link.partner instanceof MultipleRestInter rest) {
+                if ((link.partner instanceof MultipleRestInter)
+                        || (link.partner instanceof MeasureRepeatInter)) {
                     // Use a MeasureCountInter
-                    final MeasureCountInter mn = new MeasureCountInter(glyph, shape, getGrade());
-                    mn.setManual(true);
-                    mn.setStaff(rest.getStaff());
-                    toPublish.value = mn;
-                    tasks.add(new AdditionTask(sig, mn, getBounds(), links));
+                    final MeasureCountInter mc = new MeasureCountInter(glyph, shape, getGrade());
+                    mc.setManual(true);
+                    mc.setStaff(link.partner.getStaff());
+                    toPublish.value = mc;
+                    tasks.add(new AdditionTask(sig, mc, getBounds(), links));
+
                 } else if (link.partner instanceof TimeNumberInter other) {
                     // Use a TimeNumberInter
                     final TimeNumberInter tn = new TimeNumberInter(
@@ -449,7 +453,8 @@ public abstract class AbstractNumberInter
         /**
          * {@inheritDoc}.
          * <p>
-         * Specifically, various links are searched for: time partial signature, multi-measure rest.
+         * Specifically, various links are searched for: time partial signature, multi-measure rest,
+         * measure repeat sign.
          */
         @Override
         public Collection<Link> searchLinks (SystemInfo system)
@@ -473,10 +478,8 @@ public abstract class AbstractNumberInter
                     }
                 } else {
                     // Otherwise, it can be a MeasureCountInter and we look into the staff nearby
-                    final Link link = MeasureCountInter.lookupLink(getCenter(), system);
-
-                    if (link != null)
-                        return Collections.singleton(link);
+                    // for a multi-measure rest or a measure repeat sign
+                    return MeasureCountInter.lookupLinks(shape, getCenter(), system);
                 }
             }
 

@@ -52,6 +52,7 @@ import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -172,6 +173,8 @@ public abstract class Relations
 
         map(RepeatDotInter.class, RepeatDotBarRelation.class, BarlineInter.class);
         map(RepeatDotInter.class, RepeatDotPairRelation.class, RepeatDotInter.class);
+
+        map(MeasureRepeatInter.class, MeasureRepeatCountRelation.class, MeasureCountInter.class);
 
         map(SlurInter.class, SlurHeadRelation.class, HeadInter.class);
 

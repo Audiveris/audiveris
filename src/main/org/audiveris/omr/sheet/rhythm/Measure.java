@@ -44,6 +44,7 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SimileMarkInter;
@@ -225,12 +226,23 @@ public class Measure
     @Trimmable.Collection
     private final LinkedHashSet<AugmentationDotInter> augDots = new LinkedHashSet<>();
 
-    /** All simile marks in this measure. */
+    /**
+     * All measure repeat signs in this measure.
+     * Deprecated, replaced by 'repeatSigns' field.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "similes")
     @Trimmable.Collection
-    private final LinkedHashSet<SimileMarkInter> similes = new LinkedHashSet<>();
+    @Deprecated
+    private final LinkedHashSet<SimileMarkInter> OLD_similes = new LinkedHashSet<>();
+
+    /** All measure repeat signs in this measure. */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "repeat-signs")
+    @Trimmable.Collection
+    private final LinkedHashSet<MeasureRepeatInter> repeatSigns = new LinkedHashSet<>();
 
     /**
      * All voices within this measure, sorted by voice id.
@@ -398,8 +410,8 @@ public class Measure
             tuplets.add(tupletInter);
         } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
             augDots.add(augmentationDotInter);
-        } else if (inter instanceof SimileMarkInter simileInter) {
-            similes.add(simileInter);
+        } else if (inter instanceof MeasureRepeatInter measureRepeat) {
+            repeatSigns.add(measureRepeat);
         } else {
             logger.error("Attempt to use addInter() with {}", inter);
         }
@@ -473,6 +485,15 @@ public class Measure
 
             for (AbstractChordInter chord : getRestChords()) {
                 chord.afterReload(this);
+            }
+
+            // Old similes replaced by repeatSigns
+            if (!OLD_similes.isEmpty()) {
+                for (SimileMarkInter simile : OLD_similes) {
+                    repeatSigns.add(SimileMarkInter.replace(simile));
+                }
+                OLD_similes.clear();
+                upgraded = true;
             }
 
             if (upgraded) {
@@ -1041,6 +1062,19 @@ public class Measure
         return null; // No clef previously defined in this measure and staff
     }
 
+    //-------------------//
+    // getMeasureRepeats //
+    //-------------------//
+    /**
+     * Report the measure repeat signs in this measure.
+     *
+     * @return the measure repeat signs in measure
+     */
+    public Set<MeasureRepeatInter> getMeasureRepeats ()
+    {
+        return Collections.unmodifiableSet(repeatSigns);
+    }
+
     //----------------------//
     // getMeasureRestChords //
     //----------------------//
@@ -1378,19 +1412,6 @@ public class Measure
             return new Point(x, midLine.yAt(x));
         }
         }
-    }
-
-    //----------------//
-    // getSimileMarks //
-    //----------------//
-    /**
-     * Report the simile marks in this measure.
-     *
-     * @return the simile marks in measure
-     */
-    public Set<SimileMarkInter> getSimileMarks ()
-    {
-        return Collections.unmodifiableSet(similes);
     }
 
     //----------//
@@ -1761,7 +1782,7 @@ public class Measure
         addOtherCollection(other.flags);
         addOtherCollection(other.tuplets);
         addOtherCollection(other.augDots);
-        addOtherCollection(other.similes);
+        addOtherCollection(other.repeatSigns);
 
         // Voices: addressed by caller
     }
@@ -1846,8 +1867,8 @@ public class Measure
             tuplets.remove(tupletInter);
         } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
             augDots.remove(augmentationDotInter);
-        } else if (inter instanceof SimileMarkInter simileInter) {
-            similes.remove(simileInter);
+        } else if (inter instanceof MeasureRepeatInter repeatSign) {
+            repeatSigns.remove(repeatSign);
         } else {
             logger.error("Attempt to use removeInter() with {}", inter);
         }
@@ -2167,7 +2188,7 @@ public class Measure
         splitCollectionBefore(stavesBelow, measureBelow, flags);
         splitCollectionBefore(stavesBelow, measureBelow, tuplets);
         splitCollectionBefore(stavesBelow, measureBelow, augDots);
-        splitCollectionBefore(stavesBelow, measureBelow, similes);
+        splitCollectionBefore(stavesBelow, measureBelow, repeatSigns);
 
         // Voices: rhythm is reprocessed when part is vertically split (brace removal)
         //
@@ -2290,7 +2311,7 @@ public class Measure
         switchCollectionPart(newPart, flags);
         switchCollectionPart(newPart, tuplets);
         switchCollectionPart(newPart, augDots);
-        switchCollectionPart(newPart, similes);
+        switchCollectionPart(newPart, repeatSigns);
 
         // voices: no part field
     }

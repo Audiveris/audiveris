@@ -785,21 +785,21 @@ public class ShapeChecker
             }
         };
 
-        new Checker("SimileMarks", ShapeSet.RepeatBars)
+        new Checker("MeasureRepeats", ShapeSet.RepeatBars)
         {
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                // Check these simile marks are located on staff mid line
+                // Check these signs are located on staff mid line
                 final Double pp = system.estimatedPitch(glyph.getCenter2D());
                 if (pp == null) {
                     eval.failure = new Evaluation.Failure("tablature");
                     return false;
                 }
 
-                if (Math.abs(pp) > constants.maxSimilePitchPosition.getValue()) {
+                if (Math.abs(pp) > constants.maxMeasureRepeatPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;
@@ -951,10 +951,10 @@ public class ShapeChecker
                 -13.0,
                 "Minimum pitch value for a  segno / coda direction");
 
-        private final Constant.Double maxSimilePitchPosition = new Constant.Double(
+        private final Constant.Double maxMeasureRepeatPitchPosition = new Constant.Double(
                 "PitchPosition",
                 1.0,
-                "Maximum absolute pitch position for a simile mark");
+                "Maximum absolute pitch position for a measure repeat sign");
 
         private final Constant.Double minTitlePitchPosition = new Constant.Double(
                 "PitchPosition",

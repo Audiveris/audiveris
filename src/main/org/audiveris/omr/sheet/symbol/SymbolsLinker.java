@@ -38,6 +38,7 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -239,6 +240,37 @@ public class SymbolsLinker
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkGraces for {} {}", smallChord, ex.toString(), ex);
+            }
+        }
+    }
+
+    //-------------------//
+    // linkMeasureCounts //
+    //-------------------//
+    /**
+     * Link every MeasureCountInter to suitable MultipleRestInter or MeasureRepeatInter.
+     */
+    private void linkMeasureCounts ()
+    {
+        for (Inter inter : sig.inters(MeasureCountInter.class)) {
+            final MeasureCountInter mc = (MeasureCountInter) inter;
+
+            try {
+                if (mc.isVip()) {
+                    logger.info("VIP linkMeasureCounts for {}", mc);
+                }
+
+                final Collection<Link> links = mc.searchLinks(system);
+
+                if (!links.isEmpty()) {
+                    for (Link link : links) {
+                        link.applyTo(mc);
+                    }
+                } else {
+                    logger.debug("No rest or repeat sign linked to {}", mc);
+                }
+            } catch (Exception ex) {
+                logger.warn("Error in linkMeasureCounts for {} {}", mc, ex.toString(), ex);
             }
         }
     }
@@ -489,6 +521,7 @@ public class SymbolsLinker
         linkAugmentationDots();
         linkTuplets();
         linkOctaveShifts();
+        linkMeasureCounts();
     }
 
     //-------------------//

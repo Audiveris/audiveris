@@ -63,6 +63,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
@@ -125,6 +126,7 @@ import org.audiveris.omr.sig.relation.HeadPlayingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
+import org.audiveris.omr.sig.relation.MeasureRepeatCountRelation;
 import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
@@ -223,6 +225,7 @@ public class SigValue
             @XmlElementRef(type = LyricLineInter.class),
             @XmlElementRef(type = MarkerInter.class),
             @XmlElementRef(type = MeasureCountInter.class),
+            @XmlElementRef(type = MeasureRepeatInter.class),
             @XmlElementRef(type = MultipleRestInter.class),
             @XmlElementRef(type = OctaveShiftInter.class),
             @XmlElementRef(type = OrnamentInter.class),
@@ -234,7 +237,7 @@ public class SigValue
             @XmlElementRef(type = RestInter.class),
             @XmlElementRef(type = SegmentInter.class),
             @XmlElementRef(type = SentenceInter.class),
-            @XmlElementRef(type = SimileMarkInter.class),
+            @XmlElementRef(type = SimileMarkInter.class), // Temporarily...
             @XmlElementRef(type = SlurInter.class),
             @XmlElementRef(type = SmallBeamInter.class),
             @XmlElementRef(type = SmallChordInter.class),
@@ -437,6 +440,7 @@ public class SigValue
                 @XmlElementRef(type = SameVoiceRelation.class),
                 @XmlElementRef(type = SeparateTimeRelation.class),
                 @XmlElementRef(type = SeparateVoiceRelation.class),
+                @XmlElementRef(type = MeasureRepeatCountRelation.class),
                 @XmlElementRef(type = SlurHeadRelation.class),
                 @XmlElementRef(type = StemAlignmentRelation.class),
                 @XmlElementRef(type = TimeTopBottomRelation.class),
