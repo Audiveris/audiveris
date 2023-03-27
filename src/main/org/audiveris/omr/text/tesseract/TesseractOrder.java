@@ -343,7 +343,9 @@ public class TesseractOrder
                         it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 
-            // Print raw lines, right out of Tesseract OCR
+            lines.removeIf( (l) -> l.getValue().equals(" "));
+
+            // Print raw lines, right out of Tesseract OCR, except " " lines
             for (TextLine textLine : lines) {
                 logger.debug("raw {}", textLine);
             }

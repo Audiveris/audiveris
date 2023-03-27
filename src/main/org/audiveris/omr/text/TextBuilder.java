@@ -1089,8 +1089,8 @@ public class TextBuilder
         for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
             final TextLine line = it.next();
             final Point2D origin = line.getBaseline().getP1();
-            boolean inSheetHeader = (system.getId() == 1) && (origin.getY() < system.getFirstStaff()
-                    .getFirstLine().yAt(origin.getX()));
+            boolean inSheetHeader = (system.getId() == 1) //
+                    && (origin.getY() < system.getFirstStaff().getFirstLine().yAt(origin.getX()));
 
             String reason = line.checkValidity(inSheetHeader);
 
