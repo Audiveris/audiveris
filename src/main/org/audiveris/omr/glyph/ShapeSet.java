@@ -992,6 +992,7 @@ public class ShapeSet
                 list.removeAll(HeadsDiamond);
                 list.removeAll(HeadsTriangle);
                 list.removeAll(HeadsCircle);
+                list.removeAll(Playings);
             }
         }
 
