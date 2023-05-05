@@ -10,9 +10,9 @@ ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
-ext.jcppVersion     = '1.5.6'
-ext.leptVersion     = '1.81.1'
-ext.tessVersion     = '4.1.1'
+ext.jcppVersion     = '1.5.8'
+ext.leptVersion     = '1.82.0'
+ext.tessVersion     = '5.2.0'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies

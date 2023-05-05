@@ -31,13 +31,18 @@ import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.BoolPointer;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.leptonica.PIX;
-import static org.bytedeco.leptonica.global.lept.*;
-import org.bytedeco.tesseract.PageIterator;
+import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
+import static org.bytedeco.leptonica.global.leptonica.pixReadMemTiff;
 import org.bytedeco.tesseract.ResultIterator;
 import org.bytedeco.tesseract.TessBaseAPI;
-import static org.bytedeco.tesseract.global.tesseract.*;
+import static org.bytedeco.tesseract.global.tesseract.OEM_TESSERACT_ONLY;
+import static org.bytedeco.tesseract.global.tesseract.RIL_SYMBOL;
+import static org.bytedeco.tesseract.global.tesseract.RIL_TEXTLINE;
+import static org.bytedeco.tesseract.global.tesseract.RIL_WORD;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +155,7 @@ public class TesseractOrder
         this.segMode = segMode;
 
         // Build a PIX from the image provided
-        ByteBuffer buf = toTiffBuffer(bufferedImage);
+        final ByteBuffer buf = toTiffBuffer(bufferedImage);
         buf.position(0);
         image = pixReadMemTiff(buf, buf.capacity(), 0);
 
@@ -184,28 +189,48 @@ public class TesseractOrder
         return lines;
     }
 
+    //-------------//
+    // getBaseline //
+    //-------------//
+    /**
+     * Report the baseline of the provided OCR'd item.
+     *
+     * @param it    iterator on results structure
+     * @param level desired level (word)
+     * @return item baseline as a Line2D or null
+     */
     private Line2D getBaseline (ResultIterator rit,
                                 int level)
     {
-        IntPointer x1 = new IntPointer(0);
-        IntPointer y1 = new IntPointer(0);
-        IntPointer x2 = new IntPointer(0);
-        IntPointer y2 = new IntPointer(0);
+        final IntPointer x1 = new IntPointer(0);
+        final IntPointer y1 = new IntPointer(0);
+        final IntPointer x2 = new IntPointer(0);
+        final IntPointer y2 = new IntPointer(0);
 
         if (rit.Baseline(level, x1, y1, x2, y2)) {
             return new Line2D.Double(x1.get(), y1.get(), x2.get(), y2.get());
-        } else {
-            return null;
         }
+
+        return null;
     }
 
-    private Rectangle getBoundingBox (PageIterator it,
+    //----------------//
+    // getBoundingBox //
+    //----------------//
+    /**
+     * Report the bounding box of the provided OCR'd item.
+     *
+     * @param it    iterator on results structure
+     * @param level desired level (word or char/symbol)
+     * @return item bounding box as a Rectangle or null
+     */
+    private Rectangle getBoundingBox (ResultIterator it,
                                       int level)
     {
-        IntPointer left = new IntPointer(0);
-        IntPointer top = new IntPointer(0);
-        IntPointer right = new IntPointer(0);
-        IntPointer bottom = new IntPointer(0);
+        final IntPointer left = new IntPointer(0);
+        final IntPointer top = new IntPointer(0);
+        final IntPointer right = new IntPointer(0);
+        final IntPointer bottom = new IntPointer(0);
 
         if (it.BoundingBox(level, left, top, right, bottom)) {
             return new Rectangle(
@@ -213,9 +238,9 @@ public class TesseractOrder
                     top.get(),
                     right.get() - left.get(),
                     bottom.get() - top.get());
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     //---------//
@@ -229,18 +254,16 @@ public class TesseractOrder
      */
     private FontInfo getFont (ResultIterator rit)
     {
-        BoolPointer is_bold = new BoolPointer(0);
-        BoolPointer is_italic = new BoolPointer(0);
-        BoolPointer is_underlined = new BoolPointer(0);
-        BoolPointer is_monospace = new BoolPointer(0);
-        BoolPointer is_serif = new BoolPointer(0);
-        BoolPointer is_smallcaps = new BoolPointer(0);
-        IntPointer pointSize = new IntPointer(0);
-        IntPointer font_id = new IntPointer(0);
+        final BoolPointer is_bold = new BoolPointer(0);
+        final BoolPointer is_italic = new BoolPointer(0);
+        final BoolPointer is_underlined = new BoolPointer(0);
+        final BoolPointer is_monospace = new BoolPointer(0);
+        final BoolPointer is_serif = new BoolPointer(0);
+        final BoolPointer is_smallcaps = new BoolPointer(0);
+        final IntPointer pointSize = new IntPointer(0);
+        final IntPointer font_id = new IntPointer(0);
 
-        String fontName = null;
-
-        BytePointer bp = rit.WordFontAttributes(
+        final BytePointer bp = rit.WordFontAttributes(
                 is_bold,
                 is_italic,
                 is_underlined,
@@ -250,24 +273,25 @@ public class TesseractOrder
                 pointSize,
                 font_id);
 
-        // don't try to decode fontName from null bytepointer!
-        if (bp != null) {
-            fontName = bp.getString();
-        }
-
-        if (fontName != null) {
-            return new FontInfo(
-                    is_bold.get(),
-                    is_italic.get(),
-                    is_underlined.get(),
-                    is_monospace.get(),
-                    is_serif.get(),
-                    is_smallcaps.get(),
-                    pointSize.get(),
-                    fontName);
-        } else {
+        if (bp == null) {
             return null;
         }
+
+        final String fontName = bp.getString();
+
+        if (fontName == null) {
+            return null;
+        }
+
+        return new FontInfo(
+                is_bold.get(),
+                is_italic.get(),
+                is_underlined.get(),
+                is_monospace.get(),
+                is_serif.get(),
+                is_smallcaps.get(),
+                pointSize.get(),
+                fontName);
     }
 
     //----------//
@@ -445,18 +469,18 @@ public class TesseractOrder
     private ByteBuffer toTiffBuffer (BufferedImage image)
         throws IOException
     {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
-            ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
+            final ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
             writer.setOutput(ios);
             writer.write(image);
         } catch (IOException ex) {
             logger.warn("Could not write image", ex);
         }
 
-        ByteBuffer buf = ByteBuffer.allocate(baos.size());
-        byte[] bytes = baos.toByteArray();
+        final ByteBuffer buf = ByteBuffer.allocate(baos.size());
+        final byte[] bytes = baos.toByteArray();
         buf.put(bytes);
 
         // Should we keep a local copy of this buffer on disk?
@@ -498,7 +522,7 @@ public class TesseractOrder
         if (len == 1) {
             word.addChar(new TextChar(bounds, value)); // Normal case
         } else {
-            double meanCharWidth = (double) bounds.width / len;
+            final double meanCharWidth = (double) bounds.width / len;
 
             for (int i = 0; i < len; i++) {
                 Rectangle cb = new Rectangle2D.Double(
