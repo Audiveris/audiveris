@@ -204,14 +204,14 @@ public class Main
         // Log files
         LogUtil.addFileAppender();
 
+        // Process CLI parameters
+        processCli(args);
+
         // Locale to be used in the whole application?
         checkLocale();
 
         // Environment
         showEnvironment();
-
-        // Process CLI parameters
-        processCli(args);
 
         // Help?
         if (cli.isHelpMode()) {

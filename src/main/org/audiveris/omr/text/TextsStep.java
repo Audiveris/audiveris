@@ -34,12 +34,12 @@ import org.audiveris.omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>TextsStep</code> discovers text items in a system area.
@@ -123,11 +123,10 @@ public class TextsStep
         logger.debug("TEXTS impact {} {}", opKind, seq);
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
-                Inter inter = interTask.getInter();
-                SystemInfo system = inter.getSig().getSystem();
-                Class interClass = inter.getClass();
+            if (task instanceof InterTask interTask) {
+                final Inter inter = interTask.getInter();
+                final SystemInfo system = inter.getSig().getSystem();
+                final Class interClass = inter.getClass();
 
                 if (isImpactedBy(interClass, forLyrics)) {
                     if (inter instanceof LyricLineInter) {

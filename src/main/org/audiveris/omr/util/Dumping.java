@@ -129,7 +129,7 @@ public class Dumping
                       String title,
                       int level)
     {
-        new Column(relevance, obj, title, level).print();
+        System.out.println(new Column(relevance, obj, title, level).toString());
     }
 
     //--------//
