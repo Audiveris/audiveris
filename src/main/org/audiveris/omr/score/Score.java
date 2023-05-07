@@ -518,6 +518,20 @@ public class Score
         return pageNumbers.indexOf(getPageNumber(page));
     }
 
+    //--------------//
+    // getPageIndex //
+    //--------------//
+    /**
+     * Report index of the provided PageRef in the score sequence of pages.
+     *
+     * @param pageRef the provided PageRef
+     * @return the page index in score, or -1 if not found
+     */
+    public int getPageIndex (PageRef pageRef)
+    {
+        return pageNumbers.indexOf(pageRef.getPageNumber());
+    }
+
     //---------------//
     // getPageNumber //
     //---------------//
@@ -631,6 +645,27 @@ public class Score
 
         if (index > 0) {
             return getPage(pageNumbers.get(index - 1));
+        }
+
+        return null;
+    }
+
+    //---------------------//
+    // getPrecedingPageRef //
+    //---------------------//
+    /**
+     * Report the pageRef, if any, that precedes the provided pageRef within containing score.
+     *
+     * @param pageRef the provided PageRef
+     * @return the preceding PageRef or null
+     */
+    public PageRef getPrecedingPageRef (PageRef pageRef)
+    {
+        int index = getPageIndex(pageRef);
+
+        if (index > 0) {
+            final PageNumber pageNumber = pageNumbers.get(index - 1);
+            return pageNumber.getPageRef(book); // Perhaps null
         }
 
         return null;

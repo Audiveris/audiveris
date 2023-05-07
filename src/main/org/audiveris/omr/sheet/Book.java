@@ -1060,7 +1060,7 @@ public class Book
      * @param pageRef the provided page ref (sheet#, page#)
      * @return the containing score or null if not found
      */
-    private Score getScore (PageRef pageRef)
+    public Score getScore (PageRef pageRef)
     {
         for (Score score : scores) {
             PageRef ref = score.getPageRef(pageRef.getSheetNumber());

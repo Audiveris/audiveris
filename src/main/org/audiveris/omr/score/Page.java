@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
@@ -31,7 +28,8 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import org.audiveris.omr.util.Jaxb;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -49,7 +47,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>Page</code> represents a page in the score hierarchy, and corresponds to a
@@ -78,27 +75,9 @@ public class Page
     @XmlAttribute(name = "id")
     private final int id;
 
-    /** Does this page start a movement?. */
-    @XmlAttribute(name = "movement-start")
-    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean movementStart;
-
     /** Number of measures counted in this page. */
     @XmlAttribute(name = "measure-count")
     private Integer measureCount;
-
-    /**
-     * Progression of measure id within this page.
-     * <p>
-     * This is sometimes less than the raw measure count, because of special measures
-     * (pickup, repeat, courtesy) that don't increment measure IDs.
-     */
-    @XmlAttribute(name = "delta-measure-id")
-    private Integer deltaMeasureId;
-
-    /** Last time rational value in this page. */
-    @XmlElement(name = "last-time-rational")
-    private TimeRational lastTimeRational;
 
     /** This is the (sub)list of systems for this page, within the sheet systems. */
     @XmlElement(name = "system")
@@ -106,6 +85,9 @@ public class Page
 
     // Transient data
     //---------------
+
+    /** Soft reference to this page. */
+    private PageRef pageRef;
 
     /** Containing (physical) sheet. */
     @Navigable(false)
@@ -326,19 +308,6 @@ public class Page
         logger.info("{}", msg.toString());
     }
 
-    //-------------------//
-    // getDeltaMeasureId //
-    //-------------------//
-    /**
-     * Report the progression of measure IDs within this page.
-     *
-     * @return the deltaMeasureId
-     */
-    public Integer getDeltaMeasureId ()
-    {
-        return deltaMeasureId;
-    }
-
     //--------------//
     // getDimension //
     //--------------//
@@ -449,19 +418,6 @@ public class Page
         return lastSystemId;
     }
 
-    //---------------------//
-    // getLastTimeRational //
-    //---------------------//
-    /**
-     * Report the last time rational value within this page.
-     *
-     * @return the lastTimeRational
-     */
-    public TimeRational getLastTimeRational ()
-    {
-        return lastTimeRational;
-    }
-
     //-----------------//
     // getMeasureCount //
     //-----------------//
@@ -503,7 +459,11 @@ public class Page
      */
     public PageRef getRef ()
     {
-        return sheet.getStub().getPageRefs().get(id - 1);
+        if (pageRef == null) {
+            pageRef = sheet.getStub().getPageRefs().get(id - 1);
+        }
+
+        return pageRef;
     }
 
     //----------//
@@ -592,11 +552,13 @@ public class Page
     // isMovementStart //
     //-----------------//
     /**
-     * @return the movementStart
+     * Report whether this page starts a movement.
+     *
+     * @return true if so
      */
     public boolean isMovementStart ()
     {
-        return movementStart;
+        return getRef().isMovementStart();
     }
 
     //----------------//
@@ -679,8 +641,6 @@ public class Page
      */
     public void setDeltaMeasureId (Integer deltaMeasureId)
     {
-        this.deltaMeasureId = deltaMeasureId;
-
         getRef().setDeltaMeasureId(deltaMeasureId);
     }
 
@@ -716,20 +676,7 @@ public class Page
      */
     public void setLastTimeRational (TimeRational lastTimeRational)
     {
-        this.lastTimeRational = lastTimeRational;
-
         getRef().setLastTimeRational(lastTimeRational);
-    }
-
-    //------------------//
-    // setMovementStart //
-    //------------------//
-    /**
-     * @param movementStart the movementStart to set
-     */
-    public void setMovementStart (boolean movementStart)
-    {
-        this.movementStart = movementStart;
     }
 
     //----------//

@@ -142,9 +142,11 @@ public class SystemManager
 
         // Allocate systems and pages
         for (SystemInfo system : systems) {
+            final int pageId = 1 + sheet.getPages().size();
+
             if (system.isIndented()) {
-                logger.info("Indentation detected for system#{}", system.getId());
                 final int systId = system.getId();
+                logger.info("Indentation detected for system#{}", systId);
 
                 // We have a movement start
                 if (page != null) {
@@ -154,19 +156,12 @@ public class SystemManager
                 }
 
                 // Start a new page
-                sheet.addPage(
-                        page = new Page(
-                                sheet,
-                                1 + sheet.getPages().size(),
-                                (systId == 1) ? null : systId));
-                page.setMovementStart(true);
-                pageRef = new PageRef(stub, page.getId(), true);
-                stub.addPageRef(pageRef);
+                stub.addPageRef(pageRef = new PageRef(stub, pageId, true));
+                sheet.addPage(page = new Page(sheet, pageId, (systId == 1) ? null : systId));
             } else if (page == null) {
                 // Start first page in sheet
-                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
-                pageRef = new PageRef(stub, page.getId(), false);
-                stub.addPageRef(pageRef);
+                stub.addPageRef(pageRef = new PageRef(stub, pageId, false));
+                sheet.addPage(page = new Page(sheet, pageId, null));
             }
 
             system.setPage(page);
