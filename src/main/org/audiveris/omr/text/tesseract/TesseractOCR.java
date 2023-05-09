@@ -292,7 +292,7 @@ public class TesseractOCR
                     serial.incrementAndGet(),
                     constants.saveImages.isSet(),
                     languageCode,
-                    getMode(layoutMode),
+                    tesseract.PSM_SINGLE_BLOCK, // Works better than getMode(layoutMode),
                     bufferedImage);
 
             // Process the order

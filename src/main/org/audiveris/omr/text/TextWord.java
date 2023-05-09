@@ -80,6 +80,9 @@ public class TextWord
     /** Regexp for abnormal words. */
     private static final Pattern ABNORMAL_WORDS = compileRegexp(constants.abnormalWordRegexp);
 
+    /** Regexp for tuplets. */
+    private static final Pattern TUPLET_WORDS = compileRegexp(constants.tupletWordRegexp);
+
     /** Regexp for words with a dash. */
     private static final Pattern DASHED_WORDS = compileRegexp(constants.dashedWordRegexp);
 
@@ -312,6 +315,16 @@ public class TextWord
             if (matcher.matches()) {
                 logger.debug("      abnormal word value {}", this);
                 return "abnormal-word-value";
+            }
+        }
+
+        // Remove tuplet
+        if (TUPLET_WORDS != null) {
+            Matcher matcher = TUPLET_WORDS.matcher(value);
+
+            if (matcher.matches()) {
+                logger.debug("      tuplet word value {}", this);
+                return "tuplet-word-value";
             }
         }
 
@@ -576,6 +589,8 @@ public class TextWord
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
+        sb.append(" codes[").append(StringUtil.codesOf(getValue(), false)).append(']');
+
         sb.append(" ").append(getFontInfo());
 
         if (glyph != null) {
@@ -793,8 +808,12 @@ public class TextWord
                 "Regular expression to detect one-letter words");
 
         private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[\\W]+$",
+                "^[^a-zA-Z_0-9-.,&\\?]+$",
                 "Regular expression to detect abnormal words");
+
+        private final Constant.String tupletWordRegexp = new Constant.String(
+                "^.*[-_\u2014][36][-_\u2014].*$",
+                "Regular expression to detect tuplet-like words");
 
         private final Constant.String longDashWordRegexp = new Constant.String(
                 "^[-_\u2014]{2,}$",

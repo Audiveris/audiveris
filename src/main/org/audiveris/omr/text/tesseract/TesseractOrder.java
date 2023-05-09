@@ -85,6 +85,12 @@ public class TesseractOrder
     /** To specify UTF-8 encoding. */
     private static final String UTF8 = "UTF-8";
 
+    /** Tesseract variable name for white list. */
+    private static final String WHITE_LIST_NAME = "tessedit_char_whitelist";
+
+    /** Tesseract variable name for black list. */
+    private static final String BLACK_LIST_NAME = "tessedit_char_blacklist";
+
     /** To avoid repetitive warnings if OCR binding failed. */
     private static volatile boolean userWarned;
 
@@ -414,10 +420,25 @@ public class TesseractOrder
                 }
             }
 
-            if (api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY) != 0) {
-                logger.warn("Could not initialize Tesseract with lang {}", lang);
+            final int initResult = api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY);
+            if (initResult != 0) {
+                logger.warn("Could not initialize Tesseract lang: {} result: {}", lang, initResult);
 
                 return finish(null);
+            }
+
+            // Set character white list?
+            if (!constants.whiteList.getValue().isBlank()) {
+                if (!api.SetVariable(WHITE_LIST_NAME, constants.whiteList.getValue())) {
+                    logger.error("Error setting Tesseract variable {}", WHITE_LIST_NAME);
+                }
+            }
+
+            // Set character black list?
+            if (!constants.blackList.getValue().isBlank()) {
+                if (!api.SetVariable(BLACK_LIST_NAME, constants.blackList.getValue())) {
+                    logger.error("Error setting Tesseract variable {}", BLACK_LIST_NAME);
+                }
             }
 
             // Set API image
@@ -433,10 +454,10 @@ public class TesseractOrder
             api.AnalyseLayout();
 
             // Perform image recognition
-            final int result = api.Recognize(null);
+            final int recognizeResult = api.Recognize(null);
 
-            if (result != 0) {
-                logger.warn("Error in Tesseract recognize, exit code: {}", result);
+            if (recognizeResult != 0) {
+                logger.warn("Error in Tesseract recognize, result: {}", recognizeResult);
 
                 return finish(null);
             }
@@ -543,10 +564,17 @@ public class TesseractOrder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer typicalImageResolution = new Constant.Integer(
                 "dpi",
                 70,
-                "Typical image resolution in DPI (a -1 value disables this feature)");
+                "Typical image resolution in DPI (disabled when set to -1)");
+
+        private final Constant.String blackList = new Constant.String(
+                "",
+                "Character black list (disabled when empty)");
+
+        private final Constant.String whiteList = new Constant.String(
+                "", // abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.,'",
+                "Character white list (disabled when empty)");
     }
 }
