@@ -114,6 +114,7 @@ public class TesseractOCR
         // First, try to use TESSDATA_PREFIX environment variable
         // which might denote a Tesseract installation
         final String tessPrefix = System.getenv(TESSDATA_PREFIX);
+        logger.info("{} value: {}", TESSDATA_PREFIX, tessPrefix);
 
         if (tessPrefix != null) {
             Path dir = Paths.get(tessPrefix);
