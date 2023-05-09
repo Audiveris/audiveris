@@ -1,12 +1,17 @@
 ```diff
--- -------------------------------------------------------------------------------------------------
+--
 -- WARNING
--- Audiveris development is performed on "development" branch, while default "master" branch
--- is reserved for releases.
 --
--- On "development" branch, you will need JDK 17
+-- Audiveris default "master" branch is reserved for releases.
+-- Development is performed on this "development" branch (or on a derived branch)
 --
--- -------------------------------------------------------------------------------------------------
+-- Documentation is being updated, but before it is completed, please note that:
+--
+--    Java 17 is needed
+--
+--    Tesseract OCR is now a 5.x version, hence you should download language data files
+--    from https://github.com/tesseract-ocr/tessdata 
+--
 ```
 
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
