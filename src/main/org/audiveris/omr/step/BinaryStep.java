@@ -90,7 +90,7 @@ public class BinaryStep
         Picture picture = sheet.getPicture();
         ByteProcessor initial = picture.getSource(SourceKey.GRAY);
 
-        FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
         logger.debug("{}", "Binarization");
 
         PixelFilter filter = desc.getFilter(initial);

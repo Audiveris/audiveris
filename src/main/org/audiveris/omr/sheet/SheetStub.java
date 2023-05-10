@@ -26,6 +26,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
@@ -56,6 +57,7 @@ import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
+import org.audiveris.omr.util.param.IntegerParam;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
 
@@ -193,6 +195,15 @@ public class SheetStub
     @XmlElement(name = "input-quality")
     @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
     private InputQualityParam inputQuality;
+
+    /**
+     * Specification of beam thickness to use in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book level.
+     */
+    @XmlElement(name = "beam-thickness")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private IntegerParam beamThickness;
 
     /**
      * This string specifies the dominant language(s) to guide OCR on this sheet.
@@ -363,6 +374,10 @@ public class SheetStub
 
         if ((inputQuality != null) && !inputQuality.isSpecific()) {
             inputQuality = null;
+        }
+
+        if ((beamThickness != null) && !beamThickness.isSpecific()) {
+            beamThickness = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
@@ -604,6 +619,27 @@ public class SheetStub
         return assembly;
     }
 
+    //------------------//
+    // getBeamThickness //
+    //------------------//
+    public Integer getBeamThickness ()
+    {
+        return getBeamThicknessParam().getValue();
+    }
+
+    //-----------------------//
+    // getBeamThicknessParam //
+    //-----------------------//
+    public IntegerParam getBeamThicknessParam ()
+    {
+        if (beamThickness == null) {
+            beamThickness = new IntegerParam(this);
+            beamThickness.setParent(book.getBeamThicknessParam());
+        }
+
+        return beamThickness;
+    }
+
     //-----------------------//
     // getBinarizationFilter //
     //-----------------------//
@@ -612,11 +648,24 @@ public class SheetStub
      *
      * @return the filter parameter
      */
-    public FilterParam getBinarizationFilter ()
+    public FilterDescriptor getBinarizationFilter ()
+    {
+        return getBinarizationFilterParam().getValue();
+    }
+
+    //----------------------------//
+    // getBinarizationFilterParam //
+    //----------------------------//
+    /**
+     * Report the binarization filter parameter defined at sheet level.
+     *
+     * @return the filter parameter
+     */
+    public FilterParam getBinarizationFilterParam ()
     {
         if (binarizationFilter == null) {
             binarizationFilter = new FilterParam(this);
-            binarizationFilter.setParent(book.getBinarizationFilter());
+            binarizationFilter.setParent(book.getBinarizationFilterParam());
         }
 
         return binarizationFilter;
@@ -707,7 +756,7 @@ public class SheetStub
     {
         if (inputQuality == null) {
             inputQuality = new InputQualityParam(this);
-            inputQuality.setParent(book.getInputQuality());
+            inputQuality.setParent(book.getInputQualityParam());
         }
 
         return inputQuality;
@@ -765,7 +814,7 @@ public class SheetStub
     }
 
     //----------------//
-    // getMusicFamily //
+    // getMusicFamilyParam //
     //----------------//
     /**
      * Report the music family defined at sheet level.
@@ -789,7 +838,7 @@ public class SheetStub
     {
         if (musicFamily == null) {
             musicFamily = new MusicFamily.MyParam(this);
-            musicFamily.setParent(book.getMusicFamily());
+            musicFamily.setParent(book.getMusicFamilyParam());
         }
 
         return musicFamily;
@@ -848,9 +897,22 @@ public class SheetStub
     /**
      * Report the OCR language(s) specification defined at sheet level if any.
      *
-     * @return the OCR language(s) spec
+     * @return the OCR language(s) specification
      */
-    public Param<String> getOcrLanguages ()
+    public String getOcrLanguages ()
+    {
+        return getOcrLanguagesParam().getValue();
+    }
+
+    //----------------------//
+    // getOcrLanguagesParam //
+    //----------------------//
+    /**
+     * Report the OCR language(s) specification parameter defined at sheet level if any.
+     *
+     * @return the OCR language(s) specification parameter
+     */
+    public Param<String> getOcrLanguagesParam ()
     {
         if (ocrLanguages == null) {
             ocrLanguages = new StringParam(this);
@@ -1036,7 +1098,7 @@ public class SheetStub
     {
         if (textFamily == null) {
             textFamily = new TextFamily.MyParam(this);
-            textFamily.setParent(book.getTextFamily());
+            textFamily.setParent(book.getTextFamilyParam());
         }
 
         return textFamily;
@@ -1132,19 +1194,23 @@ public class SheetStub
             }
 
             if (binarizationFilter != null) {
-                binarizationFilter.setParent(book.getBinarizationFilter());
+                binarizationFilter.setParent(book.getBinarizationFilterParam());
             }
 
             if (musicFamily != null) {
-                musicFamily.setParent(book.getMusicFamily());
+                musicFamily.setParent(book.getMusicFamilyParam());
             }
 
             if (textFamily != null) {
-                textFamily.setParent(book.getTextFamily());
+                textFamily.setParent(book.getTextFamilyParam());
             }
 
             if (inputQuality != null) {
-                inputQuality.setParent(book.getInputQuality());
+                inputQuality.setParent(book.getInputQualityParam());
+            }
+
+            if (beamThickness != null) {
+                beamThickness.setParent(book.getBeamThicknessParam());
             }
 
             if (ocrLanguages != null) {

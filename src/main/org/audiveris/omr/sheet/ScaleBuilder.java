@@ -206,6 +206,18 @@ public class ScaleBuilder
             return;
         }
 
+        // Specific beam thickness from Book/Sheet parameters?
+        final Integer specifiedBeam = sheet.getStub().getBeamThickness();
+        if ((specifiedBeam != null) && (specifiedBeam != 0)) {
+            beamKey = specifiedBeam;
+
+            if (verbose) {
+                logger.info("User-specified beam height: {}", beamKey);
+            }
+
+            return;
+        }
+
         // Beam guess
         final int largerInterline = (comboPeak2 == null) ? comboPeak.main
                 : Math.max(comboPeak.main, comboPeak2.main);
@@ -401,6 +413,21 @@ public class ScaleBuilder
         throws StepException
     {
         return doRetrieveScale(false);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getMaxInterline //
+    //-----------------//
+    /**
+     * Report the maximum possible interline value.
+     *
+     * @return maximum interline possible (in pixels)
+     */
+    public static int getMaxInterline ()
+    {
+        return constants.maxInterline.getValue();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -66,6 +66,7 @@ import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
+import org.audiveris.omr.util.param.IntegerParam;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
 
@@ -217,6 +218,15 @@ public class Book
     @XmlElement(name = "input-quality")
     @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
     private InputQualityParam inputQuality;
+
+    /**
+     * Specification of beam thickness for this whole book.
+     * <p>
+     * It can still be overridden at sheet level.
+     */
+    @XmlElement(name = "beam-thickness")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private IntegerParam beamThickness;
 
     /**
      * This string specifies the dominant language(s) for this whole book.
@@ -418,6 +428,10 @@ public class Book
 
         if ((inputQuality != null) && !inputQuality.isSpecific()) {
             inputQuality = null;
+        }
+
+        if ((beamThickness != null) && !beamThickness.isSpecific()) {
+            beamThickness = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
@@ -670,15 +684,35 @@ public class Book
         return alias;
     }
 
+    //------------------//
+    // getBeamThickness //
+    //------------------//
+    public Integer getBeamThickness ()
+    {
+        return getBeamThicknessParam().getValue();
+    }
+
     //-----------------------//
-    // getBinarizationFilter //
+    // getBeamThicknessParam //
+    //-----------------------//
+    public IntegerParam getBeamThicknessParam ()
+    {
+        if (beamThickness == null) {
+            beamThickness = new IntegerParam(this);
+        }
+
+        return beamThickness;
+    }
+
+    //-----------------------//
+    // getBinarizationFilterParam //
     //-----------------------//
     /**
      * Report the binarization filter defined at book level.
      *
      * @return the filter parameter
      */
-    public FilterParam getBinarizationFilter ()
+    public FilterParam getBinarizationFilterParam ()
     {
         if (binarizationFilter == null) {
             binarizationFilter = new FilterParam(this);
@@ -780,15 +814,15 @@ public class Book
         return path;
     }
 
-    //-----------------//
-    // getInputQuality //
-    //-----------------//
+    //----------------------//
+    // getInputQualityParam //
+    //----------------------//
     /**
      * Report the input quality defined at book level.
      *
      * @return the input quality parameter
      */
-    public InputQualityParam getInputQuality ()
+    public InputQualityParam getInputQualityParam ()
     {
         if (inputQuality == null) {
             inputQuality = new InputQualityParam(this);
@@ -839,15 +873,15 @@ public class Book
         return lock;
     }
 
-    //----------------//
-    // getMusicFamily //
-    //----------------//
+    //---------------------//
+    // getMusicFamilyParam //
+    //---------------------//
     /**
      * Report the music font family defined at book level.
      *
      * @return the music font family parameter
      */
-    public MusicFamily.MyParam getMusicFamily ()
+    public MusicFamily.MyParam getMusicFamilyParam ()
     {
         if (musicFamily == null) {
             musicFamily = new MusicFamily.MyParam(this);
@@ -858,7 +892,7 @@ public class Book
     }
 
     //-----------------//
-    // getOcrLanguages //
+    // getOcrLanguagesParam //
     //-----------------//
     /**
      * Report the OCR language(s) specification defined at book level, if any.
@@ -1373,15 +1407,15 @@ public class Book
         return found;
     }
 
-    //---------------//
-    // getTextFamily //
-    //---------------//
+    //--------------------//
+    // getTextFamilyParam //
+    //--------------------//
     /**
      * Report the text font family defined at book level.
      *
      * @return the text font family parameter
      */
-    public TextFamily.MyParam getTextFamily ()
+    public TextFamily.MyParam getTextFamilyParam ()
     {
         if (textFamily == null) {
             textFamily = new TextFamily.MyParam(this);
@@ -1525,6 +1559,11 @@ public class Book
         if (inputQuality != null) {
             inputQuality.setParent(Profiles.defaultQualityParam);
             inputQuality.setScope(this);
+        }
+
+        if (beamThickness != null) {
+            // [No parent for book beamThickness]
+            beamThickness.setScope(this);
         }
 
         if (ocrLanguages != null) {
