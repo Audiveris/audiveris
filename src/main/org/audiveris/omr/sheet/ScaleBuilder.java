@@ -228,15 +228,14 @@ public class ScaleBuilder
                 largerInterline - blackPeak.main,
                 (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
         final double beamRatio = constants.beamRangeRatio.getValue();
-        beamGuess = (int) Math.rint(minHeight + ((maxHeight - minHeight) * beamRatio));
+        beamGuess = (int) Math.rint(maxHeight * beamRatio);
 
         if (verbose) {
             logger.info(
                     String.format(
-                            "Beam  guessed height: %2d -- %.2f of [%d..%d] range",
+                            "Beam  guessed height: %2d -- %.2f of %d interline",
                             beamGuess,
                             beamRatio,
-                            minHeight,
                             maxHeight));
         }
 
@@ -304,7 +303,7 @@ public class ScaleBuilder
         }
 
         if (histoKeeper != null) {
-            histoKeeper.writePlot();
+            histoKeeper.writePlots();
         }
     }
 
@@ -710,10 +709,10 @@ public class ScaleBuilder
                 final int max = Math.max(p.main, comboPeak.main);
 
                 if ((max / min) > constants.maxSecondRatio.getValue()) {
-                    logger.info("Other combo peak too different {}, discarded", p);
+                    logger.debug("Other combo peak too different {}, discarded", p);
                     it.remove();
                 } else if (Math.abs(p.main - comboPeak.main) < blackPeak.main) {
-                    logger.info("Merging two close combo peaks {} & {}", comboPeak, p);
+                    logger.debug("Merging two close combo peaks {} & {}", comboPeak, p);
                     comboPeak = new Range(min, (p.main + comboPeak.main) / 2, max);
                     it.remove();
                 }
@@ -764,51 +763,51 @@ public class ScaleBuilder
             logger.debug("blackPeak: {}", blackPeak);
         }
 
-        //-----------//
-        // writePlot //
-        //-----------//
-        public void writePlot ()
+        //------------//
+        // writePlots //
+        //------------//
+        /**
+         * Write a plot for black values (staff line, beam thickness) and
+         * a plot for combo values (staff interline).
+         */
+        public void writePlots ()
         {
-            // Determine a suitable upper value for x
-            int xMax;
-
-            if (blackPeak != null) {
-                xMax = blackPeak.max;
-            } else {
-                xMax = 30;
-            }
+            // Determine suitable x upper values for combos
+            int comboMax = blackPeak != null ? blackPeak.max : 30;
 
             if (comboPeak != null) {
-                xMax = Math.max(xMax, comboPeak.max);
+                comboMax = Math.max(comboMax, comboPeak.max);
             }
 
             if (comboPeak2 != null) {
-                xMax = Math.max(xMax, comboPeak2.max);
+                comboMax = Math.max(comboMax, comboPeak2.max);
             }
 
-            xMax = Math.min(sheet.getWidth() - 1, (xMax * 5) / 2); // Add some margin
-
-            Scale scale = sheet.getScale();
+            final Scale scale = sheet.getScale();
 
             try {
+                // Black values (staff line, beam thickness)
                 final String title = sheet.getId() + " " + blackFinder.name;
                 final String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(
                         Info.BLACK) : "NO_SCALE");
                 final String yLabel = "Runs counts - total:" + blackFunction.getArea()
                         + " - Beam quorum:" + getBeamQuorum();
-                ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
-                blackFinder.plot(plotter, true, 0, xMax).display(new Point(20, 20));
+                final ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
+                final int blackMax = Math.min(comboMax, sheet.getWidth() - 1); // Use combo limit
+                blackFinder.plot(plotter, true, 0, blackMax).display(new Point(20, 20));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
             }
 
             try {
+                // Combo values (staff interline)
                 final String title = sheet.getId() + " " + comboFinder.name;
                 final String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(
                         Info.COMBO) : "NO_SCALE");
                 final String yLabel = "Runs counts";
-                ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
-                comboFinder.plot(plotter, true, 0, xMax).display(new Point(80, 80));
+                final ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
+                comboMax = Math.min((comboMax * 3) / 2, sheet.getWidth() - 1); // Add some margin
+                comboFinder.plot(plotter, true, 0, comboMax).display(new Point(80, 80));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting combo", ex);
             }
