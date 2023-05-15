@@ -358,7 +358,7 @@ public abstract class AbstractNumberInter
 
                 final Point center = getCenter();
 
-                if (staff.contains(center)) {
+                if (!staff.isOneLineStaff() && staff.contains(center)) {
                     final double pitch = staff.pitchPositionOf(center);
                     final double y = staff.pitchToOrdinate(center.getX(), pitch < 0 ? -2 : 2);
                     dropLocation.y = (int) Math.rint(y);
@@ -463,7 +463,16 @@ public abstract class AbstractNumberInter
             final Staff theStaff = system.getClosestStaff(center);
 
             if ((theStaff != null) && !theStaff.isTablature()) {
-                if (theStaff.contains(center)) {
+                // Containment is tricky for a 1-line staff
+                final boolean inside;
+                if (theStaff.isOneLineStaff()) {
+                    final double mid = theStaff.getMidLine().yAt(center.getX());
+                    inside = Math.abs(mid - center.getY()) < theStaff.getSpecificInterline();
+                } else {
+                    inside = theStaff.contains(center);
+                }
+
+                if (inside) {
                     // If located within a staff height, this can only be a TimeNumberInter.
                     // We simply look for a time partner above or below.
                     final double pp = theStaff.pitchPositionOf(center);
