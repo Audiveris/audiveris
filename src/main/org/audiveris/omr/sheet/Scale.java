@@ -22,9 +22,12 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Range;
 import org.audiveris.omr.sheet.note.HeadSeedScale;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.param.ConstantBasedParam;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,7 +146,13 @@ public class Scale
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
+
+    public static final Param<Integer> defaultBeamSpecification = new ConstantBasedParam<>(
+            constants.defaultBeamSpecification,
+            Param.GLOBAL_SCOPE);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1104,6 +1113,18 @@ public class Scale
 
             return sb.toString();
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer defaultBeamSpecification = new Constant.Integer(
+                "pixels",
+                0,
+                "Default specification of beam thickness (0 means no specification)");
     }
 
     //----------//

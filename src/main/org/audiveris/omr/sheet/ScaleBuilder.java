@@ -207,7 +207,7 @@ public class ScaleBuilder
         }
 
         // Specific beam thickness from Book/Sheet parameters?
-        final Integer specifiedBeam = sheet.getStub().getBeamThickness();
+        final Integer specifiedBeam = sheet.getStub().getBeamSpecification();
         if ((specifiedBeam != null) && (specifiedBeam != 0)) {
             beamKey = specifiedBeam;
 

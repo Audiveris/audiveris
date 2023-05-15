@@ -224,9 +224,9 @@ public class Book
      * <p>
      * It can still be overridden at sheet level.
      */
-    @XmlElement(name = "beam-thickness")
+    @XmlElement(name = "beam-specification")
     @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
-    private IntegerParam beamThickness;
+    private IntegerParam beamSpecification;
 
     /**
      * This string specifies the dominant language(s) for this whole book.
@@ -430,8 +430,8 @@ public class Book
             inputQuality = null;
         }
 
-        if ((beamThickness != null) && !beamThickness.isSpecific()) {
-            beamThickness = null;
+        if ((beamSpecification != null) && !beamSpecification.isSpecific()) {
+            beamSpecification = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
@@ -684,29 +684,30 @@ public class Book
         return alias;
     }
 
-    //------------------//
-    // getBeamThickness //
-    //------------------//
-    public Integer getBeamThickness ()
+    //----------------------//
+    // getBeamSpecification //
+    //----------------------//
+    public Integer getBeamSpecification ()
     {
-        return getBeamThicknessParam().getValue();
+        return getBeamSpecificationParam().getValue();
     }
 
-    //-----------------------//
-    // getBeamThicknessParam //
-    //-----------------------//
-    public IntegerParam getBeamThicknessParam ()
+    //---------------------------//
+    // getBeamSpecificationParam //
+    //---------------------------//
+    public IntegerParam getBeamSpecificationParam ()
     {
-        if (beamThickness == null) {
-            beamThickness = new IntegerParam(this);
+        if (beamSpecification == null) {
+            beamSpecification = new IntegerParam(this);
+            beamSpecification.setParent(Scale.defaultBeamSpecification);
         }
 
-        return beamThickness;
+        return beamSpecification;
     }
 
-    //-----------------------//
+    //----------------------------//
     // getBinarizationFilterParam //
-    //-----------------------//
+    //----------------------------//
     /**
      * Report the binarization filter defined at book level.
      *
@@ -1561,9 +1562,9 @@ public class Book
             inputQuality.setScope(this);
         }
 
-        if (beamThickness != null) {
+        if (beamSpecification != null) {
             // [No parent for book beamThickness]
-            beamThickness.setScope(this);
+            beamSpecification.setScope(this);
         }
 
         if (ocrLanguages != null) {

@@ -201,9 +201,9 @@ public class SheetStub
      * <p>
      * If present, this specification overrides any specification made at book level.
      */
-    @XmlElement(name = "beam-thickness")
+    @XmlElement(name = "beam-specification")
     @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
-    private IntegerParam beamThickness;
+    private IntegerParam beamSpecification;
 
     /**
      * This string specifies the dominant language(s) to guide OCR on this sheet.
@@ -376,8 +376,8 @@ public class SheetStub
             inputQuality = null;
         }
 
-        if ((beamThickness != null) && !beamThickness.isSpecific()) {
-            beamThickness = null;
+        if ((beamSpecification != null) && !beamSpecification.isSpecific()) {
+            beamSpecification = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
@@ -619,25 +619,25 @@ public class SheetStub
         return assembly;
     }
 
-    //------------------//
-    // getBeamThickness //
-    //------------------//
-    public Integer getBeamThickness ()
+    //----------------------//
+    // getBeamSpecification //
+    //----------------------//
+    public Integer getBeamSpecification ()
     {
-        return getBeamThicknessParam().getValue();
+        return getBeamSpecificationParam().getValue();
     }
 
-    //-----------------------//
-    // getBeamThicknessParam //
-    //-----------------------//
-    public IntegerParam getBeamThicknessParam ()
+    //---------------------------//
+    // getBeamSpecificationParam //
+    //---------------------------//
+    public IntegerParam getBeamSpecificationParam ()
     {
-        if (beamThickness == null) {
-            beamThickness = new IntegerParam(this);
-            beamThickness.setParent(book.getBeamThicknessParam());
+        if (beamSpecification == null) {
+            beamSpecification = new IntegerParam(this);
+            beamSpecification.setParent(book.getBeamSpecificationParam());
         }
 
-        return beamThickness;
+        return beamSpecification;
     }
 
     //-----------------------//
@@ -1209,8 +1209,8 @@ public class SheetStub
                 inputQuality.setParent(book.getInputQualityParam());
             }
 
-            if (beamThickness != null) {
-                beamThickness.setParent(book.getBeamThicknessParam());
+            if (beamSpecification != null) {
+                beamSpecification.setParent(book.getBeamSpecificationParam());
             }
 
             if (ocrLanguages != null) {

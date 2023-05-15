@@ -249,7 +249,7 @@ public class BookParameters
                             defaultPanel,
                             Profiles.defaultQualityParam));
 
-            bookPanes.add(new BeamPane(null, book.getBeamThicknessParam()));
+            bookPanes.add(new BeamPane(null, book.getBeamSpecificationParam()));
 
             final LangPane bookLangPane = createLangPane(
                     (LangPane) defaultPanel.getPane(Tag.Lang),
@@ -305,7 +305,7 @@ public class BookParameters
                     sheetPanes.add(
                             new BeamPane(
                                     (BeamPane) bookPanel.getPane(Tag.Beam),
-                                    s.getBeamThicknessParam()));
+                                    s.getBeamSpecificationParam()));
 
                     final LangPane sheetLangPane = createLangPane(
                             (LangPane) bookPanel.getPane(Tag.Lang),
