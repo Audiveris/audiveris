@@ -2235,16 +2235,11 @@ public class PartwiseBuilder
                     }
                 }
 
-                // Measure firstMeasure = current.measure.getPart().getFirstMeasure();
-                // ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
-                // TODO: It is inefficient to check clef for every note! Should make an isDrumStaff() test.
                 if (staff.isOneLineStaff()) {
-                    // Unpitched
+                    // Unpitched, single line considered as E4
                     Unpitched unpitched = factory.createUnpitched();
-                    // For MuseScore: F5
-                    // For Finale:    G3
-                    unpitched.setDisplayStep(Step.F);
-                    unpitched.setDisplayOctave(5);
+                    unpitched.setDisplayStep(Step.E);
+                    unpitched.setDisplayOctave(4);
                     current.pmNote.setUnpitched(unpitched);
                 } else if (current.isDrumPart) {
                     // Unpitched 5-line percussion staff
