@@ -879,7 +879,8 @@ public class ClustersRetriever
         Collections.sort(clusters, byOrdinate);
 
         for (LineCluster current : clusters) {
-            final int maxMergeDx = current.isOneLine() ? sheet.getWidth() : params.maxMergeDx;
+            final int maxMergeDx = current.isOneLine() ? params.maxMergeDxSingle
+                    : params.maxMergeDx;
             LineCluster candidate = current;
 
             // Keep on working while we do have a candidate to check for merge
@@ -1406,7 +1407,11 @@ public class ClustersRetriever
 
         private final Scale.Fraction maxMergeDx = new Scale.Fraction(
                 6,
-                "Maximum dx to merge two clusters");
+                "Maximum dx to merge two multi-line clusters");
+
+        private final Scale.Fraction maxMergeDxSingle = new Scale.Fraction(
+                10,
+                "Maximum dx to merge two 1-line clusters");
 
         private final Scale.Fraction maxMergeDy = new Scale.Fraction(
                 0.4,
@@ -1492,6 +1497,8 @@ public class ClustersRetriever
 
         final int maxMergeDx;
 
+        final int maxMergeDxSingle;
+
         final int maxMergeDy;
 
         final int maxMergeCenterDy;
@@ -1515,6 +1522,7 @@ public class ClustersRetriever
             maxExpandDx = scale.toPixels(constants.maxExpandDx);
             maxExtrapolationDx = scale.toPixels(constants.maxExtrapolationDx);
             maxMergeDx = scale.toPixels(constants.maxMergeDx);
+            maxMergeDxSingle = scale.toPixels(constants.maxMergeDxSingle);
 
             // Specific interline scaling
             maxExpandDy = interlineScale.toPixels(constants.maxExpandDy);
