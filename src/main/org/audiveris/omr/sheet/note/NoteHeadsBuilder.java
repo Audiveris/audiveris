@@ -819,24 +819,34 @@ public class NoteHeadsBuilder
         final List<HeadInter> ch = new ArrayList<>(); // Created heads
 
         // Use all staff lines
-        int pitch = -5; // Current pitch
+        final int lineNb = staff.getLineCount();
+        final int minPitch = (lineNb == 1) ? 0 : -5;
+        final int maxPitch = (lineNb == 1) ? 0 : 5;
+        int pitch = minPitch; // Current pitch
         LineAdapter prevAdapter = null;
 
         for (LineInfo line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
-            // Look above line
-            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
+            // Look above line?
+            if (lineNb > 1) {
+                ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
+            }
 
             // Look exactly on line
             ch.addAll(new Scanner(adapter, null, 0, pitch++, useSeeds).lookup());
 
             // For the last line only, look just below line
-            if (pitch == 5) {
+            if ((lineNb > 1) && pitch == maxPitch) {
                 ch.addAll(new Scanner(adapter, null, 1, pitch++, useSeeds).lookup());
             }
 
             prevAdapter = adapter;
+        }
+
+        if (lineNb == 1) {
+            // No ledger on a 1-line staff!
+            return ch;
         }
 
         // Use all ledgers, above staff, then below staff
