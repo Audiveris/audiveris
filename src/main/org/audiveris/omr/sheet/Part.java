@@ -405,8 +405,10 @@ public class Part
                     dummyMeasure.addInter(dummyTime);
                 }
 
-                // Create dummy measure rest (w/ no precise location)
-                dummyMeasure.addDummyMeasureRest(dummyStaff);
+                if (!measure.getStack().isMultiRest()) {
+                    // Create dummy measure rest (w/ no precise location)
+                    dummyMeasure.addDummyMeasureRest(dummyStaff);
+                }
             }
 
             isFirstMeasure = false;

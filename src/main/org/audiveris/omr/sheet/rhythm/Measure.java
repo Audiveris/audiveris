@@ -293,9 +293,10 @@ public class Measure
     // addDummyMeasureRest //
     //---------------------//
     /**
-     * Insert a measure-long rest, with related chord, on provided staff in this measure.
+     * Insert a measure-long rest, with related chord, on provided (dummy) staff
+     * in this (dummy) measure.
      *
-     * @param staff specified staff in measure
+     * @param staff specified (dummy) staff in measure
      */
     public void addDummyMeasureRest (Staff staff)
     {
