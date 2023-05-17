@@ -23,38 +23,17 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Containment;
-import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
-import org.audiveris.omr.sig.ui.AdditionTask;
-import org.audiveris.omr.sig.ui.LinkTask;
-import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.symbol.MusicFamily;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumberSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.BOTTOM;
-import static org.audiveris.omr.util.VerticalSide.TOP;
-import org.audiveris.omr.util.WrappedBoolean;
-import org.audiveris.omr.util.Wrapper;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
@@ -228,42 +207,6 @@ public abstract class AbstractNumberInter
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create instance of proper sub-class of AbstractNumberInter
-     * (TimeNumberInter, MeasureCountInter, ...).
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static AbstractNumberInter create (Glyph glyph,
-                                              Shape shape,
-                                              double grade,
-                                              Staff staff)
-    {
-        AbstractNumberInter number;
-
-        // TimeNumber (within staff height)?
-        number = TimeNumberInter.create(glyph, shape, grade, staff);
-        if (number != null) {
-            return number;
-        }
-
-        // MeasureNumber (outside staff height)?
-        number = MeasureCountInter.create(glyph, shape, grade, staff);
-        if (number != null) {
-            return number;
-        }
-
-        // Nothing
-        return null;
-    }
-
     //---------//
     // valueOf //
     //---------//
@@ -314,209 +257,5 @@ public abstract class AbstractNumberInter
 
         default -> null;
         };
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-
-    //-------------//
-    // NumberInter //
-    //-------------//
-    /**
-     * This class is a concrete class, meant to temporarily convey an integer value.
-     * <p>
-     * It is assumed that the context (such as the final DnD location) will ultimately indicate
-     * whether we are dealing with a {@link TimeNumberInter} or a {@link MeasureCountInter}.
-     */
-    public static class NumberInter
-            extends AbstractNumberInter
-    {
-
-        public NumberInter (Glyph glyph,
-                            Shape shape,
-                            Double grade)
-        {
-            super(glyph, shape, grade);
-        }
-
-        //------------//
-        // deriveFrom //
-        //------------//
-        @Override
-        public boolean deriveFrom (ShapeSymbol symbol,
-                                   Sheet sheet,
-                                   MusicFont font,
-                                   Point dropLocation)
-        {
-            // First call needed to get bounds
-            super.deriveFrom(symbol, sheet, font, dropLocation);
-
-            // If within staff height, we snap ordinate to target pitch: -2 or +2
-            if (staff != null) {
-                if (staff.isTablature()) {
-                    return false;
-                }
-
-                final Point center = getCenter();
-
-                if (!staff.isOneLineStaff() && staff.contains(center)) {
-                    final double pitch = staff.pitchPositionOf(center);
-                    final double y = staff.pitchToOrdinate(center.getX(), pitch < 0 ? -2 : 2);
-                    dropLocation.y = (int) Math.rint(y);
-
-                    // Final call with refined dropLocation
-                    super.deriveFrom(symbol, sheet, font, dropLocation);
-                }
-            }
-
-            return true;
-        }
-
-        //--------//
-        // preAdd //
-        //--------//
-        /**
-         * {@inheritDoc }
-         * <p>
-         * This is rather tricky, since this temporary NumberInter instance is to be replaced
-         * by an instance of a more relevant class, once the target is known.
-         */
-        @Override
-        public List<? extends UITask> preAdd (WrappedBoolean cancel,
-                                              Wrapper<Inter> toPublish)
-        {
-            // Standard addition task for this number
-            final SystemInfo system = staff.getSystem();
-            final SIGraph sig = system.getSig();
-            final List<UITask> tasks = new ArrayList<>();
-
-            final Collection<Link> links = searchLinks(system);
-
-            if (links.isEmpty()) {
-                // Perhaps a brand new orphan time number
-                final VerticalSide vSide = timeNumberSide(system);
-                if (vSide != null) {
-                    final TimeNumberInter tn = new TimeNumberInter(glyph, shape, getGrade(), vSide);
-                    tn.setManual(true);
-                    tn.setStaff(system.getClosestStaff(getCenter()));
-                    tasks.add(new AdditionTask(sig, tn, getBounds(), /* empty */ links));
-                    toPublish.value = tn;
-                }
-            } else {
-                final Link link = links.iterator().next();
-                if ((link.partner instanceof MultipleRestInter)
-                        || (link.partner instanceof MeasureRepeatInter)) {
-                    // Use a MeasureCountInter
-                    final MeasureCountInter mc = new MeasureCountInter(glyph, shape, getGrade());
-                    mc.setManual(true);
-                    mc.setStaff(link.partner.getStaff());
-                    toPublish.value = mc;
-                    tasks.add(new AdditionTask(sig, mc, getBounds(), links));
-
-                } else if (link.partner instanceof TimeNumberInter other) {
-                    // Use a TimeNumberInter
-                    final TimeNumberInter tn = new TimeNumberInter(
-                            glyph,
-                            shape,
-                            getGrade(),
-                            link.outgoing ? TOP : BOTTOM);
-                    tn.setManual(true);
-                    tn.setStaff(other.getStaff());
-                    toPublish.value = tn;
-
-                    tasks.add(new AdditionTask(sig, tn, getBounds(), links));
-
-                    // Create the time pair ensemble?
-                    if (other.getEnsemble() == null) {
-                        final TimePairInter pair = new TimePairInter(null, null);
-                        pair.setManual(true);
-                        pair.setStaff(other.getStaff());
-                        tasks.add(
-                                new AdditionTask(
-                                        sig,
-                                        pair,
-                                        null,
-                                        Arrays.asList(new Link(tn, new Containment(), true))));
-                        tasks.add(new LinkTask(sig, pair, other, new Containment()));
-                    } else {
-                        final TimePairInter pair = (TimePairInter) other.getEnsemble();
-                        tasks.add(new LinkTask(sig, pair, tn, new Containment()));
-                    }
-                }
-            }
-
-            return tasks;
-        }
-
-        //-------------//
-        // searchLinks //
-        //-------------//
-        /**
-         * {@inheritDoc}.
-         * <p>
-         * Specifically, various links are searched for: time partial signature, multi-measure rest,
-         * measure repeat sign.
-         */
-        @Override
-        public Collection<Link> searchLinks (SystemInfo system)
-        {
-            final Point center = getCenter();
-            final Staff theStaff = system.getClosestStaff(center);
-
-            if ((theStaff != null) && !theStaff.isTablature()) {
-                // Containment is tricky for a 1-line staff
-                final boolean inside;
-                if (theStaff.isOneLineStaff()) {
-                    final double mid = theStaff.getMidLine().yAt(center.getX());
-                    inside = Math.abs(mid - center.getY()) < theStaff.getSpecificInterline();
-                } else {
-                    inside = theStaff.contains(center);
-                }
-
-                if (inside) {
-                    // If located within a staff height, this can only be a TimeNumberInter.
-                    // We simply look for a time partner above or below.
-                    final double pp = theStaff.pitchPositionOf(center);
-                    final int y = (int) Math.rint(theStaff.pitchToOrdinate(center.x, -pp));
-                    final Point p = new Point(center.x, y);
-                    final List<Inter> numbers = system.getSig().inters(TimeNumberInter.class);
-                    for (Inter tn : numbers) {
-                        if (tn.getBounds().contains(p)) {
-                            final TimeTopBottomRelation rel = new TimeTopBottomRelation();
-                            return Collections.singleton(new Link(tn, rel, pp < 0));
-                        }
-                    }
-                } else {
-                    // Otherwise, it can be a MeasureCountInter and we look into the staff nearby
-                    // for a multi-measure rest or a measure repeat sign
-                    return MeasureCountInter.lookupLinks(shape, getCenter(), system);
-                }
-            }
-
-            return Collections.emptyList();
-        }
-
-        //----------------//
-        // timeNumberSide //
-        //----------------//
-        /**
-         * Purely based on location within staff.
-         *
-         * @param system the containing system
-         * @return vertical side if OK, null otherwise
-         */
-        private VerticalSide timeNumberSide (SystemInfo system)
-        {
-            final Point center = getCenter();
-            final Staff theStaff = system.getClosestStaff(center);
-
-            if (!theStaff.isTablature() && theStaff.contains(center)) {
-                final double pp = theStaff.pitchPositionOf(center);
-                if (TimeNumberInter.isPitchValid(pp)) {
-                    return pp < 0 ? TOP : BOTTOM;
-                }
-            }
-
-            return null;
-        }
     }
 }

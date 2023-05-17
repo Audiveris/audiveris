@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -38,7 +39,6 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
-import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -244,33 +244,22 @@ public class SymbolsLinker
         }
     }
 
-    //-------------------//
-    // linkMeasureCounts //
-    //-------------------//
+    //-------------//
+    // linkNumbers //
+    //-------------//
     /**
-     * Link every MeasureCountInter to suitable MultipleRestInter or MeasureRepeatInter.
+     * Link and convert all NumberInter's.
      */
-    private void linkMeasureCounts ()
+    private void linkNumbers ()
     {
-        for (Inter inter : sig.inters(MeasureCountInter.class)) {
-            final MeasureCountInter mc = (MeasureCountInter) inter;
+        for (Inter inter : sig.inters(NumberInter.class)) {
+            final NumberInter nb = (NumberInter) inter;
 
             try {
-                if (mc.isVip()) {
-                    logger.info("VIP linkMeasureCounts for {}", mc);
-                }
-
-                final Collection<Link> links = mc.searchLinks(system);
-
-                if (!links.isEmpty()) {
-                    for (Link link : links) {
-                        link.applyTo(mc);
-                    }
-                } else {
-                    logger.debug("No rest or repeat sign linked to {}", mc);
-                }
+                nb.linkAndConvert();
+                nb.remove(); // Even if not linked!
             } catch (Exception ex) {
-                logger.warn("Error in linkMeasureCounts for {} {}", mc, ex.toString(), ex);
+                logger.warn("Error in linkNumbers for {} {}", nb, ex.toString(), ex);
             }
         }
     }
@@ -521,7 +510,7 @@ public class SymbolsLinker
         linkAugmentationDots();
         linkTuplets();
         linkOctaveShifts();
-        linkMeasureCounts();
+        linkNumbers();
     }
 
     //-------------------//

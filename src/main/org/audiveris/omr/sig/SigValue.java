@@ -65,6 +65,7 @@ import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -227,6 +228,7 @@ public class SigValue
             @XmlElementRef(type = MeasureCountInter.class),
             @XmlElementRef(type = MeasureRepeatInter.class),
             @XmlElementRef(type = MultipleRestInter.class),
+            @XmlElementRef(type = NumberInter.class),
             @XmlElementRef(type = OctaveShiftInter.class),
             @XmlElementRef(type = OrnamentInter.class),
             @XmlElementRef(type = PedalInter.class),

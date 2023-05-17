@@ -35,7 +35,6 @@ import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -122,49 +121,9 @@ public class MeasureCountInter
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a MeasureCountInter.
-     * <p>
-     * We simply check that glyph is located outside of staff height but not too far.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape (a TIME shape)
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static MeasureCountInter create (Glyph glyph,
-                                            Shape shape,
-                                            double grade,
-                                            Staff staff)
-    {
-        if (staff.isTablature()) {
-            return null;
-        }
-
-        final Point centroid = glyph.getCentroid();
-        if (staff.contains(centroid)) {
-            return null;
-        }
-
-        final double pitch = staff.pitchPositionOf(centroid);
-        if (Math.abs(pitch) > constants.maxAbsolutePitch.getValue()) {
-            return null;
-        }
-
-        final MeasureCountInter number = new MeasureCountInter(glyph, shape, grade);
-        number.setStaff(staff);
-        number.setAbnormal(true);
-
-        return number;
-    }
-
-    //------------//
-    // lookupLink //
-    //------------//
+    //-------------//
+    // lookupLinks //
+    //-------------//
     /**
      * Try to detect links between MeasureCountInter location and MultipleRestInter
      * or MeasureRepeatInter instances nearby.
@@ -172,7 +131,7 @@ public class MeasureCountInter
      * @param countShape measure count shape, perhaps null
      * @param center     location of number
      * @param system     the containing system
-     * @return the link found or null
+     * @return the links found, perhaps empty
      */
     public static List<Link> lookupLinks (Shape countShape,
                                           Point2D center,
@@ -191,6 +150,7 @@ public class MeasureCountInter
         final SIGraph sig = system.getSig();
         final List<Link> links = new ArrayList<>();
 
+        // Multiple measure rest?
         final List<Inter> multipleRests = sig.inters(MultipleRestInter.class);
         for (Inter mRest : multipleRests) {
             if (mRest.getStaff() == theStaff) {
@@ -203,6 +163,7 @@ public class MeasureCountInter
             }
         }
 
+        // Measure repeat?
         final List<Inter> repeats = sig.inters(MeasureRepeatInter.class);
         final Integer countValue = valueOf(countShape);
         for (Inter inter : repeats) {
@@ -214,6 +175,7 @@ public class MeasureCountInter
                     // Check consistency between measure count and repeat sign slashes
                     if ((countValue != null) && (countValue != 0)) {
                         final Shape simShape = repeat.getShape();
+
                         if (simShape != null) {
                             final int simValue = simShape.getSlashCount();
                             if (simValue != countValue) {
@@ -230,22 +192,6 @@ public class MeasureCountInter
         }
 
         return links;
-    }
-
-    //------------//
-    // searchRest //
-    //------------//
-    /**
-     * Look for a multiple rest compatible with provided number location.
-     *
-     * @param point location of measure number
-     * @param staff target staff
-     * @return the multiple rest found or null
-     */
-    public static MultipleRestInter searchRest (Point point,
-                                                Staff staff)
-    {
-        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

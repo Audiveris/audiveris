@@ -36,8 +36,6 @@ import org.audiveris.omr.sheet.time.TimeColumn;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
-import org.audiveris.omr.sig.inter.AbstractNumberInter;
-import org.audiveris.omr.sig.inter.AbstractNumberInter.NumberInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -73,6 +71,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -325,11 +324,9 @@ public class InterFactory
         case TIME_NINE:
         case TIME_TWELVE:
         case TIME_SIXTEEN:
-            // NOTA: These shapes are generally used for time number as part as a time signature
-            // A time number is located on position -2 or +2 , at beginning of measure.
-            // They can also be used for a measure count located above or below a multiple rest
-            // or a measure repeat sign.
-            return AbstractNumberInter.create(glyph, shape, grade, closestStaff);
+            // NOTA: These shapes are generally used for a time number or for a measure count.
+            // At this point, we simply return a general-purpose number
+            return NumberInter.create(glyph, shape, grade, closestStaff);
 
         case COMMON_TIME:
         case CUT_TIME:
