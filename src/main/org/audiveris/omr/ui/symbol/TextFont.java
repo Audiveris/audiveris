@@ -153,11 +153,19 @@ public class TextFont
         GlyphVector glyphVector = font.createGlyphVector(frc, content);
         Rectangle2D basicRect = glyphVector.getVisualBounds();
 
+        float ratio;
         if (dim.width >= dim.height) {
-            return fontSize * (dim.width / (float) basicRect.getWidth());
+            ratio = dim.width / (float) basicRect.getWidth();
         } else {
-            return fontSize * (dim.height / (float) basicRect.getHeight());
+            ratio = dim.height / (float) basicRect.getHeight();
         }
+
+        // To protect against crazy OCR bounds
+        final float maxRatio = constants.maxFontResizeRatio.getValue().floatValue();
+        logger.debug("font resize ratio: {} {}", ratio, content);
+        ratio = Math.min(maxRatio, ratio);
+
+        return fontSize * ratio;
     }
 
     //-----------------//
@@ -244,5 +252,9 @@ public class TextFont
                 "points",
                 10,
                 "Default font point size for texts");
+
+        private final Constant.Ratio maxFontResizeRatio = new Constant.Ratio(
+                1.3,
+                "Maximum font increase ratio when recomputed");
     }
 }

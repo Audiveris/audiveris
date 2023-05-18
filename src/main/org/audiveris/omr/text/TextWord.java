@@ -25,10 +25,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.LineUtil;
-import static org.audiveris.omr.sheet.ProcessingSwitch.chordNames;
-import static org.audiveris.omr.sheet.ProcessingSwitch.lyrics;
-import static org.audiveris.omr.sheet.ProcessingSwitch.lyricsAboveStaff;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.symbol.OmrFont;
@@ -245,31 +241,32 @@ public class TextWord
         }
     }
 
-    //----------------//
-    // adjustFontSize //
-    //----------------//
-    /**
-     * Adjust font size precisely according to underlying bounds.
-     *
-     * @return true if OK, false if abnormal font modification
-     */
-    public boolean adjustFontSize ()
-    {
-        double size = TextFont.computeFontSize(value, fontInfo, bounds.getSize());
-        double ratio = size / fontInfo.pointsize;
-
-        if (ratio < constants.minFontRatio.getSourceValue() || ratio > constants.maxFontRatio
-                .getSourceValue()) {
-            logger.debug("      abnormal font ratio {} {}", String.format("%.2f", ratio), this);
-
-            return false;
-        }
-
-        fontInfo = new FontInfo(fontInfo, (int) Math.rint(size));
-        textLine.invalidateCache();
-
-        return true;
-    }
+    //    //----------------//
+    //    // adjustFontSize //
+    //    //----------------//
+    //    /**
+    //     * Adjust font size precisely according to underlying bounds.
+    //     * WARNING: OCR bounds can be crazy, hence bounds-based font adjustment is not reliable enough
+    //     *
+    //     * @return true if OK, false if abnormal font modification
+    //     */
+    //    public boolean adjustFontSize ()
+    //    {
+    //        double size = TextFont.computeFontSize(value, fontInfo, bounds.getSize());
+    //        double ratio = size / fontInfo.pointsize;
+    //        //
+    //        //        if (ratio < constants.minFontRatio.getSourceValue() //
+    //        //                || ratio > constants.maxFontRatio.getSourceValue()) {
+    //        //            logger.debug("      abnormal font ratio {} {}", String.format("%.2f", ratio), this);
+    //        //
+    //        //            return false;
+    //        //        }
+    //        //
+    //        //        fontInfo = new FontInfo(fontInfo, (int) Math.rint(size));
+    //        //        textLine.invalidateCache();
+    //        //
+    //        return true;
+    //    }
 
     //---------------//
     // checkValidity //
@@ -328,22 +325,23 @@ public class TextWord
             }
         }
 
-        // Remove one-letter word, except in some cases
-        if (ONE_LETTER_WORDS != null) {
-            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-            // @formatter:off
-            if (!switches.getValue(chordNames)
-                && !switches.getValue(lyrics)
-                && !switches.getValue(lyricsAboveStaff)) {
-                final Matcher matcher = ONE_LETTER_WORDS.matcher(value);
-
-                if (matcher.matches()) {
-                    logger.debug("      one-letter word {}", this);
-                    return "one-letter-word";
-                }
-            }
-            // @formatter:on
-        }
+        //        // Remove one-letter word, except in some cases
+        //        if (ONE_LETTER_WORDS != null) {
+        //            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+        //            if (!switches.getValue(chordNames) //
+        //                    && !switches.getValue(lyrics) //
+        //                    && !switches.getValue(lyricsAboveStaff)) {
+        //                final Matcher matcher = ONE_LETTER_WORDS.matcher(value);
+        //
+        //                if (matcher.matches()) {
+        //                    // Accept only specific char
+        //                    final String mid = matcher.group(1);
+        //                    logger.info("mid: {} in {}", mid, this);
+        //                    ///logger.debug("      one-letter word {}", this);
+        //                    ///return "one-letter-word";
+        //                }
+        //            }
+        //        }
 
         // Remove long dash word (because they might well be ending horizontal lines)
         if (LONG_DASH_WORDS != null) {
@@ -804,11 +802,11 @@ public class TextWord
                 "Really low confidence to exclude words");
 
         private final Constant.String oneLetterWordRegexp = new Constant.String(
-                "^[\\W]*[\\w][\\W]*$",
+                "^[\\W]*([\\w])[\\W]*$",
                 "Regular expression to detect one-letter words");
 
         private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[^a-zA-Z_0-9-.,&\\?]+$",
+                "^[^a-zA-Z_0-9-.,&=©\\?]+$",
                 "Regular expression to detect abnormal words");
 
         private final Constant.String tupletWordRegexp = new Constant.String(

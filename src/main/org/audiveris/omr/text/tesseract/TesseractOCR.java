@@ -292,7 +292,7 @@ public class TesseractOCR
                     serial.incrementAndGet(),
                     constants.saveImages.isSet(),
                     languageCode,
-                    tesseract.PSM_SINGLE_BLOCK, // Works better than getMode(layoutMode),
+                    getMode(layoutMode),
                     bufferedImage);
 
             // Process the order
@@ -302,6 +302,13 @@ public class TesseractOCR
                 // Translate topLeft-relative coordinates to origin-relative ones
                 for (TextLine line : lines) {
                     line.translate(topLeft.x, topLeft.y);
+                }
+            }
+
+            // Print raw lines, right out of Tesseract OCR, except " " lines
+            if (lines != null) {
+                for (TextLine textLine : lines) {
+                    logger.debug("raw {}", textLine);
                 }
             }
 

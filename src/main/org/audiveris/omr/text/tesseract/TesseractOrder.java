@@ -375,11 +375,6 @@ public class TesseractOrder
 
             lines.removeIf( (l) -> l.getValue().equals(" "));
 
-            // Print raw lines, right out of Tesseract OCR, except " " lines
-            for (TextLine textLine : lines) {
-                logger.debug("raw {}", textLine);
-            }
-
             return lines;
         } catch (UnsupportedEncodingException ex) {
             logger.warn("Error decoding tesseract output", ex);
