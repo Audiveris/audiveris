@@ -1071,7 +1071,7 @@ public class ChordListMenu
             chordPrefId = chord.getPreferredVoiceId();
 
             final int prefId = (chordPrefId != null) ? chordPrefId : 0;
-            setText("Preferred voice [Experimental]");
+            setText("Preferred voice");
             setToolTipText("Assign specific voice ID to first chord in system voice");
 
             // None item

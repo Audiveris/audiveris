@@ -1160,7 +1160,8 @@ public class StemBuilder
                     }
 
                     // Others are sorted on their line starting ordinate
-                    return (yDir > 0) ? Double.compare(se1.line.getY1(), se2.line.getY1())
+                    return (yDir > 0) //
+                            ? Double.compare(se1.line.getY1(), se2.line.getY1())
                             : Double.compare(se2.line.getY2(), se1.line.getY2());
                 });
     }
