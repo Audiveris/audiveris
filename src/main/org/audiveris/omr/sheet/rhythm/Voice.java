@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.Navigable;
@@ -186,6 +187,9 @@ public class Voice
 
         if (!chords.contains(chord)) {
             chords.add(chord);
+
+            // Keep voice chords ordered by abscissa
+            Collections.sort(chords, Inters.byCenterAbscissa);
         }
     }
 
