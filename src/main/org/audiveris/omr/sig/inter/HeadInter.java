@@ -945,7 +945,9 @@ public class HeadInter
 
                     if (stemChords.isEmpty()) {
                         // Create a chord based on stem
-                        headChord = new HeadChordInter(null);
+                        headChord = shape.isSmallHead() //
+                                ? new SmallChordInter(null)
+                                : new HeadChordInter(null);
                         tasks.add(
                                 new AdditionTask(
                                         theSig,
