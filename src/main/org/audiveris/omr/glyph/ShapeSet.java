@@ -213,6 +213,16 @@ public class ShapeSet
             WHOLE_NOTE_CROSS,
             BREVE_CROSS);
 
+    /** Heads with a filled cross shape. */
+    public static final List<Shape> HeadsCrossBlack = Arrays.asList( //
+            NOTEHEAD_CROSS);
+
+    /** Heads with a hollow cross shape. */
+    public static final List<Shape> HeadsCrossHollow = Arrays.asList( //
+            NOTEHEAD_CROSS_VOID,
+            WHOLE_NOTE_CROSS,
+            BREVE_CROSS);
+
     /** Heads with a diamond shape. */
     public static final List<Shape> HeadsDiamond = Arrays.asList(
             NOTEHEAD_DIAMOND_FILLED,
@@ -993,6 +1003,7 @@ public class ShapeSet
                 list.removeAll(HeadsTriangle);
                 list.removeAll(HeadsCircle);
                 list.removeAll(Playings);
+                list.removeAll(HeadsCrossHollow);
             }
         }
 
