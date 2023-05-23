@@ -218,6 +218,10 @@ public class TesseractOCR
      */
     private int getMode (LayoutMode layoutMode)
     {
+        if (constants.forceSingleBlock.isSet()) {
+            return tesseract.PSM_SINGLE_BLOCK;
+        }
+
         switch (layoutMode) {
         case MULTI_BLOCK:
             return tesseract.PSM_AUTO;
@@ -374,6 +378,10 @@ public class TesseractOCR
         private final Constant.Boolean useOCR = new Constant.Boolean(
                 true,
                 "Should we use the OCR feature?");
+
+        private final Constant.Boolean forceSingleBlock = new Constant.Boolean(
+                false,
+                "Should we force OCR to use PSM_SINGLE_BLOCK rather than PSM_AUTO?");
 
         private final Constant.Boolean saveImages = new Constant.Boolean(
                 false,
