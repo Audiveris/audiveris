@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.HeadPlayingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -540,6 +541,23 @@ public class HeadInter
                         new Point(box.x + box.width, box.y),
                         new Point(box.x, box.y + box.height));
             }
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // getPlayingSign //
+    //----------------//
+    /**
+     * Report the playing sign, if any, related to this head.
+     *
+     * @return the related playing sign, or null
+     */
+    public PlayingInter getPlayingSign ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadPlayingRelation.class)) {
+            return (PlayingInter) sig.getOppositeInter(this, rel);
         }
 
         return null;

@@ -1623,35 +1623,24 @@ public class NoteHeadsBuilder
             }
 
             final DrumSet drumSet = DrumSet.getInstance();
-            final Set<DrumInstrument> set = drumSet.byPitch.get(pitch);
+            final Map<DrumSet.MotifSign, DrumInstrument> msMap = drumSet.byPitch.get(pitch);
             final EnumSet<Shape> allShapes = EnumSet.noneOf(Shape.class);
 
-            if (set == null) {
+            if (msMap == null) {
                 return allShapes; // Nothing on this pitch value
             }
 
-            for (DrumInstrument inst : set) {
-                // Motif + Sign (not used at template time)
-                final HeadMotif motif = inst.headMotif;
-                List<Shape> shapes = ShapeSet.getMotifSet(motif);
-                allShapes.addAll(shapes);
+            for (DrumInstrument inst : msMap.values()) {
+                if (inst != null) {
+                    // Motif + Sign (not used at template time)
+                    final HeadMotif motif = inst.headMotif;
+                    final List<Shape> shapes = ShapeSet.getMotifSet(motif);
+                    allShapes.addAll(shapes);
+                }
             }
 
             return allShapes;
         }
-        //
-        //        private void dumpShapeList (String kind,
-        //                                    Collection<Shape> coll)
-        //        {
-        //            System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
-        //            for (Shape shape : coll) {
-        //                System.out.println(String.format("    %s", shape));
-        //            }
-        //        }
-        //
-        //--------//
-        // lookup //
-        //--------//
 
         //-----------------//
         // computeYOffsets //
@@ -1916,6 +1905,9 @@ public class NoteHeadsBuilder
             return grade < Grades.minContextualGrade;
         }
 
+        //--------//
+        // lookup //
+        //--------//
         public List<HeadInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();

@@ -31,7 +31,7 @@
                         name of drum sound
                         The name must contain no space, no dash, just underscores.
                         A null sound value removes the entry at (pitch-position,motif,sign) tuple
-                        For a comprehensive list on sound names, please refer to
+                        For a comprehensive list of sound names, please refer to
                         https://computermusicresource.com/GM.Percussion.KeyMap.html 
                   
     -->
@@ -89,7 +89,7 @@
     <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/>
     
     <!-- 2 -->
-    <entry pitch-position="1" motif="oval"      sound="Low_Floor_Tom"/>
+    <entry pitch-position="2" motif="oval"      sound="Low_Floor_Tom"/>
     <entry pitch-position="2" motif="cross"     sound="Low_Conga"/>
     <entry pitch-position="2" motif="circle"    sound="Low_Conga"/>
     

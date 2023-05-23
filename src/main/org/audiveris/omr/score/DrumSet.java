@@ -22,6 +22,8 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.util.UriUtil;
@@ -34,14 +36,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.bind.JAXBContext;
@@ -71,6 +70,8 @@ public class DrumSet
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(DrumSet.class);
 
     /** File name for drum-set definitions. */
@@ -84,7 +85,7 @@ public class DrumSet
     /**
      * Instruments indexed by pitch position.
      */
-    public final Map<Integer, Set<DrumInstrument>> byPitch = new TreeMap<>();
+    public final Map<Integer, Map<MotifSign, DrumInstrument>> byPitch = new TreeMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -107,23 +108,19 @@ public class DrumSet
         logger.info("");
         logger.info("Resulting Drum Set:");
 
-        for (Entry<Integer, Set<DrumInstrument>> entry : byPitch.entrySet()) {
+        for (Entry<Integer, Map<MotifSign, DrumInstrument>> entry : byPitch.entrySet()) {
             logger.info("  pitch-position: {}", entry.getKey());
+            final Map<MotifSign, DrumInstrument> msMap = entry.getValue();
 
-            final Set<DrumInstrument> set = entry.getValue();
-            final Map<MotifSign, DrumInstrument> map = new LinkedHashMap<>();
-
-            if (set != null && !set.isEmpty()) {
-                for (DrumInstrument inst : set) {
-                    final MotifSign ms = new MotifSign(inst.headMotif, inst.sign);
-                    final DrumInstrument existing = map.get(ms);
+            if (msMap != null) {
+                for (Entry<MotifSign, DrumInstrument> msEntry : msMap.entrySet()) {
+                    final MotifSign ms = msEntry.getKey();
+                    final DrumInstrument inst = msEntry.getValue();
                     logger.info(
-                            "    motif: {}{} sound: {} {}",
-                            String.format("%-8s", inst.headMotif),
-                            inst.sign != null ? String.format(" sign: %-17s", inst.sign) : "",
-                            inst.sound,
-                            existing != null ? "-- conflicting with " + existing : "");
-                    map.put(ms, inst);
+                            "    motif: {}{} sound: {}",
+                            String.format("%-8s", ms.motif),
+                            ms.sign != null ? String.format(" sign: %-17s", ms.sign) : "",
+                            inst != null ? inst.sound : "NULL");
                 }
             }
         }
@@ -166,7 +163,9 @@ public class DrumSet
             }
         }
 
-        dumpResultingDrumSet();
+        if (constants.dumpDrumSet.isSet()) {
+            dumpResultingDrumSet();
+        }
     }
 
     //-------------------//
@@ -190,6 +189,7 @@ public class DrumSet
 
         for (DrumSetEntry entry : entries.list) {
             // Populate/update byPitch map
+            final Integer pp = entry.pitchPosition;
 
             if (entry.sound == null) {
                 // This entry is a removal
@@ -198,53 +198,48 @@ public class DrumSet
                     continue;
                 }
 
-                if (entry.pitchPosition == null) {
+                if (pp == null) {
                     logger.error("For a removal, pitch-position cannot be null ", entry);
                     continue;
                 }
 
-                final Set<DrumInstrument> set = byPitch.get(entry.pitchPosition);
-                if (set != null) {
-                    for (Iterator<DrumInstrument> it = set.iterator(); it.hasNext();) {
-                        final DrumInstrument inst = it.next();
-
-                        if (inst.headMotif == entry.headMotif) {
-                            logger.info(
-                                    "  at pitch-position: {} removing {}",
-                                    entry.pitchPosition,
-                                    inst);
-                            it.remove();
-                        }
+                final Map<MotifSign, DrumInstrument> msMap = byPitch.get(pp);
+                if (msMap != null) {
+                    final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
+                    final DrumInstrument inst = msMap.get(ms);
+                    if (inst != null) {
+                        logger.info("  at pitch-position: {} removing {}", pp, inst);
+                        msMap.put(ms, null);
                     }
                 }
             } else {
-                // This entry is an addition
-                if (entry.pitchPosition == null) {
+                // This entry is an addition or a replacement
+                if (pp == null) {
                     logger.debug("  null pitch-position in {}. Entry skipped.", entry);
                     continue;
                 }
 
                 if (entry.headMotif == null) {
-                    logger.warn(
-                            "  at pitch-position: {} null motif {}",
-                            entry.pitchPosition,
-                            entry);
+                    logger.warn("  at pitch-position: {} null motif {}", pp, entry);
                     continue;
                 }
 
-                Set<DrumInstrument> set = byPitch.get(entry.pitchPosition);
-                if (set == null) {
-                    byPitch.put(entry.pitchPosition, set = new LinkedHashSet<>());
+                Map<MotifSign, DrumInstrument> msMap = byPitch.get(pp);
+                if (msMap == null) {
+                    byPitch.put(pp, msMap = new LinkedHashMap<>());
                 }
 
+                final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
                 final DrumInstrument inst = new DrumInstrument(
                         entry.headMotif,
                         entry.sign,
                         entry.sound);
-                if (set.add(inst)) {
-                    logger.debug("  at pitch-position: {} adding {}", entry.pitchPosition, inst);
+                final DrumInstrument old = msMap.put(ms, inst);
+
+                if (old == null) {
+                    logger.debug("  at pitch-position: {} adding {}", pp, inst);
                 } else {
-                    logger.warn("  at pitch-position: {} duplicate {}", entry.pitchPosition, inst);
+                    logger.info("  at pitch-position: {} replacing {} by {}", pp, old, inst);
                 }
             }
         }
@@ -266,6 +261,17 @@ public class DrumSet
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Boolean dumpDrumSet = new Constant.Boolean(
+                true,
+                "Should we dump the resulting drum set?");
+    }
 
     //----------------//
     // DrumInstrument //
@@ -298,7 +304,8 @@ public class DrumSet
         public boolean equals (Object obj)
         {
             if (obj instanceof DrumInstrument that) {
-                return this.headMotif == that.headMotif && this.sign == that.sign
+                return this.headMotif == that.headMotif //
+                        && this.sign == that.sign //
                         && this.sound == that.sound;
             }
 
@@ -318,9 +325,11 @@ public class DrumSet
         @Override
         public String toString ()
         {
-            return new StringBuilder(getClass().getSimpleName()).append('{').append("motif: ")
-                    .append(headMotif).append(" sign: ").append(sign).append(" sound: ").append(
-                            sound).append('}').toString();
+            return new StringBuilder(getClass().getSimpleName()).append('{') //
+                    .append("motif: ").append(headMotif) //
+                    .append(" sign: ").append(sign) //
+                    .append(" sound: ").append(sound) //
+                    .append('}').toString();
         }
     }
 
@@ -379,15 +388,18 @@ public class DrumSet
         @Override
         public String toString ()
         {
-            return new StringBuilder(getClass().getSimpleName()).append('{').append(
-                    "pitch-position: ").append(pitchPosition).append(" motif: ").append(headMotif)
-                    .append(" sign: ").append(sign).append(" sound: ").append(sound).append('}')
-                    .toString();
+            return new StringBuilder(getClass().getSimpleName()).append('{') //
+                    .append("pitch-position: ").append(pitchPosition) //
+                    .append(" motif: ").append(headMotif) //
+                    .append(" sign: ").append(sign) //
+                    .append(" sound: ").append(sound) //
+                    .append('}').toString();
         }
     }
 
-    //~ Enumerations -------------------------------------------------------------------------------
-
+    //-----------//
+    // DrumSound //
+    //-----------//
     /**
      * Enum <code>DrumSound</code> provides all drum sound names together with their MIDI value.
      * <p>
@@ -508,11 +520,10 @@ public class DrumSet
     // MotifSign //
     //-----------//
     /**
-     * Class used as the (motif + sign) key for sound at a given pitch-position.
+     * Class used as the (motif + sign) key for instrument at a given pitch-position.
      */
     public static class MotifSign
     {
-
         public final HeadMotif motif;
 
         public final Shape sign;
@@ -522,6 +533,26 @@ public class DrumSet
         {
             this.motif = motif;
             this.sign = sign;
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (obj instanceof MotifSign that) {
+                return this.motif == that.motif //
+                        && this.sign == that.sign;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 3;
+            hash = 13 * hash + Objects.hashCode(this.motif);
+            hash = 13 * hash + Objects.hashCode(this.sign);
+            return hash;
         }
     }
 

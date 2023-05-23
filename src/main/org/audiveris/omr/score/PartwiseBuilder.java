@@ -31,6 +31,7 @@ import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import org.audiveris.omr.score.DrumSet.DrumSound;
+import org.audiveris.omr.score.DrumSet.MotifSign;
 import static org.audiveris.omr.score.MusicXML.*;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
@@ -70,6 +71,7 @@ import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -2356,17 +2358,20 @@ public class PartwiseBuilder
                     motif = HeadMotif.oval;
                 }
 
-                Instrument instrument = null;
+                final HeadInter head = (HeadInter) note;
+                final PlayingInter playing = head.getPlayingSign();
+                final Shape sign = (playing != null) ? playing.getShape() : null;
+                final MotifSign ms = new MotifSign(motif, sign);
                 final DrumSet drumSet = DrumSet.getInstance();
-                final Set<DrumInstrument> set = drumSet.byPitch.get(notePitch);
-                if (set != null) {
-                    for (DrumInstrument drum : set) {
-                        if (drum.headMotif == motif) {
-                            instrument = factory.createInstrument();
-                            instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
-                            current.pmNote.getInstrument().add(instrument);
-                            break;
-                        }
+                final Map<DrumSet.MotifSign, DrumInstrument> map = drumSet.byPitch.get(notePitch);
+                Instrument instrument = null;
+
+                if (map != null) {
+                    final DrumInstrument drum = map.get(ms);
+                    if (drum != null) {
+                        instrument = factory.createInstrument();
+                        instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
+                        current.pmNote.getInstrument().add(instrument);
                     }
                 }
 
