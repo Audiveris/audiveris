@@ -45,7 +45,6 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import org.audiveris.omr.sheet.rhythm.PageRhythm;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
@@ -60,7 +59,6 @@ import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.OmrStep;
-import org.audiveris.omr.step.PageStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
@@ -413,21 +411,21 @@ public class Sheet
                 }
             }
 
-            // Check version for interleaved rests
-            if (stubVersion.compareTo(Versions.INTERLEAVED_RESTS) < 0) {
-
-                if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
-                    for (Page page : pages) {
-                        new PageRhythm(page).process();
-                    }
-
-                    stub.setUpgraded(true);
-                }
-
-                if (latestStep.compareTo(OmrStep.PAGE) >= 0) {
-                    new PageStep().doit(this);
-                }
-            }
+            //            // Check version for interleaved rests
+            //            if (stubVersion.compaTo(Versions.INTERLEAVED_RESTS) < 0) {
+            //
+            //                if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
+            //                    for (Page page : pages) {
+            //                        new PageRhythm(page).process();
+            //                    }
+            //
+            //                    stub.setUpgraded(true);
+            //                }
+            //
+            //                if (latestStep.compareTo(OmrStep.PAGE) >= 0) {
+            //                    new PageStep().doit(this);
+            //                }
+            //            }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
