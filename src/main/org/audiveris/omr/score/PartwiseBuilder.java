@@ -2363,20 +2363,27 @@ public class PartwiseBuilder
                 final Shape sign = (playing != null) ? playing.getShape() : null;
                 final MotifSign ms = new MotifSign(motif, sign);
                 final DrumSet drumSet = DrumSet.getInstance();
-                final Map<DrumSet.MotifSign, DrumInstrument> map = drumSet.byPitch.get(notePitch);
-                Instrument instrument = null;
+                final int lineCount = staff.getLineCount();
+                final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet = drumSet
+                        .getStaffSet(lineCount);
+                if (staffSet == null) {
+                    logger.warn("No drum set defined for staff size {}", lineCount);
+                } else {
+                    final Map<DrumSet.MotifSign, DrumInstrument> map = staffSet.get(notePitch);
+                    Instrument instrument = null;
 
-                if (map != null) {
-                    final DrumInstrument drum = map.get(ms);
-                    if (drum != null) {
-                        instrument = factory.createInstrument();
-                        instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
-                        current.pmNote.getInstrument().add(instrument);
+                    if (map != null) {
+                        final DrumInstrument drum = map.get(ms);
+                        if (drum != null) {
+                            instrument = factory.createInstrument();
+                            instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
+                            current.pmNote.getInstrument().add(instrument);
+                        }
                     }
-                }
 
-                if (instrument == null) {
-                    logger.warn("No instrument for note {}", note);
+                    if (instrument == null) {
+                        logger.warn("No instrument for note {}", note);
+                    }
                 }
             }
 

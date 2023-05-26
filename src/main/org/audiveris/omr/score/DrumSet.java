@@ -83,9 +83,11 @@ public class DrumSet
     //~ Instance fields ----------------------------------------------------------------------------
 
     /**
-     * Instruments indexed by pitch position.
+     * Instruments structure.
+     * StaffSize => Pitch => Motif+Sign => Instrument
      */
-    public final Map<Integer, Map<MotifSign, DrumInstrument>> byPitch = new TreeMap<>();
+    private final Map<Integer, Map<Integer, Map<MotifSign, DrumInstrument>>> structure =
+            new TreeMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -108,24 +110,45 @@ public class DrumSet
         logger.info("");
         logger.info("Resulting Drum Set:");
 
-        for (Entry<Integer, Map<MotifSign, DrumInstrument>> entry : byPitch.entrySet()) {
-            logger.info("  pitch-position: {}", entry.getKey());
-            final Map<MotifSign, DrumInstrument> msMap = entry.getValue();
+        for (Entry<Integer, Map<Integer, Map<MotifSign, DrumInstrument>>> staffEntry : structure
+                .entrySet()) {
+            logger.info("");
+            logger.info("  line-count: {}", staffEntry.getKey());
+            final Map<Integer, Map<MotifSign, DrumInstrument>> byPitch = staffEntry.getValue();
 
-            if (msMap != null) {
-                for (Entry<MotifSign, DrumInstrument> msEntry : msMap.entrySet()) {
-                    final MotifSign ms = msEntry.getKey();
-                    final DrumInstrument inst = msEntry.getValue();
-                    logger.info(
-                            "    motif: {}{} sound: {}",
-                            String.format("%-8s", ms.motif),
-                            ms.sign != null ? String.format(" sign: %-17s", ms.sign) : "",
-                            inst != null ? inst.sound : "NULL");
+            for (Entry<Integer, Map<MotifSign, DrumInstrument>> entry : byPitch.entrySet()) {
+                logger.info("    pitch-position: {}", entry.getKey());
+                final Map<MotifSign, DrumInstrument> msMap = entry.getValue();
+
+                if (msMap != null) {
+                    for (Entry<MotifSign, DrumInstrument> msEntry : msMap.entrySet()) {
+                        final MotifSign ms = msEntry.getKey();
+                        final DrumInstrument inst = msEntry.getValue();
+                        logger.info(
+                                "      motif: {}{} sound: {}",
+                                String.format("%-8s", ms.motif),
+                                ms.sign != null ? String.format(" sign: %-17s", ms.sign) : "",
+                                inst != null ? inst.sound : "NULL");
+                    }
                 }
             }
         }
 
         logger.info("");
+    }
+
+    //-------------//
+    // getStaffSet //
+    //-------------//
+    /**
+     * Report the drum set that applies for a percussion staff of provided line count.
+     *
+     * @param lineCount count of lines (1 or 5) in percussion staff
+     * @return the byPitch map for this staff size
+     */
+    public Map<Integer, Map<MotifSign, DrumInstrument>> getStaffSet (int lineCount)
+    {
+        return structure.get(lineCount);
     }
 
     //-----------------------//
@@ -187,59 +210,72 @@ public class DrumSet
         final Unmarshaller um = jaxbContext.createUnmarshaller();
         final DrumSetEntries entries = (DrumSetEntries) um.unmarshal(in);
 
-        for (DrumSetEntry entry : entries.list) {
-            // Populate/update byPitch map
-            final Integer pp = entry.pitchPosition;
+        for (StaffEntries staffEntries : entries.staffList) {
+            final Integer lineCount = staffEntries.lineCount;
+            if (lineCount == null) {
+                logger.error("For a staff, line-count cannot be null ");
+                continue;
+            }
 
-            if (entry.sound == null) {
-                // This entry is a removal
-                if (entry.headMotif == null) {
-                    logger.error("For a removal, motif cannot be null ", entry);
-                    continue;
-                }
+            Map<Integer, Map<MotifSign, DrumInstrument>> byPitch = structure.get(lineCount);
+            if (byPitch == null) {
+                structure.put(lineCount, byPitch = new TreeMap<>());
+            }
 
-                if (pp == null) {
-                    logger.error("For a removal, pitch-position cannot be null ", entry);
-                    continue;
-                }
+            for (DrumSetEntry entry : staffEntries.list) {
+                // Populate/update byPitch map
+                final Integer pp = entry.pitchPosition;
 
-                final Map<MotifSign, DrumInstrument> msMap = byPitch.get(pp);
-                if (msMap != null) {
-                    final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
-                    final DrumInstrument inst = msMap.get(ms);
-                    if (inst != null) {
-                        logger.info("  at pitch-position: {} removing {}", pp, inst);
-                        msMap.put(ms, null);
+                if (entry.sound == null) {
+                    // This entry is a removal
+                    if (entry.headMotif == null) {
+                        logger.error("{} For a removal, motif cannot be null ", entry);
+                        continue;
                     }
-                }
-            } else {
-                // This entry is an addition or a replacement
-                if (pp == null) {
-                    logger.debug("  null pitch-position in {}. Entry skipped.", entry);
-                    continue;
-                }
 
-                if (entry.headMotif == null) {
-                    logger.warn("  at pitch-position: {} null motif {}", pp, entry);
-                    continue;
-                }
+                    if (pp == null) {
+                        logger.error("{} For a removal, pitch-position cannot be null ", entry);
+                        continue;
+                    }
 
-                Map<MotifSign, DrumInstrument> msMap = byPitch.get(pp);
-                if (msMap == null) {
-                    byPitch.put(pp, msMap = new LinkedHashMap<>());
-                }
-
-                final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
-                final DrumInstrument inst = new DrumInstrument(
-                        entry.headMotif,
-                        entry.sign,
-                        entry.sound);
-                final DrumInstrument old = msMap.put(ms, inst);
-
-                if (old == null) {
-                    logger.debug("  at pitch-position: {} adding {}", pp, inst);
+                    final Map<MotifSign, DrumInstrument> msMap = byPitch.get(pp);
+                    if (msMap != null) {
+                        final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
+                        final DrumInstrument inst = msMap.get(ms);
+                        if (inst != null) {
+                            logger.info("  at pitch-position: {} removing {}", pp, inst);
+                            msMap.put(ms, null);
+                        }
+                    }
                 } else {
-                    logger.info("  at pitch-position: {} replacing {} by {}", pp, old, inst);
+                    // This entry is an addition or a replacement
+                    if (pp == null) {
+                        logger.debug("  null pitch-position in {}. Entry skipped.", entry);
+                        continue;
+                    }
+
+                    if (entry.headMotif == null) {
+                        logger.warn("  at pitch-position: {} null motif {}", pp, entry);
+                        continue;
+                    }
+
+                    Map<MotifSign, DrumInstrument> msMap = byPitch.get(pp);
+                    if (msMap == null) {
+                        byPitch.put(pp, msMap = new LinkedHashMap<>());
+                    }
+
+                    final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
+                    final DrumInstrument inst = new DrumInstrument(
+                            entry.headMotif,
+                            entry.sign,
+                            entry.sound);
+                    final DrumInstrument old = msMap.put(ms, inst);
+
+                    if (old == null) {
+                        logger.debug("  at pitch-position: {} adding {}", pp, inst);
+                    } else {
+                        logger.info("  at pitch-position: {} replacing {} by {}", pp, old, inst);
+                    }
                 }
             }
         }
@@ -337,15 +373,14 @@ public class DrumSet
     // DrumSetEntries //
     //----------------//
     /**
-     * Flat list of entries, to be unmarshalled from drum-set file.
+     * Flat list of entries per staff size, to be unmarshalled from drum-set file.
      */
     @XmlAccessorType(XmlAccessType.NONE)
     @XmlRootElement(name = "drum-set")
     private static class DrumSetEntries
     {
-
-        @XmlElement(name = "entry")
-        private final List<DrumSetEntry> list = new ArrayList<>();
+        @XmlElement(name = "staff")
+        private final List<StaffEntries> staffList = new ArrayList<>();
     }
 
     //--------------//
@@ -355,7 +390,6 @@ public class DrumSet
     @XmlRootElement(name = "entry")
     private static class DrumSetEntry
     {
-
         /**
          * Pitch position.
          * Staff pitch, 0 = middle line, increasing downwards.
@@ -580,6 +614,20 @@ public class DrumSet
         {
             return ((s == null) || s.equalsIgnoreCase("null")) ? null : Integer.valueOf(s);
         }
+    }
+
+    //--------------//
+    // StaffEntries //
+    //--------------//
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "staff")
+    private static class StaffEntries
+    {
+        @XmlAttribute(name = "line-count")
+        public Integer lineCount;
+
+        @XmlElement(name = "entry")
+        public final List<DrumSetEntry> list = new ArrayList<>();
     }
 
     //--------------//

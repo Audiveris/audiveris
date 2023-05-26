@@ -11,7 +11,13 @@
     located in Audiveris user 'config' folder.
 
     Such file defines Audiveris entries for general midi percussion keys.
-    It is written as a list of entries for a sound map organized as:
+    Definitions are grouped by staff line count with one attribute:
+    
+    - line-count        (Mandatory)
+                        count of lines in percussion staff
+                        (1 or 5)
+
+    Within a staff group, it is written as a list of entries for a sound map organized as:
     key:    a tuple (pitch-position, motif, [sign])
     value:  the corresponding sound value
                        
@@ -38,6 +44,12 @@
 
 <drum-set>
     
+  <staff line-count="1">
+    <entry pitch-position="0"  motif="oval"    sound="null"/> <!-- Just a place-holder -->
+  </staff>
+  
+  <staff line-count="5">
+        
     <!-- -8 -->
     <entry pitch-position="-8" motif="cross"   sound="Splash_Cymbal"/>
     <entry pitch-position="-8" motif="circle"  sound="Chinese_Cymbal"/>
@@ -133,5 +145,7 @@
     <entry pitch-position="null" motif="null" sound="Open_Cuica"/>
     <entry pitch-position="null" motif="null" sound="Mute_Triangle"/>
     <entry pitch-position="null" motif="null" sound="Open_Triangle"/>
-    
+  
+  </staff>
+  
 </drum-set>

@@ -1622,20 +1622,28 @@ public class NoteHeadsBuilder
                 return sheetTemplateNotesAll;
             }
 
-            final DrumSet drumSet = DrumSet.getInstance();
-            final Map<DrumSet.MotifSign, DrumInstrument> msMap = drumSet.byPitch.get(pitch);
             final EnumSet<Shape> allShapes = EnumSet.noneOf(Shape.class);
+            final DrumSet drumSet = DrumSet.getInstance();
+            final int lineCount = staff.getLineCount();
+            final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet = drumSet
+                    .getStaffSet(lineCount);
 
-            if (msMap == null) {
-                return allShapes; // Nothing on this pitch value
-            }
+            if (staffSet == null) {
+                logger.warn("No DrumSet defined for staff size {}", lineCount);
+            } else {
+                final Map<DrumSet.MotifSign, DrumInstrument> msMap = staffSet.get(pitch);
 
-            for (DrumInstrument inst : msMap.values()) {
-                if (inst != null) {
-                    // Motif + Sign (not used at template time)
-                    final HeadMotif motif = inst.headMotif;
-                    final List<Shape> shapes = ShapeSet.getMotifSet(motif);
-                    allShapes.addAll(shapes);
+                if (msMap == null) {
+                    return allShapes; // Nothing on this pitch value
+                }
+
+                for (DrumInstrument inst : msMap.values()) {
+                    if (inst != null) {
+                        // Motif + Sign (not used at template time)
+                        final HeadMotif motif = inst.headMotif;
+                        final List<Shape> shapes = ShapeSet.getMotifSet(motif);
+                        allShapes.addAll(shapes);
+                    }
                 }
             }
 
