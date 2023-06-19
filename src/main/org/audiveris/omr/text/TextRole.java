@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.regex.Matcher;
 
 /**
  * Class <code>TextRole</code> describes the role of a piece of text (typically a sentence).
@@ -242,7 +243,15 @@ public enum TextRole
         case WITHIN_STAVES: // Name, Lyrics, Direction
 
             if (leftOfStaves) {
-                return PartName;
+                if (TextWord.PART_NAME_WORDS != null) {
+                    Matcher matcher = TextWord.PART_NAME_WORDS.matcher(line.getValue());
+
+                    if (matcher.matches()) {
+                        return PartName;
+                    } else {
+                        logger.debug("Abnormal part name: {}", line);
+                    }
+                }
             } else if (lyricsAllowed //
                     && hasVowel //
                     ///&& !isMainlyItalic //

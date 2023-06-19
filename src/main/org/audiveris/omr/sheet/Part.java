@@ -867,7 +867,7 @@ public class Part
      */
     public String getName ()
     {
-        return (name != null) ? name.getValue() : null;
+        return (name != null && !name.isRemoved()) ? name.getValue() : null;
     }
 
     //---------------//
@@ -1394,7 +1394,7 @@ public class Part
     {
         this.name = name;
 
-        if (name != null) {
+        if (name != null && !name.isRemoved()) {
             // Normalize font info for part name
             for (Inter inter : name.getMembers()) {
                 final WordInter word = (WordInter) inter;
@@ -1410,7 +1410,7 @@ public class Part
         // Update PartRef as well
         final PartRef partRef = getRef();
         if (partRef != null) {
-            partRef.setName(name != null ? name.getValue() : null);
+            partRef.setName((name != null && !name.isRemoved()) ? name.getValue() : null);
         }
     }
 
@@ -1578,7 +1578,7 @@ public class Part
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append('#').append(id).append('{');
 
-        if (name != null) {
+        if ((name != null) && !name.isRemoved()) {
             sb.append("name:").append(name.getValue());
         }
 

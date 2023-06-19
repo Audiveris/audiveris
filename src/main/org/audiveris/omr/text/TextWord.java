@@ -85,6 +85,9 @@ public class TextWord
     /** Regexp for dash-only words. */
     private static final Pattern LONG_DASH_WORDS = compileRegexp(constants.longDashWordRegexp);
 
+    /** Regexp for part-name words. */
+    public static final Pattern PART_NAME_WORDS = compileRegexp(constants.partNameRegexp);
+
     /** Comparator based on word size. */
     public static final Comparator<TextWord> bySize = (TextWord o1,
                                                        TextWord o2) -> Integer.compare(
@@ -820,6 +823,10 @@ public class TextWord
         private final Constant.String dashedWordRegexp = new Constant.String(
                 "^.*[-_\u2014].*$",
                 "Regular expression to detect words with embedded dashes");
+
+        private final Constant.String partNameRegexp = new Constant.String(
+                ".*[\\w]+.*$",
+                "Regular expression to validate a part name");
 
         private final Constant.Ratio maxFontRatio = new Constant.Ratio(
                 2.0,
