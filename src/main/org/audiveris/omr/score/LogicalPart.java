@@ -25,7 +25,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -92,9 +92,18 @@ public class LogicalPart
 
     /**
      * The number of lines for each staff in this part.
+     * <p>
+     * Deprecated, replaced by <code>staffConfigs</code>.
      */
+    @Deprecated
     @XmlElement(name = "line-count")
-    private List<Integer> lineCounts = new ArrayList<>();
+    private List<Integer> OLD_lineCounts;
+
+    /**
+     * The number of lines, perhaps small annotated, for each staff in this part.
+     */
+    @XmlElement(name = "staff-configuration")
+    private List<StaffConfig> staffConfigs = new ArrayList<>();
 
     /**
      * This is the name, often an instrument name, for this logical part.
@@ -135,20 +144,36 @@ public class LogicalPart
     /**
      * Creates a new instance of ScorePart
      *
-     * @param id         the id for this part
-     * @param staffCount the count of staves within this part
-     * @param lineCounts the count of lines for each staff in part
+     * @param id           the id for this part
+     * @param staffCount   the count of staves within this part
+     * @param staffConfigs the configuration for each staff in part
      */
     public LogicalPart (int id,
                         int staffCount,
-                        List<Integer> lineCounts)
+                        List<StaffConfig> staffConfigs)
     {
         setId(id);
         this.staffCount = staffCount;
-        setLineCounts(lineCounts);
+        setStaffConfigs(staffConfigs);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    @SuppressWarnings(value = "unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (OLD_lineCounts != null) {
+            for (int count : OLD_lineCounts) {
+                staffConfigs.add(new StaffConfig(count, false));
+            }
+
+            OLD_lineCounts = null;
+        }
+    }
 
     //------//
     // copy //
@@ -157,7 +182,7 @@ public class LogicalPart
     {
         try {
             final LogicalPart that = (LogicalPart) super.clone();
-            that.lineCounts = new ArrayList<>(lineCounts);
+            that.staffConfigs = new ArrayList<>(staffConfigs);
 
             return that;
         } catch (CloneNotSupportedException ignored) {
@@ -181,12 +206,10 @@ public class LogicalPart
                 return false;
             }
 
-        // @formatter:off
-        return Objects.deepEquals(name, that.name)
-               && Objects.deepEquals(abbreviation, that.abbreviation)
-               && Objects.deepEquals(lineCounts, that.lineCounts)
-               && Objects.deepEquals(midiProgram, that.midiProgram);
-        // @formatter:on
+            return Objects.deepEquals(name, that.name) //
+                    && Objects.deepEquals(abbreviation, that.abbreviation) //
+                    && Objects.deepEquals(staffConfigs, that.staffConfigs) //
+                    && Objects.deepEquals(midiProgram, that.midiProgram);
         }
 
         return false;
@@ -285,19 +308,6 @@ public class LogicalPart
         return score.getLogicalParts().indexOf(this);
     }
 
-    //---------------//
-    // getLineCounts //
-    //---------------//
-    /**
-     * Report the line count for each staff in this part.
-     *
-     * @return the staves line counts
-     */
-    public List<Integer> getLineCounts ()
-    {
-        return Collections.unmodifiableList(lineCounts);
-    }
-
     //----------------//
     // getMidiProgram //
     //----------------//
@@ -335,6 +345,19 @@ public class LogicalPart
     public String getPid ()
     {
         return "P" + getId();
+    }
+
+    //-----------------//
+    // getStaffConfigs //
+    //-----------------//
+    /**
+     * Report configuration for each staff in this part.
+     *
+     * @return the staves configurations
+     */
+    public List<StaffConfig> getStaffConfigs ()
+    {
+        return Collections.unmodifiableList(staffConfigs);
     }
 
     //---------------//
@@ -403,15 +426,6 @@ public class LogicalPart
         this.id = id;
     }
 
-    //---------------//
-    // setLineCounts //
-    //---------------//
-    public final void setLineCounts (List<Integer> lineCounts)
-    {
-        this.lineCounts.clear();
-        this.lineCounts.addAll(lineCounts);
-    }
-
     //----------------//
     // setMidiProgram //
     //----------------//
@@ -436,6 +450,15 @@ public class LogicalPart
     public void setName (String name)
     {
         this.name = name;
+    }
+
+    //-----------------//
+    // setStaffConfigs //
+    //-----------------//
+    public final void setStaffConfigs (List<StaffConfig> staffConfigs)
+    {
+        this.staffConfigs.clear();
+        this.staffConfigs.addAll(staffConfigs);
     }
 
     //-------------//
@@ -482,7 +505,7 @@ public class LogicalPart
             sb.append(" midi:").append(midiProgram);
         }
 
-        sb.append(" lines:[").append(IntUtil.toCsvString(lineCounts)).append(']');
+        sb.append(" configs:[").append(StaffConfig.toCsvString(staffConfigs)).append(']');
 
         sb.append('}');
 

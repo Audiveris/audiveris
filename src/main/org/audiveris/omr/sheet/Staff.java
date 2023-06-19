@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -1451,16 +1452,22 @@ public class Staff
             return Collections.emptyList();
         }
 
-        // @formatter:off
         final List<Inter> inters = sig.inters(StaffBarlineInter.class);
-        final List<StaffBarlineInter> found = inters.stream()
-                .filter(inter -> inter.getStaff() == this)
-                .map(inter -> (StaffBarlineInter) inter)
-                .sorted(Inters.byCenterAbscissa)
+        final List<StaffBarlineInter> found = inters.stream() //
+                .filter(inter -> inter.getStaff() == this) //
+                .map(inter -> (StaffBarlineInter) inter) //
+                .sorted(Inters.byCenterAbscissa) //
                 .collect(Collectors.toList());
-        // @formatter:on
 
         return found;
+    }
+
+    //----------------//
+    // getStaffConfig //
+    //----------------//
+    public StaffConfig getStaffConfig ()
+    {
+        return new StaffConfig(lines.size(), isSmall());
     }
 
     //-----------//

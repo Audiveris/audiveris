@@ -27,6 +27,7 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.grid.LineInfo;
@@ -46,7 +47,6 @@ import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
@@ -746,25 +746,6 @@ public class Part
         return leftBarline;
     }
 
-    //---------------//
-    // getLineCounts //
-    //---------------//
-    /**
-     * Report the line counts of all staves.
-     *
-     * @return list of staff line count
-     */
-    public List<Integer> getLineCounts ()
-    {
-        final List<Integer> lineCounts = new ArrayList<>(staves.size());
-
-        for (Staff staff : staves) {
-            lineCounts.add(staff.getLineCount());
-        }
-
-        return lineCounts;
-    }
-
     //----------------//
     // getLogicalPart //
     //----------------//
@@ -971,6 +952,25 @@ public class Part
         return selectedSlurs;
     }
 
+    //-----------------//
+    // getStaffConfigs //
+    //-----------------//
+    /**
+     * Report the staves configurations.
+     *
+     * @return list of staff configuration
+     */
+    public List<StaffConfig> getStaffConfigs ()
+    {
+        final List<StaffConfig> staffConfigs = new ArrayList<>(staves.size());
+
+        for (Staff staff : staves) {
+            staffConfigs.add(staff.getStaffConfig());
+        }
+
+        return staffConfigs;
+    }
+
     //---------------//
     // getStaffCount //
     //---------------//
@@ -1170,7 +1170,7 @@ public class Part
             addStaff(staff);
         }
         final PartRef ref = getRef();
-        ref.computeLineCounts(staves);
+        ref.computeStaffConfigs(staves);
 
         final SystemRef systemRef = system.getRef();
         final PartRef belowRef = below.getRef();
@@ -1523,7 +1523,7 @@ public class Part
         staves.removeAll(partBelow.staves);
 
         final PartRef ref = getRef();
-        ref.computeLineCounts(staves);
+        ref.computeStaffConfigs(staves);
 
         for (int im = 0; im < measures.size(); im++) {
             final Measure measure = measures.get(im);
@@ -1590,7 +1590,7 @@ public class Part
         sb.append(staves.stream().map(s -> "" + s.getId()).collect(Collectors.joining(",")));
         sb.append("]");
 
-        sb.append(" lines:[").append(IntUtil.toCsvString(getLineCounts())).append(']');
+        sb.append(" configs:[").append(StaffConfig.toCsvString(getStaffConfigs())).append(']');
 
         sb.append("}");
 

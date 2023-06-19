@@ -124,10 +124,10 @@ public class PartCollation
         final LogicalPart logical = new LogicalPart(
                 0, // This id indicates a just-created logical
                 partRef.getStaffCount(),
-                partRef.getLineCounts());
+                partRef.getStaffConfigs());
         logical.setName(partRef.getName());
         logical.setAbbreviation(null);
-        logical.setLineCounts(partRef.getLineCounts());
+        logical.setStaffConfigs(partRef.getStaffConfigs());
         logger.debug("Created {} from {}", logical, partRef);
 
         final Record record = new Record(logical);
@@ -252,7 +252,7 @@ public class PartCollation
         CandidateLoop:
         for (int ic = ic1; ic != ic2; ic += dir) {
             final PartRef partRef = sequence.get(ic);
-            final List<Integer> lineCounts = partRef.getLineCounts();
+            final List<StaffConfig> staffConfigs = partRef.getStaffConfigs();
             logger.debug("\nCandidate {}", partRef.toQualifiedString());
 
             if (partRef.isManual()) {
@@ -281,22 +281,21 @@ public class PartCollation
 
                 // Check parts are compatible in terms of line counts
                 // For backward compatibility w/ old OMRs, check is made only if line counts exist
-                if (!lineCounts.isEmpty() && !logical.getLineCounts().isEmpty() && !Objects
-                        .deepEquals(logical.getLineCounts(), lineCounts)) {
+                if (!staffConfigs.isEmpty() //
+                        && !logical.getStaffConfigs().isEmpty() //
+                        && !Objects.deepEquals(logical.getStaffConfigs(), staffConfigs)) {
                     logger.debug("    Line counts incompatibility");
                     continue;
                 }
 
                 // Check candidate name
-                // @formatter:off
                 final String name = partRef.getName();
-                if ((name != null)
-                    && !name.equalsIgnoreCase(logical.getName())
-                    && !name.equalsIgnoreCase(logical.getAbbreviation())) {
+                if ((name != null) //
+                        && !name.equalsIgnoreCase(logical.getName()) //
+                        && !name.equalsIgnoreCase(logical.getAbbreviation())) {
                     logger.debug("    Name incompatibility");
                     continue;
                 }
-                // @formatter:on
 
                 logger.debug("    Success");
                 record.partRefs.add(partRef);
@@ -306,14 +305,12 @@ public class PartCollation
                 if (resAbbrev == null) {
                     final String resName = logical.getName();
                     final String affiName = partRef.getName();
-                    // @formatter:off
-                    if ((affiName != null)
-                        && !affiName.equals(resName)
-                        && (resName == null || affiName.length() < logical.getName().length())
-                        && !logicalNames.contains(affiName)) {
+                    if ((affiName != null) //
+                            && !affiName.equals(resName) //
+                            && (resName == null || affiName.length() < logical.getName().length()) //
+                            && !logicalNames.contains(affiName)) {
                         logical.setAbbreviation(affiName);
                     }
-                    // @formatter:on
                 }
 
                 continue CandidateLoop;
@@ -348,13 +345,12 @@ public class PartCollation
                 final PageRef page = system.getPage();
                 final SheetStub stub = page.getStub();
 
-                // @formatter:off
-                sb.append("\n   ").append(partRef)
-                        .append(" rank:").append(rank)
-                        .append(" in ").append(stub)
-                        .append(", Page#").append(page.getId())
+                sb.append("\n   ") //
+                        .append(partRef) //
+                        .append(" rank:").append(rank) //
+                        .append(" in ").append(stub) //
+                        .append(", Page#").append(page.getId()) //
                         .append(", System#").append(system.getId());
-                // @formatter:on
             }
         }
 
@@ -372,7 +368,7 @@ public class PartCollation
     private Record getBiRecord ()
     {
         for (Record record : records) {
-            if (record.logical.getLineCounts().size() == 2) {
+            if (record.logical.getStaffConfigs().size() == 2) {
                 return record;
             }
         }
@@ -453,12 +449,10 @@ public class PartCollation
         @Override
         public String toString ()
         {
-            // @formatter:off
-            return new StringBuilder(getClass().getSimpleName()).append('{')
-                    .append(logical)
-                    .append(" affs:").append(partRefs.size())
+            return new StringBuilder(getClass().getSimpleName()).append('{') //
+                    .append(logical) //
+                    .append(" affs:").append(partRefs.size())//
                     .append('}').toString();
-            // @formatter:on
         }
     }
 }

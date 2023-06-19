@@ -29,13 +29,13 @@ import org.audiveris.omr.score.PageNumber;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.util.IntUtil;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -218,7 +218,8 @@ public class LogicalPartsEditor
     @Action
     public void add (ActionEvent e)
     {
-        final LogicalPart logical = new LogicalPart(0, 1, Arrays.asList(5)); // Rather standard
+        // Use a rather standard config
+        final LogicalPart logical = new LogicalPart(0, 1, Arrays.asList(new StaffConfig(5, false)));
         logical.setName("<empty>");
         model.add(logical);
 
@@ -353,7 +354,7 @@ public class LogicalPartsEditor
     {
         final int row = table.getSelectedRow();
         final LogicalPart log = model.get(row);
-        final LogicalPart dup = new LogicalPart(0, log.getStaffCount(), log.getLineCounts());
+        final LogicalPart dup = new LogicalPart(0, log.getStaffCount(), log.getStaffConfigs());
         model.add(row + 1, dup);
 
         table.getSelectionModel().setSelectionInterval(row + 1, row + 1);
@@ -656,7 +657,7 @@ public class LogicalPartsEditor
     /** Sequence and description of columns. */
     private static enum Header
     {
-        Counts(20),
+        Configs(25),
         Name(80),
         Abbrev(30),
         Midi(20);
@@ -785,7 +786,7 @@ public class LogicalPartsEditor
             final Header header = Header.values()[col];
 
             return switch (header) {
-            case Counts -> IntUtil.toCsvString(logical.getLineCounts());
+            case Configs -> StaffConfig.toCsvString(logical.getStaffConfigs());
             case Name -> logical.getName();
             case Abbrev -> logical.getAbbreviation();
             case Midi -> logical.getMidiProgram();
@@ -856,32 +857,33 @@ public class LogicalPartsEditor
                     }
                 }
             }
-            case Counts ->
+            case Configs ->
             {
                 final String str = (String) value;
                 final String[] tokens = str.split("\\s*,\\s*");
-                final List<Integer> newCounts = new ArrayList<>();
+                final List<StaffConfig> newConfigs = new ArrayList<>();
                 boolean ok = true;
 
                 for (String rawToken : tokens) {
                     final String token = rawToken.trim();
 
                     if (token.isEmpty()) {
-                        logger.warn("Illegal counts: '{}'", str);
+                        logger.warn("Illegal staff config: '{}'", str);
                         ok = false;
                         break;
                     } else {
                         try {
-                            final int count = Integer.decode(token);
+                            final StaffConfig config = StaffConfig.decode(token);
+                            final int count = config.count;
                             if (count < 1 || count > constants.maxLineCount.getValue()) {
                                 logger.warn("Illegal count value: '{}'", count);
                                 ok = false;
                                 break;
                             }
 
-                            newCounts.add(count);
-                        } catch (NumberFormatException ex) {
-                            logger.warn("Illegal count value: '{}'", token);
+                            newConfigs.add(config);
+                        } catch (Exception ex) {
+                            logger.warn("Illegal config: '{}'", token);
                             ok = false;
                             break;
                         }
@@ -889,7 +891,7 @@ public class LogicalPartsEditor
                 }
 
                 if (ok) {
-                    logical.setLineCounts(newCounts);
+                    logical.setStaffConfigs(newConfigs);
                 }
             }
             default ->
