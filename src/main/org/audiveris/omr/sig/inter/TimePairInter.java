@@ -112,6 +112,17 @@ public class TimePairInter
         EnsembleHelper.addMember(this, member);
     }
 
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        setAbnormal(getMembers().size() != 2);
+
+        return isAbnormal();
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -276,7 +287,8 @@ public class TimePairInter
         bounds = null;
         timeRational = null;
 
-        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
+        checkAbnormal();
+        setGrade(isAbnormal() ? 0 : EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //--------------//

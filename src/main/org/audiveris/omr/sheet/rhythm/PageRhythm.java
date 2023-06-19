@@ -153,9 +153,12 @@ public class PageRhythm
 
                     for (Inter inter : stackTimes) {
                         AbstractTimeInter ts = (AbstractTimeInter) inter;
-                        stack.addTimeSignature(ts);
                         systemTimes.remove(ts);
-                        found = true;
+
+                        if (ts.getTimeRational() != null) {
+                            stack.addTimeSignature(ts);
+                            found = true;
+                        }
                     }
 
                     if (found) {
