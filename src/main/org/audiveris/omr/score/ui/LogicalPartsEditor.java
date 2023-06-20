@@ -93,7 +93,6 @@ import javax.swing.table.TableModel;
 public class LogicalPartsEditor
         extends AbstractBean
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
@@ -109,8 +108,9 @@ public class LogicalPartsEditor
     private static final Map<Header, ColumnInfo> infos = new EnumMap<>(Header.class);
 
     static {
-        for (Header header : Header.values())
+        for (Header header : Header.values()) {
             infos.put(header, new ColumnInfo(header));
+        }
     }
 
     /** Name of property linked to one logical selected. */
@@ -654,10 +654,13 @@ public class LogicalPartsEditor
                 "Maximum staff line count");
     }
 
+    //--------//
+    // Header //
+    //--------//
     /** Sequence and description of columns. */
     private static enum Header
     {
-        Configs(25),
+        Staves(25),
         Name(80),
         Abbrev(30),
         Midi(20);
@@ -741,8 +744,9 @@ public class LogicalPartsEditor
         public LogicalPart getById (int id)
         {
             for (LogicalPart log : logicals) {
-                if (log.getId() == id)
+                if (log.getId() == id) {
                     return log;
+                }
             }
 
             return null;
@@ -786,7 +790,7 @@ public class LogicalPartsEditor
             final Header header = Header.values()[col];
 
             return switch (header) {
-            case Configs -> StaffConfig.toCsvString(logical.getStaffConfigs());
+            case Staves -> StaffConfig.toCsvString(logical.getStaffConfigs());
             case Name -> logical.getName();
             case Abbrev -> logical.getAbbreviation();
             case Midi -> logical.getMidiProgram();
@@ -848,16 +852,17 @@ public class LogicalPartsEditor
                 } else {
                     try {
                         final int midi = Integer.decode(newMidi);
-                        if (midi < 1 || midi > constants.maxMidi.getValue())
+                        if (midi < 1 || midi > constants.maxMidi.getValue()) {
                             logger.warn("Illegal midi value: {}", midi);
-                        else
+                        } else {
                             logical.setMidiProgram(midi);
+                        }
                     } catch (NumberFormatException ex) {
                         logger.warn("Illegal midi value: '{}'", newMidi);
                     }
                 }
             }
-            case Configs ->
+            case Staves ->
             {
                 final String str = (String) value;
                 final String[] tokens = str.split("\\s*,\\s*");

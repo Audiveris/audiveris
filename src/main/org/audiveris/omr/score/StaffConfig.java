@@ -23,7 +23,9 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.util.Jaxb;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -37,7 +39,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
-
 @XmlAccessorType(value = XmlAccessType.NONE)
 public class StaffConfig
 {
@@ -69,6 +70,9 @@ public class StaffConfig
 
     //~ Methods ------------------------------------------------------------------------------------
 
+    //--------//
+    // equals //
+    //--------//
     @Override
     public boolean equals (Object obj)
     {
@@ -78,6 +82,9 @@ public class StaffConfig
         return false;
     }
 
+    //----------//
+    // hashCode //
+    //----------//
     @Override
     public int hashCode ()
     {
@@ -87,6 +94,9 @@ public class StaffConfig
         return hash;
     }
 
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
@@ -95,6 +105,15 @@ public class StaffConfig
 
     //~ Static Methods -----------------------------------------------------------------------------
 
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode one staff configuration, like "5s".
+     *
+     * @param str the single string value
+     * @return the decoded StaffConfig if successful
+     */
     public static StaffConfig decode (String str)
     {
         boolean isSmall = false;
@@ -108,11 +127,43 @@ public class StaffConfig
         return new StaffConfig(count, isSmall);
     }
 
+    //-----------//
+    // decodeCsv //
+    //-----------//
+    /**
+     * Decode a comma-separated sequence of staff configurations, like "5s, 1".
+     *
+     * @param csv the whole string value
+     * @return the list of decoded StaffConfig's if successful
+     */
+    public static List<StaffConfig> decodeCsv (String csv)
+    {
+        final List<StaffConfig> configs = new ArrayList<>();
+        final String[] tokens = csv.split("\\s*,\\s*");
+
+        for (String token : tokens) {
+            final String trimmedToken = token.trim();
+
+            if (!trimmedToken.isEmpty()) {
+                final StaffConfig config = decode(trimmedToken);
+
+                if (config != null) {
+                    configs.add(config);
+                }
+            }
+        }
+
+        return configs;
+    }
+
+    //-------------//
+    // toCsvString //
+    //-------------//
     /**
      * Report a string formatted as comma-separated values from the provided collection.
      *
-     * @param collection provided collection of StaffConfig
-     * @return the CSV string
+     * @param collection provided collection of StaffConfig's
+     * @return the resulting CSV string
      */
     public static String toCsvString (Collection<StaffConfig> collection)
     {
@@ -121,8 +172,4 @@ public class StaffConfig
                         .map(sc -> (sc == null) ? "null" : sc.toString()) //
                         .collect(Collectors.joining(","))).toString();
     }
-
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

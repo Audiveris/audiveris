@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.SheetStub;
 
 import org.slf4j.Logger;
@@ -40,13 +42,19 @@ import java.util.Set;
  * The strategy used to build LogicalPart's out of PartRef's is based on the following assumptions:
  * <ul>
  * <li>For a part of a system to be combined to a part of another system, they must exhibit the
- * same count of staves and the same count of lines in corresponding staves</li>
+ * same staves physical configuration:
+ * <ol>
+ * <li>Same count of staves
+ * <li>Same count of lines in corresponding staves
+ * <li>Same small attribute if any in corresponding staves
+ * </ol>
  * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
  * partA followed by partB in a system, and partB followed by partA in another system.</li>
- * <li>A part with 2 staves, if any, is used as a pivot to align collations.</li>
+ * <li>A part with 2 standard staves, likely to be the piano part if any, is used as a pivot to
+ * align collations.</li>
  * <li>Otherwise, since additional parts appear at the top of a system, rather than at the bottom,
  * we process part collation bottom up.</li>
- * <li>When possible, we use the part names (or abbreviations) to help the collation algorithm,
+ * <li>When available, we use the part names (or abbreviations) to help the collation algorithm,
  * but this is questionable for lack of OCR reliability on part names and abbreviations.
  * </ul>
  *
@@ -56,7 +64,12 @@ public class PartCollation
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(PartCollation.class);
+
+    public static final List<StaffConfig> PIANO_CONFIG = StaffConfig.decodeCsv(
+            constants.pianoStaffConfig.getValue());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -171,7 +184,7 @@ public class PartCollation
      */
     private void collate (List<List<PartRef>> sequences)
     {
-        // Two-staff record found, if any
+        // Piano-like part record found, if any
         Record biRecord = null;
 
         // Process each sequence of candidate parts in turn
@@ -361,14 +374,17 @@ public class PartCollation
     // getBiRecord //
     //-------------//
     /**
-     * Report the (first) record, if any, with 2 staves among the current sequence of records.
+     * Report the (first) record, if any, among the current sequence of records, which could
+     * be the piano part.
      *
-     * @return the 2-staff record found or null
+     * @return the 2-staff piano record found or null
      */
     private Record getBiRecord ()
     {
         for (Record record : records) {
-            if (record.logical.getStaffConfigs().size() == 2) {
+            final List<StaffConfig> configs = record.logical.getStaffConfigs();
+
+            if (Objects.deepEquals(configs, PIANO_CONFIG)) {
                 return record;
             }
         }
@@ -388,8 +404,9 @@ public class PartCollation
     private Record getRecord (int logicalId)
     {
         for (Record record : records) {
-            if (record.logical.getId() == logicalId)
+            if (record.logical.getId() == logicalId) {
                 return record;
+            }
         }
 
         logger.warn("Cannot find logical for id {}", logicalId);
@@ -426,6 +443,18 @@ public class PartCollation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.String pianoStaffConfig = new Constant.String(
+                "5,5",
+                "Typical staff configuration for the piano part");
+    }
 
     //--------//
     // Record //
