@@ -90,15 +90,6 @@ public class TimeNumberInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //-----------//
     // getEditor //
     //-----------//

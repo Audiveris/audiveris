@@ -165,15 +165,6 @@ public abstract class AbstractVerticalInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //----------------//
     // afterUnmarshal //
     //----------------//

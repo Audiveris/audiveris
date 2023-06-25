@@ -69,15 +69,6 @@ public class FingeringInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //-----------------//
     // getSymbolString //
     //-----------------//

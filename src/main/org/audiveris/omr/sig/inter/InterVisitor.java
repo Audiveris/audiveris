@@ -24,9 +24,9 @@ package org.audiveris.omr.sig.inter;
 /**
  * Interface <code>InterVisitor</code> is used to visit any instance of shape interpretation.
  * <p>
- * Methods are listed by class alphabetic order for easier manual browsing.
- * <p>
  * Implementation root {@link AbstractInterVisitor} implements some default re-directions.
+ * <p>
+ * Methods are listed by class alphabetical order for easier manual browsing.
  *
  * @author Hervé Bitteur
  */
@@ -46,8 +46,6 @@ public interface InterVisitor
 
     void visit (ArpeggiatoInter inter);
 
-    void visit (ArticulationInter inter);
-
     void visit (AugmentationDotInter inter);
 
     void visit (BarConnectorInter inter);
@@ -56,43 +54,17 @@ public interface InterVisitor
 
     void visit (BeamGroupInter inter);
 
-    void visit (BeamHookInter inter);
-
-    void visit (BeamInter inter);
-
     void visit (BraceInter inter);
 
     void visit (BracketConnectorInter inter);
 
     void visit (BracketInter inter);
 
-    void visit (BreathMarkInter inter);
-
-    void visit (CaesuraInter inter);
-
-    void visit (ChordNameInter inter);
-
     void visit (ClefInter inter);
-
-    void visit (DynamicsInter inter);
 
     void visit (EndingInter inter);
 
-    void visit (FermataArcInter inter);
-
-    void visit (FermataDotInter inter);
-
-    void visit (FermataInter inter);
-
-    void visit (FingeringInter inter);
-
-    void visit (FlagInter inter);
-
-    void visit (FretInter inter);
-
     void visit (GraceChordInter inter);
-
-    void visit (HeadChordInter inter);
 
     void visit (HeadInter inter);
 
@@ -104,39 +76,15 @@ public interface InterVisitor
 
     void visit (LedgerInter inter);
 
-    void visit (LyricItemInter inter);
-
-    void visit (LyricLineInter inter);
-
-    void visit (MarkerInter inter);
-
     void visit (MultipleRestInter inter);
 
     void visit (OctaveShiftInter inter);
 
-    void visit (OrnamentInter inter);
-
-    void visit (PedalInter inter);
-
-    void visit (PluckingInter inter);
-
-    void visit (RepeatDotInter inter);
-
-    void visit (RestChordInter inter);
-
     void visit (RestInter inter);
-
-    void visit (SegmentInter inter);
 
     void visit (SentenceInter inter);
 
     void visit (SlurInter inter);
-
-    void visit (SmallBeamInter inter);
-
-    void visit (SmallChordInter inter);
-
-    void visit (SmallFlagInter inter);
 
     void visit (StaffBarlineInter inter);
 
@@ -147,10 +95,6 @@ public interface InterVisitor
     void visit (TimePairInter inter);
 
     void visit (TimeWholeInter inter);
-
-    void visit (TremoloInter inter);
-
-    void visit (TupletInter inter);
 
     void visit (VerticalSerifInter inter);
 
