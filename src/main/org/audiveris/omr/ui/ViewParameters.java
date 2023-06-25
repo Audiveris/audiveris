@@ -299,9 +299,9 @@ public class ViewParameters
         return staffPeakPainting;
     }
 
-    //----------------------//
+    //-----------------------//
     // isStaffPointsPainting //
-    //----------------------//
+    //-----------------------//
     public boolean isStaffPointsPainting ()
     {
         return staffPointsPainting;

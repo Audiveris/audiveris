@@ -22,10 +22,10 @@
 package org.audiveris.omr.sig.inter;
 
 /**
- * Class <code>AbstractInterVisitor</code> is a void implementation for {@link InterVisitor}
- * meant to ease the coding of concrete sub-classes.
+ * Class <code>AbstractInterVisitor</code> is a nearly void implementation of
+ * {@link InterVisitor}, meant to ease the coding of concrete sub-classes.
  * <p>
- * For easier browsing, keep visit() methods sorted by alphabetical order of Inter class.
+ * Some default re-directions are implemented here.
  *
  * @author Hervé Bitteur
  */
@@ -57,7 +57,7 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (AlterInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
@@ -68,13 +68,13 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (ArticulationInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (AugmentationDotInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
@@ -95,13 +95,13 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (BeamHookInter inter)
     {
-        visit((AbstractBeamInter) inter); // Redirection by default
+        visit((AbstractBeamInter) inter);
     }
 
     @Override
     public void visit (BeamInter inter)
     {
-        visit((AbstractBeamInter) inter); // Redirection by default
+        visit((AbstractBeamInter) inter);
     }
 
     @Override
@@ -122,19 +122,19 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (BreathMarkInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (CaesuraInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (ChordNameInter inter)
     {
-        visit((WordInter) inter); // Redirection by default
+        visit((WordInter) inter);
     }
 
     @Override
@@ -145,7 +145,7 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (DynamicsInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
@@ -156,49 +156,49 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (FermataArcInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (FermataDotInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (FermataInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (FingeringInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (FlagInter inter)
     {
-        visit((AbstractFlagInter) inter); // Redirection by default
+        visit((AbstractFlagInter) inter);
     }
 
     @Override
     public void visit (FretInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (GraceChordInter inter)
     {
-        visit((AbstractChordInter) inter); // Redirection by default
+        visit((AbstractChordInter) inter);
     }
 
     @Override
     public void visit (HeadChordInter inter)
     {
-        visit((AbstractChordInter) inter); // Redirection by default
+        visit((AbstractChordInter) inter);
     }
 
     @Override
@@ -229,19 +229,19 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (LyricItemInter inter)
     {
-        visit((WordInter) inter); // Redirection by default
+        visit((WordInter) inter);
     }
 
     @Override
     public void visit (LyricLineInter inter)
     {
-        visit((SentenceInter) inter); // Redirection by default
+        visit((SentenceInter) inter);
     }
 
     @Override
     public void visit (MarkerInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
@@ -257,43 +257,43 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (OrnamentInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (PedalInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (PluckingInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (RepeatDotInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (RestChordInter inter)
     {
-        visit((AbstractChordInter) inter); // Redirection by default
+        visit((AbstractChordInter) inter);
     }
 
     @Override
     public void visit (RestInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (SegmentInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
@@ -309,19 +309,19 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (SmallBeamInter inter)
     {
-        visit((AbstractBeamInter) inter); // Redirection by default
+        visit((AbstractBeamInter) inter);
     }
 
     @Override
     public void visit (SmallChordInter inter)
     {
-        visit((AbstractChordInter) inter); // Redirection by default
+        visit((AbstractChordInter) inter);
     }
 
     @Override
     public void visit (SmallFlagInter inter)
     {
-        visit((AbstractFlagInter) inter); // Redirection by default
+        visit((AbstractFlagInter) inter);
     }
 
     @Override
@@ -352,13 +352,13 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (TremoloInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override
     public void visit (TupletInter inter)
     {
-        visit((Inter) inter); // Redirection by default
+        visit((Inter) inter);
     }
 
     @Override

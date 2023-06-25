@@ -112,7 +112,6 @@ public class TesseractOCR
     private Path findOcrFolder ()
     {
         // First, try to use TESSDATA_PREFIX environment variable
-        // which might denote a Tesseract installation
         final String tessPrefix = System.getenv(TESSDATA_PREFIX);
         logger.info("{} value: {}", TESSDATA_PREFIX, tessPrefix);
 
@@ -124,31 +123,27 @@ public class TesseractOCR
             }
         }
 
+        // Second, scan OS typical TESSDATA locations
         if (WellKnowns.WINDOWS) {
-            // Fallback to default directory on Windows
-            final String pf32 = WellKnowns.OS_ARCH.equals("x86") ? "ProgramFiles"
-                    : "ProgramFiles(x86)";
-
-            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
+            return scanOcrLocations(new String[]
+            {
+                    Paths.get(System.getenv("ProgramFiles")).resolve("tesseract-ocr").toString(),
+                    Paths.get(System.getenv("ProgramFiles(x86)")).resolve("tesseract-ocr")
+                            .toString() //
+            });
         } else if (WellKnowns.LINUX) {
-            // Scan common Linux TESSDATA locations
-            final String[] linuxOcrLocations =
+            return scanOcrLocations(new String[]
             {
                     "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
                     "/usr/share", // OpenSUSE
                     "/usr/share/tesseract" // Fedora
-            };
-
-            return scanOcrLocations(linuxOcrLocations);
+            });
         } else if (WellKnowns.MAC_OS_X) {
-            // Scan common Macintosh TESSDATA locations
-            final String[] macOcrLocations =
+            return scanOcrLocations(new String[]
             {
                     "/opt/local/share", // Macports
                     "/usr/local/opt/tesseract/share" // Homebrew
-            };
-
-            return scanOcrLocations(macOcrLocations);
+            });
         }
 
         logger.warn(ocrNotFoundMsg);
@@ -337,7 +332,7 @@ public class TesseractOCR
      * @param locations the locations to scan
      * @return the first suitable location or null
      */
-    private Path scanOcrLocations (String[] locations)
+    private Path scanOcrLocations (String... locations)
     {
         for (String loc : locations) {
             final Path path = Paths.get(loc).resolve(TESSDATA);

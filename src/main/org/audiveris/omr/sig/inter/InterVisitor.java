@@ -24,7 +24,9 @@ package org.audiveris.omr.sig.inter;
 /**
  * Interface <code>InterVisitor</code> is used to visit any instance of shape interpretation.
  * <p>
- * Listed by alphabetic order for easier manual browsing.
+ * Methods are listed by class alphabetic order for easier manual browsing.
+ * <p>
+ * Implementation root {@link AbstractInterVisitor} implements some default re-directions.
  *
  * @author Hervé Bitteur
  */
@@ -32,13 +34,13 @@ public interface InterVisitor
 {
     //~ Methods ------------------------------------------------------------------------------------
 
-    void visit (AbstractBeamInter inter); // BeamHook, Beam, SmallBeam
+    void visit (AbstractBeamInter inter);
 
-    void visit (AbstractChordInter inter); // HeadChord, SmallChord, RestChord
+    void visit (AbstractChordInter inter);
 
-    void visit (AbstractFlagInter inter); // Flag, SmallFlag
+    void visit (AbstractFlagInter inter);
 
-    void visit (AbstractNumberInter inter); // Measure count, time number
+    void visit (AbstractNumberInter inter);
 
     void visit (AlterInter inter);
 
@@ -94,10 +96,7 @@ public interface InterVisitor
 
     void visit (HeadInter inter);
 
-    void visit (Inter inter); // Pedal, Rest, Alter, RepeatDot, Articulation
-    // AugmentationDot, BreathMark, Caesura, Dynamics
-    // FermataArc, FermataDot, Fermata, Fingering, Fret, Marker, Ornament, Plucking, Segment
-    // Tuplet
+    void visit (Inter inter);
 
     void visit (KeyAlterInter inter);
 
@@ -129,7 +128,7 @@ public interface InterVisitor
 
     void visit (SegmentInter inter);
 
-    void visit (SentenceInter inter); // Sentence, LyricLine
+    void visit (SentenceInter inter);
 
     void visit (SlurInter inter);
 
@@ -157,5 +156,5 @@ public interface InterVisitor
 
     void visit (WedgeInter inter);
 
-    void visit (WordInter inter); // Word, ChordName, LyricItem
+    void visit (WordInter inter);
 }

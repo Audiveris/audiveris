@@ -49,6 +49,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.file.Path;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -158,12 +159,12 @@ public class AboutAction
             // Content on right
             topic.comp.setName(topic + "TextField");
 
-            if (topic.comp instanceof JTextComponent) {
-                ((JTextComponent) topic.comp).setEditable(false);
+            if (topic.comp instanceof JTextComponent jTextComponent) {
+                jTextComponent.setEditable(false);
             }
 
-            if (topic.comp instanceof JEditorPane) {
-                ((JEditorPane) topic.comp).addHyperlinkListener(linkListener);
+            if (topic.comp instanceof JEditorPane jEditorPane) {
+                jEditorPane.addHyperlinkListener(linkListener);
             } else {
                 topic.comp.setFocusable(false);
             }
@@ -191,7 +192,11 @@ public class AboutAction
 
         ((JLabel) Topic.license.comp).setText("GNU Affero GPL v3");
 
-        ((JLabel) Topic.ocr.comp).setText(TesseractOCR.getInstance().identify());
+        final TesseractOCR tesseract = TesseractOCR.getInstance();
+        ((JLabel) Topic.ocr.comp).setText(tesseract.identify());
+
+        final Path ocrFolder = tesseract.getOcrFolder();
+        ((JLabel) Topic.ocrFolder.comp).setText(ocrFolder != null ? ocrFolder.toString() : "null");
 
         ((JLabel) Topic.javaVendor.comp).setText(System.getProperty("java.vendor"));
 
@@ -254,7 +259,8 @@ public class AboutAction
             setLayout(null);
         }
 
-        ImagePanel (URI uri) throws MalformedURLException
+        ImagePanel (URI uri)
+                throws MalformedURLException
         {
             this(new ImageIcon(uri.toURL()).getImage());
         }
@@ -287,6 +293,8 @@ public class AboutAction
         license(new JLabel()),
         /** OCR version */
         ocr(new JLabel()),
+        /** OCR version */
+        ocrFolder(new JLabel()),
         /** Java vendor */
         javaVendor(new JLabel()),
         /** Java version */

@@ -1086,6 +1086,7 @@ public class OctaveShiftInter
          * @param inter provided inter
          * @return true if provided inter is involved in 'seq'
          */
+        @Override
         public boolean concerns (Inter inter)
         {
             return seq.contains(inter);

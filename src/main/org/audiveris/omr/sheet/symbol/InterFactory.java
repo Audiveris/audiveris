@@ -1078,7 +1078,7 @@ public class InterFactory
         // Wedges
         case CRESCENDO:
         case DIMINUENDO:
-            return new WedgeInter(null, shape, GRADE); // ?
+            return new WedgeInter(null, shape, GRADE);
 
         // Graces
         case GRACE_NOTE:

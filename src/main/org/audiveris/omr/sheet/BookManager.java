@@ -489,16 +489,13 @@ public class BookManager
             return book.getBookPath().getParent();
         }
 
-        // @formatter:off
-        final Path bookFolder =
-                Main.getCli().getOutputFolder() != null
-                ? Main.getCli().getOutputFolder()
-                : constants.useInputBookFolder.isSet()
-                    ? book.getInputPath().getParent()
-                    : (useSeparateBookFolders().isSet()
-                        ? getBaseFolder().resolve(book.getRadix())
-                        : getBaseFolder());
-        // @formatter:off
+        final Path bookFolder = Main.getCli().getOutputFolder() != null //
+                ? Main.getCli().getOutputFolder() //
+                : constants.useInputBookFolder.isSet() //
+                        ? book.getInputPath().getParent() //
+                        : (useSeparateBookFolders().isSet() //
+                                ? getBaseFolder().resolve(book.getRadix()) //
+                                : getBaseFolder());
 
         try {
             if (!Files.exists(bookFolder)) {
