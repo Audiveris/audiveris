@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
-
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
+import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
 
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
@@ -83,8 +85,18 @@ public class TextSymbol
     {
         MyParams p = new MyParams();
 
+        // Workaround to retrieve sheet text family
+        final StubsController controller = StubsController.getInstance();
+        final SheetStub stub = controller.getSelectedStub();
+        final TextFamily textFamily = stub.getTextFamily();
+
         final int fontSize = (int) Math.rint(font.getSize2D() * RATIO_TINY);
-        final TextFont textFont = new TextFont(fontSize);
+        final TextFont textFont = new TextFont(
+                textFamily.getFontName(),
+                null,
+                Font.PLAIN,
+                fontSize);
+
         p.layout = textFont.layout(str);
         p.rect = p.layout.getBounds();
 
