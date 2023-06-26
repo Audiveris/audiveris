@@ -122,8 +122,10 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.HeadFingeringRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadPlayingRelation;
+import org.audiveris.omr.sig.relation.HeadPluckingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
@@ -425,8 +427,10 @@ public class SigValue
                 @XmlElementRef(type = FermataBarRelation.class),
                 @XmlElementRef(type = FermataChordRelation.class),
                 @XmlElementRef(type = FlagStemRelation.class),
+                @XmlElementRef(type = HeadFingeringRelation.class),
                 @XmlElementRef(type = HeadHeadRelation.class),
                 @XmlElementRef(type = HeadPlayingRelation.class),
+                @XmlElementRef(type = HeadPluckingRelation.class),
                 @XmlElementRef(type = HeadStemRelation.class),
                 @XmlElementRef(type = KeyAltersRelation.class),
                 @XmlElementRef(type = MarkerBarRelation.class),

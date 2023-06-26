@@ -60,6 +60,7 @@ import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
+import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -72,6 +73,7 @@ import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
+import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -131,6 +133,7 @@ import org.audiveris.proxymusic.Empty;
 import org.audiveris.proxymusic.Encoding;
 import org.audiveris.proxymusic.Ending;
 import org.audiveris.proxymusic.Fermata;
+import org.audiveris.proxymusic.Fingering;
 import org.audiveris.proxymusic.FontStyle;
 import org.audiveris.proxymusic.FontWeight;
 import org.audiveris.proxymusic.FormattedText;
@@ -169,6 +172,7 @@ import org.audiveris.proxymusic.PartName;
 import org.audiveris.proxymusic.Pedal;
 import org.audiveris.proxymusic.PedalType;
 import org.audiveris.proxymusic.Pitch;
+import org.audiveris.proxymusic.PlacementText;
 import org.audiveris.proxymusic.Print;
 import org.audiveris.proxymusic.Repeat;
 import org.audiveris.proxymusic.Rest;
@@ -193,6 +197,7 @@ import org.audiveris.proxymusic.Step;
 import org.audiveris.proxymusic.Supports;
 import org.audiveris.proxymusic.SystemLayout;
 import org.audiveris.proxymusic.SystemMargins;
+import org.audiveris.proxymusic.Technical;
 import org.audiveris.proxymusic.TextElementData;
 import org.audiveris.proxymusic.Tie;
 import org.audiveris.proxymusic.Tied;
@@ -847,6 +852,30 @@ public class PartwiseBuilder
         getNotations().getTiedOrSlurOrTuplet().add(ornaments);
 
         return ornaments;
+    }
+
+    //--------------//
+    // getTechnical //
+    //--------------//
+    /**
+     * Report (after creating it if necessary) the technical element in the notations
+     * element of the current note.
+     *
+     * @return the note notations technical element
+     */
+    private Technical getTechnical ()
+    {
+        for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Technical technical) {
+                return technical;
+            }
+        }
+
+        // Need to allocate technical
+        Technical technical = factory.createTechnical();
+        getNotations().getTiedOrSlurOrTuplet().add(technical);
+
+        return technical;
     }
 
     //---------------//
@@ -2484,6 +2513,34 @@ public class PartwiseBuilder
                     }
 
                     current.pmNote.getBeam().add(pmBeam);
+                }
+
+                // Fingering?
+                final FingeringInter fingering = head.getFingering();
+                if (fingering != null) {
+                    final Fingering pmFingering = factory.createFingering();
+                    pmFingering.setValue(fingering.getSymbolString());
+                    pmFingering.setPlacement(
+                            fingering.getCenter().y < head.getCenter().y ? AboveBelow.ABOVE
+                                    : AboveBelow.BELOW);
+                    pmFingering.setDefaultY(yOf(fingering.getCenter(), staff));
+
+                    getTechnical().getUpBowOrDownBowOrHarmonic().add(
+                            factory.createTechnicalFingering(pmFingering));
+                }
+
+                // Plucking?
+                final PluckingInter plucking = head.getPlucking();
+                if (plucking != null) {
+                    final PlacementText placement = factory.createPlacementText();
+                    placement.setValue(plucking.getSymbolString());
+                    placement.setPlacement(
+                            plucking.getCenter().y < head.getCenter().y ? AboveBelow.ABOVE
+                                    : AboveBelow.BELOW);
+                    placement.setDefaultY(yOf(plucking.getCenter(), staff));
+
+                    getTechnical().getUpBowOrDownBowOrHarmonic().add(
+                            factory.createTechnicalPluck(placement));
                 }
             }
 

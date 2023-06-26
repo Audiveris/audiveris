@@ -491,20 +491,26 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(ProcessingSwitch.fingerings) ? new FingeringInter(
+            // Check potential link with proper note head
+            return switches.getValue(ProcessingSwitch.fingerings) ? FingeringInter.createValidAdded(
                     glyph,
                     shape,
-                    grade) : null;
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(ProcessingSwitch.pluckings) ? new PluckingInter(
+            // Check potential link with proper note head
+            return switches.getValue(ProcessingSwitch.pluckings) ? PluckingInter.createValidAdded(
                     glyph,
                     shape,
-                    grade) : null;
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Romans
         case ROMAN_I:

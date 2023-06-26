@@ -37,6 +37,7 @@ import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
+import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.GraceChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
@@ -45,14 +46,15 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
+import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -163,7 +165,9 @@ public abstract class Relations
         map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
         map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);
 
+        map(HeadInter.class, HeadFingeringRelation.class, FingeringInter.class);
         map(HeadInter.class, HeadPlayingRelation.class, PlayingInter.class);
+        map(HeadInter.class, HeadPluckingRelation.class, PluckingInter.class);
         map(HeadInter.class, HeadStemRelation.class, StemInter.class);
 
         map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class); // Old

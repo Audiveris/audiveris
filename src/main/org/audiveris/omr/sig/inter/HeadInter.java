@@ -47,7 +47,9 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.HeadFingeringRelation;
 import org.audiveris.omr.sig.relation.HeadPlayingRelation;
+import org.audiveris.omr.sig.relation.HeadPluckingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -449,6 +451,23 @@ public class HeadInter
         return new Editor(this);
     }
 
+    //--------------//
+    // getFingering //
+    //--------------//
+    /**
+     * Report the fingering, if any, related to this head.
+     *
+     * @return the related fingering, or null
+     */
+    public FingeringInter getFingering ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadFingeringRelation.class)) {
+            return (FingeringInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
     //-----------//
     // getLinker //
     //-----------//
@@ -558,6 +577,23 @@ public class HeadInter
     {
         for (Relation rel : sig.getRelations(this, HeadPlayingRelation.class)) {
             return (PlayingInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getPlucking //
+    //-------------//
+    /**
+     * Report the plucking, if any, related to this head.
+     *
+     * @return the related plucking, or null
+     */
+    public PluckingInter getPlucking ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadPluckingRelation.class)) {
+            return (PluckingInter) sig.getOppositeInter(this, rel);
         }
 
         return null;

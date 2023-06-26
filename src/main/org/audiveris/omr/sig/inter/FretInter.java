@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.Shape;
 import java.util.Comparator;
 
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -45,15 +46,13 @@ public class FretInter
      * For comparing FretInter instances by their decreasing length.
      */
     public static final Comparator<FretInter> byDecreasingLength = (f1,
-                                                                    f2) -> Integer.compare(
-                                                                            f2.getSymbolString()
-                                                                                    .length(),
-                                                                            f1.getSymbolString()
-                                                                                    .length());
+                                                                    f2) //
+    -> Integer.compare(f2.getSymbolString().length(), f1.getSymbolString().length());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Fret value. */
+    @XmlAttribute
     private Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
