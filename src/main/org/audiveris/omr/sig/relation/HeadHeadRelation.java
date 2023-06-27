@@ -95,9 +95,8 @@ public class HeadHeadRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                1,
+                0.75,
                 "Value for (source or target) head coeff in head-head support formula");
     }
 }
