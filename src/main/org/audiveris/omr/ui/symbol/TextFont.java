@@ -214,6 +214,22 @@ public class TextFont
         return new TextFont(font);
     }
 
+    //-------------------//
+    // getBaseFontBySize //
+    //-------------------//
+    /**
+     * Report the (perhaps cached) text font based on chosen family and point size.
+     *
+     * @param family    chosen family font
+     * @param pointSize desired font point size
+     * @return proper scaled music font
+     */
+    public static TextFont getBaseFontBySize (TextFamily family,
+                                              int pointSize)
+    {
+        return getTextFont(family, pointSize);
+    }
+
     //-------------//
     // getTextFont //
     //-------------//

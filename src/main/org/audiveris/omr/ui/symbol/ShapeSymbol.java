@@ -22,16 +22,15 @@
 package org.audiveris.omr.ui.symbol;
 
 import static org.audiveris.omr.classifier.SampleRepository.STANDARD_INTERLINE;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
-import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
+import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +125,7 @@ public class ShapeSymbol
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** MusicFont family. */
-    protected final MusicFamily family;
+    protected final MusicFamily musicFamily;
 
     /** Related shape. */
     protected final Shape shape;
@@ -157,14 +156,14 @@ public class ShapeSymbol
     /**
      * Create a standard ShapeSymbol with the provided shape and font family.
      *
-     * @param shape  the related shape
-     * @param family the MusicFont family
+     * @param shape       the related shape
+     * @param musicFamily the MusicFont family
      */
     public ShapeSymbol (Shape shape,
-                        MusicFamily family)
+                        MusicFamily musicFamily)
     {
         this.shape = shape;
-        this.family = family;
+        this.musicFamily = musicFamily;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -267,7 +266,7 @@ public class ShapeSymbol
     {
         logger.trace("computeImage for {}", this);
         final int interline = isTiny ? TINY_INTERLINE : STANDARD_INTERLINE;
-        final MusicFont font = MusicFont.getBaseFont(family, interline);
+        final MusicFont font = MusicFont.getBaseFont(musicFamily, interline);
         image = buildImage(font);
         dimension = new Dimension(image.getWidth(), image.getHeight());
     }
@@ -408,14 +407,6 @@ public class ShapeSymbol
     }
 
     //-----------//
-    // getFamily //
-    //-----------//
-    public MusicFamily getFamily ()
-    {
-        return family;
-    }
-
-    //-----------//
     // getHeight //
     //-----------//
     /**
@@ -491,6 +482,14 @@ public class ShapeSymbol
         throw new UnsupportedOperationException(); // By default
     }
 
+    //----------------//
+    // getMusicFamily //
+    //----------------//
+    public MusicFamily getMusicFamily ()
+    {
+        return musicFamily;
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -562,8 +561,7 @@ public class ShapeSymbol
     //-----------------//
     @Override
     public Object getTransferData (DataFlavor flavor)
-        throws UnsupportedFlavorException,
-        IOException
+        throws UnsupportedFlavorException, IOException
     {
         if (isDataFlavorSupported(flavor)) {
             return this;
@@ -621,7 +619,7 @@ public class ShapeSymbol
             sb.append(" TINY");
         }
 
-        sb.append(' ').append(family);
+        sb.append(' ').append(musicFamily);
 
         return sb.toString();
     }
@@ -685,8 +683,8 @@ public class ShapeSymbol
                            int x,
                            int y)
     {
-        logger.trace("ShapeSymbol.paintIcon {} family:{}", this, family);
-        final MusicFont font = MusicFont.getBaseFont(family, TINY_INTERLINE);
+        logger.trace("ShapeSymbol.paintIcon {} family:{}", this, musicFamily);
+        final MusicFont font = MusicFont.getBaseFont(musicFamily, TINY_INTERLINE);
         final Graphics2D g2 = (Graphics2D) g;
         g.setColor(logger.isDebugEnabled() ? Color.BLUE : defaultImageColor);
         paint(g2, getParams(font), new Point(x, y), Alignment.TOP_LEFT);

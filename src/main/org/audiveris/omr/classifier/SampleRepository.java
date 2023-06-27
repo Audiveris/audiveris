@@ -36,10 +36,16 @@ import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.inter.FingeringInter;
+import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFamily;
+import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.ZipFileSystem;
@@ -84,8 +90,10 @@ import javax.swing.event.ChangeListener;
  * The repository is implemented as a collection of {@link SampleSheet} instances, to ease the
  * addition or removal of sheet samples as a whole.
  * <p>
- * A special kind of samples is provided by the use of a music font with proper scaling. These
- * font-based samples, though being artificial, are considered as part of the training material.
+ * A special kind of samples is provided by the use of a music font or text font with proper
+ * scaling.
+ * These font-based samples, though being artificial, are considered as part of the training
+ * material.
  * There is at most one font-base sample in each font family for every trainable shape,
  * and these sample are always shown in first position among all samples of the same shape.
  * All these font-based samples are gathered in virtual containers, whose names start with
@@ -317,8 +325,15 @@ public class SampleRepository
     private void buildSymbols ()
     {
 
-        for (MusicFamily family : MusicFamily.values()) {
-            final String sheetName = SYMBOLS_PREFIX + family;
+        // Music symbols
+        final EnumSet<Shape> textShapes = EnumSet.noneOf(Shape.class);
+        textShapes.addAll(ShapeSet.Digits.getShapes());
+        textShapes.addAll(ShapeSet.Pluckings.getShapes());
+        textShapes.addAll(ShapeSet.Romans.getShapes());
+        textShapes.add(Shape.CLUTTER);
+
+        for (TextFamily textFamily : TextFamily.values()) {
+            final String sheetName = SYMBOLS_PREFIX + textFamily;
             Descriptor desc = sheetContainer.getDescriptor(sheetName);
 
             if (desc == null) {
@@ -328,8 +343,8 @@ public class SampleRepository
 
             final SampleSheet symbolSheet = new SampleSheet(desc);
 
-            for (Shape shape : ShapeSet.allPhysicalShapes) {
-                final Sample sample = buildSymbolSample(family, shape);
+            for (Shape shape : textShapes) {
+                final Sample sample = buildSymbolSample(textFamily, shape);
 
                 if (sample != null) {
                     symbolSheet.privateAddSample(sample);
@@ -340,6 +355,31 @@ public class SampleRepository
             nameMap.put(sheetName, symbolSheet);
         }
 
+        final EnumSet<Shape> musicShapes = EnumSet.copyOf(ShapeSet.allPhysicalShapes);
+        musicShapes.removeAll(textShapes);
+
+        for (MusicFamily musicFamily : MusicFamily.values()) {
+            final String sheetName = SYMBOLS_PREFIX + musicFamily;
+            Descriptor desc = sheetContainer.getDescriptor(sheetName);
+
+            if (desc == null) {
+                desc = new Descriptor(sheetName, null);
+                sheetContainer.addDescriptor(desc);
+            }
+
+            final SampleSheet symbolSheet = new SampleSheet(desc);
+
+            for (Shape shape : musicShapes) {
+                final Sample sample = buildSymbolSample(musicFamily, shape);
+
+                if (sample != null) {
+                    symbolSheet.privateAddSample(sample);
+                    sampleMap.put(sample, symbolSheet);
+                }
+            }
+
+            nameMap.put(sheetName, symbolSheet);
+        }
     }
 
     //-------------------//
@@ -364,6 +404,48 @@ public class SampleRepository
         if (symbol != null) {
             final MusicFont font = MusicFont.getBaseFont(family, STANDARD_INTERLINE);
             sample = SymbolSample.create(shape, symbol, font, STANDARD_INTERLINE);
+            sample.setSymbol(true);
+        } else {
+            logger.info("{} family, no artificial sample for {}", family, shape);
+        }
+
+        return sample;
+    }
+
+    //-------------------//
+    // buildSymbolSample //
+    //-------------------//
+    /**
+     * Build an artificial sample from a symbol descriptor, in order to
+     * train a classifier even when we have no concrete sample.
+     *
+     * @param family chosen music font family
+     * @param shape  the symbol shape
+     * @return the sample built, or null if failed
+     */
+    private Sample buildSymbolSample (TextFamily family,
+                                      Shape shape)
+    {
+        Sample sample = null;
+
+        // Make sure we have the drawing available for this shape
+        final String str;
+        if (ShapeSet.Digits.contains(shape))
+            str = "" + FingeringInter.valueOf(shape);
+        else if (ShapeSet.Pluckings.contains(shape))
+            str = String.valueOf(PluckingInter.valueOf(shape));
+        else if (ShapeSet.Romans.contains(shape))
+            str = FretInter.symbolStringOf(FretInter.valueOf(shape));
+        else
+            str = null;
+
+        TextSymbol textSymbol = str != null ? new TextSymbol(shape, family, str) : null;
+
+        if (textSymbol != null) {
+            final TextFont font = TextFont.getBaseFontBySize(
+                    family,
+                    MusicFont.getPointSize(STANDARD_INTERLINE));
+            sample = SymbolSample.create(shape, textSymbol, font, STANDARD_INTERLINE);
             sample.setSymbol(true);
         } else {
             logger.info("{} family, no artificial sample for {}", family, shape);
