@@ -15,18 +15,6 @@ with the current release.
 Apart from these cases, you can fill a bug report or a request for enhancement on
 [https://github.com/Audiveris/audiveris/issues](https://github.com/Audiveris/audiveris/issues).
 
-We make a distinction between different kinds of OMR limitations:
-* **Data model**: There is nothing yet in Audiveris data model to simply describe the entity at hand.  
-  This is the worst case, because the user will have to resort to some external music editor on
-  Audiveris MusicXML output to enter the missing entity from scratch.
-* **Engine**: The data model is OK, but the OMR engine is not able to automatically detect and
-  process the entity correctly.  
-  In many cases, using Audiveris editor, the user should be able to manually modify the engine
-  output and thus allow correct production of MusicXML.
-* **Edition**: The data model is OK, but the current edition tools do not provide the
-  interactive feature to perform a desired action.    
-  Use of an external music editor on Audiveris MusicXML output may bring a solution.
-
 ---
 
 Table of contents
@@ -37,12 +25,7 @@ Table of contents
 
 ---
 
-### Data model Limitations
-
-#### Fingering
-TODO: recognized, but not exported to MXL
-
-#### Natural signs in key signature
+### Natural signs in key signature
 
 ![](../assets/images/hybrid_key.png)
 
@@ -53,63 +36,12 @@ Such natural signs are just "curtesy" signs for the reader, and can be ignored b
 
 Note however that, since the current engine expects sharps-only or flats-only signatures,
 the simple presence of natural signs will likely impede correct key recognition.
-In this case, the user will have to manually enter the correct key (without the naturals).
+In this case, we will have to manually enter the correct key (without the naturals).
 
-TODO: cancel keys
+Since 5.3, we can manually insert a natural-only key signature, a kind of "cancel key".
+See this possibility detailed in [Naturals section](../ui_tools/key.md#naturals).
 
-#### One-line percussion staff
-
-![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTm2_qwosOfoqJnj2gdIEQXmcWqqpGZ_IN44K_BHKBcmT9GWkDU4w)
-
-There is no support for 1-line percussion staff.
-
-TODO: update this
-
-Current Audiveris supports only percussion clef with standard notes on 5-line staves as in
-the following example:
-
-![](https://upload.wikimedia.org/wikipedia/commons/c/c8/Drumkit_notation_drums.png)
-
-#### Ottava
-
-![](../assets/images/ottava_alta.png)
-
-Ottava signs (ottava alta and ottava bassa) are used to indicate an octave shift between what is
-written on staff and what should be played.
-
-Their scope is specified by a dash-line that starts at the ottava sign and ends with a small
-vertical leg.
-
-Although the ottava sign is properly defined and generally recognized by the current engine, there
-is yet no support for the dash-line nor the small vertical leg.
-
-#### Plucking
-TODO: recognized, but not exported to MXL
-
-#### Tablature
-
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Guitar_tablature_sample.svg/450px-Guitar_tablature_sample.svg.png)
-
-Even though they can be detected, tablatures cannot be populated, even manually.
-
-- TODO: needed book processing option
-- TODO: non-processing areas
-
-#### Tremolos
-
-![](https://easymusictheory.files.wordpress.com/2013/02/trem1.jpg?w=479)
-
-![](https://study.com/cimages/multimages/16/tremolo_two_notes.png)
-
-Audiveris supports no tremolo, whether on a single note or between two notes.
-
-#### Tuplets
-
-Tuplets other than 3 and 6 tuplets are not supported, even manually.
-
-### Engine Limitations
-
-#### Key signature change
+### Key signature change
 
 ![](../assets/images/curtesy_key.png)
 
@@ -127,12 +59,10 @@ The purpose of a curtesy measure is simply to warn the human reader that a new k
 the next system start.
 It is thus harmless for the OMR engine to ignore this warning.
 
-Apart from this curtesy case, the user will have to manually enter the missing key change on every
+Apart from this curtesy case, the user may have to manually enter the missing key change on every
 staff.
 
-TODO: check if engine does not detect key sig changes.
-
-#### Opposed Stems
+### Opposed Stems
 
 We can have two head chords with up and down stems that are located in such a way that they seem
 to be merged, as follows:
@@ -146,9 +76,24 @@ At the next reduction, this stem will be discarded, and the now isolated heads a
 
 This error can be fixed by manually inserting separate standard stems (and the related heads).
 
-### Edition Limitations
+### ChordName
 
-#### ChordName
+Recognition of chord names can still be impeded by the presence of sharp (``♯``) or flat (``♭``) 
+characters which Tesseract OCR cannot handle correctly.
 
-Need to use # and b characters in lieu of sharp and flat in chord name.
-Tesseract OCR to be trained on embedded alteration signs.
+As a workaround, we can manually replace them by number (``#``) and lowercase ``b`` characters.
+But the real solution should be brought by training Tesseract OCR on these embedded alteration
+signs.
+
+See further description in [Text Chord Name](../ui_tools/text.md#chord-name) section.
+
+### Tuplets
+
+Tuplets other than 3 and 6 tuplets are not supported, even manually.
+
+### Roman numeral
+
+This represents chords using Roman numerals.
+
+It is recognized, but not yet exported to MusicXML.
+

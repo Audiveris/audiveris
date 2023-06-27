@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Staff edition
+title: Staff Edition
 grand_parent: User Edition
 parent: UI Tools
 nav_order: 6
 ---
-## Staff edition
+## Staff Edition
 {: .no_toc }
 
 During `GRID` step, the OMR engine strives to detect sequences of equally spaced,
@@ -18,11 +18,11 @@ the underlying staff lines.
 Generally, the engine can interpolate -- or even extrapolate -- the holes found in image regions
 with such broken filaments.
 
-If the engine result is not satisfactory, you can manually correct these staves via staff
+If the engine result is not satisfactory, we can manually correct these staves via staff
 edition, which is provided in two different modes: `Global` mode and `Lines` mode.
 The former operates on the staff as a whole, the latter on any line separately.
 
-To enter staff edition, you make a right-click within a staff area, in the popup menu select the
+To enter staff edition, we make a right-click within a staff area, in the popup menu select the
 `Staff#n...` sub-menu and then either `Edit staff` or `Edit lines` item.
 
 ---
@@ -57,19 +57,20 @@ the staff line locally.
 
 In this `Lines` mode, the handles can move only vertically.
 In the case at hand, we could slightly drag some left handles up or down.
-You will notice that the pink sections disappear when they get crossed by a staff line.
+We can notice that the pink sections disappear when they get crossed by a staff line.
 
 ![](../assets/images/staff_lines_ok.png)
 
 Clicking outside of any handle completes the edition.  
-You can always undo/redo the operation.
+We can always undo/redo the operation.
 
 In short, this mode is meant to finely adjust the vertical location of any line portion.
-If you want to move the staff limits horizontally, then you need to use the `global` mode instead.
+If we want to move the staff limits horizontally, then we need to use the `global` mode instead.
 
-[NOTA: The number of handles can vary from one line to the other, as you can see on the picture.
+{: .note }
+The number of handles can vary from one line to the other, as we can see on the picture.
 This number depends on how "wavy" was the line detected by the engine.
-It has no negative impact on the edition capabilities]
+It has no negative impact on the edition capabilities.
 
 ### Global mode
 
@@ -90,7 +91,7 @@ To fix this, we enter the staff edition in `global` mode.
 
 ![](../assets/images/staff_handles.png)
 
-As opposed to the `lines` mode, we get only handles along the staff middle line.
+As opposed to the `lines` mode, we get handles only along the staff middle line.
 This is enough to move the whole staff:
 - Side handles can move vertically **and horizontally**,
 - Other handles can move only vertically.
@@ -110,7 +111,8 @@ We slightly drag down two handles, et voilà!:
 
 ![](../assets/images/staff_handles_perfect.png)
 
-A final note: Since moving a handle is often a matter of very few pixels, you may find more
+{: .highlight }
+A final remark: Since moving a handle is often a matter of very few pixels, we may find more
 convenient to move a handle via the **keyboard**:
-While keeping `Alt` key pressed, you can use the 4 arrow keys to move the selected handle
+While keeping `Alt` key pressed, we can use the 4 arrow keys to move the selected handle
 one pixel at a time in the desired direction.

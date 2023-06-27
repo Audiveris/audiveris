@@ -31,7 +31,7 @@ Table of contents
 A pink measure background is the most obvious sign, meant to call user attention on a measure,
 as in the following page view which displays two measures (#5P1 and #10P2) with a pink
 background and the others with standard white background:  
-[Unless you have disabled this feature via the menu item `View | Show score Errors`
+[Unless we have disabled this feature via the menu item `View | Show score Errors`
 or `F9` function  key or the related toolbar icon]
 
 ![](../assets/images/pink_measures.png)
@@ -70,7 +70,7 @@ measure is really suspicious (although measure is not flagged as _abnormal_).
 ### Chords IDs
 
 By default, chord IDs are not displayed in sheet view because they look too invasive.
-To set them on, use pull-down menu `View | Show chord IDs`.
+To set them on, we use pull-down menu `View | Show chord IDs`.
 
 This gives the new picture below, where it is clear that we could merge chord 3963 and chord 3964
 into a single chord:
@@ -148,7 +148,7 @@ Which looks strange.
 
 A more readable output is available, but only in ![](../assets/images/ModeCombined.png)
 combined mode.
-Simply press mouse right button and move it near a time slot,
+We simply press mouse right button and move it near a time slot,
 while staying vertically within part stave(s).
 This highlights both the designated slot and the slot-related chords as in the pictures here below:
 

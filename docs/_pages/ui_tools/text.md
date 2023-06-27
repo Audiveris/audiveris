@@ -103,7 +103,7 @@ determined by some heuristics.
 In the case of manual OCR, the `lyric` button will always result in the _lyrics_ role,
 whereas the `text` button will always result in a non _lyrics_ role.
 
-Starting with 5.2 release, in all cases, the end-user can manually modify the sentence
+Since 5.2 release, in all cases, the end-user can manually modify the sentence
 role afterwards, from any role to any other role.
 
 ### Chord Name
@@ -114,29 +114,27 @@ For example:
 `C`, `D7`, `F♯`, `B♭min`, `Em♭5`, `G6/B`, `Gdim`, `F♯m7`, `Em♭5`, `D7♯5`, `Am7♭5`,
 `A(9)`, `BMaj7/D♯`.
 
-**IMPORTANT NOTICE**:
+{: .important }
 As of this writing, Audiveris engine is not yet able to recognize chord names that include true
 sharp (``♯``) or flat (``♭``) characters.
 Perhaps one day, we will succeed in training Tesseract OCR on this text content.  
 For the time being, Audiveris is able to recognize such chord names when these characters have
-been replaced (by OCR "mistake", or by manual modification) by more "usual" characters:
-{: .nota-bg }
-* ``'#'`` (number) as replacement for ``'♯'`` (sharp),
-* ``'b'`` (lowercase b) as replacement for ``'♭'`` (flat).
-{: .nota-bg }
+been replaced (by OCR "mistake", or by manual modification) by more "usual" characters:    
+    - ``'#'`` (number) as replacement for ``'♯'`` (sharp),  
+    - ``'b'`` (lowercase b) as replacement for ``'♭'`` (flat).
 
-When you OCR a chord name word, Audiveris may be able to decode it as a chord name and thus wrap
+When we OCR a chord name word, Audiveris may be able to decode it as a chord name and thus wrap
 it within a chord name sentence.
 
-If Audiveris has failed, you can still force the chord name role (at sentence level) and
+If Audiveris has failed, we can still force the chord name role (at sentence level) and
 type in the missing `b` or `#` characters if so needed (at word level).
 The chord name will then be decoded on-the-fly with its new textual content.
 
-Note you don't have to manually enter the true sharp or flat signs.
+Note we don't have to manually enter the true sharp or flat signs.
 Entering them via their Unicode value is a bit tricky, and finally useless.    
 Instead, when a text has been recognized or assigned as a chord name, its internal `b`
 or `#` characters are automatically replaced by their true alteration signs.    
-For example, you can type "Bb" then press `Enter` and the chord name will be translated and
+For example, we can type "Bb" then press `Enter` and the chord name will be translated and
 displayed as "B♭".
 
 ### Lyric Line
@@ -152,6 +150,6 @@ When selected, the inter board displays additional data:
 
 Each syllable (lyric item) is usually linked to a related chord.
 
-If a syllable is not linked to the correct chord, you can modify this link manually by dragging
+If a syllable is not linked to the correct chord, we can modify this link manually by dragging
 from the syllable to the suitable chord.
 This will update on-the-fly the line data (voice, verse, location).

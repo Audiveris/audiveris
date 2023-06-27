@@ -45,7 +45,7 @@ sheet musical content, organized in a hierarchical structure of containers:
     - *pages*, gathered in ...
     - *scores*
 
-    Starting with 5.2 release, the user can partly modify this hierarchy, by splitting and merging systems, parts and measures.
+    Since 5.2 release, the user can partly modify this hierarchy, by splitting and merging systems, parts and measures.
 
 2.  **Inters**.
 They represent candidate interpretations, formalized by `Inter` instances, handled
@@ -54,7 +54,7 @@ Within each system SIG, it's the struggle for life, since only the strongest int
 survive in the end.   
 There is no structure within the Inter instances of a SIG, just `Relation` instances possibly set
 between a pair of Inter instances.  
-Starting with 5.2 release, all these Inter and Relation instances can be modified interactively.
+Since 5.2 release, all these Inter and Relation instances can be modified interactively.
 
     Inter objects are everything except the static containers mentioned above:   
     - Barline, ledger, clef, key signature, time signature, chord, head, alteration,
