@@ -98,6 +98,16 @@ public class FretInter
     @Override
     public String getSymbolString ()
     {
+        return symbolStringOf(value);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getSymbolString //
+    //-----------------//
+    public static String symbolStringOf (int value)
+    {
         return switch (value) {
         case 1 -> "I";
         case 2 -> "II";
@@ -115,8 +125,6 @@ public class FretInter
         default -> null;
         };
     }
-
-    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // valueOf //

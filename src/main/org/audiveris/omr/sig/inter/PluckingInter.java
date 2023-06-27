@@ -23,8 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.GeoOrder;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -37,8 +35,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -186,58 +182,17 @@ public class PluckingInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(HeadPluckingRelation.getXOutGapMaximum(profile));
-        final int maxDy = scale.toPixels(HeadPluckingRelation.getYGapMaximum(profile));
-        final Point pluckingCenter = getCenter();
-        final Rectangle luBox = new Rectangle(pluckingCenter);
-        luBox.grow(maxDx, maxDy);
-
-        final List<Inter> chords = Inters.intersectedInters(
+        final HeadInter head = TechnicalHelper.lookupHead(
+                this,
                 systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+                scale.toPixels(HeadPluckingRelation.getXOutGapMaximum(profile)),
+                scale.toPixels(HeadPluckingRelation.getYGapMaximum(profile)));
 
-        if (chords.isEmpty()) {
+        if (head == null) {
             return null;
         }
 
-        HeadChordInter bestChord = null;
-        double bestDx = Double.MAX_VALUE;
-
-        for (Inter chord : chords) {
-            Point chordCenter = chord.getCenter();
-
-            // Select closest chord abscissa-wise
-            int dx = Math.abs(chordCenter.x - pluckingCenter.x);
-            if (bestDx > dx) {
-                bestDx = dx;
-                bestChord = (HeadChordInter) chord;
-            }
-        }
-
-        if (bestChord != null) {
-            // Choose closest head in chord, using euclidean distance with head
-            final List<? extends Inter> notes = bestChord.getNotes();
-            Inter bestHead = null;
-            double bestDist = Double.MAX_VALUE;
-
-            for (Inter note : notes) {
-                final Point noteCenter = note.getCenter();
-                final Point vect = PointUtil.subtraction(noteCenter, pluckingCenter);
-                final double d2 = vect.x * vect.x + vect.y * vect.y;
-
-                if (bestDist > d2) {
-                    bestDist = d2;
-                    bestHead = note;
-                }
-            }
-
-            if (bestHead != null) {
-                return new Link(bestHead, new HeadPluckingRelation(), false);
-            }
-        }
-
-        return null;
+        return new Link(head, new HeadPluckingRelation(), false);
     }
 
     //-------------//
@@ -306,7 +261,7 @@ public class PluckingInter
     //---------//
     // valueOf //
     //---------//
-    private static char valueOf (OmrShape omrShape)
+    public static char valueOf (OmrShape omrShape)
     {
         return switch (omrShape) {
         case fingeringPLower -> 'p';
@@ -321,7 +276,7 @@ public class PluckingInter
     //---------//
     // valueOf //
     //---------//
-    private static char valueOf (Shape shape)
+    public static char valueOf (Shape shape)
     {
         return switch (shape) {
         case PLUCK_P -> 'p';

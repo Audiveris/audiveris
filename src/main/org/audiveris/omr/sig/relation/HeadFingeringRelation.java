@@ -146,14 +146,14 @@ public class HeadFingeringRelation
     {
 
         private final Constant.Ratio fingeringTargetCoeff = new Constant.Ratio(
-                0.5,
+                2.0,
                 "Supporting coeff for (target) fingering");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
-                0.5,
+                1.5,
                 "Maximum horizontal gap between fingering center & chord");
 
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(2.5, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,

@@ -147,14 +147,14 @@ public class HeadPluckingRelation
     {
 
         private final Constant.Ratio pluckingTargetCoeff = new Constant.Ratio(
-                0.5,
+                2.0,
                 "Supporting coeff for (target) plucking");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
-                0.25,
+                1.5,
                 "Maximum horizontal gap between plucking center & chord");
 
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(2.5, "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
