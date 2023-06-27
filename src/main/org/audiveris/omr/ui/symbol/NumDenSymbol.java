@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -39,77 +40,31 @@ public class NumDenSymbol
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final int[] numCodes;
+    private final int numerator;
 
-    private final int[] denCodes;
+    private final int denominator;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new NumDenSymbol object.
      *
      * @param shape       the related shape
-     * @param numerator   the numerator value (not code)
-     * @param denominator the denominator value (not code)
+     * @param family      the musicFont family
+     * @param numerator   the numerator value
+     * @param denominator the denominator value
      */
     public NumDenSymbol (Shape shape,
+                         MusicFamily family,
                          int numerator,
                          int denominator)
     {
-        this(
-                shape,
-                ShapeSymbol.numberCodes(numerator),
-                ShapeSymbol.numberCodes(denominator));
-    }
-
-    //--------------//
-    // NumDenSymbol //
-    //--------------//
-    /**
-     * Creates a new NumDenSymbol object.
-     *
-     * @param shape    the related shape
-     * @param numCodes the numerator codes
-     * @param denCodes the denominator codes
-     */
-    public NumDenSymbol (Shape shape,
-                         int[] numCodes,
-                         int[] denCodes)
-    {
-        this(false, shape, false, numCodes, denCodes);
-    }
-
-    //--------------//
-    // NumDenSymbol //
-    //--------------//
-    /**
-     * Creates a new NumDenSymbol object.
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the related shape
-     * @param decorated true for decoration
-     * @param numCodes  the numerator codes
-     * @param denCodes  the denominator codes
-     */
-    public NumDenSymbol (boolean isIcon,
-                         Shape shape,
-                         boolean decorated,
-                         int[] numCodes,
-                         int[] denCodes)
-    {
-        super(isIcon, shape, decorated);
-        this.numCodes = numCodes;
-        this.denCodes = denCodes;
+        super(shape, family);
+        this.numerator = numerator;
+        this.denominator = denominator;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new NumDenSymbol(true, shape, decorated, numCodes, denCodes);
-    }
 
     //-----------//
     // getParams //
@@ -117,14 +72,19 @@ public class NumDenSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams(font, numCodes, denCodes);
+        final MyParams p = new MyParams();
 
-        Rectangle2D numRect = p.numLayout.getBounds();
-        Rectangle2D denRect = p.denLayout.getBounds();
-        p.rect = new Rectangle2D.Double(0,
-                                        0,
-                                        Math.max(numRect.getWidth(), denRect.getWidth()),
-                                        p.dy + Math.max(numRect.getHeight(), denRect.getHeight()));
+        p.numLayout = font.layoutNumberByCode(numerator);
+        p.denLayout = font.layoutNumberByCode(denominator);
+        p.dy = 2 * font.getStaffInterline();
+
+        final Rectangle2D numRect = p.numLayout.getBounds();
+        final Rectangle2D denRect = p.denLayout.getBounds();
+        p.rect = new Rectangle2D.Double(
+                0,
+                0,
+                Math.max(numRect.getWidth(), denRect.getWidth()),
+                p.dy + Math.max(numRect.getHeight(), denRect.getHeight()));
 
         return p;
     }
@@ -149,6 +109,7 @@ public class NumDenSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//
@@ -156,19 +117,10 @@ public class NumDenSymbol
             extends Params
     {
 
-        final double dy;
+        double dy;
 
-        final TextLayout numLayout;
+        TextLayout numLayout;
 
-        final TextLayout denLayout;
-
-        MyParams (MusicFont font,
-                  int[] numCodes,
-                  int[] denCodes)
-        {
-            dy = 2 * font.getStaffInterline();
-            numLayout = font.layout(numCodes);
-            denLayout = font.layout(denCodes);
-        }
+        TextLayout denLayout;
     }
 }

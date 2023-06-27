@@ -1,17 +1,18 @@
 apply plugin: 'application'
 
-version  = '5.2.5'
-sourceCompatibility = '1.11'
+project.version  = '5.3'
+sourceCompatibility = '1.17'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 ext.programName     = 'Audiveris'
 ext.programId       = 'audiveris'
-ext.programVersion  = "$version"
+ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
-ext.jcppVersion     = '1.3'
-ext.leptVersion     = '1.73'
-ext.tessVersion     = '3.04.01'
+
+ext.jcppVersion     = '1.5.9'
+ext.leptVersion     = '1.83.0'
+ext.tessVersion     = '5.3.1'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
@@ -19,15 +20,12 @@ ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
 ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
-                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf"]\
+                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf", "aarch64":"arm64"]\
                      [System.getProperty('os.arch').toLowerCase()]
 ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"
 println "targetOS=${project.ext.targetOS}"
 
 ext.makensisPath = null
-
-//ext.dl4jVersion = '0.8.0'
-//ext.nd4jVersion = '0.8.0'
 
 if (!hasProperty('mainClass')) {
     ext.mainClass = ext.programName
@@ -43,6 +41,9 @@ allprojects {
         options.compilerArgs << "-Xlint:unchecked"
     }
 }
+
+// To circumvent limitations brought by Jigsaw
+applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
 
 run {
     minHeapSize = '512m'
@@ -64,12 +65,16 @@ run {
 }
 
 repositories {
-    jcenter()
     maven {
         name = 'JBoss repository' // required to obtain non-free JAI
         url = 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases'
     }
+    maven { // required for JAI Core 1.1.3
+        name = 'SpringSource Enterprise Bundle Repository - External Bundle Releases'
+        url = 'https://repository.springsource.com/maven/bundles/external'
+    }
     mavenLocal()
+    mavenCentral()
     //flatDir(dirs: 'dev/externals') // for libraries not in any other repository
 }
 
@@ -80,7 +85,7 @@ sourceSets {
             srcDir "$buildDir/generated-src"
         }
         resources {
-            srcDir 'src/main'
+            srcDir 'src/main'   // Needed for BSAF use of properties
             srcDir 'dev/icons'
         }
     }
@@ -91,71 +96,67 @@ sourceSets {
     }
 }
 
-// Declare Lombok appropriately to avoid deprecation warnings in Gradle >= 4.6
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.2'
-    annotationProcessor 'org.projectlombok:lombok:1.18.2'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.2'
-}
-
-dependencies {
-    compile(
-        [group: 'org.kohsuke', name: 'github-api', version: '1.133'],
+    implementation(
+        [group: 'org.kohsuke', name: 'github-api', version: '1.301'],
         [group: 'args4j', name: 'args4j', version: '2.33'],
         [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'],
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35'],
         [group: 'net.jcip', name: 'jcip-annotations', version: '1.0'],
         [group: 'org.bushe', name: 'eventbus', version: '1.4'],
-        [group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'],
+        [group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.10'],
         [group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'],
         [group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'],
         [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
-        [group: 'net.imagej', name: 'ij', version: '1.51f'],
+        [group: 'net.imagej', name: 'ij', version: '1.53j'],
         [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.6'],
-        [group: 'org.audiveris', name: 'proxymusic', version: '3.0.1'],
-        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.1'],
-        [group: 'org.jfree', name: 'jfreechart', version: '1.0.19'],
-        [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.9'],
+        [group: 'org.audiveris', name: 'proxymusic', version: '4.0.2'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'],
+        [group: 'org.jfree', name: 'jfreechart', version: '1.5.3'],
+        [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13.2'],
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
-        [group: 'org.reflections', name: 'reflections', version: '0.9.12'],
+        [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
         [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
-        [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.3.1'],
-//        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
-//        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
+        [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
         [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
         [group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1']
     )
 
-    runtime(
-//        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+    runtimeOnly(
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
     )
 
-    testCompile(
-        [group: 'junit', name: 'junit', version: '4.10'],
-        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.0.1']
+    testImplementation(
+        [group: 'junit', name: 'junit', version: '4.13.2'],
+        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.1']
     )
+}
+
+// Needed since gradle replaced "compile" by "implementation"
+// See https://stackoverflow.com/questions/47910578/not-able-to-copy-configurations-dependencies-after-upgrading-gradle-plugin-for-a
+configurations {
+    implementationConfig.extendsFrom implementation
 }
 
 // Specific configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
 }
 
 jar {
     // override default output archive name
-    archiveName = "audiveris.jar"
+    archiveFileName = "audiveris.jar"
 
     exclude ("**/doc-files/**")
 
-    destinationDir = file('build/jar')
+    destinationDirectory = file('build/jar')
 
     // copy resources into the destination jar
     from(file('res')) {
@@ -166,14 +167,14 @@ jar {
         attributes 'Built-By': project.ext.companyName
         attributes 'Specification-Title': project.ext.programName
         attributes 'Specification-Vendor': project.ext.companyName
-        attributes 'Specification-Version': version
-        attributes 'Implementation-Version': version
+        attributes 'Specification-Version': project.version
+        attributes 'Implementation-Version': project.version
     }
 }
 
 // Defining 'debug' task allows to set its arguments later
 task(debug, dependsOn: 'classes', type: JavaExec) {
-    main = mainClassName
+    mainClass = mainClassName
     classpath = sourceSets.main.runtimeClasspath
     debug true
 }
@@ -279,7 +280,7 @@ task installers {
             copy {
                 into "$buildDir/installers/$os/lib"
                 from "$buildDir/jar" // audiveris.jar
-                from configurations.compile // Compile jars
+                from configurations.implementationConfig // Compile jars
                 from configurations."runtime-$os" // OS-specific jars
             }
 
@@ -287,7 +288,7 @@ task installers {
             def suffix = (os == "windows-x86_64")? "" : "32"
             commandLine "cmd", "/c",\
                 "${project.ext.makensisPath}",\
-                "/DPRODUCT_VERSION=$version",\
+                "/DPRODUCT_VERSION=$project.version",\
                 "/DPROJECT_DIR=$projectDir",\
                 "/DTARGET_OS=$os",\
                 "/DSUFFIX=$suffix",\
@@ -299,16 +300,26 @@ task installers {
 }
 
 javadoc {
-    doFirst {
+    title = "${project.ext.programName}-${project.version} API"
+    options.overview('src/main/overview.html')
+
+    // Copy images from src to javadoc hierarchy
+    doLast {
         copy {
-            from "src/main/java/org/audiveris/omr"
-            into "$buildDir/docs/javadoc/org/audiveris/omr"
-            include ("*/doc-files/**")
+            from 'src/main'
+            include '**/*.png'
+            into "$buildDir/docs/javadoc"
         }
     }
-    title = "${project.ext.programName}-${version} API"
-    options.overview('src/main/overview.html')
-    options.optionFiles << file('javadoc.options')
+}
+
+// To avoid too many warnings in building javadoc
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
 }
 
 // Ability to include private tasks (such as save)
@@ -320,5 +331,3 @@ fileTree("$projectDir/private").include('*.gradle').each { file ->
 test {
     testLogging.showStandardStreams = true
 }
-
-

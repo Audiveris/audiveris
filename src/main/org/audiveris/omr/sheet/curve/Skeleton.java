@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.ImageUtil;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.sheet.PageCleaner;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
@@ -45,6 +45,8 @@ import org.audiveris.omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -54,6 +56,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,47 +118,57 @@ public class Skeleton
     // +-----+-----+-----+
     //
     /** Delta abscissa, per heading. 0 1 2. 3. 4 . 5 . 6 . 7. 8 */
-    static final int[] dxs = new int[]{0, 1, 1, 1, 0, -1, -1, -1, 0};
+    static final int[] dxs = new int[]
+    { 0, 1, 1, 1, 0, -1, -1, -1, 0 };
 
     /** Delta ordinate, per heading. 0 1. 2. 3. 4. 5. 6 . 7 . 8 */
-    static final int[] dys = new int[]{0, -1, 0, 1, 1, 1, 0, -1, -1};
+    static final int[] dys = new int[]
+    { 0, -1, 0, 1, 1, 1, 0, -1, -1 };
 
     /** Headings to scan, according to last heading. */
-    static final int[][] scans = new int[][]{
-        {2, 4, 6, 8, 1, 3, 5, 7}, // 0
-        {2, 8, 1, 3, 7}, // 1
-        {2, 4, 8, 1, 3}, // 2
-        {2, 4, 1, 3, 5}, // 3
-        {2, 4, 6, 3, 5}, // 4
-        {4, 6, 3, 5, 7}, // 5
-        {4, 6, 8, 5, 7}, // 6
-        {6, 8, 1, 5, 7}, // 7
-        {2, 6, 8, 1, 7} //  8
+    static final int[][] scans = new int[][]
+    {
+            { 2, 4, 6, 8, 1, 3, 5, 7 }, // 0
+            { 2, 8, 1, 3, 7 }, // 1
+            { 2, 4, 8, 1, 3 }, // 2
+            { 2, 4, 1, 3, 5 }, // 3
+            { 2, 4, 6, 3, 5 }, // 4
+            { 4, 6, 3, 5, 7 }, // 5
+            { 4, 6, 8, 5, 7 }, // 6
+            { 6, 8, 1, 5, 7 }, // 7
+            { 2, 6, 8, 1, 7 } //  8
     };
 
     /** Map (Dx,Dy) -> Heading. */
-    static final int[][] deltaToDir = new int[][]{
-        {7, 6, 5}, // x:-1, y: -1, 0, +1
-        {8, 0, 4}, // x: 0, y: -1, 0, +1
-        {1, 2, 3} //  x:+1, y: -1, 0, +1
+    static final int[][] deltaToDir = new int[][]
+    {
+            { 7, 6, 5 }, // x:-1, y: -1, 0, +1
+            { 8, 0, 4 }, // x: 0, y: -1, 0, +1
+            { 1, 2, 3 } //  x:+1, y: -1, 0, +1
     };
 
     /** Vertical headings: south & north. */
-    static final int[] vertDirs = new int[]{4, 8};
+    static final int[] vertDirs = new int[]
+    { 4, 8 };
 
     /** Horizontal headings: east & west. */
-    static final int[] horiDirs = new int[]{2, 6};
+    static final int[] horiDirs = new int[]
+    { 2, 6 };
 
     /** Side headings: verticals + horizontals. */
-    static final int[] sideDirs = new int[]{2, 4, 6, 8};
+    static final int[] sideDirs = new int[]
+    { 2, 4, 6, 8 };
 
     /** Diagonal headings: ne, se, sw, nw. */
-    static final int[] diagDirs = new int[]{1, 3, 5, 7};
+    static final int[] diagDirs = new int[]
+    { 1, 3, 5, 7 };
 
     /** All headings. */
-    static final int[] allDirs = new int[]{2, 4, 6, 8, 1, 3, 5, 7};
+    static final int[] allDirs = new int[]
+    { 2, 4, 6, 8, 1, 3, 5, 7 };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The skeleton buffer. */
     public ByteProcessor buf;
 
@@ -182,6 +195,7 @@ public class Skeleton
     private Map<SystemInfo, List<Glyph>> erasedSeeds;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Skeleton object.
      *
@@ -193,6 +207,30 @@ public class Skeleton
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------//
+    // addVoidArc //
+    //------------//
+    /**
+     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     *
+     * @param arc the void arc to register
+     */
+    public void addVoidArc (Arc arc)
+    {
+        for (boolean rev : new boolean[]
+        { true, false }) {
+            Point junctionPt = arc.getJunction(rev);
+            List<Arc> arcs = voidArcsMap.get(junctionPt);
+
+            if (arcs == null) {
+                voidArcsMap.put(junctionPt, arcs = new ArrayList<>());
+            }
+
+            arcs.add(arc);
+        }
+    }
+
     //---------------//
     // buildSkeleton //
     //---------------//
@@ -204,6 +242,7 @@ public class Skeleton
      * <p>
      * We must keep track of erased shapes at system level.
      * <ul>
+     * <li>Tablatures don't contain curves, we can erase their area.</li>
      * <li>Notes and beams cannot be crossed by a curve.</li>
      * <li>Bar lines, connections and stems can be crossed by a curve.
      * Perhaps another specific background value could be used?</li>
@@ -216,7 +255,6 @@ public class Skeleton
         // First, get a skeleton of binary image
         Picture picture = sheet.getPicture();
 
-        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);
         ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
         buffer = (ByteProcessor) buffer.duplicate();
         buffer.skeletonize();
@@ -228,20 +266,12 @@ public class Skeleton
         CurvesCleaner cleaner = new CurvesCleaner(buffer, g, sheet);
 
         // Non-crossable inters
-        nonCrossables = cleaner.eraseShapes(
-                Arrays.asList(
-                        Shape.WHOLE_NOTE,
-                        Shape.WHOLE_NOTE_SMALL,
-                        Shape.NOTEHEAD_BLACK,
-                        Shape.NOTEHEAD_BLACK_SMALL,
-                        Shape.NOTEHEAD_VOID,
-                        Shape.NOTEHEAD_VOID_SMALL,
-                        Shape.BEAM,
-                        Shape.BEAM_HOOK,
-                        Shape.BEAM_SMALL,
-                        Shape.BEAM_HOOK_SMALL,
-                        Shape.LYRICS,
-                        Shape.TEXT));
+        final Collection<Shape> nonCrossableShapes = EnumSet.noneOf(Shape.class);
+        nonCrossableShapes.addAll(ShapeSet.Heads);
+        nonCrossableShapes.addAll(ShapeSet.Beams);
+        nonCrossableShapes.add(Shape.LYRICS);
+        nonCrossableShapes.add(Shape.TEXT);
+        nonCrossables = cleaner.eraseShapes(nonCrossableShapes);
 
         // Crossable inters
         crossables = cleaner.eraseShapes(
@@ -255,8 +285,8 @@ public class Skeleton
 
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
-        //
-        // Erase regions too far froms staves
+
+        // Erase regions too far from staves
         cleaner.eraseDistantRegions();
 
         // Build buffer
@@ -264,8 +294,8 @@ public class Skeleton
         buffer.threshold(127);
 
         // Keep a copy on disk?
-        if (constants.keepSkeleton.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".skl");
+        if (constants.saveSkeleton.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "skeleton");
         }
 
         buf = buffer;
@@ -273,26 +303,29 @@ public class Skeleton
         return img;
     }
 
-    //------------//
-    // addVoidArc //
-    //------------//
+    //-----------------//
+    // getErasedInters //
+    //-----------------//
     /**
-     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     * Report the collection of erased inters, with provided crossable characteristic
      *
-     * @param arc the void arc to register
+     * @param crossable true for crossable, false for non-crossable
+     * @return the desired erased inters
      */
-    public void addVoidArc (Arc arc)
+    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
     {
-        for (boolean rev : new boolean[]{true, false}) {
-            Point junctionPt = arc.getJunction(rev);
-            List<Arc> arcs = voidArcsMap.get(junctionPt);
+        return crossable ? crossables : nonCrossables;
+    }
 
-            if (arcs == null) {
-                voidArcsMap.put(junctionPt, arcs = new ArrayList<>());
-            }
-
-            arcs.add(arc);
-        }
+    //----------------//
+    // getErasedSeeds //
+    //----------------//
+    /**
+     * @return the erasedSeeds
+     */
+    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
+    {
+        return erasedSeeds;
     }
 
     //----------//
@@ -308,6 +341,10 @@ public class Skeleton
     public int getPixel (int x,
                          int y)
     {
+        if (x < 0 || x >= buf.getWidth() || y < 0 || y >= buf.getHeight()) {
+            return BACKGROUND;
+        }
+
         return buf.get(x, y);
     }
 
@@ -331,23 +368,6 @@ public class Skeleton
         //            g.setColor(Color.MAGENTA);
         //            g.fillOval(p.x, p.y, 1, 1);
         //        }
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Set pixel value at provided location
-     *
-     * @param x   abscissa
-     * @param y   ordinate
-     * @param val pixel value to set
-     */
-    public void setPixel (int x,
-                          int y,
-                          int val)
-    {
-        buf.set(x, y, val);
     }
 
     //----------//
@@ -384,30 +404,24 @@ public class Skeleton
         }
     }
 
-    //-----------------//
-    // getErasedInters //
-    //-----------------//
+    //----------//
+    // setPixel //
+    //----------//
     /**
-     * Report the collection of erased inters, with provided crossable characteristic
+     * Set pixel value at provided location
      *
-     * @param crossable true for crossable, false for non-crossable
-     * @return the desired erased inters
+     * @param x   abscissa
+     * @param y   ordinate
+     * @param val pixel value to set
      */
-    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
+    public void setPixel (int x,
+                          int y,
+                          int val)
     {
-        return crossable ? crossables : nonCrossables;
+        buf.set(x, y, val);
     }
 
-    //----------------//
-    // getErasedSeeds //
-    //----------------//
-    /**
-     * @return the erasedSeeds
-     */
-    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
-    {
-        return erasedSeeds;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // getDir //
@@ -485,6 +499,7 @@ public class Skeleton
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -492,9 +507,9 @@ public class Skeleton
             extends ConstantSet
     {
 
-        private final Constant.Boolean keepSkeleton = new Constant.Boolean(
+        private final Constant.Boolean saveSkeleton = new Constant.Boolean(
                 false,
-                "Should we store skeleton images on disk?");
+                "Should we save skeleton images on disk?");
 
         private final Constant.Boolean useHeader = new Constant.Boolean(
                 true,
@@ -511,6 +526,10 @@ public class Skeleton
         private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
                 10,
                 "Maximum vertical gap from any staff");
+
+        private final Scale.Fraction maxDyFromTablature = new Scale.Fraction(
+                1,
+                "Maximum vertical gap from any tablature");
     }
 
     //---------------//
@@ -625,6 +644,14 @@ public class Skeleton
             }
 
             return erasedMap;
+        }
+
+        //-----------------//
+        // eraseTablatures //
+        //-----------------//
+        public void eraseTablatures ()
+        {
+            eraseTablatures(constants.maxDyFromTablature);
         }
     }
 }

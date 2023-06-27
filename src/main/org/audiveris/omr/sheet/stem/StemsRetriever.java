@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,8 +24,8 @@ package org.audiveris.omr.sheet.stem;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.GlyphGroup;
+import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.AreaUtil;
@@ -61,7 +61,6 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +92,7 @@ import java.util.TreeMap;
  * It is composed of one {@link BLinker} for each relevant location of the beam:
  * One on each beam side and one on each detected stump.
  * Depending on the configuration, a BLinker can have several {@link VLinker} dedicated to
- * vertical directions (0 for an ANCHORD with no stump, 1 for a stump pointing out of beam, 2 for
+ * vertical directions (0 for an ANCHOR with no stump, 1 for a stump pointing out of beam, 2 for
  * beam horizontal side with no stump).
  * <li>{@link HeadLinker} handles all links from one head.<br>
  * It is composed of one {@link SLinker} for each head horizontal side, each SLinker being composed
@@ -110,8 +109,7 @@ import java.util.TreeMap;
  * and no internal vertical gap.
  * <li>We got a measurement for main and max stem thickness in the sheet (in STEM_SEEDS step).
  * </ul>
- *
- * <h3>Phase #1: one system at a time</h3>
+ * <h2>Phase #1: one system at a time</h2>
  * <ul>
  * <li>{@link #inspectStems()}
  * <ul>
@@ -142,7 +140,6 @@ import java.util.TreeMap;
  * <li>Check needed stems: heads with no stem link at all are discarded.
  * </ul>
  * </ul>
- *
  * <h3>Possible evolutions</h3>
  * <ul>
  * <li>For rather long stems, full stem expansion driven only from the initial head or beam may be
@@ -161,6 +158,7 @@ public class StemsRetriever
     private static final Logger logger = LoggerFactory.getLogger(StemsRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -209,6 +207,7 @@ public class StemsRetriever
     private StopWatch watch;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new StemsBuilder object.
      *
@@ -233,106 +232,6 @@ public class StemsRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // finalizeBeams //
-    //---------------//
-    /**
-     * Only when all systems have been processed, we can finalize the processing.
-     */
-    public void finalizeBeams ()
-    {
-        if (params == null) {
-            params = new Parameters(system, scale);
-        }
-
-        // The abscissa-sorted stem seeds for this system
-        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
-        purgeNoStemSeeds(systemSeeds);
-
-        new Finalizer().process();
-    }
-
-    //---------//
-    // process //
-    //---------//
-    public void process ()
-    {
-        watch = new StopWatch("StemsRetriever.process S#" + system.getId());
-
-        if (params == null) {
-            params = new Parameters(system, scale);
-        }
-
-        inspectStems();
-        linkStems();
-        finalizeStems();
-
-        if (constants.printWatch.isSet()) {
-            watch.print();
-        }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("{S#").append(system.getId()).append('}').toString();
-    }
-
-    //-------------//
-    // getTargetPt //
-    //-------------//
-    /**
-     * Compute the point where the (skewed) vertical from reference point crosses the
-     * provided limit.
-     *
-     * @param refPt reference point for stem connection
-     * @param limit the end of the white space (a rather horizontal line)
-     * @param slope global sheet slope
-     * @return the limit crossing point with skewed vertical at reference point
-     */
-    public static Point2D getTargetPt (Point2D refPt,
-                                       Line2D limit,
-                                       double slope)
-    {
-        final Point2D p2 = new Point2D.Double(refPt.getX() - (100 * slope), refPt.getY() + 100);
-
-        return LineUtil.intersection(refPt, p2, limit.getP1(), limit.getP2());
-    }
-
-    //------------------//
-    // sortBeamsFromRef //
-    //------------------//
-    /**
-     * Sort the provided beams vertically from the reference point.
-     *
-     * @param refPt starting reference point
-     * @param yDir  vertical direction from reference point
-     * @param beams the beams to sort
-     */
-    public static void sortBeamsFromRef (Point2D refPt,
-                                         int yDir,
-                                         List<Inter> beams)
-    {
-        if (beams.isEmpty()) {
-            return;
-        }
-
-        final double slope = beams.get(0).getSig().getSystem().getSheet().getSkew().getSlope();
-
-        Comparator<Inter> fromRef = (i1, i2) -> {
-            final AbstractBeamInter b1 = (AbstractBeamInter) i1;
-            final AbstractBeamInter b2 = (AbstractBeamInter) i2;
-            return Double.compare(
-                    yDir * (getTargetPt(refPt, getLimit(b1, yDir), slope).getY() - refPt.getY()),
-                    yDir * (getTargetPt(refPt, getLimit(b2, yDir), slope).getY() - refPt.getY()));
-        };
-
-        Collections.sort(beams, fromRef);
-    }
 
     //--------------//
     // addStemInter //
@@ -349,184 +248,20 @@ public class StemsRetriever
         }
     }
 
-    //-----------//
-    // getGapMap //
-    //-----------//
-    /**
-     * Report acceptable vertical gap per profile.
-     *
-     * @return the gapMap
-     */
-    TreeMap<Integer, Integer> getGapMap ()
-    {
-        return gapMap;
-    }
-
-    //---------------------------//
-    // getMaxHeadContextualGrade //
-    //---------------------------//
-    /**
-     * Report the maximum contextual grade for the provided head, assumed to be linked via
-     * the provided head-stem relation to a perfect stem.
-     *
-     * @param head  head for which contextual grade is reported
-     * @param hsRel relation that would stand between head and stem
-     * @return head contextual grade (based only on support from a perfect stem)
-     */
-    double getMaxHeadContextualGrade (HeadInter head,
-                                      HeadStemRelation hsRel)
-    {
-        final double maxStemGrade = Grades.intrinsicRatio;
-        final double maxStemContrib = maxStemGrade * hsRel.getTargetRatio() - 1.0;
-        final double maxCg = GradeUtil.contextual(head.getGrade(), maxStemContrib);
-
-        return maxCg;
-    }
-
-    //----------------//
-    // getNoStemAreas //
-    //----------------//
-    /**
-     * @return the noStemAreas
-     */
-    List<Area> getNoStemAreas ()
-    {
-        return noStemAreas;
-    }
-
-    //-----------//
-    // getParams //
-    //-----------//
-    /**
-     * Give access to the whole set of parameters used by for stem retrieval.
-     *
-     * @return the parameters
-     */
-    Parameters getParams ()
-    {
-        return params;
-    }
-
-    //----------------------//
-    // getNeighboringInters //
-    //----------------------//
-    /**
-     * From the provided collection of interpretations, retrieve all those located
-     * in some item vicinity.
-     *
-     * @param inters  the collection of interpretations to search
-     * @param itemBox bounding box of item
-     * @return the set of neighboring interpretations
-     */
-    List<Inter> getNeighboringInters (List<? extends Inter> inters,
-                                      Rectangle itemBox)
-    {
-        // Retrieve neighboring inters, using a box of system height and sufficiently wide,
-        // just to play with a limited number of inters.
-        Rectangle systemBox = system.getBounds();
-        Rectangle fatBox = new Rectangle(itemBox.x, systemBox.y, itemBox.width, systemBox.height);
-        fatBox.grow(params.vicinityMargin, 0);
-
-        return Inters.intersectedInters(inters, GeoOrder.BY_ABSCISSA, fatBox);
-    }
-
-    //---------------------//
-    // getNeighboringSeeds //
-    //---------------------//
-    /**
-     * Retrieve all vertical seeds in some item vicinity.
-     *
-     * @return the set of neighboring seeds
-     */
-    Set<Glyph> getNeighboringSeeds (Rectangle itemBox)
-    {
-        // Retrieve neighboring stem seeds, using a box of system height and sufficiently wide,
-        // just to play with a limited number of seeds.
-        Rectangle systemBox = system.getBounds();
-        Rectangle fatBox = new Rectangle(itemBox.x, systemBox.y, itemBox.width, systemBox.height);
-        fatBox.grow(params.vicinityMargin, 0);
-
-        return Glyphs.intersectedGlyphs(systemSeeds, fatBox);
-    }
-
-    /**
-     * @return the system
-     */
-    SystemInfo getSystem ()
-    {
-        return system;
-    }
-
-    /**
-     * @return the system beams
-     */
-    List<Inter> getSystemBeams ()
-    {
-        return systemBeams;
-    }
-
-    /**
-     * @return the system heads
-     */
-    List<Inter> getSystemHeads ()
-    {
-        return systemHeads;
-    }
-
-    /**
-     * @return the stem checker
-     */
-    StemChecker getStemChecker ()
-    {
-        return stemChecker;
-    }
-
-    //--------------//
-    // getStemInter //
-    //--------------//
-    /**
-     * Report the stem interpretation if any for the glyph at hand.
-     *
-     * @param glyph the underlying glyph
-     * @return the existing stem interpretation if any, or null
-     */
-    StemInter getStemInter (Glyph glyph)
-    {
-        return systemStems.get(glyph);
-    }
-
     //-------------//
-    // getTargetPt //
+    // buildGapMap //
     //-------------//
-    /**
-     * Compute the point where the (skewed) vertical from reference point crosses the
-     * provided limit.
-     *
-     * @param refPt reference point for stem connection
-     * @param limit the end of the white space (a rather horizontal line)
-     * @return the limit crossing point with skewed vertical at reference point
-     */
-    Point2D getTargetPt (Point2D refPt,
-                         Line2D limit)
+    private TreeMap<Integer, Integer> buildGapMap ()
     {
-        return getTargetPt(refPt, limit, system.getSheet().getSkew().getSlope());
-    }
+        final TreeMap<Integer, Integer> map = new TreeMap<>();
 
-    //--------------------//
-    // getTheoreticalLine //
-    //--------------------//
-    /**
-     * Compute the (skewed) vertical line from reference point to the ordinate limit.
-     *
-     * @param refPt  starting reference point
-     * @param yLimit ordinate limit
-     * @return the theoretical line oriented from ref point to limit
-     */
-    Line2D getTheoreticalLine (Point2D refPt,
-                               double yLimit)
-    {
-        return new Line2D.Double(refPt,
-                                 getTargetPt(refPt, new Line2D.Double(0, yLimit, 100, yLimit)));
+        for (int p = 0; p <= Profiles.MAX_VALUE; p++) {
+            map.put(p, scale.toPixels(StemChecker.getMaxYGap(p)));
+        }
+
+        logger.debug("gapMap:{}", map);
+
+        return map;
     }
 
     //----------------//
@@ -588,27 +323,28 @@ public class StemsRetriever
         for (Inter hInter : systemHeads) {
             if (ShapeSet.StemHeads.contains(hInter.getShape())) {
                 if (!sig.hasRelation(hInter, HeadStemRelation.class)) {
-                    final Set<HorizontalSide> vSides = undefs.get(hInter);
+                    final Set<HorizontalSide> hSides = undefs.get(hInter);
                     boolean linked = false;
 
-                    if (vSides != null) {
+                    if (hSides != null) {
                         final HeadInter head = (HeadInter) hInter;
                         final Point headCenter = head.getCenter();
 
-                        for (HorizontalSide hSide : vSides) {
+                        for (HorizontalSide hSide : hSides) {
                             final SLinker sl = head.getLinker().getSLinkers().get(hSide);
                             logger.debug("{} undef  {}", head, sl);
-
-                            // If we have a VERTICAL_SEED on side, try a stem link
-                            final Glyph stump = sl.getStump();
-
-                            if (stump != null && stump.isVerticalSeed()) {
-                                final Point stumpCenter = stump.getCenter();
-                                final VerticalSide vSide = stumpCenter.y < headCenter.y
-                                        ? TOP : BOTTOM;
-                                final CLinker cl = sl.getCornerLinker(vSide);
-                                linked |= cl.link(0, 0, true);
-                            }
+                            // BINGO fix this
+                            //
+                            //                            // If we have a VERTICAL_SEED on side, try a stem link
+                            //                            final Glyph stump = sl.getStump();
+                            //
+                            //                            if (stump != null && stump.isVerticalSeed()) {
+                            //                                final Point stumpCenter = stump.getCenter();
+                            //                                final VerticalSide vSide = stumpCenter.y < headCenter.y
+                            //                                        ? TOP : BOTTOM;
+                            //                                final CLinker cl = sl.getCornerLinker(vSide);
+                            //                                linked |= cl.link(0, 0, true);
+                            //                            }
                         }
                     }
 
@@ -620,36 +356,23 @@ public class StemsRetriever
         }
     }
 
-    //-------------//
-    // buildGapMap //
-    //-------------//
-    private TreeMap<Integer, Integer> buildGapMap ()
+    //---------------//
+    // finalizeBeams //
+    //---------------//
+    /**
+     * Only when all systems have been processed, we can finalize the processing.
+     */
+    public void finalizeBeams ()
     {
-        final TreeMap<Integer, Integer> map = new TreeMap<>();
-
-        for (int p = 0; p <= Profiles.MAX_VALUE; p++) {
-            map.put(p, scale.toPixels(StemChecker.getMaxYGap(p)));
+        if (params == null) {
+            params = new Parameters(system, scale);
         }
 
-        logger.debug("gapMap:{}", map);
+        // The abscissa-sorted stem seeds for this system
+        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
+        purgeNoStemSeeds(systemSeeds);
 
-        return map;
-    }
-
-    //----------//
-    // getLimit //
-    //----------//
-    /**
-     * Report closer beam limit, according to corner vertical direction.
-     *
-     * @param beam the beam or hook of interest
-     * @param yDir vertical direction from reference point
-     * @return the top or bottom beam limit, according to dir
-     */
-    private static Line2D getLimit (AbstractBeamInter beam,
-                                    int yDir)
-    {
-        return beam.getBorder(VerticalSide.of(yDir));
+        new Finalizer().process();
     }
 
     //---------------//
@@ -669,6 +392,187 @@ public class StemsRetriever
         // Flag heads with no stem link as abnormal
         watch.start("checkNeededStems");
         checkNeededStems(systemHeads);
+    }
+
+    //-----------//
+    // getGapMap //
+    //-----------//
+    /**
+     * Report acceptable vertical gap per profile.
+     *
+     * @return the gapMap
+     */
+    TreeMap<Integer, Integer> getGapMap ()
+    {
+        return gapMap;
+    }
+
+    //---------------------------//
+    // getMaxHeadContextualGrade //
+    //---------------------------//
+    /**
+     * Report the maximum contextual grade for the provided head, assumed to be linked via
+     * the provided head-stem relation to a perfect stem.
+     *
+     * @param head  head for which contextual grade is reported
+     * @param hsRel relation that would stand between head and stem
+     * @return head contextual grade (based only on support from a perfect stem)
+     */
+    double getMaxHeadContextualGrade (HeadInter head,
+                                      HeadStemRelation hsRel)
+    {
+        final double maxStemGrade = Grades.intrinsicRatio;
+        final double maxStemContrib = maxStemGrade * hsRel.getTargetRatio() - 1.0;
+        final double maxCg = GradeUtil.contextual(head.getGrade(), maxStemContrib);
+
+        return maxCg;
+    }
+
+    //----------------------//
+    // getNeighboringInters //
+    //----------------------//
+    /**
+     * From the provided collection of interpretations, retrieve all those located
+     * in some item vicinity.
+     *
+     * @param inters  the collection of interpretations to search
+     * @param itemBox bounding box of item
+     * @return the set of neighboring interpretations
+     */
+    List<Inter> getNeighboringInters (List<? extends Inter> inters,
+                                      Rectangle itemBox)
+    {
+        // Retrieve neighboring inters, using a box of system height and sufficiently wide,
+        // just to play with a limited number of inters.
+        Rectangle systemBox = system.getBounds();
+        Rectangle fatBox = new Rectangle(itemBox.x, systemBox.y, itemBox.width, systemBox.height);
+        fatBox.grow(params.vicinityMargin, 0);
+
+        return Inters.intersectedInters(inters, GeoOrder.BY_ABSCISSA, fatBox);
+    }
+
+    //---------------------//
+    // getNeighboringSeeds //
+    //---------------------//
+    /**
+     * Retrieve all vertical seeds in some item vicinity.
+     *
+     * @return the set of neighboring seeds
+     */
+    Set<Glyph> getNeighboringSeeds (Rectangle itemBox)
+    {
+        // Retrieve neighboring stem seeds, using a box of system height and sufficiently wide,
+        // just to play with a limited number of seeds.
+        Rectangle systemBox = system.getBounds();
+        Rectangle fatBox = new Rectangle(itemBox.x, systemBox.y, itemBox.width, systemBox.height);
+        fatBox.grow(params.vicinityMargin, 0);
+
+        return Glyphs.intersectedGlyphs(systemSeeds, fatBox);
+    }
+
+    //----------------//
+    // getNoStemAreas //
+    //----------------//
+    /**
+     * @return the noStemAreas
+     */
+    List<Area> getNoStemAreas ()
+    {
+        return noStemAreas;
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    /**
+     * Give access to the whole set of parameters used by for stem retrieval.
+     *
+     * @return the parameters
+     */
+    Parameters getParams ()
+    {
+        return params;
+    }
+
+    /**
+     * @return the stem checker
+     */
+    StemChecker getStemChecker ()
+    {
+        return stemChecker;
+    }
+
+    //--------------//
+    // getStemInter //
+    //--------------//
+    /**
+     * Report the stem interpretation if any for the glyph at hand.
+     *
+     * @param glyph the underlying glyph
+     * @return the existing stem interpretation if any, or null
+     */
+    StemInter getStemInter (Glyph glyph)
+    {
+        return systemStems.get(glyph);
+    }
+
+    /**
+     * @return the system
+     */
+    SystemInfo getSystem ()
+    {
+        return system;
+    }
+
+    /**
+     * @return the system beams
+     */
+    List<Inter> getSystemBeams ()
+    {
+        return systemBeams;
+    }
+
+    /**
+     * @return the system heads
+     */
+    List<Inter> getSystemHeads ()
+    {
+        return systemHeads;
+    }
+
+    //-------------//
+    // getTargetPt //
+    //-------------//
+    /**
+     * Compute the point where the (skewed) vertical from reference point crosses the
+     * provided limit.
+     *
+     * @param refPt reference point for stem connection
+     * @param limit the end of the white space (a rather horizontal line)
+     * @return the limit crossing point with skewed vertical at reference point
+     */
+    Point2D getTargetPt (Point2D refPt,
+                         Line2D limit)
+    {
+        return getTargetPt(refPt, limit, system.getSheet().getSkew().getSlope());
+    }
+
+    //--------------------//
+    // getTheoreticalLine //
+    //--------------------//
+    /**
+     * Compute the (skewed) vertical line from reference point to the ordinate limit.
+     *
+     * @param refPt  starting reference point
+     * @param yLimit ordinate limit
+     * @return the theoretical line oriented from ref point to limit
+     */
+    Line2D getTheoreticalLine (Point2D refPt,
+                               double yLimit)
+    {
+        return new Line2D.Double(
+                refPt,
+                getTargetPt(refPt, new Line2D.Double(0, yLimit, 100, yLimit)));
     }
 
     //--------------//
@@ -694,17 +598,25 @@ public class StemsRetriever
         systemBeams = sig.inters(AbstractBeamInter.class);
         Collections.sort(systemBeams, Inters.byAbscissa);
 
-        for (Inter b : systemBeams) {
-            AbstractBeamInter beam = (AbstractBeamInter) b;
+        for (Iterator<Inter> it = systemBeams.iterator(); it.hasNext();) {
+            final AbstractBeamInter beam = (AbstractBeamInter) it.next();
 
             if (beam.getLinker() == null) {
-                beam.setLinker(new BeamLinker(beam, this));
+                final BeamLinker bl = new BeamLinker(beam, this);
+
+                if (bl.looksLikeTremolo()) {
+                    // Discard this false beam.
+                    it.remove();
+                    beam.remove();
+                } else {
+                    beam.setLinker(bl);
+                }
             }
         }
 
         // The abscissa-sorted head interpretations for this system
         watch.start("Heads linkers");
-        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        systemHeads = sig.inters(ShapeSet.getTemplateNotesStem(system.getSheet()));
         Collections.sort(systemHeads, Inters.byAbscissa);
 
         for (Inter h : systemHeads) {
@@ -761,7 +673,7 @@ public class StemsRetriever
 
         // Heads second
         watch.start("Heads linking phase 1");
-        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        systemHeads = sig.inters(ShapeSet.getTemplateNotesStem(system.getSheet()));
         Collections.sort(systemHeads, Inters.byReverseGrade);
         final List<HeadInter> unlinkedHeads = new ArrayList<>();
 
@@ -775,6 +687,26 @@ public class StemsRetriever
         watch.start("Heads linking phase 2");
         for (HeadInter head : unlinkedHeads) {
             head.getLinker().linkSides(Profiles.STRICT, system.getProfile(), undefs, true);
+        }
+    }
+
+    //---------//
+    // process //
+    //---------//
+    public void process ()
+    {
+        watch = new StopWatch("StemsRetriever.process S#" + system.getId());
+
+        if (params == null) {
+            params = new Parameters(system, scale);
+        }
+
+        inspectStems();
+        linkStems();
+        finalizeStems();
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
         }
     }
 
@@ -858,13 +790,216 @@ public class StemsRetriever
         }
 
         // Sort by abscissa
-        Collections.sort(areas, (Area a1, Area a2) -> Double.compare(a1.getBounds2D().getMinX(),
-                                                                     a2.getBounds2D().getMinX()));
+        Collections.sort(
+                areas,
+                (Area a1,
+                 Area a2) -> Double.compare(
+                         a1.getBounds2D().getMinX(),
+                         a2.getBounds2D().getMinX()));
 
         return areas;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder(getClass().getSimpleName()).append("{S#").append(system.getId())
+                .append('}').toString();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------//
+    // getLimit //
+    //----------//
+    /**
+     * Report closer beam limit, according to corner vertical direction.
+     *
+     * @param beam the beam or hook of interest
+     * @param yDir vertical direction from reference point
+     * @return the top or bottom beam limit, according to dir
+     */
+    private static Line2D getLimit (AbstractBeamInter beam,
+                                    int yDir)
+    {
+        return beam.getBorder(VerticalSide.of(yDir));
+    }
+
+    //-------------//
+    // getTargetPt //
+    //-------------//
+    /**
+     * Compute the point where the (skewed) vertical from reference point crosses the
+     * provided limit.
+     *
+     * @param refPt reference point for stem connection
+     * @param limit the end of the white space (a rather horizontal line)
+     * @param slope global sheet slope
+     * @return the limit crossing point with skewed vertical at reference point
+     */
+    public static Point2D getTargetPt (Point2D refPt,
+                                       Line2D limit,
+                                       double slope)
+    {
+        final Point2D p2 = new Point2D.Double(refPt.getX() - (100 * slope), refPt.getY() + 100);
+
+        return LineUtil.intersection(refPt, p2, limit.getP1(), limit.getP2());
+    }
+
+    //------------------//
+    // sortBeamsFromRef //
+    //------------------//
+    /**
+     * Sort the provided beams vertically from the reference point.
+     *
+     * @param refPt starting reference point
+     * @param yDir  vertical direction from reference point
+     * @param beams the beams to sort
+     */
+    public static void sortBeamsFromRef (Point2D refPt,
+                                         int yDir,
+                                         List<Inter> beams)
+    {
+        if (beams.isEmpty()) {
+            return;
+        }
+
+        final double slope = beams.get(0).getSig().getSystem().getSheet().getSkew().getSlope();
+
+        Comparator<Inter> fromRef = (i1,
+                                     i2) ->
+        {
+            final AbstractBeamInter b1 = (AbstractBeamInter) i1;
+            final AbstractBeamInter b2 = (AbstractBeamInter) i2;
+            return Double.compare(
+                    yDir * (getTargetPt(refPt, getLimit(b1, yDir), slope).getY() - refPt.getY()),
+                    yDir * (getTargetPt(refPt, getLimit(b2, yDir), slope).getY() - refPt.getY()));
+        };
+
+        Collections.sort(beams, fromRef);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Scale.Fraction vicinityMargin = new Scale.Fraction(
+                1.0,
+                "Rough abscissa margin when looking for neighbors above and below in the system");
+
+        private final Constant.Double slopeMargin = new Constant.Double(
+                "tangent",
+                0.015,
+                "Margin around slope to define lookup areas");
+
+        private final Constant.Ratio maxBarOverlap = new Constant.Ratio(
+                0.25,
+                "Maximum stem overlap area ratio on a connected barline");
+
+        private final Scale.Fraction maxBeamSideDx = new Scale.Fraction(
+                0.25,
+                "Maximum horizontal dx around beam sides to catch sibling groups");
+
+        private final Scale.Fraction maxBeamGroupDy = new Scale.Fraction(
+                5.0,
+                "Maximum vertical gap between two beam groups on same stem");
+
+        private final Scale.Fraction minBeamHeadDy = new Scale.Fraction(
+                1.0,
+                "Minimum vertical distance between beam and head");
+
+        private final Scale.Fraction maxBeamLinkerDx = new Scale.Fraction(
+                0.25,
+                "Maximum horizontal distance to reuse a beam linker");
+
+        private final Scale.Fraction halfBeamLuDx = new Scale.Fraction(
+                0.3,
+                "Half dx for beam lookup area for stem and heads");
+
+        private final Scale.Fraction minSeedContrib = new Scale.Fraction(
+                0.5,
+                "Minimum seed vertical contribution to stem");
+
+        private final Scale.Fraction maxBeamSeedDx = new Scale.Fraction(
+                0.1,
+                "Maximum horizontal gap between beam and seed");
+
+        private final Constant.Ratio maxBeamSeedDyRatio = new Constant.Ratio(
+                0.25,
+                "Maximum vertical gap between beam and seed as ratio of max gap with stem");
+
+        private final Scale.Fraction minBeamStemsDx = new Scale.Fraction(
+                1.0,
+                "Minimum horizontal distance between two stems on the same beam");
+
+        private final Scale.Fraction minBeamStumpDy = new Scale.Fraction(
+                0.5,
+                "Minimum stump length above and below beam group");
+
+        private final Scale.Fraction maxLineSeedDx = new Scale.Fraction(
+                0.15,
+                "Maximum distance from stem seed to theoretical line");
+
+        private final Scale.Fraction maxLineSectionDx = new Scale.Fraction(
+                0.3,
+                "Maximum distance from section center to target line");
+
+        private final Scale.Fraction maxLineGlyphDx = new Scale.Fraction(
+                0.2,
+                "Maximum distance from glyph centroid to current stem line");
+
+        private final Scale.Fraction maxStemAlignmentDx = new Scale.Fraction(
+                0.15,
+                "Maximum dx between aligned stem seeds");
+
+        private final Scale.Fraction maxStemAlignmentDy = new Scale.Fraction(
+                4.0,
+                "Maximum dy to check for aligned stem seeds");
+
+        private final Scale.Fraction minHeadHeadDy = new Scale.Fraction(
+                0.25,
+                "Minimum vertical distance between two heads on a stem");
+
+        private final Scale.Fraction maxHeadSeedDy = new Scale.Fraction(
+                0.25,
+                "Maximum vertical gap between seed & head reference point");
+
+        private final Scale.Fraction stumpAreaDy = new Scale.Fraction(
+                0.2,
+                "Height of stump lookup area in head corner");
+
+        private final Scale.Fraction stumpAreaDxIn = new Scale.Fraction(
+                0.1,
+                "Inside half width of stump lookup area");
+
+        private final Scale.Fraction stumpAreaDxOut = new Scale.Fraction(
+                0.1,
+                "Outside half width of stump lookup area");
+
+        private final Scale.Fraction minHeadStumpDy = new Scale.Fraction(
+                0.5,
+                "Minimum stump length away from head corner reference");
+
+        private final Scale.Fraction minLinkerLength = new Scale.Fraction(
+                0.85,
+                "Minimum concrete length for a linker");
+
+        private final Constant.Ratio artificialStemGrade = new Constant.Ratio(
+                0.4,
+                "Default grade for an artificial stem");
+    }
+
     //-----------//
     // Finalizer //
     //-----------//
@@ -874,9 +1009,8 @@ public class StemsRetriever
      */
     private class Finalizer
     {
-
-        private final StopWatch watch
-                = new StopWatch("StemsRetriever.finalizer S#" + system.getId());
+        private final StopWatch watch = new StopWatch(
+                "StemsRetriever.finalizer S#" + system.getId());
 
         /** Longest length of relevant beam stem as observed in our system. */
         int maxStemLength = Integer.MIN_VALUE;
@@ -887,7 +1021,8 @@ public class StemsRetriever
         ////** Typical abscissa gap among stem/heads along a beam. */
         ///final Integer typicalBeamGap;
         /** The abscissa-sorted head interpretations for this system. */
-        final List<Inter> systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        final List<Inter> systemHeads = sig.inters(
+                ShapeSet.getTemplateNotesStem(system.getSheet()));
 
         public Finalizer ()
         {
@@ -896,23 +1031,6 @@ public class StemsRetriever
 
             beams = getStandardBeams();
             ///typicalBeamGap = typicalBeamStemsDx();
-        }
-
-        public void process ()
-        {
-            // Purge cross-system orphan beams
-            watch.start("beam purge");
-            purgeOrphanBeams();
-
-            // Boost beam sides
-            watch.start("beam sides");
-            for (AbstractBeamInter beam : beams) {
-                boostBeamSides(beam);
-            }
-
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
         }
 
         //----------------//
@@ -942,7 +1060,7 @@ public class StemsRetriever
                         final HeadStemRelation hsRel = (HeadStemRelation) rr;
                         final HeadInter head = (HeadInter) sig.getEdgeSource(hsRel);
 
-                        if (!head.getShape().isSmall()) {
+                        if (!head.getShape().isSmallHead()) {
                             final double grade = 0.5 * (bsRel.getGrade() + hsRel.getGrade());
                             sig.addEdge(beam, head, new BeamHeadRelation(grade, true));
                         }
@@ -1015,6 +1133,23 @@ public class StemsRetriever
             return found;
         }
 
+        public void process ()
+        {
+            // Purge cross-system orphan beams
+            watch.start("beam purge");
+            purgeOrphanBeams();
+
+            // Boost beam sides
+            watch.start("beam sides");
+            for (AbstractBeamInter beam : beams) {
+                boostBeamSides(beam);
+            }
+
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+
         //------------------//
         // purgeOrphanBeams //
         //------------------//
@@ -1052,116 +1187,6 @@ public class StemsRetriever
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Scale.Fraction vicinityMargin = new Scale.Fraction(
-                1.0,
-                "Rough abscissa margin when looking for neighbors above and below in the system");
-
-        private final Constant.Double slopeMargin = new Constant.Double(
-                "tangent",
-                0.015,
-                "Margin around slope to define lookup areas");
-
-        private final Constant.Ratio maxBarOverlap = new Constant.Ratio(
-                0.25,
-                "Maximum stem overlap area ratio on a connected barline");
-
-        private final Scale.Fraction maxBeamSideDx = new Scale.Fraction(
-                0.25,
-                "Maximum horizontal dx around beam sides to catch sibling groups");
-
-        private final Scale.Fraction maxBeamGroupDy = new Scale.Fraction(
-                5.0,
-                "Maximum vertical gap between two beam groups on same stem");
-
-        private final Scale.Fraction minBeamHeadDy = new Scale.Fraction(
-                1.0,
-                "Minimum vertical distance between beam and head");
-
-        private final Scale.Fraction maxBeamLinkerDx = new Scale.Fraction(
-                0.25,
-                "Maximum horizontal distance to reuse a beam linker");
-
-        private final Scale.Fraction halfBeamLuDx = new Scale.Fraction(
-                0.3,
-                "Half dx for beam lookup area for stem and heads");
-
-        private final Scale.Fraction minSeedContrib = new Scale.Fraction(
-                0.5,
-                "Minimum seed vertical contribution to stem");
-
-        private final Scale.Fraction maxBeamSeedDx = new Scale.Fraction(
-                0.1,
-                "Maximum horizontal gap between beam and seed");
-
-        private final Constant.Ratio maxBeamSeedDyRatio = new Constant.Ratio(
-                0.25,
-                "Maximum vertical gap between beam and seed as ratio of max gap with stem");
-
-        private final Scale.Fraction minBeamStemsDx = new Scale.Fraction(
-                1.0,
-                "Minimum horizontal distance between two stems on the same beam");
-
-        private final Scale.Fraction minBeamStumpDy = new Scale.Fraction(
-                0.5,
-                "Minimum stump length above and below beam group");
-
-        private final Scale.Fraction maxLineSeedDx = new Scale.Fraction(
-                0.15,
-                "Maximum distance from stem seed to theoretical line");
-
-        private final Scale.Fraction maxLineSectionDx = new Scale.Fraction(
-                0.3,
-                "Maximum distance from section center to target line");
-
-        private final Scale.Fraction maxStemAlignmentDx = new Scale.Fraction(
-                0.15,
-                "Maximum dx between aligned stem seeds");
-
-        private final Scale.Fraction maxStemAlignmentDy = new Scale.Fraction(
-                4.0,
-                "Maximum dy to check for aligned stem seeds");
-
-        private final Scale.Fraction minHeadHeadDy = new Scale.Fraction(
-                0.25,
-                "Minimum vertical distance between two heads on a stem");
-
-        private final Scale.Fraction maxHeadSeedDy = new Scale.Fraction(
-                0.25,
-                "Maximum vertical gap between seed & head reference point");
-
-        private final Scale.Fraction stumpAreaDyHalf = new Scale.Fraction(
-                0.2,
-                "Half height of stump lookup area");
-
-        private final Scale.Fraction stumpAreaDxIn = new Scale.Fraction(
-                0.1,
-                "Inside half width of stump lookup area");
-
-        private final Scale.Fraction stumpAreaDxOut = new Scale.Fraction(
-                0.1,
-                "Outside half width of stump lookup area");
-
-        private final Scale.Fraction minLinkerLength = new Scale.Fraction(
-                0.85,
-                "Minimum concrete length for a linker");
-
-        private final Constant.Ratio artificialStemGrade = new Constant.Ratio(
-                0.4,
-                "Default grade for an artificial stem");
-
-    }
-
     //------------//
     // Parameters //
     //------------//
@@ -1187,7 +1212,7 @@ public class StemsRetriever
 
         final int maxHeadSeedDy;
 
-        final int stumpAreaDyHalf;
+        final int stumpAreaDy;
 
         final double stumpAreaDxIn;
 
@@ -1211,6 +1236,8 @@ public class StemsRetriever
 
         final int minBeamStumpDy;
 
+        final int minHeadStumpDy;
+
         final double maxBeamSeedDyRatio;
 
         final int minBeamStemsDx;
@@ -1218,6 +1245,8 @@ public class StemsRetriever
         final double maxLineSeedDx;
 
         final double maxLineSectionDx;
+
+        final double maxLineGlyphDx;
 
         final int minChunkWeight;
 
@@ -1253,7 +1282,7 @@ public class StemsRetriever
             maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
             maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(profile));
 
-            stumpAreaDyHalf = scale.toPixels(constants.stumpAreaDyHalf);
+            stumpAreaDy = scale.toPixels(constants.stumpAreaDy);
             stumpAreaDxIn = scale.toPixelsDouble(constants.stumpAreaDxIn);
             stumpAreaDxOut = scale.toPixelsDouble(constants.stumpAreaDxOut);
 
@@ -1270,11 +1299,13 @@ public class StemsRetriever
             minBeamStemsDx = scale.toPixels(constants.minBeamStemsDx);
 
             minBeamStumpDy = scale.toPixels(constants.minBeamStumpDy);
+            minHeadStumpDy = scale.toPixels(constants.minHeadStumpDy);
 
             mainStemThickness = scale.getStemThickness();
             maxStemThickness = scale.getMaxStem();
             maxLineSeedDx = scale.toPixelsDouble(constants.maxLineSeedDx);
             maxLineSectionDx = scale.toPixelsDouble(constants.maxLineSectionDx);
+            maxLineGlyphDx = scale.toPixelsDouble(constants.maxLineGlyphDx);
             maxStemAlignmentDx = scale.toPixelsDouble(constants.maxStemAlignmentDx);
             maxStemAlignmentDy = scale.toPixelsDouble(constants.maxStemAlignmentDy);
 
@@ -1293,122 +1324,3 @@ public class StemsRetriever
         }
     }
 }
-//
-//        //--------------------//
-//        // typicalBeamStemsDx //
-//        //--------------------//
-//        /**
-//         * Try to compute the typical abscissa gap between notes (head/stem) on same beam.
-//         * <p>
-//         * It also checks whether a beam does not have a stem relation too close to another.
-//         * If so, these too close stems are flagged as mutually exclusive.
-//         *
-//         * @param beams system population of beams
-//         * @return the typical abscissa gap, or null is not reliable enough
-//         */
-//        private Integer typicalBeamStemsDx ()
-//        {
-//            final List<Integer> values = new ArrayList<>();
-//            Integer medianValue = null;
-//            int count = 0; // Number of measure gaps
-//
-//            for (Iterator<AbstractBeamInter> it = beams.iterator(); it.hasNext();) {
-//                final AbstractBeamInter beam = it.next();
-//                final boolean beamIsGood = beam.isGood();
-//                final List<BeamStemRelation> rels = new ArrayList<>();
-//
-//                for (Relation rel : sig.edgesOf(beam)) {
-//                    if (rel instanceof BeamStemRelation) {
-//                        rels.add((BeamStemRelation) rel);
-//                    }
-//                }
-//
-//                // Sort on abscissa
-//                final int size = rels.size();
-//                Collections.sort(rels, (BeamStemRelation o1, BeamStemRelation o2) -> Double.compare(
-//                        o1.getExtensionPoint().getX(), o2.getExtensionPoint().getX()));
-//
-//                for (int i = 0; i < size; i++) {
-//                    BeamStemRelation rel = rels.get(i);
-//                    StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-//
-//                    for (BeamStemRelation r : rels.subList(i + 1, size)) {
-//                        final int dx = (int) Math.rint(
-//                                r.getExtensionPoint().getX() - rel.getExtensionPoint().getX());
-//
-//                        if (dx < params.minBeamStemsDx) {
-//                            // If stems are too close to one another, they are mutually exclusive.
-//                            StemInter s = (StemInter) sig.getEdgeTarget(r);
-//                            sig.insertExclusion(stem, s, Cause.INCOMPATIBLE);
-//                        } else {
-//                            if (beamIsGood) {
-//                                count++;
-//                                values.add(dx);
-//                            }
-//
-//                            break;
-//                        }
-//                    }
-//
-//                    if (beamIsGood) {
-//                        // Update max stem length, using only good beams
-//                        maxStemLength = Math.max(maxStemLength, stem.getMedian().getBounds().height);
-//                    }
-//                }
-//
-//                if (!beamIsGood || beam instanceof BeamHookInter) {
-//                    it.remove();
-//                }
-//            }
-//
-//            if (count > 0) {
-//                Collections.sort(values);
-//                medianValue = values.get(count / 2);
-//                logger.debug("{} Median abscissa gap between beam stems: {}", system, medianValue);
-//            }
-//
-//            return medianValue;
-//        }
-//
-//
-//    //-------------------------//
-//    // performMutualExclusions //
-//    //-------------------------//
-//    /**
-//     * Browse the system interpretations to insert mutual exclusions wherever possible.
-//     * This is done for stems.
-//     */
-//    private void performMutualExclusions ()
-//    {
-//        final List<Inter> stems = sig.inters(Shape.STEM);
-//        final int size = stems.size();
-//        int count = 0;
-//
-//        try {
-//            if (size < 2) {
-//                return;
-//            }
-//
-//            Collections.sort(stems, Inters.byAbscissa);
-//
-//            for (int i = 0; i < (size - 1); i++) {
-//                final Inter one = stems.get(i);
-//                final Rectangle oneBox = one.getGlyph().getBounds();
-//                final int xBreak = oneBox.x + oneBox.width;
-//
-//                for (Inter two : stems.subList(i + 1, size)) {
-//                    Rectangle twoBox = two.getGlyph().getBounds();
-//
-//                    // Is there an overlap between stems one & two?
-//                    if (oneBox.intersects(twoBox)) {
-//                        sig.insertExclusion(one, two, Cause.OVERLAP);
-//                        count++;
-//                    } else if (twoBox.x >= xBreak) {
-//                        break;
-//                    }
-//                }
-//            }
-//        } finally {
-//            logger.debug("S#{} stems: {} exclusions: {}", system.getId(), size, count);
-//        }
-//    }

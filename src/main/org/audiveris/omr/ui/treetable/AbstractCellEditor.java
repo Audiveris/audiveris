@@ -31,6 +31,7 @@ public class AbstractCellEditor
     protected EventListenerList listenerList = new EventListenerList();
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------------//
     // addCellEditorListener //
     //-----------------------//
@@ -54,6 +55,46 @@ public class AbstractCellEditor
     @Override
     public void cancelCellEditing ()
     {
+    }
+
+    /**
+     * Notify all listeners that have registered interest for notification on
+     * this event type.
+     *
+     * @see EventListenerList
+     */
+    protected void fireEditingCanceled ()
+    {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+
+        // Process the listeners last to first, notifying those that are
+        // interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == CellEditorListener.class) {
+                ((CellEditorListener) listeners[i + 1]).editingCanceled(new ChangeEvent(this));
+            }
+        }
+    }
+
+    /**
+     * Notify all listeners that have registered interest for
+     * notification on this event type.
+     *
+     * @see EventListenerList
+     */
+    protected void fireEditingStopped ()
+    {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == CellEditorListener.class) {
+                ((CellEditorListener) listeners[i + 1]).editingStopped(new ChangeEvent(this));
+            }
+        }
     }
 
     //--------------------//
@@ -126,45 +167,5 @@ public class AbstractCellEditor
     public boolean stopCellEditing ()
     {
         return true;
-    }
-
-    /**
-     * Notify all listeners that have registered interest for notification on
-     * this event type.
-     *
-     * @see EventListenerList
-     */
-    protected void fireEditingCanceled ()
-    {
-        // Guaranteed to return a non-null array
-        Object[] listeners = listenerList.getListenerList();
-
-        // Process the listeners last to first, notifying those that are
-        // interested in this event
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == CellEditorListener.class) {
-                ((CellEditorListener) listeners[i + 1]).editingCanceled(new ChangeEvent(this));
-            }
-        }
-    }
-
-    /**
-     * Notify all listeners that have registered interest for
-     * notification on this event type.
-     *
-     * @see EventListenerList
-     */
-    protected void fireEditingStopped ()
-    {
-        // Guaranteed to return a non-null array
-        Object[] listeners = listenerList.getListenerList();
-
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == CellEditorListener.class) {
-                ((CellEditorListener) listeners[i + 1]).editingStopped(new ChangeEvent(this));
-            }
-        }
     }
 }

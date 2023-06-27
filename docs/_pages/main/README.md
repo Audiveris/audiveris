@@ -10,6 +10,8 @@ This chapter presents the main features of Audiveris application, especially the
 pipeline of OMR engine, from input to outputs.
 
 The manual correction of OMR results is such an important topic that it deserves the separate
-[UI Tools](../ui_tools/README.md) and [UI in Action](../edition/README.md) chapters.
+[UI Tools](../ui_tools/README.md) and [UI Examples](../ui_examples/README.md) chapters.
 
-More advanced topics can be found in the [Advanced Features](../advanced/README.md) chapter.
+A few specific features are gathered in the [Specific Features](../specific/README.md) chapter.
+
+And more advanced features can be found in the [Advanced Features](../advanced/README.md) chapter.

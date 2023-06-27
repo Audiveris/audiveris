@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!--                                 d r u m - s e t . x m l                                     -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+<!--
+    This file, located in Audiveris 'res' folder, defines drum default mapping.
+    The end-user can override part or whole of this mapping by writing a specific drum-set.xml file
+    located in Audiveris user 'config' folder.
+
+    Such file defines Audiveris entries for general midi percussion keys.
+    Definitions are grouped by staff line count with one attribute:
+    
+    - line-count        (Mandatory)
+                        count of lines in percussion staff
+                        (1 or 5)
+
+    Within a staff group, it is written as a list of entries for a sound map organized as:
+    key:    a tuple (pitch-position, motif, [sign])
+    value:  the corresponding sound value
+                       
+    - pitch-position:   (Mandatory)
+                        head position relative to staff line/space
+                        (0 for middle line, positive downwards)
+
+    - motif:            (Mandatory)
+                        motif of head shape, regardless of its duration
+                        (oval, small, cross, diamond, triangle, circle)
+
+    - sign:             (Optional, default value is null)
+                        percussion playing technique
+                        (PLAYING_OPEN, PLAYING_HALF_OPEN, PLAYING_CLOSED)
+
+    - sound:            (Mandatory)
+                        name of drum sound
+                        The name must contain no space, no dash, just underscores.
+                        A null sound value removes the entry at (pitch-position,motif,sign) tuple
+                        For a comprehensive list of sound names, please refer to
+                        https://computermusicresource.com/GM.Percussion.KeyMap.html 
+                  
+    -->
+
+<drum-set>
+    
+  <staff line-count="1">
+    <entry pitch-position="0"  motif="oval"    sound="null"/> <!-- Just a place-holder -->
+  </staff>
+  
+  <staff line-count="5">
+        
+    <!-- -8 -->
+    <entry pitch-position="-8" motif="cross"   sound="Splash_Cymbal"/>
+    <entry pitch-position="-8" motif="circle"  sound="Chinese_Cymbal"/>
+    
+    <!-- -7 -->
+    <entry pitch-position="-7" motif="cross"   sound="Crash_Cymbal_2"/>
+    <entry pitch-position="-7" motif="circle"  sound="Crash_Cymbal_2"/>
+    
+    <!-- -6 -->
+    <entry pitch-position="-6" motif="cross"   sound="Crash_Cymbal_1"/>
+    <entry pitch-position="-6" motif="circle"  sound="Crash_Cymbal_1"/>
+    <entry pitch-position="-6" motif="diamond" sound="Crash_Cymbal_1"/>
+    
+    <!-- -5 -->
+    <entry pitch-position="-5" motif="cross"    sign="PLAYING_OPEN"   sound="Open_Hi_Hat"/>
+    <entry pitch-position="-5" motif="circle"                         sound="Open_Hi_Hat"/>
+    <entry pitch-position="-5" motif="cross"    sign="PLAYING_CLOSED" sound="Closed_Hi_Hat"/>   
+    <entry pitch-position="-5" motif="cross"                          sound="Closed_Hi_Hat"/>
+
+    <!-- -4 -->
+    <entry pitch-position="-4" motif="oval"     sound="High_Tom"/>
+    <entry pitch-position="-4" motif="cross"    sound="Ride_Cymbal_1"/>
+    <entry pitch-position="-4" motif="circle"   sound="Ride_Cymbal_1"/>
+    <entry pitch-position="-4" motif="diamond"  sound="Ride_Bell"/> <!-- Or Ride_Cymbal_1 or 2 -->
+    
+    <!-- -3 -->
+    <entry pitch-position="-3" motif="oval"     sound="Hi_Mid_Tom"/>
+    <entry pitch-position="-3" motif="cross"    sound="Open_Hi_Hat"/>
+    <entry pitch-position="-3" motif="circle"   sound="Open_Hi_Hat"/>
+    <entry pitch-position="-3" motif="triangle" sound="Cowbell"/>
+    
+    <!-- -2 -->
+    <entry pitch-position="-2" motif="oval"     sound="Low_Mid_Tom"/>
+    <entry pitch-position="-2" motif="triangle" sound="Cowbell"/>
+    <entry pitch-position="-2" motif="diamond"  sound="Tambourine"/>
+    <entry pitch-position="-2" motif="cross"    sound="Ride_Cymbal_2"/>
+    <entry pitch-position="-2" motif="circle"   sound="Ride_Cymbal_2"/>
+    
+    <!-- -1 -->
+    <entry pitch-position="-1" motif="oval"     sound="Acoustic_Snare"/>
+    <entry pitch-position="-1" motif="small"    sound="Acoustic_Snare"/>
+    <entry pitch-position="-1" motif="cross"    sound="Side_Stick"/>
+    <entry pitch-position="-1" motif="circle"   sound="Side_Stick"/>
+    
+    <!-- 0 -->
+    <entry pitch-position="0" motif="oval"      sound="Low_Tom"/>
+    
+    <!-- 1 -->
+    <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/>
+    
+    <!-- 2 -->
+    <entry pitch-position="2" motif="oval"      sound="Low_Floor_Tom"/>
+    <entry pitch-position="2" motif="cross"     sound="Low_Conga"/>
+    <entry pitch-position="2" motif="circle"    sound="Low_Conga"/>
+    
+    <!-- 3 -->
+    <entry pitch-position="3" motif="oval"      sound="Bass_Drum_1"/>     
+    
+    <!-- 4 -->
+    <entry pitch-position="4" motif="oval"      sound="Acoustic_Bass_Drum"/>
+    <entry pitch-position="4" motif="cross"     sound="Open_Hi_Conga"/>
+    <entry pitch-position="4" motif="circle"    sound="Open_Hi_Conga"/>
+    
+    <!-- 5 -->
+    <!-- w/ open sign -> foot splash -->
+    <entry pitch-position="5" motif="cross"     sound="Pedal_Hi_Hat"/>
+    <entry pitch-position="5" motif="circle"    sound="Open_Hi_Hat"/>
+    
+<!--
+    Here below is the list of not yet assigned sounds
+    To actually assign one sound, replace the "null" values by actual pitch-position and motif
+    -->
+    <entry pitch-position="null" motif="null" sound="Hand_Clap"/>
+    <entry pitch-position="null" motif="null" sound="Vibraslap"/>
+    <entry pitch-position="null" motif="null" sound="Electric_Snare"/>
+    <entry pitch-position="null" motif="null" sound="Hi_Bongo"/>
+    <entry pitch-position="null" motif="null" sound="Low_Bongo"/>
+    <entry pitch-position="null" motif="null" sound="Mute_Hi_Conga"/>
+    <entry pitch-position="null" motif="null" sound="High_Timbale"/>
+    <entry pitch-position="null" motif="null" sound="Low_Timbale"/>
+    <entry pitch-position="null" motif="null" sound="High_Agogo"/>
+    <entry pitch-position="null" motif="null" sound="Low_Agogo"/>
+    <entry pitch-position="null" motif="null" sound="Cabasa"/>
+    <entry pitch-position="null" motif="null" sound="Maracas"/>
+    <entry pitch-position="null" motif="null" sound="Short_Whistle"/>
+    <entry pitch-position="null" motif="null" sound="Long_Whistle"/>
+    <entry pitch-position="null" motif="null" sound="Short_Guiro"/>
+    <entry pitch-position="null" motif="null" sound="Long_Guiro"/>
+    <entry pitch-position="null" motif="null" sound="Claves"/>
+    <entry pitch-position="null" motif="null" sound="Hi_Wood_Block"/>
+    <entry pitch-position="null" motif="null" sound="Low_Wood_Block"/>
+    <entry pitch-position="null" motif="null" sound="Mute_Cuica"/>
+    <entry pitch-position="null" motif="null" sound="Open_Cuica"/>
+    <entry pitch-position="null" motif="null" sound="Mute_Triangle"/>
+    <entry pitch-position="null" motif="null" sound="Open_Triangle"/>
+  
+  </staff>
+  
+</drum-set>

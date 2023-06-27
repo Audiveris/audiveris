@@ -2681,7 +2681,7 @@ pre {
     <xsl:template match="*" mode="properties"/>
 
     <!--
-    Emtpy template to avoid unwanted output in 'hiddendoc' mode
+    Empty template to avoid unwanted output in 'hiddendoc' mode
     -->
     <xsl:template match="text()" mode="hiddendoc"/>
 

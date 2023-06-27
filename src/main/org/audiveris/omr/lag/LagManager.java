@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,11 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -57,6 +59,7 @@ public class LagManager
     private static final Logger logger = LoggerFactory.getLogger(LagManager.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -64,13 +67,11 @@ public class LagManager
     /** Map of all public lags. */
     private final Map<String, Lag> lagMap = new TreeMap<>();
 
-    /** Id of last long horizontal section. */
-    private int lastLongHSectionId;
-
     /** (Debug)Predefined IDs for VIP sections. */
     private final EnumMap<Orientation, List<Integer>> vipMap;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>LagManager</code> object.
      *
@@ -84,6 +85,7 @@ public class LagManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -216,30 +218,49 @@ public class LagManager
         return lag;
     }
 
-    //---------------------//
-    // getLongSectionMaxId //
-    //---------------------//
-    /**
-     * Report the id of the last long horizontal section
-     *
-     * @return the id of the last long horizontal section
-     */
-    public int getLongSectionMaxId ()
+    //----------------//
+    // getVipSections //
+    //----------------//
+    private EnumMap<Orientation, List<Integer>> getVipSections ()
     {
-        return lastLongHSectionId;
+        EnumMap<Orientation, List<Integer>> map = new EnumMap<>(Orientation.class);
+
+        for (Orientation orientation : Orientation.values()) {
+            String vipStr = orientation.isVertical() ? constants.verticalVipSections.getValue()
+                    : constants.horizontalVipSections.getValue();
+            List<Integer> ids = IntUtil.parseInts(vipStr);
+
+            if (!ids.isEmpty()) {
+                logger.info("{} VIP sections: {}", orientation, ids);
+            }
+
+            map.put(orientation, ids);
+        }
+
+        return map;
     }
 
-    //---------------------//
-    // setLongSectionMaxId //
-    //---------------------//
+    //-----------------//
+    // rebuildBothLags //
+    //-----------------//
     /**
-     * Remember the id of the last long horizontal section
-     *
-     * @param id the id of the last long horizontal section
+     * Rebuild both hLag and vLag directly from NO_STAFF table.
      */
-    public void setLongSectionMaxId (int id)
+    private void rebuildBothLags ()
     {
-        lastLongHSectionId = id;
+        // Build tables
+        RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
+
+        if (sourceTable == null) {
+            return;
+        }
+
+        RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
+        RunTable horiTable = filterRuns(sourceTable, vertTable);
+
+        // Build lags
+        buildHorizontalLag(horiTable, null);
+        buildVerticalLag(vertTable);
     }
 
     //-------------//
@@ -308,52 +329,8 @@ public class LagManager
         }
     }
 
-    //----------------//
-    // getVipSections //
-    //----------------//
-    private EnumMap<Orientation, List<Integer>> getVipSections ()
-    {
-        EnumMap<Orientation, List<Integer>> map = new EnumMap<>(Orientation.class);
-
-        for (Orientation orientation : Orientation.values()) {
-            String vipStr = orientation.isVertical() ? constants.verticalVipSections.getValue()
-                    : constants.horizontalVipSections.getValue();
-            List<Integer> ids = IntUtil.parseInts(vipStr);
-
-            if (!ids.isEmpty()) {
-                logger.info("{} VIP sections: {}", orientation, ids);
-            }
-
-            map.put(orientation, ids);
-        }
-
-        return map;
-    }
-
-    //-----------------//
-    // rebuildBothLags //
-    //-----------------//
-    /**
-     * Rebuild both hLag and vLag directly from NO_STAFF table.
-     */
-    private void rebuildBothLags ()
-    {
-        // Build tables
-        RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
-
-        if (sourceTable == null) {
-            return;
-        }
-
-        RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
-        RunTable horiTable = filterRuns(sourceTable, vertTable);
-
-        // Build lags
-        buildHorizontalLag(horiTable, null);
-        buildVerticalLag(vertTable);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

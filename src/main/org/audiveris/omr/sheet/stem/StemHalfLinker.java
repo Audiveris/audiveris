@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -56,6 +56,8 @@ public abstract class StemHalfLinker
      */
     public abstract Line2D getTheoreticalLine ();
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Update the stem line being built, by including a new glyph.
      * <p>
@@ -64,17 +66,37 @@ public abstract class StemHalfLinker
      * @param glyph  the new glyph to include
      * @param glyphs the set of glyphs already included
      * @param sLine  the current stem line
+     * @param maxDx  maximum acceptable abscissa shift, if any
+     * @return true if OK, false otherwise
      */
-    protected static void updateStemLine (Glyph glyph,
-                                          Set<Glyph> glyphs,
-                                          Line2D sLine)
+    protected static boolean updateStemLine (Glyph glyph,
+                                             Set<Glyph> glyphs,
+                                             Line2D sLine,
+                                             Double maxDx)
     {
-        if ((glyph != null) && glyphs.add(glyph)) {
-            final Glyph stemGlyph = (glyphs.size() > 1) ? GlyphFactory.buildGlyph(glyphs) : glyph;
-            final Point2D centroid = stemGlyph.getCentroidDouble();
+        if ((glyph == null) || glyphs.contains(glyph)) {
+            return true; // Nothing new
+        }
+
+        // Check dx shift?
+        if ((maxDx != null) && !glyphs.isEmpty()) {
+            final Point2D centroid = glyph.getCentroidDouble();
             final Point2D xp = LineUtil.intersectionAtY(sLine, centroid.getY());
             final double dx = centroid.getX() - xp.getX();
-            sLine.setLine(sLine.getX1() + dx, sLine.getY1(), sLine.getX2() + dx, sLine.getY2());
+
+            if (Math.abs(dx) > maxDx) {
+                return false;
+            }
         }
+
+        // Include the new glyph
+        glyphs.add(glyph);
+        final Glyph stemGlyph = (glyphs.size() > 1) ? GlyphFactory.buildGlyph(glyphs) : glyph;
+        final Point2D centroid = stemGlyph.getCentroidDouble();
+        final Point2D xp = LineUtil.intersectionAtY(sLine, centroid.getY());
+        final double dx = centroid.getX() - xp.getX();
+        sLine.setLine(sLine.getX1() + dx, sLine.getY1(), sLine.getX2() + dx, sLine.getY2());
+
+        return true;
     }
 }

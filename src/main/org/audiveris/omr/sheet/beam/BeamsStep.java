@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,6 +36,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Class <code>BeamsStep</code> implements <b>BEAMS</b> step, which uses the spots
  * produced by an image closing operation to retrieve all possible beam interpretations.
+ * <p>
+ * Typical beam height should have been detected by SCALE step.
+ * If not, the end-user can still force a beam height via menu Sheet | Set scaling data.
+ * <p>
+ * A secondary (small) height may have been detected by SCALE step, or forced by end-user.
+ * If the switch {@link ProcessingSwitch#smallBeams} is set, and if no secondary height is known,
+ * a default value is used (about 2/3 of typical height).
  *
  * @author Hervé Bitteur
  */
@@ -47,6 +54,7 @@ public class BeamsStep
     private static final Logger logger = LoggerFactory.getLogger(BeamsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BeamsStep object.
      */
@@ -55,16 +63,6 @@ public class BeamsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
-    {
-        new BeamsBuilder(system, context.spotLag).buildBeams();
-    }
 
     //----------//
     // doEpilog //
@@ -72,14 +70,14 @@ public class BeamsStep
     /**
      * {@inheritDoc}
      * <p>
-     * Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams.
+     * For beams, dispose of BEAM_SPOT glyphs, a glyph may be split into several stuck beams.
      * <p>
-     * (NOTA: the weak references to glyphs may survive as long as a related SpotsController exists)
+     * (NOTA: Weak references to glyphs may survive as long as a related SpotsController exists)
      */
     @Override
     protected void doEpilog (Sheet sheet,
                              Context context)
-            throws StepException
+        throws StepException
     {
         for (SystemInfo system : sheet.getSystems()) {
             system.removeGroupedGlyphs(GlyphGroup.BEAM_SPOT);
@@ -92,8 +90,8 @@ public class BeamsStep
     /**
      * {@inheritDoc}
      * <p>
-     * Perform a closing operation on the whole image with a disk shape as the structure
-     * element to point out concentrations of foreground pixels (meant for beams).
+     * For beams, perform a closing operation on the whole image with a disk shape as the
+     * structure element to point out concentrations of foreground pixels (meant for beams).
      *
      * @return the populated context
      */
@@ -108,7 +106,22 @@ public class BeamsStep
         return new Context(spotLag);
     }
 
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        new BeamsBuilder(system, context.spotLag).buildBeams();
+
+        // Detection of multiple-measure rests, since they resemble a long horizontal beam
+        new MultipleRestsBuilder(system).process();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//

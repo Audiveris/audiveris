@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,11 +22,12 @@
 package org.audiveris.omr.util;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.BasicSymbol;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class <code>BasicIndex</code>
  *
  * @param <E> precise type for indexed entities
- *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
@@ -68,9 +68,10 @@ public class BasicIndex<E extends Entity>
     private static final Logger logger = LoggerFactory.getLogger(BasicIndex.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
     @XmlJavaTypeAdapter(MapAdapter.class)
@@ -78,7 +79,7 @@ public class BasicIndex<E extends Entity>
 
     // Transient data
     //---------------
-    //
+
     /** Global id used to uniquely identify an entity instance. */
     protected AtomicInteger lastId;
 
@@ -89,6 +90,14 @@ public class BasicIndex<E extends Entity>
     private List<Integer> vipIds;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>BasicIndex</code> object.
+     */
+    protected BasicIndex ()
+    {
+    }
+
     /**
      * Creates a new <code>BasicIndex</code> object.
      *
@@ -100,14 +109,21 @@ public class BasicIndex<E extends Entity>
         this.lastId = lastId;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //------------//
+    // generateId //
+    //------------//
     /**
-     * Creates a new <code>BasicIndex</code> object.
+     * Report the next available ID value.
+     *
+     * @return next available ID
      */
-    protected BasicIndex ()
+    protected int generateId ()
     {
+        return lastId.incrementAndGet();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -151,16 +167,6 @@ public class BasicIndex<E extends Entity>
     public EntityService<E> getEntityService ()
     {
         return entityService;
-    }
-
-    //------------------//
-    // setEntityService //
-    //------------------//
-    @Override
-    public void setEntityService (EntityService<E> entityService)
-    {
-        this.entityService = entityService;
-        entityService.connect();
     }
 
     //------------//
@@ -233,15 +239,6 @@ public class BasicIndex<E extends Entity>
         return lastId.get();
     }
 
-    //-----------//
-    // setLastId //
-    //-----------//
-    @Override
-    public void setLastId (int lastId)
-    {
-        this.lastId.set(lastId);
-    }
-
     //---------//
     // getName //
     //---------//
@@ -256,10 +253,12 @@ public class BasicIndex<E extends Entity>
     //--------//
     /**
      * Insert an entity with its ID already defined.
-     * This method is meant for re-loading an index.
+     * <p>
+     * For example, this method can be used to re-load an index.
      *
      * @param entity the entity to insert
      */
+    @Override
     public void insert (E entity)
     {
         int id = entity.getId();
@@ -274,6 +273,33 @@ public class BasicIndex<E extends Entity>
             entity.setVip(true);
             logger.info("VIP insert {}", entity);
         }
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a description string of class internals.
+     *
+     * @return description string of internals
+     */
+    protected String internals ()
+    {
+        return getName();
+    }
+
+    //---------//
+    // isValid //
+    //---------//
+    /**
+     * Report whether the provided entity is valid
+     *
+     * @param entity the entity to check
+     * @return true if entity is valid
+     */
+    protected boolean isValid (E entity)
+    {
+        return entity != null;
     }
 
     //---------//
@@ -319,6 +345,10 @@ public class BasicIndex<E extends Entity>
     public void publish (E entity,
                          SelectionHint hint)
     {
+        if ((entity instanceof Inter inter) && inter.isRemoved()) {
+            return; // We don't publish a removed inter that would lead to invalid ID
+        }
+
         if (entityService != null) {
             final EntityListEvent<E> event = new EntityListEvent<>(
                     this,
@@ -326,7 +356,7 @@ public class BasicIndex<E extends Entity>
                     MouseMovement.PRESSING,
                     entity);
 
-            SwingUtilities.invokeLater(() -> entityService.publish(event));
+            SwingUtilities.invokeLater( () -> entityService.publish(event));
         }
     }
 
@@ -384,6 +414,25 @@ public class BasicIndex<E extends Entity>
         }
     }
 
+    //------------------//
+    // setEntityService //
+    //------------------//
+    @Override
+    public void setEntityService (EntityService<E> entityService)
+    {
+        this.entityService = entityService;
+        entityService.connect();
+    }
+
+    //-----------//
+    // setLastId //
+    //-----------//
+    @Override
+    public void setLastId (int lastId)
+    {
+        this.lastId.set(lastId);
+    }
+
     //-----------//
     // setVipIds //
     //-----------//
@@ -421,47 +470,8 @@ public class BasicIndex<E extends Entity>
         return sb.toString();
     }
 
-    //------------//
-    // generateId //
-    //------------//
-    /**
-     * Report the next available ID value.
-     *
-     * @return next available ID
-     */
-    protected int generateId ()
-    {
-        return lastId.incrementAndGet();
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    /**
-     * Report a description string of class internals.
-     *
-     * @return description string of internals
-     */
-    protected String internals ()
-    {
-        return getName();
-    }
-
-    //---------//
-    // isValid //
-    //---------//
-    /**
-     * Report whether the provided entity is valid
-     *
-     * @param entity the entity to check
-     * @return true if entity is valid
-     */
-    protected boolean isValid (E entity)
-    {
-        return entity != null;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // IndexAdapter //
     //--------------//
@@ -474,17 +484,34 @@ public class BasicIndex<E extends Entity>
 
         @Override
         public BasicIndex<E> marshal (EntityIndex<E> itf)
-                throws Exception
+            throws Exception
         {
             return (BasicIndex<E>) itf;
         }
 
         @Override
         public EntityIndex<E> unmarshal (BasicIndex<E> basic)
-                throws Exception
+            throws Exception
         {
             return basic;
         }
+    }
+
+    //------------//
+    // IndexValue //
+    //------------//
+    /**
+     * Class <code>IndexValue</code> is just a flat list of entities, with each item name
+     * based on actual item type.
+     *
+     * @param <E> the specific entity type
+     */
+    private static class IndexValue<E extends AbstractEntity>
+    {
+
+        @XmlElementRefs(
+        { @XmlElementRef(type = Glyph.class), @XmlElementRef(type = ShapeSymbol.class) })
+        ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }
 
     //------------//
@@ -502,7 +529,7 @@ public class BasicIndex<E extends Entity>
 
         @Override
         public IndexValue<E> marshal (ConcurrentSkipListMap<Integer, E> map)
-                throws Exception
+            throws Exception
         {
             IndexValue<E> value = new IndexValue<>();
             value.list = new ArrayList<>(map.values());
@@ -512,9 +539,12 @@ public class BasicIndex<E extends Entity>
 
         @Override
         public ConcurrentSkipListMap<Integer, E> unmarshal (IndexValue<E> value)
-                throws Exception
+            throws Exception
         {
-            Collections.sort(value.list, (E e1, E e2) -> Integer.compare(e1.getId(), e2.getId()));
+            Collections.sort(
+                    value.list,
+                    (E e1,
+                     E e2) -> Integer.compare(e1.getId(), e2.getId()));
             ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<>();
 
             for (E entity : value.list) {
@@ -523,23 +553,5 @@ public class BasicIndex<E extends Entity>
 
             return map;
         }
-    }
-
-    //------------//
-    // IndexValue //
-    //------------//
-    /**
-     * Class <code>IndexValue</code> is just a flat list of entities, with each item name
-     * based on actual item type.
-     *
-     * @param <E> the specific entity type
-     */
-    private static class IndexValue<E extends AbstractEntity>
-    {
-
-        @XmlElementRefs({@XmlElementRef(type = Glyph.class),
-                         @XmlElementRef(type = BasicSymbol.class)
-        })
-        ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }
 }

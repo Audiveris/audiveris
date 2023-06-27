@@ -11,8 +11,9 @@ import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.moments.MomentsExtractor;
 import org.audiveris.omr.moments.OrthogonalMoments;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import static org.audiveris.omr.ui.symbol.MusicFont.DEFAULT_INTERLINE;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.junit.Ignore;
 
@@ -57,13 +58,10 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         temp.mkdirs();
 
         // Retrieve descriptor for each physical shape
-        for (Shape shape : ShapeSet.allPhysicalShapes) {
-            ShapeSymbol symbol = Symbols.getSymbol(shape);
+        final MusicFont font = MusicFont.getBaseFont(MusicFamily.Bravura, DEFAULT_INTERLINE);
 
-            // If no plain symbol, use the decorated symbol as plan B
-            if (symbol == null) {
-                symbol = Symbols.getSymbol(shape, true);
-            }
+        for (Shape shape : ShapeSet.allPhysicalShapes) {
+            ShapeSymbol symbol = font.getSymbol(shape);
 
             if (symbol != null) {
                 System.out.println("shape:" + shape);
@@ -71,6 +69,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
                 SymbolSample sample = SymbolSample.create(
                         shape,
                         symbol,
+                        font,
                         MusicFont.DEFAULT_INTERLINE);
                 PointsCollector collector = new PointsCollector(null, sample.getWeight());
                 sample.getRunTable().cumulate(collector, null);

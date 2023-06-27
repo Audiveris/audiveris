@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,85 +22,53 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.LedgerInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.Line2D;
+import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>LedgerSymbol</code> implements a ledger symbol.
+ * Class <code>LedgerSymbol</code> implements a ledger symbol, perhaps decorated.
  *
  * @author Hervé Bitteur
  */
 public class LedgerSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    // The head part
-    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a LedgerSymbol (with decoration?) standard size
      *
-     * @param decorated true for a decorated image
+     * @param family the musicFont family
      */
-    public LedgerSymbol (boolean decorated)
+    public LedgerSymbol (MusicFamily family)
     {
-        this(false, decorated);
-    }
-
-    /**
-     * Create a LedgerSymbol (with decoration?)
-     *
-     * @param isIcon    true for an icon
-     * @param decorated true for a decorated image
-     */
-    protected LedgerSymbol (boolean isIcon,
-                            boolean decorated)
-    {
-        super(isIcon, Shape.LEDGER, decorated);
+        super(Shape.LEDGER, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
     @Override
     public LedgerInter.Model getModel (MusicFont font,
-                                       Point location,
-                                       Alignment alignment)
+                                       Point location)
     {
-        MyParams p = getParams(font);
-        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        p.model.translate(loc.getX(), loc.getY());
+        final MyParams p = getParams(font);
+        final double width = p.rect.getWidth();
 
-        return p.model;
-    }
-
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new LedgerSymbol(isIcon, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new LedgerSymbol(true, decorated);
+        return new LedgerInter.Model(
+                location.x - width / 2,
+                location.y,
+                location.x + width / 2,
+                location.y);
     }
 
     //-----------//
@@ -109,24 +77,16 @@ public class LedgerSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
+        final MyParams p = new MyParams();
+        p.layout = font.layoutShapeByCode(shape);
+        p.rect = p.layout.getBounds();
 
-        // Typical ledger length
-        final int width = (int) Math.ceil(
-                font.getStaffInterline() * LedgerInter.getDefaultLength().getValue());
-        p.thickness = (int) Math.ceil(LedgerInter.DEFAULT_THICKNESS);
-
-        if (decorated) {
-            // Head layout
-            p.layout = font.layout(head.getString());
-
-            p.rect = new Rectangle2D.Double(0, 0, width, p.layout.getBounds().getHeight());
-        } else {
-            p.rect = new Rectangle2D.Double(0, 0, width, p.thickness);
+        if (isDecorated) {
+            // Add head layout
+            p.headLayout = font.layoutShapeByCode(Shape.NOTEHEAD_BLACK);
+            final Rectangle2D hr = p.headLayout.getBounds();
+            Rectangle2D.union(p.rect, hr, p.rect);
         }
-
-        final double y = p.rect.getHeight() / 2.0;
-        p.model = new LedgerInter.Model(0, y, width, y);
 
         return p;
     }
@@ -140,40 +100,35 @@ public class LedgerSymbol
                           Point2D location,
                           Alignment alignment)
     {
-        MyParams p = (MyParams) params;
+        final MyParams p = (MyParams) params;
+        final Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
-        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-
-        if (decorated) {
-            // Draw a note head (using composite)
-            Composite oldComposite = g.getComposite();
+        if (isDecorated) {
+            // Draw a note head, using composite
+            final Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
-            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
+            MusicFont.paint(g, p.headLayout, loc, AREA_CENTER);
             g.setComposite(oldComposite);
         }
 
         // Ledger itself
-        PointUtil.add(loc, -p.rect.getWidth() / 2, 0);
-        p.model.translate(loc.getX(), 0);
-        g.draw(new Line2D.Double(p.model.p1, p.model.p2));
+        MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: not used
-        // layout: head decoration
-        // rect:   global image
+        // layout: ledger
+        // rect:   global image (ledger + head?)
         //
-        // ledger thickness
-        int thickness;
-
-        // model
-        LedgerInter.Model model;
+        // Layout for head decoration
+        TextLayout headLayout;
     }
 }

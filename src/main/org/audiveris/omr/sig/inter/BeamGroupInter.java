@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,6 +27,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -37,6 +38,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamBeamRelation;
 import org.audiveris.omr.sig.relation.BeamRestRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
@@ -66,11 +68,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sig.relation.Containment;
 
 /**
  * Class <code>BeamGroupInter</code> represents a group of related beams.
+ * <p>
+ * Within a group, beams are rather parallel and with no large vertical gap.
  * <p>
  * It is an <code>InterEnsemble</code> linked via <code>Containment</code> relations to its Beam
  * members.
@@ -80,9 +82,8 @@ import org.audiveris.omr.sig.relation.Containment;
  * <p>
  * This class replaces the (old)BeamGroup class that was not an inter and had to directly manage its
  * contained beams.
- * <p>
- * @since 5.2
  *
+ * @since 5.2
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
@@ -98,10 +99,10 @@ public class BeamGroupInter
     private static final Logger logger = LoggerFactory.getLogger(BeamGroupInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Indicates if this beam group relates to more than one staff.
      */
@@ -110,6 +111,7 @@ public class BeamGroupInter
     private boolean multiStaff;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new instance of BeamGroup.
      */
@@ -119,6 +121,7 @@ public class BeamGroupInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -149,103 +152,89 @@ public class BeamGroupInter
         }
     }
 
-    //----------------//
-    // canBeNeighbors //
-    //----------------//
+    //---------------//
+    // checkForSplit //
+    //---------------//
     /**
-     * Check whether the two provided beams can belong to the same group, one directly
-     * above or below the other.
+     * Run a consistency check on the group, and detect when a group has to be split.
      *
-     * @param one   a beam candidate
-     * @param two   another beam candidate
-     * @param scale the sheet or staff scale
-     * @return true if they can be direct neighbors in a group
+     * @return the detected alien chord, or null if no split is needed
      */
-    public static boolean canBeNeighbors (AbstractBeamInter one,
-                                          AbstractBeamInter two,
-                                          Scale scale)
+    private AbstractChordInter checkForSplit ()
     {
-        return canBeNeighbors(one,
-                              two,
-                              scale.toPixelsDouble(constants.minXOverlap),
-                              scale.toPixelsDouble(constants.maxYDistance),
-                              constants.maxSlopeDiff.getValue());
-    }
+        final Scale scale = sig.getSystem().getSheet().getScale();
+        final double maxChordDy = constants.maxChordDy.getValue();
 
-    //----------------//
-    // canBeNeighbors //
-    //----------------//
-    /**
-     * Check whether the two provided beams can belong to the same group, one directly
-     * above or below the other.
-     *
-     * @param one          a beam candidate
-     * @param two          another beam candidate
-     * @param minXOverlap  minimum horizontal overlap between candidates median lines
-     * @param maxYDistance maximum vertical distance between candidates median lines
-     * @param maxSlopeDiff maximum slope difference between candidates median lines
-     * @return true if they can be direct neighbors in a group
-     */
-    public static boolean canBeNeighbors (AbstractBeamInter one,
-                                          AbstractBeamInter two,
-                                          double minXOverlap,
-                                          double maxYDistance,
-                                          double maxSlopeDiff)
-    {
-        if (one.isVip() && two.isVip()) {
-            logger.info("VIP canBeNeighbors? {} {}", one, two);
+        // Make sure all chords are part of the same group
+        // We check the vertical distance between any chord and the beams above or below the chord.
+        for (AbstractChordInter chord : getChords()) {
+            if (chord.isVip()) {
+                logger.info("VIP checkForSplit on {}", chord);
+            }
+
+            final Rectangle chordBox = chord.getBounds();
+            final Point tail = chord.getTailLocation();
+
+            // Get the collection of questionable beams WRT chord
+            List<AbstractBeamInter> questionableBeams = new ArrayList<>();
+
+            for (Inter bInter : getMembers()) {
+                final AbstractBeamInter beam = (AbstractBeamInter) bInter;
+                // Skip beam hooks
+                // Skip beams attached to this chord
+                // Skip beams with no abscissa overlap WRT this chord
+                if (!beam.isHook() && !beam.getChords().contains(chord) && (GeoUtil.xOverlap(
+                        beam.getBounds(),
+                        chordBox) > 0)) {
+                    // Check vertical gap
+                    int lineY = (int) Math.rint(LineUtil.yAtX(beam.getMedian(), tail.x));
+                    int yOverlap = Math.min(lineY, chordBox.y + chordBox.height) - Math.max(
+                            lineY,
+                            chordBox.y);
+
+                    if (yOverlap < 0) {
+                        questionableBeams.add(beam);
+                    }
+                }
+            }
+
+            if (questionableBeams.isEmpty()) {
+                continue; // No problem found around the chord at hand
+            }
+
+            // Sort these questionable beams vertically, at chord stem abscissa,
+            // according to distance from chord tail.
+            Collections.sort(
+                    questionableBeams,
+                    (b1,
+                     b2) ->
+                    {
+                        final double y1 = LineUtil.yAtX(b1.getMedian(), tail.x);
+                        final double tailDy1 = Math.abs(y1 - tail.y);
+                        final double y2 = LineUtil.yAtX(b2.getMedian(), tail.x);
+                        final double tailDy2 = Math.abs(y2 - tail.y);
+                        return Double.compare(tailDy1, tailDy2);
+                    });
+
+            AbstractBeamInter nearestBeam = questionableBeams.get(0);
+            int lineY = (int) Math.rint(LineUtil.yAtX(nearestBeam.getMedian(), tail.x));
+            int tailDy = Math.abs(lineY - tail.y);
+            double normedDy = scale.pixelsToFrac(tailDy);
+
+            if (normedDy > maxChordDy) {
+                logger.debug(
+                        "Vertical gap between {} and {}, {} vs {}",
+                        chord,
+                        nearestBeam,
+                        normedDy,
+                        maxChordDy);
+
+                // Split the beam group here
+                return chord;
+            }
         }
 
-        final Line2D m1 = one.getMedian();
-        final Line2D m2 = two.getMedian();
-
-        // Check min x overlap
-        final double maxLeft = Math.max(m1.getX1(), m2.getX1());
-        final double minRight = Math.min(m1.getX2(), m2.getX2());
-        final double xOverlap = minRight - maxLeft;
-
-        if (xOverlap < minXOverlap) {
-            return false;
-        }
-
-        // Measure vertical distance at middle of x overlap
-        final double x = (maxLeft + minRight) / 2;
-        final double y1 = LineUtil.yAtX(m1, x);
-        final double y2 = LineUtil.yAtX(m2, x);
-        final double dy = Math.abs(y2 - y1);
-
-        if (dy > maxYDistance) {
-            return false;
-        }
-
-        // Check slopes
-        final double slope1 = LineUtil.getSlope(m1);
-        final double slope2 = LineUtil.getSlope(m2);
-        final double slopeDiff = Math.abs(slope2 - slope1);
-
-        return slopeDiff <= maxSlopeDiff;
-    }
-
-    //----------------------------//
-    // checkSystemForOldBeamGroup //
-    //----------------------------//
-    /**
-     * Check whether in the provided system beams have their related beam group,
-     * and, if not, populate the system with needed BeamGroupInter instances.
-     *
-     * @param system the system to check for beam groups
-     */
-    @Deprecated
-    public static void checkSystemForOldBeamGroup (SystemInfo system)
-    {
-        // Checking one beam is enough
-        if (system.getSig().vertexSet().stream().anyMatch(inter
-                -> !inter.isRemoved()
-                           && (inter instanceof AbstractBeamInter)
-                           && ((AbstractBeamInter) inter).getGroup() == null)) {
-            logger.info("Upgrading BeamGroups for {}", system);
-            populateSystem(system);
-        }
+        return null; // everything is OK
     }
 
     //------------------------//
@@ -253,7 +242,7 @@ public class BeamGroupInter
     //------------------------//
     /**
      * Detect all the interleaved rests for this beam group.
-     *
+     * <p>
      * Rests lookup depends on the potential existence of an explicit voice relation
      * between the rest and one of the stemmed chords of the beam group:
      * <ul>
@@ -270,13 +259,15 @@ public class BeamGroupInter
     public void detectInterleavedRests ()
     {
         final List<AbstractChordInter> headChords = getChords();
-        final Set<RestChordInter> blackRests = getLinkedRests(headChords,
-                                                              false,
-                                                              SeparateVoiceRelation.class);
-        final Set<RestChordInter> whiteRests = getLinkedRests(headChords,
-                                                              true,
-                                                              SameVoiceRelation.class,
-                                                              NextInVoiceRelation.class);
+        final Set<RestChordInter> blackRests = getLinkedRests(
+                headChords,
+                false,
+                SeparateVoiceRelation.class);
+        final Set<RestChordInter> whiteRests = getLinkedRests(
+                headChords,
+                true,
+                SameVoiceRelation.class,
+                NextInVoiceRelation.class);
         whiteRests.removeAll(blackRests); // Safer
 
         // Plain candidate rests
@@ -405,25 +396,6 @@ public class BeamGroupInter
         return EnsembleHelper.computeMeanContextualGrade(this);
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        if (multiStaff) {
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-
-            sb.append("multi-staff");
-        }
-
-        return sb.toString();
-    }
-
     //-------------//
     // getDuration //
     //-------------//
@@ -487,6 +459,56 @@ public class BeamGroupInter
         }
     }
 
+    //----------------//
+    // getLinkedRests //
+    //----------------//
+    /**
+     * Report the rest chords with a specific relation to this group.
+     *
+     * @param headChords head chords of this group
+     * @param transitive true for re-applying search to rest chords themselves, etc
+     * @param classes    desired relation classes
+     * @return white listed rest chords
+     */
+    private Set<RestChordInter> getLinkedRests (List<AbstractChordInter> headChords,
+                                                boolean transitive,
+                                                Class<?>... classes)
+    {
+        final Set<RestChordInter> allRests = new LinkedHashSet<>();
+
+        // First, restChords directly linked to headChords
+        for (AbstractChordInter ch : headChords) {
+            for (Relation sameRel : sig.getRelations(ch, classes)) {
+                final Inter other = sig.getOppositeInter(ch, sameRel);
+
+                if (other instanceof RestChordInter restChordInter) {
+                    allRests.add(restChordInter);
+                }
+            }
+        }
+
+        if (transitive) {
+            // Then, other restChords directly linked to already collected restChords, etc...
+            final Set<RestChordInter> newRests = new LinkedHashSet<>();
+            do {
+                allRests.addAll(newRests);
+                newRests.clear();
+
+                for (AbstractChordInter ch : allRests) {
+                    for (Relation sameRel : sig.getRelations(ch, classes)) {
+                        final Inter other = sig.getOppositeInter(ch, sameRel);
+
+                        if ((other instanceof RestChordInter) && !allRests.contains(other)) {
+                            newRests.add((RestChordInter) other);
+                        }
+                    }
+                }
+            } while (!newRests.isEmpty());
+        }
+
+        return allRests;
+    }
+
     //---------------//
     // getMainMedian //
     //---------------//
@@ -514,33 +536,6 @@ public class BeamGroupInter
         return mainMedian;
     }
 
-    //-----------------//
-    // getMaxSlopeDiff //
-    //-----------------//
-    /**
-     * Report the maximum acceptable difference in slope between beams of a group.
-     *
-     * @return max slope diff
-     */
-    public static double getMaxSlopeDiff ()
-    {
-        return constants.maxSlopeDiff.getValue();
-    }
-
-    //-----------------//
-    // getMaxYDistance //
-    //-----------------//
-    /**
-     * Report the maximum acceptable vertical distance between median lines of subsequent
-     * beams within a group.
-     *
-     * @return max vertical distance (median to median)
-     */
-    public static Scale.Fraction getMaxYDistance ()
-    {
-        return constants.maxYDistance;
-    }
-
     //-------------//
     // getMeasures //
     //-------------//
@@ -562,8 +557,10 @@ public class BeamGroupInter
 
         // Sort measures by abscissa
         List<Measure> measureList = new ArrayList<>(measureSet);
-        Collections.sort(measureList, (m1, m2) -> Double.compare(m1.getStack().getLeft(),
-                                                                 m2.getStack().getLeft()));
+        Collections.sort(
+                measureList,
+                (m1,
+                 m2) -> Double.compare(m1.getStack().getLeft(), m2.getStack().getLeft()));
 
         return measureList;
     }
@@ -694,14 +691,8 @@ public class BeamGroupInter
     @Override
     public String internals ()
     {
-        final StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(Entities.ids(" beams", getMembers()));
-
-        if (multiStaff) {
-            sb.append(" multiStaff");
-        }
-
-        return sb.toString();
+        return new StringBuilder(super.internals()).append(Entities.ids(" beams", getMembers()))
+                .toString();
     }
 
     //-----------------//
@@ -716,19 +707,6 @@ public class BeamGroupInter
         bounds = null;
     }
 
-    //--------------//
-    // isMultiStaff //
-    //--------------//
-    /**
-     * Tell whether this beam group is linked to more than one staff.
-     *
-     * @return the multiStaff
-     */
-    public boolean isMultiStaff ()
-    {
-        return multiStaff;
-    }
-
     //-------//
     // isVip //
     //-------//
@@ -736,6 +714,373 @@ public class BeamGroupInter
     public boolean isVip ()
     {
         return vip;
+    }
+
+    //-------------//
+    // lookupRests //
+    //-------------//
+    /**
+     * Look for plain rests interleaved between the provided left and right headChords.
+     * <p>
+     * A lookup area is defined between every sequence of two stemmed chords of the beam group,
+     * and all measure rests are checked for intersection with this lookup area:
+     * <ul>
+     * <li>If the 2 chords are in the same vertical direction, the area is the parallelogram
+     * defined by their stems, vertically extended if needed to the middle line of related staff.
+     * <li>If in opposite directions, we focus only above the beams.
+     * The area is then defined by the up stem and the main beam median line,
+     * vertically extended if needed to the middle line of the upper staff
+     * </ul>
+     * <p>
+     * Additional checks:
+     * <ul>
+     * <li>An interleaved rest is expected to lie horizontally BETWEEN the beam chords, hence
+     * we impose that rest bounds stay horizontally away from left and right chords.
+     * <li>Two interleaved rests cannot overlap in abscissa, so only the one closer to the
+     * related beam is kept.
+     * <li>An interleaved rest can relate to just one beam group.
+     * So, if the rest at hand is already related to (another) beam group, the more distant relation
+     * is discarded.
+     * <li>A rest chord can belong to exactly one voice.
+     * NOTA: this is not yet implemented, and might be questionable (notion of "shared rests").
+     * </ul>
+     *
+     * @param left       provided head chord on left side
+     * @param right      provided head chord on right side
+     * @param candidates plain candidate rests, already purged of white-listed or blacklisted rests
+     * @param whiteRests white-listed rests
+     */
+    private void lookupRests (AbstractChordInter left,
+                              AbstractChordInter right,
+                              Set<RestChordInter> candidates,
+                              Set<RestChordInter> whiteRests)
+    {
+        final Rectangle leftBox = left.getBounds();
+        final Point leftHead = left.getHeadLocation();
+        final Point leftTail = left.getTailLocation();
+        final Rectangle rightBox = right.getBounds();
+        final Point rightHead = right.getHeadLocation();
+        final Point rightTail = right.getTailLocation();
+        final Line2D median = getMainMedian();
+
+        // Define proper lookup area, according to beamed chords directions
+        final Polygon polygon = new Polygon();
+        final int leftDir = Integer.signum(leftHead.y - leftTail.y);
+        final int rightDir = Integer.signum(rightHead.y - rightTail.y);
+
+        if (leftDir == rightDir) {
+            if ((left.getStaff() != null) && left.getStaff() == right.getStaff()) {
+                // Extend heads vertically to staff middle line
+                final LineInfo midLine = left.getStaff().getMidLine();
+                final int midLeft = midLine.yAt(leftHead.x);
+                final int midRight = midLine.yAt(rightHead.x);
+
+                if (leftDir * (midLeft - leftHead.y) > 0) {
+                    leftHead.y = midLeft;
+                }
+
+                if (leftDir * (midRight - rightHead.y) > 0) {
+                    rightHead.y = midRight;
+                }
+            }
+
+            polygon.addPoint(rightHead.x, rightHead.y);
+            polygon.addPoint(rightTail.x, rightTail.y);
+            polygon.addPoint(leftTail.x, leftTail.y);
+            polygon.addPoint(leftHead.x, leftHead.y);
+        } else {
+            // Opposite directions, we select the area ABOVE the beam (this is questionable...)
+            final Point upHead = leftDir < 0 ? leftHead : rightHead;
+            final Point upTail = leftDir < 0 ? leftTail : rightTail;
+            final Point downHead = leftDir > 0 ? leftHead : rightHead;
+            final Point downTail = leftDir > 0 ? leftTail : rightTail;
+
+            // Extend upHead vertically to upper staff middle line
+            final Staff upStaff = leftDir < 0 ? left.getStaff() : right.getStaff();
+            final LineInfo midLine = upStaff.getMidLine();
+            final int mid = midLine.yAt((leftHead.x + rightHead.x) / 2);
+
+            if (upHead.y > mid) {
+                upHead.y = mid;
+            }
+
+            polygon.addPoint(upHead.x, upHead.y);
+
+            final Point upMedian = PointUtil.rounded(
+                    LineUtil.intersection(median, new Line2D.Double(upHead, upTail)));
+            polygon.addPoint(upMedian.x, upMedian.y);
+
+            final Point downMedian = PointUtil.rounded(
+                    LineUtil.intersection(median, new Line2D.Double(downHead, downTail)));
+            polygon.addPoint(downMedian.x, downMedian.y);
+
+            polygon.addPoint(downMedian.x, downMedian.y - (upMedian.y - upHead.y));
+        }
+
+        CandidateLoop:
+        for (RestChordInter restChord : candidates) {
+            final Rectangle box = restChord.getBounds();
+
+            if (restChord.isVip()) {
+                logger.info("VIP lookupRests restChord: {}", restChord);
+            }
+
+            if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                final RestInter rest = (RestInter) restChord.getMembers().get(0);
+                final Point center = rest.getCenter();
+                final Line2D vertical = sig.getSystem().getSkew().skewedVertical(center);
+
+                // Check candidate lies horizontally away from left & right chords
+                if ((GeoUtil.xOverlap(box, leftBox) > 0) || (GeoUtil.xOverlap(box, rightBox) > 0)) {
+                    logger.debug("{} overlaps {} or {}", restChord, left, right);
+                    continue;
+                }
+
+                final NearestBeam nearest = getNearestBeam(center);
+
+                if (nearest == null) {
+                    continue;
+                }
+
+                // Check no abscissa overlap with sibling interleaved rests
+                for (Relation rel : sig.getRelations(nearest.beam, BeamRestRelation.class)) {
+                    final BeamRestRelation br = (BeamRestRelation) rel;
+                    final Inter oRest = sig.getOppositeInter(nearest.beam, rel);
+                    final Point2D pt = LineUtil.intersectionAtY(vertical, oRest.getCenter().y);
+
+                    if (oRest.getBounds().contains(pt)) {
+                        // Give up in front of a whitelisted rest
+                        final RestChordInter oRestChord = (RestChordInter) oRest.getEnsemble();
+
+                        if (whiteRests.contains(oRestChord)) {
+                            continue CandidateLoop;
+                        }
+
+                        // Compare distance to beam
+                        if (nearest.dist > br.getDistance()) {
+                            logger.debug(
+                                    "{} farther to {} than {}",
+                                    restChord,
+                                    nearest.beam,
+                                    oRest);
+
+                            continue CandidateLoop;
+                        } else {
+                            logger.debug("{} closer to {} than {}", restChord, nearest.beam, oRest);
+                            sig.removeEdge(rel);
+                        }
+                    }
+                }
+
+                // Case of rest already interleaved (in another beam group)
+                for (Relation rel : sig.getRelations(rest, BeamRestRelation.class)) {
+                    final BeamRestRelation br = (BeamRestRelation) rel;
+                    final Inter oBeam = sig.getOppositeInter(rest, rel);
+
+                    if (nearest.dist > br.getDistance()) {
+                        logger.debug("{} farther to {} than to {}", restChord, nearest.beam, oBeam);
+
+                        continue CandidateLoop;
+                    } else {
+                        logger.debug("{} closer to {} than to {}", restChord, nearest.beam, oBeam);
+                        sig.removeEdge(rel);
+                    }
+                }
+
+                // All tests are OK
+                sig.addEdge(nearest.beam, rest, new BeamRestRelation());
+            }
+        }
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof AbstractBeamInter)) {
+            throw new IllegalArgumentException(
+                    "Only AbstractBeamInter can be removed from BeamGroupInter");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * Set a voice to this beam group, and to the related entities.
+     *
+     * @param voice the voice to set
+     */
+    public void setVoice (Voice voice)
+    {
+        // Propagate voice to the beamed chords, including the interleaved rests if any
+        for (AbstractChordInter chord : getAllChords()) {
+            if (chord.getMeasure() == voice.getMeasure()) {
+                chord.setVoice(voice);
+            }
+        }
+    }
+
+    //-------//
+    // split //
+    //-------//
+    private void split (AbstractChordInter alienChord)
+    {
+        new Splitter(alienChord).process();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // assignGroup //
+    //-------------//
+    /**
+     * Recursively determine BeamGroupInter for the provided beam, as well as all other
+     * beams connected within the same group.
+     *
+     * @param group the beam group
+     * @param beam  the beam seed
+     */
+    private static void assignGroup (BeamGroupInter group,
+                                     AbstractBeamInter beam)
+    {
+        group.addMember(beam);
+
+        for (AbstractChordInter chord : beam.getChords()) {
+            for (AbstractBeamInter b : chord.getBeams()) {
+                if (b.getEnsemble() == null) {
+                    assignGroup(group, b);
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // canBeNeighbors //
+    //----------------//
+    /**
+     * Check whether the two provided beams can belong to the same group, one directly
+     * above or below the other.
+     *
+     * @param one          a beam candidate
+     * @param two          another beam candidate
+     * @param minXOverlap  minimum horizontal overlap between candidates median lines
+     * @param maxYDistance maximum vertical distance between candidates median lines
+     * @param maxSlopeDiff maximum slope difference between candidates median lines
+     * @return true if they can be direct neighbors in a group
+     */
+    public static boolean canBeNeighbors (AbstractBeamInter one,
+                                          AbstractBeamInter two,
+                                          double minXOverlap,
+                                          double maxYDistance,
+                                          double maxSlopeDiff)
+    {
+        if (one.isVip() && two.isVip()) {
+            logger.info("VIP canBeNeighbors? {} {}", one, two);
+        }
+
+        final Line2D m1 = one.getMedian();
+        final Line2D m2 = two.getMedian();
+
+        // Check min x overlap
+        final double maxLeft = Math.max(m1.getX1(), m2.getX1());
+        final double minRight = Math.min(m1.getX2(), m2.getX2());
+        final double xOverlap = minRight - maxLeft;
+
+        if (xOverlap < minXOverlap) {
+            return false;
+        }
+
+        // Measure vertical distance at middle of x overlap
+        final double x = (maxLeft + minRight) / 2;
+        final double y1 = LineUtil.yAtX(m1, x);
+        final double y2 = LineUtil.yAtX(m2, x);
+        final double dy = Math.abs(y2 - y1);
+
+        if (dy > maxYDistance) {
+            return false;
+        }
+
+        // Check slopes
+        final double slope1 = LineUtil.getSlope(m1);
+        final double slope2 = LineUtil.getSlope(m2);
+        final double slopeDiff = Math.abs(slope2 - slope1);
+
+        return slopeDiff <= maxSlopeDiff;
+    }
+
+    //----------------//
+    // canBeNeighbors //
+    //----------------//
+    /**
+     * Check whether the two provided beams can belong to the same group, one directly
+     * above or below the other.
+     *
+     * @param one   a beam candidate
+     * @param two   another beam candidate
+     * @param scale the sheet or staff scale
+     * @return true if they can be direct neighbors in a group
+     */
+    public static boolean canBeNeighbors (AbstractBeamInter one,
+                                          AbstractBeamInter two,
+                                          Scale scale)
+    {
+        return canBeNeighbors(
+                one,
+                two,
+                scale.toPixelsDouble(constants.minXOverlap),
+                scale.toPixelsDouble(constants.maxYDistance),
+                constants.maxSlopeDiff.getValue());
+    }
+
+    //-----------------//
+    // checkBeamGroups //
+    //-----------------//
+    /**
+     * Check all the BeamGroupInter instances of the given measure, to find the first
+     * split if any to perform.
+     *
+     * @param measure the given measure
+     * @return the first split parameters, or null if everything is OK
+     */
+    private static boolean checkBeamGroups (Measure measure)
+    {
+        for (BeamGroupInter group : measure.getBeamGroups()) {
+            AbstractChordInter alienChord = group.checkForSplit();
+
+            if (alienChord != null) {
+                group.split(alienChord);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //----------------------------//
+    // checkSystemForOldBeamGroup //
+    //----------------------------//
+    /**
+     * Check whether in the provided system beams have their related beam group,
+     * and, if not, populate the system with needed BeamGroupInter instances.
+     *
+     * @param system the system to check for beam groups
+     */
+    @Deprecated
+    public static void checkSystemForOldBeamGroup (SystemInfo system)
+    {
+        // Checking one beam is enough
+        if (system.getSig().vertexSet().stream().anyMatch(
+                inter -> !inter.isRemoved() && (inter instanceof AbstractBeamInter)
+                        && ((AbstractBeamInter) inter).getGroup() == null)) {
+            logger.info("Upgrading BeamGroups for {}", system);
+            populateSystem(system);
+        }
     }
 
     //---------------//
@@ -780,77 +1125,30 @@ public class BeamGroupInter
     }
 
     //-----------------//
-    // populateMeasure //
+    // getMaxSlopeDiff //
     //-----------------//
     /**
-     * Populate all the BeamGroupInter instances for a given measure.
+     * Report the maximum acceptable difference in slope between beams of a group.
      *
-     * @param measure         the containing measure
-     * @param checkGroupSplit true for check on group split
+     * @return max slope diff
      */
-    public static void populateMeasure (Measure measure,
-                                        boolean checkGroupSplit)
+    public static double getMaxSlopeDiff ()
     {
-        // Retrieve beams in this measure
-        final Set<AbstractBeamInter> beams = new LinkedHashSet<>();
-        for (AbstractChordInter chord : measure.getHeadChords()) {
-            beams.addAll(chord.getBeams());
-        }
-
-        // Retrieve beam groups for this measure
-        final Set<BeamGroupInter> groups = new LinkedHashSet<>();
-        for (AbstractBeamInter beam : beams) {
-            if (beam.isRemoved()) {
-                continue;
-            }
-
-            final BeamGroupInter group = beam.getGroup();
-            groups.add(group);
-        }
-
-        // Detect groups that are linked to more than one staff
-        for (BeamGroupInter group : measure.getBeamGroups()) {
-            group.countStaves();
-        }
+        return constants.maxSlopeDiff.getValue();
     }
 
-    //----------------------//
-    // populateCueAggregate //
-    //----------------------//
+    //-----------------//
+    // getMaxYDistance //
+    //-----------------//
     /**
-     * Group the (cue) beams of a CueAggregate.
+     * Report the maximum acceptable vertical distance between median lines of subsequent
+     * beams within a group.
      *
-     * @param beams (cue) beams found in CueAggregate
+     * @return max vertical distance (median to median)
      */
-    public static void populateCueAggregate (List<Inter> beams)
+    public static Scale.Fraction getMaxYDistance ()
     {
-        if (beams.isEmpty()) {
-            return;
-        }
-
-        final Scale scale = beams.get(0).getSig().getSystem().getSheet().getScale();
-        groupBeams(beams,
-                   scale.toPixels(constants.cueMinXOverlap),
-                   scale.toPixels(constants.cueMaxYDistance),
-                   constants.cueMaxSlopeDiff.getValue());
-    }
-
-    //----------------//
-    // populateSystem //
-    //----------------//
-    /**
-     * Populate a system with all the needed BeamGroupInter instances to gather the
-     * system beams.
-     *
-     * @param system the system to process
-     */
-    public static void populateSystem (SystemInfo system)
-    {
-        final Scale scale = system.getSheet().getScale();
-        groupBeams(system.getSig().inters(AbstractBeamInter.class),
-                   scale.toPixels(constants.minXOverlap),
-                   scale.toPixels(constants.maxYDistance),
-                   constants.maxSlopeDiff.getValue());
+        return constants.maxYDistance;
     }
 
     //------------//
@@ -934,449 +1232,93 @@ public class BeamGroupInter
         }
     }
 
-    //--------------//
-    // removeMember //
-    //--------------//
-    @Override
-    public void removeMember (Inter member)
-    {
-        if (!(member instanceof AbstractBeamInter)) {
-            throw new IllegalArgumentException(
-                    "Only AbstractBeamInter can be removed from BeamGroupInter");
-        }
-
-        EnsembleHelper.removeMember(this, member);
-    }
-
-    //---------------//
-    // setMultiStaff //
-    //---------------//
-    public void setMultiStaff (boolean multiStaff)
-    {
-        this.multiStaff = multiStaff;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip (boolean vip)
-    {
-        this.vip = vip;
-    }
-
-    //----------//
-    // setVoice //
-    //----------//
+    //----------------------//
+    // populateCueAggregate //
+    //----------------------//
     /**
-     * Set a voice to this beam group, and to the related entities.
+     * Group the (cue) beams of a CueAggregate.
      *
-     * @see #justAssignVoice(Voice)
-     *
-     * @param voice the voice to set
+     * @param beams (cue) beams found in CueAggregate
      */
-    public void setVoice (Voice voice)
+    public static void populateCueAggregate (List<Inter> beams)
     {
-        // Propagate voice to the beamed chords, including the interleaved rests if any
-        for (AbstractChordInter chord : getAllChords()) {
-            if (chord.getMeasure() == voice.getMeasure()) {
-                chord.setVoice(voice);
-            }
-        }
-    }
-
-    //-------------//
-    // assignGroup //
-    //-------------//
-    /**
-     * Recursively determine BeamGroupInter for the provided beam, as well as all other
-     * beams connected within the same group.
-     *
-     * @param beam    the beam seed
-     * @param measure the containing measure
-     */
-    private static void assignGroup (BeamGroupInter group,
-                                     AbstractBeamInter beam)
-    {
-        group.addMember(beam);
-
-        for (AbstractChordInter chord : beam.getChords()) {
-            for (AbstractBeamInter b : chord.getBeams()) {
-                if (b.getEnsemble() == null) {
-                    assignGroup(group, b);
-                }
-            }
-        }
-    }
-
-    //-----------------//
-    // checkBeamGroups //
-    //-----------------//
-    /**
-     * Check all the BeamGroupInter instances of the given measure, to find the first
-     * split if any to perform.
-     *
-     * @param measure the given measure
-     * @return the first split parameters, or null if everything is OK
-     */
-    private static boolean checkBeamGroups (Measure measure)
-    {
-        for (BeamGroupInter group : measure.getBeamGroups()) {
-            AbstractChordInter alienChord = group.checkForSplit();
-
-            if (alienChord != null) {
-                group.split(alienChord);
-
-                return true;
-            }
+        if (beams.isEmpty()) {
+            return;
         }
 
-        return false;
-    }
-
-    //---------------//
-    // checkForSplit //
-    //---------------//
-    /**
-     * Run a consistency check on the group, and detect when a group has to be split.
-     *
-     * @return the detected alien chord, or null if no split is needed
-     */
-    private AbstractChordInter checkForSplit ()
-    {
-        final Scale scale = sig.getSystem().getSheet().getScale();
-        final double maxChordDy = constants.maxChordDy.getValue();
-
-        // Make sure all chords are part of the same group
-        // We check the vertical distance between any chord and the beams above or below the chord.
-        for (AbstractChordInter chord : getChords()) {
-            if (chord.isVip()) {
-                logger.info("VIP checkForSplit on {}", chord);
-            }
-
-            final Rectangle chordBox = chord.getBounds();
-            final Point tail = chord.getTailLocation();
-
-            // Get the collection of questionable beams WRT chord
-            List<AbstractBeamInter> questionableBeams = new ArrayList<>();
-
-            for (Inter bInter : getMembers()) {
-                final AbstractBeamInter beam = (AbstractBeamInter) bInter;
-                // Skip beam hooks
-                // Skip beams attached to this chord
-                // Skip beams with no abscissa overlap WRT this chord
-                if (!beam.isHook() && !beam.getChords().contains(chord)
-                            && (GeoUtil.xOverlap(beam.getBounds(), chordBox) > 0)) {
-                    // Check vertical gap
-                    int lineY = (int) Math.rint(LineUtil.yAtX(beam.getMedian(), tail.x));
-                    int yOverlap = Math.min(lineY, chordBox.y + chordBox.height) - Math.max(
-                            lineY,
-                            chordBox.y);
-
-                    if (yOverlap < 0) {
-                        questionableBeams.add(beam);
-                    }
-                }
-            }
-
-            if (questionableBeams.isEmpty()) {
-                continue; // No problem found around the chord at hand
-            }
-
-            // Sort these questionable beams vertically, at chord stem abscissa,
-            // according to distance from chord tail.
-            Collections.sort(questionableBeams, (b1, b2) -> {
-                         final double y1 = LineUtil.yAtX(b1.getMedian(), tail.x);
-                         final double tailDy1 = Math.abs(y1 - tail.y);
-                         final double y2 = LineUtil.yAtX(b2.getMedian(), tail.x);
-                         final double tailDy2 = Math.abs(y2 - tail.y);
-                         return Double.compare(tailDy1, tailDy2);
-                     });
-
-            AbstractBeamInter nearestBeam = questionableBeams.get(0);
-            int lineY = (int) Math.rint(LineUtil.yAtX(nearestBeam.getMedian(), tail.x));
-            int tailDy = Math.abs(lineY - tail.y);
-            double normedDy = scale.pixelsToFrac(tailDy);
-
-            if (normedDy > maxChordDy) {
-                logger.debug(
-                        "Vertical gap between {} and {}, {} vs {}",
-                        chord,
-                        nearestBeam,
-                        normedDy,
-                        maxChordDy);
-
-                // Split the beam group here
-                return chord;
-            }
-        }
-
-        return null; // everything is OK
-    }
-
-    //-------------//
-    // countStaves //
-    //-------------//
-    /**
-     * Check whether this group is linked to more than one staff.
-     * If so, it is flagged as such.
-     */
-    private void countStaves ()
-    {
-        Set<Staff> staves = new LinkedHashSet<>();
-
-        for (Inter beam : getMembers()) {
-            for (Relation rel : sig.getRelations(beam, BeamStemRelation.class)) {
-                Inter stem = sig.getOppositeInter(beam, rel);
-                Staff staff = stem.getStaff();
-
-                if (staff != null) {
-                    staves.add(staff);
-                }
-            }
-        }
-
-        if (staves.size() > 1) {
-            multiStaff = true;
-        }
+        final Scale scale = beams.get(0).getSig().getSystem().getSheet().getScale();
+        groupBeams(
+                beams,
+                scale.toPixels(constants.cueMinXOverlap),
+                scale.toPixels(constants.cueMaxYDistance),
+                constants.cueMaxSlopeDiff.getValue());
     }
 
     //----------------//
-    // getLinkedRests //
+    // populateSystem //
     //----------------//
     /**
-     * Report the rest chords with a specific relation to this group.
+     * Populate a system with all the needed BeamGroupInter instances to gather the
+     * system beams.
      *
-     * @param headChords head chords of this group
-     * @param transitive true for re-applying search to rest chords themselves, etc
-     * @param classes    desired relation classes
-     * @return white listed rest chords
+     * @param system the system to process
      */
-    private Set<RestChordInter> getLinkedRests (List<AbstractChordInter> headChords,
-                                                boolean transitive,
-                                                Class<?>... classes)
+    public static void populateSystem (SystemInfo system)
     {
-        final Set<RestChordInter> allRests = new LinkedHashSet<>();
-
-        // First, restChords directly linked to headChords
-        for (AbstractChordInter ch : headChords) {
-            for (Relation sameRel : sig.getRelations(ch, classes)) {
-                final Inter other = sig.getOppositeInter(ch, sameRel);
-
-                if (other instanceof RestChordInter) {
-                    allRests.add((RestChordInter) other);
-                }
-            }
-        }
-
-        if (transitive) {
-            // Then, other restChords directly linked to already collected restChords, etc...
-            final Set<RestChordInter> newRests = new LinkedHashSet<>();
-            do {
-                allRests.addAll(newRests);
-                newRests.clear();
-
-                for (AbstractChordInter ch : allRests) {
-                    for (Relation sameRel : sig.getRelations(ch, classes)) {
-                        final Inter other = sig.getOppositeInter(ch, sameRel);
-
-                        if ((other instanceof RestChordInter) && !allRests.contains(other)) {
-                            newRests.add((RestChordInter) other);
-                        }
-                    }
-                }
-            } while (!newRests.isEmpty());
-        }
-
-        return allRests;
-    }
-
-    //-------------//
-    // lookupRests //
-    //-------------//
-    /**
-     * Look for plain rests interleaved between the provided left and right headChords.
-     * <p>
-     * A lookup area is defined between every sequence of two stemmed chords of the beam group,
-     * and all measure rests are checked for intersection with this lookup area:
-     * <ul>
-     * <li>If the 2 chords are in the same vertical direction, the area is the parallelogram
-     * defined by their stems, vertically extended if needed to the middle line of related staff.
-     * <li>If in opposite directions, we focus only above the beams.
-     * The area is then defined by the up stem and the main beam median line,
-     * vertically extended if needed to the middle line of the upper staff
-     * </ul>
-     *
-     * Additional checks:
-     * <ul>
-     * <li>An interleaved rest is expected to lie horizontally BETWEEN the beam chords, hence
-     * we impose that rest bounds stay horizontally away from left and right chords.
-     * <li>Two interleaved rests cannot overlap in abscissa, so only the one closer to the
-     * related beam is kept.
-     * <li>An interleaved rest can relate to just one beam group.
-     * So, if the rest at hand is already related to (another) beam group, the more distant relation
-     * is discarded.
-     * <li>A rest chord can belong to exactly one voice.
-     * NOTA: this is not yet implemented, and might be questionable (notion of "shared rests").
-     * </ul>
-     *
-     * @param left       provided head chord on left side
-     * @param right      provided head chord on right side
-     * @param candidates plain candidate rests, already purged of white-listed or blacklisted rests
-     * @param whiteRests white-listed rests
-     */
-    private void lookupRests (AbstractChordInter left,
-                              AbstractChordInter right,
-                              Set<RestChordInter> candidates,
-                              Set<RestChordInter> whiteRests)
-    {
-        final Rectangle leftBox = left.getBounds();
-        final Point leftHead = left.getHeadLocation();
-        final Point leftTail = left.getTailLocation();
-        final Rectangle rightBox = right.getBounds();
-        final Point rightHead = right.getHeadLocation();
-        final Point rightTail = right.getTailLocation();
-        final Line2D median = getMainMedian();
-
-        // Define proper lookup area, according to beamed chords directions
-        final Polygon polygon = new Polygon();
-        final int leftDir = Integer.signum(leftHead.y - leftTail.y);
-        final int rightDir = Integer.signum(rightHead.y - rightTail.y);
-
-        if (leftDir == rightDir) {
-            if ((left.getStaff() != null) && left.getStaff() == right.getStaff()) {
-                // Extend heads vertically to staff middle line
-                final LineInfo midLine = left.getStaff().getMidLine();
-                final int midLeft = midLine.yAt(leftHead.x);
-                final int midRight = midLine.yAt(rightHead.x);
-
-                if (leftDir * (midLeft - leftHead.y) > 0) {
-                    leftHead.y = midLeft;
-                }
-
-                if (leftDir * (midRight - rightHead.y) > 0) {
-                    rightHead.y = midRight;
-                }
-            }
-
-            polygon.addPoint(rightHead.x, rightHead.y);
-            polygon.addPoint(rightTail.x, rightTail.y);
-            polygon.addPoint(leftTail.x, leftTail.y);
-            polygon.addPoint(leftHead.x, leftHead.y);
-        } else {
-            // Opposite directions, we select the area ABOVE the beam (this is questionable...)
-            final Point upHead = leftDir < 0 ? leftHead : rightHead;
-            final Point upTail = leftDir < 0 ? leftTail : rightTail;
-            final Point downHead = leftDir > 0 ? leftHead : rightHead;
-            final Point downTail = leftDir > 0 ? leftTail : rightTail;
-
-            // Extend upHead vertically to upper staff middle line
-            final Staff upStaff = leftDir < 0 ? left.getStaff() : right.getStaff();
-            final LineInfo midLine = upStaff.getMidLine();
-            final int mid = midLine.yAt((leftHead.x + rightHead.x) / 2);
-
-            if (upHead.y > mid) {
-                upHead.y = mid;
-            }
-
-            polygon.addPoint(upHead.x, upHead.y);
-
-            final Point upMedian = PointUtil.rounded(LineUtil.intersection(
-                    median,
-                    new Line2D.Double(upHead, upTail)));
-            polygon.addPoint(upMedian.x, upMedian.y);
-
-            final Point downMedian = PointUtil.rounded(LineUtil.intersection(
-                    median,
-                    new Line2D.Double(downHead, downTail)));
-            polygon.addPoint(downMedian.x, downMedian.y);
-
-            polygon.addPoint(downMedian.x,
-                             downMedian.y - (upMedian.y - upHead.y));
-        }
-
-        CandidateLoop:
-        for (RestChordInter restChord : candidates) {
-            final Rectangle box = restChord.getBounds();
-
-            if (restChord.isVip()) {
-                logger.info("VIP lookupRests restChord: {}", restChord);
-            }
-
-            if (polygon.intersects(box.x, box.y, box.width, box.height)) {
-                final RestInter rest = (RestInter) restChord.getMembers().get(0);
-                final Point center = rest.getCenter();
-                final Line2D vertical = sig.getSystem().getSkew().skewedVertical(center);
-
-                // Check candidate lies horizontally away from left & right chords
-                if ((GeoUtil.xOverlap(box, leftBox) > 0)
-                            || (GeoUtil.xOverlap(box, rightBox) > 0)) {
-                    logger.debug("{} overlaps {} or {}", restChord, left, right);
-                    continue;
-                }
-
-                final NearestBeam nearest = getNearestBeam(center);
-
-                if (nearest == null) {
-                    continue;
-                }
-
-                // Check no abscissa overlap with sibling interleaved rests
-                for (Relation rel : sig.getRelations(nearest.beam, BeamRestRelation.class)) {
-                    final BeamRestRelation br = (BeamRestRelation) rel;
-                    final Inter oRest = sig.getOppositeInter(nearest.beam, rel);
-                    final Point2D pt = LineUtil.intersectionAtY(vertical, oRest.getCenter().y);
-
-                    if (oRest.getBounds().contains(pt)) {
-                        // Give up in front of a whitelisted rest
-                        final RestChordInter oRestChord = (RestChordInter) oRest.getEnsemble();
-
-                        if (whiteRests.contains(oRestChord)) {
-                            continue CandidateLoop;
-                        }
-
-                        // Compare distance to beam
-                        if (nearest.dist > br.getDistance()) {
-                            logger.debug("{} farther to {} than {}", restChord, nearest.beam, oRest);
-
-                            continue CandidateLoop;
-                        } else {
-                            logger.debug("{} closer to {} than {}", restChord, nearest.beam, oRest);
-                            sig.removeEdge(rel);
-                        }
-                    }
-                }
-
-                // Case of rest already interleaved (in another beam group)
-                for (Relation rel : sig.getRelations(rest, BeamRestRelation.class)) {
-                    final BeamRestRelation br = (BeamRestRelation) rel;
-                    final Inter oBeam = sig.getOppositeInter(rest, rel);
-
-                    if (nearest.dist > br.getDistance()) {
-                        logger.debug("{} farther to {} than to {}", restChord, nearest.beam, oBeam);
-
-                        continue CandidateLoop;
-                    } else {
-                        logger.debug("{} closer to {} than to {}", restChord, nearest.beam, oBeam);
-                        sig.removeEdge(rel);
-                    }
-                }
-
-                // All tests are OK
-                sig.addEdge(nearest.beam, rest, new BeamRestRelation());
-            }
-        }
-    }
-
-    //-------//
-    // split //
-    //-------//
-    private void split (AbstractChordInter alienChord)
-    {
-        new Splitter(alienChord).process();
+        final Scale scale = system.getSheet().getScale();
+        groupBeams(
+                system.getSig().inters(AbstractBeamInter.class),
+                scale.toPixels(constants.minXOverlap),
+                scale.toPixels(constants.maxYDistance),
+                constants.maxSlopeDiff.getValue());
     }
 
     //~ Inner classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer maxSplitLoops = new Constant.Integer(
+                "loops",
+                10,
+                "Maximum number of loops allowed for splitting beam groups");
+
+        private final Scale.Fraction maxChordDy = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between a chord and a beam");
+
+        private final Scale.Fraction minXOverlap = new Scale.Fraction(
+                0.7,
+                "Minimum horizontal overlap between subsequent beams of a group");
+
+        private final Scale.Fraction cueMinXOverlap = new Scale.Fraction(
+                0.7,
+                "(Cue) Minimum horizontal overlap between subsequent beams of a group");
+
+        private final Scale.Fraction maxYDistance = new Scale.Fraction(
+                1.2, // Was 1.5
+                "Maximum vertical distance between subsequent beams of a group");
+
+        private final Scale.Fraction cueMaxYDistance = new Scale.Fraction(
+                1.0, // Was 1.5
+                "(Cue) Maximum vertical distance between subsequent beams of a group");
+
+        private final Constant.Double maxSlopeDiff = new Constant.Double(
+                "tangent",
+                0.065,
+                "Maximum slope difference between beams of a group");
+
+        private final Constant.Double cueMaxSlopeDiff = new Constant.Double(
+                "tangent",
+                0.2,
+                "(Cue) Maximum slope difference between beams of a group");
+
+    }
+
     //-------------//
     // NearestBeam //
     //-------------//
@@ -1428,36 +1370,6 @@ public class BeamGroupInter
         Splitter (AbstractChordInter alienChord)
         {
             this.alienChord = alienChord;
-        }
-
-        //---------//
-        // process //
-        //---------//
-        /**
-         * Actually split the group in two, around the detected pivot chord.
-         * <p>
-         * Some beams of this group instance are moved to a new separate BeamGroupInter instance.
-         * The two instances are articulated around a pivot chord, common to both groups.
-         * <p>
-         */
-        public void process ()
-        {
-            logger.debug("{} splitter on {}", BeamGroupInter.this, alienChord);
-
-            // The new group on alienChord side
-            alienGroup = createAlienGroup();
-
-            // Detect the pivot chord shared by the two groups, and "split" it for both groups
-            pivotChord = detectPivotChord();
-
-            // Dispatch beams attached to pivotChord to their proper group
-            dispatchPivotBeams();
-
-            // Make sure all beams have been dispatched
-            dispatchAllBeams();
-
-            // Duplicate the chord between the two group
-            splitChord();
         }
 
         //------------------//
@@ -1603,6 +1515,36 @@ public class BeamGroupInter
             return rootStem.extractSubStem(yStart, yStop);
         }
 
+        //---------//
+        // process //
+        //---------//
+        /**
+         * Actually split the group in two, around the detected pivot chord.
+         * <p>
+         * Some beams of this group instance are moved to a new separate BeamGroupInter instance.
+         * The two instances are articulated around a pivot chord, common to both groups.
+         * <p>
+         */
+        public void process ()
+        {
+            logger.debug("{} splitter on {}", BeamGroupInter.this, alienChord);
+
+            // The new group on alienChord side
+            alienGroup = createAlienGroup();
+
+            // Detect the pivot chord shared by the two groups, and "split" it for both groups
+            pivotChord = detectPivotChord();
+
+            // Dispatch beams attached to pivotChord to their proper group
+            dispatchPivotBeams();
+
+            // Make sure all beams have been dispatched
+            dispatchAllBeams();
+
+            // Duplicate the chord between the two group
+            splitChord();
+        }
+
         //------------//
         // splitChord //
         //------------//
@@ -1692,49 +1634,5 @@ public class BeamGroupInter
 
             pivotChord.getMeasure().getStack().addInter(shortChord);
         }
-    }
-
-//-----------//
-// Constants //
-//-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer maxSplitLoops = new Constant.Integer(
-                "loops",
-                10,
-                "Maximum number of loops allowed for splitting beam groups");
-
-        private final Scale.Fraction maxChordDy = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap between a chord and a beam");
-
-        private final Scale.Fraction minXOverlap = new Scale.Fraction(
-                0.7,
-                "Minimum horizontal overlap between subsequent beams of a group");
-
-        private final Scale.Fraction cueMinXOverlap = new Scale.Fraction(
-                0.7,
-                "(Cue) Minimum horizontal overlap between subsequent beams of a group");
-
-        private final Scale.Fraction maxYDistance = new Scale.Fraction(
-                1.5,
-                "Maximum vertical distance between subsequent beams of a group");
-
-        private final Scale.Fraction cueMaxYDistance = new Scale.Fraction(
-                1.5,
-                "(Cue) Maximum vertical distance between subsequent beams of a group");
-
-        private final Constant.Double maxSlopeDiff = new Constant.Double(
-                "tangent",
-                0.065,
-                "Maximum slope difference between beams of a group");
-
-        private final Constant.Double cueMaxSlopeDiff = new Constant.Double(
-                "tangent",
-                0.2,
-                "(Cue) Maximum slope difference between beams of a group");
-
     }
 }

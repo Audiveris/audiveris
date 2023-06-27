@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,15 +30,13 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.WedgeSymbol;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Jaxb;
 
@@ -47,8 +45,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -86,6 +86,7 @@ public class WedgeInter
     private static final double HANDLE_RATIO = constants.handleRatio.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Top line. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
@@ -97,24 +98,13 @@ public class WedgeInter
     private Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new WedgeInter object.
-     *
-     * @param l1      precise first line
-     * @param l2      precise second line
-     * @param bounds  bounding box
-     * @param shape   CRESCENDO or DIMINUENDO
-     * @param impacts assignments details
+     * No-arg constructor meant for JAXB.
      */
-    public WedgeInter (Line2D l1,
-                       Line2D l2,
-                       Rectangle bounds,
-                       Shape shape,
-                       GradeImpacts impacts)
+    private WedgeInter ()
     {
-        super(null, bounds, shape, impacts);
-        this.l1 = l1;
-        this.l2 = l2;
+        super(null, null, null, 0.0);
     }
 
     /**
@@ -136,14 +126,27 @@ public class WedgeInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new WedgeInter object.
+     *
+     * @param l1      precise first line
+     * @param l2      precise second line
+     * @param bounds  bounding box
+     * @param shape   CRESCENDO or DIMINUENDO
+     * @param impacts assignments details
      */
-    private WedgeInter ()
+    public WedgeInter (Line2D l1,
+                       Line2D l2,
+                       Rectangle bounds,
+                       Shape shape,
+                       GradeImpacts impacts)
     {
-        super(null, null, null, 0.0);
+        super(null, bounds, shape, impacts);
+        this.l1 = l1;
+        this.l2 = l2;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -187,13 +190,21 @@ public class WedgeInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point loc)
     {
-        WedgeSymbol wedgeSymbol = (WedgeSymbol) symbol;
-        Model model = wedgeSymbol.getModel(font, dropLocation, alignment);
-        l1 = new Line2D.Double(model.top1, model.top2);
-        l2 = new Line2D.Double(model.bot1, model.bot2);
+        final TextLayout layout = font.layoutShapeByCode(shape);
+        final Rectangle2D wr = layout.getBounds();
+        final double halfWidth = wr.getWidth() / 2;
+        final double halfHeight = wr.getHeight() / 2;
+
+        if (shape == Shape.CRESCENDO) {
+            l1 = new Line2D.Double(loc.x - halfWidth, loc.y, loc.x + halfWidth, loc.y - halfHeight);
+            l2 = new Line2D.Double(loc.x - halfWidth, loc.y, loc.x + halfWidth, loc.y + halfHeight);
+        } else {
+            l1 = new Line2D.Double(loc.x - halfWidth, loc.y - halfHeight, loc.x + halfWidth, loc.y);
+            l2 = new Line2D.Double(loc.x - halfWidth, loc.y + halfHeight, loc.x + halfWidth, loc.y);
+        }
+
         setBounds(null);
 
         return true;
@@ -215,35 +226,6 @@ public class WedgeInter
         box.grow(0, (int) Math.ceil(DEFAULT_THICKNESS / 2.0));
 
         return new Rectangle(bounds = box);
-    }
-
-    //-----------//
-    // setBounds //
-    //-----------//
-    @Override
-    public void setBounds (Rectangle b)
-    {
-        super.setBounds(b);
-
-        if (b != null) {
-            final double dy = DEFAULT_THICKNESS / 2.0;
-
-            if (shape == Shape.CRESCENDO) {
-                l1 = new Line2D.Double(b.x, b.y + b.height / 2.0,
-                                       b.x + b.width, b.y + 0.5 + dy);
-            } else {
-                l1 = new Line2D.Double(b.x, b.y + 0.5 + dy,
-                                       b.x + b.width, b.y + b.height / 2.0);
-            }
-
-            if (shape == Shape.CRESCENDO) {
-                l2 = new Line2D.Double(b.x, b.y + b.height / 2.0,
-                                       b.x + b.width, b.y + b.height - 0.5 - dy);
-            } else {
-                l2 = new Line2D.Double(b.x, b.y + b.height - 0.5 - dy,
-                                       b.x + b.width, b.y + b.height / 2.0);
-            }
-        }
     }
 
     //-----------//
@@ -299,19 +281,6 @@ public class WedgeInter
         }
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        if (glyph != null) {
-            setBounds(glyph.getBounds());
-        }
-    }
-
     //-------------//
     // searchLinks //
     //-------------//
@@ -324,8 +293,9 @@ public class WedgeInter
         final List<Link> links = new ArrayList<>();
 
         for (HorizontalSide side : HorizontalSide.values()) {
-            final Point2D location = (side == HorizontalSide.LEFT)
-                    ? new Point2D.Double(topLine.getX1() + xMargin, topLine.getY1())
+            final Point2D location = (side == HorizontalSide.LEFT) ? new Point2D.Double(
+                    topLine.getX1() + xMargin,
+                    topLine.getY1())
                     : new Point2D.Double(topLine.getX2() - xMargin, topLine.getY2());
             final MeasureStack stack = system.getStackAt(location);
 
@@ -343,7 +313,7 @@ public class WedgeInter
                 if (chordBelow != null) {
                     links.add(new Link(chordBelow, new ChordWedgeRelation(side), false));
                 } else {
-                    logger.info("No chord for {} {}", this, side);
+                    logger.debug("No chord for {} {}", this, side);
                 }
             }
         }
@@ -361,75 +331,53 @@ public class WedgeInter
         return searchObsoletelinks(links, ChordWedgeRelation.class);
     }
 
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle b)
+    {
+        super.setBounds(b);
+
+        if (b != null) {
+            final double dy = DEFAULT_THICKNESS / 2.0;
+
+            if (shape == Shape.CRESCENDO) {
+                l1 = new Line2D.Double(b.x, b.y + b.height / 2.0, b.x + b.width, b.y + 0.5 + dy);
+            } else {
+                l1 = new Line2D.Double(b.x, b.y + 0.5 + dy, b.x + b.width, b.y + b.height / 2.0);
+            }
+
+            if (shape == Shape.CRESCENDO) {
+                l2 = new Line2D.Double(
+                        b.x,
+                        b.y + b.height / 2.0,
+                        b.x + b.width,
+                        b.y + b.height - 0.5 - dy);
+            } else {
+                l2 = new Line2D.Double(
+                        b.x,
+                        b.y + b.height - 0.5 - dy,
+                        b.x + b.width,
+                        b.y + b.height / 2.0);
+            }
+        }
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (glyph != null) {
+            setBounds(glyph.getBounds());
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Impacts //
-    //---------//
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]{
-            "s1",
-            "s2",
-            "closedDy",
-            "openDy",
-            "openBias",
-            "width"};
-
-        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1, 1};
-
-        public Impacts (double s1,
-                        double s2,
-                        double closedDy,
-                        double openDy,
-                        double openBias,
-                        double width)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, s1);
-            setImpact(1, s2);
-            setImpact(2, closedDy);
-            setImpact(3, openDy);
-            setImpact(4, openBias);
-            setImpact(5, width);
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        public final Point2D top1;
-
-        public final Point2D top2;
-
-        public final Point2D bot1;
-
-        public final Point2D bot2;
-
-        public Model (Line2D l1,
-                      Line2D l2)
-        {
-            top1 = l1.getP1();
-            top2 = l1.getP2();
-            bot1 = l2.getP1();
-            bot2 = l2.getP2();
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(top1, dx, dy);
-            PointUtil.add(top2, dx, dy);
-            PointUtil.add(bot1, dx, dy);
-            PointUtil.add(bot2, dx, dy);
-        }
-    }
 
     //-----------//
     // Constants //
@@ -460,9 +408,9 @@ public class WedgeInter
      * <p>
      * For a wedge, there are 4 handles:
      * <ul>
-     * <li>Left handle, moving only horizontally (extending both wedge lines)
+     * <li>Left handle, moving in any direction (extending both wedge lines)
      * <li>Middle handle, moving the whole inter in any direction
-     * <li>Right handle, moving only horizontally (extending both wedge lines)
+     * <li>Right handle, moving in any direction (extending both wedge lines)
      * <li>Below handle, moving only vertically (opening both wedge lines)
      * </ul>
      */
@@ -499,65 +447,55 @@ public class WedgeInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data
-                    model.translate(vector.x, vector.y);
+                    model.translate(dx, dy);
 
                     // Handles
                     for (InterEditor.Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
                 }
             });
 
-            // Left handle: move horizontally only
+            // Left handle: move in any direction
             handles.add(new InterEditor.Handle(mid1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
-                    if (dx == 0) {
-                        return false;
-                    }
-
                     // Data
-                    PointUtil.add(model.top1, dx, 0);
-                    PointUtil.add(model.bot1, dx, 0);
+                    PointUtil.add(model.top1, dx, dy);
+                    PointUtil.add(model.bot1, dx, dy);
 
                     // Handles
-                    PointUtil.add(mid1, dx, 0);
-                    PointUtil.add(middle, dx / 2.0, 0);
+                    PointUtil.add(mid1, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
                     below.setLocation(getBelow(wedge.shape));
 
                     return true;
                 }
             });
 
-            // Right handle: move horizontally only
-            handles.add(
-                    new InterEditor.Handle(mid2)
+            // Right handle: move in any direction
+            handles.add(new InterEditor.Handle(mid2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
-                    if (dx == 0) {
-                        return false;
-                    }
-
                     // Data
-                    PointUtil.add(model.top2, dx, 0);
-                    PointUtil.add(model.bot2, dx, 0);
+                    PointUtil.add(model.top2, dx, dy);
+                    PointUtil.add(model.bot2, dx, dy);
 
                     // Handles
-                    PointUtil.add(mid2, dx, 0);
-                    PointUtil.add(middle, dx / 2.0, 0);
+                    PointUtil.add(mid2, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
                     below.setLocation(getBelow(wedge.shape));
 
                     return true;
@@ -568,10 +506,9 @@ public class WedgeInter
             handles.add(new InterEditor.Handle(below)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }
@@ -592,6 +529,18 @@ public class WedgeInter
             });
         }
 
+        @Override
+        protected void doit ()
+        {
+            final Inter inter = getInter();
+            final WedgeInter wedge = (WedgeInter) inter;
+            wedge.l1.setLine(model.top1, model.top2);
+            wedge.l2.setLine(model.bot1, model.bot2);
+
+            inter.setBounds(null);
+            super.doit(); // No more glyph
+        }
+
         /**
          * Compute location of the "below handle" on bottom line.
          *
@@ -603,31 +552,87 @@ public class WedgeInter
             final Point2D p1 = (shape == Shape.DIMINUENDO) ? model.bot1 : model.bot2;
             final Point2D p2 = (shape == Shape.DIMINUENDO) ? model.bot2 : model.bot1;
 
-            return new Point2D.Double(p1.getX() + HANDLE_RATIO * (p2.getX() - p1.getX()),
-                                      p1.getY() + HANDLE_RATIO * (p2.getY() - p1.getY()));
-        }
-
-        @Override
-        protected void doit ()
-        {
-            final WedgeInter wedge = (WedgeInter) inter;
-            wedge.l1.setLine(model.top1, model.top2);
-            wedge.l2.setLine(model.bot1, model.bot2);
-
-            inter.setBounds(null);
-            super.doit(); // No more glyph
+            return new Point2D.Double(
+                    p1.getX() + HANDLE_RATIO * (p2.getX() - p1.getX()),
+                    p1.getY() + HANDLE_RATIO * (p2.getY() - p1.getY()));
         }
 
         @Override
         public void undo ()
         {
-            final WedgeInter wedge = (WedgeInter) inter;
+            final Inter inter = getInter();
+            final WedgeInter wedge = (WedgeInter) object;
 
             wedge.l1.setLine(originalModel.top1, originalModel.top2);
             wedge.l2.setLine(originalModel.bot1, originalModel.bot2);
 
             inter.setBounds(null);
             super.undo();
+        }
+    }
+
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]
+        { "s1", "s2", "closedDy", "openDy", "openBias", "width" };
+
+        private static final double[] WEIGHTS = new double[]
+        { 1, 1, 1, 1, 1, 1 };
+
+        public Impacts (double s1,
+                        double s2,
+                        double closedDy,
+                        double openDy,
+                        double openBias,
+                        double width)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, s1);
+            setImpact(1, s2);
+            setImpact(2, closedDy);
+            setImpact(3, openDy);
+            setImpact(4, openBias);
+            setImpact(5, width);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public final Point2D top1;
+
+        public final Point2D top2;
+
+        public final Point2D bot1;
+
+        public final Point2D bot2;
+
+        public Model (Line2D l1,
+                      Line2D l2)
+        {
+            top1 = l1.getP1();
+            top2 = l1.getP2();
+            bot1 = l2.getP1();
+            bot2 = l2.getP2();
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(top1, dx, dy);
+            PointUtil.add(top2, dx, dy);
+            PointUtil.add(bot1, dx, dy);
+            PointUtil.add(bot2, dx, dy);
         }
     }
 }

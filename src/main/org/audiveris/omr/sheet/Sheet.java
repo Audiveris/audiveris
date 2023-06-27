@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,10 +40,10 @@ import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
-import org.audiveris.omr.sheet.rhythm.PageRhythm;
 import org.audiveris.omr.score.ui.BookPdfOutput;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
@@ -59,7 +59,6 @@ import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.OmrStep;
-import org.audiveris.omr.step.PageStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
@@ -67,12 +66,16 @@ import org.audiveris.omr.ui.ErrorsEditor;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.WeakItemRenderer;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +91,7 @@ import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -147,18 +151,17 @@ public class Sheet
     public static final String INTERNALS_RADIX = "sheet#";
 
     /** Events that can be published on sheet location service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        LocationEvent.class,
-        PixelEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { LocationEvent.class, PixelEvent.class };
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Every sheet persistent entity (whether it's a Glyph or an Inter instance)
      * is assigned a unique sequential id within the sheet.
@@ -201,7 +204,7 @@ public class Sheet
 
     // Transient data
     //---------------
-    //
+
     /** Corresponding sheet stub. */
     @Navigable(false)
     private SheetStub stub;
@@ -246,21 +249,28 @@ public class Sheet
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new <code>Sheet</code> object with a binary table.
-     *
-     * @param stub        the related sheet stub
-     * @param binaryTable the binary table, if any
+     * No-arg constructor needed for JAXB.
      */
-    public Sheet (SheetStub stub,
-                  RunTable binaryTable)
+    private Sheet ()
     {
-        this(stub);
+    }
 
-        if (binaryTable != null) {
-            setBinary(binaryTable);
-        }
+    /**
+     * Create a new <code>Sheet</code> instance within a book.
+     *
+     * @param stub the related sheet stub
+     */
+    private Sheet (SheetStub stub)
+    {
+        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
+
+        glyphIndex = new GlyphIndex();
+
+        initTransients(stub);
+
+        interIndex = new InterIndex();
+        interIndex.initTransients(this);
     }
 
     /**
@@ -283,31 +293,26 @@ public class Sheet
         }
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Create a new <code>Sheet</code> instance within a book.
+     * Creates a new <code>Sheet</code> object with a binary table.
      *
-     * @param stub the related sheet stub
+     * @param stub        the related sheet stub
+     * @param binaryTable the binary table, if any
      */
-    private Sheet (SheetStub stub)
+    public Sheet (SheetStub stub,
+                  RunTable binaryTable)
     {
-        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
+        this(stub);
 
-        glyphIndex = new GlyphIndex();
-
-        initTransients(stub);
-
-        interIndex = new InterIndex();
-        interIndex.initTransients(this);
-    }
-
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private Sheet ()
-    {
+        if (binaryTable != null) {
+            setBinary(binaryTable);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // addItemRenderer //
     //-----------------//
@@ -321,24 +326,9 @@ public class Sheet
     {
         if ((renderer != null) && (OMR.gui != null)) {
             return itemRenderers.add(new WeakItemRenderer(renderer));
-
-            ///return itemRenderers.add(renderer);
         }
 
         return false;
-    }
-
-    //---------//
-    // addPage //
-    //---------//
-    /**
-     * Add a related page to this sheet.
-     *
-     * @param page the detected page
-     */
-    public void addPage (Page page)
-    {
-        pages.add(page);
     }
 
     //---------//
@@ -354,6 +344,19 @@ public class Sheet
                          Page page)
     {
         pages.add(index, page);
+    }
+
+    //---------//
+    // addPage //
+    //---------//
+    /**
+     * Add a related page to this sheet.
+     *
+     * @param page the detected page
+     */
+    public void addPage (Page page)
+    {
+        pages.add(page);
     }
 
     //-------------//
@@ -374,7 +377,7 @@ public class Sheet
             initTransients(stub);
 
             // Make sure hLag & vLag are available and their sections dispatched to relevant systems
-            if (stub.isDone(OmrStep.GRID)) {
+            if (stub.isValid() && stub.isDone(OmrStep.GRID)) {
                 systemManager.dispatchHorizontalSections();
                 systemManager.dispatchVerticalSections();
             }
@@ -388,22 +391,41 @@ public class Sheet
                 system.afterReload();
             }
 
-            // Check version for interleaved rests
-            if (stub.getVersion().compareTo(Versions.INTERLEAVED_RESTS) < 0) {
-                final OmrStep latestStep = stub.getLatestStep();
+            final OmrStep latestStep = stub.getLatestStep();
 
-                if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
-                    for (Page page : pages) {
-                        new PageRhythm(page).process();
-                    }
+            if (latestStep.compareTo(OmrStep.GRID) >= 0) {
+                // Old OMRs: complete stub information with SystemRef's if needed
+                stub.checkSystems();
 
+                // Make part id consistent with their corresponding PartRef logical id
+                checkPartIds();
+            }
+
+            final Version stubVersion = stub.getVersion();
+
+            // Check version for flag shape names
+            if (stubVersion.compareWithLabelTo(Versions.DRUM_NOTATION) < 0) {
+                if (checkShapesRenamed()) {
                     stub.setUpgraded(true);
-                }
-
-                if (latestStep.compareTo(OmrStep.PAGE) >= 0) {
-                    new PageStep().doit(this);
+                    logger.info("Some flag shapes renamed.");
                 }
             }
+
+            //            // Check version for interleaved rests
+            //            if (stubVersion.compaTo(Versions.INTERLEAVED_RESTS) < 0) {
+            //
+            //                if (latestStep.compareTo(OmrStep.RHYTHMS) >= 0) {
+            //                    for (Page page : pages) {
+            //                        new PageRhythm(page).process();
+            //                    }
+            //
+            //                    stub.setUpgraded(true);
+            //                }
+            //
+            //                if (latestStep.compareTo(OmrStep.PAGE) >= 0) {
+            //                    new PageStep().doit(this);
+            //                }
+            //            }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -449,9 +471,7 @@ public class Sheet
             BufferedImage img = runTable.getBufferedImage();
             os = Files.newOutputStream(imgPath, CREATE);
             ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
         } finally {
             if (os != null) {
@@ -464,6 +484,67 @@ public class Sheet
         }
     }
 
+    //--------------//
+    // checkPartIds //
+    //--------------//
+    /**
+     * Make the id of every Part is consistent with the logical id, if any, defined by their
+     * corresponding PartRef.
+     */
+    private void checkPartIds ()
+    {
+        for (Page page : pages) {
+            for (SystemInfo system : page.getSystems()) {
+                for (Part part : system.getParts()) {
+                    final PartRef partRef = part.getRef();
+                    final Integer logicalId = partRef.getLogicalId();
+
+                    if ((logicalId != null) && (logicalId != part.getId())) {
+                        part.setId(logicalId);
+                        stub.setModified(true);
+                    }
+                }
+            }
+        }
+    }
+
+    //--------------------//
+    // checkShapesRenamed //
+    //--------------------//
+    /**
+     * Check whether some old shape names must be fixed.
+     *
+     * @return true if modifications were made
+     */
+    private boolean checkShapesRenamed ()
+    {
+        boolean modified = false;
+
+        for (SystemInfo system : getSystems()) {
+            final SIGraph sig = system.getSig();
+
+            for (Inter inter : sig.vertexSet()) {
+                final Shape shape = inter.getShape();
+                if (shape == null) {
+                    continue;
+                }
+
+                switch (shape) {
+                case FLAG_1_UP -> modified |= inter.renameShapeAs(Shape.FLAG_1_DOWN);
+                case FLAG_2_UP -> modified |= inter.renameShapeAs(Shape.FLAG_2_DOWN);
+                case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
+                case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
+                case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
+                default ->
+                        {
+                        }
+                }
+            }
+        }
+
+        return modified;
+    }
+
     //------------------//
     // createBinaryView //
     //------------------//
@@ -474,9 +555,8 @@ public class Sheet
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> createBinaryView());
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> createBinaryView());
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -498,6 +578,15 @@ public class Sheet
         }
     }
 
+    //------------------------//
+    // createGlyphsController //
+    //------------------------//
+    private void createGlyphsController ()
+    {
+        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
+        glyphsController = new GlyphsController(model);
+    }
+
     //----------------//
     // createGrayView //
     //----------------//
@@ -510,10 +599,10 @@ public class Sheet
 
         // Display sheet picture
         PictureView pictureView = new PictureView(this, SheetTab.GRAY_TAB);
-        stub.getAssembly().addViewTab(SheetTab.GRAY_TAB,
-                                      pictureView,
-                                      new BoardsPane(new PixelBoard(this), new BinarizationBoard(
-                                                     this)));
+        stub.getAssembly().addViewTab(
+                SheetTab.GRAY_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------//
@@ -553,6 +642,19 @@ public class Sheet
         }
     }
 
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private void done (OmrStep step)
+    {
+        stub.done(step);
+    }
+
     //-----------------//
     // dumpSystemInfos //
     //-----------------//
@@ -576,14 +678,13 @@ public class Sheet
     // export //
     //--------//
     /**
-     * Export a single sheet in MusicXML.
+     * Export just a single sheet in MusicXML.
      * <p>
      * The output is structured differently according to whether the sheet contains one or several
      * pages.
      * <ul>
      * <li>A single-page sheet results in one score output.</li>
-     * <li>A multi-page sheet results in one opus output (if useOpus is set) or a series of scores
-     * (is useOpus is not set).</li>
+     * <li>A multi-page sheet results in a series of scores.</li>
      * </ul>
      *
      * @param path sheet export path
@@ -614,7 +715,7 @@ public class Sheet
                 for (PageRef pageRef : stub.getPageRefs()) {
                     final Score score = new Score();
                     score.setBook(book);
-                    score.addPageRef(stub.getNumber(), pageRef);
+                    score.addPageNumber(stub.getNumber(), pageRef);
                     new ScoreReduction(score).reduce(Arrays.asList(stub));
 
                     final int idx = pageRef.getId();
@@ -626,7 +727,7 @@ public class Sheet
                 // Export the sheet single page as a score
                 final Score score = new Score();
                 score.setBook(book);
-                score.addPageRef(stub.getNumber(), stub.getFirstPageRef());
+                score.addPageNumber(stub.getNumber(), stub.getFirstPageRef());
                 new ScoreReduction(score).reduce(Arrays.asList(stub));
 
                 final String scoreName = sheetName;
@@ -639,6 +740,14 @@ public class Sheet
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
         }
+    }
+
+    //---------//
+    // getBook //
+    //---------//
+    private Book getBook ()
+    {
+        return stub.getBook();
     }
 
     //-----------------//
@@ -686,6 +795,25 @@ public class Sheet
         }
 
         return glyphIndex;
+    }
+
+    //----------------------//
+    // getGlyphIndexContent // Needed for JAXB
+    //----------------------//
+    /**
+     * This is the index of all <code>Glyph</code> instances registered in
+     * the containing sheet.
+     */
+    @SuppressWarnings("unused")
+    @XmlElement(name = "glyph-index")
+    @XmlJavaTypeAdapter(GlyphListAdapter.class)
+    private ArrayList<Glyph> getGlyphIndexContent ()
+    {
+        if (glyphIndex == null) {
+            return null;
+        }
+
+        return glyphIndex.getEntities();
     }
 
     //---------------------//
@@ -825,13 +953,13 @@ public class Sheet
     // getPages //
     //----------//
     /**
-     * Report the sequence of pages found in this sheet (generally just one).
+     * Report the unmodifiable sequence of pages found in this sheet (generally just one).
      *
      * @return the list of page(s)
      */
     public List<Page> getPages ()
     {
-        return pages;
+        return Collections.unmodifiableList(pages);
     }
 
     //--------------------------//
@@ -884,62 +1012,6 @@ public class Sheet
         return scale;
     }
 
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * Remember scale information to this sheet
-     *
-     * @param scale the computed sheet global scale
-     */
-    public void setScale (Scale scale)
-    {
-        this.scale = scale;
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    /**
-     * Assign the related image to this sheet
-     *
-     * @param image       the loaded image
-     * @param adjustImage true to check and adjust image format
-     * @throws StepException if processing failed at this step
-     */
-    public final void setImage (BufferedImage image,
-                                boolean adjustImage)
-            throws StepException
-    {
-        try {
-            if (picture == null) {
-                picture = new Picture(this, image, adjustImage);
-            } else {
-                picture.setImage(Picture.ImageKey.GRAY, image, adjustImage);
-            }
-
-            if (OMR.gui != null) {
-                createGrayView();
-            }
-
-            done(OmrStep.LOAD);
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + stub.getBook().getInputPath()
-                                 + "\n"
-                                 + ex.getMessage();
-
-            if (OMR.gui != null) {
-                OMR.gui.displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
-    }
-
     //---------------//
     // getSheetDelta //
     //---------------//
@@ -953,17 +1025,23 @@ public class Sheet
         return sheetDelta;
     }
 
-    //---------------//
-    // setSheetDelta //
-    //---------------//
+    //----------------//
+    // getSheetEditor //
+    //----------------//
     /**
-     * Remember the sheet delta in sheet
+     * In non batch mode, report the editor dedicated to this sheet
      *
-     * @param sheetDelta difference between input (pixels) and output (recognized entities)
+     * @return the sheet editor, or null
      */
-    public void setSheetDelta (SheetDiff sheetDelta)
+    public SheetEditor getSheetEditor ()
     {
-        this.sheetDelta = sheetDelta;
+        if (sheetEditor == null) {
+            interController = new InterController(this);
+            sheetEditor = new SheetEditor(this, getGlyphsController(), interController);
+            interController.setSheetEditor(sheetEditor);
+        }
+
+        return sheetEditor;
     }
 
     //---------//
@@ -977,19 +1055,6 @@ public class Sheet
     public Skew getSkew ()
     {
         return skew;
-    }
-
-    //---------//
-    // setSkew //
-    //---------//
-    /**
-     * Link skew information to this sheet
-     *
-     * @param skew the skew information
-     */
-    public void setSkew (Skew skew)
-    {
-        this.skew = skew;
     }
 
     //-----------------//
@@ -1018,23 +1083,21 @@ public class Sheet
         return stub;
     }
 
-    //----------------//
-    // getSheetEditor //
-    //----------------//
+    //-----------//
+    // getSymbol //
+    //-----------//
     /**
-     * In non batch mode, report the editor dedicated to this sheet
+     * Report proper symbol for the provided shape, according to sheet preferred music font.
      *
-     * @return the sheet editor, or null
+     * @param shape the provided shape
+     * @return the proper symbol, perhaps null
      */
-    public SheetEditor getSheetEditor ()
+    public ShapeSymbol getSymbol (Shape shape)
     {
-        if (sheetEditor == null) {
-            interController = new InterController(this);
-            sheetEditor = new SheetEditor(this, getGlyphsController(), interController);
-            interController.setSheetEditor(sheetEditor);
-        }
+        final MusicFamily family = getStub().getMusicFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, getScale().getInterline());
 
-        return sheetEditor;
+        return font.getSymbol(shape);
     }
 
     //------------------//
@@ -1087,6 +1150,84 @@ public class Sheet
     public boolean hasPicture ()
     {
         return picture != null;
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param stub the related stub
+     */
+    private void initTransients (SheetStub stub)
+    {
+        logger.debug("Sheet#{} initTransients", stub.getNumber());
+
+        this.stub = stub;
+
+        // Update UI information if so needed
+        if (OMR.gui != null) {
+            locationService = new SelectionService("locationService", eventsAllowed);
+            errorsEditor = new ErrorsEditor(this);
+            itemRenderers = new LinkedHashSet<>();
+            addItemRenderer(staffManager);
+        }
+
+        if (picture != null) {
+            picture.initTransients(this);
+        }
+
+        // Invalid stub?
+        if (!stub.isValid()) {
+            scale = null;
+            skew = null;
+            pages.clear();
+        }
+
+        if (glyphIndex != null) {
+            glyphIndex.initTransients(this);
+        }
+
+        for (Page page : pages) {
+            page.initTransients(this);
+        }
+
+        if (systemManager == null) {
+            systemManager = new SystemManager(this);
+        } else {
+            systemManager.initTransients(this);
+        }
+
+        // systemManager
+        List<SystemInfo> systems = new ArrayList<>();
+
+        for (Page page : pages) {
+            for (SystemInfo system : page.getSystems()) {
+                system.initTransients(this, page);
+                systems.add(system);
+
+                List<Staff> systemStaves = new ArrayList<>();
+
+                for (Part part : system.getParts()) {
+                    part.setSystem(system);
+
+                    for (Staff staff : part.getStaves()) {
+                        staff.setPart(part);
+                        systemStaves.add(staff);
+                    }
+                }
+
+                system.setStaves(systemStaves);
+            }
+        }
+
+        systemManager.setSystems(systems);
+
+        staffManager = new StaffManager(this);
+
+        lagManager = new LagManager(this);
     }
 
     //-------//
@@ -1146,6 +1287,54 @@ public class Sheet
         }
     }
 
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Reinitialize the sheet members, according to step needs.
+     *
+     * @param step the starting step
+     */
+    void reset (OmrStep step)
+    {
+        switch (step) {
+        default:
+            break;
+
+        case LOAD:
+            picture = null;
+
+            // Fall-through!
+        case BINARY:
+            scale = null;
+
+            // Fall-through!
+        case SCALE:
+        case GRID:
+            pages.clear();
+            stub.clearPageRefs();
+            skew = null;
+
+            lagManager.setLag(Lags.HLAG, null);
+            lagManager.setLag(Lags.VLAG, null);
+
+            staffManager.reset();
+            systemManager.reset();
+            glyphsController = null;
+            sheetEditor = null;
+        }
+
+        // Clear errors and history for this step
+        if (OMR.gui != null) {
+            getErrorsEditor().clearStep(step);
+
+            if (interController != null) {
+                // To be run on swing thread
+                SwingUtilities.invokeLater( () -> interController.clearHistory());
+            }
+        }
+    }
+
     //--------//
     // sample //
     //--------//
@@ -1168,7 +1357,8 @@ public class Sheet
 
                 if ((shape != null) && (staff != null) && (glyph != null)) {
                     Double pitch = (inter instanceof AbstractPitchedInter)
-                            ? ((AbstractPitchedInter) inter).getPitch() : null;
+                            ? ((AbstractPitchedInter) inter).getPitch()
+                            : null;
                     repository.addSample(
                             inter.getShape(),
                             glyph,
@@ -1185,6 +1375,120 @@ public class Sheet
                 }
             }
         }
+    }
+
+    //-----------//
+    // setBinary //
+    //-----------//
+    private void setBinary (RunTable binaryTable)
+    {
+        if (picture == null) {
+            picture = new Picture(this, binaryTable);
+        } else {
+            picture.setTable(Picture.TableKey.BINARY, binaryTable, true);
+        }
+
+        if (OMR.gui != null) {
+            createBinaryView();
+        }
+
+        done(OmrStep.LOAD);
+        done(OmrStep.BINARY);
+    }
+
+    //----------------------//
+    // setGlyphIndexContent // Needed for JAXB
+    //----------------------//
+    /**
+     * Meant for JAXB unmarshalling only.
+     *
+     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unused")
+    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
+    {
+        getGlyphIndex().setEntities(glyphs);
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    /**
+     * Assign the related image to this sheet
+     *
+     * @param image       the loaded image
+     * @param adjustImage true to check and adjust image format
+     * @throws StepException if processing failed at this step
+     */
+    public final void setImage (BufferedImage image,
+                                boolean adjustImage)
+        throws StepException
+    {
+        try {
+            if (picture == null) {
+                picture = new Picture(this, image, adjustImage);
+            } else {
+                picture.setImage(Picture.ImageKey.GRAY, image, adjustImage);
+            }
+
+            if (OMR.gui != null) {
+                createGrayView();
+            }
+
+            done(OmrStep.LOAD);
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
+                    + ex.getMessage();
+
+            if (OMR.gui != null) {
+                OMR.gui.displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
+    }
+
+    //----------//
+    // setScale //
+    //----------//
+    /**
+     * Remember scale information to this sheet
+     *
+     * @param scale the computed sheet global scale
+     */
+    public void setScale (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //---------------//
+    // setSheetDelta //
+    //---------------//
+    /**
+     * Remember the sheet delta in sheet
+     *
+     * @param sheetDelta difference between input (pixels) and output (recognized entities)
+     */
+    public void setSheetDelta (SheetDiff sheetDelta)
+    {
+        this.sheetDelta = sheetDelta;
+    }
+
+    //---------//
+    // setSkew //
+    //---------//
+    /**
+     * Link skew information to this sheet
+     *
+     * @param skew the skew information
+     */
+    public void setSkew (Skew skew)
+    {
+        this.skew = skew;
     }
 
     //-------//
@@ -1223,9 +1527,7 @@ public class Sheet
             stub.setModified(false);
             stub.setUpgraded(false);
             logger.info("Stored {}", structurePath);
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.warn("Error in saving sheet structure " + ex, ex);
         }
     }
@@ -1247,205 +1549,20 @@ public class Sheet
         return sb.toString();
     }
 
-    //------------------------//
-    // createGlyphsController //
-    //------------------------//
-    private void createGlyphsController ()
-    {
-        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
-        glyphsController = new GlyphsController(model);
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private void done (OmrStep step)
-    {
-        stub.done(step);
-    }
-
-    //---------//
-    // getBook //
-    //---------//
-    private Book getBook ()
-    {
-        return stub.getBook();
-    }
-
-    //----------------------//
-    // getGlyphIndexContent // Needed for JAXB
-    //----------------------//
-    /**
-     * This is the index of all <code>Glyph</code> instances registered in
-     * the containing sheet.
-     */
-    @SuppressWarnings("unused")
-    @XmlElement(name = "glyph-index")
-    @XmlJavaTypeAdapter(GlyphListAdapter.class)
-    private ArrayList<Glyph> getGlyphIndexContent ()
-    {
-        if (glyphIndex == null) {
-            return null;
-        }
-
-        return glyphIndex.getEntities();
-    }
-
-    //----------------------//
-    // setGlyphIndexContent // Needed for JAXB
-    //----------------------//
-    /**
-     * Meant for JAXB unmarshalling only.
-     *
-     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
-     */
-    @SuppressWarnings("unused")
-    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
-    {
-        getGlyphIndex().setEntities(glyphs);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
-    // initTransients //
+    // getJaxbContext //
     //----------------//
-    /**
-     * Initialize needed transient members.
-     * (which by definition have not been set by the unmarshalling).
-     *
-     * @param stub the related stub
-     */
-    private void initTransients (SheetStub stub)
+    public static JAXBContext getJaxbContext ()
+        throws JAXBException
     {
-        logger.debug("Sheet#{} initTransients", stub.getNumber());
-
-        this.stub = stub;
-
-        // Update UI information if so needed
-        if (OMR.gui != null) {
-            locationService = new SelectionService("locationService", eventsAllowed);
-            errorsEditor = new ErrorsEditor(this);
-            itemRenderers = new LinkedHashSet<>();
-            addItemRenderer(staffManager);
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Sheet.class);
         }
 
-        if (picture != null) {
-            picture.initTransients(this);
-        }
-
-        if (glyphIndex != null) {
-            glyphIndex.initTransients(this);
-        }
-
-        for (Page page : pages) {
-            page.initTransients(this);
-        }
-
-        if (systemManager == null) {
-            systemManager = new SystemManager(this);
-        } else {
-            systemManager.initTransients(this);
-        }
-
-        // systemManager
-        List<SystemInfo> systems = new ArrayList<>();
-
-        for (Page page : pages) {
-            for (SystemInfo system : page.getSystems()) {
-                system.initTransients(this, page);
-                systems.add(system);
-
-                List<Staff> systemStaves = new ArrayList<>();
-
-                for (Part part : system.getParts()) {
-                    part.setSystem(system);
-
-                    for (Staff staff : part.getStaves()) {
-                        staff.setPart(part);
-                        systemStaves.add(staff);
-                    }
-                }
-
-                system.setStaves(systemStaves);
-            }
-        }
-
-        systemManager.setSystems(systems);
-
-        staffManager = new StaffManager(this);
-
-        lagManager = new LagManager(this);
-    }
-
-    //-----------//
-    // setBinary //
-    //-----------//
-    private void setBinary (RunTable binaryTable)
-    {
-        if (picture == null) {
-            picture = new Picture(this, binaryTable);
-        } else {
-            picture.setTable(Picture.TableKey.BINARY, binaryTable, true);
-        }
-
-        if (OMR.gui != null) {
-            createBinaryView();
-        }
-
-        done(OmrStep.LOAD);
-        done(OmrStep.BINARY);
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Reinitialize the sheet members, according to step needs.
-     *
-     * @param step the starting step
-     */
-    void reset (OmrStep step)
-    {
-        switch (step) {
-        default:
-            break;
-
-        case LOAD:
-            picture = null;
-
-        // Fall-through!
-        case BINARY:
-            scale = null;
-
-        // Fall-through!
-        case SCALE:
-        case GRID:
-            pages.clear();
-            stub.clearPageRefs();
-            skew = null;
-
-            lagManager.setLag(Lags.HLAG, null);
-            lagManager.setLag(Lags.VLAG, null);
-
-            staffManager.reset();
-            systemManager.reset();
-            glyphsController = null;
-            sheetEditor = null;
-        }
-
-        // Clear errors and history for this step
-        if (OMR.gui != null) {
-            getErrorsEditor().clearStep(step);
-
-            if (interController != null) {
-                // To be run on swing thread
-                SwingUtilities.invokeLater(() -> interController.clearHistory());
-            }
-        }
+        return jaxbContext;
     }
 
     //------------------//
@@ -1474,7 +1591,7 @@ public class Sheet
      * @exception JAXBException raised when unmarshalling goes wrong
      */
     public static Sheet unmarshal (InputStream in)
-            throws JAXBException
+        throws JAXBException
     {
         Unmarshaller um = getJaxbContext().createUnmarshaller();
 
@@ -1488,21 +1605,8 @@ public class Sheet
         return sheet;
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    public static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Sheet.class);
-        }
-
-        return jaxbContext;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1565,14 +1669,14 @@ public class Sheet
 
         @Override
         public GlyphList marshal (ArrayList<Glyph> glyphs)
-                throws Exception
+            throws Exception
         {
             return new GlyphList(glyphs);
         }
 
         @Override
         public ArrayList<Glyph> unmarshal (GlyphList list)
-                throws Exception
+            throws Exception
         {
             return list.glyphs;
         }

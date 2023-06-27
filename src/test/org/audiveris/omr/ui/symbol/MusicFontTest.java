@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.ui.symbol.Symbols.CodeRange;
+
+import org.junit.Test;
+
 import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-
-import org.junit.Test;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -38,8 +40,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 /**
- * Class <code>MusicFontTest</code> generates a PDF file with all symbols
- * from MusicalsSymbols font.
+ * Class <code>MusicFontTest</code> generates a PDF file for each known font family,
+ * with all non-degenerated symbols from each font.
  *
  * @author Hervé Bitteur
  */
@@ -72,93 +74,102 @@ public class MusicFontTest
         File dir = new File("data/temp");
         dir.mkdirs();
 
-        File file = new File(dir, MusicFont.FONT_NAME + ".pdf");
+        for (MusicFamily family : MusicFamily.values()) {
+            File file = new File(dir, family + ".pdf");
 
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            Rectangle rect = new Rectangle(pageWidth, pageHeight);
-            int x = xMargin; // Cell left side
-            int y = yMargin; // Cell top side
-            int line = 0;
-            Document document = new Document(rect);
-            PdfWriter writer = PdfWriter.getInstance(document, fos);
-            document.open();
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                Rectangle rect = new Rectangle(pageWidth, pageHeight);
+                int x = xMargin; // Cell left side
+                int y = yMargin; // Cell top side
+                int line = 0;
+                Document document = new Document(rect);
+                PdfWriter writer = PdfWriter.getInstance(document, fos);
+                document.open();
 
-            PdfContentByte cb = writer.getDirectContent();
-            Graphics2D g = new PdfGraphics2D(cb, pageWidth, pageHeight);
-            MusicFont musicFont = MusicFont.getPointFont(64, 0);
-            Font stringFont = g.getFont().deriveFont(24f);
-            Font infoFont = stringFont.deriveFont(15f);
-            String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
+                PdfContentByte cb = writer.getDirectContent();
+                Graphics2D g = new PdfGraphics2D(cb, pageWidth, pageHeight);
+                MusicFont musicFont = MusicFont.getMusicFont(family, 64);
+                Font stringFont = g.getFont().deriveFont(24f);
+                Font infoFont = stringFont.deriveFont(15f);
+                String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
+                int n = -1;
 
-            for (int i = 0; i < 256; i++) {
-                BasicSymbol symbol = new BasicSymbol(false, i);
-                TextLayout layout = symbol.layout(musicFont);
+                for (CodeRange range : family.getSymbols().getCodeRanges()) {
+                    for (int i = range.start; i <= range.stop; i++) {
+                        TextLayout layout = musicFont.layout(MusicFont.getString(i));
+                        Rectangle2D r = layout.getBounds();
 
-                if (i > 0) {
-                    // Compute x,y for current cell
-                    x = xMargin + (cellWidth * (i % itemsPerLine));
-
-                    if (x == xMargin) {
-                        line++;
-
-                        if (line >= linesPerPage) {
-                            // New page
-                            g.dispose();
-                            document.setPageSize(rect);
-                            document.newPage();
-                            cb = writer.getDirectContent();
-                            g = new PdfGraphics2D(cb, pageWidth, pageHeight);
-                            x = xMargin;
-                            y = yMargin;
-                            line = 0;
-                        } else {
-                            y = yMargin + (line * cellHeight);
+                        if (r.getWidth() == 0 && r.getHeight() == 0) {
+                            continue;
                         }
+
+                        n++;
+                        if (n > 0) {
+                            // Compute x,y for current cell
+                            x = xMargin + (cellWidth * (n % itemsPerLine));
+
+                            if (x == xMargin) {
+                                line++;
+
+                                if (line >= linesPerPage) {
+                                    // New page
+                                    g.dispose();
+                                    document.setPageSize(rect);
+                                    document.newPage();
+                                    cb = writer.getDirectContent();
+                                    g = new PdfGraphics2D(cb, pageWidth, pageHeight);
+                                    x = xMargin;
+                                    y = yMargin;
+                                    line = 0;
+                                } else {
+                                    y = yMargin + (line * cellHeight);
+                                }
+                            }
+                        }
+
+                        // Draw axes
+                        g.setColor(Color.PINK);
+                        g.drawLine(
+                                x + (cellWidth / 4),
+                                y + (cellHeight / 2),
+                                (x + cellWidth) - (cellWidth / 4),
+                                y + (cellHeight / 2));
+                        g.drawLine(
+                                x + (cellWidth / 2),
+                                y + (cellHeight / 4),
+                                x + (cellWidth / 2),
+                                (y + cellHeight) - (cellHeight / 4));
+
+                        // Draw number
+                        g.setFont(stringFont);
+                        g.setColor(Color.RED);
+                        g.drawString(Integer.toHexString(i), x + 10, y + 30);
+
+                        // Draw info
+                        String info = String.format(
+                                frm,
+                                r.getX(),
+                                r.getY(),
+                                r.getWidth(),
+                                r.getHeight());
+                        g.setFont(infoFont);
+                        g.setColor(Color.GRAY);
+                        g.drawString(info, x + 5, (y + cellHeight) - 5);
+
+                        // Draw cell rectangle
+                        g.setColor(Color.BLUE);
+                        g.drawRect(x, y, cellWidth, cellHeight);
+
+                        // Draw symbol
+                        g.setColor(Color.BLACK);
+                        layout.draw(g, x + (cellWidth / 2), y + (cellHeight / 2));
                     }
                 }
 
-                // Draw axes
-                g.setColor(Color.PINK);
-                g.drawLine(
-                        x + (cellWidth / 4),
-                        y + (cellHeight / 2),
-                        (x + cellWidth) - (cellWidth / 4),
-                        y + (cellHeight / 2));
-                g.drawLine(
-                        x + (cellWidth / 2),
-                        y + (cellHeight / 4),
-                        x + (cellWidth / 2),
-                        (y + cellHeight) - (cellHeight / 4));
-
-                // Draw number
-                g.setFont(stringFont);
-                g.setColor(Color.RED);
-                g.drawString(Integer.toString(i), x + 10, y + 30);
-
-                // Draw info
-                Rectangle2D r = layout.getBounds();
-                String info = String.format(
-                        frm,
-                        r.getX(),
-                        r.getY(),
-                        r.getWidth(),
-                        r.getHeight());
-                g.setFont(infoFont);
-                g.setColor(Color.GRAY);
-                g.drawString(info, x + 5, (y + cellHeight) - 5);
-
-                // Draw cell rectangle
-                g.setColor(Color.BLUE);
-                g.drawRect(x, y, cellWidth, cellHeight);
-
-                // Draw symbol
-                g.setColor(Color.BLACK);
-                layout.draw(g, x + (cellWidth / 2), y + (cellHeight / 2));
+                // This is the end...
+                g.dispose();
+                document.close();
             }
-
-            // This is the end...
-            g.dispose();
-            document.close();
         }
     }
 }

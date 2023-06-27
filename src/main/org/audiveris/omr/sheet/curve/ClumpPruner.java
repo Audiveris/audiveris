@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,7 +32,8 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -66,6 +67,7 @@ public class ClumpPruner
     private static final Logger logger = LoggerFactory.getLogger(ClumpLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     @Navigable(false)
     private final Sheet sheet;
 
@@ -73,6 +75,7 @@ public class ClumpPruner
     private final SlurLinker slurLinker;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SlursLinker object.
      *
@@ -86,6 +89,42 @@ public class ClumpPruner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Report the rectangular bounds of the clump of slurs.
+     *
+     * @param clump the aggregated slurs
+     * @return the global bounds
+     */
+    private Map<HorizontalSide, Rectangle> getBounds (Set<Inter> clump,
+                                                      Map<Inter, Map<HorizontalSide, Area>> areas)
+    {
+        Map<HorizontalSide, Rectangle> bounds = new EnumMap<>(HorizontalSide.class);
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            // Take union of areas for this side
+            Rectangle box = null;
+
+            for (Inter inter : clump) {
+                SlurInter slur = (SlurInter) inter;
+                Rectangle b = areas.get(slur).get(side).getBounds();
+
+                if (box == null) {
+                    box = b;
+                } else {
+                    box.add(b);
+                }
+            }
+
+            bounds.put(side, box);
+        }
+
+        return bounds;
+    }
+
     //-------//
     // prune //
     //-------//
@@ -178,41 +217,6 @@ public class ClumpPruner
         return null; // No acceptable candidate found
     }
 
-    //-----------//
-    // getBounds //
-    //-----------//
-    /**
-     * Report the rectangular bounds of the clump of slurs.
-     *
-     * @param clump the aggregated slurs
-     * @return the global bounds
-     */
-    private Map<HorizontalSide, Rectangle> getBounds (Set<Inter> clump,
-                                                      Map<Inter, Map<HorizontalSide, Area>> areas)
-    {
-        Map<HorizontalSide, Rectangle> bounds = new EnumMap<>(HorizontalSide.class);
-
-        for (HorizontalSide side : HorizontalSide.values()) {
-            // Take union of areas for this side
-            Rectangle box = null;
-
-            for (Inter inter : clump) {
-                SlurInter slur = (SlurInter) inter;
-                Rectangle b = areas.get(slur).get(side).getBounds();
-
-                if (box == null) {
-                    box = b;
-                } else {
-                    box.add(b);
-                }
-            }
-
-            bounds.put(side, box);
-        }
-
-        return bounds;
-    }
-
     /**
      * On the provided slur side, replace the linked head by its mirror head.
      *
@@ -227,68 +231,6 @@ public class ClumpPruner
         Inter mirror = head.getMirror();
         Objects.requireNonNull(mirror, "switchMirrorHead needs a non-null mirror"); // Safer
         link.partner = mirror;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // SlurEntry //
-    //-----------//
-    /**
-     * Class <code>SlurEntry</code> handles link data for a slur.
-     */
-    private static class SlurEntry
-    {
-
-        public static Comparator<SlurEntry> byWeightedDist = (SlurEntry s1, SlurEntry s2)
-                -> Double.compare(s1.weightedDist(), s2.weightedDist());
-
-        /** The slur concerned. */
-        public final SlurInter slur;
-
-        /** The two best head links (left and right). */
-        public final Map<HorizontalSide, SlurHeadLink> links;
-
-        SlurEntry (SlurInter slur,
-                   Map<HorizontalSide, SlurHeadLink> links)
-        {
-            this.slur = slur;
-            this.links = links;
-        }
-
-        /**
-         * Compute the mean euclidian-distance of this entry
-         *
-         * @return means euclidian distance
-         */
-        public double meanEuclidianDist ()
-        {
-            double dist = 0;
-            int n = 0;
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                SlurHeadLink link = links.get(side);
-
-                if (link != null) {
-                    dist += ((SlurHeadRelation) link.relation).getEuclidean();
-                    n++;
-                }
-            }
-
-            return dist / n;
-        }
-
-        /**
-         * Temper raw euclidean distance with the slur length.
-         *
-         * @return a more valuable measurement of link quality
-         */
-        public double weightedDist ()
-        {
-            final double dist = meanEuclidianDist();
-            final int nbPoints = slur.getInfo().getPoints().size();
-
-            return dist / nbPoints;
-        }
     }
 
     //-------------//
@@ -350,6 +292,117 @@ public class ClumpPruner
             }
         }
 
+        //--------------//
+        // filterChords //
+        //--------------//
+        /**
+         * Filter the chords that could be relevant for clump.
+         */
+        private void filterChords (Map<HorizontalSide, Rectangle> bounds)
+        {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                Rectangle box = bounds.get(side);
+
+                // Filter via box intersection
+                chords.put(side, Inters.intersectedInters(sysChords, null, box));
+            }
+        }
+
+        //---------------//
+        // getNonOrphans //
+        //---------------//
+        /**
+         * Select the slurs that are not orphan.
+         *
+         * @param entries the connection map to browse
+         * @return the slurs which have links on both sides
+         */
+        private List<SlurEntry> getNonOrphans (List<SlurEntry> entries)
+        {
+            List<SlurEntry> nonOrphans = new ArrayList<>();
+            EntryLoop:
+            for (SlurEntry entry : entries) {
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    if (entry.links.get(side) == null) {
+                        continue EntryLoop;
+                    }
+                }
+
+                nonOrphans.add(entry);
+            }
+
+            return nonOrphans;
+        }
+
+        //-------------//
+        // selectAmong //
+        //-------------//
+        /**
+         * Make a selection among the competing slurs.
+         * None or all of those slurs are orphans (and on the same side).
+         * <p>
+         * First, sort the slurs by increasing mean X-distance to their heads.
+         * Second, among the first ones that share the same heads, select the one with shortest
+         * mean Euclidean-distance.
+         * (TODO: this 2nd point is very questionable, we could use slur grade as well).
+         *
+         * @param entries the slur entries to select from
+         * @return the best selected
+         */
+        private SlurEntry selectAmong (List<SlurEntry> entries)
+        {
+            if ((entries == null) || entries.isEmpty()) {
+                return null;
+            } else if (entries.size() == 1) {
+                return entries.get(0);
+            }
+
+            // Sort by mean euclidean distance
+            // TODO: this may be too rigid!
+            Collections.sort(entries, SlurEntry.byWeightedDist);
+
+            // Now, select between slurs with same embraced heads, if any
+            SlurEntry bestEntry = null;
+            double bestDist = Double.MAX_VALUE;
+            SlurHeadLink bestLeft = null;
+            SlurHeadLink bestRight = null;
+
+            for (SlurEntry entry : entries) {
+                final SlurHeadLink left = entry.links.get(LEFT);
+                final SlurHeadLink right = entry.links.get(RIGHT);
+
+                if (bestEntry == null) {
+                    bestEntry = entry;
+                    bestDist = entry.weightedDist();
+                    bestLeft = left;
+                    bestRight = right;
+                    logger.debug("   {} euclide:{}", entry, bestDist);
+                } else {
+                    // Check whether embraced chords are still the same
+                    if ((bestLeft != null) && (left != null) && (left.getChord() != bestLeft
+                            .getChord())) {
+                        break;
+                    }
+
+                    if ((bestRight != null) && (right != null) && (right.getChord() != bestRight
+                            .getChord())) {
+                        break;
+                    }
+
+                    // We do have the same embraced chords as slurs above, so use Euclidean distance
+                    double dist = entry.weightedDist();
+                    logger.debug("   {} euclide:{}", entry, dist);
+
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestEntry = entry;
+                    }
+                }
+            }
+
+            return bestEntry;
+        }
+
         //------------//
         // selectSlur //
         //------------//
@@ -394,116 +447,70 @@ public class ClumpPruner
 
             return selectAmong(entries);
         }
+    }
 
-        //--------------//
-        // filterChords //
-        //--------------//
-        /**
-         * Filter the chords that could be relevant for clump.
-         */
-        private void filterChords (Map<HorizontalSide, Rectangle> bounds)
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // SlurEntry //
+    //-----------//
+    /**
+     * Class <code>SlurEntry</code> handles link data for a slur.
+     */
+    private static class SlurEntry
+    {
+
+        public static Comparator<SlurEntry> byWeightedDist = (SlurEntry s1,
+                                                              SlurEntry s2) -> Double.compare(
+                                                                      s1.weightedDist(),
+                                                                      s2.weightedDist());
+
+        /** The slur concerned. */
+        public final SlurInter slur;
+
+        /** The two best head links (left and right). */
+        public final Map<HorizontalSide, SlurHeadLink> links;
+
+        SlurEntry (SlurInter slur,
+                   Map<HorizontalSide, SlurHeadLink> links)
         {
+            this.slur = slur;
+            this.links = links;
+        }
+
+        /**
+         * Compute the mean euclidian-distance of this entry
+         *
+         * @return mean euclidean distance
+         */
+        public double meanEuclidianDist ()
+        {
+            double dist = 0;
+            int n = 0;
+
             for (HorizontalSide side : HorizontalSide.values()) {
-                Rectangle box = bounds.get(side);
+                SlurHeadLink link = links.get(side);
 
-                // Filter via box intersection
-                chords.put(side, Inters.intersectedInters(sysChords, null, box));
-            }
-        }
-
-        //---------------//
-        // getNonOrphans //
-        //---------------//
-        /**
-         * Select the slurs that are not orphan.
-         *
-         * @param map the connection map to browse
-         * @return the slurs which have links on both sides
-         */
-        private List<SlurEntry> getNonOrphans (List<SlurEntry> entries)
-        {
-            List<SlurEntry> nonOrphans = new ArrayList<>();
-            EntryLoop:
-            for (SlurEntry entry : entries) {
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    if (entry.links.get(side) == null) {
-                        continue EntryLoop;
-                    }
-                }
-
-                nonOrphans.add(entry);
-            }
-
-            return nonOrphans;
-        }
-
-        //-------------//
-        // selectAmong //
-        //-------------//
-        /**
-         * Make a selection among the competing slurs.
-         * None or all of those slurs are orphans (and on the same side).
-         * <p>
-         * First, sort the slurs by increasing mean X-distance to their heads.
-         * Second, among the first ones that share the same heads, select the one with shortest
-         * mean Euclidean-distance.
-         * (TODO: this 2nd point is very questionable, we could use slur grade as well).
-         *
-         * @param entries the slur entries to select from
-         * @return the best selected
-         */
-        private SlurEntry selectAmong (List<SlurEntry> entries)
-        {
-            if ((entries == null) || entries.isEmpty()) {
-                return null;
-            } else if (entries.size() == 1) {
-                return entries.get(0);
-            }
-
-            // Sort by mean euclidian distance
-            // TODO: this may be too rigid!
-            Collections.sort(entries, SlurEntry.byWeightedDist);
-
-            // Now, select between slurs with same embraced heads, if any
-            SlurEntry bestEntry = null;
-            double bestDist = Double.MAX_VALUE;
-            SlurHeadLink bestLeft = null;
-            SlurHeadLink bestRight = null;
-
-            for (SlurEntry entry : entries) {
-                final SlurHeadLink left = entry.links.get(LEFT);
-                final SlurHeadLink right = entry.links.get(RIGHT);
-
-                if (bestEntry == null) {
-                    bestEntry = entry;
-                    bestDist = entry.weightedDist();
-                    bestLeft = left;
-                    bestRight = right;
-                    logger.debug("   {} euclide:{}", entry, bestDist);
-                } else {
-                    // Check whether embraced chords are still the same
-                    if ((bestLeft != null) && (left != null) && (left.getChord() != bestLeft
-                            .getChord())) {
-                        break;
-                    }
-
-                    if ((bestRight != null) && (right != null) && (right.getChord() != bestRight
-                            .getChord())) {
-                        break;
-                    }
-
-                    // We do have the same embraced chords as slurs above, so use Euclidian distance
-                    double dist = entry.weightedDist();
-                    logger.debug("   {} euclide:{}", entry, dist);
-
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        bestEntry = entry;
-                    }
+                if (link != null) {
+                    dist += ((SlurHeadRelation) link.relation).getEuclidean();
+                    n++;
                 }
             }
 
-            return bestEntry;
+            return dist / n;
+        }
+
+        /**
+         * Temper raw euclidean distance with the slur length.
+         *
+         * @return a more valuable measurement of link quality
+         */
+        public double weightedDist ()
+        {
+            final double dist = meanEuclidianDist();
+            final int nbPoints = slur.getInfo().getPoints().size();
+
+            return dist / nbPoints;
         }
     }
 }

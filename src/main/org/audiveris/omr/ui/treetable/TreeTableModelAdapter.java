@@ -5,7 +5,6 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
-
 /*
  * @(#)TreeTableModelAdapter.java 1.2 98/10/27
  *
@@ -47,6 +46,7 @@ public class TreeTableModelAdapter
     TreeTableModel treeTableModel;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TreeTableModelAdapter object.
      *
@@ -61,16 +61,16 @@ public class TreeTableModelAdapter
 
         tree.addTreeExpansionListener(new TreeExpansionListener()
         {
-            // Don't use fireTableRowsInserted() here; the selection model
-            // would get updated twice.
             @Override
-            public void treeExpanded (TreeExpansionEvent event)
+            public void treeCollapsed (TreeExpansionEvent event)
             {
                 fireTableDataChanged();
             }
 
+            // Don't use fireTableRowsInserted() here; the selection model
+            // would get updated twice.
             @Override
-            public void treeCollapsed (TreeExpansionEvent event)
+            public void treeExpanded (TreeExpansionEvent event)
             {
                 fireTableDataChanged();
             }
@@ -109,6 +109,19 @@ public class TreeTableModelAdapter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------------------------//
+    // delayedFireTableDataChanged //
+    //-----------------------------//
+    /**
+     * Invokes fireTableDataChanged after all the pending events have been
+     * processed. SwingUtilities.invokeLater is used to handle this.
+     */
+    protected void delayedFireTableDataChanged ()
+    {
+        SwingUtilities.invokeLater( () -> fireTableDataChanged());
+    }
+
     //----------------//
     // getColumnClass //
     //----------------//
@@ -234,17 +247,5 @@ public class TreeTableModelAdapter
                             int column)
     {
         treeTableModel.setValueAt(value, nodeForRow(row), column);
-    }
-
-    //-----------------------------//
-    // delayedFireTableDataChanged //
-    //-----------------------------//
-    /**
-     * Invokes fireTableDataChanged after all the pending events have been
-     * processed. SwingUtilities.invokeLater is used to handle this.
-     */
-    protected void delayedFireTableDataChanged ()
-    {
-        SwingUtilities.invokeLater(() -> fireTableDataChanged());
     }
 }

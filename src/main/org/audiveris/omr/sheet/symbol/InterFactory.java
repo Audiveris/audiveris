@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,9 +25,8 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -60,6 +59,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -69,22 +69,28 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.NumberInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -118,6 +124,7 @@ public class InterFactory
     private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -153,6 +160,7 @@ public class InterFactory
     private final ProcessingSwitches switches;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new InterFactory object.
      *
@@ -182,6 +190,7 @@ public class InterFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // create //
     //--------//
@@ -191,10 +200,11 @@ public class InterFactory
      * @param eval         evaluation result
      * @param glyph        evaluated glyph
      * @param closestStaff only the closest staff, ordinate-wise
+     * @return the created inter, perhaps null
      */
-    public void create (Evaluation eval,
-                        Glyph glyph,
-                        Staff closestStaff)
+    public Inter create (Evaluation eval,
+                         Glyph glyph,
+                         Staff closestStaff)
     {
         final Inter inter = doCreate(eval, glyph, closestStaff);
 
@@ -202,60 +212,8 @@ public class InterFactory
         if ((inter != null) && (inter.getSig() == null)) {
             sig.addVertex(inter);
         }
-    }
 
-    //---------------//
-    // getSystemBars //
-    //---------------//
-    /**
-     * Report all system barlines.
-     *
-     * @return all barlines in the containing system
-     */
-    public List<Inter> getSystemBars ()
-    {
-        if (systemBars == null) {
-            systemBars = sig.inters(BarlineInter.class);
-            Collections.sort(systemBars, Inters.byAbscissa);
-        }
-
-        return systemBars;
-    }
-
-    //----------------//
-    // getSystemRests //
-    //----------------//
-    /**
-     * Report all rests in system.
-     *
-     * @return all rests in the containing system
-     */
-    public List<Inter> getSystemRests ()
-    {
-        if (systemRests == null) {
-            systemRests = sig.inters(RestInter.class);
-            Collections.sort(systemRests, Inters.byAbscissa);
-        }
-
-        return systemRests;
-    }
-
-    //------------//
-    // lateChecks //
-    //------------//
-    /**
-     * Perform late checks.
-     */
-    public void lateChecks ()
-    {
-        // Conflicting dot interpretations
-        dotFactory.lateDotChecks();
-
-        // Complex dynamics
-        handleComplexDynamics();
-
-        // Column consistency of Time Signatures in a system
-        handleTimes();
+        return inter;
     }
 
     //----------//
@@ -265,7 +223,7 @@ public class InterFactory
      * Create proper inter instance(s) for provided evaluated glyph.
      * <p>
      * This method addresses only the symbols handled via a classifier.
-     * In current OMR design, this does not address:
+     * In current OMR design, this does <b>not</b> address:
      * <ul>
      * <li>Brace
      * <li>Bracket
@@ -282,6 +240,7 @@ public class InterFactory
      * @param eval         evaluation result
      * @param glyph        evaluated glyph
      * @param closestStaff only the closest staff, ordinate-wise
+     * @return the created inter or null
      */
     private Inter doCreate (Evaluation eval,
                             Glyph glyph,
@@ -298,11 +257,12 @@ public class InterFactory
         case CLUTTER:
             return null;
 
-        // Ottava (TODO: not yet handled ???)
-        //
-        case OTTAVA_ALTA:
-        case OTTAVA_BASSA:
-            return null;
+        // Octave shift
+        case OTTAVA:
+        case QUINDICESIMA:
+        case VENTIDUESIMA:
+            // Staff is very questionable!
+            return OctaveShiftInter.create(glyph, shape, grade, closestStaff);
 
         // All dots:
         // - REPEAT_DOT
@@ -313,6 +273,12 @@ public class InterFactory
             dotFactory.instantDotChecks(eval, glyph, closestStaff);
 
             return null;
+
+        // Measure repeat signs
+        case REPEAT_ONE_BAR:
+        case REPEAT_TWO_BARS:
+        case REPEAT_FOUR_BARS:
+            return MeasureRepeatInter.create(glyph, shape, grade, closestStaff); // Staff is OK
 
         // Clefs
         case G_CLEF:
@@ -358,7 +324,9 @@ public class InterFactory
         case TIME_NINE:
         case TIME_TWELVE:
         case TIME_SIXTEEN:
-            return TimeNumberInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+            // NOTA: These shapes are generally used for a time number or for a measure count.
+            // At this point, we simply return a general-purpose number
+            return NumberInter.create(glyph, shape, grade, closestStaff);
 
         case COMMON_TIME:
         case CUT_TIME:
@@ -379,13 +347,15 @@ public class InterFactory
         case FLAG_3:
         case FLAG_4:
         case FLAG_5:
-        case FLAG_1_UP:
-        case FLAG_2_UP:
-        case FLAG_3_UP:
-        case FLAG_4_UP:
-        case FLAG_5_UP:
+        case FLAG_1_DOWN:
+        case FLAG_2_DOWN:
+        case FLAG_3_DOWN:
+        case FLAG_4_DOWN:
+        case FLAG_5_DOWN:
         case SMALL_FLAG:
+        case SMALL_FLAG_DOWN:
         case SMALL_FLAG_SLASH:
+        case SMALL_FLAG_SLASH_DOWN:
             return AbstractFlagInter.createValidAdded(glyph, shape, grade, system, systemStems); // Glyph is checked
 
         // Rests
@@ -411,8 +381,12 @@ public class InterFactory
         case NATURAL:
         case SHARP:
         case DOUBLE_SHARP:
-        case DOUBLE_FLAT: {
+        case DOUBLE_FLAT:
+        {
             // Staff is very questionable!
+            if (closestStaff.isTablature()) {
+                return null;
+            }
             AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
             sig.addVertex(alter);
@@ -427,15 +401,15 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter.createValidAdded(
-                    glyph, shape, grade, system, systemHeadChords)
-                    : null;
+            return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
+                    .createValidAdded(glyph, shape, grade, system, systemHeadChords) : null;
 
         // Markers
         case CODA:
         case SEGNO:
         case DAL_SEGNO:
-        case DA_CAPO: {
+        case DA_CAPO:
+        {
             MarkerInter marker = MarkerInter.create(glyph, shape, grade, closestStaff); // OK
 
             sig.addVertex(marker);
@@ -472,9 +446,14 @@ public class InterFactory
         case DIMINUENDO:
             return new WedgeInter(glyph, shape, grade);
 
-        // Ornaments (TODO: Really handle GRACE_NOTE and GRACE_NOTE_SLASH)
-        case GRACE_NOTE_SLASH:
+        // Grace notes
         case GRACE_NOTE:
+        case GRACE_NOTE_DOWN:
+        case GRACE_NOTE_SLASH:
+        case GRACE_NOTE_SLASH_DOWN:
+            return GraceChordInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
+
+        // Ornaments
         case TR:
         case TURN:
         case TURN_INVERTED:
@@ -483,6 +462,18 @@ public class InterFactory
         case MORDENT:
         case MORDENT_INVERTED:
             return OrnamentInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
+
+        // Tremolos
+        case TREMOLO_1:
+        case TREMOLO_2:
+        case TREMOLO_3:
+            return switches.getValue(ProcessingSwitch.tremolos) ? TremoloInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemStems,
+                    systemHeads) : null;
 
         // Plucked techniques
         case ARPEGGIATO:
@@ -500,16 +491,26 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(ProcessingSwitch.fingerings) ? new FingeringInter(glyph, shape, grade)
-                    : null;
+            // Check potential link with proper note head
+            return switches.getValue(ProcessingSwitch.fingerings) ? FingeringInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(ProcessingSwitch.pluckings) ? new PluckingInter(glyph, shape, grade)
-                    : null;
+            // Check potential link with proper note head
+            return switches.getValue(ProcessingSwitch.pluckings) ? PluckingInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Romans
         case ROMAN_I:
@@ -524,128 +525,45 @@ public class InterFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return switches.getValue(ProcessingSwitch.frets) ? new FretInter(glyph, shape, grade) : null;
+            return switches.getValue(ProcessingSwitch.frets) ? new FretInter(glyph, shape, grade)
+                    : null;
+
+        // Playings
+        case PLAYING_OPEN:
+        case PLAYING_HALF_OPEN:
+        case PLAYING_CLOSED:
+            // Check potential link with proper drum note
+            return switches.getValue(ProcessingSwitch.drumNotation) ? PlayingInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Others
         default:
-            logger.info("No support yet for {} glyph#{}", shape, glyph.getId());
+            logger.debug("No support yet for {} glyph#{}", shape, glyph.getId());
 
             return null;
         }
     }
 
-    //-----------------------//
-    // handleComplexDynamics //
-    //-----------------------//
+    //---------------//
+    // getSystemBars //
+    //---------------//
     /**
-     * Handle competition between complex and shorter dynamics.
+     * Report all system barlines.
+     *
+     * @return all barlines in the containing system
      */
-    private void handleComplexDynamics ()
+    public List<Inter> getSystemBars ()
     {
-        // All dynamics in system
-        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
-
-        // Complex dynamics in system, sorted by decreasing length
-        final List<DynamicsInter> complexes = new ArrayList<>();
-
-        for (Inter inter : dynamics) {
-            DynamicsInter dyn = (DynamicsInter) inter;
-
-            if (dyn.getSymbolString().length() > 1) {
-                complexes.add(dyn);
-            }
+        if (systemBars == null) {
+            systemBars = sig.inters(BarlineInter.class);
+            Collections.sort(systemBars, Inters.byAbscissa);
         }
 
-        Collections.sort(complexes, (d1, d2) -> Integer.compare(
-                d2.getSymbolString().length(),
-                d1.getSymbolString().length()) // Sort by decreasing length
-        );
-
-        for (DynamicsInter complex : complexes) {
-            complex.swallowShorterDynamics(dynamics);
-        }
-    }
-
-    //-------------//
-    // handleTimes //
-    //-------------//
-    /**
-     * Handle time inters outside of system header.
-     * <p>
-     * Isolated time inters found outside of system header lead to the retrieval of a column of
-     * time signatures.
-     */
-    private void handleTimes ()
-    {
-        // Retrieve all time inters (outside staff headers)
-        final List<Inter> systemTimes = sig.inters(
-                new Class[]{TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-                            TimeCustomInter.class, // User modifiable combo 6/8
-                            TimeNumberInter.class}); // Partial symbol like 6 or 8
-
-        final List<Inter> headerTimes = new ArrayList<>();
-
-        for (Inter inter : systemTimes) {
-            Staff staff = inter.getStaff();
-
-            if (inter.getCenter().x < staff.getHeaderStop()) {
-                headerTimes.add(inter);
-            }
-        }
-
-        systemTimes.removeAll(headerTimes);
-
-        if (systemTimes.isEmpty()) {
-            return;
-        }
-
-        // Dispatch these time inters into their containing stack
-        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
-                (s1, s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
-
-        for (Inter inter : systemTimes) {
-            final MeasureStack stack = system.getStackAt(inter.getCenter());
-
-            if (stack != null) {
-                Set<Inter> stackSet = timeMap.get(stack);
-
-                if (stackSet == null) {
-                    timeMap.put(stack, stackSet = new LinkedHashSet<>());
-                }
-
-                stackSet.add(inter);
-            }
-        }
-
-        // Finally, scan each stack populated with some time sig(s)
-        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
-            final MeasureStack stack = entry.getKey();
-            final TimeColumn column = new BasicTimeColumn(stack, entry.getValue());
-            final int res = column.retrieveTime();
-
-            // If the stack does have a validated time sig, discard overlapping stuff right now!
-            if (res != -1) {
-                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
-                final Rectangle columnBox = Inters.getBounds(times);
-                final List<Inter> neighbors = sig.inters(
-                        (inter) -> inter.getBounds().intersects(columnBox)
-                                           && !(inter instanceof InterEnsemble));
-
-                neighbors.removeAll(times);
-
-                for (AbstractTimeInter time : times) {
-                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
-                        final Inter neighbor = it.next();
-
-                        if (neighbor.overlaps(time)) {
-                            logger.debug("Deleting time overlapping {}", neighbor);
-                            neighbor.remove();
-                            it.remove();
-                        }
-                    }
-                }
-            }
-        }
+        return systemBars;
     }
 
     //-----------------//
@@ -686,6 +604,167 @@ public class InterFactory
 
         return systemNotes;
     }
+
+    //----------------//
+    // getSystemRests //
+    //----------------//
+    /**
+     * Report all rests in system.
+     *
+     * @return all rests in the containing system
+     */
+    public List<Inter> getSystemRests ()
+    {
+        if (systemRests == null) {
+            systemRests = sig.inters(RestInter.class);
+            Collections.sort(systemRests, Inters.byAbscissa);
+        }
+
+        return systemRests;
+    }
+
+    //-----------------------//
+    // handleComplexDynamics //
+    //-----------------------//
+    /**
+     * Handle competition between complex and shorter dynamics.
+     */
+    private void handleComplexDynamics ()
+    {
+        // All dynamics in system
+        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
+
+        // Complex dynamics in system, sorted by decreasing length
+        final List<DynamicsInter> complexes = new ArrayList<>();
+
+        for (Inter inter : dynamics) {
+            DynamicsInter dyn = (DynamicsInter) inter;
+
+            if (dyn.getSymbolString().length() > 1) {
+                complexes.add(dyn);
+            }
+        }
+
+        Collections.sort(
+                complexes,
+                (d1,
+                 d2) -> Integer.compare(
+                         d2.getSymbolString().length(),
+                         d1.getSymbolString().length()) // Sort by decreasing length
+        );
+
+        for (DynamicsInter complex : complexes) {
+            complex.swallowShorterDynamics(dynamics);
+        }
+    }
+
+    //-------------//
+    // handleTimes //
+    //-------------//
+    /**
+     * Handle time inters outside of system header.
+     * <p>
+     * Isolated time inters found outside of system header lead to the retrieval of a column of
+     * time signatures.
+     */
+    private void handleTimes ()
+    {
+        // Retrieve all time inters (outside staff headers)
+        final List<Inter> systemTimes = sig.inters(new Class[]
+        {
+                TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+                TimeCustomInter.class, // User modifiable combo 6/8
+                TimeNumberInter.class }); // Partial symbol like 6 or 8
+
+        final List<Inter> headerTimes = new ArrayList<>();
+
+        for (Inter inter : systemTimes) {
+            Staff staff = inter.getStaff();
+
+            if (inter.getCenter().x < staff.getHeaderStop()) {
+                headerTimes.add(inter);
+            }
+        }
+
+        systemTimes.removeAll(headerTimes);
+
+        if (systemTimes.isEmpty()) {
+            return;
+        }
+
+        // Dispatch these time inters into their containing stack
+        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
+                (s1,
+                 s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
+
+        for (Inter inter : systemTimes) {
+            final MeasureStack stack = system.getStackAt(inter.getCenter());
+
+            if (stack != null) {
+                Set<Inter> stackSet = timeMap.get(stack);
+
+                if (stackSet == null) {
+                    timeMap.put(stack, stackSet = new LinkedHashSet<>());
+                }
+
+                stackSet.add(inter);
+            }
+        }
+
+        // Finally, scan each stack populated with some time sig(s)
+        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
+            final MeasureStack stack = entry.getKey();
+            final TimeColumn column = new BasicTimeColumn(stack, entry.getValue());
+            final int res = column.retrieveTime();
+
+            // If the stack does have a validated time sig, discard overlapping stuff right now!
+            if (res != -1) {
+                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
+                final Rectangle columnBox = Inters.getBounds(times);
+                final List<Inter> neighbors = sig.inters(
+                        (inter) -> inter.getBounds().intersects(columnBox)
+                                && !(inter instanceof InterEnsemble));
+
+                neighbors.removeAll(times);
+
+                for (AbstractTimeInter time : times) {
+                    final double timeGrade = time.getGrade();
+
+                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
+                        final Inter neighbor = it.next();
+
+                        if (neighbor.overlaps(time) && (neighbor.getGrade() < timeGrade)) {
+                            if (neighbor.isVip()) {
+                                logger.info("VIP Deleting time overlapping {}", neighbor);
+                            }
+                            neighbor.remove();
+                            it.remove();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //------------//
+    // lateChecks //
+    //------------//
+    /**
+     * Perform late checks.
+     */
+    public void lateChecks ()
+    {
+        // Conflicting dot interpretations
+        dotFactory.lateDotChecks();
+
+        // Complex dynamics
+        handleComplexDynamics();
+
+        // Column consistency of Time Signatures in a system
+        handleTimes();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------//
     // createManual //
@@ -730,12 +809,12 @@ public class InterFactory
         case CLUTTER:
             return new ClutterInter(null, GRADE);
 
-        //
-        // Ottava TODO ???
-        //        case OTTAVA_ALTA:
-        //        case OTTAVA_BASSA:
-        //            return null;
-        //
+        // Octave shift
+        case OTTAVA:
+        case QUINDICESIMA:
+        case VENTIDUESIMA:
+            return new OctaveShiftInter(shape, GRADE);
+
         // Brace, bracket
         case BRACE:
             return new BraceInter(GRADE);
@@ -746,12 +825,11 @@ public class InterFactory
         // Barlines
         case THIN_BARLINE:
         case THICK_BARLINE:
-
-            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-                return new BarlineInter(null, shape, GRADE, null, null);
-            } else {
-                return new StaffBarlineInter(shape, GRADE);
-            }
+            //            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
+            //                return new BarlineInter(null, shape, GRADE, null, null);
+            //            } else {
+            return new StaffBarlineInter(shape, GRADE);
+        //            }
 
         case DOUBLE_BARLINE:
         case FINAL_BARLINE:
@@ -764,6 +842,9 @@ public class InterFactory
         // Beams
         case BEAM:
             return new BeamInter(GRADE);
+
+        case BEAM_SMALL:
+            return new SmallBeamInter(GRADE);
 
         case BEAM_HOOK:
             return new BeamHookInter(GRADE);
@@ -779,6 +860,12 @@ public class InterFactory
         // Repeats
         case REPEAT_DOT:
             return new RepeatDotInter(null, GRADE, null, null); // No visit
+
+        // Measure repeat signs
+        case REPEAT_ONE_BAR:
+        case REPEAT_TWO_BARS:
+        case REPEAT_FOUR_BARS:
+            return new MeasureRepeatInter(shape, GRADE);
 
         // Curves
         case SLUR_ABOVE:
@@ -831,8 +918,8 @@ public class InterFactory
         case KEY_SHARP_7:
             return new KeyInter(GRADE, shape);
 
-        // Time sig
-        case TIME_ZERO:
+        // Custom / predefined number
+        case NUMBER_CUSTOM:
         case TIME_ONE:
         case TIME_TWO:
         case TIME_THREE:
@@ -844,8 +931,9 @@ public class InterFactory
         case TIME_NINE:
         case TIME_TWELVE:
         case TIME_SIXTEEN:
-            return new TimeNumberInter(null, shape, GRADE, null); // No visit
+            return new NumberInter(null, shape, GRADE);
 
+        // Predefined whole time
         case COMMON_TIME:
         case CUT_TIME:
         case TIME_FOUR_FOUR:
@@ -859,18 +947,39 @@ public class InterFactory
         case TIME_TWELVE_EIGHT:
             return new TimeWholeInter(null, shape, GRADE);
 
-        case CUSTOM_TIME:
+        case TIME_CUSTOM:
             return new TimeCustomInter(0, 0, GRADE);
 
         // Noteheads
-        case NOTEHEAD_CROSS:
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
         case BREVE:
         case WHOLE_NOTE:
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_BLACK:
+
+        case BREVE_SMALL:
         case WHOLE_NOTE_SMALL:
+        case NOTEHEAD_VOID_SMALL:
+        case NOTEHEAD_BLACK_SMALL:
+
+        case BREVE_CROSS:
+        case WHOLE_NOTE_CROSS:
+        case NOTEHEAD_CROSS_VOID:
+        case NOTEHEAD_CROSS:
+
+        case BREVE_DIAMOND:
+        case WHOLE_NOTE_DIAMOND:
+        case NOTEHEAD_DIAMOND_VOID:
+        case NOTEHEAD_DIAMOND_FILLED:
+
+        case BREVE_TRIANGLE_DOWN:
+        case WHOLE_NOTE_TRIANGLE_DOWN:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+
+        case BREVE_CIRCLE_X:
+        case WHOLE_NOTE_CIRCLE_X:
+        case NOTEHEAD_CIRCLE_X_VOID:
+        case NOTEHEAD_CIRCLE_X:
             return new HeadInter(null, shape, GRADE, null, null);
 
         case AUGMENTATION_DOT:
@@ -889,18 +998,23 @@ public class InterFactory
         case FLAG_3:
         case FLAG_4:
         case FLAG_5:
-        case FLAG_1_UP:
-        case FLAG_2_UP:
-        case FLAG_3_UP:
-        case FLAG_4_UP:
-        case FLAG_5_UP:
+        case FLAG_1_DOWN:
+        case FLAG_2_DOWN:
+        case FLAG_3_DOWN:
+        case FLAG_4_DOWN:
+        case FLAG_5_DOWN:
             return new FlagInter(null, shape, GRADE);
 
         case SMALL_FLAG:
+        case SMALL_FLAG_DOWN:
         case SMALL_FLAG_SLASH:
+        case SMALL_FLAG_SLASH_DOWN:
             return new SmallFlagInter(null, shape, GRADE);
 
         // Rests
+        case MULTIPLE_REST:
+            return new MultipleRestInter(GRADE);
+
         case LONG_REST:
         case BREVE_REST:
         case WHOLE_REST:
@@ -970,11 +1084,16 @@ public class InterFactory
         // Wedges
         case CRESCENDO:
         case DIMINUENDO:
-            return new WedgeInter(null, shape, GRADE); // ?
+            return new WedgeInter(null, shape, GRADE);
+
+        // Graces
+        case GRACE_NOTE:
+        case GRACE_NOTE_DOWN:
+        case GRACE_NOTE_SLASH:
+        case GRACE_NOTE_SLASH_DOWN:
+            return new GraceChordInter(null, shape, GRADE);
 
         // Ornaments
-        case GRACE_NOTE_SLASH:
-        case GRACE_NOTE:
         case TR:
         case TURN:
         case TURN_INVERTED:
@@ -983,6 +1102,12 @@ public class InterFactory
         case MORDENT:
         case MORDENT_INVERTED:
             return new OrnamentInter(null, shape, GRADE); // No visit
+
+        // Tremolos
+        case TREMOLO_1:
+        case TREMOLO_2:
+        case TREMOLO_3:
+            return new TremoloInter(shape, GRADE);
 
         // Plucked techniques
         case ARPEGGIATO:
@@ -1023,6 +1148,12 @@ public class InterFactory
         case ROMAN_XI:
         case ROMAN_XII:
             return new FretInter(null, shape, GRADE); // No visit
+
+        // Playings
+        case PLAYING_OPEN:
+        case PLAYING_HALF_OPEN:
+        case PLAYING_CLOSED:
+            return new PlayingInter(null, shape, GRADE);
 
         // Others
         default:

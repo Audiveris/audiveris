@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
-import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
+import static org.audiveris.omr.glyph.ShapeSet.SmallFlagsUp;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -36,7 +36,6 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -64,6 +63,7 @@ public abstract class AbstractFlagInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Value of this flag (compound?) in terms of individual flags.
      * (Lazily evaluated)
@@ -71,6 +71,7 @@ public abstract class AbstractFlagInter
     protected Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>AbstractFlagInter</code> object.
      */
@@ -93,6 +94,7 @@ public abstract class AbstractFlagInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -109,19 +111,19 @@ public abstract class AbstractFlagInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
-        // Needed to get flag  bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        // First call needed to get flag  bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
-        // For a flag we snap to stem on x
         if (staff != null) {
+            // We try to snap abscissa on a suitable stem
             final Double x = getSnapAbscissa();
 
             if (x != null) {
+                // Final call, now with refined dropLocation
                 dropLocation.x = (int) Math.rint(x);
-                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+                super.deriveFrom(symbol, sheet, font, dropLocation);
             }
         }
 
@@ -135,61 +137,6 @@ public abstract class AbstractFlagInter
     public InterEditor getEditor ()
     {
         return new Editor(this);
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Report the count of individual flags represented by this inter shape.
-     *
-     * @return the corresponding count of individual flags
-     */
-    public int getValue ()
-    {
-        if (value == null) {
-            value = getFlagValue(shape);
-        }
-
-        return value;
-    }
-
-    //----------//
-    // getVoice //
-    //----------//
-    @Override
-    public Voice getVoice ()
-    {
-        for (Relation rel : sig.getRelations(this, FlagStemRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
-        Collections.sort(systemStems, Inters.byAbscissa);
-
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final Link link = lookupLink(systemStems, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, FlagStemRelation.class);
     }
 
     //-----------------//
@@ -224,6 +171,36 @@ public abstract class AbstractFlagInter
         return null;
     }
 
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Report the count of individual flags represented by this inter shape.
+     *
+     * @return the corresponding count of individual flags
+     */
+    public int getValue ()
+    {
+        if (value == null) {
+            value = getFlagValue(shape);
+        }
+
+        return value;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, FlagStemRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        return null;
+    }
+
     //------------//
     // lookupLink //
     //------------//
@@ -245,9 +222,9 @@ public abstract class AbstractFlagInter
         final Scale scale = system.getSheet().getScale();
         final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(profile));
 
-        // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
-        final boolean isFlagUp = FlagsUp.contains(shape);
-        final boolean isSmall = SmallFlags.contains(shape);
+        // Look for stems nearby, using the highest (for up) or lowest (for down) third of height
+        final boolean isFlagUp = FlagsUp.contains(shape) || SmallFlagsUp.contains(shape);
+        final boolean isSmall = shape.isSmallFlag();
         final int stemWidth = system.getSheet().getScale().getMaxStem();
         final Rectangle flagBox = getBounds();
         final int footHeight = (int) Math.rint(flagBox.height / 2.5);
@@ -255,10 +232,10 @@ public abstract class AbstractFlagInter
         // We need a flag ref point to compute x and y distances to stem
         final Point refPt = new Point(
                 flagBox.x,
-                isFlagUp ? ((flagBox.y + flagBox.height) - footHeight) : (flagBox.y + footHeight));
-        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY)
-                : (flagBox.y + maxStemFlagGapY);
-        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2)) : (refPt.y - (footHeight / 2));
+                isFlagUp ? (flagBox.y + footHeight) : ((flagBox.y + flagBox.height) - footHeight));
+        final int y = isFlagUp ? (flagBox.y + maxStemFlagGapY)
+                : ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY);
+        final int midFootY = isFlagUp ? (refPt.y - (footHeight / 2)) : (refPt.y + (footHeight / 2));
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
         final Rectangle luBox = new Rectangle(
@@ -271,7 +248,10 @@ public abstract class AbstractFlagInter
             glyph.addAttachment("fs", luBox);
         }
 
-        final List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+        final List<Inter> stems = Inters.intersectedInters(
+                systemStems,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;
@@ -303,26 +283,26 @@ public abstract class AbstractFlagInter
                         LineUtil.intersectionAtY(
                                 start,
                                 stop,
-                                isFlagUp ? ((flagBox.y + flagBox.height) - 1) : flagBox.y));
+                                isFlagUp ? flagBox.y : ((flagBox.y + flagBox.height) - 1)));
 
                 // Check consistency between flag direction and vertical position on stem
                 // As well as stem direction as indicated by heads on stem
                 double midStemY = (start.getY() + stop.getY()) / 2;
 
                 if (isFlagUp) {
-                    if (midFootY <= midStemY) {
-                        continue;
-                    }
-
-                    if (stem.computeDirection() == -1) {
-                        continue;
-                    }
-                } else {
                     if (midFootY >= midStemY) {
                         continue;
                     }
 
                     if (stem.computeDirection() == 1) {
+                        continue;
+                    }
+                } else {
+                    if (midFootY <= midStemY) {
+                        continue;
+                    }
+
+                    if (stem.computeDirection() == -1) {
                         continue;
                     }
                 }
@@ -333,6 +313,33 @@ public abstract class AbstractFlagInter
 
         return null;
     }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(systemStems, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, FlagStemRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // createValidAdded //
@@ -357,8 +364,7 @@ public abstract class AbstractFlagInter
                                                       SystemInfo system,
                                                       List<Inter> systemStems)
     {
-        final AbstractFlagInter flag = SmallFlags.contains(shape)
-                ? new SmallFlagInter(glyph, shape, grade)
+        final AbstractFlagInter flag = shape.isSmallFlag() ? new SmallFlagInter(glyph, shape, grade)
                 : new FlagInter(glyph, shape, grade);
         final Link link = flag.lookupLink(systemStems, system.getProfile());
 
@@ -385,25 +391,27 @@ public abstract class AbstractFlagInter
     {
         switch (shape) {
         case FLAG_1:
-        case FLAG_1_UP:
+        case FLAG_1_DOWN:
         case SMALL_FLAG:
+        case SMALL_FLAG_DOWN:
         case SMALL_FLAG_SLASH:
+        case SMALL_FLAG_SLASH_DOWN:
             return 1;
 
         case FLAG_2:
-        case FLAG_2_UP:
+        case FLAG_2_DOWN:
             return 2;
 
         case FLAG_3:
-        case FLAG_3_UP:
+        case FLAG_3_DOWN:
             return 3;
 
         case FLAG_4:
-        case FLAG_4_UP:
+        case FLAG_4_DOWN:
             return 4;
 
         case FLAG_5:
-        case FLAG_5_UP:
+        case FLAG_5_DOWN:
             return 5;
         }
 
@@ -413,6 +421,7 @@ public abstract class AbstractFlagInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Editor //
     //--------//
@@ -445,20 +454,19 @@ public abstract class AbstractFlagInter
             handles.add(selectedHandle = new Handle(flag.getCenter())
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final double dy = vector.getY();
-
                     if (dy == 0) {
                         return false;
                     }
 
                     // Data
-                    latestBounds.y += dy;
+                    latestBounds.y += (int) Math.rint(dy);
 
                     // Handle
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), 0, dy);
+                        PointUtil.add(handle.getPoint(), 0, dy);
                     }
 
                     return true;
@@ -469,14 +477,14 @@ public abstract class AbstractFlagInter
         @Override
         protected void doit ()
         {
-            inter.setBounds(latestBounds);
+            getInter().setBounds(latestBounds);
             super.doit(); // No more glyph
         }
 
         @Override
         public void undo ()
         {
-            inter.setBounds(originalBounds);
+            getInter().setBounds(originalBounds);
             super.undo();
         }
     }

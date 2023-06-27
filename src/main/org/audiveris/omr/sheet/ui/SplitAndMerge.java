@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -72,6 +72,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -117,8 +119,8 @@ public class SplitAndMerge
 
     private static final Logger logger = LoggerFactory.getLogger(SplitAndMerge.class);
 
-    private static final ApplicationContext applicationContext
-            = Application.getInstance().getContext();
+    private static final ApplicationContext applicationContext = Application.getInstance()
+            .getContext();
 
     private static final ResourceMap resources = applicationContext.getResourceMap(
             SplitAndMerge.class);
@@ -148,6 +150,7 @@ public class SplitAndMerge
     private static final String DOWN_ENABLED = "downEnabled";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The root component. */
     private final JDialog dialog;
 
@@ -173,6 +176,7 @@ public class SplitAndMerge
     private boolean downEnabled = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SplitAndMerge</code> object.
      *
@@ -195,14 +199,16 @@ public class SplitAndMerge
 
         defineLayout();
 
-        model.addTableModelListener((TableModelEvent e) -> {
+        model.addTableModelListener( (TableModelEvent e) ->
+        {
             setEmpty(checkEmpty());
             setBuildable(checkBuildable());
         });
 
         table.setDropMode(DropMode.INSERT_ROWS);
 
-        table.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+        table.getSelectionModel().addListSelectionListener( (ListSelectionEvent e) ->
+        {
             logger.debug("ListSelection valueChanged");
             setSelected(checkSelected());
             setUpEnabled(checkUpEnabled());
@@ -217,11 +223,12 @@ public class SplitAndMerge
 
         // Start with a specific playlist?
         if (playListPath != null) {
-            SwingUtilities.invokeLater(() -> new OpenPlayListTask(playListPath).execute());
+            SwingUtilities.invokeLater( () -> new OpenPlayListTask(playListPath).execute());
         }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // build //
     //-------//
@@ -245,19 +252,25 @@ public class SplitAndMerge
         }
 
         if (!unsaved.isEmpty()) {
-            OMR.gui.displayWarning(new JList<>(unsaved.toArray(String[]::new)),
-                                   resources.getString("unsavedBooks"));
+            OMR.gui.displayWarning(
+                    new JList<>(unsaved.toArray(String[]::new)),
+                    resources.getString("unsavedBooks"));
             return null;
         }
 
         try {
             // Second, let the user select a book output file
             final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
-            final Path targetPath = selectBookPath(true, defaultFolder);
+            Path targetPath = selectBookPath(true, defaultFolder);
 
-            if ((targetPath != null) && isTargetConfirmed(targetPath)) {
-                // Finally, launch building of the compound book
-                return new BuildCompoundTask(targetPath);
+            if (targetPath != null) {
+                if (!targetPath.toString().endsWith(OMR.BOOK_EXTENSION)) {
+                    targetPath = Paths.get(targetPath + OMR.BOOK_EXTENSION);
+                }
+
+                if (isTargetConfirmed(targetPath)) {
+                    return new BuildCompoundTask(targetPath);
+                }
             }
         } catch (Throwable ex) {
             logger.warn("Error in SplitAndMerge.build {}", ex.toString(), ex);
@@ -266,12 +279,109 @@ public class SplitAndMerge
         return null;
     }
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    public JDialog getComponent ()
+    //-----------------//
+    // buildButtonPane //
+    //-----------------//
+    /**
+     * Build the whole pane of buttons, one button per declared action.
+     *
+     * @return the button pane
+     */
+    private Panel buildButtonPane ()
     {
-        return dialog;
+        final ApplicationActionMap actionMap = applicationContext.getActionMap(this);
+        final Panel buttonPane = new Panel();
+        buttonPane.setInsets(10, 10, 10, 10);
+
+        final String[] actions = new String[]
+        {
+                "open",
+                "loadFiles",
+                "include",
+                "duplicate",
+                "remove",
+                "moveUp",
+                "moveDown",
+                "save",
+                "build" };
+
+        final StringBuilder rowSpec = new StringBuilder();
+        for (int i = 0; i < actions.length; i++) {
+            if (i != 0) {
+                rowSpec.append(", 5dlu, ");
+            }
+
+            rowSpec.append("pref");
+        }
+
+        final FormLayout layout = new FormLayout("pref", rowSpec.toString());
+        final CellConstraints cst = new CellConstraints();
+        final PanelBuilder builder = new PanelBuilder(layout, buttonPane);
+
+        int r = -1;
+        for (String action : actions) {
+            builder.add(new JButton(actionMap.get(action)), cst.xy(1, r += 2, "fill,fill"));
+        }
+
+        return buttonPane;
+    }
+
+    private boolean checkBuildable ()
+    {
+        return (model.size() > 0) && illegals.isEmpty();
+    }
+
+    private boolean checkDownEnabled ()
+    {
+        final int row = table.getSelectedRow();
+        return (row != -1) && (row < table.getRowCount() - 1);
+    }
+
+    private boolean checkEmpty ()
+    {
+        return model.size() == 0;
+    }
+
+    private boolean checkSelected ()
+    {
+        return table.getSelectedRowCount() > 0;
+    }
+
+    private boolean checkUpEnabled ()
+    {
+        return table.getSelectedRow() > 0;
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        dialog.setName("SplitAndMergeDialog"); // For SAF life cycle
+
+        // Alternate color for zebra appearance
+        final Color zebraColor = new Color(248, 248, 255);
+        UIManager.put("Table.alternateRowColor", zebraColor);
+
+        // BookExcerpt's table
+        JScrollPane scrollPane = new JScrollPane(table);
+        table.setShowGrid(true);
+        table.setRowHeight(30);
+        table.setIntercellSpacing(new Dimension(10, 5));
+        table.setFillsViewportHeight(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Buttons
+        final Panel buttonPane = buildButtonPane();
+
+        // Dialog layout
+        dialog.setTitle(resources.getString("dialog.title"));
+        dialog.setLayout(new BorderLayout());
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        dialog.add(buttonPane, BorderLayout.EAST);
+
+        // I18n
+        resources.injectComponents(dialog);
     }
 
     //-----------//
@@ -294,6 +404,14 @@ public class SplitAndMerge
         model.fireTableRowsUpdated(row + 1, model.size());
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    public JDialog getComponent ()
+    {
+        return dialog;
+    }
+
     //---------//
     // include //
     //---------//
@@ -313,15 +431,18 @@ public class SplitAndMerge
         list.setCellRenderer(new DefaultListCellRenderer()
         {
             @Override
-            public Component getListCellRendererComponent (
-                    JList<?> list,
-                    Object value,
-                    int index,
-                    boolean isSelected,
-                    boolean cellHasFocus)
+            public Component getListCellRendererComponent (JList<?> list,
+                                                           Object value,
+                                                           int index,
+                                                           boolean isSelected,
+                                                           boolean cellHasFocus)
             {
                 final JLabel label = (JLabel) super.getListCellRendererComponent(
-                        list, value, index, isSelected, cellHasFocus);
+                        list,
+                        value,
+                        index,
+                        isSelected,
+                        cellHasFocus);
                 final Book book = (Book) value;
                 final Path path = book.getPath();
                 label.setText(path.toString());
@@ -334,7 +455,8 @@ public class SplitAndMerge
                 new JScrollPane(list),
                 JOptionPane.QUESTION_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION);
-        optionPane.addPropertyChangeListener((PropertyChangeEvent e1) -> {
+        optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) ->
+        {
             final String prop = e1.getPropertyName();
             if (includeDialog.isVisible() && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
                 final int value = (Integer) optionPane.getValue();
@@ -355,47 +477,51 @@ public class SplitAndMerge
         OmrGui.getApplication().show(includeDialog);
     }
 
-    //----------//
-    // loadBook //
-    //----------//
-    /**
-     * Load an external book file .
-     *
-     * @param e the event that triggered this action
-     * @return the asynchronous task, or null
-     */
-    @Action
-    public Task loadBook (ActionEvent e)
+    public boolean isBuildable ()
     {
-        final Path path = BookActions.selectBookPath(false,
-                                                     Paths.get(BookManager.getDefaultBookFolder()));
+        return buildable;
+    }
 
-        if (path == null) {
-            return null;
-        }
+    public boolean isDownEnabled ()
+    {
+        return downEnabled;
+    }
 
-        return new LoadBookTask(path);
+    public boolean isEmpty ()
+    {
+        return empty;
+    }
+
+    public boolean isSelected ()
+    {
+        return selected;
+    }
+
+    public boolean isUpEnabled ()
+    {
+        return upEnabled;
     }
 
     //-----------//
-    // loadImage //
+    // loadFiles //
     //-----------//
     /**
-     * Load an external image file and include its related book.
+     * Load external book or image files and include them.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public Task loadImage (ActionEvent e)
+    public Task loadFiles (ActionEvent e)
     {
-        final Path path = BookActions.selectImagePath();
+        final Path[] paths = BookActions.selectBookOrImagePaths(
+                Paths.get(BookManager.getDefaultBookFolder()));
 
-        if (path == null) {
+        if (paths.length == 0) {
             return null;
         }
 
-        return new LoadImageTask(path);
+        return new LoadFilesTask(Arrays.asList(paths));
     }
 
     //----------//
@@ -446,6 +572,34 @@ public class SplitAndMerge
         model.fireTableRowsUpdated(other, row);
     }
 
+    //------//
+    // open //
+    //------//
+    /**
+     * Read a playlist from disk.
+     *
+     * @param e the event that triggered this action
+     * @return the asynchronous task, or null
+     */
+    @Action
+    public Task open (ActionEvent e)
+    {
+        try {
+            // Let the user select a playlist input file
+            final OmrFileFilter filter = BookActions.filter(OMR.PLAYLIST_EXTENSION);
+            final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
+            Path targetPath = BookActions.selectPath(false, defaultFolder, filter);
+
+            if (targetPath != null) {
+                return new OpenPlayListTask(targetPath);
+            }
+        } catch (Throwable ex) {
+            logger.warn("Error in open {}", ex.toString(), ex);
+        }
+
+        return null;
+    }
+
     //--------//
     // remove //
     //--------//
@@ -465,34 +619,6 @@ public class SplitAndMerge
     }
 
     //------//
-    // open //
-    //------//
-    /**
-     * Read a playlist from disk.
-     *
-     * @param e the event that triggered this action
-     * @return the asynchronous task, or null
-     */
-    @Action
-    public Task open (ActionEvent e)
-    {
-        try {
-            // Let the user select a playlist input file
-            final OmrFileFilter filter = BookActions.filter(".xml");
-            final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
-            final Path targetPath = BookActions.selectPath(false, defaultFolder, filter);
-
-            if (targetPath != null) {
-                return new OpenPlayListTask(targetPath);
-            }
-        } catch (Throwable ex) {
-            logger.warn("Error in open {}", ex.toString(), ex);
-        }
-
-        return null;
-    }
-
-    //------//
     // save //
     //------//
     /**
@@ -508,21 +634,22 @@ public class SplitAndMerge
             // Let the user select a playlist output file
             final OmrFileFilter filter = BookActions.filter(".xml");
             final Path defaultFolder = Paths.get(constants.lastFolder.getValue());
-            final Path targetPath = BookActions.selectPath(true, defaultFolder, filter);
+            Path targetPath = BookActions.selectPath(true, defaultFolder, filter);
 
-            if ((targetPath != null) && isTargetConfirmed(targetPath)) {
-                return new SavePlayListTask(targetPath);
+            if (targetPath != null) {
+                if (!targetPath.toString().endsWith(OMR.PLAYLIST_EXTENSION)) {
+                    targetPath = Paths.get(targetPath + OMR.PLAYLIST_EXTENSION);
+                }
+
+                if (isTargetConfirmed(targetPath)) {
+                    return new SavePlayListTask(targetPath);
+                }
             }
         } catch (Throwable ex) {
             logger.warn("Error in SavePlayListTask {}", ex.toString(), ex);
         }
 
         return null;
-    }
-
-    public boolean isBuildable ()
-    {
-        return buildable;
     }
 
     public final void setBuildable (boolean buildable)
@@ -535,56 +662,6 @@ public class SplitAndMerge
         }
     }
 
-    public boolean isEmpty ()
-    {
-        return empty;
-    }
-
-    public final void setEmpty (boolean empty)
-    {
-        boolean oldValue = this.empty;
-        this.empty = empty;
-
-        if (empty != oldValue) {
-            firePropertyChange(EMPTY, oldValue, this.empty);
-        }
-    }
-
-    public boolean isSelected ()
-    {
-        return selected;
-    }
-
-    public void setSelected (boolean selected)
-    {
-        boolean oldValue = this.selected;
-        this.selected = selected;
-
-        if (selected != oldValue) {
-            firePropertyChange(SELECTED, oldValue, this.selected);
-        }
-    }
-
-    public boolean isUpEnabled ()
-    {
-        return upEnabled;
-    }
-
-    public void setUpEnabled (boolean upEnabled)
-    {
-        boolean oldValue = this.upEnabled;
-        this.upEnabled = upEnabled;
-
-        if (upEnabled != oldValue) {
-            firePropertyChange(UP_ENABLED, oldValue, this.upEnabled);
-        }
-    }
-
-    public boolean isDownEnabled ()
-    {
-        return downEnabled;
-    }
-
     public void setDownEnabled (boolean downEnabled)
     {
         boolean oldValue = this.downEnabled;
@@ -595,146 +672,14 @@ public class SplitAndMerge
         }
     }
 
-    private boolean checkDownEnabled ()
+    public final void setEmpty (boolean empty)
     {
-        final int row = table.getSelectedRow();
-        return (row != -1) && (row < table.getRowCount() - 1);
-    }
+        boolean oldValue = this.empty;
+        this.empty = empty;
 
-    private boolean checkBuildable ()
-    {
-        return (model.size() > 0) && illegals.isEmpty();
-    }
-
-    private boolean checkEmpty ()
-    {
-        return model.size() == 0;
-    }
-
-    private boolean checkSelected ()
-    {
-        return table.getSelectedRowCount() > 0;
-    }
-
-    private boolean checkUpEnabled ()
-    {
-        return table.getSelectedRow() > 0;
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        dialog.setName("SplitAndMergeDialog"); // For SAF life cycle
-
-        // Alternate color for zebra appearance
-        final Color zebraColor = new Color(248, 248, 255);
-        UIManager.put("Table.alternateRowColor", zebraColor);
-
-        // BookExcerpt's table
-        JScrollPane scrollPane = new JScrollPane(table);
-        table.setShowGrid(true);
-        table.setRowHeight(30);
-        table.setIntercellSpacing(new Dimension(10, 5));
-        table.setFillsViewportHeight(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Buttons
-        final Panel buttonPane = buildButtonPane();
-
-        // Dialog layout
-        dialog.setTitle(resources.getString("dialog.title"));
-        dialog.setLayout(new BorderLayout());
-        dialog.add(scrollPane, BorderLayout.CENTER);
-        dialog.add(buttonPane, BorderLayout.EAST);
-
-        // I18n
-        resources.injectComponents(dialog);
-    }
-
-    //-----------------//
-    // buildButtonPane //
-    //-----------------//
-    /**
-     * Build the whole pane of buttons, one button per declared action.
-     *
-     * @return the button pane
-     */
-    private Panel buildButtonPane ()
-    {
-        final ApplicationActionMap actionMap = applicationContext.getActionMap(this);
-        final Panel buttonPane = new Panel();
-        buttonPane.setInsets(10, 10, 10, 10);
-
-        final String[] actions = new String[]{"open", "loadBook", "loadImage", "include",
-                                              "duplicate", "remove", "moveUp", "moveDown",
-                                              "save", "build"};
-
-        final StringBuilder rowSpec = new StringBuilder();
-        for (int i = 0; i < actions.length; i++) {
-            if (i != 0) {
-                rowSpec.append(", 5dlu, ");
-            }
-
-            rowSpec.append("pref");
+        if (empty != oldValue) {
+            firePropertyChange(EMPTY, oldValue, this.empty);
         }
-
-        final FormLayout layout = new FormLayout("pref", rowSpec.toString());
-        final CellConstraints cst = new CellConstraints();
-        final PanelBuilder builder = new PanelBuilder(layout, buttonPane);
-
-        int r = -1;
-        for (String action : actions) {
-            builder.add(new JButton(actionMap.get(action)), cst.xy(1, r += 2, "fill,fill"));
-        }
-
-        return buttonPane;
-    }
-
-    //---------//
-    // isImage //
-    //---------//
-    /**
-     * Report whether the provided book is just a book created on-the-fly to represent
-     * an image file.
-     *
-     * @param book the book to check
-     * @return true if so
-     */
-    public static boolean isImage (Book book)
-    {
-        return book.getBookPath() == null;
-    }
-
-    //--------//
-    // isSafe //
-    //--------//
-    /**
-     * Report whether the provided book is safe regarding the building of compound file.
-     *
-     * @param book the book to check
-     * @return true if so
-     */
-    private static boolean isSafe (Book book)
-    {
-        if (!book.isModified() && !book.isUpgraded()) {
-            return true;
-        }
-
-        if (!isImage(book)) {
-            return false;
-        }
-
-        // Book has never been saved
-        for (SheetStub stub : book.getStubs()) {
-            final OmrStep latestStep = stub.getLatestStep();
-            if (latestStep != null && latestStep.compareTo(OmrStep.BINARY) > 0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     //-----------------//
@@ -751,7 +696,95 @@ public class SplitAndMerge
         constants.lastFolder.setStringValue(path.getParent().toAbsolutePath().toString());
     }
 
+    public void setSelected (boolean selected)
+    {
+        boolean oldValue = this.selected;
+        this.selected = selected;
+
+        if (selected != oldValue) {
+            firePropertyChange(SELECTED, oldValue, this.selected);
+        }
+    }
+
+    public void setUpEnabled (boolean upEnabled)
+    {
+        boolean oldValue = this.upEnabled;
+        this.upEnabled = upEnabled;
+
+        if (upEnabled != oldValue) {
+            firePropertyChange(UP_ENABLED, oldValue, this.upEnabled);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // isSafe //
+    //--------//
+    /**
+     * Report whether the provided book is safe regarding the building of compound file.
+     *
+     * @param book the book to check
+     * @return true if so
+     */
+    private static boolean isSafe (Book book)
+    {
+        if (!book.isModified() && !book.isUpgraded()) {
+            return true;
+        }
+
+        if (!book.isImage()) {
+            return false;
+        }
+
+        // Book has never been saved
+        for (SheetStub stub : book.getStubs()) {
+            final OmrStep latestStep = stub.getLatestStep();
+            if (latestStep != null && latestStep.compareTo(OmrStep.BINARY) > 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    //-------------------//
+    // BuildCompoundTask //
+    //-------------------//
+    /**
+     * Task that compiles the sequence of excerpts into a compound book.
+     */
+    private class BuildCompoundTask
+            extends PathTask<Void, Void>
+    {
+
+        /**
+         * Creates a new <code> BuildCompoundTask</code>, with the target book path.
+         *
+         * @param targetPath path to resulting compound book file
+         */
+        public BuildCompoundTask (Path targetPath)
+        {
+            super(targetPath);
+        }
+
+        @Override
+        protected Void doInBackground ()
+            throws Exception
+        {
+            model.pl.buildCompound(path);
+            return null;
+        }
+
+        @Override
+        protected void succeeded (Void result)
+        {
+            constants.lastFolder.setStringValue(path.getParent().toAbsolutePath().toString());
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -764,21 +797,90 @@ public class SplitAndMerge
                 "Latest folder used for playlist or compound");
     }
 
+    //---------------//
+    // DropFilesTask //
+    //---------------//
+    /**
+     * Task to drop files (book / image) into playlist.
+     */
+    private class DropFilesTask
+            extends LoadFilesTask
+    {
+
+        /** Target row in table. */
+        private int row;
+
+        public DropFilesTask (int row,
+                              Collection<? extends Path> paths)
+        {
+            super(paths);
+            this.row = row;
+        }
+
+        @Override
+        protected void addExcerpt (Book book)
+        {
+            // We add excerpts at the current row in the playlist
+            // And increment row for next excerpt insertion
+            model.add(row++, BookExcerpt.create(book));
+        }
+    }
+
+    //---------------//
+    // LoadFilesTask //
+    //---------------//
+    /**
+     * Task to load files (book / image) from disk into playlist.
+     */
+    private class LoadFilesTask
+            extends BookActions.LoadFilesTask
+    {
+
+        public LoadFilesTask (Collection<? extends Path> paths)
+        {
+            super(paths);
+        }
+
+        protected void addExcerpt (Book book)
+        {
+            // We add excerpts at the end of the playlist
+            model.add(BookExcerpt.create(book));
+        }
+
+        @Override
+        protected void succeeded (List<Book> bookList)
+        {
+            super.succeeded(bookList);
+
+            for (Book book : bookList) {
+                if (book != null) {
+                    addExcerpt(book);
+                }
+            }
+        }
+    }
+
     //--------------//
     // MyTableModel //
     //--------------//
+    /**
+     * Underlying model for the dialog table.
+     */
     private class MyTableModel
             extends AbstractTableModel
     {
 
-        private final String[] columnNames = {resources.getString("headerBook"),
-                                              resources.getString("headerSpec"),
-                                              resources.getString("headerCounts")};
+        private final String[] columnNames =
+        {
+                resources.getString("headerBook"),
+                resources.getString("headerSpec"),
+                resources.getString("headerCounts") };
 
         // Underlying data
         private final PlayList pl = new PlayList();
 
         //~ Methods --------------------------------------------------------------------------------
+
         public void add (BookExcerpt excerpt)
         {
             add(size(), excerpt);
@@ -794,23 +896,6 @@ public class SplitAndMerge
         public BookExcerpt get (int row)
         {
             return (BookExcerpt) pl.excerpts.get(row);
-        }
-
-        public void remove (int row)
-        {
-            pl.excerpts.remove(row);
-            fireTableRowsDeleted(row, row);
-        }
-
-        public void set (int row,
-                         BookExcerpt excerpt)
-        {
-            pl.excerpts.set(row, excerpt);
-        }
-
-        public int size ()
-        {
-            return pl.excerpts.size();
         }
 
         public Set<Book> getAllBooks ()
@@ -866,12 +951,24 @@ public class SplitAndMerge
             return columnIndex == COL_SPEC;
         }
 
+        public void remove (int row)
+        {
+            pl.excerpts.remove(row);
+            fireTableRowsDeleted(row, row);
+        }
+
+        public void set (int row,
+                         BookExcerpt excerpt)
+        {
+            pl.excerpts.set(row, excerpt);
+        }
+
         @Override
         public void setValueAt (Object value,
                                 int row,
                                 int col)
         {
-            logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);;;;;;;;;;;;
+            logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);
 
             if (col == COL_SPEC) {
                 // Specification modified
@@ -897,44 +994,10 @@ public class SplitAndMerge
                 setBuildable(checkBuildable());
             }
         }
-    }
 
-    //--------------//
-    // SpecRenderer //
-    //--------------//
-    /**
-     * This cell renderer allows to highlight any illegal sheets specification.
-     */
-    private class SpecRenderer
-            extends DefaultTableCellRenderer
-    {
-
-        @Override
-        public Component getTableCellRendererComponent (JTable table,
-                                                        Object value,
-                                                        boolean isSelected,
-                                                        boolean hasFocus,
-                                                        int row,
-                                                        int column)
+        public int size ()
         {
-            final JLabel comp = (JLabel) super.getTableCellRendererComponent(
-                    table, value, isSelected, hasFocus, row, column);
-
-            final String spec = (String) value;
-            try {
-                // Let's throw an exception if spec is invalid...
-                NaturalSpec.normalized(spec, model.get(row).book.size());
-
-                // Spec is OK
-                comp.setForeground(table.getForeground());
-            } catch (Exception ex) {
-                // Spec is not OK
-                comp.setForeground(Color.red);
-                final Font font = table.getFont();
-                comp.setFont(font.deriveFont(Font.BOLD, 1.25f * font.getSize()));
-            }
-
-            return comp;
+            return pl.excerpts.size();
         }
     }
 
@@ -943,7 +1006,7 @@ public class SplitAndMerge
     //-------------------//
     /**
      * For the SplitAndMerge dialog, we support transfer from a list of files
-     * (book.omr or image input file).
+     * (book.omr or image input files).
      */
     private class MyTransferHandler
             extends FileDropHandler
@@ -958,21 +1021,13 @@ public class SplitAndMerge
                     final Transferable trsf = support.getTransferable();
                     final Object data = trsf.getTransferData(DataFlavor.javaFileListFlavor);
 
+                    final List<Path> pathList = new ArrayList<>();
                     @SuppressWarnings("unchecked")
                     final List<File> fileList = (List<File>) data;
+                    fileList.forEach(file -> pathList.add(file.toPath()));
+
                     final int row = ((JTable.DropLocation) support.getDropLocation()).getRow();
-
-                    // Process every file
-                    for (File file : fileList) {
-                        final Path path = file.toPath();
-                        final String fileName = file.getName();
-
-                        if (fileName.endsWith(OMR.BOOK_EXTENSION)) {
-                            new DropBookTask(row, path).execute();
-                        } else {
-                            new DropImageTask(row, path).execute();
-                        }
-                    }
+                    new DropFilesTask(row, pathList).execute();
 
                     return true;
                 } catch (UnsupportedFlavorException ex) {
@@ -983,143 +1038,6 @@ public class SplitAndMerge
             }
 
             return false;
-        }
-    }
-
-    //-------------------//
-    // BuildCompoundTask //
-    //-------------------//
-    /**
-     * Task that compiles the sequence of excerpts into a compound book.
-     */
-    private class BuildCompoundTask
-            extends PathTask<Void, Void>
-    {
-
-        /**
-         * Creates a new <code> BuildCompoundTask</code>, with the target book path.
-         *
-         * @param targetPath path to resulting compound book file
-         */
-        public BuildCompoundTask (Path targetPath)
-        {
-            super(targetPath);
-        }
-
-        @Override
-        protected Void doInBackground ()
-                throws Exception
-        {
-            model.pl.buildCompound(path);
-            return null;
-        }
-
-        @Override
-        protected void succeeded (Void result)
-        {
-            constants.lastFolder.setStringValue(path.getParent().toAbsolutePath().toString());
-        }
-    }
-
-    //--------------//
-    // LoadBookTask //
-    //--------------//
-    private class LoadBookTask
-            extends BookActions.LoadBookTask
-    {
-
-        public LoadBookTask (Path path)
-        {
-            super(path);
-        }
-
-        @Override
-        protected void succeeded (Book book)
-        {
-            if (book != null) {
-                addExcerpt(book);
-                super.succeeded(book);
-            }
-        }
-
-        protected void addExcerpt (Book book)
-        {
-            model.add(BookExcerpt.create(book));
-        }
-    }
-
-    //---------------//
-    // LoadImageTask //
-    //---------------//
-    private class LoadImageTask
-            extends BookActions.LoadImageTask
-    {
-
-        public LoadImageTask (Path path)
-        {
-            super(path);
-        }
-
-        @Override
-        protected void succeeded (Book book)
-        {
-            if (book != null) {
-                addExcerpt(book);
-                super.succeeded(book);
-            }
-        }
-
-        protected void addExcerpt (Book book)
-        {
-            model.add(BookExcerpt.create(book));
-        }
-    }
-
-    //--------------//
-    // DropBookTask //
-    //--------------//
-    private class DropBookTask
-            extends LoadBookTask
-    {
-
-        /** Target row in table. */
-        private final int row;
-
-        public DropBookTask (int row,
-                             Path path)
-        {
-            super(path);
-            this.row = row;
-        }
-
-        @Override
-        protected void addExcerpt (Book book)
-        {
-            model.add(row, BookExcerpt.create(book));
-        }
-    }
-
-    //---------------//
-    // DropImageTask //
-    //---------------//
-    private class DropImageTask
-            extends LoadImageTask
-    {
-
-        /** Target row in table. */
-        private final int row;
-
-        public DropImageTask (int row,
-                              Path path)
-        {
-            super(path);
-            this.row = row;
-        }
-
-        @Override
-        protected void addExcerpt (Book book)
-        {
-            model.add(row, BookExcerpt.create(book));
         }
     }
 
@@ -1140,7 +1058,7 @@ public class SplitAndMerge
 
         @Override
         protected PlayList doInBackground ()
-                throws Exception
+            throws Exception
         {
             final PlayList playList = PlayList.load(path);
 
@@ -1205,7 +1123,7 @@ public class SplitAndMerge
 
         @Override
         protected Void doInBackground ()
-                throws Exception
+            throws Exception
         {
             model.pl.store(path);
             return null;
@@ -1215,6 +1133,50 @@ public class SplitAndMerge
         protected void succeeded (Void result)
         {
             setPlayListPath(path);
+        }
+    }
+
+    //--------------//
+    // SpecRenderer //
+    //--------------//
+    /**
+     * This cell renderer allows to highlight any illegal sheets specification.
+     */
+    private class SpecRenderer
+            extends DefaultTableCellRenderer
+    {
+
+        @Override
+        public Component getTableCellRendererComponent (JTable table,
+                                                        Object value,
+                                                        boolean isSelected,
+                                                        boolean hasFocus,
+                                                        int row,
+                                                        int column)
+        {
+            final JLabel comp = (JLabel) super.getTableCellRendererComponent(
+                    table,
+                    value,
+                    isSelected,
+                    hasFocus,
+                    row,
+                    column);
+
+            final String spec = (String) value;
+            try {
+                // Let's throw an exception if spec is invalid...
+                NaturalSpec.normalized(spec, model.get(row).book.size());
+
+                // Spec is OK
+                comp.setForeground(table.getForeground());
+            } catch (Exception ex) {
+                // Spec is not OK
+                comp.setForeground(Color.red);
+                final Font font = table.getFont();
+                comp.setFont(font.deriveFont(Font.BOLD, 1.25f * font.getSize()));
+            }
+
+            return comp;
         }
     }
 }

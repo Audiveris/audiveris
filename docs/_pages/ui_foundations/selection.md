@@ -17,7 +17,7 @@ Table of contents
 ---
 
 ### Current location
-Selection is driven by the current location you are pointing at in the score image.
+Selection is driven by the current location we are pointing at in the score image.
 
 The location point is displayed as a cross made of 2 red segments, one horizontal and one vertical.
 The length of each segment does not vary with the zoom ratio, but the segment thickness is always
@@ -27,18 +27,18 @@ The length of each segment does not vary with the zoom ratio, but the segment th
 | --- | --- |
 |![](../assets/images/current_location.png)|![](../assets/images/current_location_z8.png)|
 
-To define the current **point**, either:
+To define the current **point**, we either:
 * Press down the left or the right mouse button at the desired location.
-* Or, if the Pixel-Board is displayed, type numeric values in the X and Y fields.
+* Or, if the Pixel-Board is displayed, enter numeric values in the X and Y fields.
 
 To define a current **rectangle** -- which also defines current point at rectangle center --,
-either:
+we either:
 * Press down the left mouse button at a desired rectangle corner location,
 and keep the `SHIFT` key pressed while dragging the mouse.
 * Or, if the Pixel-Board is displayed, type numeric values in the X, Y, Width and Height fields.
 
 To precisely **shift** the current location:
-* While keeping the `ALT` key pressed, use one of the 4 arrow keys to move the location (point
+* While keeping the `ALT` key pressed, we use one of the 4 arrow keys to move the location (point
 or rectangle) one pixel at a time.
 
 ### Entity selection
@@ -50,7 +50,7 @@ There are 3 selections modes available:
 2. ![](../assets/images/font_type.png) _inter_-only based
 3. ![](../assets/images/kjumpingcube.png) _section_-only based.
 
-To switch from one mode to another, use the toggle menu item `View | Switch selections`,
+To switch from one mode to another, we use the toggle menu item `View | Switch selections`,
 click on the related toolbar icon or press `F11` function key.
 
 #### Selection means
@@ -72,7 +72,7 @@ section entities, according to the current selection mode.
   rectangular area.
     All entities fully contained in this area start a new selection.
 
-*   **Adding an entity**: A left click on an entity while pressing the `CTRL` key (`Option` key for MacOS)
+*   **Adding an entity**: A left click on an entity while pressing the `Ctrl` key (`Option` key for MacOS)
     adds this entity to the current selection, whether the selection was done via point or lasso.
 
 *   **Naming an entity**: Entering the integer ID of a glyph in the Glyph-Board spinner or the ID
@@ -114,16 +114,16 @@ A left-click in an entity area selects this entity (and deselects the entity pre
 
 To select several entities:
 
-* Either, by dragging the mouse while keeping the `SHIFT` key pressed, use a rectangular "lasso"
+* Either, by dragging the mouse while keeping the `SHIFT` key pressed, we use a rectangular "lasso"
 to grab all the entities whose bounds are **fully contained** by the lasso rectangle.
 
-* Or, select each entity, one after the other, keeping the `CTRL` key pressed.
-If you have selected an item that you don't want to keep, simply click on it a second time
+* Or, we select each entity, one after the other, keeping the `Ctrl` key pressed.
+If we have selected an item that we don't want to keep, we simply click on it a second time
 and it will be de-selected.
 This can especially be useful when having selected several items using the "lasso" to then
 de-select items that are not wanted.
 
-A red rectangle always shows your selection frame.
+A red rectangle always shows our selection frame.
 When in ![](../assets/images/font_bitmap.png) _glyph+inter_ mode, an additional black rectangle
 shows the bounding box of a compound glyph built from all selected glyphs.
 
@@ -135,7 +135,7 @@ nearly-reverse color, a section turns white).
 Selecting an entity by pointing at it can be ambiguous.
 
 This can be the case when two or more **Glyphs** overlap each other.
-When you point at an overlapping region, the software will pick up only the smallest glyph.
+When we point at an overlapping region, the software will pick up only the smallest glyph.
 
 This is by definition always the case when pointing at an **Inter** which is a member of an
 **Inter ensemble**, for example a note and its containing chord.
@@ -147,7 +147,7 @@ For example:
 ![](../assets/images/member_selected.png)
 
 Here, we have pointed on a note head which is part of a head chord.
-Note the (member) head inter is selected over the (ensemble) chord inter, the involved "_HeadStem_"
+We can note the (member) head inter is selected over the (ensemble) chord inter, the involved "_HeadStem_"
 relation is visible between head and stem, the Inter-board focuses on head inter,
 with the `To Ensemble` button enabled.
 

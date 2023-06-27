@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
-import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -32,12 +33,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>RepeatDotSymbol</code> implements a decorated repeat dot symbol.
+ * Class <code>RepeatDotSymbol</code> implements a repeat dot symbol, perhaps decorated.
  *
  * @author Hervé Bitteur
  */
 public class RepeatDotSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -45,46 +46,18 @@ public class RepeatDotSymbol
     private static final double yRatio = 3.5;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a <code>RepeatDotSymbol</code> (with decoration?) standard size
-     *
-     * @param decorated true for a decorated image
-     */
-    public RepeatDotSymbol (boolean decorated)
-    {
-        this(false, decorated);
-    }
 
     /**
-     * Create a <code>RepeatDotSymbol</code> (with decoration?)
+     * Create a <code>RepeatDotSymbol</code> standard size with no decoration.
      *
-     * @param isIcon    true for an icon
-     * @param decorated true for a decorated image
+     * @param family the musicFont family
      */
-    protected RepeatDotSymbol (boolean isIcon,
-                               boolean decorated)
+    public RepeatDotSymbol (MusicFamily family)
     {
-        super(isIcon, Shape.REPEAT_DOT, decorated, 46);
+        super(Shape.REPEAT_DOT, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new RepeatDotSymbol(isIcon, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new RepeatDotSymbol(true, decorated);
-    }
 
     //-----------//
     // getParams //
@@ -98,11 +71,11 @@ public class RepeatDotSymbol
         Params p = new Params();
 
         // Dot layout
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
 
         Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
-        if (decorated) {
+        if (isDecorated) {
             // Use a rectangle yTimes times as high as dot
             p.rect = new Rectangle2D.Double(0, 0, rs.getWidth(), yRatio * rs.getHeight());
 
@@ -124,7 +97,7 @@ public class RepeatDotSymbol
                           Point2D location,
                           Alignment alignment)
     {
-        if (decorated) {
+        if (isDecorated) {
             // Draw a dot (using composite) on the top
             Point2D loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,11 +30,11 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.Staff.IndexedLedger;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
@@ -55,7 +56,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -99,6 +100,7 @@ public class DotFactory
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related inter factory. */
     private final InterFactory interFactory;
 
@@ -113,6 +115,7 @@ public class DotFactory
     private final List<Dot> dots = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new DotFactory object.
      *
@@ -129,60 +132,6 @@ public class DotFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // instantDotChecks //
-    //------------------//
-    /**
-     * Run the various initial checks for the provided dot-shaped glyph.
-     * <p>
-     * All symbols may not be available yet, so only instant processing is launched on the dot (as
-     * a repeat dot, as a staccato dot).
-     * <p>
-     * Whatever the role of a dot, it cannot be stuck (or too close) to a staff line or ledger.
-     * <p>
-     * The symbol is also saved as a dot candidate for later processing.
-     *
-     * @param eval         evaluation result
-     * @param glyph        underlying glyph
-     * @param closestStaff staff closest to the dot
-     */
-    public void instantDotChecks (Evaluation eval,
-                                  Glyph glyph,
-                                  Staff closestStaff)
-    {
-        // Discard glyph too close to staff line or ledger
-        if (!checkDistanceToLine(glyph, closestStaff)) {
-            return;
-        }
-
-        // Simply record the candidate dot
-        Dot dot = new GlyphDot(eval, glyph);
-        dots.add(dot);
-
-        // Run instant checks
-        instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
-        instantCheckStaccato(dot); // Staccato dot
-
-        // We cannot run augmentation check since rest inters may not have been created yet
-    }
-
-    //---------------//
-    // lateDotChecks //
-    //---------------//
-    /**
-     * Launch all processing that can take place only after all symbols interpretations
-     * have been retrieved for the system.
-     */
-    public void lateDotChecks ()
-    {
-        // Sort dots carefully
-        Collections.sort(dots, Dot.comparator);
-
-        // Run all late checks
-        lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
-        lateFermataChecks(); // Dot as part of a fermata sign
-        lateRepeatChecks(); // Dot as part of stack repeat (to say the last word)
-    }
 
     //------------------//
     // buildRepeatPairs //
@@ -215,23 +164,23 @@ public class DotFactory
         }
     }
 
-    //---------------------//
-    // checkDistanceToLine //
-    //---------------------//
+    //-----------------------------//
+    // checkDistanceToConcreteLine //
+    //-----------------------------//
     /**
-     * Check that dot glyph is vertically distant from staff line or ledger.
+     * Check that dot glyph is vertically distant from a staff line or a concrete ledger.
      * <p>
      * For a tablature, check is always OK.
      * <p>
-     * For a standard staff (5) or for a OneLineStaff (1), distance to closest line or ledger
-     * is checked.
+     * For a standard staff (5) or for a OneLineStaff (1), distance to closest line or concrete
+     * ledger is checked.
      *
      * @param glyph the dot glyph to check
      * @param staff the closest staff
      * @return true if OK
      */
-    private boolean checkDistanceToLine (Glyph glyph,
-                                         Staff staff)
+    private boolean checkDistanceToConcreteLine (Glyph glyph,
+                                                 Staff staff)
     {
         if (staff.isTablature()) {
             return true;
@@ -244,21 +193,27 @@ public class DotFactory
             final double dy = Math.abs(center.getY() - staff.getMidLine().yAt(center.getX()));
             distance = dy / staff.getSpecificInterline();
         } else {
-            final NotePosition notePosition = staff.getNotePosition(center);
-            final IndexedLedger ledger = notePosition.getLedger();
-            final double pitch = notePosition.getPitchPosition();
+            final double pitch = staff.pitchPositionOf(center);
+            final double closestLinePitch = 2 * Math.rint(pitch / 2);
 
-            if ((Math.abs(pitch) > staff.getLineCount()) && (ledger == null)) {
-                if (glyph.isVip()) {
-                    logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+            if (Math.abs(pitch) <= staff.getLineCount()) {
+                // Within staff height, check distance to staff lines
+                distance = Math.abs(pitch - closestLinePitch) / 2;
+            } else {
+                // Outside staff height, look for concrete ledgers
+                final LedgerInter ledger = staff.getConcreteLedgerNearby(center);
+
+                if (ledger == null) {
+                    if (glyph.isVip()) {
+                        logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+                    }
+
+                    return true;
                 }
 
-                return true;
+                final double dy = Math.abs(center.getY() - ledger.getCenter2D().getY());
+                distance = dy / staff.getSpecificInterline();
             }
-
-            // Distance to line/ledger specified in interline fraction (5-line staff)
-            double linePitch = 2 * ((ledger != null) ? (2 + ledger.index) : Math.rint(pitch / 2));
-            distance = Math.abs(pitch - linePitch) / 2;
         }
 
         if (distance >= constants.minDyFromLine.getValue()) {
@@ -354,12 +309,12 @@ public class DotFactory
 
                             if (side == LEFT) {
                                 if ((shape == Shape.LEFT_REPEAT_SIGN)
-                                            || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                        || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             } else {
                                 if ((shape == Shape.RIGHT_REPEAT_SIGN)
-                                            || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                        || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             }
@@ -484,15 +439,21 @@ public class DotFactory
         }
 
         // Allocate inter
-        final double pp = system.estimatedPitch(dotPt);
+        final Double pp = system.estimatedPitch(dotPt);
+        if (pp == null) {
+            return;
+        }
+
         final double pitch = (pp > 0) ? 1 : (-1);
         final Glyph glyph = dot.getGlyph();
         final Staff staff = system.getClosestStaff(dotPt); // Staff is OK
         final RepeatDotInter repeat = new RepeatDotInter(glyph, 0.0, staff, pitch);
 
         // Check barline nearby
-        final Link barLink = repeat.lookupBarLink(system, interFactory.getSystemBars(),
-                                                  system.getProfile());
+        final Link barLink = repeat.lookupBarLink(
+                system,
+                interFactory.getSystemBars(),
+                system.getProfile());
 
         if (barLink == null) {
             return;
@@ -525,6 +486,11 @@ public class DotFactory
      */
     private void instantCheckStaccato (Dot dot)
     {
+        final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
+        if (!switches.getValue(ProcessingSwitch.articulations)) {
+            return;
+        }
+
         Glyph glyph = dot.getGlyph();
 
         if (glyph != null) {
@@ -535,6 +501,43 @@ public class DotFactory
                     system,
                     interFactory.getSystemHeadChords());
         }
+    }
+
+    //------------------//
+    // instantDotChecks //
+    //------------------//
+    /**
+     * Run the various initial checks for the provided dot-shaped glyph.
+     * <p>
+     * All symbols may not be available yet, so only instant processing is launched on the dot (as
+     * a repeat dot, as a staccato dot).
+     * <p>
+     * Whatever the role of a dot, it cannot be stuck (or too close) to a staff line or ledger.
+     * <p>
+     * The symbol is also saved as a dot candidate for later processing.
+     *
+     * @param eval         evaluation result
+     * @param glyph        underlying glyph
+     * @param closestStaff staff closest to the dot
+     */
+    public void instantDotChecks (Evaluation eval,
+                                  Glyph glyph,
+                                  Staff closestStaff)
+    {
+        // Discard glyph too close to staff line or ledger
+        if (!checkDistanceToConcreteLine(glyph, closestStaff)) {
+            return;
+        }
+
+        // Simply record the candidate dot
+        Dot dot = new GlyphDot(eval, glyph);
+        dots.add(dot);
+
+        // Run instant checks
+        instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
+        instantCheckStaccato(dot); // Staccato dot
+
+        // We cannot run augmentation check since rest inters may not have been created yet
     }
 
     //------------------------//
@@ -592,6 +595,23 @@ public class DotFactory
         }
     }
 
+    //---------------//
+    // lateDotChecks //
+    //---------------//
+    /**
+     * Launch all processing that can take place only after all symbols interpretations
+     * have been retrieved for the system.
+     */
+    public void lateDotChecks ()
+    {
+        Collections.sort(dots, Dot.byAbscissa);
+
+        // Run all late checks
+        lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
+        lateFermataChecks(); // Dot as part of a fermata sign
+        lateRepeatChecks(); // Dot as part of stack repeat (to say the last word)
+    }
+
     //-------------------//
     // lateFermataChecks //
     //-------------------//
@@ -631,9 +651,8 @@ public class DotFactory
                 if (halfBox.intersects(dotBox)) {
                     final Point2D dotCenter = GeoUtil.center2D(dotBox);
                     double xGap = Math.abs(dotCenter.getX() - (halfBox.x + (halfBox.width / 2)));
-                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW)
-                            ? (halfBox.y + (halfBox.height * 0.25))
-                            : (halfBox.y + (halfBox.height * 0.75));
+                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW) ? (halfBox.y
+                            + (halfBox.height * 0.25)) : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.getY() - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
                     rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
@@ -679,7 +698,9 @@ public class DotFactory
         final List<Link> links = new ArrayList<>();
         final int profile = system.getProfile();
         final Link headLink = aug.lookupHeadLink(
-                interFactory.getSystemHeadChords(), system, profile);
+                interFactory.getSystemHeadChords(),
+                system,
+                profile);
         links.addAll(aug.sharedHeadLinks(headLink, system));
         links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system, profile));
 
@@ -709,6 +730,19 @@ public class DotFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
+                0.3,
+                "Minimum vertical distance between dot center and staff line/ledger");
+    }
+
     //-----//
     // Dot //
     //-----//
@@ -719,27 +753,12 @@ public class DotFactory
     {
 
         /**
-         * Very specific sorting of dots.
-         * <p>
-         * If the 2 dots overlap vertically, return left one first.
-         * Otherwise, return top one first.
-         *
-         * @param that the other dot
-         * @return order sign
+         * Sorting dots by left abscissa.
          */
-        public static final Comparator<Dot> comparator = (Dot d1, Dot d2) -> {
-            if (d1 == d2) {
-                return 0;
-            }
-
-            final Rectangle b1 = d1.getBounds();
-            final Rectangle b2 = d2.getBounds();
-
-            if (GeoUtil.yOverlap(b1, b2) > 0) {
-                return Integer.compare(b1.x, b2.x);
-            } else {
-                return Integer.compare(b1.y, b2.y);
-            }
+        public static final Comparator<Dot> byAbscissa = (Dot d1,
+                                                          Dot d2) ->
+        {
+            return Integer.compare(d1.getBounds().x, d2.getBounds().x);
         };
 
         public abstract int getAnnotationId ();
@@ -753,18 +772,6 @@ public class DotFactory
         public abstract OmrShape getOmrShape ();
 
         public abstract boolean isVip ();
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
-                0.3,
-                "Minimum vertical distance between dot center and staff line/ledger");
     }
 
     //----------//
@@ -829,6 +836,7 @@ public class DotFactory
         {
             StringBuilder sb = new StringBuilder("GlyphDot{");
             sb.append("glyph#").append(glyph.getId());
+            sb.append(" ").append(getBounds());
             sb.append(" ").append(eval);
             sb.append("}");
 

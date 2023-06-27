@@ -8,7 +8,11 @@ package org.audiveris.omr.ui.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -17,7 +21,6 @@ import javax.swing.SwingUtilities;
  * FlowLayout subclass that fully supports wrapping of components.
  *
  * @author Rob Camick
- *
  * @see <a href="https://tips4java.wordpress.com/2008/11/06/wrap-layout/">Wrap Layout</a>
  */
 public class WrapLayout
@@ -28,9 +31,11 @@ public class WrapLayout
     private static final Logger logger = LoggerFactory.getLogger(WrapLayout.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private Dimension preferredLayoutSize;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Constructs a new <code>WrapLayout</code> with a left
      * alignment and a default 5-unit horizontal and vertical gap.
@@ -75,64 +80,28 @@ public class WrapLayout
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
-    //    /**
-    //     * Layout the components in the Container using the layout logic of the parent
-    //     * FlowLayout class.
-    //     *
-    //     * @param target the Container using this WrapLayout
-    //     */
-    //    @Override
-    //    public void layoutContainer (Container target)
-    //    {
-    //        Dimension size = preferredLayoutSize(target);
-    //        // When a frame is minimized or maximized the preferred size of the
-    //        // Container is assumed not to change. Therefore we need to force a
-    //        // validate() to make sure that space, if available, is allocated to
-    //        // the panel using a WrapLayout.
-    //        if (size.equals(preferredLayoutSize)) {
-    //            super.layoutContainer(target);
-    //        } else {
-    //            preferredLayoutSize = size;
-    //            Container top = target;
-    //
-    //            while (top.getParent() != null) {
-    //                top = top.getParent();
-    //            }
-    //
-    //            top.validate();
-    //        }
-    //    }
-    //
-    /**
-     * Returns the preferred dimensions for this layout given the
-     * <i>visible</i> components in the specified target container.
-     *
-     * @param target the component which needs to be laid out
-     * @return the preferred dimensions to lay out the
-     *         sub-components of the specified container
-     */
-    @Override
-    public Dimension preferredLayoutSize (Container target)
-    {
-        return layoutSize(target, true);
-    }
 
-    /**
-     * Returns the minimum dimensions needed to layout the <i>visible</i>
-     * components contained in the specified target container.
+    /*
+     * A new row has been completed. Use the dimensions of this row
+     * to update the preferred size for the container.
      *
-     * @param target the component which needs to be laid out
-     * @return the minimum dimensions to lay out the
-     *         sub-components of the specified container
+     * @param dim update the width and height when appropriate
+     *
+     * @param rowWidth the width of the row to add
+     *
+     * @param rowHeight the height of the row to add
      */
-    @Override
-    public Dimension minimumLayoutSize (Container target)
+    private void addRow (Dimension dim,
+                         int rowWidth,
+                         int rowHeight)
     {
-        Dimension minimum = layoutSize(target, false);
-        minimum.width -= (getHgap() + 1);
+        dim.width = Math.max(dim.width, rowWidth);
 
-        return minimum;
+        if (dim.height > 0) {
+            dim.height += getVgap();
+        }
+
+        dim.height += rowHeight;
     }
 
     /**
@@ -221,24 +190,63 @@ public class WrapLayout
         }
     }
 
-    /*
-     * A new row has been completed. Use the dimensions of this row
-     * to update the preferred size for the container.
+    /**
+     * Returns the minimum dimensions needed to layout the <i>visible</i>
+     * components contained in the specified target container.
      *
-     * @param dim update the width and height when appropriate
-     * @param rowWidth the width of the row to add
-     * @param rowHeight the height of the row to add
+     * @param target the component which needs to be laid out
+     * @return the minimum dimensions to lay out the
+     *         sub-components of the specified container
      */
-    private void addRow (Dimension dim,
-                         int rowWidth,
-                         int rowHeight)
+    @Override
+    public Dimension minimumLayoutSize (Container target)
     {
-        dim.width = Math.max(dim.width, rowWidth);
+        Dimension minimum = layoutSize(target, false);
+        minimum.width -= (getHgap() + 1);
 
-        if (dim.height > 0) {
-            dim.height += getVgap();
-        }
+        return minimum;
+    }
 
-        dim.height += rowHeight;
+    //
+    //    /**
+    //     * Layout the components in the Container using the layout logic of the parent
+    //     * FlowLayout class.
+    //     *
+    //     * @param target the Container using this WrapLayout
+    //     */
+    //    @Override
+    //    public void layoutContainer (Container target)
+    //    {
+    //        Dimension size = preferredLayoutSize(target);
+    //        // When a frame is minimized or maximized the preferred size of the
+    //        // Container is assumed not to change. Therefore we need to force a
+    //        // validate() to make sure that space, if available, is allocated to
+    //        // the panel using a WrapLayout.
+    //        if (size.equals(preferredLayoutSize)) {
+    //            super.layoutContainer(target);
+    //        } else {
+    //            preferredLayoutSize = size;
+    //            Container top = target;
+    //
+    //            while (top.getParent() != null) {
+    //                top = top.getParent();
+    //            }
+    //
+    //            top.validate();
+    //        }
+    //    }
+    //
+    /**
+     * Returns the preferred dimensions for this layout given the
+     * <i>visible</i> components in the specified target container.
+     *
+     * @param target the component which needs to be laid out
+     * @return the preferred dimensions to lay out the
+     *         sub-components of the specified container
+     */
+    @Override
+    public Dimension preferredLayoutSize (Container target)
+    {
+        return layoutSize(target, true);
     }
 }

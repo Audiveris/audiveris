@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,16 +29,20 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
+import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.StaffPosition;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.PartGroup;
-import org.audiveris.omr.sheet.note.NotePosition;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
@@ -85,10 +89,16 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = {
-    /** NOTA: Sig must be marshalled last. */
-    "id", "indented", "stacks", "parts", "partGroups", "freeGlyphs", "sig"}
-)
+@XmlType(propOrder =
+{
+        /** NOTA: Sig must be marshalled last. */
+        "id",
+        "indented",
+        "stacks",
+        "parts",
+        "partGroups",
+        "freeGlyphs",
+        "sig" })
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
@@ -97,14 +107,16 @@ public class SystemInfo
     private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     /** To sort by system id. */
-    public static final Comparator<SystemInfo> byId = (SystemInfo o1, SystemInfo o2)
-            -> Integer.compare(o1.id, o2.id);
+    public static final Comparator<SystemInfo> byId = (SystemInfo o1,
+                                                       SystemInfo o2) -> Integer.compare(
+                                                               o1.id,
+                                                               o2.id);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
     @XmlAttribute(name = "id")
     private int id;
@@ -144,7 +156,7 @@ public class SystemInfo
 
     // Transient data
     //---------------
-    //
+
     /** Containing sheet. */
     @Navigable(false)
     private Sheet sheet;
@@ -154,6 +166,9 @@ public class SystemInfo
 
     /** Assigned page, if any. */
     private Page page;
+
+    /** Its corresponding soft reference. */
+    private SystemRef systemRef;
 
     /** Horizontal sections. */
     private final List<Section> hSections = new ArrayList<>();
@@ -186,6 +201,14 @@ public class SystemInfo
     private int width = -1;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SystemInfo ()
+    {
+    }
+
     /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
@@ -206,14 +229,8 @@ public class SystemInfo
         sig.addGraphListener(new SigListener(sig));
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private SystemInfo ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // addFreeGlyph //
     //--------------//
@@ -229,19 +246,6 @@ public class SystemInfo
         }
 
         freeGlyphs.add(glyph);
-    }
-
-    //---------//
-    // addPart //
-    //---------//
-    /**
-     * Add a (real) part to this system.
-     *
-     * @param part the part to add
-     */
-    public void addPart (Part part)
-    {
-        parts.add(part);
     }
 
     //---------//
@@ -265,17 +269,17 @@ public class SystemInfo
         }
     }
 
-    //----------//
-    // addStack //
-    //----------//
+    //---------//
+    // addPart //
+    //---------//
     /**
-     * Add stack at end of system stacks
+     * Add a (real) part to this system.
      *
-     * @param stack stack to add
+     * @param part the part to add
      */
-    public void addStack (MeasureStack stack)
+    public void addPart (Part part)
     {
-        stacks.add(stack);
+        parts.add(part);
     }
 
     //----------//
@@ -293,6 +297,19 @@ public class SystemInfo
         stacks.add(index, stack);
     }
 
+    //----------//
+    // addStack //
+    //----------//
+    /**
+     * Add stack at end of system stacks
+     *
+     * @param stack stack to add
+     */
+    public void addStack (MeasureStack stack)
+    {
+        stacks.add(stack);
+    }
+
     //-------------//
     // afterReload //
     //-------------//
@@ -302,6 +319,8 @@ public class SystemInfo
     public void afterReload ()
     {
         try {
+            getRef();
+
             // Populate system sig
             sig.afterReload(this);
 
@@ -348,11 +367,37 @@ public class SystemInfo
                 sentence.assignStaff(this, sentence.getLocation());
             }
 
+            for (Inter inter : sig.inters(OctaveShiftInter.class)) {
+                OctaveShiftInter os = (OctaveShiftInter) inter;
+                os.afterReload(this);
+            }
+
             // Listen to sig modifications
             sig.addGraphListener(new SigListener(sig));
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
+    }
+
+    //----------//
+    // buildRef //
+    //----------//
+    /**
+     * Build the SystemRef that describes this system.
+     *
+     * @return the corresponding SystemRef
+     */
+    public SystemRef buildRef ()
+    {
+        systemRef = new SystemRef();
+        systemRef.setPage(page.getRef());
+
+        for (Part part : getParts()) {
+            final PartRef partRef = new PartRef(systemRef, part.getStaves());
+            systemRef.getParts().add(partRef);
+        }
+
+        return systemRef;
     }
 
     //-----------------//
@@ -405,14 +450,19 @@ public class SystemInfo
      * Make an estimate of pitch position for the provided point.
      * <p>
      * NOTA: this is really error-prone, since a pitch position is relevant only with respect to a
-     * staff, and here we simply pick the "closest" staff which may not be the related staff.
+     * staff, and here we simply pick the "closest" staff which may not be the related staff,
+     * and may even be a tablature.
      *
      * @param point the location to process
      * @return an estimate of point pitch position (WRT closest staff)
      */
-    public double estimatedPitch (Point2D point)
+    public Double estimatedPitch (Point2D point)
     {
         final Staff closestStaff = getClosestStaff(point); // This is just an indication!
+
+        if (closestStaff.isTablature()) {
+            return null;
+        }
 
         return closestStaff.pitchPositionOf(point);
     }
@@ -432,19 +482,6 @@ public class SystemInfo
         }
 
         return area;
-    }
-
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * Assign the system area.
-     *
-     * @param area the underlying system area
-     */
-    public void setArea (Area area)
-    {
-        this.area = area;
     }
 
     //------------//
@@ -573,6 +610,25 @@ public class SystemInfo
         return staves.get(0);
     }
 
+    //-----------------------//
+    // getFirstStandardPart //
+    //-----------------------//
+    /**
+     * Report the first non-tablature part of the system.
+     *
+     * @return the first standard part or null if none
+     */
+    public Part getFirstStandardPart ()
+    {
+        for (Part part : parts) {
+            if (!part.getFirstStaff().isTablature()) {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
     //--------------------//
     // getFollowingInPage //
     //--------------------//
@@ -621,6 +677,26 @@ public class SystemInfo
         return found;
     }
 
+    //---------------//
+    // getHeaderStop //
+    //---------------//
+    /**
+     * Report the abscissa at end of first staff header encountered, otherwise first staff left
+     * abscissa.
+     *
+     * @return end of header if known
+     */
+    public int getHeaderStop ()
+    {
+        for (Staff staff : staves) {
+            if (staff.getHeader() != null) {
+                return staff.getHeaderStop();
+            }
+        }
+
+        return getFirstStaff().getAbscissa(LEFT);
+    }
+
     //-----------------------//
     // getHorizontalSections //
     //-----------------------//
@@ -647,19 +723,6 @@ public class SystemInfo
     public int getId ()
     {
         return id;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Assign a new ID to this system.
-     *
-     * @param id the new ID value
-     */
-    public void setId (int id)
-    {
-        this.id = id;
     }
 
     //----------------//
@@ -794,62 +857,28 @@ public class SystemInfo
         return vSections;
     }
 
-    //----------------//
-    // getNoteStaffAt //
-    //----------------//
+    //---------------//
+    // getNextInPage //
+    //---------------//
     /**
-     * Given a note, retrieve the proper related staff within the system, using ledgers
-     * if any.
+     * Report the next system, if any, in current page.
      *
-     * @param point the center of the provided note entity
-     * @return the proper note position (staff and pitch) or null
+     * @return the next system in page, or null
      */
-    public NotePosition getNoteStaffAt (Point point)
+    public SystemInfo getNextInPage ()
     {
-        Staff staff = getClosestStaff(point);
-
-        if (staff == null) {
+        if (page == null) {
             return null;
         }
 
-        NotePosition pos = staff.getNotePosition(point);
+        final List<SystemInfo> pageSystems = page.getSystems();
+        final int index = pageSystems.indexOf(this);
 
-        logger.debug("{} -> {}", point, pos);
-
-        double pitch = pos.getPitchPosition();
-
-        if ((Math.abs(pitch) > 5) && (pos.getLedger() == null)) {
-            // Delta pitch from reference line
-            double dp = Math.abs(pitch) - 4;
-
-            // Check with the other staff, if any
-            int index = staves.indexOf(staff);
-            Staff otherStaff = null;
-
-            if ((pitch < 0) && (index > 0)) {
-                otherStaff = staves.get(index - 1);
-            } else if ((pitch > 0) && (index < (staves.size() - 1))) {
-                otherStaff = staves.get(index + 1);
-            }
-
-            if (otherStaff != null) {
-                NotePosition otherPos = otherStaff.getNotePosition(point);
-
-                if (otherPos.getLedger() != null) {
-                    // Delta pitch from closest reference ledger
-                    double otherDp = Math.abs(
-                            otherPos.getPitchPosition() - Staff.getLedgerPitchPosition(
-                            otherPos.getLedger().index));
-
-                    if (otherDp < dp) {
-                        logger.debug("   otherPos: {}", pos);
-                        pos = otherPos;
-                    }
-                }
-            }
+        if (index < pageSystems.size() - 1) {
+            return pageSystems.get(index + 1);
         }
 
-        return pos;
+        return null;
     }
 
     //---------//
@@ -863,19 +892,6 @@ public class SystemInfo
     public Page getPage ()
     {
         return page;
-    }
-
-    //---------//
-    // setPage //
-    //---------//
-    /**
-     * Assign the containing page.
-     *
-     * @param page the containing page
-     */
-    public void setPage (Page page)
-    {
-        this.page = page;
     }
 
     //------------------//
@@ -957,8 +973,10 @@ public class SystemInfo
      */
     public Part getPhysicalPart (LogicalPart logicalPart)
     {
+        final int id = logicalPart.getId();
+
         for (Part part : parts) {
-            if (part.getLogicalPart() == logicalPart) {
+            if (part.getLogicalPart().getId() == id) {
                 return part;
             }
         }
@@ -1003,6 +1021,35 @@ public class SystemInfo
     public int getProfile ()
     {
         return getSheet().getStub().getProfile();
+    }
+
+    //--------//
+    // getRef //
+    //--------//
+    /**
+     * Report the soft reference to this system.
+     *
+     * @return related SystemRef
+     */
+    public SystemRef getRef ()
+    {
+        if (systemRef == null) {
+            final int systemIndex = getIndexInPage();
+            final PageRef pageRef = page.getRef();
+
+            if (pageRef.getSystems().isEmpty()) {
+                // Case of old .omr files
+                final List<SystemRef> systemRefs = new ArrayList<>();
+                for (SystemInfo system : page.getSystems()) {
+                    systemRefs.add(system.buildRef());
+                }
+                pageRef.setSystems(systemRefs);
+            }
+
+            systemRef = pageRef.getSystems().get(systemIndex);
+        }
+
+        return systemRef;
     }
 
     //----------//
@@ -1053,6 +1100,23 @@ public class SystemInfo
     public Skew getSkew ()
     {
         return sheet.getSkew();
+    }
+
+    //-----------------------------//
+    // getSmallestMeasureRestShape //
+    //-----------------------------//
+    /**
+     * Report the smallest measure-long rest shape (WHOLE_REST or BREVE_REST).
+     * This depends on whether the 'partialWholeRests' switch is on or off for this sheet.
+     *
+     * @return WHOLE_REST or BREVE_REST
+     */
+    public Shape getSmallestMeasureRestShape ()
+    {
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+        return switches.getValue(ProcessingSwitch.partialWholeRests) ? Shape.BREVE_REST
+                : Shape.WHOLE_REST;
     }
 
     //------------//
@@ -1236,27 +1300,6 @@ public class SystemInfo
         return staves;
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<Staff> staves)
-    {
-        this.staves.clear();
-
-        if (staves != null) {
-            this.staves.addAll(staves);
-
-            for (Staff staff : staves) {
-                staff.setSystem(this);
-            }
-
-            updateCoordinates();
-        }
-    }
-
     //-----------------//
     // getStavesAround //
     //-----------------//
@@ -1326,11 +1369,13 @@ public class SystemInfo
         List<Staff> tablatures = null;
 
         for (Staff staff : staves) {
-            if (tablatures == null) {
-                tablatures = new ArrayList<>();
-            }
+            if (staff.isTablature()) {
+                if (tablatures == null) {
+                    tablatures = new ArrayList<>();
+                }
 
-            tablatures.add(staff);
+                tablatures.add(staff);
+            }
         }
 
         return (tablatures != null) ? tablatures : Collections.emptyList();
@@ -1388,6 +1433,36 @@ public class SystemInfo
         return hash;
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (Sheet sheet,
+                         Page page)
+    {
+        this.sheet = sheet;
+        this.page = page;
+    }
+
+    //----------------//
+    // isFirstInScore //
+    //----------------//
+    /**
+     * Report whether this system is the very first system within the containing score.
+     *
+     * @return true if so, null if score is not yet known
+     */
+    public Boolean isFirstInScore ()
+    {
+        final Score score = page.getScore();
+
+        if (score != null) {
+            final Page firstPage = score.getFirstPage();
+            return this == firstPage.getSystems().get(0);
+        } else {
+            return null;
+        }
+    }
+
     //------------//
     // isIndented //
     //------------//
@@ -1399,34 +1474,6 @@ public class SystemInfo
     public boolean isIndented ()
     {
         return indented;
-    }
-
-    //-------------//
-    // setIndented //
-    //-------------//
-    /**
-     * @param indented the indented to set
-     */
-    public void setIndented (boolean indented)
-    {
-        this.indented = indented;
-    }
-
-    //-----------------------------//
-    // getSmallestMeasureRestShape //
-    //-----------------------------//
-    /**
-     * Report the smallest measure-long rest shape (WHOLE_REST or BREVE_REST).
-     * This depends on whether the 'partialWholeRests' switch is on or off for this sheet.
-     *
-     * @return WHOLE_REST or BREVE_REST
-     */
-    public Shape getSmallestMeasureRestShape ()
-    {
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-
-        return switches.getValue(ProcessingSwitch.partialWholeRests)
-                ? Shape.BREVE_REST : Shape.WHOLE_REST;
     }
 
     //--------------------//
@@ -1450,7 +1497,8 @@ public class SystemInfo
         case BREVE_REST:
             return true;
 
-        case WHOLE_REST: {
+        case WHOLE_REST:
+        {
             final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
             return !switches.getValue(ProcessingSwitch.partialWholeRests);
@@ -1490,16 +1538,24 @@ public class SystemInfo
     {
         final List<SystemInfo> systems = sheet.getSystems();
         final SystemInfo systemBelow = systems.get(1 + systems.indexOf(this));
+        final SystemRef ref = getRef();
+        final SystemRef refBelow = systemBelow.getRef();
 
         // Remove systemBelow from sheet structure
-        PageRef removedPageRef = sheet.getSystemManager().removeSystem(systemBelow);
+        // If system removal leads to a page removal, removedPageRef is set to the removed page
+        final PageRef removedPageRef = sheet.getSystemManager().removeSystem(systemBelow);
 
         // parts
         parts.addAll(systemBelow.parts);
-
         for (Part partBelow : systemBelow.parts) {
             partBelow.setSystem(this);
             partBelow.setId(1 + parts.indexOf(partBelow));
+        }
+
+        // partRefs
+        ref.getParts().addAll(refBelow.getParts());
+        for (PartRef partRefBelow : refBelow.getParts()) {
+            partRefBelow.setSystem(ref);
         }
 
         // partGroups
@@ -1539,6 +1595,8 @@ public class SystemInfo
 
         // sig
         sig.includeSig(systemBelow.getSig());
+
+        sheet.getStub().setModified(true);
 
         return removedPageRef;
     }
@@ -1690,6 +1748,19 @@ public class SystemInfo
         stacks.remove(stack);
     }
 
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * Assign the system area.
+     *
+     * @param area the underlying system area
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
+    }
+
     //------------//
     // setAreaEnd //
     //------------//
@@ -1709,99 +1780,61 @@ public class SystemInfo
         }
     }
 
-    //-------------//
-    // unmergeWith //
-    //-------------//
+    //-------//
+    // setId //
+    //-------//
     /**
-     * Revert the merge of this system with the former system below.
+     * Assign a new ID to this system.
      *
-     * @param systemBelow former system below
-     * @param pageRef     the removed PageRef, if any
-     * @see #mergeWithBelow()
+     * @param id the new ID value
      */
-    public void unmergeWith (SystemInfo systemBelow,
-                             PageRef pageRef)
+    public void setId (int id)
     {
-        // Re-insert system (and its PageRef if needed)
-        sheet.getSystemManager().unremoveSystem(systemBelow, pageRef);
-
-        // parts
-        parts.removeAll(systemBelow.parts);
-
-        for (Part part : systemBelow.parts) {
-            part.setSystem(systemBelow);
-        }
-
-        // partGroups
-        partGroups.removeAll(systemBelow.partGroups);
-
-        // freeGlyphs
-        if (systemBelow.freeGlyphs != null) {
-            freeGlyphs.removeAll(systemBelow.freeGlyphs);
-
-            if (freeGlyphs.isEmpty()) {
-                freeGlyphs = null;
-            }
-        }
-
-        // staves
-        staves.removeAll(systemBelow.staves);
-
-        // sections
-        hSections.removeAll(systemBelow.hSections);
-        vSections.removeAll(systemBelow.vSections);
-
-        // bottom, deltaY, left, top, width
-        updateCoordinates();
-
-        // area, areaLeft, areaRight
-        area = null;
-        getArea();
-
-        // stacks
-        for (int i = 0; i < stacks.size(); i++) {
-            MeasureStack stack = stacks.get(i);
-            MeasureStack stackBelow = systemBelow.stacks.get(i);
-            stack.unmergeWith(stackBelow);
-        }
-
-        // sig
-        sig.excludeSig(systemBelow.getSig());
+        this.id = id;
     }
 
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
+    //-------------//
+    // setIndented //
+    //-------------//
     /**
-     *
+     * @param indented the indented to set
      */
-    public final void updateCoordinates ()
+    public void setIndented (boolean indented)
     {
-        try {
-            Staff firstStaff = getFirstStaff();
-            LineInfo firstLine = firstStaff.getFirstLine();
-            Point2D topLeft = firstLine.getEndPoint(LEFT);
+        this.indented = indented;
+    }
 
-            Staff lastStaff = getLastStaff();
-            LineInfo lastLine = lastStaff.getLastLine();
-            Point2D botLeft = lastLine.getEndPoint(LEFT);
+    //---------//
+    // setPage //
+    //---------//
+    /**
+     * Assign the containing page.
+     *
+     * @param page the containing page
+     */
+    public void setPage (Page page)
+    {
+        this.page = page;
+    }
 
-            left = Integer.MAX_VALUE;
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves.clear();
 
-            int right = 0;
+        if (staves != null) {
+            this.staves.addAll(staves);
 
             for (Staff staff : staves) {
-                left = Math.min(left, staff.getAbscissa(LEFT));
-                right = Math.max(right, staff.getAbscissa(RIGHT));
+                staff.setSystem(this);
             }
 
-            top = (int) Math.rint(topLeft.getY());
-            width = right - left + 1;
-            deltaY = (int) Math.rint(
-                    lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-            bottom = (int) Math.rint(botLeft.getY());
-        } catch (Exception ex) {
-            logger.warn("Error updating coordinates for system#{}", id, ex);
+            updateCoordinates();
         }
     }
 
@@ -1865,6 +1898,146 @@ public class SystemInfo
         return "System#" + id;
     }
 
+    //-------------//
+    // unmergeWith //
+    //-------------//
+    /**
+     * Revert the merge of this system with the former system below.
+     *
+     * @param systemBelow former system below
+     * @param pageRef     the removed PageRef, if any
+     * @see #mergeWithBelow()
+     */
+    public void unmergeWith (SystemInfo systemBelow,
+                             PageRef pageRef)
+    {
+        // Re-insert system (and its PageRef if needed)
+        sheet.getSystemManager().unremoveSystem(systemBelow, pageRef);
+
+        // parts
+        parts.removeAll(systemBelow.parts);
+        for (Part part : systemBelow.parts) {
+            part.setSystem(systemBelow);
+        }
+
+        // partRefs
+        final SystemRef ref = getRef();
+        final SystemRef refBelow = systemBelow.getRef();
+        ref.getParts().removeAll(refBelow.getParts());
+        for (PartRef partRef : refBelow.getParts()) {
+            partRef.setSystem(refBelow);
+        }
+
+        // partGroups
+        partGroups.removeAll(systemBelow.partGroups);
+
+        // freeGlyphs
+        if (systemBelow.freeGlyphs != null) {
+            freeGlyphs.removeAll(systemBelow.freeGlyphs);
+
+            if (freeGlyphs.isEmpty()) {
+                freeGlyphs = null;
+            }
+        }
+
+        // staves
+        staves.removeAll(systemBelow.staves);
+
+        // sections
+        hSections.removeAll(systemBelow.hSections);
+        vSections.removeAll(systemBelow.vSections);
+
+        // bottom, deltaY, left, top, width
+        updateCoordinates();
+
+        // area, areaLeft, areaRight
+        area = null;
+        getArea();
+
+        // stacks
+        for (int i = 0; i < stacks.size(); i++) {
+            MeasureStack stack = stacks.get(i);
+            MeasureStack stackBelow = systemBelow.stacks.get(i);
+            stack.unmergeWith(stackBelow);
+        }
+
+        // sig
+        sig.excludeSig(systemBelow.getSig());
+
+        sheet.getStub().setModified(true);
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    /**
+     *
+     */
+    public final void updateCoordinates ()
+    {
+        try {
+            Staff firstStaff = getFirstStaff();
+            LineInfo firstLine = firstStaff.getFirstLine();
+            Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+            Staff lastStaff = getLastStaff();
+            LineInfo lastLine = lastStaff.getLastLine();
+            Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+            left = Integer.MAX_VALUE;
+
+            int right = 0;
+
+            for (Staff staff : staves) {
+                left = Math.min(left, staff.getAbscissa(LEFT));
+                right = Math.max(right, staff.getAbscissa(RIGHT));
+            }
+
+            top = (int) Math.rint(topLeft.getY());
+            width = right - left + 1;
+            deltaY = (int) Math.rint(
+                    lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+            bottom = (int) Math.rint(botLeft.getY());
+        } catch (Exception ex) {
+            logger.warn("Error updating coordinates for system#{}", id, ex);
+        }
+    }
+
+    //-------------------//
+    // updateHeadersStop //
+    //-------------------//
+    /**
+     * Recompute the ending abscissa offset for each staff header.
+     * <p>
+     * This must be called whenever a header content is modified, such as the removal of a
+     * header time signature.
+     */
+    public void updateHeadersStop ()
+    {
+        int maxOffset = 0;
+
+        for (Staff staff : staves) {
+            if (!staff.isTablature()) {
+                final StaffHeader header = staff.getHeader();
+                final Integer stop = header.getActualStop();
+
+                if (stop != null) {
+                    maxOffset = Math.max(maxOffset, stop - header.start);
+                }
+            }
+        }
+
+        // Push this value to all staves
+        if (maxOffset > 0) {
+            for (Staff staff : staves) {
+                if (!staff.isTablature()) {
+                    StaffHeader header = staff.getHeader();
+                    header.stop = header.start + maxOffset;
+                }
+            }
+        }
+    }
+
     //-----------//
     // xOverlaps //
     //-----------//
@@ -1901,15 +2074,7 @@ public class SystemInfo
         return commonBottom > commonTop;
     }
 
-    //----------------//
-    // initTransients //
-    //----------------//
-    void initTransients (Sheet sheet,
-                         Page page)
-    {
-        this.sheet = sheet;
-        this.page = page;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // toString //

@@ -335,7 +335,7 @@ public class MyXsdGeneratorHelper
                         validatePrefixSubstitutionIsPossible(oldPrefix, newPrefix, currentResolver);
 
                         if (mavenLog.isDebugEnabled()) {
-                            mavenLog.debug("Subtituting namespace prefix [" + oldPrefix + "] with ["
+                            mavenLog.debug("Substituting namespace prefix [" + oldPrefix + "] with ["
                                                    + newPrefix
                                                    + "] in file [" + currentResolver
                                             .getSourceFilename() + "].");

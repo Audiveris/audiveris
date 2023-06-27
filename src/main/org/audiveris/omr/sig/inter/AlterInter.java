@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,13 +28,18 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.symbol.FlatSymbol;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -43,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -78,12 +84,23 @@ public class AlterInter
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Measured pitch value.
      */
     private final Double measuredPitch;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private AlterInter ()
+    {
+        super(null, null, null, (Double) null, null, null);
+        this.measuredPitch = null;
+    }
+
     /**
      * Creates a new AlterInter object.
      *
@@ -126,24 +143,7 @@ public class AlterInter
         this.measuredPitch = measuredPitch;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private AlterInter ()
-    {
-        super(null, null, null, (Double) null, null, null);
-        this.measuredPitch = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-------//
     // added //
@@ -154,47 +154,6 @@ public class AlterInter
         super.added();
 
         setAbnormal(true); // No head linked yet
-    }
-
-    //--------------//
-    // alterationOf //
-    //--------------//
-    /**
-     * Report the pitch alteration that corresponds to the provided accidental.
-     *
-     * @param accidental the provided accidental, perhaps null
-     * @return the pitch impact
-     */
-    public static int alterationOf (AlterInter accidental)
-    {
-        if (accidental == null) {
-            return 0;
-        }
-
-        switch (accidental.getShape()) {
-        case SHARP:
-            return 1;
-
-        case DOUBLE_SHARP:
-            return 2;
-
-        case FLAT:
-            return -1;
-
-        case DOUBLE_FLAT:
-            return -2;
-
-        case NATURAL:
-            return 0;
-
-        default:
-            logger.warn(
-                    "Weird shape {} for accidental {}",
-                    accidental.getShape(),
-                    accidental.getId());
-
-            return 0; // Should not happen
-        }
     }
 
     //---------------//
@@ -210,16 +169,46 @@ public class AlterInter
     }
 
     //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
+    {
+        switch (shape) {
+        case FLAT:
+        case DOUBLE_FLAT:
+        {
+            // Alters for FLAT/DOUBLE_FLAT have a focus center different from area center
+            final FlatSymbol flatSymbol = (FlatSymbol) symbol;
+            final Model model = flatSymbol.getModel(font, dropLocation);
+            setBounds(model.box.getBounds());
+
+            return true;
+        }
+
+        default:
+            // The other alters have their area center as focus center
+            return super.deriveFrom(symbol, sheet, font, dropLocation);
+        }
+    }
+
+    //------------//
     // getDetails //
     //------------//
     @Override
     public String getDetails ()
     {
+        final StringBuilder sb = new StringBuilder(super.getDetails());
+
         if (measuredPitch != null) {
-            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append(String.format("mPitch:%.1f", measuredPitch));
         }
 
-        return super.getDetails();
+        return sb.toString();
     }
 
     /**
@@ -240,11 +229,13 @@ public class AlterInter
 
         switch (shape) {
         case FLAT:
-        case DOUBLE_FLAT: {
+        case DOUBLE_FLAT:
+        {
             double il = (staff != null) ? staff.getSpecificInterline()
                     : getBounds().height / constants.flatTypicalHeight.getValue();
-            return new Point2D.Double(center.getX(),
-                                      center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
+            return new Point2D.Double(
+                    center.getX(),
+                    center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
         }
 
         default:
@@ -263,48 +254,6 @@ public class AlterInter
         }
 
         return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
-        Collections.sort(systemHeads, Inters.byAbscissa);
-
-        final int profile = Math.max(getProfile(), system.getProfile());
-
-        return lookupLinks(systemHeads, profile);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, AlterHeadRelation.class);
-    }
-
-    //----------//
-    // setLinks //
-    //----------//
-    /**
-     * Try to detect relation with heads nearby (perhaps with their mirror).
-     *
-     * @param systemHeads ordered collection of heads in system
-     */
-    public void setLinks (List<Inter> systemHeads)
-    {
-        final int profile = Math.max(getProfile(), getSig().getSystem().getProfile());
-        final Collection<Link> links = lookupLinks(systemHeads, profile);
-
-        for (Link link : links) {
-            link.applyTo(this);
-        }
     }
 
     //-------------//
@@ -339,9 +288,8 @@ public class AlterInter
         Rectangle accidBox = getBounds();
         Point accidPt = new Point(
                 accidBox.x + accidBox.width,
-                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT))
-                        ? (accidBox.y + (accidBox.height / 2))
-                        : (accidBox.y + ((3 * accidBox.height) / 4)));
+                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT)) ? (accidBox.y
+                        + (accidBox.height / 2)) : (accidBox.y + ((3 * accidBox.height) / 4)));
         Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
         List<Inter> notes = Inters.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
 
@@ -388,6 +336,164 @@ public class AlterInter
         return Collections.emptySet();
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        Collections.sort(systemHeads, Inters.byAbscissa);
+
+        final int profile = Math.max(getProfile(), system.getProfile());
+
+        return lookupLinks(systemHeads, profile);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, AlterHeadRelation.class);
+    }
+
+    //----------//
+    // setLinks //
+    //----------//
+    /**
+     * Try to detect relation with heads nearby (perhaps with their mirror).
+     *
+     * @param systemHeads ordered collection of heads in system
+     */
+    public void setLinks (List<Inter> systemHeads)
+    {
+        final int profile = Math.max(getProfile(), getSig().getSystem().getProfile());
+        final Collection<Link> links = lookupLinks(systemHeads, profile);
+
+        for (Link link : links) {
+            link.applyTo(this);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------------//
+    // alterationOf //
+    //--------------//
+    /**
+     * Report the pitch alteration that corresponds to the provided accidental.
+     *
+     * @param accidental the provided accidental, perhaps null
+     * @return the pitch impact
+     */
+    public static int alterationOf (AlterInter accidental)
+    {
+        if (accidental == null) {
+            return 0;
+        }
+
+        switch (accidental.getShape()) {
+        case SHARP:
+            return 1;
+
+        case DOUBLE_SHARP:
+            return 2;
+
+        case FLAT:
+            return -1;
+
+        case DOUBLE_FLAT:
+            return -2;
+
+        case NATURAL:
+            return 0;
+
+        default:
+            logger.warn(
+                    "Weird shape {} for accidental {}",
+                    accidental.getShape(),
+                    accidental.getId());
+
+            return 0; // Should not happen
+        }
+    }
+
+    //--------------//
+    // computePitch //
+    //--------------//
+    /**
+     * Compute pitch (integer) and measuredPitch (double) values related to the provided
+     * staff, according to alteration glyph and shape.
+     * <p>
+     * Sharp and natural signs are symmetric, hence their pitch can be directly derived from
+     * centroid ordinate.
+     * <p>
+     * But sharp signs are not symmetric, hence we need a more precise point.
+     * We use two heuristics:
+     * <ul>
+     * <li>Augment centroid pitch by a fixed pitch offset, around 0.65</li>
+     * <li>Use point located at a fixed ratio of glyph height, around 0.65, to retrieve pitch.</li>
+     * </ul>
+     * And we use the average value from these two heuristics.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param staff related staff
+     * @return the pitch values (assigned, measured)
+     */
+    protected static Pitches computePitch (Glyph glyph,
+                                           Shape shape,
+                                           Staff staff)
+    {
+        Point centroid = glyph.getCentroid();
+        double massPitch = staff.pitchPositionOf(centroid);
+
+        // Pitch offset for flat-based alterations
+        if ((shape == Shape.FLAT) || (shape == Shape.DOUBLE_FLAT)) {
+            // Heuristic pitch offset WRT pitch of mass center
+            massPitch += constants.flatMassPitchOffset.getValue();
+
+            // Heuristic pitch offset WRT pitch of area center
+            Point2D center = glyph.getCenter2D();
+            double geoPitch = staff.pitchPositionOf(center);
+            geoPitch += getAreaPitchOffset(Shape.FLAT);
+
+            // Average value of both heuristics
+            double mix = 0.5 * (massPitch + geoPitch);
+
+            // logger.info(
+            //         "G#{} {}",
+            //         glyph.getId(),
+            //         String.format("mass:%+.2f geo:%+.2f mix:%+.2f", massPitch, geoPitch, mix));
+            return new Pitches((int) Math.rint(mix), mix);
+        } else {
+            return new Pitches((int) Math.rint(massPitch), massPitch);
+        }
+    }
+
+    //--------------//
+    // computePitch //
+    //--------------//
+    protected static Pitches computePitch (Rectangle bounds,
+                                           OmrShape omrShape,
+                                           Staff staff)
+    {
+        final Point2D center = GeoUtil.center2D(bounds);
+        double geoPitch = staff.pitchPositionOf(center);
+
+        // Pitch offset for flat-based alterations
+        if ((omrShape == OmrShape.keyFlat) || (omrShape == OmrShape.accidentalFlat)
+                || (omrShape == OmrShape.accidentalDoubleFlat)
+                || (omrShape == OmrShape.accidentalFlatSmall)) {
+            geoPitch += getAreaPitchOffset(Shape.FLAT);
+        }
+
+        return new Pitches((int) Math.rint(geoPitch), geoPitch);
+    }
+
     //--------//
     // create //
     //--------//
@@ -432,82 +538,42 @@ public class AlterInter
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
     }
 
-    //--------------//
-    // computePitch //
-    //--------------//
-    /**
-     * Compute pitch (integer) and measuredPitch (double) values related to the provided
-     * staff, according to alteration glyph and shape.
-     * <p>
-     * Sharp and natural signs are symmetric, hence their pitch can be directly derived from
-     * centroid ordinate.
-     * <p>
-     * But sharp signs are not symmetric, hence we need a more precise point.
-     * We use two heuristics:
-     * <ul>
-     * <li>Augment centroid pitch by a fixed pitch offset, around 0.65</li>
-     * <li>Use point located at a fixed ratio of glyph height, around 0.65, to retrieve pitch.</li>
-     * </ul>
-     * And we use the average value from these two heuristics.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param staff related staff
-     * @return the pitch values (assigned, measured)
-     */
-    protected static Pitches computePitch (Glyph glyph,
-                                           Shape shape,
-                                           Staff staff)
-    {
-        Point centroid = glyph.getCentroid();
-        double massPitch = staff.pitchPositionOf(centroid);
-
-        // Pitch offset for flat-based alterations
-        if ((shape == Shape.FLAT) || (shape == Shape.DOUBLE_FLAT)) {
-            // Heuristic pitch offset WRT pitch of mass center
-            massPitch += constants.flatMassPitchOffset.getValue();
-
-            // Heuristic pitch offset WRT pitch of area center
-            Rectangle box = glyph.getBounds();
-            Point2D center = glyph.getCenter2D();
-            double geoPitch = staff.pitchPositionOf(center);
-            geoPitch += getAreaPitchOffset(Shape.FLAT);
-
-            // Average value of both heuristics
-            double mix = 0.5 * (massPitch + geoPitch);
-
-            // logger.info(
-            //         "G#{} {}",
-            //         glyph.getId(),
-            //         String.format("mass:%+.2f geo:%+.2f mix:%+.2f", massPitch, geoPitch, mix));
-            return new Pitches((int) Math.rint(mix), mix);
-        } else {
-            return new Pitches((int) Math.rint(massPitch), massPitch);
-        }
-    }
-
-    //--------------//
-    // computePitch //
-    //--------------//
-    protected static Pitches computePitch (Rectangle bounds,
-                                           OmrShape omrShape,
-                                           Staff staff)
-    {
-        final Point2D center = GeoUtil.center2D(bounds);
-        double geoPitch = staff.pitchPositionOf(center);
-
-        // Pitch offset for flat-based alterations
-        if ((omrShape == OmrShape.keyFlat)
-                    || (omrShape == OmrShape.accidentalFlat)
-                    || (omrShape == OmrShape.accidentalDoubleFlat)
-                    || (omrShape == OmrShape.accidentalFlatSmall)) {
-            geoPitch += getAreaPitchOffset(Shape.FLAT);
-        }
-
-        return new Pitches((int) Math.rint(geoPitch), geoPitch);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction flatTypicalHeight = new Scale.Fraction(
+                2.7,
+                "Typical flat height");
+
+        private final Constant.Double flatMassPitchOffset = new Constant.Double(
+                "pitch",
+                0.65,
+                "Pitch offset of flat WRT mass center");
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public Rectangle2D box; // Alter box
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            GeoUtil.translate2D(box, dx, dy);
+        }
+    }
+
     //---------//
     // Pitches //
     //---------//
@@ -535,22 +601,5 @@ public class AlterInter
             this.pitch = pitch;
             this.measuredPitch = measuredPitch;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction flatTypicalHeight = new Scale.Fraction(
-                2.7,
-                "Typical flat height");
-
-        private final Constant.Double flatMassPitchOffset = new Constant.Double(
-                "pitch",
-                0.65,
-                "Pitch offset of flat WRT mass center");
     }
 }

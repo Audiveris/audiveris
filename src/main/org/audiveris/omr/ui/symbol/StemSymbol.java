@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_RIGHT;
+
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -31,62 +33,26 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>StemSymbol</code> implements a stem symbol.
+ * Class <code>StemSymbol</code> implements a stem symbol, perhaps decorated.
  *
  * @author Hervé Bitteur
  */
 public class StemSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    // The head+stem part
-    private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
-
-    // The stem part
-    private static final BasicSymbol stem = Symbols.SYMBOL_STEM;
-
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a <code>StemSymbol</code> (with decoration?) standard size
-     *
-     * @param decorated true for a decorated image
-     */
-    public StemSymbol (boolean decorated)
-    {
-        this(false, decorated);
-    }
 
     /**
-     * Create a <code>StemSymbol</code>(with decoration?)
+     * Create a <code>StemSymbol</code> standard size with no decoration.
      *
-     * @param isIcon    true for an icon
-     * @param decorated true for a decorated image
+     * @param family the musicFont family
      */
-    protected StemSymbol (boolean isIcon,
-                          boolean decorated)
+    public StemSymbol (MusicFamily family)
     {
-        super(isIcon, Shape.STEM, decorated);
+        super(Shape.STEM, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new StemSymbol(isIcon, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new StemSymbol(true, decorated);
-    }
 
     //-----------//
     // getParams //
@@ -97,19 +63,19 @@ public class StemSymbol
         MyParams p = new MyParams();
 
         // Stem layout
-        p.layout = font.layout(stem.getString());
-
+        p.layout = font.layoutShapeByCode(shape);
         Rectangle rs = p.layout.getBounds().getBounds(); // Stem bounds
 
-        if (decorated) {
+        if (isDecorated) {
             // Quarter layout
-            p.quarterLayout = font.layout(quarter.getString());
+            p.quarterLayout = font.layoutShapeByCode(Shape.QUARTER_NOTE_UP);
 
             p.rect = p.quarterLayout.getBounds();
 
             // Define specific offset
-            p.offset = new Point2D.Double((p.rect.getWidth() - rs.width) / 2,
-                                          -(p.rect.getHeight() - rs.height) / 2);
+            p.offset = new Point2D.Double(
+                    (p.rect.getWidth() - rs.width) / 2,
+                    -(p.rect.getHeight() - rs.height) / 2);
         } else {
             p.rect = p.layout.getBounds();
         }
@@ -128,7 +94,7 @@ public class StemSymbol
     {
         MyParams p = (MyParams) params;
 
-        if (decorated) {
+        if (isDecorated) {
             Point2D loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
             // Decorations (using composite)
@@ -147,6 +113,7 @@ public class StemSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

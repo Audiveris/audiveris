@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,40 +32,18 @@ import org.audiveris.omr.sig.SIGraph;
  */
 public abstract class UITask
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /** Operation kind performed on a UITask. */
-    public static enum OpKind
-    {
-        DO,
-        UNDO,
-        REDO;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** A name for task action. */
     protected final String actionName;
 
     /** Underlying sheet. */
     protected Sheet sheet;
 
-    /** Underlying SIG. */
+    /** Underlying SIG, if any. */
     protected final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>UITask</code> object, with a sig.
-     *
-     * @param sig        the underlying sig
-     * @param actionName name for action
-     */
-    public UITask (SIGraph sig,
-                   String actionName)
-    {
-        this.sig = sig;
-        sheet = sig.getSystem().getSheet();
-        this.actionName = actionName;
-    }
 
     /**
      * Creates a new <code>UITask</code> object, with a page.
@@ -81,7 +59,36 @@ public abstract class UITask
         this.actionName = actionName;
     }
 
+    /**
+     * Creates a new <code>UITask</code> object, with a sheet.
+     *
+     * @param sheet      the underlying sheet
+     * @param actionName name for action
+     */
+    public UITask (Sheet sheet,
+                   String actionName)
+    {
+        sig = null;
+        this.sheet = sheet;
+        this.actionName = actionName;
+    }
+
+    /**
+     * Creates a new <code>UITask</code> object, with a sig.
+     *
+     * @param sig        the underlying sig
+     * @param actionName name for action
+     */
+    public UITask (SIGraph sig,
+                   String actionName)
+    {
+        this.sig = sig;
+        sheet = sig.getSystem().getSheet();
+        this.actionName = actionName;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     public SIGraph getSig ()
     {
         return sig;
@@ -90,4 +97,14 @@ public abstract class UITask
     public abstract void performDo ();
 
     public abstract void performUndo ();
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    /** Operation kind performed on a UITask. */
+    public static enum OpKind
+    {
+        DO,
+        UNDO,
+        REDO;
+    }
 }

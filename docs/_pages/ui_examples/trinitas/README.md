@@ -8,10 +8,9 @@ nav_order: 1
 # O lux beata Trinitas
 {: .no_toc }
 
-**NOTA**:
+{: .note }
 You will notice that description of user edition is very detailed in this example, perhaps too much.
 This was done on purpose, so that the session content could be used as introductory material.
-{: .nota-bg }
 
 The case at hand describes the processing of an old office hymn available on IMSLP site.
 You can download it directly via the button here below:
@@ -46,14 +45,14 @@ Table of contents
 
 ## Program launch
 
-There are many ways to install/build then launch Audiveris program, depending on your environment.
+There are many ways to install/build then launch Audiveris program, depending on our environment.
 
-If you haven't done so, move to [Audiveris releases on github](https://github.com/Audiveris/audiveris/releases) to retrieve the latest release.
+If we haven't done so, we select [Audiveris releases on github](https://github.com/Audiveris/audiveris/releases) to retrieve the latest release.
 
-Under Windows, you can simply run the installer (for example Audiveris_Setup-5.2.2-windows-x86_64.exe
+Under Windows, we can simply run the installer (for example Audiveris_Setup-5.2.2-windows-x86_64.exe
 ).
-Under Windows, Linux and MacOS, you can decide to clone Audiveris project locally and then build it.
-In any case, you will have to make sure that proper Java version (Java 11) is installed.
+Under Windows, Linux and MacOS, we can decide to clone Audiveris project locally and then build it.
+In any case, we will have to make sure that proper Java version is installed.
 
 Here below are the first messages displayed, when pressing Windows start icon,
 selecting Audiveris folder, then Audiveris program:
@@ -138,16 +137,16 @@ Quick explanations about these early messages :
    [Trinitas#4] Loaded /sheet#4/sheet#4.xml
    [Trinitas#5] Loaded /sheet#5/sheet#5.xml
    ```   
-   If you look carefully, you can see that, even with all sheets back in memory, the total memory
+   If we look carefully, we can see that, even with all sheets back in memory, the total memory
    consumption is just 164/531 MB, far below the initial 324/706.
    This is so because a bunch of transient data, needed to transcribe sheets, is no longer needed
    and has been disposed of, via the store/reload process.
 
    Even more efficiently, we could also:
-   1. Close the book using `Book | Close Book` command (or `Ctrl-W` shortcut).
+   1. Close the book using `Book | Close Book` command (or `Ctrl+W` shortcut).
       We would be prompted to save the book if so needed.
    2. Reopen the latest closed book (at its latest opened sheet), via
-      `Book | Most recent book` command (or `Ctrl+Shift-T` shortcut).
+      `Book | Most recent book` command (or `Ctrl+Shift+T` shortcut).
    3. Going through all book sheets, total memory would stay at about 105 MB.
 
 ## Raw results
@@ -155,7 +154,7 @@ Quick explanations about these early messages :
 Here are sheet results, right out of the OMR engine:   
 We have selected `View | Show score voice` or `F8` command so that voices in the same part
 be displayed in different colors.   
--- Note: You can ask your browser to display each of these sheet images in a separate tab --
+-- Note: We can ask our browser to display each of these sheet images in a separate tab --
 
 | Sheet#1 | Sheet#2 | Sheet#3 | Sheet#4 | Sheet#5 |
 | :---: | :---: | :---: | :---: | :---: |
@@ -178,12 +177,11 @@ We can double-check the time signatures. All have been correctly recognized:
 Let's have a closer look, with colorized voices (`View | Show score Voices`) and
 with chord IDs displayed (`View | Show chord IDs`).
 
-**NOTA**: Chord IDs are dynamically assigned within each sheet by Audiveris program.
-If you replay this processing even with just a slight difference in the engine code or parameters,
+{: .note }
+Chord IDs are dynamically assigned within each sheet by Audiveris program.
+If we replay this processing even with just a slight difference in the engine code or parameters,
 some chord IDs may be different that those listed in this handbook version.
 Purpose of using chord IDs is to ease user mapping between snapshots and text lines.
-{: .nota-bg }
-
 
 ## Sheet #1
 
@@ -224,12 +222,12 @@ Inserting 4/2 signature is more complex, since this is not one of the predefined
 We do this for both common-cut sigs on first measure of sheet #1.
 We'll do the same thing on sheet #4 later.
 
-NOTA: If you delete both original common-cut sigs before entering the new 4/2 values, you will
+{: .note }
+If we delete both original common-cut sigs before entering the new 4/2 values, we will
 notice that all measures of sheet #1, except measure #12, will turn white.   
 The reason is that at this moment we have no time sig at all, hence no length-check can be
 performed on measures.  
 [In measure #12 remaining pink, we'll later see that a whole note has not been recognized].
-{: .nota-bg }
 
 With 4/2 clearly stated, among the 16 measures in sheet, we now have 11 in white.
 A significant improvement! :-)
@@ -253,7 +251,7 @@ In fact, and there are other similar cases in this book, the whole rest is never
 but located as a plain chord in a time slot.
 
 We can visualize the content of first slot,
-using ![](../../assets/images/ModeCombined.png) combined mode and pressing left mouse
+using ![](../../assets/images/ModeCombined.png) combined mode and pressing right mouse
 button near the first slot.
 Chord #3381 is *not* part of this slot:
 
@@ -436,12 +434,12 @@ whole note shape using the shape palette.
 To do so, in shape palette, we select the "HeadsAndDot" family figured by a black head and,
 while the target glyph is still selected, we use a double-click on the WHOLE_NOTE icon.
 
-**Remember**: the OMR engine uses a specific technique (*template matching*) to recognize heads.   
+{: .important }
+The OMR engine uses a specific technique (*template matching*) to recognize heads.   
 The glyph classifier works correctly for isolated fixed-size symbols like a treble key but would
 work very poorly on heads because their underlying glyph is often difficult to retrieve
 (think of glyph merge between head and staff lines and/or between head and stem).   
 So, don't even think of Glyph Classifier top 5 output when dealing with heads!
-{: .nota-bg }
 
 ### Sheet #1, Measure #14
 
@@ -546,9 +544,9 @@ A missing quarter note.
 ![](sheet3_m11.png)
 
 On upper staff, we do have a slur but it is linked to the wrong note head on its right side,
-certain because this head is closer to slur end target.
+certainly because this head is closer to slur end target.
 
-So we drag from this slur to the head of chord #4396, this move the slur-head relation off of
+So we drag from this slur to the head of chord #4396, this moves the slur-head relation off of
 chord #4395 head to chord #4396 head.
 
 For the slur on lower staff, which is linked to the wrong note head, we could also drag from the
@@ -612,13 +610,13 @@ to fulfill the "Next In Voice" relations we had just set.
 
 ![](sheet4_m1_2_3.png)
 
-NOTA: This direct voice number assignment is still an experimental feature:
+{: .warning }
+This direct voice number assignment is still an experimental feature:
 - It is a *hard coding*, hence less flexible than the use of relations like "Next in Voice"
   or "Separate Voices",
 - It is effective *only* for the starting chord of a voice in its measure.
   Setting the voice number for another chord in voice will have no effect,
   and in particular cannot be used as a means to link or unlink voices.
-  {: .nota-bg }
 
 ### Sheet #4, Measure #7 and #8
 
@@ -628,7 +626,7 @@ NOTA: This direct voice number assignment is still an experimental feature:
 
 Here we have the strange layout of a measure that ends system #2 and starts system #3.
 Notice that system #2 ends with no barline, as opposed to the other systems.
-Each of these "half-measures" lasts has a duration of 1.
+Each of these "half-measures" has a duration of 1.
 
 Audiveris can see these only as separate measures, numbered #7 and #8 respectively.   
 NOTA: Unfortunately, this shifts by 1 all the following measure numbers in this movement.

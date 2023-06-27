@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,11 @@ package org.audiveris.omr.ui.symbol;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.KeyInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -39,6 +43,10 @@ import java.awt.geom.Rectangle2D;
 public abstract class KeySymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(KeySymbol.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /**
@@ -47,25 +55,31 @@ public abstract class KeySymbol
      */
     public final int fifths;
 
+    /** The shape for key item (a sharp, a flat). */
+    public final Shape itemShape;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new KeySymbol object.
      *
-     * @param fifths fifths value within [-7 .. +7]
-     * @param isIcon true for an icon
-     * @param shape  the related shape
-     * @param codes  the code for item shape
+     * @param fifths    fifths value within [-7 .. +7]
+     * @param shape     the related key shape
+     * @param family    the musicFont family
+     * @param itemShape the shape for any key item
      */
     public KeySymbol (int fifths,
-                      boolean isIcon,
                       Shape shape,
-                      int... codes)
+                      MusicFamily family,
+                      Shape itemShape)
     {
-        super(isIcon, shape, false, codes);
+        super(shape, family);
         this.fifths = fifths;
+        this.itemShape = itemShape;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getParams //
     //-----------//
@@ -77,7 +91,7 @@ public abstract class KeySymbol
         p.stepDy = font.getStaffInterline() / 2.0;
 
         // One item
-        p.layout = layout(font);
+        p.layout = font.layoutShapeByCode(itemShape);
 
         Rectangle2D r2 = p.layout.getBounds();
         p.itemDx = r2.getWidth() * 1.15;
@@ -109,49 +123,13 @@ public abstract class KeySymbol
         // Define global rect as:
         // (x,y): area center wrt staff middle-left
         // (w,h): area dim
-        p.rect.setRect(p.rect.getWidth() / 2,
-                       p.rect.getY() - (KeyInter.getStandardPosition(fifths) * p.stepDy),
-                       p.rect.getWidth(),
-                       p.rect.getHeight());
+        p.rect.setRect(
+                p.rect.getWidth() / 2,
+                p.rect.getY() - (KeyInter.getStandardPosition(fifths) * p.stepDy),
+                p.rect.getWidth(),
+                p.rect.getHeight());
 
         return p;
-    }
-
-    //-------//
-    // paint //
-    //-------//
-    @Override
-    protected void paint (Graphics2D g,
-                          Params params,
-                          Point2D location,
-                          Alignment alignment)
-    {
-        MyParams p = (MyParams) params;
-        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-
-        // Set loc to (x=left side, y=staff mid line)
-        PointUtil.add(loc,
-                      -p.rect.getWidth() / 2,
-                      -KeyInter.getStandardPosition(fifths) * p.stepDy);
-
-        if (fifths == 0) {
-            int pitch = KeyInter.getItemPitch(1, null);
-            MusicFont.paint(g,
-                            p.layout,
-                            new Point2D.Double(loc.getX(), loc.getY() + (pitch * p.stepDy)),
-                            MIDDLE_LEFT);
-        } else {
-            int sign = Integer.signum(fifths);
-
-            for (int k = 1; k <= (fifths * sign); k++) {
-                int pitch = KeyInter.getItemPitch(k * sign, null);
-                MusicFont.paint(g,
-                                p.layout,
-                                new Point2D.Double(loc.getX() + ((k - 1) * p.itemDx),
-                                                   loc.getY() + (pitch * p.stepDy)),
-                                MIDDLE_LEFT);
-            }
-        }
     }
 
     //-----------//
@@ -167,7 +145,49 @@ public abstract class KeySymbol
         return sb.toString();
     }
 
+    //-------//
+    // paint //
+    //-------//
+    @Override
+    protected void paint (Graphics2D g,
+                          Params params,
+                          Point2D location,
+                          Alignment alignment)
+    {
+        MyParams p = (MyParams) params;
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+
+        // Set loc to (x=left side, y=staff mid line)
+        PointUtil.add(
+                loc,
+                -p.rect.getWidth() / 2,
+                -KeyInter.getStandardPosition(fifths) * p.stepDy);
+
+        if (fifths == 0) {
+            int pitch = KeyInter.getItemPitch(1, null);
+            MusicFont.paint(
+                    g,
+                    p.layout,
+                    new Point2D.Double(loc.getX(), loc.getY() + (pitch * p.stepDy)),
+                    MIDDLE_LEFT);
+        } else {
+            int sign = Integer.signum(fifths);
+
+            for (int k = 1; k <= (fifths * sign); k++) {
+                int pitch = KeyInter.getItemPitch(k * sign, null);
+                MusicFont.paint(
+                        g,
+                        p.layout,
+                        new Point2D.Double(
+                                loc.getX() + ((k - 1) * p.itemDx),
+                                loc.getY() + (pitch * p.stepDy)),
+                        MIDDLE_LEFT);
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//

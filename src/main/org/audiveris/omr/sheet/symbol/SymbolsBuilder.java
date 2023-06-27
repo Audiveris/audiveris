@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,13 +37,15 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
-import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
@@ -74,6 +76,7 @@ public class SymbolsBuilder
     private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -91,13 +94,14 @@ public class SymbolsBuilder
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
 
-    /** Aras where fine glyphs may be needed. */
+    /** Areas where fine glyphs may be needed. */
     private final List<Rectangle> fineBoxes = new ArrayList<>();
 
     /** Scale-dependent global constants. */
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SymbolsBuilder object.
      *
@@ -116,6 +120,7 @@ public class SymbolsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // buildSymbols //
     //--------------//
@@ -123,20 +128,27 @@ public class SymbolsBuilder
      * Find all possible interpretations of symbols composed from available system glyphs.
      * <p>
      * <b>Synopsis:</b>
-     *
-     * <pre>
-     * - retrieveFineBoxes()                            // Retrieve areas around small chords
-     * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
-     * - buildLinks()                                   // Build graph with distances
-     * - processClusters():                             // Group connected glyphs into clusters
-     *    + FOREACH cluster of connected glyphs:
-     *       + cluster.decompose()                      // Decompose cluster into all subsets
-     *       + FOREACH subset process(subset):
-     *          - build compound glyph                  // Build one compound glyph per subset
-     *          - evaluateGlyph(compound)               // Run shape classifier on compound
-     *          - FOREACH acceptable evaluation
-     *             + interFactory.create(eval, glyph) // Create inter(s) related to evaluation
-     * </pre>
+     * <ol>
+     * <li>retrieveFineBoxes() // Retrieve areas around small chords
+     * <li>getSymbolsGlyphs() // Retrieve all glyphs usable for symbols
+     * <li>buildLinks() // Build graph with distances
+     * <li>processClusters(): // Group connected glyphs into clusters
+     * <ol>
+     * <li>FOREACH cluster of connected glyphs:
+     * <ol>
+     * <li>cluster.decompose() // Decompose cluster into all subsets
+     * <li>FOREACH subset process(subset):
+     * <ol>
+     * <li>build compound glyph // Build one compound glyph per subset
+     * <li>evaluateGlyph(compound) // Run shape classifier on compound
+     * <li>FOREACH acceptable evaluation:
+     * <ol>
+     * <li>interFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     * </ol>
+     * </ol>
+     * </ol>
+     * </ol>
+     * </ol>
      *
      * @param optionalsMap the optional (weak) glyphs per system
      */
@@ -195,41 +207,32 @@ public class SymbolsBuilder
             return;
         }
 
-        // TODO: checks should be run only AFTER both classifiers have been run
-        Evaluation[] evals = classifier.evaluate(
+        final Evaluation[] evals = classifier.evaluate(
                 glyph,
                 system,
-                2,
+                constants.maxEvaluationCount.getValue(),
                 Grades.symbolMinGrade,
                 EnumSet.of(Classifier.Condition.CHECKED));
 
-        //        Evaluation[] evals2 = classifier2.evaluate(
-        //                glyph,
-        //                system,
-        //                2,
-        //                Grades.symbolMinGrade, // Not OK for deep classifier!
-        //                EnumSet.of(Classifier.Condition.CHECKED));
-        //
-        if (evals.length > 0) {
-            //            // Create one interpretation for each acceptable evaluation
-            //            for (Evaluation eval : evals) {
-            //                try {
-            //                    factory.create(eval, glyph, closestStaff);
-            //                } catch (Exception ex) {
-            //                    logger.warn("Error in glyph evaluation " + ex, ex);
-            //                }
-            //            }
-            //
-            Evaluation eval = evals[0];
+        // Create one interpretation for each acceptable evaluation
+        final SIGraph sig = system.getSig();
+        final List<Inter> createdInters = new ArrayList<>();
 
-            ///if (evals2.length > 0 && eval.shape == evals2[0].shape) {
+        for (Evaluation eval : evals) {
             try {
-                factory.create(eval, glyph, closestStaff);
+                final Inter created = factory.create(eval, glyph, closestStaff);
+
+                if (created != null) {
+                    // Set exclusion with all competitors already created for the same glyph
+                    for (Inter other : createdInters) {
+                        sig.insertExclusion(other, created, Exclusion.ExclusionCause.OVERLAP);
+                    }
+
+                    createdInters.add(created);
+                }
             } catch (Exception ex) {
                 logger.warn("Error in glyph evaluation " + ex, ex);
             }
-
-            ///}
         }
     }
 
@@ -358,14 +361,17 @@ public class SymbolsBuilder
     //-------------------//
     // retrieveFineBoxes //
     //-------------------//
+    /**
+     * Define a fine box on the right side of every small chord, specifically meant for
+     * detecting a potential small flag there.
+     */
     private void retrieveFineBoxes ()
     {
-        List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
+        final List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
 
         for (Inter inter : smallChords) {
-            // Define a fine box on the right side of the small chord
-            Rectangle box = inter.getBounds();
-            Rectangle fineBox = new Rectangle(
+            final Rectangle box = inter.getBounds();
+            final Rectangle fineBox = new Rectangle(
                     box.x + box.width,
                     box.y,
                     params.smallChordMargin,
@@ -375,6 +381,7 @@ public class SymbolsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -391,8 +398,13 @@ public class SymbolsBuilder
                 7,
                 "Maximum number of parts considered for a symbol");
 
+        private final Constant.Integer maxEvaluationCount = new Constant.Integer(
+                "Evaluations",
+                2,
+                "Maximum number of evaluations kept for a symbol");
+
         private final Scale.Fraction maxGap = new Scale.Fraction(
-                0.5, // 0.75 vs 0.5 is a bit too small for fermata - dot distance
+                0.6, // Was 0.5, but 0.55 is minimum needed for measure repeat sign
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(

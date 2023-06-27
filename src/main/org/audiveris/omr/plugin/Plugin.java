@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,7 +31,10 @@ import org.jdesktop.application.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -73,6 +76,7 @@ public class Plugin
     private static final Logger logger = LoggerFactory.getLogger(Plugin.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Id. */
     @XmlAttribute(name = "id")
     private final String id;
@@ -86,6 +90,17 @@ public class Plugin
     private final List<String> args;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Plugin ()
+    {
+        id = null;
+        tip = null;
+        args = null;
+    }
+
     /**
      * Creates a new <code>Plugin</code> object.
      *
@@ -102,17 +117,35 @@ public class Plugin
         this.args = args;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // buildCli //
+    //----------//
     /**
-     * No-arg constructor needed for JAXB.
+     * Build the CLI command.
+     *
+     * @param paths the export path(s) to process
+     * @return the resulting CLI command
      */
-    private Plugin ()
+    private List<String> buildCli (Collection<Path> paths)
     {
-        id = null;
-        tip = null;
-        args = null;
+        final List<String> cli = new ArrayList<>();
+
+        for (String arg : args) {
+            // Special token to indicate where paths must be inserted
+            if (arg.trim().equals("{}")) {
+                for (Path path : paths) {
+                    cli.add(path.toString());
+                }
+            } else {
+                cli.add(arg);
+            }
+        }
+
+        return cli;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // check //
     //-------//
@@ -135,9 +168,73 @@ public class Plugin
             }
         }
 
-        logger.warn("Missing special '\\{}' arg in plugin {}", getId());
+        logger.warn("Missing special '{}' arg in plugin {}", "{}", getId());
 
         return false;
+    }
+
+    //-------------//
+    // deleteFiles //
+    //-------------//
+    /**
+     * Delete all the provided files.
+     *
+     * @param paths paths to delete
+     * @throws IOException
+     */
+    private void deleteFiles (Collection<Path> paths)
+        throws IOException
+    {
+        for (Path path : paths) {
+            Files.deleteIfExists(path);
+        }
+    }
+
+    //------------//
+    // exportIsOk //
+    //------------//
+    /**
+     * Check if all the provided paths do exist and are dated after provided bookTime
+     * if any.
+     *
+     * @param bookTime time stamp of book file, perhaps null
+     * @param paths    all required paths
+     * @return true if OK
+     * @throws IOException can be thrown when checking file date
+     */
+    private boolean exportIsOk (FileTime bookTime,
+                                Collection<Path> paths)
+        throws IOException
+    {
+        for (Path path : paths) {
+            if (!exportIsOk(bookTime, path)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    //------------//
+    // exportIsOk //
+    //------------//
+    /**
+     * Check if the provided path does exist and is dated after provided bookTime if any.
+     *
+     * @param bookTime time stamp of book file, perhaps null
+     * @param path     required path
+     * @return true if OK
+     * @throws IOException can be thrown when checking file date
+     */
+    private boolean exportIsOk (FileTime bookTime,
+                                Path path)
+        throws IOException
+    {
+        if (!Files.exists(path)) {
+            return false;
+        }
+
+        return (bookTime == null) || (Files.getLastModifiedTime(path).compareTo(bookTime) > 0);
     }
 
     //----------------//
@@ -180,168 +277,6 @@ public class Plugin
         return new PluginTask(book);
     }
 
-    //-----------//
-    // runPlugin //
-    //-----------//
-    /**
-     * Run this plugin on the provided book.
-     *
-     * @param book provided book
-     * @return nothing
-     */
-    public Void runPlugin (Book book)
-    {
-        final Collection<Path> exportPaths = retrieveExportFiles(book);
-
-        if (exportPaths == null) {
-            logger.warn("No suitable export file(s)");
-
-            return null;
-        }
-
-        // Build process
-        final List<String> cli = buildCli(exportPaths);
-        logger.info("Process: {}", cli);
-
-        final ProcessBuilder pb = new ProcessBuilder(cli);
-        pb.redirectErrorStream(true); // Merge process error stream with its output stream
-
-        try {
-            final Process process = pb.start(); // Start process
-
-            // Consume process output (process output is an input stream for us)
-            final InputStream is = process.getInputStream();
-            final InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
-            final BufferedReader br = new BufferedReader(isr);
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            // Wait to get exit value
-            final int exitValue = process.waitFor();
-            logger.info("{} exit value: {}", getId(), exitValue);
-        } catch (IOException |
-                 InterruptedException ex) {
-            logger.warn("Error launching {} {}" + this, ex.toString(), ex);
-        }
-
-        return null;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-
-        sb.append("id:\"").append(id).append("\"");
-
-        if (tip != null) {
-            sb.append(" tip:\"").append(tip).append("\"");
-        }
-
-        sb.append(" args:").append(args);
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // buildCli //
-    //----------//
-    /**
-     * Build the CLI command.
-     *
-     * @param paths the export path(s) to process
-     * @return the resulting CLI command
-     */
-    private List<String> buildCli (Collection<Path> paths)
-    {
-        final List<String> cli = new ArrayList<>();
-
-        for (String arg : args) {
-            // Special token to indicate where paths must be inserted
-            if (arg.trim().equals("{}")) {
-                for (Path path : paths) {
-                    cli.add(path.toString());
-                }
-            } else {
-                cli.add(arg);
-            }
-        }
-
-        return cli;
-    }
-
-    //-------------//
-    // deleteFiles //
-    //-------------//
-    /**
-     * Delete all the provided files.
-     *
-     * @param paths paths to delete
-     * @throws IOException
-     */
-    private void deleteFiles (Collection<Path> paths)
-            throws IOException
-    {
-        for (Path path : paths) {
-            Files.deleteIfExists(path);
-        }
-    }
-
-    //------------//
-    // exportIsOk //
-    //------------//
-    /**
-     * Check if the provided path does exist and is dated after provided bookTime if any.
-     *
-     * @param bookTime time stamp of book file, perhaps null
-     * @param path     required path
-     * @return true if OK
-     * @throws IOException can be thrown when checking file date
-     */
-    private boolean exportIsOk (FileTime bookTime,
-                                Path path)
-            throws IOException
-    {
-        if (!Files.exists(path)) {
-            return false;
-        }
-
-        return (bookTime == null) || (Files.getLastModifiedTime(path).compareTo(bookTime) > 0);
-    }
-
-    //------------//
-    // exportIsOk //
-    //------------//
-    /**
-     * Check if all the provided paths do exist and are dated after provided bookTime
-     * if any.
-     *
-     * @param bookTime time stamp of book file, perhaps null
-     * @param paths    all required paths
-     * @return true if OK
-     * @throws IOException can be thrown when checking file date
-     */
-    private boolean exportIsOk (FileTime bookTime,
-                                Collection<Path> paths)
-            throws IOException
-    {
-        for (Path path : paths) {
-            if (!exportIsOk(bookTime, path)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     //---------------------//
     // retrieveExportFiles //
     //---------------------//
@@ -355,9 +290,8 @@ public class Plugin
     {
         try {
             // Target export file(s)
-            final Collection<Path> paths = BookManager.useOpus()
-                    ? Arrays.asList(book.getOpusExportPath())
-                    : book.getScoreExportPaths(book.getScores()).values();
+            final Collection<Path> paths = BookManager.useOpus() ? Arrays.asList(
+                    book.getOpusExportPath()) : book.getScoreExportPaths(book.getScores()).values();
 
             // Reuse existing export?
             if (!book.isModified()) {
@@ -386,7 +320,79 @@ public class Plugin
         return null;
     }
 
+    //-----------//
+    // runPlugin //
+    //-----------//
+    /**
+     * Run this plugin on the provided book.
+     *
+     * @param book provided book
+     * @return nothing
+     */
+    public Void runPlugin (Book book)
+    {
+        final Collection<Path> exportPaths = retrieveExportFiles(book);
+
+        if (exportPaths == null) {
+            logger.warn("No suitable export file(s)");
+
+            return null;
+        }
+
+        // Build process
+        final List<String> cli = buildCli(exportPaths);
+        logger.info("Process: {}", cli);
+
+        final ProcessBuilder pb = new ProcessBuilder(cli);
+        pb.redirectErrorStream(true); // Merge process error stream with its output stream
+
+        try {
+            final Process process = pb.start(); // Start process
+            final InputStream is = process.getInputStream();
+
+            // Consume process output (process output is an input stream for us)
+            try (InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+                    BufferedReader br = new BufferedReader(isr)) {
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    System.out.println(line);
+                }
+
+                // Wait to get exit value
+                final int exitValue = process.waitFor();
+                logger.info("{} exit value: {}", getId(), exitValue);
+            }
+        } catch (IOException | InterruptedException ex) {
+            logger.warn("Error launching {} {}" + this, ex.toString(), ex);
+        }
+
+        return null;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+
+        sb.append("id:\"").append(id).append("\"");
+
+        if (tip != null) {
+            sb.append(" tip:\"").append(tip).append("\"");
+        }
+
+        sb.append(" args:").append(args);
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // PluginTask //
     //------------//
@@ -408,7 +414,7 @@ public class Plugin
         @Override
         @SuppressWarnings("unchecked")
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             return Plugin.this.runPlugin(book);
         }

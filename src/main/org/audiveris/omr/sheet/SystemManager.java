@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,11 +29,14 @@ import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +85,7 @@ public class SystemManager
     private static final Logger logger = LoggerFactory.getLogger(SystemManager.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
@@ -89,7 +93,16 @@ public class SystemManager
     /** Sheet retrieved systems. */
     private final List<SystemInfo> systems = new ArrayList<>();
 
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SystemManager ()
+    {
+        this.sheet = null;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SystemManager object.
      *
@@ -100,15 +113,8 @@ public class SystemManager
         this.sheet = sheet;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private SystemManager ()
-    {
-        this.sheet = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // allocatePages //
     //---------------//
@@ -127,41 +133,79 @@ public class SystemManager
         final ProcessingSwitches switches = stub.getProcessingSwitches();
         final boolean useIndentation = switches.getValue(ProcessingSwitch.indentations);
         Page page = null;
+        PageRef pageRef = null;
 
-        // Look at left indentation of (deskewed) systems
-        checkIndentations();
+        if (useIndentation) {
+            // Look at left indentation of (deskewed) systems
+            checkIndentations();
+        }
 
-        // Allocate systems per page
+        // Allocate systems and pages
         for (SystemInfo system : systems) {
-            if (system.isIndented() && useIndentation) {
+            final int pageId = 1 + sheet.getPages().size();
+
+            if (system.isIndented()) {
                 final int systId = system.getId();
+                logger.info("Indentation detected for system#{}", systId);
 
                 // We have a movement start
                 if (page != null) {
                     // Sheet middle => Score break, finish current page
                     page.setLastSystemId(systId - 1);
-                    page.setSystems(systems);
+                    page.setSystemsFrom(systems);
                 }
 
                 // Start a new page
-                sheet.addPage(
-                        page = new Page(
-                                sheet,
-                                1 + sheet.getPages().size(),
-                                (systId == 1) ? null : systId));
-                page.setMovementStart(true);
-                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
+                stub.addPageRef(pageRef = new PageRef(stub, pageId, true));
+                sheet.addPage(page = new Page(sheet, pageId, (systId == 1) ? null : systId));
             } else if (page == null) {
                 // Start first page in sheet
-                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
-                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), false, null));
+                stub.addPageRef(pageRef = new PageRef(stub, pageId, false));
+                sheet.addPage(page = new Page(sheet, pageId, null));
             }
 
             system.setPage(page);
+            pageRef.addSystem(system.buildRef());
         }
 
         if (page != null) {
-            page.setSystems(systems);
+            page.setSystemsFrom(systems);
+        }
+    }
+
+    //-------------------//
+    // checkIndentations //
+    //-------------------//
+    /**
+     * Check all (de-skewed) systems for left-indentation that would signal a new movement.
+     */
+    private void checkIndentations ()
+    {
+        final Skew skew = sheet.getSkew();
+        final double minIndentation = sheet.getScale().toPixels(constants.minIndentation);
+
+        for (SystemInfo system : systems) {
+            // For side by side systems, only the leftmost one is concerned
+            if (system.getAreaEnd(LEFT) != 0) {
+                continue;
+            }
+
+            final Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
+
+            for (VerticalSide side : VerticalSide.values()) {
+                final List<SystemInfo> others = verticalNeighbors(system, side);
+
+                if (!others.isEmpty()) {
+                    SystemInfo other = others.get(0);
+                    Point2D ulOther = skew.deskewed(new Point(other.getLeft(), other.getTop()));
+
+                    if ((ul.getX() - ulOther.getX()) >= minIndentation) {
+                        system.setIndented(true);
+
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -194,13 +238,12 @@ public class SystemManager
         system.setAreaEnd(LEFT, left);
 
         final SystemInfo rightNeighbor = horizontalNeighbor(system, RIGHT);
-        final int right = (rightNeighbor != null)
-                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
+        final int right = (rightNeighbor != null) ? ((system.getRight() + rightNeighbor.getLeft())
+                / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
 
-        PathIterator north = aboves.isEmpty()
-                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(null)
-                : getGlobalLine(aboves, BOTTOM);
+        PathIterator north = aboves.isEmpty() ? new GeoPath(new Line2D.Double(left, 0, right, 0))
+                .getPathIterator(null) : getGlobalLine(aboves, BOTTOM);
 
         PathIterator south = belows.isEmpty() ? new GeoPath(
                 new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
@@ -342,6 +385,34 @@ public class SystemManager
         return found.get(bestIndex);
     }
 
+    //---------------//
+    // getGlobalLine //
+    //---------------//
+    /**
+     * Report a line which concatenates the corresponding
+     * (first or last) staff lines of all provided systems
+     * (assumed to be side by side).
+     *
+     * @param list the horizontal sequence of systems
+     * @param side the desired vertical side
+     * @return iterator on the global line
+     */
+    private PathIterator getGlobalLine (List<SystemInfo> list,
+                                        VerticalSide side)
+    {
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        List<Staff> staffList = new ArrayList<>();
+
+        for (SystemInfo system : list) {
+            staffList.add((side == TOP) ? system.getFirstStaff() : system.getLastStaff());
+        }
+
+        return sheet.getStaffManager().getGlobalLine(staffList, side);
+    }
+
     //------------//
     // getSystems //
     //------------//
@@ -353,22 +424,6 @@ public class SystemManager
     public List<SystemInfo> getSystems ()
     {
         return Collections.unmodifiableList(systems);
-    }
-
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the whole sequence of systems
-     *
-     * @param systems the (new) systems
-     */
-    public void setSystems (Collection<SystemInfo> systems)
-    {
-        if (this.systems != systems) {
-            this.systems.clear();
-            this.systems.addAll(systems);
-        }
     }
 
     //--------------//
@@ -530,6 +585,14 @@ public class SystemManager
         return null;
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //-----------------//
     // populateSystems //
     //-----------------//
@@ -580,7 +643,13 @@ public class SystemManager
         if (index == -1) {
             logger.error("Cannot remove unknown {}", system);
         } else {
+            final SystemRef systemRef = system.getRef();
             systems.remove(system);
+
+            final Page page = system.getPage();
+            page.removeSystem(system);
+            final PageRef pageRef = page.getRef();
+            pageRef.removeSystem(systemRef);
 
             // Update ID for each following system
             for (int i = index; i < systems.size(); i++) {
@@ -588,189 +657,16 @@ public class SystemManager
                 s.setId(i + 1);
             }
 
-            final Page page = system.getPage();
-            page.removeSystem(system);
-
             // Remove page?
             if (page.getSystems().isEmpty()) {
-                final SheetStub stub = sheet.getStub();
-                final PageRef pageRef = stub.getPageRefs().get(page.getId() - 1);
                 sheet.removePage(page);
-                stub.removePageRef(pageRef);
+                sheet.getStub().removePageRef(pageRef);
 
                 return pageRef;
             }
         }
 
         return null;
-    }
-
-    //----------------//
-    // unremoveSystem //
-    //----------------//
-    /**
-     * Un-remove the provided system (canceling a remove).
-     *
-     * @param system  the system to remove
-     * @param pageRef the removed PageRef if any
-     *
-     */
-    public void unremoveSystem (SystemInfo system,
-                                PageRef pageRef)
-    {
-        // Re-insert system in sheet
-        final int index = system.getId() - 1; // Where to re-insert removed system
-        systems.add(index, system);
-
-        // Re-insert page?
-        final Page page = system.getPage();
-
-        if (pageRef != null) {
-            sheet.addPage(page.getId() - 1, page);
-
-            final SheetStub stub = sheet.getStub();
-            stub.addPageRef(pageRef.getId() - 1, pageRef);
-        }
-
-        // Re-insert system into containing page
-        page.unremoveSystem(system);
-
-        // Update ID for each following system
-        for (int i = index + 1; i < systems.size(); i++) {
-            SystemInfo s = systems.get(i);
-            s.setId(i + 1);
-        }
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Empty the whole collection of systems.
-     */
-    public void reset ()
-    {
-        systems.clear();
-    }
-
-    //-------------------//
-    // verticalNeighbors //
-    //-------------------//
-    /**
-     * Report the systems, if any, which are located immediately on the desired vertical
-     * side of the provided one.
-     *
-     * @param current current system
-     * @param vSide   desired vertical side
-     * @return the neighboring systems if any, otherwise an empty list
-     */
-    public List<SystemInfo> verticalNeighbors (SystemInfo current,
-                                               VerticalSide vSide)
-    {
-        final List<SystemInfo> neighbors = new ArrayList<>();
-        final int idx = systems.indexOf(current);
-        final int dir = (vSide == TOP) ? (-1) : 1;
-        final int iBreak = (vSide == TOP) ? (-1) : systems.size();
-        SystemInfo other = null;
-
-        // Pickup the one immediately on desired vertical side
-        for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
-            SystemInfo s = systems.get(i);
-
-            if (current.xOverlaps(s)) {
-                other = s;
-
-                break;
-            }
-        }
-
-        if (other != null) {
-            // Pick up this first one, and its horizontal neighbors
-            neighbors.add(other);
-
-            for (HorizontalSide hSide : HorizontalSide.values()) {
-                SystemInfo next = other;
-
-                do {
-                    next = horizontalNeighbor(next, hSide);
-
-                    if (next != null) {
-                        neighbors.add(next);
-                    } else {
-                        break;
-                    }
-                } while (true);
-            }
-        }
-
-        Collections.sort(neighbors, SystemInfo.byId);
-
-        return neighbors;
-    }
-
-    //-------------------//
-    // checkIndentations //
-    //-------------------//
-    /**
-     * Check all (de-skewed) systems for indentation that would signal a new movement.
-     */
-    private void checkIndentations ()
-    {
-        Skew skew = sheet.getSkew();
-        double minShift = sheet.getScale().toPixels(constants.minShift);
-
-        for (SystemInfo system : systems) {
-            // For side by side systems, only the leftmost one is concerned
-            if (system.getAreaEnd(LEFT) != 0) {
-                continue;
-            }
-
-            Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
-
-            for (VerticalSide side : VerticalSide.values()) {
-                List<SystemInfo> others = verticalNeighbors(system, side);
-
-                if (!others.isEmpty()) {
-                    SystemInfo other = others.get(0);
-                    Point2D ulOther = skew.deskewed(new Point(other.getLeft(), other.getTop()));
-
-                    if ((ul.getX() - ulOther.getX()) >= minShift) {
-                        system.setIndented(true);
-                        logger.info("Indentation detected for system#{}", system.getId());
-
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    //---------------//
-    // getGlobalLine //
-    //---------------//
-    /**
-     * Report a line which concatenates the corresponding
-     * (first or last) staff lines of all provided systems
-     * (assumed to be side by side).
-     *
-     * @param list the horizontal sequence of systems
-     * @param side the desired vertical side
-     * @return iterator on the global line
-     */
-    private PathIterator getGlobalLine (List<SystemInfo> list,
-                                        VerticalSide side)
-    {
-        if (list.isEmpty()) {
-            return null;
-        }
-
-        List<Staff> staffList = new ArrayList<>();
-
-        for (SystemInfo system : list) {
-            staffList.add((side == TOP) ? system.getFirstStaff() : system.getLastStaff());
-        }
-
-        return sheet.getStaffManager().getGlobalLine(staffList, side);
     }
 
     //---------------//
@@ -841,15 +737,128 @@ public class SystemManager
         }
     }
 
-    //----------------//
-    // initTransients //
-    //----------------//
-    void initTransients (Sheet sheet)
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Empty the whole collection of systems.
+     */
+    public void reset ()
     {
-        this.sheet = sheet;
+        systems.clear();
+    }
+
+    //------------//
+    // setSystemsFrom //
+    //------------//
+    /**
+     * Assign the whole sequence of systems
+     *
+     * @param systems the (new) systems
+     */
+    public void setSystems (Collection<SystemInfo> systems)
+    {
+        if (this.systems != systems) {
+            this.systems.clear();
+            this.systems.addAll(systems);
+        }
+    }
+
+    //----------------//
+    // unremoveSystem //
+    //----------------//
+    /**
+     * Un-remove the provided system (canceling a remove).
+     *
+     * @param system  the system to remove
+     * @param pageRef the removed PageRef if any
+     */
+    public void unremoveSystem (SystemInfo system,
+                                PageRef pageRef)
+    {
+        // Re-insert system in sheet
+        final int indexInSheet = system.getId() - 1;
+        systems.add(indexInSheet, system);
+
+        // Re-insert page?
+        final Page page = system.getPage();
+
+        if (pageRef != null) {
+            sheet.addPage(page.getId() - 1, page);
+
+            final SheetStub stub = sheet.getStub();
+            stub.addPageRef(pageRef.getId() - 1, pageRef);
+        }
+
+        // Re-insert system into containing page
+        page.unremoveSystem(system);
+        final int indexInPage = system.getIndexInPage();
+        page.getRef().unremoveSystem(indexInPage, system.getRef());
+
+        // Update ID for each following system
+        for (int i = indexInSheet + 1; i < systems.size(); i++) {
+            SystemInfo s = systems.get(i);
+            s.setId(i + 1);
+        }
+    }
+
+    //-------------------//
+    // verticalNeighbors //
+    //-------------------//
+    /**
+     * Report the systems, if any, which are located immediately on the desired vertical
+     * side of the provided one.
+     *
+     * @param current current system
+     * @param vSide   desired vertical side
+     * @return the neighboring systems if any, otherwise an empty list
+     */
+    public List<SystemInfo> verticalNeighbors (SystemInfo current,
+                                               VerticalSide vSide)
+    {
+        final List<SystemInfo> neighbors = new ArrayList<>();
+        final int idx = systems.indexOf(current);
+        final int dir = (vSide == TOP) ? (-1) : 1;
+        final int iBreak = (vSide == TOP) ? (-1) : systems.size();
+        SystemInfo other = null;
+
+        // Pickup the one immediately on desired vertical side
+        for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
+            SystemInfo s = systems.get(i);
+
+            if (current.xOverlaps(s)) {
+                other = s;
+
+                break;
+            }
+        }
+
+        if (other != null) {
+            // Pick up this first one, and its horizontal neighbors
+            neighbors.add(other);
+
+            for (HorizontalSide hSide : HorizontalSide.values()) {
+                SystemInfo next = other;
+
+                do {
+                    next = horizontalNeighbor(next, hSide);
+
+                    if (next != null) {
+                        neighbors.add(next);
+                    } else {
+                        break;
+                    }
+                } while (true);
+            }
+        }
+
+        Collections.sort(neighbors, SystemInfo.byId);
+
+        return neighbors;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -857,8 +866,8 @@ public class SystemManager
             extends ConstantSet
     {
 
-        private final Scale.Fraction minShift = new Scale.Fraction(
-                3.0,
+        private final Scale.Fraction minIndentation = new Scale.Fraction(
+                2.0,
                 "Minimum shift to detect a system indentation");
     }
 }

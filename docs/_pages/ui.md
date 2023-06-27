@@ -16,7 +16,7 @@ It is thus globally more efficient to complement the OMR engine with a convenien
 editor so that the end-user can easily fix most of OMR errors.
 
 While Audiveris 5.1 release provided a basic editor limited to the drag n' drop of fixed-size
-symbols, the 5.2 release now offers a comprehensive editor to modify nearly any kind of symbol.
+symbols, the 5.2 release added a comprehensive editor to modify nearly any kind of symbol.
 
 Audiveris editor does not try to compete with music editors like MuseScore, Finale or Sibelius.
 Those are sophisticated high-level editors meant for composers, arrangers or publishers
@@ -33,9 +33,9 @@ As an introduction, you can watch Audiveris 5.1 user editor in action
 thanks to Baruch's
 [tutorial video](https://www.youtube.com/watch?v=718iy10sKV4&feature=youtu.be).
 
-WARNING: Keep in mind that this tutorial was based on **5.1** version, and some topics may be
-significantly different when using current **5.2** version.
-{: .warning-bg }
+{: .warning }
+Keep in mind that this tutorial was based on **5.1** version, and some topics may be
+significantly different when using current **{{ site.audiveris_version }}** version.
 
 ## Documentation content
 

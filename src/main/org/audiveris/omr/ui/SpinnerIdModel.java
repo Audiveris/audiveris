@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,10 @@ public class SpinnerIdModel<E extends Entity>
     private static final Logger logger = LoggerFactory.getLogger(SpinnerIdModel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
+    /** Name of entity type. */
+    private final String typeName;
+
     /** Underlying entity index. */
     private final EntityIndex<E> index;
 
@@ -52,17 +56,22 @@ public class SpinnerIdModel<E extends Entity>
     private Integer currentId;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SpinnerIdModel</code> object.
      *
-     * @param index the underlying entity index
+     * @param typeName name of entity type
+     * @param index    the underlying entity index
      */
-    public SpinnerIdModel (EntityIndex<E> index)
+    public SpinnerIdModel (String typeName,
+                           EntityIndex<E> index)
     {
+        this.typeName = typeName;
         this.index = index;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public Integer getNextValue ()
     {
@@ -114,7 +123,7 @@ public class SpinnerIdModel<E extends Entity>
                 fireStateChanged();
             }
         } else {
-            logger.warn("Invalid entity id: {}", id);
+            logger.warn("Invalid {} id: {}", typeName, id);
         }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,9 +22,13 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
+import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,9 +80,10 @@ import java.util.List;
 public enum Shape
 {
     /**
-     * =================================================================================
-     * Nota: Avoid changing the order of the physical shapes, otherwise the evaluators
-     * won't detect this and you'll have to retrain them on your own.
+     * =============================================================================================
+     * Beginning of physical shapes, they are recognized by trainable classifiers
+     * NOTA: Order of physicals is relevant, its modification would silently impact the classifiers,
+     * and you would have to retrain them on your own!
      * =============================================================================================
      */
 
@@ -99,6 +104,9 @@ public enum Shape
     CAESURA("Caesura"),
     FERMATA_ARC("Fermata arc, without dot"),
     FERMATA_ARC_BELOW("Fermata arc below, without dot"),
+    REPEAT_ONE_BAR("Repeat last bar"),
+    REPEAT_TWO_BARS("Repeat last two bars"),
+    REPEAT_FOUR_BARS("Repeat last four bars"),
 
     //
     // Clefs ---
@@ -113,6 +121,7 @@ public enum Shape
     F_CLEF_8VA("Bass Clef Ottava Alta"),
     F_CLEF_8VB("Bass Clef Ottava Bassa"),
     PERCUSSION_CLEF("Percussion Clef"),
+    //CLEF_OTTAVA("Clef 8"), Not handled without its related clef
 
     //
     // Accidentals ---
@@ -157,8 +166,9 @@ public enum Shape
     //
     // Octave shifts ---
     //
-    OTTAVA_ALTA("8 va"),
-    OTTAVA_BASSA("8 vb"),
+    OTTAVA("8"),
+    QUINDICESIMA("15"),
+    VENTIDUESIMA("22"),
 
     //
     // Rests ---
@@ -175,27 +185,32 @@ public enum Shape
     //
     // Flags ---
     //
-    FLAG_1("Single flag down"),
-    FLAG_1_UP("Single flag up"),
-    FLAG_2("Double flag down"),
-    FLAG_2_UP("Double flag up"),
-    FLAG_3("Triple flag down"),
-    FLAG_3_UP("Triple flag up"),
-    FLAG_4("Quadruple flag down"),
-    FLAG_4_UP("Quadruple flag up"),
-    FLAG_5("Quintuple flag down"),
-    FLAG_5_UP("Quintuple flag up"),
+    FLAG_1("Single flag"),
+    FLAG_1_DOWN("Single flag down"),
+    FLAG_2("Double flag"),
+    FLAG_2_DOWN("Double flag down"),
+    FLAG_3("Triple flag"),
+    FLAG_3_DOWN("Triple flag down"),
+    FLAG_4("Quadruple flag"),
+    FLAG_4_DOWN("Quadruple flag down"),
+    FLAG_5("Quintuple flag"),
+    FLAG_5_DOWN("Quintuple flag down"),
 
     //
     // Small Flags
     //
     SMALL_FLAG("Flag for grace note"),
-    SMALL_FLAG_SLASH("Flag for slashed grace note"),
+    SMALL_FLAG_DOWN("Flag for grace note down"),
+    SMALL_FLAG_SLASH("Slashed flag for grace note"),
+    SMALL_FLAG_SLASH_DOWN("Slashed flag for grace note down"),
 
     //
-    // StemLessHeads ---
+    // Grace notes ---
     //
-    BREVE("Double Whole"),
+    GRACE_NOTE("Grace Note with no slash"),
+    GRACE_NOTE_DOWN("Grace Note down with no slash"),
+    GRACE_NOTE_SLASH("Grace Note with a Slash"),
+    GRACE_NOTE_SLASH_DOWN("Grace Note down with a Slash"),
 
     //
     // Articulations ---
@@ -289,19 +304,35 @@ public enum Shape
     PLUCK_A("Plucking annulaire/anular/ring"),
 
     //
+    // Percussion playing technique ---
+    //
+    PLAYING_OPEN("Pict open: o"),
+    PLAYING_HALF_OPEN("Pict half-open: ø"),
+    PLAYING_CLOSED("Pict closed: +"),
+
+    //
+    // Tremolos
+    //
+    TREMOLO_1("Single tremolo"),
+    TREMOLO_2("Double tremolo"),
+    TREMOLO_3("Triple tremolo"),
+
+    //
     // Miscellaneous ---
     //
     CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
     /**
-     * =================================================================================
-     * End of physical shapes, beginning of logical shapes.
+     * =============================================================================================
+     * End of physical shapes
+     * Beginning of logical shapes, their order is irrelevant
+     * All head shapes are among them, they are recognized by template matching
      * =============================================================================================
      */
     TEXT("Sequence of letters & spaces"),
     CHARACTER("Any letter"),
 
     //
-    // Shapes from DOT_set ---
+    // Shapes based on physical DOT_set ---
     //
     REPEAT_DOT("Repeat dot", DOT_set),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
@@ -309,19 +340,52 @@ public enum Shape
     STACCATO("Staccato dot", DOT_set),
 
     //
-    // Shapes from HW_REST_set ---
+    // Shapes based on physical HW_REST_set ---
     //
     WHOLE_REST("Rest for a 1", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
 
     //
-    // Noteheads ---
+    // StemLessHeads duration 2 ---
     //
-    NOTEHEAD_CROSS("Ghost node with rhythmic value but no discernible pitch"),
-    NOTEHEAD_BLACK("Filled node head for quarters and less"),
-    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
-    NOTEHEAD_VOID("Hollow node head for halves"),
+    BREVE("Double Whole"),
+    BREVE_SMALL("Small Double Whole"),
+    BREVE_CROSS("Double Whole Cross"),
+    BREVE_DIAMOND("Double Whole Diamond"),
+    BREVE_TRIANGLE_DOWN("Double Whole Triangle Down"),
+    BREVE_CIRCLE_X("Double Whole Circle X"),
+
+    //
+    // StemLessHeads duration 1 ---
+    //
+    WHOLE_NOTE("Hollow node head for wholes"),
+    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
+    WHOLE_NOTE_CROSS("Hollow cross shape note head for unpitched percussion wholes"),
+    WHOLE_NOTE_DIAMOND("Hollow diamond-shaped note head for unpitched percussion wholes"),
+    WHOLE_NOTE_TRIANGLE_DOWN("Hollow point-down triangle shape for unpitched percussion wholes"),
+    WHOLE_NOTE_CIRCLE_X("Stemless circle-x head shape for unpitched percussion wholes"),
+
+    //
+    // Noteheads duration 1/2 ---
+    //
+    NOTEHEAD_VOID("Hollow note head for halves"),
     NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue"),
+    NOTEHEAD_CROSS_VOID("Hollow cross shape note head for unpitched percussion"),
+    NOTEHEAD_DIAMOND_VOID("Hollow diamond shape note head for unpitched percussion"),
+    NOTEHEAD_TRIANGLE_DOWN_VOID(
+            "Hollow point-down triangle shape note head for unpitched percussion"),
+    NOTEHEAD_CIRCLE_X_VOID("Hollow circle-x shape note head for unpitched percussion"),
+
+    //
+    // Noteheads duration 1/4 ---
+    //
+    NOTEHEAD_BLACK("Filled note head for quarters and less"),
+    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
+    NOTEHEAD_CROSS("Ghost note with rhythmic value but no discernible pitch"),
+    NOTEHEAD_DIAMOND_FILLED("Filled diamond shape note head for unpitched percussion"),
+    NOTEHEAD_TRIANGLE_DOWN_FILLED(
+            "Filled point-down triangle shape note head for unpitched percussion"),
+    NOTEHEAD_CIRCLE_X("Circle-x shape note head for unpitched percussion"),
 
     //
     // Compound notes (head + stem) ---
@@ -330,12 +394,6 @@ public enum Shape
     QUARTER_NOTE_DOWN("Filled head plus its down stem"),
     HALF_NOTE_UP("Hollow head plus its up stem"),
     HALF_NOTE_DOWN("Hollow head plus its down stem"),
-
-    //
-    // StemLessHeads ---
-    //
-    WHOLE_NOTE("Hollow node head for wholes"),
-    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
 
     //
     // Beams and slurs ---
@@ -347,6 +405,10 @@ public enum Shape
     SLUR("Slur above or below notes"),
     SLUR_ABOVE("Slur above notes"),
     SLUR_BELOW("Slur below notes"),
+    MULTIPLE_REST("Multiple measure rest"),
+    MULTIPLE_REST_LEFT("Multiple measure rest left"),
+    MULTIPLE_REST_MIDDLE("Multiple measure rest middle"),
+    MULTIPLE_REST_RIGHT("Multiple measure rest right"),
 
     //
     // Key signatures ---
@@ -405,12 +467,7 @@ public enum Shape
     // Stems ---
     //
     STEM("Stem"),
-
-    //
-    // Ornaments ---
-    //
-    GRACE_NOTE_SLASH("Grace Note with a Slash"),
-    GRACE_NOTE("Grace Note with no slash"),
+    VERTICAL_SERIF("Vertical serif"),
 
     //
     // Full fermatas ---
@@ -424,8 +481,21 @@ public enum Shape
     FORWARD("To indicate a forward"),
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
-    CUSTOM_TIME("Time signature defined by user"),
-    NO_LEGAL_TIME("No Legal Time Shape");
+    NUMBER_CUSTOM("Number defined by user"),
+    TIME_CUSTOM("Time signature defined by user"),
+    NO_LEGAL_TIME("No Legal Time Shape"),
+    BRACKET_UPPER_SERIF("Top serif of a bracket"),
+    BRACKET_LOWER_SERIF("Bottom serif of a bracket"),
+    STAFF_LINES("5-line staff"),
+
+    //
+    // Obsolete, kept for backward compatibility ---
+    //
+    FLAG_1_UP("OBSOLETE Single flag up"),
+    FLAG_2_UP("OBSOLETE Double flag up"),
+    FLAG_3_UP("OBSOLETE Triple flag up"),
+    FLAG_4_UP("OBSOLETE Quadruple flag up"),
+    FLAG_5_UP("OBSOLETE Quintuple flag up");
 
     // =============================================================================================
     // This is the end of shape enumeration
@@ -437,23 +507,14 @@ public enum Shape
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
     /** A comparator based on shape name. */
-    public static final Comparator<Shape> alphaComparator = (Shape o1, Shape o2)
-            -> o1.name().compareTo(o2.name());
+    public static final Comparator<Shape> alphaComparator = (Shape o1,
+                                                             Shape o2) -> o1.name().compareTo(
+                                                                     o2.name());
+
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Explanation of the glyph shape. */
     private final String description;
-
-    /** Potential related symbol. */
-    private ShapeSymbol symbol;
-
-    /** Potential related decorated symbol for menus. */
-    private ShapeSymbol decoratedSymbol;
-
-    /** Remember the fact that this shape has no related symbol. */
-    private boolean hasNoSymbol;
-
-    /** Remember the fact that this shape has no related decorated symbol. */
-    private boolean hasNoDecoratedSymbol;
 
     /** Potential related physical shape. */
     private Shape physicalShape;
@@ -464,43 +525,30 @@ public enum Shape
     /** Related color constant. */
     private Constant.Color constantColor;
 
-    //-------//
-    // Shape //
-    //-------//
+    //~ Constructors -------------------------------------------------------------------------------
+
     Shape ()
     {
         this("", null, null);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description)
     {
         this(description, null, null);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description,
            Color color)
     {
         this(description, null, color);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description,
            Shape physicalShape)
     {
         this(description, physicalShape, null);
     }
 
-    //-------//
-    // Shape //
-    //-------//
     Shape (String description,
            Shape physicalShape,
            Color color)
@@ -517,112 +565,52 @@ public enum Shape
                 "Color for shape " + name());
     }
 
-    //--------//
-    // isHead //
-    //--------//
-    /**
-     * Check whether the shape is a head.
-     *
-     * @return true if head
-     */
-    public boolean isHead ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------//
+    // createShapeColor //
+    //------------------//
+    void createShapeColor (Color color)
     {
-        return ShapeSet.Heads.contains(this);
+        // Assign the shape display color
+        if (!constantColor.isSourceValue()) {
+            setColor(constantColor.getValue()); // Use the shape specific color
+        } else if (this.color == null) {
+            setColor(color); // Use the provided (range) default color
+        }
     }
 
-    //--------//
-    // isRest //
-    //--------//
+    //----------//
+    // getColor //
+    //----------//
     /**
-     * Check whether the shape is a rest.
+     * Report the color assigned to the shape, if any.
      *
-     * @return true if rest
+     * @return the related color, or null
      */
-    public boolean isRest ()
+    public Color getColor ()
     {
-        return ShapeSet.Rests.contains(this);
+        return color;
     }
 
-    //--------------//
-    // isPersistent //
-    //--------------//
+    //--------------------//
+    // getDecoratedSymbol //
+    //--------------------//
     /**
-     * Report whether the impact of this shape persists across system
-     * (actually measure) borders (clefs, time signatures, key signatures).
-     * Based on just the shape, we cannot tell whether an accidental is part of
-     * a key signature or not, so we take a conservative approach.
+     * Report the symbol to use for menu items.
      *
-     * @return true if persistent, false otherwise
+     * @param family the selected MusicFont family
+     * @return the shape symbol, with decorations if any, perhaps null
      */
-    public boolean isPersistent ()
+    public ShapeSymbol getDecoratedSymbol (MusicFamily family)
     {
-        return ShapeSet.Clefs.contains(this) || ShapeSet.Times.contains(this)
-                       || ShapeSet.Accidentals.contains(this);
-    }
+        final ShapeSymbol symbol = getSymbol(family);
 
-    //--------//
-    // isText //
-    //--------//
-    /**
-     * Check whether the shape is a text (or a simple character).
-     *
-     * @return true if text or character
-     */
-    public boolean isText ()
-    {
-        return (this == TEXT) || (this == CHARACTER);
-    }
+        if (symbol == null) {
+            return null;
+        }
 
-    //--------------//
-    // isSharpBased //
-    //--------------//
-    /**
-     * Check whether the shape is a sharp or a key-sig sequence of sharps.
-     *
-     * @return true if sharp or sharp key sig
-     */
-    public boolean isSharpBased ()
-    {
-        return (this == SHARP) || ShapeSet.SharpKeys.contains(this);
-    }
-
-    //-------------//
-    // isFlatBased //
-    //-------------//
-    /**
-     * Check whether the shape is a flat or a key-sig sequence of flats.
-     *
-     * @return true if flat or flat key sig
-     */
-    public boolean isFlatBased ()
-    {
-        return (this == FLAT) || ShapeSet.FlatKeys.contains(this);
-    }
-
-    //---------//
-    // isSmall //
-    //---------//
-    /**
-     * Check whether the shape is a small note, meant for cue or grace.
-     *
-     * @return true if small (black/void/whole)
-     */
-    public boolean isSmall ()
-    {
-        return ShapeSet.SmallNotes.contains(this);
-    }
-
-    //-------------//
-    // isTrainable //
-    //-------------//
-    /**
-     * Report whether this shape can be used to train an classifier.
-     *
-     * @return true if trainable, false otherwise
-     */
-    public boolean isTrainable ()
-    {
-        return ordinal() <= LAST_PHYSICAL_SHAPE.ordinal();
+        return symbol.getDecoratedVersion();
     }
 
     //----------------//
@@ -642,17 +630,386 @@ public enum Shape
         }
     }
 
-    //----------//
-    // getColor //
-    //----------//
+    //---------------//
+    // getFontSymbol //
+    //---------------//
     /**
-     * Report the color assigned to the shape, if any.
+     * Report the couple font/symbol for this shape and the provided music font family.
+     * <p>
+     * DEFAULT_INTERLINE is used as staff interline.
      *
-     * @return the related color, or null
+     * @param family preferred font family
+     * @return a non-null FontSymbol structure, populated by the first compatible family if any
      */
-    public Color getColor ()
+    public FontSymbol getFontSymbol (MusicFamily family)
     {
-        return color;
+        return getFontSymbolByInterline(family, MusicFont.DEFAULT_INTERLINE);
+    }
+
+    //---------------//
+    // getFontSymbol //
+    //---------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font.
+     *
+     * @param font preferred font
+     * @return a FontSymbol structure, populated by the first compatible font, or null
+     */
+    public FontSymbol getFontSymbol (MusicFont font)
+    {
+        ShapeSymbol symbol = font.getSymbol(this);
+
+        while (symbol == null && font.getBackup() != null) {
+            font = font.getBackup();
+            symbol = font.getSymbol(this);
+        }
+
+        if (symbol == null)
+            return null;
+
+        return new FontSymbol(font, symbol);
+    }
+
+    //--------------------------//
+    // getFontSymbolByInterline //
+    //--------------------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font family
+     * and staff interline.
+     *
+     * @param family    preferred font family
+     * @param interline specified interline value
+     * @return a FontSymbol structure, populated by the first compatible family, or null
+     */
+    public FontSymbol getFontSymbolByInterline (MusicFamily family,
+                                                int interline)
+    {
+        return getFontSymbol(MusicFont.getBaseFont(family, interline));
+    }
+
+    //---------------------//
+    // getFontSymbolBySize //
+    //---------------------//
+    /**
+     * Report the couple font/symbol for this shape and the provided music font family
+     * and desired font point size.
+     *
+     * @param family    preferred font family
+     * @param pointSize specified interline value
+     * @return a FontSymbol structure, populated by the first compatible family, or null
+     */
+    public FontSymbol getFontSymbolBySize (MusicFamily family,
+                                           int pointSize)
+    {
+        return getFontSymbol(MusicFont.getBaseFontBySize(family, pointSize));
+    }
+
+    //--------------//
+    // getHeadMotif //
+    //--------------//
+    public HeadMotif getHeadMotif ()
+    {
+        if (ShapeSet.HeadsOval.contains(this)) {
+            return HeadMotif.oval;
+        }
+
+        if (ShapeSet.HeadsOvalSmall.contains(this)) {
+            return HeadMotif.small;
+        }
+
+        if (ShapeSet.HeadsCross.contains(this)) {
+            return HeadMotif.cross;
+        }
+
+        if (ShapeSet.HeadsDiamond.contains(this)) {
+            return HeadMotif.diamond;
+        }
+
+        if (ShapeSet.HeadsTriangle.contains(this)) {
+            return HeadMotif.triangle;
+        }
+
+        if (ShapeSet.HeadsCircle.contains(this)) {
+            return HeadMotif.circle;
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // getNoteDuration //
+    //-----------------//
+    /**
+     * Report the intrinsic duration of the note shape.
+     * This is the head or rest duration, regardless of any tuplet, beam/flag or augmentation
+     * dot.
+     *
+     * @return the duration as a rational value, or null if this shape is not a note shape
+     */
+    public Rational getNoteDuration ()
+    {
+        switch (this) {
+        case LONG_REST:
+            return new Rational(4, 1);
+
+        case BREVE_REST:
+        case BREVE:
+        case BREVE_SMALL:
+        case BREVE_CROSS:
+        case BREVE_DIAMOND:
+        case BREVE_TRIANGLE_DOWN, BREVE_CIRCLE_X:
+            return Rational.TWO;
+
+        case WHOLE_REST:
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_SMALL:
+        case WHOLE_NOTE_CROSS:
+        case WHOLE_NOTE_DIAMOND, WHOLE_NOTE_TRIANGLE_DOWN:
+        case WHOLE_NOTE_CIRCLE_X:
+            return Rational.ONE;
+
+        case HALF_REST:
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+        case NOTEHEAD_CROSS_VOID, NOTEHEAD_DIAMOND_VOID:
+        case NOTEHEAD_TRIANGLE_DOWN_VOID:
+        case NOTEHEAD_CIRCLE_X_VOID:
+            return Rational.HALF;
+
+        case QUARTER_REST:
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+        case NOTEHEAD_CROSS, NOTEHEAD_DIAMOND_FILLED:
+        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+        case NOTEHEAD_CIRCLE_X:
+            return Rational.QUARTER;
+
+        case EIGHTH_REST:
+            return new Rational(1, 8);
+
+        case ONE_16TH_REST:
+            return new Rational(1, 16);
+
+        case ONE_32ND_REST:
+            return new Rational(1, 32);
+
+        case ONE_64TH_REST:
+            return new Rational(1, 64);
+
+        case ONE_128TH_REST:
+            return new Rational(1, 128);
+
+        default:
+            return null;
+        }
+    }
+
+    //------------------//
+    // getPhysicalShape //
+    //------------------//
+    /**
+     * Report the shape to use for training or precise drawing.
+     *
+     * @return the related physical shape, if different
+     */
+    public Shape getPhysicalShape ()
+    {
+        if (physicalShape != null) {
+            return physicalShape;
+        } else {
+            return this;
+        }
+    }
+
+    //---------------//
+    // getSlashCount //
+    //---------------//
+    /**
+     * Report the number of slashes in this shape (currently effective on RepeatBars only).
+     *
+     * @return count of slashes
+     */
+    public int getSlashCount ()
+    {
+        return switch (this) {
+        case REPEAT_ONE_BAR -> 1;
+        case REPEAT_TWO_BARS -> 2;
+        case REPEAT_FOUR_BARS -> 4;
+        default -> 0;
+        };
+    }
+
+    //-----------//
+    // getSymbol //
+    //-----------//
+    /**
+     * Report the symbol to use for this shape.
+     *
+     * @param family the selected MusicFont family
+     * @return the shape symbol, perhaps null
+     */
+    public ShapeSymbol getSymbol (MusicFamily family)
+    {
+        final FontSymbol fs = getFontSymbol(family);
+
+        return (fs != null) ? fs.symbol : null;
+    }
+
+    //-------------//
+    // isDraggable //
+    //-------------//
+    /**
+     * Report whether this shape can be dragged (in a DnD gesture).
+     *
+     * @return true if shape can be dragged
+     */
+    public boolean isDraggable ()
+    {
+        return !ShapeSet.Undraggables.contains(this);
+    }
+
+    //-------------//
+    // isFlatBased //
+    //-------------//
+    /**
+     * Check whether the shape is a flat or a key-sig sequence of flats.
+     *
+     * @return true if flat or flat key sig
+     */
+    public boolean isFlatBased ()
+    {
+        return (this == FLAT) || ShapeSet.FlatKeys.contains(this);
+    }
+
+    //---------//
+    // isGrace //
+    //---------//
+    /**
+     * Check whether the shape is a grace
+     *
+     * @return true if grace
+     */
+    public boolean isGrace ()
+    {
+        return ShapeSet.Graces.contains(this);
+    }
+
+    //--------//
+    // isHead //
+    //--------//
+    /**
+     * Check whether the shape is a head.
+     *
+     * @return true if head
+     */
+    public boolean isHead ()
+    {
+        return ShapeSet.Heads.contains(this);
+    }
+
+    //--------------//
+    // isPercussion //
+    //--------------//
+    /**
+     * Check whether the shape represents an un-pitched percussion.
+     *
+     * @return true if so
+     */
+    public boolean isPercussion ()
+    {
+        return ShapeSet.HeadsCross.contains(this) || ShapeSet.HeadsDiamond.contains(this)
+                || ShapeSet.HeadsTriangle.contains(this) || ShapeSet.HeadsCircle.contains(this);
+    }
+
+    //--------//
+    // isRest //
+    //--------//
+    /**
+     * Check whether the shape is a rest.
+     *
+     * @return true if rest
+     */
+    public boolean isRest ()
+    {
+        return ShapeSet.Rests.contains(this);
+    }
+
+    //--------------//
+    // isSharpBased //
+    //--------------//
+    /**
+     * Check whether the shape is a sharp or a key-sig sequence of sharps.
+     *
+     * @return true if sharp or sharp key sig
+     */
+    public boolean isSharpBased ()
+    {
+        return (this == SHARP) || ShapeSet.SharpKeys.contains(this);
+    }
+
+    //-------------//
+    // isSmallFlag //
+    //-------------//
+    /**
+     * Check whether the shape is a small flag, meant for cue or grace.
+     *
+     * @return true if small flag
+     */
+    public boolean isSmallFlag ()
+    {
+        return ShapeSet.SmallFlagsUp.contains(this) || ShapeSet.SmallFlagsDown.contains(this);
+    }
+
+    //-------------//
+    // isSmallHead //
+    //-------------//
+    /**
+     * Check whether the shape is a small note head, meant for cue or grace.
+     *
+     * @return true if small (black/void/whole/breve)
+     */
+    public boolean isSmallHead ()
+    {
+        return ShapeSet.HeadsOvalSmall.contains(this);
+    }
+
+    //----------------//
+    // isStemLessHead //
+    //----------------//
+    /**
+     * Check whether the shape is a stem-less head, that is whole or breve.
+     *
+     * @return true if so
+     */
+    public boolean isStemLessHead ()
+    {
+        return ShapeSet.StemLessHeads.contains(this);
+    }
+
+    //--------//
+    // isText //
+    //--------//
+    /**
+     * Check whether the shape is a text (or a simple character).
+     *
+     * @return true if text or character
+     */
+    public boolean isText ()
+    {
+        return (this == TEXT) || (this == CHARACTER);
+    }
+
+    //-------------//
+    // isTrainable //
+    //-------------//
+    /**
+     * Report whether this shape can be used to train an classifier.
+     *
+     * @return true if trainable, false otherwise
+     */
+    public boolean isTrainable ()
+    {
+        return ordinal() <= LAST_PHYSICAL_SHAPE.ordinal();
     }
 
     //----------//
@@ -682,137 +1039,7 @@ public enum Shape
         setColor(color);
     }
 
-    //------------------//
-    // createShapeColor //
-    //------------------//
-    void createShapeColor (Color color)
-    {
-        // Assign the shape display color
-        if (!constantColor.isSourceValue()) {
-            setColor(constantColor.getValue()); // Use the shape specific color
-        } else if (this.color == null) {
-            setColor(color); // Use the provided (range) default color
-        }
-    }
-
-    //-----------//
-    // getSymbol //
-    //-----------//
-    /**
-     * Report the symbol related to the shape, if any.
-     *
-     * @return the related symbol, or null
-     */
-    public ShapeSymbol getSymbol ()
-    {
-        if (hasNoSymbol) {
-            return null;
-        }
-
-        if (symbol == null) {
-            symbol = Symbols.getSymbol(this);
-
-            if (symbol == null) {
-                hasNoSymbol = true;
-            }
-        }
-
-        return symbol;
-    }
-
-    //-----------//
-    // setSymbol //
-    //-----------//
-    /**
-     * Assign a symbol to this shape.
-     *
-     * @param symbol the assigned symbol, which may be null
-     */
-    public void setSymbol (ShapeSymbol symbol)
-    {
-        this.symbol = symbol;
-    }
-
-    //--------------------//
-    // getDecoratedSymbol //
-    //--------------------//
-    /**
-     * Report the symbol to use for menu items.
-     *
-     * @return the shape symbol, with decorations if any
-     */
-    public ShapeSymbol getDecoratedSymbol ()
-    {
-        if (hasNoDecoratedSymbol) {
-            // Avoid a new search, just use the undecorated symbol instead
-            return getSymbol();
-        }
-
-        if (decoratedSymbol == null) {
-            // Try to build / load a decorated symbol
-            ShapeSymbol symb = getSymbol();
-
-            if (symb != null) {
-                setDecoratedSymbol(symb.getDecoratedSymbol());
-            }
-
-            if (decoratedSymbol == null) {
-                hasNoDecoratedSymbol = true;
-
-                return getSymbol();
-            }
-        }
-
-        // Return the cached decorated symbol
-        return decoratedSymbol;
-    }
-
-    //--------------------//
-    // setDecoratedSymbol //
-    //--------------------//
-    /**
-     * Assign a decorated symbol to this shape.
-     *
-     * @param decoratedSymbol the assigned decorated symbol, which may be null
-     */
-    public void setDecoratedSymbol (ShapeSymbol decoratedSymbol)
-    {
-        this.decoratedSymbol = decoratedSymbol;
-    }
-
-    //------------------//
-    // getPhysicalShape //
-    //------------------//
-    /**
-     * Report the shape to use for training or precise drawing.
-     *
-     * @return the related physical shape, if different
-     */
-    public Shape getPhysicalShape ()
-    {
-        if (physicalShape != null) {
-            return physicalShape;
-        } else {
-            return this;
-        }
-    }
-
-    //-------------//
-    // isDraggable //
-    //-------------//
-    /**
-     * Report whether this shape can be dragged (in a DnD gesture).
-     *
-     * @return true if shape can be dragged
-     */
-    public boolean isDraggable ()
-    {
-        if (ShapeSet.PartialTimes.contains(this)) {
-            return false;
-        }
-
-        return getPhysicalShape().getSymbol() != null;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------------//
     // dumpShapeColors //

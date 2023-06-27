@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,7 +26,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.ui.EvaluationBoard;
 import org.audiveris.omr.glyph.ui.GlyphsController;
@@ -49,7 +48,6 @@ import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Rhythm;
@@ -70,7 +68,7 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -122,6 +120,7 @@ public class SheetEditor
     private static final Logger logger = LoggerFactory.getLogger(SheetEditor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -140,6 +139,7 @@ public class SheetEditor
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the DATA_TAB view in the sheet assembly tabs, dedicated to the display and
      * handling of glyphs and inters.
@@ -203,13 +203,14 @@ public class SheetEditor
         boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet()));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(evaluationBoard = new EvaluationBoard(
-                true,
-                sheet,
-                BasicClassifier.getInstance(),
-                sheet.getGlyphIndex().getEntityService(),
-                interController,
-                constants.selectBasicClassifierBoard.isSet()));
+        boards.add(
+                evaluationBoard = new EvaluationBoard(
+                        true,
+                        sheet,
+                        BasicClassifier.getInstance(),
+                        sheet.getGlyphIndex().getEntityService(),
+                        interController,
+                        constants.selectBasicClassifierBoard.isSet()));
 
         //        boards.add(
         //                new EvaluationBoard(
@@ -229,6 +230,7 @@ public class SheetEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // closeEditMode //
     //---------------//
@@ -237,8 +239,20 @@ public class SheetEditor
      */
     public void closeEditMode ()
     {
-        view.interEditor = null;
+        view.objectEditor = null;
         refresh();
+    }
+
+    //----------------//
+    // getEditedInter //
+    //----------------//
+    public Inter getEditedInter ()
+    {
+        if (view.objectEditor instanceof InterEditor interEditor) {
+            return interEditor.getInter();
+        }
+
+        return null;
     }
 
     //--------------------//
@@ -254,24 +268,12 @@ public class SheetEditor
         return evaluationBoard;
     }
 
-    //----------------//
-    // getEditedInter //
-    //----------------//
-    public Inter getEditedInter ()
+    //-----------------//
+    // getObjectEditor //
+    //-----------------//
+    public ObjectEditor getObjectEditor ()
     {
-        if (view.interEditor == null) {
-            return null;
-        }
-
-        return view.interEditor.getInter();
-    }
-
-    //----------------//
-    // getInterEditor //
-    //----------------//
-    public InterEditor getInterEditor ()
-    {
-        return view.interEditor;
+        return view.objectEditor;
     }
 
     //---------------//
@@ -391,7 +393,38 @@ public class SheetEditor
      */
     public void highLight (final Slot slot)
     {
-        SwingUtilities.invokeLater(() -> view.highLight(slot));
+        SwingUtilities.invokeLater( () -> view.highLight(slot));
+    }
+
+    //-----------//
+    // isEditing //
+    //-----------//
+    /**
+     * Report whether the provided Inter is being edited.
+     *
+     * @param inter provided inter
+     * @return true if provided inter is involved in editor activity
+     */
+    public boolean isEditing (Inter inter)
+    {
+        if (view.objectEditor instanceof InterEditor interEditor) {
+            return interEditor.concerns(inter);
+        }
+
+        return false;
+    }
+
+    //-----------------------//
+    // isRepetitiveInputMode //
+    //-----------------------//
+    /**
+     * Report whether the repetitive input mode is ON.
+     *
+     * @return true if ON, false if OFF
+     */
+    public boolean isRepetitiveInputMode ()
+    {
+        return view.repetitiveInputMode;
     }
 
     //--------------//
@@ -404,7 +437,24 @@ public class SheetEditor
      */
     public void openEditMode (Inter inter)
     {
-        view.interEditor = inter.getEditor();
+        view.objectEditor = inter.getEditor();
+        BookActions.getInstance().setUndoable(true);
+        refresh();
+    }
+
+    //--------------//
+    // openEditMode //
+    //--------------//
+    /**
+     * Set the provided Staff into edit mode.
+     *
+     * @param staff  the staff to edit
+     * @param global true for global staff edition, false for lines edition
+     */
+    public void openEditMode (Staff staff,
+                              boolean global)
+    {
+        view.objectEditor = staff.getEditor(global);
         BookActions.getInstance().setUndoable(true);
         refresh();
     }
@@ -430,19 +480,6 @@ public class SheetEditor
         view.repaint();
     }
 
-    //-----------------------//
-    // isRepetitiveInputMode //
-    //-----------------------//
-    /**
-     * Report whether the repetitive input mode is ON.
-     *
-     * @return true if ON, false if OFF
-     */
-    public boolean isRepetitiveInputMode ()
-    {
-        return view.repetitiveInputMode;
-    }
-
     //------------------------//
     // setRepetitiveInputMode //
     //------------------------//
@@ -454,9 +491,10 @@ public class SheetEditor
     public void setRepetitiveInputMode (boolean repetitiveInputMode)
     {
         view.repetitiveInputMode = repetitiveInputMode;
-        logger.info("{} Repetitive input mode is {}",
-                    sheet.getId(),
-                    view.repetitiveInputMode ? "ON" : "OFF");
+        logger.info(
+                "{} Repetitive input mode is {}",
+                sheet.getId(),
+                view.repetitiveInputMode ? "ON" : "OFF");
     }
 
     //---------------------------//
@@ -471,64 +509,49 @@ public class SheetEditor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //------------------//
-    // SheetKeyListener //
-    //------------------//
-    /**
-     * Listener in charge of retrieving the sequence of keys typed by the user.
-     */
-    public class SheetKeyListener
-            extends KeyAdapter
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
     {
 
-        /** First character typed, if any. */
-        Character firstChar = null;
+        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
+                false,
+                "Should we select Pixel board by default?");
 
-        @Override
-        public void keyTyped (KeyEvent e)
-        {
-            final char c = e.getKeyChar();
+        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Horizontal Section board by default?");
 
-            if (firstChar == null) {
-                // Shape family selection?
-                if (shapeBoard.isSelected() && shapeBoard.checkInitial(c)) {
-                    firstChar = c;
-                    return;
-                }
+        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Vertical Section board by default?");
 
-                // Direct use of classifier buttons?
-                if (evaluationBoard.isSelected()) {
-                    final char maxId = (char) ('0' + EvaluationBoard.evalCount());
+        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
+                false,
+                "Should we select Glyph board by default?");
 
-                    if (c >= '1' && c <= maxId) {
-                        final int id = c - '0';
-                        evaluationBoard.selectButton(id);
-                        return;
-                    }
-                }
-            } else {
-                // Second character (shape within family)
-                final String str = String.valueOf(new char[]{firstChar, c});
-                shapeBoard.processString(str);
-                reset();
-            }
-        }
+        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
+                true,
+                "Should we select Inter board by default?");
 
-        /**
-         * Reset the key input sequence.
-         */
-        public void reset ()
-        {
-            firstChar = null;
-        }
+        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
+                true,
+                "Should we select Shape board by default?");
+
+        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
+                true,
+                "Should we select Basic Classifier board by default?");
     }
 
     //------------//
     // EditorView //
     //------------//
     /**
-     * This is the main view, displaying the sheet image with sections, glyphs and inters
-     * for edition.
+     * This is the main view, displaying the sheet image with sections, glyphs
+     * and inters/staffLines for edition.
      */
     private final class EditorView
             extends NestView
@@ -540,8 +563,8 @@ public class SheetEditor
         /** Current relation vector. */
         private RelationVector relationVector;
 
-        /** Inter being edited, if any. */
-        private InterEditor interEditor;
+        /** Object being edited, if any. */
+        private ObjectEditor objectEditor;
 
         /** Repetitive input mode. */
         private boolean repetitiveInputMode = false;
@@ -551,11 +574,12 @@ public class SheetEditor
 
         private EditorView (GlyphIndex glyphIndex)
         {
-            super(glyphIndex.getEntityService(),
-                  Arrays.asList(
-                          sheet.getLagManager().getLag(Lags.HLAG),
-                          sheet.getLagManager().getLag(Lags.VLAG)),
-                  sheet);
+            super(
+                    glyphIndex.getEntityService(),
+                    Arrays.asList(
+                            sheet.getLagManager().getLag(Lags.HLAG),
+                            sheet.getLagManager().getLag(Lags.VLAG)),
+                    sheet);
             setName("SymbolsEditor-EditorView");
 
             // Subscribe to all lags for SectionSet events
@@ -571,6 +595,33 @@ public class SheetEditor
 
         }
 
+        //----------------------//
+        // bindInterEditionKeys //
+        //----------------------//
+        private void bindInterEditionKeys ()
+        {
+            final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            final ActionMap actionMap = getActionMap();
+
+            // Slight translation of both rubber and editor handle
+            // We override default binding of any RubbelPanel to also move editor handle
+            inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
+            actionMap.put("UpTranslateAction", new EditTranslateAction(0, -1));
+
+            inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
+            actionMap.put("DownTranslateAction", new EditTranslateAction(0, 1));
+
+            inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
+            actionMap.put("LeftTranslateAction", new EditTranslateAction(-1, 0));
+
+            inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
+            actionMap.put("RightTranslateAction", new EditTranslateAction(1, 0));
+
+            // End of edition
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
+            actionMap.put("EndInterEditionAction", new EndInterEditionAction());
+        }
+
         //--------------//
         // contextAdded //
         //--------------//
@@ -579,7 +630,7 @@ public class SheetEditor
                                   MouseMovement movement)
         {
             relationVector = null;
-            interEditor = null;
+            objectEditor = null;
 
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter modes
@@ -600,7 +651,7 @@ public class SheetEditor
                                      MouseMovement movement)
         {
             relationVector = null;
-            interEditor = null;
+            objectEditor = null;
 
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter mode
@@ -615,6 +666,54 @@ public class SheetEditor
             if (movement == MouseMovement.RELEASING) {
                 showPagePopup(pt, getRubberRectangle());
             }
+        }
+
+        //--------------//
+        // createEditor //
+        //--------------//
+        /**
+         * Create an inter at provided location, together with a brand new editor.
+         * <p>
+         * This is done when repetitive input mode is on.
+         *
+         * @see #selectEditor(Point)
+         */
+        private InterEditor createEditor (Point location)
+        {
+            // Inter is determined by latest history information
+            final List<Shape> history = shapeBoard.getHistory();
+
+            if (history.isEmpty()) {
+                return null;
+            }
+
+            final Shape shape = history.get(0);
+
+            if (!shape.isDraggable()) {
+                return null;
+            }
+
+            Staff staff = sheet.getStaffManager().getClosestStaff(location);
+
+            if (staff == null) {
+                return null;
+            }
+
+            Inter inter = InterFactory.createManual(shape, sheet);
+            inter.setStaff(staff);
+
+            final MusicFamily family = sheet.getStub().getMusicFamily();
+            final int staffInterline = staff.getSpecificInterline();
+            final MusicFont font = inter.getShape().isHead() ? MusicFont.getHeadFont(
+                    family,
+                    sheet.getScale(),
+                    staffInterline) : MusicFont.getBaseFont(family, staffInterline);
+            inter.deriveFrom(font.getSymbol(shape), sheet, font, location);
+
+            staff.getSystem().getSig().addVertex(inter); // To set inter sig
+            sheet.getInterController().addInter(inter); // NOTA: this runs in a background task...
+
+            return inter.getEditor();
         }
 
         //-----------//
@@ -678,11 +777,14 @@ public class SheetEditor
             highLight(null);
 
             // Try to select an inter and put it into edit mode
-            interEditor = selectEditor(pt);
+            objectEditor = selectEditor(pt);
 
-            if (interEditor != null) {
-                Inter inter = interEditor.getInter();
-                inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+            if (objectEditor != null) {
+                if (objectEditor instanceof InterEditor interEditor) {
+                    Inter inter = interEditor.getInter();
+                    inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+                }
+
                 BookActions.getInstance().setUndoable(true);
             }
         }
@@ -695,7 +797,7 @@ public class SheetEditor
                                 MouseMovement movement)
         {
             relationVector = null;
-            interEditor = null;
+            objectEditor = null;
 
             // Cancel slot highlighting
             highLight(null);
@@ -718,23 +820,24 @@ public class SheetEditor
 
             // Specific repetitive input mode?
             if (repetitiveInputMode && (movement == MouseMovement.PRESSING)) {
-                interEditor = createEditor(pt);
+                objectEditor = createEditor(pt);
             }
 
             // On-going inter edition?
-            if (interEditor != null) {
+            if (objectEditor != null) {
                 // Publish (transient) location to allow shifting when getting close to view borders
                 locationService.publish(
-                        new LocationEvent(this,
-                                          SelectionHint.ENTITY_TRANSIENT,
-                                          MouseMovement.DRAGGING,
-                                          new Rectangle(pt)));
+                        new LocationEvent(
+                                this,
+                                SelectionHint.ENTITY_TRANSIENT,
+                                MouseMovement.DRAGGING,
+                                new Rectangle(pt)));
 
-                if (interEditor.processMouse(pt, movement)) {
+                if (objectEditor.processMouse(pt, movement)) {
                     return;
                 }
 
-                interEditor = null;
+                objectEditor = null;
             }
 
             // Handle relation vector
@@ -757,7 +860,6 @@ public class SheetEditor
                 break;
 
             case DRAGGING:
-
                 if (relationVector != null) {
                     relationVector.extendTo(pt); // Extension
                 }
@@ -765,7 +867,6 @@ public class SheetEditor
                 break;
 
             case RELEASING:
-
                 if ((relationVector != null)) {
                     relationVector.process(); // Handle end of vector
                     relationVector = null; // This is the end
@@ -895,8 +996,7 @@ public class SheetEditor
                     SelectionPainter painter = new SelectionPainter(sheet, g);
 
                     for (Inter inter : inters) {
-                        if ((inter != null) && !inter.isRemoved()
-                                    && (interEditor == null || inter != interEditor.getInter())) {
+                        if ((inter != null) && !inter.isRemoved()) {
                             // Highlight selected inter
                             painter.render(inter);
 
@@ -905,16 +1005,19 @@ public class SheetEditor
                             inter.renderAttachments(g);
                             g.setStroke(oldStroke);
 
-                            // Inter: main links
-                            SIGraph sig = inter.getSig();
+                            if (!isEditing(inter)) {
+                                // Inter: main links
+                                SIGraph sig = inter.getSig();
 
-                            if (sig != null) {
-                                final Set<Relation> links = sig.getRelations(inter,
-                                                                             Support.class,
-                                                                             Rhythm.class);
-                                for (Relation rel : links) {
-                                    Inter opp = sig.getOppositeInter(inter, rel);
-                                    painter.drawLink(inter, opp, rel.getClass());
+                                if (sig != null) {
+                                    final Set<Relation> links = sig.getRelations(
+                                            inter,
+                                            Support.class,
+                                            Rhythm.class);
+                                    for (Relation rel : links) {
+                                        Inter opp = sig.getOppositeInter(inter, rel);
+                                        painter.drawLink(inter, opp, rel);
+                                    }
                                 }
                             }
                         }
@@ -940,55 +1043,9 @@ public class SheetEditor
             }
 
             // Inter editor?
-            if (interEditor != null) {
-                interEditor.render(g);
+            if (objectEditor != null) {
+                objectEditor.render(g);
             }
-        }
-
-        //--------------//
-        // createEditor //
-        //--------------//
-        /**
-         * Create an inter at provided location, together with a brand new editor.
-         * <p>
-         * This is done when repetitive input mode is on.
-         *
-         * @see #selectEditor(Point)
-         */
-        private InterEditor createEditor (Point location)
-        {
-            // Inter is determined my latest history information
-            final List<Shape> history = shapeBoard.getHistory();
-
-            if (history.isEmpty()) {
-                return null;
-            }
-
-            final Shape shape = history.get(0);
-
-            if (!shape.isDraggable()) {
-                return null;
-            }
-
-            Staff staff = sheet.getStaffManager().getClosestStaff(location);
-
-            if (staff == null) {
-                return null;
-            }
-
-            Inter inter = InterFactory.createManual(shape, sheet);
-            inter.setStaff(staff);
-
-            final int staffInterline = staff.getSpecificInterline();
-            final MusicFont font = (ShapeSet.Heads.contains(inter.getShape()))
-                    ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
-                    : MusicFont.getBaseFont(staffInterline);
-            inter.deriveFrom(shape.getSymbol(), sheet, font, location, Alignment.AREA_CENTER);
-
-            staff.getSystem().getSig().addVertex(inter); // To set inter sig
-            sheet.getInterController().addInter(inter); // NOTA: this runs in a background task...
-
-            return inter.getEditor();
         }
 
         //--------------//
@@ -1002,7 +1059,6 @@ public class SheetEditor
          *
          * @param location provided location
          * @return the create editor, if proper Inter was found at location.
-         *
          * @see #createEditor(Point)
          */
         private InterEditor selectEditor (Point location)
@@ -1019,7 +1075,7 @@ public class SheetEditor
 
             Inter first = inters.get(0);
 
-            if (first instanceof InterEnsemble) {
+            if (!first.isEditable()) {
                 return null;
             }
 
@@ -1067,33 +1123,6 @@ public class SheetEditor
             return (!starts.isEmpty()) ? new RelationVector(p1, starts) : null;
         }
 
-        //----------------------//
-        // bindInterEditionKeys //
-        //----------------------//
-        private void bindInterEditionKeys ()
-        {
-            final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            final ActionMap actionMap = getActionMap();
-
-            // Slight translation of both rubber and editor handle
-            // We override default binding of any RubbelPanel to also move editor handle
-            inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
-            actionMap.put("UpTranslateAction", new EditTranslateAction(0, -1));
-
-            inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
-            actionMap.put("DownTranslateAction", new EditTranslateAction(0, 1));
-
-            inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
-            actionMap.put("LeftTranslateAction", new EditTranslateAction(-1, 0));
-
-            inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
-            actionMap.put("RightTranslateAction", new EditTranslateAction(1, 0));
-
-            // End of edition
-            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
-            actionMap.put("EndInterEditionAction", new EndInterEditionAction());
-        }
-
         //---------------------//
         // EditTranslateAction //
         //---------------------//
@@ -1112,8 +1141,8 @@ public class SheetEditor
             {
                 super.actionPerformed(e);
 
-                if (interEditor != null) {
-                    interEditor.processKeyboard(new Point(dx, dy));
+                if (objectEditor != null) {
+                    objectEditor.processKeyboard(new Point(dx, dy));
                     refresh();
                 }
             }
@@ -1129,47 +1158,64 @@ public class SheetEditor
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                if (interEditor != null) {
-                    interEditor.endProcess();
+                if (objectEditor != null) {
+                    objectEditor.endProcess();
                     refresh();
                 }
             }
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
+    //------------------//
+    // SheetKeyListener //
+    //------------------//
+    /**
+     * Listener in charge of retrieving the sequence of keys typed by the user.
+     */
+    public class SheetKeyListener
+            extends KeyAdapter
     {
 
-        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
-                false,
-                "Should we select Pixel board by default?");
+        /** First character typed, if any. */
+        Character firstChar = null;
 
-        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
-                false,
-                "Should we select Horizontal Section board by default?");
+        @Override
+        public void keyTyped (KeyEvent e)
+        {
+            final char c = e.getKeyChar();
 
-        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
-                false,
-                "Should we select Vertical Section board by default?");
+            if (firstChar == null) {
+                // Shape family selection?
+                if (shapeBoard.isSelected() && shapeBoard.checkInitial(c)) {
+                    firstChar = c;
+                    return;
+                }
 
-        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
-                false,
-                "Should we select Glyph board by default?");
+                // Direct use of classifier buttons?
+                if (evaluationBoard.isSelected()) {
+                    final char maxId = (char) ('0' + EvaluationBoard.evalCount());
 
-        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
-                true,
-                "Should we select Inter board by default?");
+                    if (c >= '1' && c <= maxId) {
+                        final int id = c - '0';
+                        evaluationBoard.selectButton(id);
+                        return;
+                    }
+                }
+            } else {
+                // Second character (shape within family)
+                final String str = String.valueOf(new char[]
+                { firstChar, c });
+                shapeBoard.processString(str);
+                reset();
+            }
+        }
 
-        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
-                true,
-                "Should we select Shape board by default?");
-
-        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
-                true,
-                "Should we select Basic Classifier board by default?");
+        /**
+         * Reset the key input sequence.
+         */
+        public void reset ()
+        {
+            firstChar = null;
+        }
     }
 }

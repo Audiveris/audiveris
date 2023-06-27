@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -68,6 +68,7 @@ public class ActionManager
     private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The map of all menus, so that we can directly provide some. */
     private final Map<String, JMenu> menuMap = new HashMap<>();
 
@@ -78,6 +79,7 @@ public class ActionManager
     private final JMenuBar menuBar = new JMenuBar();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Meant to be instantiated at most once.
      */
@@ -86,6 +88,7 @@ public class ActionManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------------//
     // getActionInstance //
     //-------------------//
@@ -181,9 +184,10 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions if any
-        URI[] uris = new URI[]{
-            UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
-            WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize()};
+        URI[] uris = new URI[]
+        {
+                UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
+                WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize() };
 
         for (int i = 0; i < uris.length; i++) {
             URI uri = uris[i];
@@ -203,6 +207,66 @@ public class ActionManager
                 logger.warn("Error loading actions from " + uri, ex);
             }
         }
+    }
+
+    //----------------//
+    // registerAction //
+    //----------------//
+    /**
+     * Allocate and dress an instance of the provided class, then register the action in
+     * the UI structure (menus and buttons) according to the action descriptor parameters.
+     *
+     * @param desc the provided action descriptor
+     * @return the registered and decorated instance of the action class
+     */
+    @SuppressWarnings("unchecked")
+    private ApplicationAction registerAction (ActionDescriptor desc)
+    {
+        ///logger.info("registerAction. " + desc);
+        ApplicationAction action = null;
+
+        try {
+            // Retrieve proper class instance
+            Class<?> classe = classLoader.loadClass(desc.className);
+            Object instance = null;
+
+            // Reuse existing instance through a 'getInstance()' method if any
+            try {
+                Method getInstance = classe.getDeclaredMethod("getInstance", (Class[]) null);
+
+                if (Modifier.isStatic(getInstance.getModifiers())) {
+                    instance = getInstance.invoke(null);
+                }
+            } catch (NoSuchMethodException ignored) {
+            }
+
+            if (instance == null) {
+                // Fall back to allocate a new class instance
+                instance = classe.newInstance();
+            }
+
+            // Retrieve the action instance
+            action = getActionInstance(instance, desc.methodName);
+
+            if (action != null) {
+                // Insertion of a button on Tool Bar?
+                if (desc.buttonClassName != null) {
+                    Class buttonClass = classLoader.loadClass(desc.buttonClassName);
+                    AbstractButton button = (AbstractButton) buttonClass.newInstance();
+                    button.setAction(action);
+                    toolBar.add(button);
+                    button.setBorder(UIUtil.getToolBorder());
+                    button.setText("");
+                }
+            } else {
+                logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
+            }
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                | InstantiationException | SecurityException | InvocationTargetException ex) {
+            logger.warn("Error while registering " + desc, ex);
+        }
+
+        return action;
     }
 
     //--------------------//
@@ -258,70 +322,6 @@ public class ActionManager
                 menuBar.add(menu);
             }
         }
-    }
-
-    //----------------//
-    // registerAction //
-    //----------------//
-    /**
-     * Allocate and dress an instance of the provided class, then register the action in
-     * the UI structure (menus and buttons) according to the action descriptor parameters.
-     *
-     * @param action the provided action class
-     * @return the registered and decorated instance of the action class
-     */
-    @SuppressWarnings("unchecked")
-    private ApplicationAction registerAction (ActionDescriptor desc)
-    {
-        ///logger.info("registerAction. " + desc);
-        ApplicationAction action = null;
-
-        try {
-            // Retrieve proper class instance
-            Class<?> classe = classLoader.loadClass(desc.className);
-            Object instance = null;
-
-            // Reuse existing instance through a 'getInstance()' method if any
-            try {
-                Method getInstance = classe.getDeclaredMethod("getInstance", (Class[]) null);
-
-                if (Modifier.isStatic(getInstance.getModifiers())) {
-                    instance = getInstance.invoke(null);
-                }
-            } catch (NoSuchMethodException ignored) {
-            }
-
-            if (instance == null) {
-                // Fall back to allocate a new class instance
-                instance = classe.newInstance();
-            }
-
-            // Retrieve the action instance
-            action = getActionInstance(instance, desc.methodName);
-
-            if (action != null) {
-                // Insertion of a button on Tool Bar?
-                if (desc.buttonClassName != null) {
-                    Class buttonClass = classLoader.loadClass(desc.buttonClassName);
-                    AbstractButton button = (AbstractButton) buttonClass.newInstance();
-                    button.setAction(action);
-                    toolBar.add(button);
-                    button.setBorder(UIUtil.getToolBorder());
-                    button.setText("");
-                }
-            } else {
-                logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
-            }
-        } catch (ClassNotFoundException |
-                 IllegalAccessException |
-                 IllegalArgumentException |
-                 InstantiationException |
-                 SecurityException |
-                 InvocationTargetException ex) {
-            logger.warn("Error while registering " + desc, ex);
-        }
-
-        return action;
     }
 
     //-----------------------//
@@ -380,15 +380,16 @@ public class ActionManager
                             item.setName(desc.menuName);
                             menu.add(item);
                         }
-                    } catch (ClassNotFoundException |
-                             IllegalAccessException |
-                             InstantiationException ex) {
+                    } catch (ClassNotFoundException | IllegalAccessException
+                            | InstantiationException ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }
             }
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -404,6 +405,7 @@ public class ActionManager
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // LazySingleton //
     //---------------//

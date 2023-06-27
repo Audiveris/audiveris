@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,9 +28,8 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterUIModel;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
@@ -58,16 +57,13 @@ public class BraceInter
     private static final Logger logger = LoggerFactory.getLogger(BraceInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new BraceInter object.
-     *
-     * @param glyph underlying glyph
-     * @param grade evaluation value
+     * No-arg constructor meant for JAXB.
      */
-    public BraceInter (Glyph glyph,
-                       Double grade)
+    private BraceInter ()
     {
-        super(glyph, null, Shape.BRACE, grade);
+        super(null, null, null, (Double) null);
     }
 
     /**
@@ -81,14 +77,19 @@ public class BraceInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new BraceInter object.
+     *
+     * @param glyph underlying glyph
+     * @param grade evaluation value
      */
-    private BraceInter ()
+    public BraceInter (Glyph glyph,
+                       Double grade)
     {
-        super(null, null, null, (Double) null);
+        super(glyph, null, Shape.BRACE, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -146,17 +147,16 @@ public class BraceInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         // Needed to get brace bounds
-        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+        super.deriveFrom(symbol, sheet, font, dropLocation);
 
         // Make sure brace staff is the upper staff
         if (staff != null) {
-            Rectangle box = getBounds();
-            Point topRight = new Point(box.x + box.width, box.y);
-            SystemInfo system = sheet.getSystemManager().getClosestSystem(topRight);
+            final Rectangle box = getBounds();
+            final Point topRight = new Point(box.x + box.width, box.y);
+            final SystemInfo system = sheet.getSystemManager().getClosestSystem(topRight);
 
             if (system == null) {
                 return false;
@@ -289,37 +289,7 @@ public class BraceInter
         super.remove(extensive);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        // Upper middle point
-        public final Point2D p1;
-
-        // Lower middle point
-        public final Point2D p2;
-
-        public Model (double x1,
-                      double y1,
-                      double x2,
-                      double y2)
-        {
-            p1 = new Point2D.Double(x1, y1);
-            p2 = new Point2D.Double(x2, y2);
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // Editor //
@@ -356,10 +326,9 @@ public class BraceInter
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }
@@ -375,11 +344,12 @@ public class BraceInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data (and shared handles)
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
@@ -390,10 +360,9 @@ public class BraceInter
             handles.add(new Handle(model.p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }
@@ -409,25 +378,62 @@ public class BraceInter
         @Override
         protected void doit ()
         {
-            Rectangle box = inter.getBounds();
-            inter.setBounds(new Rectangle(
-                    (int) Math.rint(model.p1.getX() - (box.width / 2.0)),
-                    (int) Math.rint(model.p1.getY()),
-                    box.width,
-                    (int) Math.rint(model.p2.getY() - model.p1.getY())));
+            final Inter inter = getInter();
+            final Rectangle box = inter.getBounds();
+            inter.setBounds(
+                    new Rectangle(
+                            (int) Math.rint(model.p1.getX() - (box.width / 2.0)),
+                            (int) Math.rint(model.p1.getY()),
+                            box.width,
+                            (int) Math.rint(model.p2.getY() - model.p1.getY())));
             super.doit(); // No more glyph
         }
 
         @Override
         public void undo ()
         {
-            Rectangle box = inter.getBounds();
-            inter.setBounds(new Rectangle(
-                    (int) Math.rint(originalModel.p1.getX() - box.width / 2.0),
-                    (int) Math.rint(originalModel.p1.getY()),
-                    box.width,
-                    (int) Math.rint(originalModel.p2.getY() - originalModel.p1.getY())));
+            final Inter inter = getInter();
+            final Rectangle box = inter.getBounds();
+            inter.setBounds(
+                    new Rectangle(
+                            (int) Math.rint(originalModel.p1.getX() - box.width / 2.0),
+                            (int) Math.rint(originalModel.p1.getY()),
+                            box.width,
+                            (int) Math.rint(originalModel.p2.getY() - originalModel.p1.getY())));
             super.undo();
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        // Upper middle point
+        public final Point2D p1;
+
+        // Lower middle point
+        public final Point2D p2;
+
+        public Model (double x1,
+                      double y1,
+                      double x2,
+                      double y2)
+        {
+            p1 = new Point2D.Double(x1, y1);
+            p2 = new Point2D.Double(x2, y2);
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 }

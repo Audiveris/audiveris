@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -99,12 +99,14 @@ public abstract class UIUtil
     };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private UIUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------------------//
     // adjustDefaultFonts //
     //--------------------//
@@ -114,9 +116,10 @@ public abstract class UIUtil
     public static void adjustDefaultFonts ()
     {
         // Control font
-        final Font defaultFont = new Font(constants.defaultFontName.getValue(),
-                                          Font.PLAIN,
-                                          adjustedSize(constants.defaultFontSize.getValue()));
+        final Font defaultFont = new Font(
+                constants.defaultFontName.getValue(),
+                Font.PLAIN,
+                adjustedSize(constants.defaultFontSize.getValue()));
         final Font controlFont = defaultFont;
         UIManager.put("Button.font", controlFont);
         UIManager.put("CheckBox.font", controlFont);
@@ -163,14 +166,18 @@ public abstract class UIUtil
         UIManager.put("Viewport.font", windowTitleFont);
 
         // Miscellaneous fonts
-        UIManager.put("ToolTip.font", new Font(
-                      constants.defaultFontName.getValue(),
-                      Font.ITALIC,
-                      adjustedSize(constants.defaultFontSize.getValue())));
-        UIManager.put("TitledBorder.font", new Font(
-                      constants.defaultFontName.getValue(),
-                      Font.BOLD,
-                      adjustedSize(constants.defaultFontSize.getValue())));
+        UIManager.put(
+                "ToolTip.font",
+                new Font(
+                        constants.defaultFontName.getValue(),
+                        Font.ITALIC,
+                        adjustedSize(constants.defaultFontSize.getValue())));
+        UIManager.put(
+                "TitledBorder.font",
+                new Font(
+                        constants.defaultFontName.getValue(),
+                        Font.BOLD,
+                        adjustedSize(constants.defaultFontSize.getValue())));
     }
 
     //--------------------//
@@ -181,18 +188,18 @@ public abstract class UIUtil
      */
     public static void adjustDefaultTexts ()
     {
-        final ResourceMap resources = Application.getInstance().getContext()
-                .getResourceMap(UIUtil.class);
+        final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
+                UIUtil.class);
 
         // OptionPane texts
-        final String[] keys = new String[]{
-            "OptionPane.inputDialogTitle",
-            "OptionPane.messageDialogTitle",
-            "OptionPane.titleText",
-            "OptionPane.cancelButtonText",
-            "OptionPane.noButtonText",
-            "OptionPane.yesButtonText"
-        };
+        final String[] keys = new String[]
+        {
+                "OptionPane.inputDialogTitle",
+                "OptionPane.messageDialogTitle",
+                "OptionPane.titleText",
+                "OptionPane.cancelButtonText",
+                "OptionPane.noButtonText",
+                "OptionPane.yesButtonText" };
 
         for (String key : keys) {
             final String localizedString = resources.getString(key);
@@ -231,20 +238,6 @@ public abstract class UIUtil
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
-    //----------------//
-    // selectionColor //
-    //----------------//
-    /**
-     * Report a selection color for the provided color.
-     *
-     * @param color provided color
-     * @return the corresponding selection color
-     */
-    public static Color selectionColor (Color color)
-    {
-        return new Color(color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
-    }
-
     //------------------//
     // directoryChooser //
     //------------------//
@@ -262,7 +255,7 @@ public abstract class UIUtil
     {
         //        String oldMacProperty = System.getProperty("apple.awt.fileDialogForDirectories", "false");
         //        System.setProperty("apple.awt.fileDialogForDirectories", "true");
-        OmrFileFilter filter = new OmrFileFilter("Directories", new String[]{})
+        OmrFileFilter filter = new OmrFileFilter("Directories", new String[] {})
         {
             @Override
             public boolean accept (File f)
@@ -411,16 +404,6 @@ public abstract class UIUtil
             }
         } else {
             final JFileChooser fc = new JFileChooser();
-            // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
-            //            final JFileChooser fc = new JFileChooser()
-            //            {
-            //                @Override
-            //                public void updateUI ()
-            //                {
-            //                    putClientProperty("FileChooser.useShellFolder", false);
-            //                    super.updateUI();
-            //                }
-            //            };
             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
             // Pre-select the directory, and potentially the file to save to
@@ -449,6 +432,150 @@ public abstract class UIUtil
         }
 
         return file;
+    }
+
+    //--------------//
+    // filesChooser //
+    //--------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startFile default file, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @param title     a specific dialog title or null
+     * @return the array of selected files, perhaps empty but not null
+     */
+    public static File[] filesChooser (boolean save,
+                                       Component parent,
+                                       File startFile,
+                                       OmrFileFilter filter,
+                                       String title)
+    {
+        File[] files = new File[0];
+
+        if (WellKnowns.MAC_OS_X) {
+            if ((parent == null) && (org.audiveris.omr.OMR.gui != null)) {
+                parent = org.audiveris.omr.OMR.gui.getFrame();
+            }
+
+            Component parentFrame = parent;
+
+            if (parentFrame != null) {
+                while (parentFrame.getParent() != null) {
+                    parentFrame = parentFrame.getParent();
+                }
+            }
+
+            try {
+                final FileDialog fd = new FileDialog((Frame) parentFrame);
+                fd.setMultipleMode(true); // MULTI-SELECTION!
+
+                if (startFile != null) {
+                    fd.setDirectory(
+                            startFile.isDirectory() ? startFile.getPath() : startFile.getParent());
+                }
+
+                fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
+                fd.setFilenameFilter(filter);
+
+                if (title == null) {
+                    title = save ? "Saving: " : "Loading: ";
+                    title += filter.getDescription();
+                }
+
+                fd.setTitle(title);
+                fd.setVisible(true);
+
+                files = fd.getFiles();
+            } catch (ClassCastException e) {
+                logger.warn("no ancestor is Frame");
+            }
+        } else {
+            final JFileChooser fc = new JFileChooser();
+            fc.setMultiSelectionEnabled(true); // MULTI-SELECTION!
+            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+            // Pre-select the directory, and potentially the file to save to
+            if (startFile != null) {
+                if (startFile.isDirectory()) {
+                    fc.setCurrentDirectory(startFile);
+                } else {
+                    File parentFile = startFile.getParentFile();
+                    fc.setCurrentDirectory(parentFile);
+                    fc.setSelectedFile(startFile);
+                }
+            }
+
+            fc.addChoosableFileFilter(filter);
+            fc.setFileFilter(filter);
+
+            if (title != null) {
+                fc.setDialogTitle(title);
+            }
+
+            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                files = fc.getSelectedFiles();
+            }
+        }
+
+        return files;
+    }
+
+    //--------------------//
+    // getDefaultFontSize //
+    //--------------------//
+    /**
+     * Report the font size used by default when no ratio is applied.
+     *
+     * @return the default font size in application
+     */
+    public static int getDefaultFontSize ()
+    {
+        return constants.defaultFontSize.getValue();
+    }
+
+    //--------------------//
+    // getGlobalFontRatio //
+    //--------------------//
+    /**
+     * Report the current global font ratio.
+     *
+     * @return current global font ratio
+     */
+    public static double getGlobalFontRatio ()
+    {
+        return constants.globalFontRatio.getValue();
+    }
+
+    //-----------------------//
+    // getMaxGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the maximum allowed value for global font ratio.
+     *
+     * @return maximum allowed value
+     */
+    public static double getMaxGlobalFontRatio ()
+    {
+        return constants.maxGlobalFontRatio.getValue();
+    }
+
+    //-----------------------//
+    // getMinGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the minimum allowed value for global font ratio.
+     *
+     * @return minimum allowed value
+     */
+    public static double getMinGlobalFontRatio ()
+    {
+        return constants.minGlobalFontRatio.getValue();
     }
 
     //---------------//
@@ -483,8 +610,8 @@ public abstract class UIUtil
 
         final int size = UIUtil.adjustedSize(constants.urlFontSize.getValue());
         final String name = constants.defaultFontName.getValue();
-        sb.append("<style> body ").append("{font-family: ").append(name).append(';')
-                .append(" font-size: ").append(size).append("px;").append("} </style>");
+        sb.append("<style> body ").append("{font-family: ").append(name).append(';').append(
+                " font-size: ").append(size).append("px;").append("} </style>");
 
         sb.append("<A HREF=\"").append(url).append("\">").append(url).append("</A>");
 
@@ -576,6 +703,72 @@ public abstract class UIUtil
         return null;
     }
 
+    //--------------//
+    // pathsChooser //
+    //--------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] pathsChooser (boolean save,
+                                       Component parent,
+                                       Path startPath,
+                                       OmrFileFilter filter)
+    {
+        return pathsChooser(save, parent, startPath, filter, null);
+    }
+
+    //--------------//
+    // pathsChooser //
+    //--------------//
+    /**
+     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
+     * platform.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filter    a filter to be applied on files
+     * @param title     a specific dialog title or null
+     * @return the array of selected paths, perhaps empty but not null
+     */
+    public static Path[] pathsChooser (boolean save,
+                                       Component parent,
+                                       Path startPath,
+                                       OmrFileFilter filter,
+                                       String title)
+    {
+        final File[] files = filesChooser(save, parent, startPath.toFile(), filter, null);
+        final Path[] paths = new Path[files.length];
+
+        for (int i = 0; i < files.length; i++) {
+            final File file = files[i];
+            paths[i] = (file != null) ? file.toPath() : null;
+        }
+
+        return paths;
+    }
+
+    //----------------//
+    // selectionColor //
+    //----------------//
+    /**
+     * Report a selection color for the provided color.
+     *
+     * @param color provided color
+     * @return the corresponding selection color
+     */
+    public static Color selectionColor (Color color)
+    {
+        return new Color(color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
     //-------------------------//
     // setAbsoluteDashedStroke //
     //-------------------------//
@@ -599,7 +792,8 @@ public abstract class UIUtil
                 BasicStroke.CAP_SQUARE,
                 BasicStroke.JOIN_MITER,
                 10.0f,
-                new float[]{3.0f},
+                new float[]
+                { 6.0f / (float) ratio },
                 0.0f);
         g2.setStroke(stroke);
 
@@ -628,6 +822,22 @@ public abstract class UIUtil
         g2.setStroke(stroke);
 
         return oldStroke;
+    }
+
+    //--------------------//
+    // setGlobalFontRatio //
+    //--------------------//
+    /**
+     * Set value for global font ratio.
+     *
+     * @param ratio value to set
+     */
+    public static void setGlobalFontRatio (double ratio)
+    {
+        if (ratio != constants.globalFontRatio.getValue()) {
+            constants.globalFontRatio.setValue(ratio);
+            logger.info("Global font ratio: {} at next restart", ratio);
+        }
     }
 
     //-----------------//
@@ -689,75 +899,8 @@ public abstract class UIUtil
         frame.toFront();
     }
 
-    //--------------------//
-    // getDefaultFontSize //
-    //--------------------//
-    /**
-     * Report the font size used by default when no ratio is applied.
-     *
-     * @return the default font size in application
-     */
-    public static int getDefaultFontSize ()
-    {
-        return constants.defaultFontSize.getValue();
-    }
-
-    //--------------------//
-    // getGlobalFontRatio //
-    //--------------------//
-    /**
-     * Report the current global font ratio.
-     *
-     * @return current global font ratio
-     */
-    public static double getGlobalFontRatio ()
-    {
-        return constants.globalFontRatio.getValue();
-    }
-
-    //--------------------//
-    // setGlobalFontRatio //
-    //--------------------//
-    /**
-     * Set value for global font ratio.
-     *
-     * @param ratio value to set
-     */
-    public static void setGlobalFontRatio (double ratio)
-    {
-        if (ratio != constants.globalFontRatio.getValue()) {
-            constants.globalFontRatio.setValue(ratio);
-            logger.info("Global font ratio: {} at next restart", ratio);
-        }
-    }
-
-    //-----------------------//
-    // getMaxGlobalFontRatio //
-    //-----------------------//
-    /**
-     * Report the maximum allowed value for global font ratio.
-     *
-     * @return maximum allowed value
-     */
-    public static double getMaxGlobalFontRatio ()
-    {
-        return constants.maxGlobalFontRatio.getValue();
-    }
-
-    //-----------------------//
-    // getMinGlobalFontRatio //
-    //-----------------------//
-    /**
-     * Report the minimum allowed value for global font ratio.
-     *
-     * @return minimum allowed value
-     */
-    public static double getMinGlobalFontRatio ()
-    {
-        return constants.minGlobalFontRatio.getValue();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -2,7 +2,7 @@
  * Package for handling textual aspects in glyphs.
  * <p>
  * <img src="doc-files/Text.png" alt="Text data model">
- * <h3>Detection of text items</h3>
+ * <h2>Detection of text items</h2>
  * <p>
  * The purpose of the TEXTS step is to run Tesseract OCR on a sheet image.
  * We use the SegmentationMode.AUTO mode of OCR, which thus performs the image layout analysis and

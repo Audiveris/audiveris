@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,6 +32,7 @@ import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,7 @@ public class LedgersStep
     private static final Logger logger = LoggerFactory.getLogger(LedgersStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LedgersStep object.
      */
@@ -57,6 +59,7 @@ public class LedgersStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // displayUI //
     //-----------//
@@ -71,15 +74,24 @@ public class LedgersStep
     }
 
     //----------//
-    // doSystem //
+    // doEpilog //
     //----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Analyze the sheet population of ledgers to detect abnormal ones, then discard those,
+     * and rebuild the ledger map for each staff.
+     *
+     * @param sheet   the sheet being processed
+     * @param context ledgers context
+     * @throws StepException
+     */
     @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
+    protected void doEpilog (Sheet sheet,
+                             Context context)
+        throws StepException
     {
-        final List<Section> sections = context.sectionMap.get(system);
-        new LedgersBuilder(system).buildLedgers(sections);
+        new LedgersPostAnalysis(sheet, context).process();
     }
 
     //----------//
@@ -90,23 +102,37 @@ public class LedgersStep
      * <p>
      * Retrieve horizontal sticks for ledger candidates, mapped by related system(s).
      *
-     * @return the context (map of sections per system)
+     * @return the map of sections per system
      */
     @Override
     protected Context doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         return new Context(new LedgersFilter(sheet).process());
     }
 
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        final LedgersBuilder builder = new LedgersBuilder(system);
+        context.builders.put(system, builder);
+        builder.buildLedgers(context.sectionMap.get(system));
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//
     /**
      * Context for step processing.
      */
-    protected static class Context
+    public static class Context
     {
 
         /**
@@ -114,12 +140,15 @@ public class LedgersStep
          */
         public final Map<SystemInfo, List<Section>> sectionMap;
 
+        /** Map system -> builder. */
+        public final Map<SystemInfo, LedgersBuilder> builders = new HashMap<>();
+
         /**
          * Create a Context.
          *
-         * @param sectionMap
+         * @param sectionMap map of filtered sections per system
          */
-        Context (Map<SystemInfo, List<Section>> sectionMap)
+        public Context (Map<SystemInfo, List<Section>> sectionMap)
         {
             this.sectionMap = sectionMap;
         }

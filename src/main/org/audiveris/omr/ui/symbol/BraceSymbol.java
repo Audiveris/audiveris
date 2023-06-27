@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,17 +21,19 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
 
-import java.awt.Graphics2D;
-import java.awt.font.TextLayout;
+import org.audiveris.omr.glyph.Shape;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>BraceSymbol</code> displays a BRACE symbol: {
+ * Class <code>BraceSymbol</code> displays a BRACE symbol: '{'
+ * <p>
+ * This class exists only to significantly modify the standard size of Brace symbol.
  *
  * @author Hervé Bitteur
  */
@@ -40,84 +42,38 @@ public class BraceSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    // The upper part symbol
-    private static final BasicSymbol upperSymbol = Symbols.SYMBOL_BRACE_UPPER_HALF;
+    private static final Logger logger = LoggerFactory.getLogger(BraceSymbol.class);
 
-    // The lower part symbol
-    private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACE_LOWER_HALF;
+    /** Scaling to apply on default brace symbol size: {@value}. */
+    private static final int MULTIPLIER = 4;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a BraceSymbol (which is made of upper and lower parts).
-     */
-    public BraceSymbol ()
-    {
-        this(false);
-    }
 
     /**
-     * Create a BraceSymbol (which is made of upper and lower parts)
+     * Create a BraceSymbol.
      *
-     * @param isIcon true for an icon
+     * @param family the MusicFont family
      */
-    protected BraceSymbol (boolean isIcon)
+    public BraceSymbol (MusicFamily family)
     {
-        super(isIcon, Shape.BRACE, false);
+        super(Shape.BRACE, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BraceSymbol(true);
-    }
 
     //-----------//
     // getParams //
     //-----------//
     @Override
-    protected MyParams getParams (MusicFont font)
+    protected Params getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
-
-        AffineTransform at = isIcon ? tiny : null;
-        p.upperLayout = font.layout(upperSymbol.getString(), at);
-        p.lowerLayout = font.layout(lowerSymbol.getString(), at);
-
-        Rectangle2D r = p.upperLayout.getBounds();
-        p.rect = new Rectangle2D.Double(0, 0, r.getWidth(), 2 * r.getHeight());
+        // This impacts brace symbol drawing in SheetView and in boards
+        final Params p = new Params();
+        final double ratio = MULTIPLIER * (isTiny ? RATIO_TINY : 1);
+        final AffineTransform at = AffineTransform.getScaleInstance(ratio, ratio);
+        p.layout = font.layoutShapeByCode(Shape.BRACE, at);
+        p.rect = p.layout.getBounds();
 
         return p;
-    }
-
-    //-------//
-    // paint //
-    //-------//
-    @Override
-    protected void paint (Graphics2D g,
-                          Params params,
-                          Point2D location,
-                          Alignment alignment)
-    {
-        MyParams p = (MyParams) params;
-        Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
-        MusicFont.paint(g, p.upperLayout, loc, BOTTOM_LEFT);
-        MusicFont.paint(g, p.lowerLayout, loc, TOP_LEFT);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // Params //
-    //--------//
-    protected static class MyParams
-            extends Params
-    {
-
-        TextLayout upperLayout;
-
-        TextLayout lowerLayout;
     }
 }

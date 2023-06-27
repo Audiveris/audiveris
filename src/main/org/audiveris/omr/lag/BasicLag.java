@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,6 +49,7 @@ public class BasicLag
     private static final Logger logger = LoggerFactory.getLogger(BasicLag.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Orientation of the lag. */
     private final Orientation orientation;
 
@@ -59,6 +60,7 @@ public class BasicLag
     private final String name;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Constructor with specified orientation
      *
@@ -76,6 +78,7 @@ public class BasicLag
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // addRunTable //
     //-------------//
@@ -136,6 +139,41 @@ public class BasicLag
         return runTable;
     }
 
+    //--------//
+    // insert //
+    //--------//
+    @Override
+    public void insert (Section section)
+    {
+        super.insert(section);
+
+        // Insert the section runs
+        int pos = section.getFirstPos();
+
+        for (Run run : section.getRuns()) {
+            runTable.addRun(pos++, run);
+        }
+    }
+
+    //----------------//
+    // insertSections //
+    //----------------//
+    @Override
+    public void insertSections (Collection<Section> sections)
+    {
+        sections.forEach(section -> insert(section));
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return new StringBuilder(super.internals()).append(" ").append(orientation).append(
+                " sections:").append(entities.size()).toString();
+    }
+
     //---------------------//
     // intersectedSections //
     //---------------------//
@@ -158,27 +196,34 @@ public class BasicLag
         return orientation.isVertical();
     }
 
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (Section section)
+    {
+        // Make sure the section has not already been removed
+        if (getEntity(section.getId()) == null) {
+            logger.info("Section {} already removed", section);
+        } else {
+            // Remove the related runs from the underlying runTable
+            int pos = section.getFirstPos();
+
+            for (Run run : section.getRuns()) {
+                runTable.removeRun(pos++, run);
+            }
+
+            super.remove(section);
+        }
+    }
+
     //----------------//
     // removeSections //
     //----------------//
     @Override
     public void removeSections (Collection<Section> sections)
     {
-        for (Section section : sections) {
-            // Make sure the section has not already been removed
-            if (getEntity(section.getId()) == null) {
-                logger.info("Section {} already removed", section);
-            } else {
-                // Remove the related runs from the underlying runTable
-                int pos = section.getFirstPos();
-
-                for (Run run : section.getRuns()) {
-                    runTable.removeRun(pos++, run);
-                }
-
-                remove(section);
-            }
-        }
+        sections.forEach(section -> remove(section));
     }
 
     //-------//
@@ -202,22 +247,5 @@ public class BasicLag
         } else {
             this.runTable = runTable;
         }
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        // Orientation
-        sb.append(" ").append(orientation);
-
-        // Size
-        sb.append(" sections:").append(entities.size());
-
-        return sb.toString();
     }
 }

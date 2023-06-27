@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.FileUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.intarsys.cwt.awt.environment.CwtAwtGraphicsContext;
 import de.intarsys.cwt.environment.IGraphicsContext;
 import de.intarsys.pdf.content.CSContent;
@@ -30,13 +37,6 @@ import de.intarsys.pdf.pd.PDPage;
 import de.intarsys.pdf.platform.cwt.rendering.CSPlatformRenderer;
 import de.intarsys.pdf.tools.kernel.PDFGeometryTools;
 import de.intarsys.tools.locator.FileLocator;
-
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.FileUtil;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -53,7 +53,6 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.JAI;
 
 /**
  * Class <code>ImageLoading</code> handles the loading of one or several images out of an
@@ -74,7 +73,6 @@ import javax.media.jai.JAI;
  * <ul>
  * <li><b>JPod</b> for PDF files. This replaces former use of GhostScript sub-process.</li>
  * <li><b>ImageIO</b> for all files except PDF.</li>
- * <li><b>JAI</b> if ImageIO failed. Note that JAI can find only one image per file.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -90,6 +88,7 @@ public abstract class ImageLoading
     private static final Logger logger = LoggerFactory.getLogger(ImageLoading.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * To disallow instantiation.
      */
@@ -97,53 +96,7 @@ public abstract class ImageLoading
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // getLoader //
-    //-----------//
-    /**
-     * Build a proper loader instance dedicated to the provided image file.
-     *
-     * @param imgPath the provided image path
-     * @return the loader instance or null if failed
-     */
-    public static Loader getLoader (Path imgPath)
-    {
-        // Avoid stupid errors
-        if (!Files.exists(imgPath)) {
-            logger.warn("File {} does not exist", imgPath);
-
-            return null;
-        }
-
-        if (Files.isDirectory(imgPath)) {
-            logger.warn("{} is a directory!", imgPath);
-
-            return null;
-        }
-
-        String extension = FileUtil.getExtension(imgPath);
-        Loader loader;
-
-        if (extension.equalsIgnoreCase(".pdf")) {
-            // Use JPod
-            loader = getJPodLoader(imgPath);
-        } else {
-            // Try ImageIO
-            loader = getImageIOLoader(imgPath);
-
-            if (loader == null) {
-                // Use JAI
-                loader = getJaiLoader(imgPath);
-            }
-        }
-
-        if (loader == null) {
-            logger.warn("Cannot find a loader for {}", imgPath);
-        }
-
-        return loader;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // getImageIOLoader //
@@ -228,68 +181,50 @@ public abstract class ImageLoading
         return new JPodLoader(doc, imageCount);
     }
 
-    //--------------//
-    // getJaiLoader //
-    //--------------//
+    //-----------//
+    // getLoader //
+    //-----------//
     /**
-     * Try to use JAI.
+     * Build a proper loader instance dedicated to the provided image file.
      *
-     * @param imgPath the provided input file
-     * @return proper (JAI) loader or null if failed
+     * @param imgPath the provided image path
+     * @return the loader instance or null if failed
      */
-    private static Loader getJaiLoader (Path imgPath)
+    public static Loader getLoader (Path imgPath)
     {
-        logger.debug("getJaiLoader {}", imgPath);
+        // Avoid stupid errors
+        if (!Files.exists(imgPath)) {
+            logger.warn("File {} does not exist", imgPath);
 
-        try {
-            BufferedImage image = JAI.create("fileload", imgPath.toString()).getAsBufferedImage();
-
-            if ((image != null) && (image.getWidth() > 0) && (image.getHeight() > 0)) {
-                return new JaiLoader(image);
-            }
-
-            logger.debug("No image read by JAI for {}", imgPath);
-        } catch (Exception ex) {
-            logger.warn("JAI failed opening {}, {} ", imgPath, ex.toString(), ex);
+            return null;
         }
 
-        return null;
-    }
+        if (Files.isDirectory(imgPath)) {
+            logger.warn("{} is a directory!", imgPath);
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //--------//
-    // Loader //
-    //--------//
-    /**
-     * A loader dedicated to an input file.
-     */
-    public static interface Loader
-    {
+            return null;
+        }
 
-        /**
-         * Release any loader resources.
-         */
-        void dispose ();
+        String extension = FileUtil.getExtension(imgPath);
+        Loader loader;
 
-        /**
-         * Load the specific image.
-         *
-         * @param id specified image id (its index counted from 1)
-         * @return the image, or null if failed
-         * @throws IOException for any IO error
-         */
-        BufferedImage getImage (int id)
-                throws IOException;
+        if (extension.equalsIgnoreCase(".pdf")) {
+            // Use JPod
+            loader = getJPodLoader(imgPath);
+        } else {
+            // Try ImageIO
+            loader = getImageIOLoader(imgPath);
+        }
 
-        /**
-         * Report the count of images available in input file.
-         *
-         * @return the count of images
-         */
-        int getImageCount ();
+        if (loader == null) {
+            logger.warn("Cannot find a loader for {}", imgPath);
+        }
+
+        return loader;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------------//
     // AbstractLoader //
     //----------------//
@@ -305,6 +240,13 @@ public abstract class ImageLoading
             this.imageCount = imageCount;
         }
 
+        protected void checkId (int id)
+        {
+            if ((id < 1) || (id > imageCount)) {
+                throw new IllegalArgumentException("Invalid image id " + id);
+            }
+        }
+
         @Override
         public void dispose ()
         {
@@ -314,13 +256,6 @@ public abstract class ImageLoading
         public int getImageCount ()
         {
             return imageCount;
-        }
-
-        protected void checkId (int id)
-        {
-            if ((id < 1) || (id > imageCount)) {
-                throw new IllegalArgumentException("Invalid image id " + id);
-            }
         }
     }
 
@@ -361,7 +296,7 @@ public abstract class ImageLoading
 
         @Override
         public BufferedImage getImage (int id)
-                throws IOException
+            throws IOException
         {
             checkId(id);
 
@@ -399,7 +334,7 @@ public abstract class ImageLoading
 
         @Override
         public BufferedImage getImage (int id)
-                throws IOException
+            throws IOException
         {
             checkId(id);
 
@@ -472,31 +407,37 @@ public abstract class ImageLoading
         }
     }
 
-    //-----------//
-    // JaiLoader //
-    //-----------//
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+
+    //--------//
+    // Loader //
+    //--------//
     /**
-     * A (degenerated) loader, since the only available image has already been cached.
+     * A loader dedicated to an input file.
      */
-    private static class JaiLoader
-            extends AbstractLoader
+    public static interface Loader
     {
 
-        private final BufferedImage image; // The single image
+        /**
+         * Release any loader resources.
+         */
+        void dispose ();
 
-        JaiLoader (BufferedImage image)
-        {
-            super(1); // JAI can return just one image
-            this.image = image;
-        }
+        /**
+         * Load the specific image.
+         *
+         * @param id specified image id (its index counted from 1)
+         * @return the image, or null if failed
+         * @throws IOException for any IO error
+         */
+        BufferedImage getImage (int id)
+            throws IOException;
 
-        @Override
-        public BufferedImage getImage (int id)
-                throws IOException
-        {
-            checkId(id);
-
-            return image;
-        }
+        /**
+         * Report the count of images available in input file.
+         *
+         * @return the count of images
+         */
+        int getImageCount ();
     }
 }

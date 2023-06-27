@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -43,13 +43,13 @@ import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.DefaultEditor;
 import org.audiveris.omr.sig.ui.EditionTask;
-import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
@@ -59,6 +59,7 @@ import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,10 +118,10 @@ public abstract class AbstractInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** The shape assigned to this Inter. */
     @Navigable(false)
     @XmlAttribute(name = "shape")
@@ -161,8 +162,12 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean manual;
 
-    /** See {@link #getStaffId()} */
-    /** The staff, if any, this Inter relates to. Marshalled via the staff id. */
+    /**
+     * The staff, if any, this Inter relates to.
+     * Marshalled via the staff id.
+     *
+     * @see #getStaffId()
+     */
     @Navigable(false)
     protected Staff staff;
 
@@ -173,7 +178,7 @@ public abstract class AbstractInter
 
     // Transient data
     //---------------
-    //
+
     /** Related part, if any. */
     @Navigable(false)
     protected Part part;
@@ -198,21 +203,12 @@ public abstract class AbstractInter
     protected Rectangle coreBounds;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new AbstractInter object, with detailed impacts information.
-     *
-     * @param glyph   the glyph to interpret
-     * @param bounds  the precise object bounds (if different from glyph bounds)
-     * @param shape   the possible shape
-     * @param impacts assignment details
+     * Creates a new <code>AbstractInter</code> object.
      */
-    public AbstractInter (Glyph glyph,
-                          Rectangle bounds,
-                          Shape shape,
-                          GradeImpacts impacts)
+    protected AbstractInter ()
     {
-        this(glyph, bounds, shape, (impacts != null) ? impacts.getGrade() : 0);
-        this.impacts = impacts;
     }
 
     /**
@@ -242,13 +238,24 @@ public abstract class AbstractInter
     }
 
     /**
-     * Creates a new <code>AbstractInter</code> object.
+     * Creates a new AbstractInter object, with detailed impacts information.
+     *
+     * @param glyph   the glyph to interpret
+     * @param bounds  the precise object bounds (if different from glyph bounds)
+     * @param shape   the possible shape
+     * @param impacts assignment details
      */
-    protected AbstractInter ()
+    public AbstractInter (Glyph glyph,
+                          Rectangle bounds,
+                          Shape shape,
+                          GradeImpacts impacts)
     {
+        this(glyph, bounds, shape, (impacts != null) ? impacts.getGrade() : 0);
+        this.impacts = impacts;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -284,6 +291,30 @@ public abstract class AbstractInter
 
         if (isVip()) {
             logger.info("VIP added {}", this);
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before marshalling of this object begins.
+     *
+     * @param m (not used)
+     */
+    @SuppressWarnings("unused")
+    protected void beforeMarshal (Marshaller m)
+    {
+        // Make sure this Inter instance either has no glyph or has a duly registered one
+        if ((glyph != null) && (glyph.getId() == 0)) {
+            logger.error("Inter referencing a non-registered glyph: " + this + " glyph: " + glyph);
+        }
+
+        // Make sure bounds exist
+        getBounds();
+
+        if (sig == null) {
+            logger.error("Marshalling an inter with no sig " + this);
         }
     }
 
@@ -350,9 +381,9 @@ public abstract class AbstractInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
+        // For a basic ghost, focus center is area center, and we just need to set inter bounds.
         final Dimension dim = symbol.getDimension(font);
         final Rectangle box = new Rectangle(
                 dropLocation.x - (dim.width / 2),
@@ -451,19 +482,6 @@ public abstract class AbstractInter
         return area;
     }
 
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * Set the underlying area.
-     *
-     * @param area the area to set
-     */
-    public void setArea (Area area)
-    {
-        this.area = area;
-    }
-
     //----------------//
     // getAttachments //
     //----------------//
@@ -507,15 +525,6 @@ public abstract class AbstractInter
         }
 
         return null;
-    }
-
-    //-----------//
-    // setBounds //
-    //-----------//
-    @Override
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = (bounds != null) ? new Rectangle(bounds) : null;
     }
 
     //-----------//
@@ -612,15 +621,6 @@ public abstract class AbstractInter
         return ctxGrade;
     }
 
-    //--------------------//
-    // setContextualGrade //
-    //--------------------//
-    @Override
-    public void setContextualGrade (double value)
-    {
-        ctxGrade = value;
-    }
-
     //---------------//
     // getCoreBounds //
     //---------------//
@@ -642,44 +642,23 @@ public abstract class AbstractInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         if (glyph != null) {
             sb.append("g#").append(glyph.getId());
         }
 
         if (impacts != null) {
-            if (sb.length() != 0) {
-                sb.append(" ");
-            }
-
+            sb.append((sb.length() != 0) ? " " : "");
             sb.append("(").append(impacts).append(")");
         }
 
         if (abnormal) {
-            sb.append(" ABNORMAL");
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("ABNORMAL");
         }
 
         return sb.toString();
-    }
-
-    //------------//
-    // isEditable //
-    //------------//
-    @Override
-    public boolean isEditable ()
-    {
-        return !(this instanceof InterEnsemble);
-    }
-
-    //--------//
-    // getDnd //
-    //--------//
-    @Override
-    public InterDnd getDnd (Sheet sheet,
-                            ShapeSymbol symbol)
-    {
-        return new InterDnd(this, sheet, symbol);
     }
 
     //-----------//
@@ -697,6 +676,10 @@ public abstract class AbstractInter
     @Override
     public InterEnsemble getEnsemble ()
     {
+        if (isRemoved()) {
+            return null;
+        }
+
         for (Relation rel : sig.incomingEdgesOf(this)) {
             if (rel instanceof Containment) {
                 return (InterEnsemble) sig.getEdgeSource(rel);
@@ -716,30 +699,12 @@ public abstract class AbstractInter
     }
 
     //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-    }
-
-    //----------//
     // getGrade //
     //----------//
     @Override
     public Double getGrade ()
     {
         return grade;
-    }
-
-    //----------//
-    // setGrade //
-    //----------//
-    @Override
-    public void setGrade (Double grade)
-    {
-        this.grade = grade;
     }
 
     //------------//
@@ -749,6 +714,32 @@ public abstract class AbstractInter
     public GradeImpacts getImpacts ()
     {
         return impacts;
+    }
+
+    //----------//
+    // getLinks //
+    //----------//
+    @Override
+    public Collection<Link> getLinks ()
+    {
+        Set<Link> links = null;
+
+        if (sig.containsVertex(this)) {
+            for (Relation rel : sig.edgesOf(this)) {
+                if (links == null) {
+                    links = new LinkedHashSet<>();
+                }
+
+                final Inter partner = sig.getOppositeInter(this, rel);
+                links.add(new Link(partner, rel, sig.getEdgeTarget(rel) == partner));
+            }
+        }
+
+        if (links == null) {
+            return Collections.emptySet();
+        }
+
+        return links;
     }
 
     //-----------//
@@ -764,22 +755,6 @@ public abstract class AbstractInter
         }
 
         return null;
-    }
-
-    //-----------//
-    // setMirror //
-    //-----------//
-    @Override
-    public void setMirror (Inter mirror)
-    {
-        final boolean direct = this.getId() < mirror.getId();
-        final Inter source = direct ? this : mirror;
-        final Inter target = direct ? mirror : this;
-        Relation rel = sig.getRelation(source, target, MirrorRelation.class);
-
-        if (rel == null) {
-            sig.addEdge(source, target, new MirrorRelation());
-        }
     }
 
     //---------//
@@ -804,25 +779,7 @@ public abstract class AbstractInter
     @Override
     public int getProfile ()
     {
-        return isManual() ? Profiles.MANUAL : Profiles.STANDARD;
-    }
-
-    //-----------------//
-    // getSpecificPart //
-    //-----------------//
-    @Override
-    public Part getSpecificPart ()
-    {
-        return part;
-    }
-
-    //---------//
-    // setPart //
-    //---------//
-    @Override
-    public void setPart (Part part)
-    {
-        this.part = part;
+        return isManual() ? Profiles.MANUAL : Profiles.STRICT;
     }
 
     //-------------------//
@@ -842,6 +799,15 @@ public abstract class AbstractInter
         }
 
         return null;
+    }
+
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point2D getRelationCenter (Relation relation)
+    {
+        return getRelationCenter(); // By default
     }
 
     //----------//
@@ -866,13 +832,13 @@ public abstract class AbstractInter
     // getShapeSymbol //
     //----------------//
     @Override
-    public ShapeSymbol getShapeSymbol ()
+    public ShapeSymbol getShapeSymbol (MusicFamily family)
     {
         if (shape == null) {
             return null;
         }
 
-        return shape.getDecoratedSymbol();
+        return shape.getDecoratedSymbol(family);
     }
 
     //--------//
@@ -884,13 +850,13 @@ public abstract class AbstractInter
         return sig;
     }
 
-    //--------//
-    // setSig //
-    //--------//
+    //-----------------//
+    // getSpecificPart //
+    //-----------------//
     @Override
-    public void setSig (SIGraph sig)
+    public Part getSpecificPart ()
     {
-        this.sig = sig;
+        return part;
     }
 
     //----------//
@@ -905,16 +871,23 @@ public abstract class AbstractInter
         return staff;
     }
 
-    //----------//
-    // setStaff //
-    //----------//
+    //------------//
+    // getStaffId //
+    //------------//
     /**
-     * @param staff the staff to set
+     * Meant for JAXB.
+     *
+     * @return the ID of related staff.
      */
-    @Override
-    public void setStaff (Staff staff)
+    @SuppressWarnings("unused")
+    @XmlAttribute(name = "staff")
+    private Integer getStaffId ()
     {
-        this.staff = staff;
+        if (staff == null) {
+            return null;
+        }
+
+        return staff.getId();
     }
 
     //-----------------//
@@ -931,17 +904,18 @@ public abstract class AbstractInter
     @Override
     public Rectangle getSymbolBounds (int interline)
     {
-        Point center = getCenter(); // Use area center
-
-        MusicFont musicFont = MusicFont.getBaseFont(interline);
-        TextLayout layout = musicFont.layout(getShape());
-        Rectangle2D bounds = layout.getBounds();
+        final Point center = getCenter(); // Use area center
+        final Sheet sheet = staff.getSystem().getSheet();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final FontSymbol fs = getShape().getFontSymbolByInterline(family, interline);
+        final TextLayout layout = fs.getLayout();
+        final Rectangle2D box = layout.getBounds();
 
         return new Rectangle(
-                center.x - (int) Math.rint(bounds.getWidth() / 2),
-                center.y - (int) Math.rint(bounds.getHeight() / 2),
-                (int) Math.rint(bounds.getWidth()),
-                (int) Math.rint(bounds.getHeight()));
+                center.x - (int) Math.rint(box.getWidth() / 2),
+                center.y - (int) Math.rint(box.getHeight() / 2),
+                (int) Math.rint(box.getWidth()),
+                (int) Math.rint(box.getHeight()));
     }
 
     //------------//
@@ -989,24 +963,54 @@ public abstract class AbstractInter
         grade = increaseGrade(grade, ratio);
     }
 
-    //---------------//
-    // increaseGrade //
-    //---------------//
+    //-----------//
+    // internals //
+    //-----------//
     /**
-     * Increase the provided intrinsic grade by some ratio.
+     * Protected method to report internal values of inter instance.
      *
-     * @param grade initial value
-     * @param ratio ratio applied
-     * @return the increased grade
+     * @return a string on internal values
      */
-    public static double increaseGrade (double grade,
-                                        double ratio)
+    @Override
+    protected String internals ()
     {
-        if (grade < Grades.intrinsicRatio) {
-            grade += (ratio * (Grades.intrinsicRatio - grade));
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (isRemoved()) {
+            sb.append(" REMOVED");
         }
 
-        return grade;
+        if (isManual()) {
+            sb.append(" MANUAL");
+        }
+
+        if (isImplicit()) {
+            sb.append(" IMPLICIT");
+        }
+
+        if (isFrozen()) {
+            sb.append(" FROZEN");
+        }
+
+        sb.append(String.format("(%.3f", grade));
+
+        Double cg = getContextualGrade();
+
+        if (cg != null) {
+            sb.append(String.format("/%.3f", cg));
+        }
+
+        sb.append(")");
+
+        if (staff != null) {
+            sb.append(" stf:").append(staff.getId());
+        }
+
+        if (shape != null) {
+            sb.append(" ").append(shape);
+        }
+
+        return sb.toString();
     }
 
     //-----------------//
@@ -1027,21 +1031,6 @@ public abstract class AbstractInter
         return abnormal;
     }
 
-    //-------------//
-    // setAbnormal //
-    //-------------//
-    @Override
-    public void setAbnormal (boolean abnormal)
-    {
-        if (this.abnormal != abnormal) {
-            this.abnormal = abnormal;
-
-            if (sig != null) {
-                sig.getSystem().getSheet().getStub().setModified(true);
-            }
-        }
-    }
-
     //--------------------//
     // isContextuallyGood //
     //--------------------//
@@ -1053,6 +1042,15 @@ public abstract class AbstractInter
         }
 
         return grade >= getGoodGrade();
+    }
+
+    //------------//
+    // isEditable //
+    //------------//
+    @Override
+    public boolean isEditable ()
+    {
+        return !(this instanceof InterEnsemble);
     }
 
     //----------//
@@ -1082,15 +1080,6 @@ public abstract class AbstractInter
         return implicit;
     }
 
-    //-------------//
-    // setImplicit //
-    //-------------//
-    @Override
-    public void setImplicit (boolean implicit)
-    {
-        this.implicit = implicit;
-    }
-
     //----------//
     // isManual //
     //----------//
@@ -1098,15 +1087,6 @@ public abstract class AbstractInter
     public boolean isManual ()
     {
         return manual;
-    }
-
-    //-----------//
-    // setManual //
-    //-----------//
-    @Override
-    public void setManual (boolean manual)
-    {
-        this.manual = manual;
     }
 
     //-----------//
@@ -1171,9 +1151,9 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that)
-                            && that.overlaps(thisMember)
-                            && sig.noSupport(thisMember, that)) {
+                if (thisMember.overlaps(that) && that.overlaps(thisMember) && sig.noSupport(
+                        thisMember,
+                        that)) {
                     return true;
                 }
             }
@@ -1229,7 +1209,8 @@ public abstract class AbstractInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         final SystemInfo system = staff.getSystem();
 
@@ -1243,6 +1224,7 @@ public abstract class AbstractInter
     @Override
     public List<? extends UITask> preEdit (InterEditor editor)
     {
+        // Append the EditionTask with inter links and unlinks
         final SystemInfo system = getSig().getSystem();
         final Collection<Link> links = searchLinks(system);
         final Collection<Link> unlinks = searchUnlinks(system, links);
@@ -1307,9 +1289,7 @@ public abstract class AbstractInter
                     }
                 }
 
-                if (this instanceof InterEnsemble) {
-                    InterEnsemble ens = (InterEnsemble) this;
-
+                if (this instanceof InterEnsemble ens) {
                     // Delete all its members that are not part of another ensemble
                     for (Inter member : ens.getMembers()) {
                         Set<Inter> ensembles = member.getAllEnsembles();
@@ -1353,6 +1333,20 @@ public abstract class AbstractInter
         }
     }
 
+    //---------------//
+    // renameShapeAs //
+    //---------------//
+    @Override
+    public boolean renameShapeAs (Shape shape)
+    {
+        if (this.shape != shape) {
+            this.shape = shape;
+            return true;
+        }
+
+        return false;
+    }
+
     //-------------------//
     // renderAttachments //
     //-------------------//
@@ -1369,16 +1363,6 @@ public abstract class AbstractInter
     //-------------//
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
-    {
-        return Collections.emptySet(); // By default
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
     {
         return Collections.emptySet(); // By default
     }
@@ -1400,6 +1384,10 @@ public abstract class AbstractInter
     protected final Collection<Link> searchObsoletelinks (Collection<Link> links,
                                                           Class<? extends Support>... classes)
     {
+        if (isRemoved()) {
+            return Collections.emptySet();
+        }
+
         Collection<Link> unlinks = null;
 
         ExistingLoop:
@@ -1423,6 +1411,80 @@ public abstract class AbstractInter
         return (unlinks != null) ? unlinks : Collections.emptySet();
     }
 
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return Collections.emptySet(); // By default
+    }
+
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    @Override
+    public void setAbnormal (boolean abnormal)
+    {
+        if (this.abnormal != abnormal) {
+            this.abnormal = abnormal;
+
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * Set the underlying area.
+     *
+     * @param area the area to set
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        this.bounds = (bounds != null) ? new Rectangle(bounds) : null;
+    }
+
+    //--------------------//
+    // setContextualGrade //
+    //--------------------//
+    @Override
+    public void setContextualGrade (double value)
+    {
+        ctxGrade = value;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
+    //----------//
+    // setGrade //
+    //----------//
+    @Override
+    public void setGrade (Double grade)
+    {
+        this.grade = grade;
+    }
+
     //-------//
     // setId //
     //-------//
@@ -1440,106 +1502,68 @@ public abstract class AbstractInter
         this.id = id;
     }
 
-    //-----------------//
-    // upgradeOldStuff //
-    //-----------------//
+    //-------------//
+    // setImplicit //
+    //-------------//
     @Override
-    public boolean upgradeOldStuff (List<Version> upgrades)
+    public void setImplicit (boolean implicit)
     {
-        return false; // By default
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before marshalling of this object begins.
-     *
-     * @param m (not used)
-     */
-    @SuppressWarnings("unused")
-    protected void beforeMarshal (Marshaller m)
-    {
-        // Make sure this Inter instance either has no glyph or has a duly registered one
-        if ((glyph != null) && (glyph.getId() == 0)) {
-            logger.error("Inter referencing a non-registered glyph: " + this + " glyph: " + glyph);
-        }
-
-        // Make sure bounds exist
-        getBounds();
-
-        if (sig == null) {
-            logger.error("Marshalling an inter with no sig " + this);
-        }
+        this.implicit = implicit;
     }
 
     //-----------//
-    // internals //
+    // setManual //
     //-----------//
-    /**
-     * Protected method to report internal values of inter instance.
-     *
-     * @return a string on internal values
-     */
     @Override
-    protected String internals ()
+    public void setManual (boolean manual)
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if (isRemoved()) {
-            sb.append(" REMOVED");
-        }
-
-        if (isManual()) {
-            sb.append(" MANUAL");
-        }
-
-        if (isImplicit()) {
-            sb.append(" IMPLICIT");
-        }
-
-        if (isFrozen()) {
-            sb.append(" FROZEN");
-        }
-
-        sb.append(String.format("(%.3f", grade));
-
-        Double cg = getContextualGrade();
-
-        if (cg != null) {
-            sb.append(String.format("/%.3f", cg));
-        }
-
-        sb.append(")");
-
-        if (staff != null) {
-            sb.append(" stf:").append(staff.getId());
-        }
-
-        if (shape != null) {
-            sb.append(" ").append(shape);
-        }
-
-        return sb.toString();
+        this.manual = manual;
     }
 
-    //------------//
-    // getStaffId //
-    //------------//
-    /**
-     * Meant for JAXB.
-     *
-     * @return the ID of related staff.
-     */
-    @SuppressWarnings("unused")
-    @XmlAttribute(name = "staff")
-    private Integer getStaffId ()
+    //-----------//
+    // setMirror //
+    //-----------//
+    @Override
+    public void setMirror (Inter mirror)
     {
-        if (staff == null) {
-            return null;
-        }
+        final boolean direct = this.getId() < mirror.getId();
+        final Inter source = direct ? this : mirror;
+        final Inter target = direct ? mirror : this;
+        Relation rel = sig.getRelation(source, target, MirrorRelation.class);
 
-        return staff.getId();
+        if (rel == null) {
+            sig.addEdge(source, target, new MirrorRelation());
+        }
+    }
+
+    //---------//
+    // setPart //
+    //---------//
+    @Override
+    public void setPart (Part part)
+    {
+        this.part = part;
+    }
+
+    //--------//
+    // setSig //
+    //--------//
+    @Override
+    public void setSig (SIGraph sig)
+    {
+        this.sig = sig;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    /**
+     * @param staff the staff to set
+     */
+    @Override
+    public void setStaff (Staff staff)
+    {
+        this.staff = staff;
     }
 
     //------------//
@@ -1556,6 +1580,65 @@ public abstract class AbstractInter
         if (id != null) {
             setStaff(Staff.StaffHolder.getStaffHolder(id));
         }
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        return false; // By default
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------------//
+    // deriveOnStaffMiddleLine //
+    //-------------------------//
+    /**
+     * Snap ghost symbol vertically on staff middle line.
+     *
+     * @param inter        the dropped inter
+     * @param staff        the related staff, if any
+     * @param symbol       the dropped symbol
+     * @param sheet        containing sheet
+     * @param font         properly sized font
+     * @param dropLocation (input/output) current drag/drop location.
+     *                     Input: location is assumed to be the symbol focus center
+     *                     Output: location may get modified when some snapping occurs
+     * @return true if OK
+     */
+    protected static boolean deriveOnStaffMiddleLine (Inter inter,
+                                                      Staff staff,
+                                                      ShapeSymbol symbol,
+                                                      Sheet sheet,
+                                                      MusicFont font,
+                                                      Point dropLocation)
+    {
+        // Get initial bounds
+        final Dimension dim = symbol.getDimension(font);
+        final Rectangle box = new Rectangle(
+                dropLocation.x - (dim.width / 2),
+                dropLocation.y - (dim.height / 2),
+                dim.width,
+                dim.height);
+        final Point center = GeoUtil.center(box);
+
+        if (staff != null) {
+            if (staff.isTablature()) {
+                return false;
+            }
+
+            // Snap ordinate on staff middle line
+            final double y = staff.pitchToOrdinate(center.x, 0);
+            dropLocation.y = (int) Math.rint(y);
+            box.y = dropLocation.y - (dim.height / 2);
+
+            inter.setBounds(box);
+        }
+
+        return true;
     }
 
     //--------------//
@@ -1584,7 +1667,28 @@ public abstract class AbstractInter
         return Grades.minInterGrade;
     }
 
+    //---------------//
+    // increaseGrade //
+    //---------------//
+    /**
+     * Increase the provided intrinsic grade by some ratio.
+     *
+     * @param grade initial value
+     * @param ratio ratio applied
+     * @return the increased grade
+     */
+    public static double increaseGrade (double grade,
+                                        double ratio)
+    {
+        if (grade < Grades.intrinsicRatio) {
+            grade += (ratio * (Grades.intrinsicRatio - grade));
+        }
+
+        return grade;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -1597,14 +1701,14 @@ public abstract class AbstractInter
 
         @Override
         public AbstractInter marshal (Inter inter)
-                throws Exception
+            throws Exception
         {
             return (AbstractInter) inter;
         }
 
         @Override
         public Inter unmarshal (AbstractInter abstractInter)
-                throws Exception
+            throws Exception
         {
             return abstractInter;
         }

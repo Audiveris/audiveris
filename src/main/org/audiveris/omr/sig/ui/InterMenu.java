@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +52,8 @@ import javax.swing.JMenuItem;
 
 /**
  * Class <code>InterMenu</code> builds a menu around a given inter.
+ * <p>
+ * TODO: I18N of this class
  *
  * @author Hervé Bitteur
  */
@@ -61,15 +64,15 @@ public class InterMenu
     private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final SeparableMenu menu;
 
-    private final Inter inter;
+    private final SeparableMenu menu;
 
     private final RelationListener relationListener = new RelationListener();
 
     private final InterController interController;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>InterMenu</code> object.
      *
@@ -79,8 +82,6 @@ public class InterMenu
     public InterMenu (final Inter inter,
                       final Set<Relation> relations)
     {
-        this.inter = inter;
-
         final Sheet sheet = inter.getSig().getSystem().getSheet();
         interController = sheet.getInterController();
 
@@ -96,6 +97,11 @@ public class InterMenu
         // Edit mode
         if (inter.isEditable()) {
             menu.add(new JMenuItem(new EditAction(inter)));
+        }
+
+        // Deassign
+        if (!inter.isRemoved()) {
+            menu.add(new JMenuItem(new DeassignAction(inter)));
         }
 
         // Shape-based selection
@@ -117,16 +123,6 @@ public class InterMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getMenu //
-    //---------//
-    /**
-     * @return the menu
-     */
-    public JMenu getMenu ()
-    {
-        return menu;
-    }
 
     //---------------------//
     // buildRelationsTitle //
@@ -153,7 +149,46 @@ public class InterMenu
         return title;
     }
 
+    //---------//
+    // getMenu //
+    //---------//
+    /**
+     * @return the menu
+     */
+    public JMenu getMenu ()
+    {
+        return menu;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //----------------//
+    // DeassignAction //
+    //----------------//
+    private static class DeassignAction
+            extends AbstractAction
+    {
+
+        /** Originating inter. */
+        private final Inter inter;
+
+        public DeassignAction (Inter inter)
+        {
+            this.inter = inter;
+
+            putValue(NAME, "Deassign");
+            putValue(SHORT_DESCRIPTION, "Deassign inter");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Delete the inter
+            final Sheet sheet = inter.getSig().getSystem().getSheet();
+            sheet.getInterController().removeInters(Arrays.asList(inter));
+        }
+    }
+
     //------------//
     // EditAction //
     //------------//
@@ -181,47 +216,6 @@ public class InterMenu
             final Sheet sheet = inter.getSig().getSystem().getSheet();
             sheet.getSheetEditor().openEditMode(inter);
             inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
-        }
-    }
-
-    //----------------------//
-    // ShapeSelectionAction //
-    //----------------------//
-    /**
-     * Ability to select all inters in sheet with the same shape as this inter.
-     */
-    private static class ShapeSelectionAction
-            extends AbstractAction
-    {
-
-        /** Originating inter. */
-        private final Inter inter;
-
-        public ShapeSelectionAction (Inter inter)
-        {
-            this.inter = inter;
-
-            putValue(NAME, "Select all " + inter.getShape() + " in sheet");
-            putValue(SHORT_DESCRIPTION, "Select all inters with the same shape as this one");
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final Shape shape = inter.getShape();
-            final Page page = inter.getSig().getSystem().getPage();
-            final List<Inter> inters = new ArrayList<>();
-
-            for (SystemInfo system : page.getSystems()) {
-                inters.addAll(system.getSig().inters(shape));
-            }
-
-            page.getSheet().getInterIndex().getEntityService().publish(
-                    new EntityListEvent<>(
-                            this,
-                            SelectionHint.ENTITY_INIT,
-                            MouseMovement.PRESSING,
-                            inters));
         }
     }
 
@@ -314,6 +308,47 @@ public class InterMenu
                     interController.unlink(sig, relation);
                 }
             }
+        }
+    }
+
+    //----------------------//
+    // ShapeSelectionAction //
+    //----------------------//
+    /**
+     * Ability to select all inters in sheet with the same shape as this inter.
+     */
+    private static class ShapeSelectionAction
+            extends AbstractAction
+    {
+
+        /** Originating inter. */
+        private final Inter inter;
+
+        public ShapeSelectionAction (Inter inter)
+        {
+            this.inter = inter;
+
+            putValue(NAME, "Select all " + inter.getShape() + " in sheet");
+            putValue(SHORT_DESCRIPTION, "Select all inters with the same shape as this one");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final Shape shape = inter.getShape();
+            final Page page = inter.getSig().getSystem().getPage();
+            final List<Inter> inters = new ArrayList<>();
+
+            for (SystemInfo system : page.getSystems()) {
+                inters.addAll(system.getSig().inters(shape));
+            }
+
+            page.getSheet().getInterIndex().getEntityService().publish(
+                    new EntityListEvent<>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            inters));
         }
     }
 }

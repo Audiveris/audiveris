@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,6 +31,7 @@ import org.audiveris.omr.math.Range;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Scale.BeamScale;
+import org.audiveris.omr.sheet.Scale.Info;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Scale.LineScale;
 import org.audiveris.omr.step.StepException;
@@ -48,24 +49,45 @@ import java.util.List;
  * Class <code>ScaleBuilder</code> computes the global scale of a given sheet by processing
  * the image vertical runs.
  * <p>
- * Adding the most frequent black run length to the most frequent white run length,
- * would give the average interline value.
- * Instead of a posteriori addition, we analyze the total length of two combo runs in sequence.
+ * We build two histograms, one named 'black' for the length of black runs and
+ * one named 'combo' for the combined length of a black run with its following white run
+ * (or the combined length of a white run with its following black run).
  * <p>
- * A second black peak usually gives the average beam thickness.
- * And similarly, a second combo peak may indicate a series of staves with a different interline
- * than the main series.
+ * For each histogram, black or combo, we look only at the highest peaks found (the peak height is
+ * the number of occurrences for a given run length) and a threshold is applied to filter out peaks
+ * that are not significant enough.
+ * <dl>
+ * <dt>Use of <b>BLACK</b> histogram:</dt>
+ * <ol>
+ * <li>The very high peak corresponds to staff line thickness.
+ * <li>If any, the first next in height corresponds to the thickness of beams.
+ * <li>And if any, the second next in height corresponds to the thickness of a second population of
+ * beams.
+ * <p>
+ * NOTA: This second population of beams can exist only when there is a second population of
+ * stave heights.
+ * </ol>
+ * <dt>Use of <b>COMBO</b> histogram:</dt>
+ * <ol>
+ * <li>The highest peak corresponds to staff interline value.
+ * <li>If any, the next in height corresponds to the interline value of a second population of
+ * staves.
+ * </ol>
+ * </dl>
+ * NOTA: The notion of 'first' vs 'second' peak (for staff interline, for beam height) simply means
+ * that we have found two distinct peaks and that 'first' key appears more <b>frequently</b> than
+ * 'second' key.
+ * But more frequent does not mean larger or smaller, which is given by the key itself.
  * <p>
  * Internally, additional validity checks are performed:
  * <ol>
  * <li>If we cannot retrieve black peak, we decide that the sheet does not contain significant
- * lines.</li>
+ * lines.
  * <li>If we cannot retrieve combo peak, we decide that the sheet does not contain regularly spaced
- * staff lines.</li>
+ * staff lines.
  * <li>Method {@link #checkResolution} looks at combo peak.
  * If the main interline value is below a certain threshold (see constants.minInterline), then we
  * suspect that the picture is not a music sheet (it may rather be an image, a page of text, etc).
- * </li>
  * </ol>
  * <p>
  * If we have doubts about the page at hand and if this page is part of a multi-page score, we
@@ -84,6 +106,7 @@ public class ScaleBuilder
     private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -91,7 +114,7 @@ public class ScaleBuilder
     /** Whole vertical run table. */
     private RunTable binary;
 
-    /** Keeper of vertical run length histograms, for foreground & background. */
+    /** Keeper of vertical run length histograms, for foreground and background. */
     private HistoKeeper histoKeeper;
 
     /** Most frequent length of vertical black runs found. */
@@ -106,7 +129,14 @@ public class ScaleBuilder
     /** Main beam thickness found, if any. */
     private Integer beamKey;
 
+    /** Second beam thickness found, if any. */
+    private Integer beamKey2;
+
+    /** Guessed beam thickness if ever, for lack of 'beamKey'. */
+    private Integer beamGuess;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Constructor to enable scale computation on a given sheet.
      *
@@ -118,6 +148,145 @@ public class ScaleBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------------//
+    // checkResolution //
+    //-----------------//
+    /**
+     * Check global interline value, to detect pictures with too low
+     * resolution or pictures which do not represent music staves.
+     *
+     * @throws StepException if processing must stop on this sheet
+     */
+    private void checkResolution ()
+        throws StepException
+    {
+        int interline = comboPeak.main;
+
+        if (interline == 0) {
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Interline value is zero." + LINE_SEPARATOR
+                            + "This sheet does not seem to contain staff lines.",
+                    false);
+        } else if (interline < constants.minInterline.getValue()) {
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
+                            + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
+                            + LINE_SEPARATOR
+                            + "or the picture resolution is too low (try 300 DPI).",
+                    false);
+        } else if (interline > constants.maxInterline.getValue()) {
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Too large interline value: " + interline
+                            + " pixels" + LINE_SEPARATOR
+                            + "This sheet does not seem to contain staff lines.",
+                    false);
+        }
+    }
+
+    //-----------------//
+    // computeBeamKeys //
+    //-----------------//
+    /**
+     * Compute the beam scale information for the sheet, assigning values to
+     * <code>beamKey</code> and <code>beamKey2</code> if possible,
+     * or <code>beamGuess</code> if nothing else works.
+     * <p>
+     * We try to retrieve beam keys in black histogram, otherwise we extrapolate a probable beam
+     * height based on minimum and maximum height values.
+     *
+     * @param verbose true for printing out computation details
+     */
+    private void computeBeamKeys (boolean verbose)
+    {
+        // Scale data?
+        if (comboPeak == null) {
+            logger.warn("No global scale information available");
+
+            return;
+        }
+
+        // Specific beam thickness from Book/Sheet parameters?
+        final Integer specifiedBeam = sheet.getStub().getBeamSpecification();
+        if ((specifiedBeam != null) && (specifiedBeam != 0)) {
+            beamKey = specifiedBeam;
+
+            if (verbose) {
+                logger.info("User-specified beam height: {}", beamKey);
+            }
+
+            return;
+        }
+
+        // Beam guess
+        final int largerInterline = (comboPeak2 == null) ? comboPeak.main
+                : Math.max(comboPeak.main, comboPeak2.main);
+        final int minHeight = Math.max(
+                blackPeak.max,
+                (int) Math.rint(constants.beamMinFraction.getValue() * largerInterline));
+        final int maxHeight = Math.max(
+                largerInterline - blackPeak.main,
+                (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
+        final double beamRatio = constants.beamRangeRatio.getValue();
+        beamGuess = (int) Math.rint(maxHeight * beamRatio);
+
+        if (verbose) {
+            logger.info(
+                    String.format(
+                            "Beam  guessed height: %2d -- %.2f of %d interline",
+                            beamGuess,
+                            beamRatio,
+                            maxHeight));
+        }
+
+        // Beam measurement
+        final int quorum = histoKeeper.getBeamQuorum();
+
+        // NOTA: At this point in time, blackFinder.findPeaks() has already been used for staff line.
+        // Setting quorum for blackFinder here is just for the potential plot
+        histoKeeper.blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
+
+        final List<Integer> peaks = histoKeeper.blackFunction.getLocalMaxima(minHeight, maxHeight);
+
+        if (!peaks.isEmpty()) {
+            final int peak = peaks.get(0);
+            final double quorumRatio = (double) histoKeeper.blackFunction.getValue(peak) / quorum;
+            final double rangeRatio = (double) (peak - minHeight) / (maxHeight - minHeight);
+
+            if (verbose) {
+                logger.info(
+                        String.format(
+                                "Beam measured height: %2d -- %.2f"
+                                        + " of [%d..%d] range at %d%% of needed quorum",
+                                peak,
+                                rangeRatio,
+                                minHeight,
+                                maxHeight,
+                                (int) Math.rint(quorumRatio * 100)));
+            }
+
+            // Quorum reached or measured value close to guess?
+            final int diff = Math.abs(peak - beamGuess);
+
+            if ((quorumRatio >= 1.0) || (diff <= constants.beamMaxDiff.getValue())) {
+                beamKey = peak;
+            }
+
+            if ((comboPeak2 != null) && (peaks.size() > 1)) {
+                final int peak2 = peaks.get(1);
+                final double qRatio = (double) histoKeeper.blackFunction.getValue(peak2) / quorum;
+
+                if (qRatio >= 1.0) {
+                    beamKey2 = peak2;
+                }
+            }
+        }
+
+        if ((beamKey == null) && verbose) {
+            logger.warn("No reliable beam height found, guessed value: {}", beamGuess);
+        }
+    }
+
     //--------------//
     // displayChart //
     //--------------//
@@ -134,177 +303,7 @@ public class ScaleBuilder
         }
 
         if (histoKeeper != null) {
-            histoKeeper.writePlot();
-        }
-    }
-
-    //---------------//
-    // retrieveScale //
-    //---------------//
-    /**
-     * Retrieve scale information on sheet.
-     *
-     * @return scale information
-     * @throws StepException raised if some mandatory information cannot be retrieved.
-     *                       For example if no staves are found.
-     */
-    public Scale retrieveScale ()
-            throws StepException
-    {
-        return doRetrieveScale(false);
-    }
-
-    //-----------------//
-    // checkResolution //
-    //-----------------//
-    /**
-     * Check global interline value, to detect pictures with too low
-     * resolution or pictures which do not represent music staves.
-     *
-     * @throws StepException if processing must stop on this sheet
-     */
-    private void checkResolution ()
-            throws StepException
-    {
-        int interline = comboPeak.main;
-
-        if (interline == 0) {
-            sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR
-                            + "Interline value is zero."
-                            + LINE_SEPARATOR
-                            + "This sheet does not seem to contain staff lines.",
-                    false);
-        } else if (interline < constants.minInterline.getValue()) {
-            sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR
-                            + "With an interline value of "
-                            + interline
-                            + " pixels,"
-                            + LINE_SEPARATOR
-                            + "either this sheet contains no staves,"
-                            + LINE_SEPARATOR
-                            + "or the picture resolution is too low (try 300 DPI).",
-                    false);
-        } else if (interline > constants.maxInterline.getValue()) {
-            sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR
-                            + "Too large interline value: "
-                            + interline
-                            + " pixels"
-                            + LINE_SEPARATOR
-                            + "This sheet does not seem to contain staff lines.",
-                    false);
-        }
-    }
-
-    //-------------//
-    // computeBeam //
-    //-------------//
-    /**
-     * Report the beam scale information for the sheet.
-     * <p>
-     * We try to retrieve a beam key in black histogram, otherwise we extrapolate a probable beam
-     * height based on minimum and maximum height values.
-     *
-     * @param verbose true for printing out computation details
-     * @return the beam scale
-     */
-    private BeamScale computeBeam (boolean verbose)
-    {
-        // Scale data?
-        if (comboPeak == null) {
-            logger.warn("No global scale information available");
-
-            return null;
-        }
-
-        // Beam guess
-        final int largerInterline = getLargerInterline();
-        final int minHeight = Math.max(
-                blackPeak.max,
-                (int) Math.rint(constants.beamMinFraction.getValue() * largerInterline));
-        final int maxHeight = Math.max(
-                largerInterline - blackPeak.main,
-                (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
-        final double beamRatio = constants.beamRangeRatio.getValue();
-        final int guess = (int) Math.rint(minHeight + ((maxHeight - minHeight) * beamRatio));
-
-        if (verbose) {
-            logger.info(String.format("Beam  guessed height: %2d -- %.2f of [%d..%d] range",
-                                      guess, beamRatio, minHeight, maxHeight));
-        }
-
-        // Beam measurement
-        final int quorum = histoKeeper.getBeamQuorum();
-
-        // NOTA: At this point in time, blackFinder.findPeaks() has already been used for staff line.
-        // Setting quorum for blackFinder here is just for the potential plot
-        histoKeeper.blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
-
-        List<Integer> peaks = histoKeeper.blackFunction.getLocalMaxima(minHeight, maxHeight);
-
-        if (!peaks.isEmpty()) {
-            final int peak = peaks.get(0);
-            final double quorumRatio = (double) histoKeeper.blackFunction.getValue(peak) / quorum;
-            final double rangeRatio = (double) (peak - minHeight) / (maxHeight - minHeight);
-
-            if (verbose) {
-                logger.info(String.format("Beam measured height: %2d -- %.2f"
-                                                  + " of [%d..%d] range at %d%% of needed quorum",
-                                          peak, rangeRatio, minHeight, maxHeight,
-                                          (int) Math.rint(quorumRatio * 100)));
-            }
-
-            // Quorum reached or measured value close to guess?
-            final int diff = Math.abs(peak - guess);
-
-            if ((quorumRatio >= 1.0) || (diff <= constants.beamMaxDiff.getValue())) {
-                beamKey = peak;
-
-                if (verbose) {
-                    logger.info("Beam height: {}", beamKey);
-                }
-            }
-        }
-
-        if (beamKey != null) {
-            return new BeamScale(beamKey, false);
-        } else {
-            // Beam extrapolation from height possible range
-            if (verbose) {
-                logger.warn("No reliable beam height found, guessed value: {}", guess);
-            }
-
-            return new BeamScale(guess, true);
-        }
-    }
-
-    //------------------//
-    // computeInterline //
-    //------------------//
-    private InterlineScale computeInterline ()
-    {
-        if ((comboPeak2 == null) || (comboPeak2.main < comboPeak.main)) {
-            return new InterlineScale(comboPeak);
-        } else {
-            return new InterlineScale(comboPeak2);
-        }
-    }
-
-    //-----------------------//
-    // computeSmallInterline //
-    //-----------------------//
-    private InterlineScale computeSmallInterline ()
-    {
-        if (comboPeak2 == null) {
-            return null;
-        }
-
-        if (comboPeak2.main < comboPeak.main) {
-            return new InterlineScale(comboPeak2);
-        } else {
-            return new InterlineScale(comboPeak);
+            histoKeeper.writePlots();
         }
     }
 
@@ -321,76 +320,117 @@ public class ScaleBuilder
      * @throws StepException if processing must stop for this sheet.
      */
     private Scale doRetrieveScale (boolean dummy)
-            throws StepException
+        throws StepException
     {
-        binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-        histoKeeper = new HistoKeeper();
+        final Scale scl = sheet.getScale();
 
-        histoKeeper.buildBlacks();
-        histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
+        if (dummy || scl == null) {
+            binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+            histoKeeper = new HistoKeeper();
 
-        histoKeeper.buildCombos();
-        histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
+            histoKeeper.buildBlacks();
+            histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
 
-        if (dummy) {
-            computeBeam(false); // Just for the chart
+            histoKeeper.buildCombos();
+            histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
 
-            return null;
+            if (dummy) {
+                computeBeamKeys(false); // Just for the chart
+
+                return null;
+            }
+        }
+
+        // Respect user-assigned scale info, if any
+        if (scl != null) {
+            logger.info("Sheet scale data already set.");
+            return scl;
         }
 
         // Check we have acceptable resolution.  If not, throw StepException
         checkResolution();
 
         // Here, we keep going on with scale data
-        InterlineScale smallInterlineScale = computeSmallInterline();
-        Scale smallScale = (smallInterlineScale == null) ? null
-                : new Scale(smallInterlineScale, null, null, null);
+        final LineScale lineScale = new LineScale(blackPeak);
 
-        // Respect user-assigned scale info, if any
-        final Scale scl = sheet.getScale();
-        final Scale scale;
+        final InterlineScale interlineScale = getInterlineScale();
+        final InterlineScale smallInterlineScale = getSmallInterlineScale();
 
-        if (scl != null) {
-            scale = new Scale(
-                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
-                    (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
-                    (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(true),
-                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
+        computeBeamKeys(true); // -> beamGuess, beamKey, beamKey2
+        BeamScale beamScale = null;
+        BeamScale smallBeamScale = null;
 
-            if (scl.getStemScale() != null) {
-                scale.setStemScale(scl.getStemScale());
-            }
-        } else {
-            scale = new Scale(
-                    computeInterline(),
-                    new LineScale(blackPeak),
-                    computeBeam(true),
-                    smallScale);
+        if (beamKey2 != null) {
+            beamScale = new BeamScale(Math.max(beamKey, beamKey2), false);
+            smallBeamScale = new BeamScale(Math.min(beamKey, beamKey2), false);
+        } else if (beamKey != null) {
+            beamScale = new BeamScale(beamKey, false);
+        } else if (beamGuess != null) {
+            beamScale = new BeamScale(beamGuess, true);
         }
 
-        return scale;
+        return new Scale(interlineScale, lineScale, beamScale, smallInterlineScale, smallBeamScale);
     }
 
-    //--------------------//
-    // getLargerInterline //
-    //--------------------//
-    /**
-     * Report the larger of comboPeak.main (and comboPeak2.main if any)
-     *
-     * @return (larger) main interline
-     */
-    private int getLargerInterline ()
+    //-------------------//
+    // getInterlineScale //
+    //-------------------//
+    private InterlineScale getInterlineScale ()
     {
-        int mainCombo = comboPeak.main;
+        if ((comboPeak2 == null) || (comboPeak2.main < comboPeak.main)) {
+            return new InterlineScale(comboPeak);
+        } else {
+            return new InterlineScale(comboPeak2);
+        }
+    }
 
-        if (comboPeak2 != null) {
-            mainCombo = Math.max(mainCombo, comboPeak2.main);
+    //------------------------//
+    // getSmallInterlineScale //
+    //------------------------//
+    private InterlineScale getSmallInterlineScale ()
+    {
+        if (comboPeak2 == null) {
+            return null;
         }
 
-        return mainCombo;
+        final Range peak = (comboPeak2.main < comboPeak.main) ? comboPeak2 : comboPeak;
+
+        return new InterlineScale(peak);
+    }
+
+    //---------------//
+    // retrieveScale //
+    //---------------//
+    /**
+     * Retrieve scale information on sheet.
+     *
+     * @return scale information
+     * @throws StepException raised if some mandatory information cannot be retrieved.
+     *                       For example if no staves are found.
+     */
+    public Scale retrieveScale ()
+        throws StepException
+    {
+        return doRetrieveScale(false);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getMaxInterline //
+    //-----------------//
+    /**
+     * Report the maximum possible interline value.
+     *
+     * @return maximum interline possible (in pixels)
+     */
+    public static int getMaxInterline ()
+    {
+        return constants.maxInterline.getValue();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -433,7 +473,7 @@ public class ScaleBuilder
                 "Maximum ratio between beam height and interline");
 
         private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
-                0.01,
+                0.007,
                 "Minimum ratio of runs for beam height measurement (quorum)");
 
         private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
@@ -533,7 +573,7 @@ public class ScaleBuilder
                 int lastBlack = 0; // Length of last valid black run
 
                 for (Iterator<Run> it = binary.iterator(x); it.hasNext();) {
-                    Run run = it.next();
+                    final Run run = it.next();
                     final int y = run.getStart();
                     final int black = run.getLength();
 
@@ -542,7 +582,7 @@ public class ScaleBuilder
                     } else {
                         if (y > yLast) {
                             // Process the white run before this black run
-                            int white = y - yLast;
+                            final int white = y - yLast;
 
                             // A white run between valid black runs?: B1, W, B2
                             // Combo 1 is defined as B1 + W, that is [-----]
@@ -566,45 +606,32 @@ public class ScaleBuilder
             }
         }
 
-        //
-        //        //-----------------//
-        //        // retrieveBeamKey //
-        //        //-----------------//
-        //        /**
-        //         * Try to retrieve a suitable beam thickness value.
-        //         * <p>
-        //         * Take most frequent black local max for which key (beam thickness) is larger than a
-        //         * minimum fraction of interline and smaller than main white gap between (large) staff
-        //         * lines.
-        //         *
-        //         * @param minHeight start value for height range
-        //         * @param maxHeight stop value for height range
-        //         */
-        //        public Integer retrieveBeamKey (int minHeight,
-        //                                        int maxHeight)
-        //        {
-        //            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
-        //
-        //            // Quorum on height histo
-        //            final int totalArea = blackFunction.getArea();
-        //            final double ratio = constants.minBeamCountRatio.getValue();
-        //            final int quorum = (int) Math.rint(totalArea * ratio);
-        //            logger.info("Beam minHeight:{} maxHeight:{} quorum:{}", minHeight, maxHeight, quorum);
-        //            blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
-        //
-        //            for (int local : localMaxima) {
-        //                if ((local >= minHeight) && (local <= maxHeight)) {
-        //                    if (blackFunction.getValue(local) >= quorum) {
-        //                        return local;
-        //                    }
-        //
-        //                    break;
-        //                }
-        //            }
-        //
-        //            return null;
-        //        }
-        //
+        //------------//
+        // checkBlack //
+        //------------//
+        /**
+         * Check we have a significant number of black pixels WRT image size,
+         * otherwise the sheet is mostly blank and contains no music.
+         *
+         * @throws StepException if processing must stop on this sheet
+         */
+        private void checkBlack ()
+            throws StepException
+        {
+            final int blackCount = getBlackCount();
+            final int size = binary.getWidth() * binary.getHeight();
+            final double blackRatio = (double) blackCount / size;
+            logger.debug("blackRatio: {}", blackRatio);
+
+            if (blackRatio < constants.minBlackRatio.getValue()) {
+                sheet.getStub().decideOnRemoval(
+                        sheet.getId() + LINE_SEPARATOR + "Too few black pixels: " + String.format(
+                                "%.4f%%",
+                                100 * blackRatio) + LINE_SEPARATOR + "This sheet is almost blank.",
+                        false);
+            }
+        }
+
         //---------------//
         // getBeamQuorum //
         //---------------//
@@ -622,6 +649,29 @@ public class ScaleBuilder
             return (int) Math.rint(totalArea * ratio);
         }
 
+        //---------------//
+        // getBlackCount //
+        //---------------//
+        /**
+         * Compute the total number of black pixels.
+         * <p>
+         * We use the fact that in 'blackHisto', x represents a black run length and y the number
+         * of occurrences of this run length in the image.
+         *
+         * @return the count of black pixels
+         */
+        private int getBlackCount ()
+        {
+            int total = 0;
+            int xMin = blackFunction.getXMin();
+
+            for (int i = xMin; i <= blackFunction.getXMax(); i++) {
+                total += ((i - xMin) * blackFunction.getValue(i));
+            }
+
+            return total;
+        }
+
         //------------------------//
         // retrieveInterlinePeaks //
         //------------------------//
@@ -632,7 +682,7 @@ public class ScaleBuilder
          * but the chart will still display the (original) peaks found.
          */
         public void retrieveInterlinePeaks ()
-                throws StepException
+            throws StepException
         {
             // Combo peak(s)
             final int area = comboFunction.getArea();
@@ -659,10 +709,10 @@ public class ScaleBuilder
                 final int max = Math.max(p.main, comboPeak.main);
 
                 if ((max / min) > constants.maxSecondRatio.getValue()) {
-                    logger.info("Other combo peak too different {}, discarded", p);
+                    logger.debug("Other combo peak too different {}, discarded", p);
                     it.remove();
                 } else if (Math.abs(p.main - comboPeak.main) < blackPeak.main) {
-                    logger.info("Merging two close combo peaks {} & {}", comboPeak, p);
+                    logger.debug("Merging two close combo peaks {} & {}", comboPeak, p);
                     comboPeak = new Range(min, (p.main + comboPeak.main) / 2, max);
                     it.remove();
                 }
@@ -681,7 +731,7 @@ public class ScaleBuilder
          * Retrieve black peak for line thickness.
          */
         public void retrieveLinePeak ()
-                throws StepException
+            throws StepException
         {
             // Check we have enough foreground material. If not, throw StepException
             checkBlack();
@@ -713,103 +763,54 @@ public class ScaleBuilder
             logger.debug("blackPeak: {}", blackPeak);
         }
 
-        //-----------//
-        // writePlot //
-        //-----------//
-        public void writePlot ()
+        //------------//
+        // writePlots //
+        //------------//
+        /**
+         * Write a plot for black values (staff line, beam thickness) and
+         * a plot for combo values (staff interline).
+         */
+        public void writePlots ()
         {
-            // Determine a suitable upper value for x
-            int xMax;
-
-            if (blackPeak != null) {
-                xMax = blackPeak.max;
-            } else {
-                xMax = 30;
-            }
+            // Determine suitable x upper values for combos
+            int comboMax = blackPeak != null ? blackPeak.max : 30;
 
             if (comboPeak != null) {
-                xMax = Math.max(xMax, comboPeak.max);
+                comboMax = Math.max(comboMax, comboPeak.max);
             }
 
             if (comboPeak2 != null) {
-                xMax = Math.max(xMax, comboPeak2.max);
+                comboMax = Math.max(comboMax, comboPeak2.max);
             }
 
-            xMax = Math.min(sheet.getWidth() - 1, (xMax * 5) / 2); // Add some margin
-
-            Scale scale = sheet.getScale();
-            String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(false)
-                    : "NO_SCALE");
+            final Scale scale = sheet.getScale();
 
             try {
+                // Black values (staff line, beam thickness)
                 final String title = sheet.getId() + " " + blackFinder.name;
+                final String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(
+                        Info.BLACK) : "NO_SCALE");
                 final String yLabel = "Runs counts - total:" + blackFunction.getArea()
-                                              + " - Beam quorum:" + getBeamQuorum();
-                ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
-                blackFinder.plot(plotter, true, 0, xMax).display(new Point(20, 20));
+                        + " - Beam quorum:" + getBeamQuorum();
+                final ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
+                final int blackMax = Math.min(comboMax, sheet.getWidth() - 1); // Use combo limit
+                blackFinder.plot(plotter, true, 0, blackMax).display(new Point(20, 20));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
             }
 
             try {
+                // Combo values (staff interline)
                 final String title = sheet.getId() + " " + comboFinder.name;
+                final String xLabel = "Runs lengths - " + ((scale != null) ? scale.toString(
+                        Info.COMBO) : "NO_SCALE");
                 final String yLabel = "Runs counts";
-                ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
-                comboFinder.plot(plotter, true, 0, xMax).display(new Point(80, 80));
+                final ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
+                comboMax = Math.min((comboMax * 3) / 2, sheet.getWidth() - 1); // Add some margin
+                comboFinder.plot(plotter, true, 0, comboMax).display(new Point(80, 80));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting combo", ex);
             }
-        }
-
-        //------------//
-        // checkBlack //
-        //------------//
-        /**
-         * Check we have a significant number of black pixels WRT image size,
-         * otherwise the sheet is mostly blank and contains no music.
-         *
-         * @throws StepException if processing must stop on this sheet
-         */
-        private void checkBlack ()
-                throws StepException
-        {
-            final int blackCount = getBlackCount();
-            final int size = binary.getWidth() * binary.getHeight();
-            final double blackRatio = (double) blackCount / size;
-            logger.debug("blackRatio: {}", blackRatio);
-
-            if (blackRatio < constants.minBlackRatio.getValue()) {
-                sheet.getStub().decideOnRemoval(
-                        sheet.getId() + LINE_SEPARATOR
-                                + "Too few black pixels: "
-                                + String.format("%.4f%%", 100 * blackRatio)
-                                + LINE_SEPARATOR
-                                + "This sheet is almost blank.",
-                        false);
-            }
-        }
-
-        //---------------//
-        // getBlackCount //
-        //---------------//
-        /**
-         * Compute the total number of black pixels.
-         * <p>
-         * We use the fact that in 'blackHisto', x represents a black run length and y the number
-         * of occurrences of this run length in the image.
-         *
-         * @return the count of black pixels
-         */
-        private int getBlackCount ()
-        {
-            int total = 0;
-            int xMin = blackFunction.getXMin();
-
-            for (int i = xMin; i <= blackFunction.getXMax(); i++) {
-                total += ((i - xMin) * blackFunction.getValue(i));
-            }
-
-            return total;
         }
     }
 }

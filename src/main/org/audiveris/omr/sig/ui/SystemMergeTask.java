@@ -46,10 +46,11 @@ public class SystemMergeTask
     private PageRef pageRef;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SystemMergeTask</code> object.
      *
-     * @param system DOCUMENT ME!
+     * @param system the upper system
      */
     public SystemMergeTask (SystemInfo system)
     {
@@ -62,6 +63,7 @@ public class SystemMergeTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     public SystemInfo getSystem ()
     {
         return system;

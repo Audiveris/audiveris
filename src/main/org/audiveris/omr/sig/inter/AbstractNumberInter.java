@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,6 +23,11 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.NumberSymbol;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -35,8 +40,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 /**
  * Class <code>AbstractNumberInter</code> is an abstract inter with a integer value.
  * <p>
- * Concrete subclasses must be defined for Time upper or lower parts, for an ending number, for
- * the number of measures in a multi-measure rest.
+ * Concrete subclasses are defined for:
+ * <ul>
+ * <li>{@link TimeNumberInter} value in upper or lower part of a time signature,
+ * <li>{@link MeasureCountInter} to specify the count of measures above a {@link MultipleRestInter}
+ * or above a {@link MeasureRepeatInter} for 2 or 4 bars.
+ * <li>An ending number in a volta (to be confirmed)
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -48,11 +58,31 @@ public abstract class AbstractNumberInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractNumberInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Integer value for the number. */
     @XmlAttribute
     protected Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new AbstractNumberInter object.
+     *
+     * @param glyph underlying glyph
+     * @param value numerical value
+     * @param grade evaluation value
+     */
+    public AbstractNumberInter (Glyph glyph,
+                                Integer value,
+                                Double grade)
+    {
+        super(glyph, null, null, grade);
+
+        if (value != null) {
+            this.value = value; // Copy
+        }
+    }
+
     /**
      * Creates a new AbstractNumberInter object.
      *
@@ -72,6 +102,24 @@ public abstract class AbstractNumberInter
      * Creates a new AbstractNumberInter object.
      *
      * @param bounds bounding box of the number
+     * @param value  numerical value
+     * @param grade  evaluation value
+     */
+    public AbstractNumberInter (Rectangle bounds,
+                                Integer value,
+                                Double grade)
+    {
+        super(null, bounds, null, grade);
+
+        if (value != null) {
+            this.value = value; // Copy
+        }
+    }
+
+    /**
+     * Creates a new AbstractNumberInter object.
+     *
+     * @param bounds bounding box of the number
      * @param shape  precise shape
      * @param grade  evaluation value
      */
@@ -84,6 +132,7 @@ public abstract class AbstractNumberInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -91,6 +140,24 @@ public abstract class AbstractNumberInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "NUMBER_" + value;
+    }
+
+    //----------------//
+    // getShapeSymbol //
+    //----------------//
+    @Override
+    public ShapeSymbol getShapeSymbol (MusicFamily family)
+    {
+        return new NumberSymbol(shape, family, value);
     }
 
     //----------//
@@ -106,19 +173,6 @@ public abstract class AbstractNumberInter
         return value;
     }
 
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Set a new integer value to this symbol
-     *
-     * @param value the new value
-     */
-    public void setValue (Integer value)
-    {
-        this.value = value;
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -128,101 +182,80 @@ public abstract class AbstractNumberInter
         return super.internals() + " " + value;
     }
 
-    //---------//
-    // valueOf //
-    //---------//
+    //----------//
+    // setValue //
+    //----------//
     /**
-     * Report the integer value for the provided shape
+     * Set a new integer value to this inter.
      *
-     * @param shape shape to test
-     * @return supported integer value or IllegalArgumentException is thrown
+     * @param value the new value
      */
-    protected static int valueOf (Shape shape)
+    public void setValue (Integer value)
     {
-        switch (shape) {
-        case TIME_ZERO:
-            return 0;
+        this.value = value;
 
-        case TIME_ONE:
-            return 1;
-
-        case TIME_TWO:
-            return 2;
-
-        case TIME_THREE:
-            return 3;
-
-        case TIME_FOUR:
-            return 4;
-
-        case TIME_FIVE:
-            return 5;
-
-        case TIME_SIX:
-            return 6;
-
-        case TIME_SEVEN:
-            return 7;
-
-        case TIME_EIGHT:
-            return 8;
-
-        case TIME_NINE:
-            return 9;
-
-        case TIME_TWELVE:
-            return 12;
-
-        case TIME_SIXTEEN:
-            return 16;
+        // Update containing time pair if any
+        if (sig != null) {
+            for (Relation rel : sig.getRelations(this, Containment.class)) {
+                final Inter ens = sig.getEdgeSource(rel);
+                if (ens instanceof TimePairInter pair) {
+                    pair.invalidateCache();
+                }
+            }
         }
-
-        throw new IllegalArgumentException("No integer value defined for " + shape);
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // valueOf //
     //---------//
     protected static int valueOf (OmrShape omrShape)
     {
-        switch (omrShape) {
-        case timeSig0:
-            return 0;
+        return switch (omrShape) {
+        case timeSig0 -> 0;
+        case timeSig1 -> 1;
+        case timeSig2 -> 2;
+        case timeSig3 -> 3;
+        case timeSig4 -> 4;
+        case timeSig5 -> 5;
+        case timeSig6 -> 6;
+        case timeSig7 -> 7;
+        case timeSig8 -> 8;
+        case timeSig9 -> 9;
+        case timeSig12 -> 12;
+        case timeSig16 -> 16;
 
-        case timeSig1:
-            return 1;
+        default -> throw new IllegalArgumentException("No integer value defined for " + omrShape);
+        };
+    }
 
-        case timeSig2:
-            return 2;
+    //---------//
+    // valueOf //
+    //---------//
+    /**
+     * Report the integer value for the provided shape.
+     *
+     * @param shape shape to test
+     * @return supported integer value or null
+     */
+    public static Integer valueOf (Shape shape)
+    {
+        return (shape == null) ? null : switch (shape) {
+        case NUMBER_CUSTOM, TIME_ZERO -> 0;
+        case TIME_ONE -> 1;
+        case TIME_TWO -> 2;
+        case TIME_THREE -> 3;
+        case TIME_FOUR -> 4;
+        case TIME_FIVE -> 5;
+        case TIME_SIX -> 6;
+        case TIME_SEVEN -> 7;
+        case TIME_EIGHT -> 8;
+        case TIME_NINE -> 9;
+        case TIME_TWELVE -> 12;
+        case TIME_SIXTEEN -> 16;
 
-        case timeSig3:
-            return 3;
-
-        case timeSig4:
-            return 4;
-
-        case timeSig5:
-            return 5;
-
-        case timeSig6:
-            return 6;
-
-        case timeSig7:
-            return 7;
-
-        case timeSig8:
-            return 8;
-
-        case timeSig9:
-            return 9;
-
-        case timeSig12:
-            return 12;
-
-        case timeSig16:
-            return 16;
-        }
-
-        throw new IllegalArgumentException("No integer value defined for " + omrShape);
+        default -> null;
+        };
     }
 }

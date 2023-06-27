@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.sheet.note.NotePosition;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -46,6 +45,13 @@ public class Tablature
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed for JAXB.
+     */
+    public Tablature ()
+    {
+    }
+
+    /**
      * Creates a new <code>Tablature</code> object.
      *
      * @param id                the id of the tablature
@@ -63,14 +69,8 @@ public class Tablature
         super(id, left, right, specificInterline, lines);
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    public Tablature ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public boolean isTablature ()
     {
@@ -78,11 +78,21 @@ public class Tablature
     }
 
     //-----------------//
-    // getNotePosition //
+    // pitchPositionOf //
     //-----------------//
     @Override
-    public NotePosition getNotePosition (Point2D point)
+    public double pitchPositionOf (Point2D pt)
     {
-        return null; // No notion of pitch for a tablature
+        throw new IllegalStateException("A tablature has no notion of pitch");
+    }
+
+    //-----------------//
+    // pitchToOrdinate //
+    //-----------------//
+    @Override
+    public double pitchToOrdinate (double x,
+                                   double pitch)
+    {
+        throw new IllegalStateException("A tablature has no notion of pitch");
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -37,6 +33,8 @@ import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.note.NoteHeadsBuilder;
+import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
@@ -49,6 +47,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -77,9 +79,11 @@ public class TemplateBoard
     private static final Logger logger = LoggerFactory.getLogger(TemplateBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]
+    { LocationEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -95,12 +99,21 @@ public class TemplateBoard
     /** Input: Anchor selection. */
     private final JSpinner anchorSpinner;
 
-    /** Output: evaluation result. */
+    /** Output: distance. */
     private final JTextField evalField = new JTextField(6);
+
+    /** Output: raw (non-boosted) grade. */
+    private final LDoubleField rawField = new LDoubleField("Raw", "Inter grade", "%.3f");
+
+    /** Output: (boosted) grade. */
+    private final LDoubleField gradeField = new LDoubleField(
+            "Grade",
+            "Inter boosted grade",
+            "%.3f");
 
     /** Output: key point value. */
     private final LDoubleField keyPointField = new LDoubleField(
-            "Tpl",
+            "KeyPt",
             "Template key point value",
             "%.1f");
 
@@ -108,6 +121,7 @@ public class TemplateBoard
     private Point refPoint;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TemplateBoard</code> object.
      *
@@ -126,7 +140,7 @@ public class TemplateBoard
 
         // Shape spinner
         shapeSpinner = new JSpinner(
-                new SpinnerListModel(new ArrayList<>(ShapeSet.getTemplateNotes(sheet))));
+                new SpinnerListModel(new ArrayList<>(ShapeSet.getTemplateNotesAll(sheet))));
         shapeSpinner.addChangeListener(this);
         shapeSpinner.setName("shapeSpinner");
         shapeSpinner.setToolTipText("Selection of template shape");
@@ -148,47 +162,57 @@ public class TemplateBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    @Override
-    public void onEvent (UserEvent event)
+
+    //---------------//
+    // areCompatible //
+    //---------------//
+    /**
+     * Check whether the provided shape and anchor values are compatible.
+     * <ul>
+     * <li>Stem-less shapes (breve, wholes) go with Anchor.MIDDLE_LEFT only.</li>
+     * <li>Stem shapes (halves, quarters) go with Anchor.LEFT_STEM and Anchor.RIGHT_STEM plus
+     * Anchor.MIDDLE_LEFT</li>
+     * </ul>
+     *
+     * @param shape  provided shape
+     * @param anchor provided anchor
+     * @return true if compatible
+     */
+    private boolean areCompatible (Shape shape,
+                                   Anchor anchor)
     {
-        try {
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
+        if (ShapeSet.StemLessHeads.contains(shape)) {
+            return anchor == Anchor.MIDDLE_LEFT;
+        } else {
+            return true;
         }
     }
 
     //--------------//
-    // stateChanged //
+    // defineLayout //
     //--------------//
-    /**
-     * CallBack triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating spinner
-     */
-    @Override
-    public void stateChanged (ChangeEvent e)
+    private void defineLayout ()
     {
-        // Notify the new anchor (with current template shape)
-        final Shape shape = (Shape) shapeSpinner.getValue();
-        final Anchor anchor = (Anchor) anchorSpinner.getValue();
-        AnchoredTemplate at = null;
+        FormLayout layout = Panel.makeFormLayout(2, 3);
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
 
-        if (areCompatible(shape, anchor)) {
-            Scale scale = sheet.getScale();
-            Template template = TemplateFactory.getInstance().getCatalog(
-                    MusicFont.getHeadPointSize(scale, scale.getInterline())).getTemplate(shape);
-            at = new AnchoredTemplate(anchor, template);
-        }
+        ///builder.setDefaultDialogBorder();
+        CellConstraints cst = new CellConstraints();
 
-        templateService.publish(
-                new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
-        tryEvaluate(refPoint, at);
+        int r = 1; // --------------------------------
+        builder.add(evalField, cst.xy(1, r));
+        builder.add(anchorSpinner, cst.xyw(3, r, 3));
+        builder.add(shapeSpinner, cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+        builder.add(gradeField.getLabel(), cst.xy(1, r));
+        builder.add(gradeField.getField(), cst.xy(3, r));
+
+        builder.add(rawField.getLabel(), cst.xy(5, r));
+        builder.add(rawField.getField(), cst.xy(7, r));
+
+        builder.add(keyPointField.getLabel(), cst.xy(9, r));
+        builder.add(keyPointField.getField(), cst.xy(11, r));
     }
 
     //---------------------//
@@ -241,73 +265,83 @@ public class TemplateBoard
         }
     }
 
-    //---------------//
-    // areCompatible //
-    //---------------//
-    /**
-     * Check whether the provided shape and anchor values are compatible.
-     * <ul>
-     * <li>Whole shapes go with Anchor.MIDDLE_LEFT only.</li>
-     * <li>Head shapes go with Anchor.LEFT_STEM and Anchor.RIGHT_STEM plus Anchor.MIDDLE_LEFT</li>
-     * </ul>
-     *
-     * @param shape  provided shape
-     * @param anchor provided anchor
-     * @return true if compatible
-     */
-    private boolean areCompatible (Shape shape,
-                                   Anchor anchor)
+    //---------//
+    // onEvent //
+    //---------//
+    @Override
+    public void onEvent (UserEvent event)
     {
-        switch (shape) {
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-            return anchor == Anchor.MIDDLE_LEFT;
-
-        default:
-            return true;
+        try {
+            if (event instanceof LocationEvent) {
+                handleLocationEvent((LocationEvent) event);
+            }
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
     //--------------//
-    // defineLayout //
+    // stateChanged //
     //--------------//
-    private void defineLayout ()
+    /**
+     * CallBack triggered by a change in one of the spinners.
+     *
+     * @param e the change event, this allows to retrieve the originating spinner
+     */
+    @Override
+    public void stateChanged (ChangeEvent e)
     {
-        FormLayout layout = Panel.makeFormLayout(2, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        // Notify the new anchor (with current template shape)
+        final Shape shape = (Shape) shapeSpinner.getValue();
+        final Anchor anchor = (Anchor) anchorSpinner.getValue();
+        AnchoredTemplate at = null;
 
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
+        if (areCompatible(shape, anchor)) {
+            final Scale scale = sheet.getScale();
+            final Template template = TemplateFactory.getInstance().getCatalog(
+                    sheet.getStub().getMusicFamily(),
+                    MusicFont.getHeadPointSize(scale, scale.getInterline())).getTemplate(shape);
+            at = new AnchoredTemplate(anchor, template);
+        }
 
-        int r = 1; // --------------------------------
-        builder.add(evalField, cst.xy(1, r));
-        builder.add(anchorSpinner, cst.xyw(3, r, 3));
-        builder.add(shapeSpinner, cst.xyw(7, r, 5));
-
-        r += 2; // --------------------------------
-        builder.add(keyPointField.getLabel(), cst.xy(9, r));
-        builder.add(keyPointField.getField(), cst.xy(11, r));
+        templateService.publish(
+                new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
+        tryEvaluate(refPoint, at);
     }
 
     //-------------//
     // tryEvaluate //
     //-------------//
-    private void tryEvaluate (Point p,
+    /**
+     * Evaluate provided template at provided location.
+     *
+     * @param pt               the provided location in sheet
+     * @param anchoredTemplate the template to use
+     */
+    private void tryEvaluate (Point pt,
                               AnchoredTemplate anchoredTemplate)
     {
-        if ((p != null) && (anchoredTemplate != null)) {
-            // Evaluate current anchored template at this location
-            if ((p.x < table.getWidth()) && (p.y < table.getHeight())) {
-                final Anchor anchor = anchoredTemplate.anchor;
-                final Template template = anchoredTemplate.template;
-                double dist = template.evaluate(p.x, p.y, anchor, table);
-                double grade = Grades.intrinsicRatio * Template.impactOf(dist);
-                evalField.setText(String.format("%.3f", grade));
-            } else {
-                evalField.setText("");
-            }
+        if ((pt != null) && (anchoredTemplate != null) && (pt.x < table.getWidth()) && (pt.y < table
+                .getHeight())) {
+            final Anchor anchor = anchoredTemplate.anchor;
+            final Template template = anchoredTemplate.template;
+
+            final double dist = template.evaluate(pt.x, pt.y, anchor, table);
+            evalField.setText(String.format("%.3f", dist));
+
+            final double grade = Math.max(0, Grades.intrinsicRatio * Template.impactOf(dist));
+            rawField.setValue(grade);
+
+            final Shape shape = (Shape) shapeSpinner.getValue();
+            final double boosted = (grade == 0) ? 0
+                    : (ShapeSet.StemLessHeads.contains(shape) ? AbstractInter.increaseGrade(
+                            grade,
+                            NoteHeadsBuilder.getStemLessBoost()) : grade);
+            gradeField.setValue(boosted);
         } else {
             evalField.setText("");
+            rawField.setText("");
+            gradeField.setText("");
         }
     }
 }

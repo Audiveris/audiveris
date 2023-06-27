@@ -5,11 +5,11 @@
 //------------------------------------------------------------------------------------------------//
 package org.audiveris.omr.log;
 
-import ch.qos.logback.classic.Level;
-
 import org.audiveris.omr.WellKnowns;
 
 import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,6 +34,7 @@ public class LoggingStream
     private final Level level;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Constructor
      *
@@ -49,6 +50,7 @@ public class LoggingStream
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Upon flush(), write the existing contents of the OutputStream to
      * the logger as a log record.
@@ -57,7 +59,7 @@ public class LoggingStream
      */
     @Override
     public void flush ()
-            throws IOException
+        throws IOException
     {
         String record;
 

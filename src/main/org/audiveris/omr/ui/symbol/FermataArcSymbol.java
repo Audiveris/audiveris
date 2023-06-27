@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,8 +22,8 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.DOT_set;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
 
 import java.awt.Color;
 import java.awt.Composite;
@@ -34,57 +34,31 @@ import java.awt.geom.Point2D;
 /**
  * Class <code>FermataArcSymbol</code> implements Fermata Arc symbols with the related dot
  * as decoration.
+ * <p>
+ * Purpose of this symbol is to allow the glyph classifier to recognize fermata arc and fermata dot
+ * as two separate entities (they lie too far apart for the glyph classifier to be considered as
+ * a single symbol candidate).
  *
  * @author Hervé Bitteur
  */
 public class FermataArcSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    // The DOT_set symbol
-    private final ShapeSymbol dotSymbol = Symbols.getSymbol(DOT_set);
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Create a FermataArcSymbol (with decoration?) standard size.
+     * Create a FermataArcSymbol standard size with no decoration.
      *
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for rest part
+     * @param shape  the precise shape
+     * @param family the musicFont family
      */
     public FermataArcSymbol (Shape shape,
-                             boolean decorated,
-                             int... codes)
+                             MusicFamily family)
     {
-        this(false, shape, decorated, codes);
-    }
-
-    /**
-     * Create a FermataArcSymbol (with decoration?).
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for rest part
-     */
-    protected FermataArcSymbol (boolean isIcon,
-                                Shape shape,
-                                boolean decorated,
-                                int... codes)
-    {
-        super(isIcon, shape, decorated, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new FermataArcSymbol(true, shape, decorated, codes);
-    }
 
     //-----------//
     // getParams //
@@ -95,11 +69,11 @@ public class FermataArcSymbol
         MyParams p = new MyParams();
 
         // Full symbol (arc + dot)
-        p.layout = font.layout(codes);
+        p.layout = font.layoutShapeByCode(shape);
         p.rect = p.layout.getBounds();
 
         // Dot layout
-        p.dotLayout = font.layout(dotSymbol);
+        p.dotLayout = font.layoutShapeByCode(Shape.DOT_set);
 
         return p;
     }
@@ -121,7 +95,7 @@ public class FermataArcSymbol
 
         MusicFont.paint(g, p.layout, loc, align); // Arc + Dot
 
-        if (decorated) {
+        if (isDecorated) {
             // Paint dot in gray
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
@@ -137,6 +111,7 @@ public class FermataArcSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Relation removal
+title: Relation Removal
 grand_parent: User Edition
 parent: UI Tools
 nav_order: 5
 ---
-## Relation removal
+## Relation Removal
 {: .no_toc }
 
 ---
@@ -25,13 +25,13 @@ In the following example, a sharp sign has been linked to the wrong note head:
 
 ![](../assets/images/wrong_relation.png)
 
-To select this relation, first select the involved sharp sign.
+To select this relation, we first select the involved sharp sign.
 This will result in the picture above.
 
-Then use a right-click to display the context popup menu, hover on `Inters...` submenu,
+Then we use a right-click to display the context popup menu, hover on `Inters...` submenu,
 then on the sharp item to see the `Relations:` list of relation(s) this Inter is involved in.
 
-By clicking on the _AlterHead_ relation, you will be prompted to confirm the removal of this
+By clicking on the _AlterHead_ relation, we will be prompted to confirm the removal of this
 relation.
 
 ![](../assets/images/select_relation_for_remove.png)
@@ -56,5 +56,5 @@ This is so, because an accidental can reference only one note head
 So the wrong _AlterHead_ relation would be removed automatically when inserting a new one.
 
 The same applies to note heads: they can reference only one stem
-(if we except again the specific case of a single note head _shared_ between two opposite stems).
+(still excepting the specific case of a single note head _shared_ between two opposite stems).
 Here again, inserting a new _HeadStem_ relation would remove the former one.

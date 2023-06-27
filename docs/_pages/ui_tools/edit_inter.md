@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Inter edition
+title: Inter Edition
 grand_parent: User Edition
 parent: UI Tools
 nav_order: 2
 ---
-## Inter edition
+## Inter Edition
 {: .no_toc }
 
-Starting with 5.2 release, any Inter -- whether it has been created by the OMR engine,
+Since 5.2 release, any Inter -- whether it has been created by the OMR engine,
 manually created from a glyph or dragged n' dropped from the shape palette -- can be edited
 in terms of precise location and size.
 
 This is now the default general behavior, knowing that, depending on the Inter class at hand,
-your mileage may vary.
+our mileage may vary.
 
 And an Inter being edited has a behavior identical to the one being dragged n' dropped,
 in terms of dynamic relations evaluation and in terms of potential snapping to items nearby.
@@ -28,7 +28,7 @@ Table of contents
 
 ### Entering edition mode
 
-To start editing an Inter, you must first set it into `edition mode`:
+To start editing an Inter, we must first set it into `edition mode`:
 - This is most conveniently done by a left double-click on the inter.
 - If the inter is already selected, the InterBoard on the right displays information about it.
   In this board, the `Edit` checkbox can be used to set inter into edition mode.    
@@ -47,7 +47,7 @@ Clicking on another handle makes it the new current handle.
 
 A handle is meant to be moved:
 - either by mouse dragging,
-- or by pressing keyboard `ALT + arrow` keys in desired direction.
+- or by pressing keyboard `ALT+ ←/↑/↓/→` keys in desired direction.
 
 Clicking on any location other than Inter handles makes the Inter exit its edition mode and
 commits the edition.
@@ -56,7 +56,7 @@ commits the edition.
 By default, just one handle is displayed as in the case of the 16th rest shown above, allowing the
 inter to be shifted in any direction.
 Since this inter exhibits only one handle, it offers no resizing capability
--- not surprisingly, you cannot resize a 16th rest symbol--.
+-- not surprisingly, we cannot resize a 16th rest symbol--.
 
 ![](../assets/images/beam_edited.png)
 In the case of a beam, 3 handles are displayed.
@@ -64,7 +64,7 @@ The center handle shifts the beam in any direction.
 The left or the right handle moves just this beam edge in any direction, leaving the other edge in
 place.
 
-You will quickly notice, while moving or resizing this beam, that the green relation segments with
+We will quickly notice, while moving or resizing this beam, that the green relation segments with
 the related stems can come and go according to the possible geometric connections between the beam
 being moved or resized and the (static) stems.
 
@@ -74,7 +74,7 @@ of all available Inter editors.
 
 ### Exiting edition mode
 
-Finally, to complete the on-going edition, simply press the `Enter` key or
+Finally, to complete the on-going edition, we simply press the `Enter` key or
 click on any location other than the Inter handles.
 
 It is always possible to undo (and redo) any manual edition.

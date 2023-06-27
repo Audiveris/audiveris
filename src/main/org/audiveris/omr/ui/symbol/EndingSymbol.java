@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.EndingInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -33,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>EndingSymbol</code> implements an ending symbol
+ * Class <code>EndingSymbol</code> implements an ending symbol.
  *
  * @author Hervé Bitteur
  */
@@ -45,44 +45,58 @@ public class EndingSymbol
     final boolean withRightLeg;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create an EndingSymbol.
-     *
-     * @param withRightLeg true to provide the optional right leg
-     */
-    public EndingSymbol (boolean withRightLeg)
-    {
-        this(withRightLeg, false);
-    }
 
     /**
      * Create an EndingSymbol.
      *
      * @param withRightLeg true to provide the optional right leg
-     * @param isIcon       true for an icon
+     * @param family       the musicFont family
      */
-    protected EndingSymbol (boolean withRightLeg,
-                            boolean isIcon)
+    public EndingSymbol (boolean withRightLeg,
+                         MusicFamily family)
     {
-        super(isIcon, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, false);
+        super(withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, family);
         this.withRightLeg = withRightLeg;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
     @Override
     public EndingInter.Model getModel (MusicFont font,
-                                       Point location,
-                                       Alignment alignment)
+                                       Point location)
     {
-        MyParams p = getParams(font);
-        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        loc = PointUtil.subtraction(loc, p.offset);
-        p.model.translate(loc.getX(), loc.getY());
+        final MyParams p = getParams(font);
+        p.model.translate(p.vectorTo(location));
 
         return p.model;
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    @Override
+    protected MyParams getParams (MusicFont font)
+    {
+        final MyParams p = new MyParams();
+        final double width = font.getStaffInterline() * 4.0;
+        final double height = font.getStaffInterline() * 1.0;
+        p.rect = new Rectangle2D.Double(0, 0, width, height);
+
+        p.model.topLeft = new Point2D.Double(0, 0);
+        p.model.topRight = new Point2D.Double(width - 1, 0);
+        p.model.bottomLeft = new Point2D.Double(0, height - 1);
+
+        if (withRightLeg) {
+            p.model.bottomRight = new Point2D.Double(width - 1, height - 1);
+        }
+
+        /** For an Ending symbol, focus center is middle of upper horizontal segment. */
+        p.offset = new Point2D.Double(0, -height / 2);
+
+        return p;
     }
 
     //--------//
@@ -92,39 +106,6 @@ public class EndingSymbol
     public String getTip ()
     {
         return shape + (withRightLeg ? " (w/ right leg)" : "");
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new EndingSymbol(withRightLeg, true);
-    }
-
-    //-----------//
-    // getParams //
-    //-----------//
-    @Override
-    protected MyParams getParams (MusicFont font)
-    {
-        MyParams p = new MyParams();
-        double width = font.getStaffInterline() * 4.0;
-        double height = font.getStaffInterline() * 1.0;
-        p.rect = new Rectangle2D.Double(0, 0, width, height);
-
-        p.model.topLeft = new Point2D.Double(0, 0);
-        p.model.topRight = new Point2D.Double(width - 1, 0);
-        p.model.bottomLeft = new Point2D.Double(0, height);
-
-        if (withRightLeg) {
-            p.model.bottomRight = new Point2D.Double(width - 1, height);
-        }
-
-        p.offset = new Point2D.Double(0, -height / 2);
-
-        return p;
     }
 
     //-------//
@@ -150,11 +131,12 @@ public class EndingSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: used

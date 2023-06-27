@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,15 +22,27 @@
 package org.audiveris.omr.text.tesseract;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.bytedeco.javacpp.*;
-import static org.bytedeco.javacpp.lept.*;
-import static org.bytedeco.javacpp.tesseract.*;
+import org.bytedeco.javacpp.BoolPointer;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.leptonica.PIX;
+import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
+import static org.bytedeco.leptonica.global.leptonica.pixReadMemTiff;
+import org.bytedeco.tesseract.ResultIterator;
+import org.bytedeco.tesseract.TessBaseAPI;
+import static org.bytedeco.tesseract.global.tesseract.OEM_TESSERACT_ONLY;
+import static org.bytedeco.tesseract.global.tesseract.RIL_SYMBOL;
+import static org.bytedeco.tesseract.global.tesseract.RIL_TEXTLINE;
+import static org.bytedeco.tesseract.global.tesseract.RIL_WORD;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +52,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -65,10 +78,18 @@ public class TesseractOrder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
     /** To specify UTF-8 encoding. */
     private static final String UTF8 = "UTF-8";
+
+    /** Tesseract variable name for white list. */
+    private static final String WHITE_LIST_NAME = "tessedit_char_whitelist";
+
+    /** Tesseract variable name for black list. */
+    private static final String BLACK_LIST_NAME = "tessedit_char_blacklist";
 
     /** To avoid repetitive warnings if OCR binding failed. */
     private static volatile boolean userWarned;
@@ -82,6 +103,10 @@ public class TesseractOrder
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+
+    /** Containing sheet. */
+    private final Sheet sheet;
+
     /** Serial number for this order. */
     private final int serial;
 
@@ -89,7 +114,7 @@ public class TesseractOrder
     private final String label;
 
     /** Should we keep a disk copy of the image?. */
-    private final boolean keepImage;
+    private final boolean saveImage;
 
     /** Language specification. */
     private final String lang;
@@ -104,15 +129,14 @@ public class TesseractOrder
     private final PIX image;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------------//
-    // TesseractOrder //
-    //----------------//
+
     /**
      * Creates a new TesseractOrder object.
      *
+     * @param sheet         the containing sheet
      * @param label         A debugging label (such as sheet name or glyph id)
      * @param serial        A unique id for this order instance
-     * @param keepImage     True to keep a disk copy of the image
+     * @param saveImage     True to keep a disk copy of the image
      * @param lang          The language specification
      * @param segMode       The desired page segmentation mode
      * @param bufferedImage The image to process
@@ -120,23 +144,24 @@ public class TesseractOrder
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
      */
-    public TesseractOrder (String label,
+    public TesseractOrder (Sheet sheet,
+                           String label,
                            int serial,
-                           boolean keepImage,
+                           boolean saveImage,
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
-            throws UnsatisfiedLinkError,
-                   IOException
+            throws UnsatisfiedLinkError, IOException
     {
+        this.sheet = sheet;
         this.label = label;
         this.serial = serial;
-        this.keepImage = keepImage;
+        this.saveImage = saveImage;
         this.lang = lang;
         this.segMode = segMode;
 
         // Build a PIX from the image provided
-        ByteBuffer buf = toTiffBuffer(bufferedImage);
+        final ByteBuffer buf = toTiffBuffer(bufferedImage);
         buf.position(0);
         image = pixReadMemTiff(buf, buf.capacity(), 0);
 
@@ -147,59 +172,6 @@ public class TesseractOrder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Actually allocate a Tesseract API and recognize the image.
-     *
-     * @return the sequence of lines found
-     */
-    public List<TextLine> process ()
-    {
-        if (!OcrUtil.getOcr().isAvailable()) {
-            return Collections.emptyList();
-        }
-
-        try {
-            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
-            api = new TessBaseAPI();
-
-            // Init API with proper language
-            if (api.Init(ocrFolder.toString(), lang) != 0) {
-                logger.warn("Could not initialize Tesseract with lang {}", lang);
-
-                return finish(null);
-            }
-
-            // Set API image
-            api.SetImage(image);
-
-            // Perform layout analysis according to segmentation mode
-            api.SetPageSegMode(segMode);
-            api.AnalyseLayout();
-
-            // Perform image recognition
-            final int result = api.Recognize(null);
-
-            if (result != 0) {
-                logger.warn("Error in Tesseract recognize, exit code: {}", result);
-
-                return finish(null);
-            }
-
-            // Extract lines
-            return finish(getLines());
-        } catch (UnsatisfiedLinkError ex) {
-            if (!userWarned) {
-                logger.warn("Could not link Tesseract engine", ex);
-                logger.warn("java.library.path=" + System.getProperty("java.library.path"));
-                userWarned = true;
-            }
-
-            throw new RuntimeException(ex);
-        }
-    }
 
     //--------//
     // finish //
@@ -223,28 +195,48 @@ public class TesseractOrder
         return lines;
     }
 
+    //-------------//
+    // getBaseline //
+    //-------------//
+    /**
+     * Report the baseline of the provided OCR'd item.
+     *
+     * @param it    iterator on results structure
+     * @param level desired level (word)
+     * @return item baseline as a Line2D or null
+     */
     private Line2D getBaseline (ResultIterator rit,
                                 int level)
     {
-        IntPointer x1 = new IntPointer(0);
-        IntPointer y1 = new IntPointer(0);
-        IntPointer x2 = new IntPointer(0);
-        IntPointer y2 = new IntPointer(0);
+        final IntPointer x1 = new IntPointer(0);
+        final IntPointer y1 = new IntPointer(0);
+        final IntPointer x2 = new IntPointer(0);
+        final IntPointer y2 = new IntPointer(0);
 
         if (rit.Baseline(level, x1, y1, x2, y2)) {
             return new Line2D.Double(x1.get(), y1.get(), x2.get(), y2.get());
-        } else {
-            return null;
         }
+
+        return null;
     }
 
-    private Rectangle getBoundingBox (PageIterator it,
+    //----------------//
+    // getBoundingBox //
+    //----------------//
+    /**
+     * Report the bounding box of the provided OCR'd item.
+     *
+     * @param it    iterator on results structure
+     * @param level desired level (word or char/symbol)
+     * @return item bounding box as a Rectangle or null
+     */
+    private Rectangle getBoundingBox (ResultIterator it,
                                       int level)
     {
-        IntPointer left = new IntPointer(0);
-        IntPointer top = new IntPointer(0);
-        IntPointer right = new IntPointer(0);
-        IntPointer bottom = new IntPointer(0);
+        final IntPointer left = new IntPointer(0);
+        final IntPointer top = new IntPointer(0);
+        final IntPointer right = new IntPointer(0);
+        final IntPointer bottom = new IntPointer(0);
 
         if (it.BoundingBox(level, left, top, right, bottom)) {
             return new Rectangle(
@@ -252,9 +244,9 @@ public class TesseractOrder
                     top.get(),
                     right.get() - left.get(),
                     bottom.get() - top.get());
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     //---------//
@@ -268,18 +260,16 @@ public class TesseractOrder
      */
     private FontInfo getFont (ResultIterator rit)
     {
-        BoolPointer is_bold = new BoolPointer(0);
-        BoolPointer is_italic = new BoolPointer(0);
-        BoolPointer is_underlined = new BoolPointer(0);
-        BoolPointer is_monospace = new BoolPointer(0);
-        BoolPointer is_serif = new BoolPointer(0);
-        BoolPointer is_smallcaps = new BoolPointer(0);
-        IntPointer pointSize = new IntPointer(0);
-        IntPointer font_id = new IntPointer(0);
+        final BoolPointer is_bold = new BoolPointer(0);
+        final BoolPointer is_italic = new BoolPointer(0);
+        final BoolPointer is_underlined = new BoolPointer(0);
+        final BoolPointer is_monospace = new BoolPointer(0);
+        final BoolPointer is_serif = new BoolPointer(0);
+        final BoolPointer is_smallcaps = new BoolPointer(0);
+        final IntPointer pointSize = new IntPointer(0);
+        final IntPointer font_id = new IntPointer(0);
 
-        String fontName = null;
-
-        BytePointer bp = rit.WordFontAttributes(
+        final BytePointer bp = rit.WordFontAttributes(
                 is_bold,
                 is_italic,
                 is_underlined,
@@ -289,24 +279,25 @@ public class TesseractOrder
                 pointSize,
                 font_id);
 
-        // don't try to decode fontName from null bytepointer!
-        if (bp != null) {
-            fontName = bp.getString();
-        }
-
-        if (fontName != null) {
-            return new FontInfo(
-                    is_bold.get(),
-                    is_italic.get(),
-                    is_underlined.get(),
-                    is_monospace.get(),
-                    is_serif.get(),
-                    is_smallcaps.get(),
-                    pointSize.get(),
-                    fontName);
-        } else {
+        if (bp == null) {
             return null;
         }
+
+        final String fontName = bp.getString();
+
+        if (fontName == null) {
+            return null;
+        }
+
+        return new FontInfo(
+                is_bold.get(),
+                is_italic.get(),
+                is_underlined.get(),
+                is_monospace.get(),
+                is_serif.get(),
+                is_smallcaps.get(),
+                pointSize.get(),
+                fontName);
     }
 
     //----------//
@@ -337,7 +328,7 @@ public class TesseractOrder
 
                 // Start of line?
                 if (it.IsAtBeginningOf(RIL_TEXTLINE)) {
-                    line = new TextLine();
+                    line = new TextLine(sheet);
                     logger.debug("{} {}", label, line);
                     lines.add(line);
                 }
@@ -354,6 +345,7 @@ public class TesseractOrder
                     }
 
                     word = new TextWord(
+                            sheet,
                             getBoundingBox(it, RIL_WORD),
                             it.GetUTF8Text(RIL_WORD).getString(UTF8),
                             getBaseline(it, RIL_WORD),
@@ -381,10 +373,7 @@ public class TesseractOrder
                         it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 
-            // Print raw lines, right out of Tesseract OCR
-            for (TextLine textLine : lines) {
-                logger.debug("raw {}", textLine);
-            }
+            lines.removeIf( (l) -> l.getValue().equals(" "));
 
             return lines;
         } catch (UnsupportedEncodingException ex) {
@@ -393,6 +382,91 @@ public class TesseractOrder
             return null;
         } finally {
             it.deallocate();
+        }
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Actually allocate a Tesseract API and recognize the image.
+     *
+     * @return the sequence of lines found
+     */
+    public List<TextLine> process ()
+    {
+        if (!OcrUtil.getOcr().isAvailable()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            api = new TessBaseAPI();
+
+            // Init API with proper language
+            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
+
+            if (logger.isDebugEnabled()) {
+                logger.info("ocrFolder: {}", ocrFolder);
+                final File langsDir = ocrFolder.toFile();
+                for (File file : langsDir.listFiles()) {
+                    if (file.toString().endsWith(".traineddata")) {
+                        logger.info("Lang file: {}", file);
+                    }
+                }
+            }
+
+            final int initResult = api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY);
+            if (initResult != 0) {
+                logger.warn("Could not initialize Tesseract lang: {} result: {}", lang, initResult);
+
+                return finish(null);
+            }
+
+            // Set character white list?
+            if (!constants.whiteList.getValue().isBlank()) {
+                if (!api.SetVariable(WHITE_LIST_NAME, constants.whiteList.getValue())) {
+                    logger.error("Error setting Tesseract variable {}", WHITE_LIST_NAME);
+                }
+            }
+
+            // Set character black list?
+            if (!constants.blackList.getValue().isBlank()) {
+                if (!api.SetVariable(BLACK_LIST_NAME, constants.blackList.getValue())) {
+                    logger.error("Error setting Tesseract variable {}", BLACK_LIST_NAME);
+                }
+            }
+
+            // Set API image
+            api.SetImage(image);
+
+            // Specify image resolution (experimental)
+            if (constants.typicalImageResolution.getValue() != -1) {
+                api.SetSourceResolution(constants.typicalImageResolution.getValue());
+            }
+
+            // Perform layout analysis according to segmentation mode
+            api.SetPageSegMode(segMode);
+            api.AnalyseLayout();
+
+            // Perform image recognition
+            final int recognizeResult = api.Recognize(null);
+
+            if (recognizeResult != 0) {
+                logger.warn("Error in Tesseract recognize, result: {}", recognizeResult);
+
+                return finish(null);
+            }
+
+            // Extract lines
+            return finish(getLines());
+        } catch (UnsatisfiedLinkError ex) {
+            if (!userWarned) {
+                logger.warn("Could not link Tesseract engine", ex);
+                logger.warn("java.library.path=" + System.getProperty("java.library.path"));
+                userWarned = true;
+            }
+
+            throw new RuntimeException(ex);
         }
     }
 
@@ -409,32 +483,33 @@ public class TesseractOrder
      * @return a buffer in TIFF format
      */
     private ByteBuffer toTiffBuffer (BufferedImage image)
-            throws IOException
+        throws IOException
     {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
-            ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
+            final ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
             writer.setOutput(ios);
             writer.write(image);
         } catch (IOException ex) {
             logger.warn("Could not write image", ex);
         }
 
-        ByteBuffer buf = ByteBuffer.allocate(baos.size());
-        byte[] bytes = baos.toByteArray();
+        final ByteBuffer buf = ByteBuffer.allocate(baos.size());
+        final byte[] bytes = baos.toByteArray();
         buf.put(bytes);
 
         // Should we keep a local copy of this buffer on disk?
-        if (keepImage) {
-            String name = String.format("%03d-", serial) + ((label != null) ? label : "");
-            Path path = WellKnowns.TEMP_FOLDER.resolve(name + ".tif");
+        if (saveImage) {
+            final Path dirPath = WellKnowns.TEMP_FOLDER.resolve(label);
 
-            // Make sure the TEMP directory exists
-            if (!Files.exists(WellKnowns.TEMP_FOLDER)) {
-                Files.createDirectories(WellKnowns.TEMP_FOLDER);
+            // Make sure the target directory exists
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
             }
 
+            final String name = String.format("text-%03d.tif", serial);
+            final Path path = dirPath.resolve(name);
             try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
                 fos.write(bytes);
             } catch (IOException ex) {
@@ -452,7 +527,7 @@ public class TesseractOrder
      *
      * @param word   the word to populate
      * @param bounds the char/symbol bounds
-     * @param str    the char/symbol value
+     * @param value  the char/symbol value
      */
     private void wordAddChars (TextWord word,
                                Rectangle bounds,
@@ -463,7 +538,7 @@ public class TesseractOrder
         if (len == 1) {
             word.addChar(new TextChar(bounds, value)); // Normal case
         } else {
-            double meanCharWidth = (double) bounds.width / len;
+            final double meanCharWidth = (double) bounds.width / len;
 
             for (int i = 0; i < len; i++) {
                 Rectangle cb = new Rectangle2D.Double(
@@ -474,5 +549,27 @@ public class TesseractOrder
                 word.addChar(new TextChar(cb, value.substring(i, i + 1)));
             }
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer typicalImageResolution = new Constant.Integer(
+                "dpi",
+                70,
+                "Typical image resolution in DPI (disabled when set to -1)");
+
+        private final Constant.String blackList = new Constant.String(
+                "",
+                "Character black list (disabled when empty)");
+
+        private final Constant.String whiteList = new Constant.String(
+                "", // abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.,'",
+                "Character white list (disabled when empty)");
     }
 }

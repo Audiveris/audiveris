@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,10 +31,12 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,14 +66,14 @@ import java.util.List;
  *
  * <pre>
  * +-------+
- * |   1   |
- * |   2   |
+ * | . 1 . |
+ * | . 2 . |
  * +---+---+
  * | 3 | 5 |
  * | 4 | 6 |
  * +---+---+
- * |   7   |
- * |   8   |
+ * | . 7 . |
+ * | . 8 . |
  * +-------+
  * </pre>
  *
@@ -87,6 +89,7 @@ public class StaffManager
     private static final Logger logger = LoggerFactory.getLogger(StaffManager.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -95,6 +98,7 @@ public class StaffManager
     private final List<Staff> staves = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new StaffManager object.
      *
@@ -110,6 +114,7 @@ public class StaffManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addStaff //
     //----------//
@@ -368,7 +373,7 @@ public class StaffManager
     // getStrictStaffAt //
     //------------------//
     /**
-     * Report the staff which strictly contains the provided point.
+     * Report the staff which vertically contains the provided point.
      *
      * @param point the provided point
      * @return the containing staff, or null if none containing found
@@ -401,14 +406,14 @@ public class StaffManager
      *
      * <pre>
      * +-------+
-     * |   1   |
-     * |   2   |
+     * | . 1 . |
+     * | . 2 . |
      * +---+---+
      * | 3 | 5 |
      * | 4 | 6 |
      * +---+---+
-     * |   7   |
-     * |   8   |
+     * | . 7 . |
+     * | . 8 . |
      * +-------+
      * - horiNeighbor(1, RIGHT) == null
      * - horiNeighbor(3, RIGHT) == 5
@@ -437,6 +442,33 @@ public class StaffManager
         }
 
         return null;
+    }
+
+    //-------------//
+    // removeStaff //
+    //-------------//
+    /**
+     * Remove the provided staff (and update the following staves);
+     *
+     * @param staff the staff to remove
+     */
+    public void removeStaff (Staff staff)
+    {
+        final int idx = staves.indexOf(staff);
+
+        if (idx == -1) {
+            throw new IllegalArgumentException("Unknown staff in sheet " + staff);
+        }
+
+        staves.remove(idx);
+
+        for (int i = idx; i < staves.size(); i++) {
+            staves.get(i).setId(i + 1);
+        }
+
+        //        for (Staff s : staves) {
+        //            s.setArea(null);
+        //        }
     }
 
     //--------//
@@ -501,14 +533,14 @@ public class StaffManager
      *
      * <pre>
      * +-------+
-     * |   1   |
-     * |   2   |
+     * | . 1 . |
+     * | . 2 . |
      * +---+---+
      * | 3 | 5 |
      * | 4 | 6 |
      * +---+---+
-     * |   7   |
-     * |   8   |
+     * | . 7 . |
+     * | . 8 . |
      * +-------+
      * - vertNeighbors(1, TOP) == []
      * - vertNeighbors(1, BOTTOM) == [2]
@@ -571,6 +603,8 @@ public class StaffManager
 
         return neighbors;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------------//
     // getClosestStaff //
@@ -689,6 +723,7 @@ public class StaffManager
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

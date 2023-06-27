@@ -20,7 +20,8 @@ the Audiveris application window.
 
 Audiveris accepts a variety of image formats as input, notably PDF, TIFF, JPG, PNG, BMP.
 
-Here, we have selected the file `chula.png`, and the application window displays the contained image
-(actually, it's a binarized version of the image):
+Here, we have selected the file `chula.png`, and the application window now displays the
+contained image.
+Actually, it's a *binarized* version of the image:
 
 ![Binarized image](../assets/images/chula_binarized.png)

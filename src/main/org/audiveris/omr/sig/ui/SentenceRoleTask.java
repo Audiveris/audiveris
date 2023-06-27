@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.text.TextRole;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class <code>SentenceRoleTask</code> changes the role of a sentence.
  *
@@ -32,6 +35,10 @@ import org.audiveris.omr.text.TextRole;
 public class SentenceRoleTask
         extends InterTask
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(SentenceRoleTask.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Old sentence role. */
@@ -41,6 +48,7 @@ public class SentenceRoleTask
     final TextRole newRole;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SentenceTask</code> object.
      *
@@ -57,6 +65,7 @@ public class SentenceRoleTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public SentenceInter getInter ()
     {

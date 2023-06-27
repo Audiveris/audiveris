@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,8 +22,15 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import static org.audiveris.omr.glyph.Shape.BREVE_REST;
+import static org.audiveris.omr.glyph.Shape.HALF_REST;
+import static org.audiveris.omr.glyph.Shape.LONG_REST;
+import static org.audiveris.omr.glyph.Shape.WHOLE_REST;
+import org.audiveris.omr.math.PointUtil;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -38,67 +45,27 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class RestSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Staff lines symbol. */
-    protected static final BasicSymbol linesSymbol = Symbols.SYMBOL_STAFF_LINES;
+    private static final Logger logger = LoggerFactory.getLogger(RestSymbol.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a RestSymbol (with decoration?) standard size.
      *
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for rest part
+     * @param shape  the precise shape (LONG_REST, BREVE_REST, WHOLE_REST, HALF_REST, HW_REST_set)
+     * @param family the musicFont family
      */
     public RestSymbol (Shape shape,
-                       boolean decorated,
-                       int... codes)
+                       MusicFamily family)
     {
-        this(false, shape, decorated, codes);
-    }
-
-    /**
-     * Create a RestSymbol (with decoration?).
-     *
-     * @param isIcon    true for an icon
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for rest part
-     */
-    protected RestSymbol (boolean isIcon,
-                          Shape shape,
-                          boolean decorated,
-                          int... codes)
-    {
-        super(isIcon, shape, decorated, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        if ((shape == LONG_REST) || (shape == BREVE_REST) || (shape == WHOLE_REST)
-                    || (shape == HALF_REST)) {
-            return new RestSymbol(isIcon, shape, true, codes);
-        }
-
-        return this; // No decoration
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new RestSymbol(true, shape, decorated, codes);
-    }
 
     //-----------//
     // getParams //
@@ -106,19 +73,19 @@ public class RestSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
+        final MyParams p = new MyParams();
 
         // Rest symbol layout
-        p.layout = getRestLayout(font);
+        p.layout = font.layoutShapeByCode(shape);
 
-        Rectangle2D rs = p.layout.getBounds();
+        final Rectangle2D rs = p.layout.getBounds();
 
-        if (decorated) {
-            // Define specific offset
-            p.offset = new Point2D.Double(0, rs.getY() + (rs.getHeight() / 2));
+        if (isDecorated) {
+            // Define specific vertical offset from lines center to rest center
+            p.offset = new Point2D.Double(0, getYOffset(rs.getHeight()));
 
             // Lines layout
-            p.linesLayout = font.layout(linesSymbol.getString());
+            p.linesLayout = font.layoutShapeByCode(Shape.STAFF_LINES);
             p.rect = p.linesLayout.getBounds();
         } else {
             p.rect = rs;
@@ -127,18 +94,28 @@ public class RestSymbol
         return p;
     }
 
-    //---------------//
-    // getRestLayout //
-    //---------------//
+    //------------//
+    // getYOffset //
+    //------------//
     /**
-     * Retrieve the layout of just the rest symbol part, w/o the lines.
+     * Report the vertical offset to use, according to rest shape.
      *
-     * @param font the font to extract the layout from
-     * @return text layout for rest symbols
+     * @param height symbol height
+     * @return the vertical offset
      */
-    protected TextLayout getRestLayout (MusicFont font)
+    private double getYOffset (double height)
     {
-        return font.layout(getString());
+        switch (shape) {
+        default:
+        case LONG_REST:
+            return 0;
+        case BREVE_REST:
+            return -0.5 * height;
+        case WHOLE_REST:
+            return -1.25 * height;
+        case HALF_REST:
+            return -0.5 * height;
+        }
     }
 
     //-------//
@@ -150,22 +127,35 @@ public class RestSymbol
                           Point2D location,
                           Alignment alignment)
     {
-        MyParams p = (MyParams) params;
-        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        final MyParams p = (MyParams) params;
+        final Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
-        if (decorated) {
-            Composite oldComposite = g.getComposite();
+        if (isDecorated) {
+            // Paint staff lines and compute location for rest symbol
+            final Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
             MusicFont.paint(g, p.linesLayout, loc, AREA_CENTER);
             g.setComposite(oldComposite);
 
-            MusicFont.paint(g, p.layout, loc, BASELINE_CENTER);
-        } else {
-            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
+            PointUtil.add(loc, p.offset);
         }
+
+        // Paint rest symbol
+        MusicFont.paint(g, p.layout, loc, AREA_CENTER);
+    }
+
+    //--------------------//
+    // supportsDecoration //
+    //--------------------//
+    @Override
+    protected boolean supportsDecoration ()
+    {
+        return (shape == BREVE_REST) || (shape == LONG_REST) || (shape == WHOLE_REST)
+                || (shape == HALF_REST);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

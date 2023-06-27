@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,27 +23,35 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
+import static org.audiveris.omr.glyph.Shape.HALF_NOTE_UP;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_BLACK;
+import static org.audiveris.omr.glyph.Shape.NOTEHEAD_VOID;
+import static org.audiveris.omr.glyph.Shape.QUARTER_NOTE_DOWN;
+import static org.audiveris.omr.glyph.Shape.QUARTER_NOTE_UP;
+import static org.audiveris.omr.glyph.Shape.STEM;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.symbol.InterFactory;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTracker;
-import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.step.OmrStep;
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.CompoundNoteSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +64,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.Link;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 /**
  * Class <code>CompoundNoteInter</code> represents a head combined with a stem.
@@ -68,10 +72,6 @@ import org.audiveris.omr.ui.symbol.Symbols;
  * of quarter and half notes.
  * <p>
  * When such compound is dropped, it gets replaced by head + stem + head-stem relation.
- * <p>
- * TODO:
- *
- * Tracker
  *
  * @author Hervé Bitteur
  */
@@ -80,21 +80,24 @@ public class CompoundNoteInter
 {
 
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(CompoundNoteInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Included head. */
-    private HeadInter head;
+    private final HeadInter head;
 
     /** Included stem. */
-    private StemInter stem;
+    private final StemInter stem;
 
     /** Related model, if any. */
     private Model model;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new <code>HeadInter</code> object.
+     * Creates a new <code>CompoundNoteInter</code> object.
      *
      * @param glyph  the underlying glyph if any
      * @param bounds the object bounds
@@ -109,12 +112,44 @@ public class CompoundNoteInter
         super(glyph, bounds, shape, grade);
 
         head = (HeadInter) InterFactory.createManual(
-                isQuarter() ? NOTEHEAD_BLACK : NOTEHEAD_VOID, null);
+                isQuarter() ? NOTEHEAD_BLACK : NOTEHEAD_VOID,
+                null);
 
         stem = (StemInter) InterFactory.createManual(STEM, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // getModel //
+    //----------//
+    /**
+     * Build a poor-man model, just from staff and bounds (from glyph?).
+     *
+     * @return the created model
+     */
+    private Model buildModel ()
+    {
+        if (bounds == null || staff == null) {
+            return null;
+        }
+
+        final Point center = getCenter();
+        final int staffInterline = staff.getSpecificInterline();
+        final int halfInterline = staffInterline / 2;
+        final Point hCenter = new Point(
+                center.x,
+                isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
+        final Sheet sheet = staff.getSystem().getSheet();
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final MusicFont font = MusicFont.getBaseFont(family, staffInterline);
+        final CompoundNoteSymbol symbol = (CompoundNoteSymbol) font.getSymbol(shape);
+        deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter);
+        logger.debug("{}", model);
+
+        return model;
+    }
+
     //------------//
     // deriveFrom //
     //------------//
@@ -122,11 +157,10 @@ public class CompoundNoteInter
     public boolean deriveFrom (ShapeSymbol symbol,
                                Sheet sheet,
                                MusicFont font,
-                               Point dropLocation,
-                               Alignment alignment)
+                               Point dropLocation)
     {
         final CompoundNoteSymbol noteSymbol = (CompoundNoteSymbol) symbol;
-        model = noteSymbol.getModel(font, dropLocation, alignment);
+        model = noteSymbol.getModel(font, dropLocation);
 
         // We snap head to lines/ledgers for y
         final Double y = HeadInter.getSnapOrdinate(model.headCenter, staff);
@@ -176,39 +210,28 @@ public class CompoundNoteInter
         return new HeadInter.Tracker(this, sheet);
     }
 
-    //----------//
-    // getModel //
-    //----------//
-    /**
-     * Build a poor-man model, just from staff and bounds (from glyph?).
-     *
-     * @return the created model
-     */
-    private Model buildModel ()
+    //-----------//
+    // isQuarter //
+    //-----------//
+    private boolean isQuarter ()
     {
-        if (bounds == null || staff == null) {
-            return null;
-        }
+        return (shape == QUARTER_NOTE_UP) || (shape == QUARTER_NOTE_DOWN);
+    }
 
-        final Point center = getCenter();
-        final int staffInterline = staff.getSpecificInterline();
-        final int halfInterline = staffInterline / 2;
-        final Point hCenter = new Point(
-                center.x,
-                isUp() ? bounds.y + bounds.height - halfInterline : bounds.y + halfInterline);
-        final CompoundNoteSymbol symbol = (CompoundNoteSymbol) Symbols.getSymbol(shape);
-        final MusicFont font = MusicFont.getBaseFont(staffInterline);
-        deriveFrom(symbol, staff.getSystem().getSheet(), font, hCenter, AREA_CENTER);
-        logger.debug("{}", model);
-
-        return model;
+    //------//
+    // isUp //
+    //------//
+    private boolean isUp ()
+    {
+        return (shape == QUARTER_NOTE_UP) || (shape == HALF_NOTE_UP);
     }
 
     //--------//
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         final List<UITask> tasks = new ArrayList<>();
 
@@ -286,28 +309,13 @@ public class CompoundNoteInter
         return stem.lookupBeamLinks(system, profile);
     }
 
-    //-----------//
-    // isQuarter //
-    //-----------//
-    private boolean isQuarter ()
-    {
-        return (shape == QUARTER_NOTE_UP) || (shape == QUARTER_NOTE_DOWN);
-    }
-
-    //------//
-    // isUp //
-    //------//
-    private boolean isUp ()
-    {
-        return (shape == QUARTER_NOTE_UP) || (shape == HALF_NOTE_UP);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Model //
     //-------//
     public static class Model
-            implements InterUIModel
+            implements ObjectUIModel
     {
 
         public Rectangle2D box; // CompoundNote bounds
@@ -319,6 +327,13 @@ public class CompoundNoteInter
         public Point2D headCenter; // Head center
 
         @Override
+        public String toString ()
+        {
+            return new StringBuilder("noteModel{").append(" box:").append(box).append(
+                    " headCenter:").append(headCenter).append('}').toString();
+        }
+
+        @Override
         public void translate (double dx,
                                double dy)
         {
@@ -326,15 +341,6 @@ public class CompoundNoteInter
             GeoUtil.translate2D(box, dx, dy);
             GeoUtil.translate2D(headBox, dx, dy);
             GeoUtil.translate2D(stemBox, dx, dy);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return new StringBuilder("noteModel{")
-                    .append(" box:").append(box)
-                    .append(" headCenter:").append(headCenter)
-                    .append('}').toString();
         }
     }
 }

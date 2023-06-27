@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,9 +23,11 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.score.ui.LogicalPartsEditor;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.param.Param;
 
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
@@ -42,6 +45,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>Score</code> represents a single movement, and is composed of one or
@@ -95,13 +99,10 @@ public class Score
     public static final int LINE_NB = 5;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
-    /**
-     * Score id, within containing book.
-     * see {@link #getId()}.
-     */
+
     /**
      * This is the list of <code>LogicalPart</code>'s defined for the whole score.
      */
@@ -109,59 +110,70 @@ public class Score
     private List<LogicalPart> logicalParts;
 
     /**
-     * This is the list of references to score pages, as seen from this score.
+     * This boolean signals the locking of logicalPart sequence.
+     */
+    @XmlAttribute(name = "logicals-locked")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean logicalsLocked;
+
+    /**
+     * This is the list of soft references to score pages, as seen from this score.
      */
     @XmlElement(name = "page")
-    private final List<ScorePageRef> pageLinks = new ArrayList<>();
+    private final List<PageNumber> pageNumbers = new ArrayList<>();
 
     // Transient data
     //---------------
-    //
+
     /** Containing book. */
     @Navigable(false)
     private Book book;
 
-    /**
-     * References to score pages, as seen from their containing sheet stubs.
-     */
-    private final ArrayList<PageRef> pageRefs = new ArrayList<>();
-
-    /** Actual score pages. */
-    private ArrayList<Page> pages;
-
-    /** Handling of parts name and program. */
-    private final Param<List<PartData>> partsParam = new PartsParam();
-
     /** Handling of tempo parameter. */
-    private final Param<Integer> tempoParam = new Param<>();
+    private final Param<Integer> tempoParam;
 
     /** The specified sound volume, if any. */
     private Integer volume;
 
+    /** The editor, if any, on score logical parts. */
+    private LogicalPartsEditor logicalsEditor;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a Score.
      */
     public Score ()
     {
+        tempoParam = new Param<>(this);
         tempoParam.setParent(Tempo.defaultTempo);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // addPageRef //
-    //------------//
+
+    //---------------//
+    // addPageNumber //
+    //---------------//
     /**
-     * Add a PageRef.
+     * Add a PageNumber.
      *
      * @param stubNumber id of containing sheet stub
      * @param pageRef    to add
      */
-    public void addPageRef (int stubNumber,
-                            PageRef pageRef)
+    public void addPageNumber (int stubNumber,
+                               PageRef pageRef)
     {
-        pageRefs.add(pageRef);
-        pageLinks.add(new ScorePageRef(stubNumber, pageRef.getId()));
+        pageNumbers.add(new PageNumber(stubNumber, pageRef.getId()));
+    }
+
+    //-----------------//
+    // beforeUnmarshal //
+    //-----------------//
+    @SuppressWarnings("unused")
+    private void beforeUnmarshal (Unmarshaller u,
+                                  Object parent)
+    {
+        book = (Book) parent;
     }
 
     //-------//
@@ -173,10 +185,31 @@ public class Score
     public void close ()
     {
         logger.info("Closing {}", this);
+
+        if (logicalsEditor != null) {
+            logicalsEditor.getComponent().dispose();
+        }
     }
 
+    //----------//
+    // contains //
+    //----------//
     /**
-     * Report the containing book for this score
+     * Report whether this score contains the provided PageNumber.
+     *
+     * @param pageNumber provided page number
+     * @return true if so
+     */
+    public boolean contains (PageNumber pageNumber)
+    {
+        return pageNumbers.indexOf(pageNumber) != -1;
+    }
+
+    //---------//
+    // getBook //
+    //---------//
+    /**
+     * Report the containing book for this score.
      *
      * @return the book
      */
@@ -185,51 +218,66 @@ public class Score
         return book;
     }
 
-    //---------//
-    // setBook //
-    //---------//
+    //--------------------//
+    // getFirstOccurrence //
+    //--------------------//
     /**
-     * Assign the containing book.
+     * Report the first part in this score which implements the provided logical part.
      *
-     * @param book the book to set
+     * @param logicalPart the desired logicalPart
+     * @return first corresponding (physical) part, or null if not found
      */
-    public void setBook (Book book)
+    public PartRef getFirstOccurrence (LogicalPart logicalPart)
     {
-        this.book = book;
+        final int logId = logicalPart.getId();
+
+        for (PageNumber pageNumber : pageNumbers) {
+            final PageRef pageRef = pageNumber.getPageRef(book);
+
+            for (SystemRef systemRef : pageRef.getSystems()) {
+                for (PartRef partRef : systemRef.getParts()) {
+                    if (partRef.getLogicalId() == logId) {
+                        return partRef;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     //--------------//
     // getFirstPage //
     //--------------//
     /**
-     * Report the first page in this score
+     * Report the first Page in this score.
      *
      * @return first page
      */
     public Page getFirstPage ()
     {
-        if (pageRefs.isEmpty()) {
+        if (pageNumbers.isEmpty()) {
             return null;
         }
 
-        return getPage(pageRefs.get(0));
+        return getPage(pageNumbers.get(0));
     }
 
     //-----------------//
     // getFirstPageRef //
     //-----------------//
     /**
-     * Return the first PageRef in this score
+     * Return the first PageRef in this score.
      *
      * @return first pageRef
      */
     public PageRef getFirstPageRef ()
     {
-        if (pageRefs.isEmpty()) {
+        if (pageNumbers.isEmpty()) {
             return null;
         }
 
-        return pageRefs.get(0);
+        return pageNumbers.get(0).getPageRef(book);
     }
 
     //------------------//
@@ -245,8 +293,8 @@ public class Score
     {
         int index = getPageIndex(page);
 
-        if (index < (pageRefs.size() - 1)) {
-            return getPage(pageRefs.get(index + 1));
+        if (index < (pageNumbers.size() - 1)) {
+            return getPage(pageNumbers.get(index + 1));
         }
 
         return null;
@@ -261,7 +309,6 @@ public class Score
      *
      * @return the score id
      */
-    @XmlAttribute(name = "id")
     public Integer getId ()
     {
         final int index = book.getScores().indexOf(this);
@@ -283,11 +330,28 @@ public class Score
      */
     public Page getLastPage ()
     {
-        if (pageRefs.isEmpty()) {
+        if (pageNumbers.isEmpty()) {
             return null;
         }
 
-        return getPage(pageRefs.get(pageRefs.size() - 1));
+        return getPage(pageNumbers.get(pageNumbers.size() - 1));
+    }
+
+    //-------------------//
+    // getLastPageNumber //
+    //-------------------//
+    /**
+     * Report the last PageNumber in this score.
+     *
+     * @return last PageNumber or null
+     */
+    public PageNumber getLastPageNumber ()
+    {
+        if (pageNumbers.isEmpty()) {
+            return null;
+        }
+
+        return pageNumbers.get(pageNumbers.size() - 1);
     }
 
     //----------------//
@@ -296,15 +360,39 @@ public class Score
     /**
      * Report the last PageRef in this score.
      *
-     * @return last pageRef
+     * @return last PageRef or null
      */
     public PageRef getLastPageRef ()
     {
-        if (pageRefs.isEmpty()) {
+        final PageNumber lastNumber = getLastPageNumber();
+
+        if (lastNumber == null) {
             return null;
         }
 
-        return pageRefs.get(pageRefs.size() - 1);
+        return lastNumber.getPageRef(book);
+    }
+
+    //--------------------//
+    // getLogicalPartById //
+    //--------------------//
+    /**
+     * Report the LogicalPart that corresponds to the provided ID.
+     *
+     * @param id provided ID
+     * @return corresponding LogicalPart or null if not found
+     */
+    public LogicalPart getLogicalPartById (int id)
+    {
+        if (logicalParts != null) {
+            for (LogicalPart log : logicalParts) {
+                if (log.getId() == id) {
+                    return log;
+                }
+            }
+        }
+
+        return null;
     }
 
     //-----------------//
@@ -320,17 +408,17 @@ public class Score
         return logicalParts;
     }
 
-    //-----------------//
-    // setLogicalParts //
-    //-----------------//
+    //-------------------//
+    // getLogicalsEditor //
+    //-------------------//
     /**
-     * Assign a part list valid for the whole score.
+     * Report the LogicalPartsEditor, if any, active on this score.
      *
-     * @param logicalParts the list of logical parts
+     * @return the logical parts editor, perhaps null
      */
-    public void setLogicalParts (List<LogicalPart> logicalParts)
+    public LogicalPartsEditor getLogicalsEditor ()
     {
-        this.logicalParts = logicalParts;
+        return logicalsEditor;
     }
 
     //--------------------//
@@ -345,16 +433,17 @@ public class Score
      */
     public Integer getMeasureIdOffset (Page page)
     {
-        final PageRef ref = getPageRef(page);
+        final PageNumber num = getPageNumber(page);
         int offset = 0;
 
-        for (PageRef pageRef : pageRefs) {
-            if (pageRef == ref) {
+        for (PageNumber pageNumber : pageNumbers) {
+            if (pageNumber == num) {
                 return offset;
             }
 
             // Beware of page with no deltaMeasureId (because its transcription failed)
-            Integer delta = pageRef.getDeltaMeasureId();
+            final PageRef pageRef = pageNumber.getPageRef(book);
+            final Integer delta = pageRef.getDeltaMeasureId();
 
             if (delta != null) {
                 offset += delta;
@@ -379,11 +468,27 @@ public class Score
     {
         final int index = number - 1;
 
-        if ((index < 0) || (index >= pageRefs.size())) {
+        if ((index < 0) || (index >= pageNumbers.size())) {
             throw new IllegalArgumentException("No page with number " + number);
         }
 
-        return getPage(pageRefs.get(index));
+        return getPage(pageNumbers.get(index));
+    }
+
+    //---------//
+    // getPage //
+    //---------//
+    /**
+     * Report the Page corresponding to the provided PageNumber.
+     *
+     * @param pageNumber provided page number
+     * @return the corresponding page
+     */
+    private Page getPage (PageNumber pageNumber)
+    {
+        Sheet sheet = book.getStubs().get(pageNumber.sheetNumber - 1).getSheet();
+
+        return sheet.getPages().get(pageNumber.sheetPageId - 1);
     }
 
     //--------------//
@@ -396,7 +501,7 @@ public class Score
      */
     public int getPageCount ()
     {
-        return pageRefs.size();
+        return pageNumbers.size();
     }
 
     //--------------//
@@ -410,25 +515,72 @@ public class Score
      */
     public int getPageIndex (Page page)
     {
-        final PageRef ref = getPageRef(page);
+        return pageNumbers.indexOf(getPageNumber(page));
+    }
 
-        return pageRefs.indexOf(ref);
+    //--------------//
+    // getPageIndex //
+    //--------------//
+    /**
+     * Report index of the provided PageRef in the score sequence of pages.
+     *
+     * @param pageRef the provided PageRef
+     * @return the page index in score, or -1 if not found
+     */
+    public int getPageIndex (PageRef pageRef)
+    {
+        return pageNumbers.indexOf(pageRef.getPageNumber());
+    }
+
+    //---------------//
+    // getPageNumber //
+    //---------------//
+    /**
+     * Report the PageNumber if any that corresponds to the provided Page in this score.
+     *
+     * @param page provided Page
+     * @return the corresponding PageNumber or null if page is not in this score
+     */
+    public PageNumber getPageNumber (Page page)
+    {
+        final int sheetNumber = page.getSheet().getStub().getNumber();
+
+        for (PageNumber pageNumber : pageNumbers) {
+            if (pageNumber.sheetNumber == sheetNumber) {
+                return pageNumber;
+            }
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // getPageNumbers //
+    //----------------//
+    /**
+     * Report score PageNumber's.
+     *
+     * @return a <b>view</b> on list of PageNumber's in this score
+     */
+    public List<PageNumber> getPageNumbers ()
+    {
+        return Collections.unmodifiableList(pageNumbers);
     }
 
     //------------//
     // getPageRef //
     //------------//
     /**
-     * Return the score pageRef for a specified sheet stub.
+     * Return the PageRef in this score for a specified sheet stub.
      *
      * @param sheetNumber sheet stub number
      * @return the score page in this sheet, or null
      */
     public PageRef getPageRef (int sheetNumber)
     {
-        for (PageRef pageRef : pageRefs) {
-            if (pageRef.getSheetNumber() == sheetNumber) {
-                return pageRef;
+        for (PageNumber pageNumber : pageNumbers) {
+            if (pageNumber.sheetNumber == sheetNumber) {
+                return pageNumber.getPageRef(book);
             }
         }
 
@@ -439,75 +591,43 @@ public class Score
     // getPageRefs //
     //-------------//
     /**
-     * Report the sequence of PageRef instances for this score.
+     * Report the collection of PageRef's in that score, limited to the provided stubs.
      *
-     * @return sequence of PageRef's
+     * @param stubs valid selected stubs
+     * @return the relevant PageRef's
      */
-    public List<PageRef> getPageRefs ()
+    public List<PageRef> getPageRefs (List<SheetStub> stubs)
     {
-        return Collections.unmodifiableList(pageRefs);
+        final List<PageRef> relevantPageRefs = new ArrayList<>();
+
+        for (PageNumber pageNumber : pageNumbers) {
+            final SheetStub stub = book.getStub(pageNumber.sheetNumber);
+
+            if (stubs.contains(stub)) {
+                relevantPageRefs.add(pageNumber.getPageRef(book));
+            }
+        }
+
+        return relevantPageRefs;
     }
 
     //----------//
     // getPages //
     //----------//
     /**
-     * Report the collection of pages in that score.
+     * Report the list of all pages in that score.
      *
-     * @return the pages
+     * @return the pages list
      */
     public List<Page> getPages ()
     {
-        if (pages == null) {
-            pages = new ArrayList<>();
+        final List<Page> pages = new ArrayList<>();
 
-            // De-reference pageRefs
-            for (PageRef ref : pageRefs) {
-                pages.add(getPage(ref));
-            }
+        for (PageNumber pageNumber : pageNumbers) {
+            pages.add(getPage(pageNumber));
         }
 
         return pages;
-    }
-
-    //----------//
-    // getPages //
-    //----------//
-    /**
-     * Report the collection of pages in that score, limited to the provided stubs.
-     *
-     * @param stubs valid selected stubs
-     * @return the relevant pages
-     */
-    public List<Page> getPages (List<SheetStub> stubs)
-    {
-        final List<Page> relevantPages = new ArrayList<>();
-
-        // De-reference pageRefs
-        for (PageRef ref : pageRefs) {
-            final SheetStub stub = book.getStub(ref.getSheetNumber());
-
-            if (stubs.contains(stub)) {
-                final Sheet sheet = stub.getSheet();
-                final Page page = sheet.getPages().get(ref.getId() - 1);
-                relevantPages.add(page);
-            }
-        }
-
-        return relevantPages;
-    }
-
-    //---------------//
-    // getPartsParam //
-    //---------------//
-    /**
-     * Report the sequence of parts parameters.
-     *
-     * @return sequence of parts parameters (name, midi program)
-     */
-    public Param<List<PartData>> getPartsParam ()
-    {
-        return partsParam;
     }
 
     //------------------//
@@ -524,7 +644,28 @@ public class Score
         int index = getPageIndex(page);
 
         if (index > 0) {
-            return getPage(pageRefs.get(index - 1));
+            return getPage(pageNumbers.get(index - 1));
+        }
+
+        return null;
+    }
+
+    //---------------------//
+    // getPrecedingPageRef //
+    //---------------------//
+    /**
+     * Report the pageRef, if any, that precedes the provided pageRef within containing score.
+     *
+     * @param pageRef the provided PageRef
+     * @return the preceding PageRef or null
+     */
+    public PageRef getPrecedingPageRef (PageRef pageRef)
+    {
+        int index = getPageIndex(pageRef);
+
+        if (index > 0) {
+            final PageNumber pageNumber = pageNumbers.get(index - 1);
+            return pageNumber.getPageRef(book); // Perhaps null
         }
 
         return null;
@@ -550,6 +691,20 @@ public class Score
         return null;
     }
 
+    //---------//
+    // getStub //
+    //---------//
+    /**
+     * Report the stub that corresponds to the provided PageNumber.
+     *
+     * @param pageNumber the provided PageNumber
+     * @return the corresponding stub
+     */
+    public SheetStub getStub (PageNumber pageNumber)
+    {
+        return book.getStubs().get(pageNumber.sheetNumber - 1);
+    }
+
     //----------//
     // getStubs //
     //----------//
@@ -563,8 +718,8 @@ public class Score
         final List<SheetStub> pageStubs = new ArrayList<>();
         final List<SheetStub> bookStubs = book.getStubs();
 
-        for (PageRef ref : pageRefs) {
-            pageStubs.add(bookStubs.get(ref.getSheetNumber() - 1));
+        for (PageNumber pageNumber : pageNumbers) {
+            pageStubs.add(bookStubs.get(pageNumber.sheetNumber - 1));
         }
 
         return pageStubs;
@@ -602,19 +757,6 @@ public class Score
     }
 
     //-----------//
-    // setVolume //
-    //-----------//
-    /**
-     * Assign a volume value.
-     *
-     * @param volume the volume value to be assigned
-     */
-    public void setVolume (Integer volume)
-    {
-        this.volume = volume;
-    }
-
-    //-----------//
     // hasVolume //
     //-----------//
     /**
@@ -625,6 +767,32 @@ public class Score
     public boolean hasVolume ()
     {
         return volume != null;
+    }
+
+    //------------//
+    // insertPage //
+    //------------//
+    /**
+     * Insert the provided page at proper index.
+     *
+     * @param pageRef the reference to page
+     */
+    public void insertPage (PageRef pageRef)
+    {
+        final PageNumber pageNumber = pageRef.getPageNumber();
+
+        int i;
+        for (i = 0; i < pageNumbers.size(); i++) {
+            final PageNumber p = pageNumbers.get(i);
+
+            if (pageNumber.compareTo(p) <= 0) {
+                pageNumbers.add(i, pageNumber);
+
+                return;
+            }
+        }
+
+        pageNumbers.add(i, pageNumber);
     }
 
     //---------//
@@ -638,24 +806,172 @@ public class Score
      */
     public boolean isFirst (Page page)
     {
-        PageRef pageRef = getPageRef(page);
+        final int sheetNumber = page.getSheet().getStub().getNumber();
+        final PageNumber firstNumber = pageNumbers.get(0);
 
-        if (pageRef != null) {
-            return pageRefs.get(0) == pageRef;
-        }
+        return sheetNumber == firstNumber.sheetNumber;
+    }
 
-        return false;
+    //------------------//
+    // isLogicalsLocked //
+    //------------------//
+    /**
+     * Report whether the LogicalPart's are locked.
+     *
+     * @return the logicalsLocked flag
+     */
+    public boolean isLogicalsLocked ()
+    {
+        return logicalsLocked;
     }
 
     //-------------//
     // isMultiPage //
     //-------------//
     /**
-     * @return the multiPage
+     * Report whether this score contains several pages.
+     *
+     * @return true if so
      */
     public boolean isMultiPage ()
     {
-        return pageRefs.size() > 1;
+        return pageNumbers.size() > 1;
+    }
+
+    //---------------//
+    // mergeWithNext //
+    //---------------//
+    /**
+     * Try to merge this score with the provided (following) one.
+     *
+     * @param nextScore the score to merge with
+     */
+    public void mergeWith (Score nextScore)
+    {
+        if (nextScore != this) {
+            pageNumbers.addAll(nextScore.pageNumbers);
+
+            if (!isLogicalsLocked() && nextScore.isLogicalsLocked()) {
+                if (logicalParts != null) {
+                    logicalParts.clear();
+                } else {
+                    logicalParts = new ArrayList<>();
+                }
+
+                logicalParts.addAll(nextScore.logicalParts);
+                setLogicalsLocked(true);
+            }
+
+            book.getScores().remove(nextScore);
+        }
+    }
+
+    //--------------------//
+    // needsPartCollation //
+    //--------------------//
+    /**
+     * Report whether this score needs parts collation.
+     *
+     * @return true if so
+     */
+    public boolean needsPartCollation ()
+    {
+        for (PageNumber pageNumber : pageNumbers) {
+            final PageRef pageRef = pageNumber.getPageRef(book);
+
+            for (SystemRef systemRef : pageRef.getSystems()) {
+                for (PartRef partRef : systemRef.getParts()) {
+                    if (partRef.getLogicalId() == null) {
+                        logger.info("PartCollation needed in {}", this);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //------------------------//
+    // removeSheetPageNumbers //
+    //------------------------//
+    /**
+     * Remove the PageNumber instances that refer to the provided sheet number.
+     *
+     * @param sheetNumber the sheet number to remove
+     */
+    public void removeSheetPageNumbers (int sheetNumber)
+    {
+        for (Iterator<PageNumber> it = pageNumbers.iterator(); it.hasNext();) {
+            if (it.next().sheetNumber == sheetNumber) {
+                it.remove();
+            }
+        }
+    }
+
+    //---------//
+    // setBook //
+    //---------//
+    /**
+     * Assign the containing book.
+     *
+     * @param book the book to set
+     */
+    public void setBook (Book book)
+    {
+        this.book = book;
+    }
+
+    //-----------------//
+    // setLogicalParts //
+    //-----------------//
+    /**
+     * Assign a part list valid for the whole score.
+     *
+     * @param logicalParts the list of logical parts
+     */
+    public void setLogicalParts (List<LogicalPart> logicalParts)
+    {
+        this.logicalParts = logicalParts;
+    }
+
+    //-------------------//
+    // setLogicalsEditor //
+    //-------------------//
+    /**
+     * @param logicalsEditor the logicals editor to set
+     */
+    public void setLogicalsEditor (LogicalPartsEditor logicalsEditor)
+    {
+        this.logicalsEditor = logicalsEditor;
+    }
+
+    //-------------------//
+    // setLogicalsLocked //
+    //-------------------//
+    /**
+     * Lock or unlock the logicals.
+     *
+     * @param bool true to lock, false to unlock
+     */
+    public void setLogicalsLocked (boolean bool)
+    {
+        logicalsLocked = bool;
+        logger.info("LogicalParts for {} are {}", this, bool ? "LOCKED" : "UNLOCKED");
+        book.setModified(true);
+    }
+
+    //-----------//
+    // setVolume //
+    //-----------//
+    /**
+     * Assign a volume value.
+     *
+     * @param volume the volume value to be assigned
+     */
+    public void setVolume (Integer volume)
+    {
+        this.volume = volume;
     }
 
     //----------//
@@ -667,65 +983,7 @@ public class Score
         return "{Score " + getId() + "}";
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller u,
-                                 Object parent)
-    {
-        for (ScorePageRef pageLink : pageLinks) {
-            SheetStub stub = book.getStub(pageLink.sheetNumber);
-
-            if (pageLink.sheetPageId > 0) {
-                if (stub.getPageRefs().size() >= pageLink.sheetPageId) {
-                    pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
-                } else {
-                    logger.info("Missing pages in {}", stub);
-                }
-            } else {
-                logger.info("Illegal pageLink.sheetPageId: {}", pageLink.sheetPageId);
-            }
-        }
-    }
-
-    //-----------------//
-    // beforeUnmarshal //
-    //-----------------//
-    @SuppressWarnings("unused")
-    private void beforeUnmarshal (Unmarshaller u,
-                                  Object parent)
-    {
-        book = (Book) parent;
-    }
-
-    //---------//
-    // getPage //
-    //---------//
-    private Page getPage (PageRef ref)
-    {
-        Sheet sheet = book.getStubs().get(ref.getSheetNumber() - 1).getSheet();
-
-        return sheet.getPages().get(ref.getId() - 1);
-    }
-
-    //------------//
-    // getPageRef //
-    //------------//
-    private PageRef getPageRef (Page page)
-    {
-        final int sheetNumber = page.getSheet().getStub().getNumber();
-
-        for (PageRef pageRef : pageRefs) {
-            if (pageRef.getSheetNumber() == sheetNumber) {
-                return pageRef;
-            }
-        }
-
-        logger.error("No page ref for " + page);
-
-        return null;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // getDefaultVolume //
@@ -738,19 +996,6 @@ public class Score
     public static int getDefaultVolume ()
     {
         return constants.defaultVolume.getValue();
-    }
-
-    //------------------//
-    // setDefaultVolume //
-    //------------------//
-    /**
-     * Assign default value for Midi volume.
-     *
-     * @param volume the default volume value
-     */
-    public static void setDefaultVolume (int volume)
-    {
-        constants.defaultVolume.setValue(volume);
     }
 
     //-----------------//
@@ -766,7 +1011,21 @@ public class Score
         constants.defaultTempo.setValue(tempo);
     }
 
+    //------------------//
+    // setDefaultVolume //
+    //------------------//
+    /**
+     * Assign default value for Midi volume.
+     *
+     * @param volume the default volume value
+     */
+    public static void setDefaultVolume (int volume)
+    {
+        constants.defaultVolume.setValue(volume);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -783,60 +1042,5 @@ public class Score
                 "Volume",
                 78,
                 "Default Volume in 0..127 range");
-    }
-
-    //------------//
-    // PartsParam //
-    //------------//
-    private class PartsParam
-            extends Param<List<PartData>>
-    {
-
-        @Override
-        public List<PartData> getSpecific ()
-        {
-            List<LogicalPart> list = getLogicalParts();
-
-            if (list != null) {
-                List<PartData> data = new ArrayList<>();
-
-                for (LogicalPart logicalPart : list) {
-                    // Initial setting for part midi program
-                    int prog = (logicalPart.getMidiProgram() != null)
-                            ? logicalPart.getMidiProgram() : logicalPart.getDefaultProgram();
-
-                    data.add(new PartData(logicalPart.getName(), prog));
-                }
-
-                return data;
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public boolean setSpecific (List<PartData> specific)
-        {
-            try {
-                for (int i = 0; i < specific.size(); i++) {
-                    PartData data = specific.get(i);
-                    LogicalPart logicalPart = getLogicalParts().get(i);
-
-                    // Part name
-                    logicalPart.setName(data.name);
-
-                    // Part midi program
-                    logicalPart.setMidiProgram(data.program);
-                }
-
-                logger.info("Score parts have been updated");
-
-                return true;
-            } catch (Exception ex) {
-                logger.warn("Error updating score parts", ex);
-            }
-
-            return false;
-        }
     }
 }

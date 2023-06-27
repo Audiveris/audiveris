@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,25 +29,28 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class <code>LogicalPart</code> describes a part at score or page level.
  * <p>
  * It can be "instantiated" in one or several SystemInfo by a (physical)
- * {@link org.audiveris.omr.sheet.Part} instance.
- * <p>
- * There is an intermediate LogicalPart instance at Page level, which abstracts the system parts at
- * page level, and which is then used when abstracting the part information from pages to score.
+ * {@link Part} instance.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class LogicalPart
+        implements Cloneable
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -56,9 +59,10 @@ public class LogicalPart
     private static final Logger logger = LoggerFactory.getLogger(LogicalPart.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /**
      * This is the distinguished integer id for this logical part.
      * <p>
@@ -70,6 +74,7 @@ public class LogicalPart
 
     /**
      * This is the count of staves in this logical part.
+     * Deprecated since the introduction of the more precise lineCounts field.
      * <p>
      * The count of staves must be the same for a given logical part and for the corresponding
      * physical part in each system.
@@ -82,7 +87,23 @@ public class LogicalPart
      * </ul>
      */
     @XmlAttribute(name = "staff-count")
+    @Deprecated
     private final int staffCount;
+
+    /**
+     * The number of lines for each staff in this part.
+     * <p>
+     * Deprecated, replaced by <code>staffConfigs</code>.
+     */
+    @Deprecated
+    @XmlElement(name = "line-count")
+    private List<Integer> OLD_lineCounts;
+
+    /**
+     * The number of lines, perhaps small annotated, for each staff in this part.
+     */
+    @XmlElement(name = "staff-configuration")
+    private List<StaffConfig> staffConfigs = new ArrayList<>();
 
     /**
      * This is the name, often an instrument name, for this logical part.
@@ -112,18 +133,6 @@ public class LogicalPart
     private Integer midiProgram;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new instance of ScorePart
-     *
-     * @param id         the id for this part
-     * @param staffCount the count of staves within this part
-     */
-    public LogicalPart (int id,
-                        int staffCount)
-    {
-        setId(id);
-        this.staffCount = staffCount;
-    }
 
     /** Meant for XML binder only */
     private LogicalPart ()
@@ -132,7 +141,56 @@ public class LogicalPart
         staffCount = 0;
     }
 
+    /**
+     * Creates a new instance of ScorePart
+     *
+     * @param id           the id for this part
+     * @param staffCount   the count of staves within this part
+     * @param staffConfigs the configuration for each staff in part
+     */
+    public LogicalPart (int id,
+                        int staffCount,
+                        List<StaffConfig> staffConfigs)
+    {
+        setId(id);
+        this.staffCount = staffCount;
+        setStaffConfigs(staffConfigs);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    @SuppressWarnings(value = "unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (OLD_lineCounts != null) {
+            for (int count : OLD_lineCounts) {
+                staffConfigs.add(new StaffConfig(count, false));
+            }
+
+            OLD_lineCounts = null;
+        }
+    }
+
+    //------//
+    // copy //
+    //------//
+    public LogicalPart copy ()
+    {
+        try {
+            final LogicalPart that = (LogicalPart) super.clone();
+            that.staffConfigs = new ArrayList<>(staffConfigs);
+
+            return that;
+        } catch (CloneNotSupportedException ignored) {
+            logger.error("Could not clone LogicalPart");
+            return null;
+        }
+    }
+
     //--------//
     // equals //
     //--------//
@@ -143,47 +201,18 @@ public class LogicalPart
             return true;
         }
 
-        if (!(obj instanceof LogicalPart)) {
-            return false;
+        if (obj instanceof LogicalPart that) {
+            if ((id != that.id) || (staffCount != that.staffCount)) {
+                return false;
+            }
+
+            return Objects.deepEquals(name, that.name) //
+                    && Objects.deepEquals(abbreviation, that.abbreviation) //
+                    && Objects.deepEquals(staffConfigs, that.staffConfigs) //
+                    && Objects.deepEquals(midiProgram, that.midiProgram);
         }
 
-        LogicalPart that = (LogicalPart) obj;
-
-        if ((id != that.id) || (staffCount != that.staffCount)) {
-            return false;
-        }
-
-        return Objects.deepEquals(midiProgram, that.midiProgram)
-                       && Objects.deepEquals(name, that.name)
-                       && Objects.deepEquals(abbreviation, that.abbreviation);
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Set the id of this part.
-     *
-     * @param id the new part id
-     */
-    public final void setId (int id)
-    {
-        if (this.id != id) {
-            this.id = id;
-        }
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id of this part
-     *
-     * @return the part id
-     */
-    public int getId ()
-    {
-        return id;
+        return false;
     }
 
     //-----------------//
@@ -197,17 +226,6 @@ public class LogicalPart
         return abbreviation;
     }
 
-    //-----------------//
-    // setAbbreviation //
-    //-----------------//
-    /**
-     * @param abbreviation the abbreviation to set
-     */
-    public void setAbbreviation (String abbreviation)
-    {
-        this.abbreviation = abbreviation;
-    }
-
     //----------------//
     // getDefaultName //
     //----------------//
@@ -218,16 +236,11 @@ public class LogicalPart
      */
     public String getDefaultName ()
     {
-        switch (staffCount) {
-        case 1:
-            return constants.defaultSingleStaffPartName.getValue();
-
-        case 2:
-            return constants.defaultDoubleStaffPartName.getValue();
-
-        default:
-            return constants.defaultPartName.getValue();
-        }
+        return switch (staffCount) {
+        case 1 -> constants.defaultSingleStaffPartName.getValue();
+        case 2 -> constants.defaultDoubleStaffPartName.getValue();
+        default -> constants.defaultPartName.getValue();
+        };
     }
 
     //-------------------//
@@ -242,16 +255,57 @@ public class LogicalPart
     {
         logger.debug("Part #{} count={}", getId(), staffCount);
 
-        switch (staffCount) {
-        case 1:
-            return constants.defaultSingleStaffPartProgram.getValue();
+        return switch (staffCount) {
+        case 1 -> constants.defaultSingleStaffPartProgram.getValue();
+        case 2 -> constants.defaultDoubleStaffPartProgram.getValue();
+        default -> constants.defaultPartProgram.getValue();
+        };
+    }
 
-        case 2:
-            return constants.defaultDoubleStaffPartProgram.getValue();
+    //-------------//
+    // getFullName //
+    //-------------//
+    /**
+     * Report the full name formatted as: name + " [" + abbreviation + "]".
+     *
+     * @return the full name for this logical part
+     */
+    public String getFullName ()
+    {
+        if (name == null)
+            return null;
 
-        default:
-            return constants.defaultPartProgram.getValue();
-        }
+        if (abbreviation == null)
+            return name;
+
+        return name + " [" + abbreviation + "]";
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id of this logical part
+     *
+     * @return the part id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //----------//
+    // getIndex //
+    //----------//
+    /**
+     * Report the index of this logical part within the provided score.
+     *
+     * @param score the containing score
+     * @return logical part index
+     */
+    public int getIndex (Score score)
+    {
+        return score.getLogicalParts().indexOf(this);
     }
 
     //----------------//
@@ -267,19 +321,6 @@ public class LogicalPart
         return midiProgram;
     }
 
-    //----------------//
-    // setMidiProgram //
-    //----------------//
-    /**
-     * Assign the part midi program.
-     *
-     * @param midiProgram the midi program number for this part
-     */
-    public void setMidiProgram (Integer midiProgram)
-    {
-        this.midiProgram = midiProgram;
-    }
-
     //---------//
     // getName //
     //---------//
@@ -291,19 +332,6 @@ public class LogicalPart
     public String getName ()
     {
         return name;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to this part
-     *
-     * @param name the new part name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
     }
 
     //--------//
@@ -319,10 +347,25 @@ public class LogicalPart
         return "P" + getId();
     }
 
+    //-----------------//
+    // getStaffConfigs //
+    //-----------------//
+    /**
+     * Report configuration for each staff in this part.
+     *
+     * @return the staves configurations
+     */
+    public List<StaffConfig> getStaffConfigs ()
+    {
+        return Collections.unmodifiableList(staffConfigs);
+    }
+
     //---------------//
     // getStaffCount //
     //---------------//
     /**
+     * Report the count of staves in this logical part.
+     *
      * @return the staffCount
      */
     public int getStaffCount ()
@@ -330,6 +373,9 @@ public class LogicalPart
         return staffCount;
     }
 
+    //----------//
+    // hashCode //
+    //----------//
     @Override
     public int hashCode ()
     {
@@ -356,11 +402,70 @@ public class LogicalPart
         return staffCount > 1;
     }
 
+    //-----------------//
+    // setAbbreviation //
+    //-----------------//
+    /**
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Set the id of this part.
+     *
+     * @param id the new part id
+     */
+    public final void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //----------------//
+    // setMidiProgram //
+    //----------------//
+    /**
+     * Assign the part midi program.
+     *
+     * @param midiProgram the midi program number for this part
+     */
+    public void setMidiProgram (Integer midiProgram)
+    {
+        this.midiProgram = midiProgram;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part
+     *
+     * @param name the new part name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    //-----------------//
+    // setStaffConfigs //
+    //-----------------//
+    public final void setStaffConfigs (List<StaffConfig> staffConfigs)
+    {
+        this.staffConfigs.clear();
+        this.staffConfigs.addAll(staffConfigs);
+    }
+
     //-------------//
     // swapVoiceId //
     //-------------//
     /**
-     * Change in the provided page, the ID of voice for the specified newId
+     * Change, in the provided page, the ID of voice for the specified newId
      *
      * @param page  the page to update
      * @param oldId old ID
@@ -385,27 +490,57 @@ public class LogicalPart
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("LogicalPart{");
-
-        sb.append("id=").append(getId());
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('#').append(id).append('{');
 
         if (name != null) {
-            sb.append(" name=").append(name);
+            sb.append("name:").append(name);
         }
 
         if (abbreviation != null) {
-            sb.append(" abrv=").append(abbreviation);
+            sb.append(" abrv:").append(abbreviation);
         }
 
-        sb.append(" staffCount:").append(staffCount);
+        if (midiProgram != null) {
+            sb.append(" midi:").append(midiProgram);
+        }
 
-        sb.append("}");
+        sb.append(" configs:[").append(StaffConfig.toCsvString(staffConfigs)).append(']');
+
+        sb.append('}');
 
         return sb.toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------//
+    // valueOf //
+    //---------//
+    /**
+     * Report, among the collection of LogicalPart instances, the one that matches on full name.
+     *
+     * @param fullName the full name to match: name [abbrev]
+     * @param logicals collection of LogicalParts to browse
+     * @return the proper LogicalPart found or null
+     */
+    public static LogicalPart valueOf (String fullName,
+                                       List<LogicalPart> logicals)
+    {
+        // Extract name from full name
+        final int bracket = fullName.indexOf('[');
+        final String name = ((bracket != -1) ? fullName.substring(0, bracket) : fullName).trim();
+
+        for (LogicalPart log : logicals) {
+            if (log.name.equalsIgnoreCase(name))
+                return log;
+        }
+
+        return null;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

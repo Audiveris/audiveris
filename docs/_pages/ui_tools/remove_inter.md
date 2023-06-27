@@ -1,14 +1,14 @@
 ---
 layout: default
-title: Inter removal
+title: Inter Removal
 grand_parent: User Edition
 parent: UI Tools
 nav_order: 3
 ---
-## Inter removal
+## Inter Removal
 {: .no_toc }
 
-When one or several Inter instances have been selected, you can remove them as follows:
+When one or several Inter instances have been selected, we can remove them as follows:
 
 *   The Inter-board has a `Deassign` button which removes the selected inter displayed in the
   board.
@@ -19,9 +19,9 @@ When one or several Inter instances have been selected, you can remove them as f
     remove the selected Inter entities according to their containing system.
   ![](../assets/images/remove_inters.png)
 
-*   Pressing the `DELETE` key on the keyboard removes all the selected inters.
+*   Pressing `DELETE` key or `BACKSPACE` key on the keyboard removes all the selected inters.
 
-If more than one inter is selected, you will be prompted for confirmation beforehand.
+If more than one inter is selected, we will be prompted for confirmation beforehand.
 
 Removing a selected inter (or a set of selected inters) automatically removes the relations these
 inters were involved in.

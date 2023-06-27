@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -79,20 +80,24 @@ public abstract class AbstractChordInter
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
-    private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
+    /** For comparing chords by head location ordinate. */
+    public static final Comparator<AbstractChordInter> byHeadOrdinate = (c1,
+                                                                         c2) -> Integer.compare(
+                                                                                 c1.getHeadLocation().y,
+                                                                                 c2.getHeadLocation().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Preferred voice ID, if any. */
     @XmlAttribute(name = "preferred-voice-id")
     private Integer preferredVoiceId;
 
     // Transient data
     //---------------
-    //
+
     /**
      * Sequence of beams if any this chord is linked to,
      * kept ordered from tail to head. Lazily computed.
@@ -121,15 +126,6 @@ public abstract class AbstractChordInter
     protected Voice voice;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>AbstractChordInter</code> object.
-     *
-     * @param grade the interpretation quality
-     */
-    public AbstractChordInter (Double grade)
-    {
-        super((Glyph) null, null, null, grade);
-    }
 
     /**
      * No-arg constructor meant for JAXB.
@@ -138,7 +134,32 @@ public abstract class AbstractChordInter
     {
     }
 
+    /**
+     * Creates a new <code>AbstractChordInter</code> object.
+     *
+     * @param grade the interpretation quality
+     */
+    protected AbstractChordInter (Double grade)
+    {
+        super((Glyph) null, null, null, grade);
+    }
+
+    /**
+     * Protected constructor meant for SmallChordInter based on grace note.
+     *
+     * @param glyph
+     * @param shape
+     * @param grade
+     */
+    protected AbstractChordInter (Glyph glyph,
+                                  Shape shape,
+                                  Double grade)
+    {
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -146,20 +167,6 @@ public abstract class AbstractChordInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //-----------//
-    // addMember //
-    //-----------//
-    @Override
-    public void addMember (Inter member)
-    {
-        if (!(member instanceof AbstractNoteInter)) {
-            throw new IllegalArgumentException(
-                    "Only AbstractNoteInter can be added to AbstractChordInter");
-        }
-
-        EnsembleHelper.addMember(this, member);
     }
 
     //-------//
@@ -188,6 +195,20 @@ public abstract class AbstractChordInter
         }
     }
 
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member)
+    {
+        if (!(member instanceof AbstractNoteInter)) {
+            throw new IllegalArgumentException(
+                    "Only AbstractNoteInter can be added to AbstractChordInter");
+        }
+
+        EnsembleHelper.addMember(this, member);
+    }
+
     //-------------//
     // afterReload //
     //-------------//
@@ -213,20 +234,21 @@ public abstract class AbstractChordInter
         }
     }
 
-    //-----------------//
-    // justAssignVoice //
-    //-----------------//
+    //------------------//
+    // computeLocations //
+    //------------------//
     /**
-     * Just assign a voice to this chord, with no propagation.
-     * Method meant for afterReload only.
-     *
-     * @see #setVoice(Voice)
-     *
-     * @param voice the voice to assign
+     * Compute the head and tail locations for this chord.
      */
-    public void justAssignVoice (Voice voice)
+    protected void computeLocations ()
     {
-        this.voice = voice;
+        AbstractNoteInter leading = getLeadingNote();
+
+        if (leading == null) {
+            return;
+        }
+
+        tailLocation = headLocation = leading.getCenter();
     }
 
     //-----------//
@@ -331,16 +353,18 @@ public abstract class AbstractChordInter
 
                 if (headLoc != null) {
                     // Keep the sequence ordered by distance from chord tail
-                    Collections.sort(beams, (AbstractBeamInter b1, AbstractBeamInter b2) -> {
-                                 int x = getCenter().x;
-                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                                 int yHead = headLoc.y;
+                    Collections.sort(
+                            beams,
+                            (AbstractBeamInter b1,
+                             AbstractBeamInter b2) ->
+                            {
+                                int x = getCenter().x;
+                                double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                                double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                                int yHead = headLoc.y;
 
-                                 return Double.compare(
-                                         Math.abs(yHead - y2),
-                                         Math.abs(yHead - y1));
-                             });
+                                return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
+                            });
                 }
             }
         }
@@ -518,7 +542,7 @@ public abstract class AbstractChordInter
             final Shape noteShape = note.getShape();
 
             // Duration from note shape
-            dur = AbstractNoteInter.getShapeDuration(noteShape);
+            dur = noteShape.getNoteDuration();
 
             if (!noteShape.isRest()) {
                 // Apply flags/beams for non-rests
@@ -532,7 +556,7 @@ public abstract class AbstractChordInter
                      * the note head should be considered as black.
                      */
                     if ((noteShape == Shape.NOTEHEAD_VOID) && (note.getMirror() != null)) {
-                        dur = AbstractNoteInter.getShapeDuration(Shape.NOTEHEAD_BLACK);
+                        dur = Shape.NOTEHEAD_BLACK.getNoteDuration();
                     }
 
                     for (int i = 0; i < fbn; i++) {
@@ -726,19 +750,6 @@ public abstract class AbstractChordInter
     }
 
     //------------//
-    // setMeasure //
-    //------------//
-    /**
-     * Set the containing measure.
-     *
-     * @param measure the measure that contains this chord
-     */
-    public void setMeasure (Measure measure)
-    {
-        this.measure = measure;
-    }
-
-    //------------//
     // getMembers //
     //------------//
     /**
@@ -816,19 +827,6 @@ public abstract class AbstractChordInter
         return preferredVoiceId;
     }
 
-    //---------------------//
-    // setPreferredVoiceId //
-    //---------------------//
-    /**
-     * Assign a preferred voice ID.
-     *
-     * @param preferredVoiceId the preferredVoiceId to set
-     */
-    public void setPreferredVoiceId (Integer preferredVoiceId)
-    {
-        this.preferredVoiceId = preferredVoiceId;
-    }
-
     //---------//
     // getSlot //
     //---------//
@@ -840,19 +838,6 @@ public abstract class AbstractChordInter
     public Slot getSlot ()
     {
         return slot;
-    }
-
-    //---------//
-    // setSlot //
-    //---------//
-    /**
-     * Return the containing time slot, if any
-     *
-     * @param slot containing slot or null
-     */
-    public void setSlot (Slot slot)
-    {
-        this.slot = slot;
     }
 
     //----------//
@@ -1023,44 +1008,35 @@ public abstract class AbstractChordInter
         return voice;
     }
 
-    //----------//
-    // setVoice //
-    //----------//
-    /**
-     * Set a voice to this chord, and recursively propagate to the following chords
-     * related by beam or tie.
-     *
-     * @see #justAssignVoice(Voice)
-     *
-     * @param voice the voice to set
-     */
-    public void setVoice (Voice voice)
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
     {
-        if (this.voice != voice) {
-            this.voice = voice;
+        StringBuilder sb = new StringBuilder(super.internals());
 
-            // Update the voice entity
-            if ((voice != null) && !isMeasureRest()) {
-                voice.addChord(this);
-            }
+        if (sig != null) {
+            if (sig.containsVertex(this)) {
+                if (slot != null) {
+                    sb.append(" slot#").append(slot.getId());
+                }
 
-            // Extend to other grouped chords if any
-            BeamGroupInter group = getBeamGroup();
+                if (timeOffset != null) {
+                    sb.append(" off:").append(timeOffset);
+                }
 
-            if (group != null) {
-                group.setVoice(voice);
-            }
+                Rational dur = getDuration();
 
-            // Extend to the following tied chord(s?) as well
-            List<AbstractChordInter> tied = getFollowingTiedChords();
-
-            for (AbstractChordInter chord : tied) {
-                // Make sure the tied chords belong to the same measure
-                if (this.measure == chord.measure) {
-                    chord.setVoice(voice);
+                if (dur != null) {
+                    sb.append(" dur:").append(dur);
                 }
             }
+        } else {
+            sb.append(" noSIG");
         }
+
+        return sb.toString();
     }
 
     //-----------------//
@@ -1175,54 +1151,19 @@ public abstract class AbstractChordInter
         return ShapeSet.StemLessHeads.contains(shape);
     }
 
-    //--------//
-    // remove //
-    //--------//
+    //-----------------//
+    // justAssignVoice //
+    //-----------------//
     /**
-     * Remove the chord from containing measure.
+     * Just assign a voice to this chord, with no propagation.
+     * Method meant for afterReload only.
      *
-     * @param extensive true for non-manual removals only
-     * @see #added()
+     * @see #setVoice(Voice)
+     * @param voice the voice to assign
      */
-    @Override
-    public void remove (boolean extensive)
+    public void justAssignVoice (Voice voice)
     {
-        if (isRemoved()) {
-            return;
-        }
-
-        if (measure != null) {
-            measure.removeInter(this);
-        }
-
-        super.remove(extensive);
-    }
-
-    //--------------//
-    // removeMember //
-    //--------------//
-    @Override
-    public void removeMember (Inter member)
-    {
-        if (!(member instanceof AbstractNoteInter)) {
-            throw new IllegalArgumentException(
-                    "Only AbstractNoteInter can be removed from ChordInter");
-        }
-
-        EnsembleHelper.removeMember(this, member);
-    }
-
-    //-------------//
-    // resetTiming //
-    //-------------//
-    /**
-     * Reset cached data related to timing.
-     */
-    public void resetTiming ()
-    {
-        slot = null;
-        voice = null;
-        timeOffset = null;
+        this.voice = voice;
     }
 
     //----------//
@@ -1283,24 +1224,6 @@ public abstract class AbstractChordInter
         }
     }
 
-    //--------------------------//
-    // pushTimeViaVoiceSequence //
-    //--------------------------//
-    /**
-     * Push time information via voice sequence structure, if any.
-     */
-    public void pushTimeViaVoiceSequence ()
-    {
-        // Propagate via voice sequence if any
-        final AbstractChordInter ch = getNextChordInVoiceSequence();
-
-        if ((ch != null) && (measure == ch.measure)) {
-            ch.setTimeOffset(getEndTime());
-
-            ch.pushTime(); // If possible, push further
-        }
-    }
-
     //----------------//
     // pushTimeViaTie //
     //----------------//
@@ -1322,20 +1245,72 @@ public abstract class AbstractChordInter
         }
     }
 
-    //---------------//
-    // setTimeOffset //
-    //---------------//
+    //--------------------------//
+    // pushTimeViaVoiceSequence //
+    //--------------------------//
     /**
-     * Remember the time offset for this chord.
-     * <p>
-     * Information is <b>NOT</b> recursively propagated to other chords linked by beam or tie.
-     * if needed, do it via {@link #pushTimeViaGroup()} and {@link #pushTimeViaTie()}.
-     *
-     * @param timeOffset chord starting time (counted since measure start)
+     * Push time information via voice sequence structure, if any.
      */
-    public void setTimeOffset (Rational timeOffset)
+    public void pushTimeViaVoiceSequence ()
     {
-        this.timeOffset = timeOffset;
+        // Propagate via voice sequence if any
+        final AbstractChordInter ch = getNextChordInVoiceSequence();
+
+        if ((ch != null) && (measure == ch.measure)) {
+            ch.setTimeOffset(getEndTime());
+
+            ch.pushTime(); // If possible, push further
+        }
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove the chord from containing measure.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (isRemoved()) {
+            return;
+        }
+
+        if (measure != null) {
+            measure.removeInter(this);
+        }
+
+        super.remove(extensive);
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof AbstractNoteInter)) {
+            throw new IllegalArgumentException(
+                    "Only AbstractNoteInter can be removed from ChordInter");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
+    //-------------//
+    // resetTiming //
+    //-------------//
+    /**
+     * Reset cached data related to timing.
+     */
+    public void resetTiming ()
+    {
+        slot = null;
+        voice = null;
+        timeOffset = null;
     }
 
     //----------------//
@@ -1355,53 +1330,106 @@ public abstract class AbstractChordInter
         }
     }
 
-    //------------------//
-    // computeLocations //
-    //------------------//
+    //------------//
+    // setMeasure //
+    //------------//
     /**
-     * Compute the head and tail locations for this chord.
+     * Set the containing measure.
+     *
+     * @param measure the measure that contains this chord
      */
-    protected void computeLocations ()
+    public void setMeasure (Measure measure)
     {
-        AbstractNoteInter leading = getLeadingNote();
-
-        if (leading == null) {
-            return;
-        }
-
-        tailLocation = headLocation = leading.getCenter();
+        this.measure = measure;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
+    //---------------------//
+    // setPreferredVoiceId //
+    //---------------------//
+    /**
+     * Assign a preferred voice ID.
+     *
+     * @param preferredVoiceId the preferredVoiceId to set
+     */
+    public void setPreferredVoiceId (Integer preferredVoiceId)
     {
-        StringBuilder sb = new StringBuilder(super.internals());
+        this.preferredVoiceId = preferredVoiceId;
+    }
 
-        if (sig != null) {
-            if (sig.containsVertex(this)) {
-                if (slot != null) {
-                    sb.append(" slot#").append(slot.getId());
-                }
+    //---------//
+    // setSlot //
+    //---------//
+    /**
+     * Return the containing time slot, if any
+     *
+     * @param slot containing slot or null
+     */
+    public void setSlot (Slot slot)
+    {
+        this.slot = slot;
+    }
 
-                if (timeOffset != null) {
-                    sb.append(" off:").append(timeOffset);
-                }
+    //---------------//
+    // setTimeOffset //
+    //---------------//
+    /**
+     * Remember the time offset for this chord.
+     * <p>
+     * Information is <b>NOT</b> recursively propagated to other chords linked by beam or tie.
+     * if needed, do it via {@link #pushTimeViaGroup()} and {@link #pushTimeViaTie()}.
+     *
+     * @param timeOffset chord starting time (counted since measure start)
+     */
+    public void setTimeOffset (Rational timeOffset)
+    {
+        this.timeOffset = timeOffset;
+    }
 
-                Rational dur = getDuration();
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * Set a voice to this chord, and recursively propagate to the other chords
+     * related by beam or tie.
+     *
+     * @see #justAssignVoice(Voice)
+     * @param voice the voice to set
+     */
+    public void setVoice (Voice voice)
+    {
 
-                if (dur != null) {
-                    sb.append(" dur:").append(dur);
+        if (this.voice != voice) {
+            if (isVip()) {
+                logger.info("VIP {} setVoice from {} to {}", this, this.voice, voice);
+            }
+
+            this.voice = voice;
+
+            // Update the voice entity
+            if ((voice != null) && !isMeasureRest() && !(this instanceof SmallChordInter)) {
+                voice.addChord(this);
+            }
+
+            // Extend to other grouped chords if any
+            final BeamGroupInter group = getBeamGroup();
+
+            if (group != null) {
+                group.setVoice(voice);
+            }
+
+            // Extend to the following tied chord(s?) as well
+            List<AbstractChordInter> tied = getFollowingTiedChords();
+
+            for (AbstractChordInter chord : tied) {
+                // Make sure the tied chords belong to the same measure
+                if (this.measure == chord.measure) {
+                    chord.setVoice(voice);
                 }
             }
-        } else {
-            sb.append(" noSIG");
         }
-
-        return sb.toString();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------------//
     // getClosestChord //

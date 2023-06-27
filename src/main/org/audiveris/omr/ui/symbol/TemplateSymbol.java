@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,57 +21,56 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.image.Template;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
+import org.audiveris.omr.image.TemplateFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
  * Class <code>TemplateSymbol</code> defines a symbol meant only for template matching.
  * <p>
- * <b>BEWARE:</b>Don't use it for simple display, use a ShapeSymbol of proper shape instead.
+ * <b>BEWARE:</b>Don't use it for simple display, use a {@link ShapeSymbol} of proper shape instead.
  *
  * @author Hervé Bitteur
  */
 public class TemplateSymbol
-        extends BasicSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Affine Transform for small symbol shapes. */
-    private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
-            Template.smallRatio,
-            Template.smallRatio);
+    private static final Logger logger = LoggerFactory.getLogger(TemplateSymbol.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Template shape. */
-    protected final Shape shape;
 
-    /** Indicate a smaller symbol. */
+    /** Indicates a smaller symbol. */
     protected final boolean isSmall;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TemplateSymbol object.
      *
-     * @param shape shape for the template
-     * @param codes the codes for MusicFont characters
+     * @param shape  shape for the template
+     * @param family the selected MusicFont family
      */
     public TemplateSymbol (Shape shape,
-                           int... codes)
+                           MusicFamily family)
     {
-        super(false, codes);
-        this.shape = shape;
-        isSmall = shape.isSmall();
+        super(shape, family);
+        isSmall = shape.isSmallHead();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // getFatBounds //
     //--------------//
@@ -93,20 +92,39 @@ public class TemplateSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        p.layout = font.layout(getString(), isSmall ? smallAt : null);
+
+        ShapeSymbol symbol = font.getSymbol(shape);
+
+        while (symbol == null && font.getBackup() != null) {
+            logger.debug(
+                    "no symbol in TemplateSymbol for {} in family {} ...",
+                    shape,
+                    font.getMusicFamily());
+            font = font.getBackup();
+            symbol = font.getSymbol(shape);
+        }
+
+        if (symbol == null) {
+            logger.warn(
+                    "TemplateSymbol. No symbol for {} in family {}",
+                    shape,
+                    font.getMusicFamily());
+        }
+
+        final Params symParams = symbol.getParams(font);
+        p.layout = symParams.layout;
 
         // Symbol rectangle
         final Rectangle2D rawSym = p.layout.getBounds();
         final Rectangle fatSym = rawSym.getBounds();
 
         // Template rectangle with origin at (0,0) and some room around the symbol
-        final int dx = 6;
-        final int dy = 5;
+        final int room = 2 * (int) Math.ceil(TemplateFactory.maxDistanceFromSymbol());
         p.rect = new Rectangle2D.Double(
                 0,
                 0,
-                isSmall ? (fatSym.width + dx) : (rawSym.getWidth() + dx),
-                isSmall ? (font.getStaffInterline() + dy) : (rawSym.getHeight() + dy));
+                room + (isSmall ? fatSym.width : rawSym.getWidth()),
+                room + (isSmall ? fatSym.height : rawSym.getHeight()));
 
         // Symbol bounds relative to template rectangle
         p.rawRect = new Rectangle2D.Double(
@@ -129,18 +147,13 @@ public class TemplateSymbol
     {
         final MyParams p = (MyParams) params;
 
-        // Background
-        g.setColor(Color.RED);
-        g.fill(p.rect);
-
-        // Naked symbol
         g.setColor(Color.BLACK);
 
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // MyParams //
     //----------//

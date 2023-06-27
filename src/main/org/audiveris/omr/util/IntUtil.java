@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2021. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,7 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>IntUtil</code> gathers convenient methods related to Integer handling.
@@ -39,12 +41,14 @@ public abstract class IntUtil
     private static final Logger logger = LoggerFactory.getLogger(IntUtil.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private IntUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------//
     // parseInts //
     //-----------//
@@ -72,5 +76,21 @@ public abstract class IntUtil
         }
 
         return intList;
+    }
+
+    //-------------//
+    // toCsvString //
+    //-------------//
+    /**
+     * Report a string formatted as comma-separated values from the provided collection.
+     *
+     * @param collection provided collection of integers
+     * @return the CSV string
+     */
+    public static String toCsvString (Collection<Integer> collection)
+    {
+        return new StringBuilder().append(
+                collection.stream().map(i -> (i == null) ? "null" : "" + i).collect(
+                        Collectors.joining(","))).toString();
     }
 }

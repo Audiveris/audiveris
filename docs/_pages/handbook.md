@@ -66,20 +66,23 @@ They can even be directly connected via simple [plugins](/advanced/plugins.md).
 
 ## Handbook content
 
-1. [Installation](/install/README.md):
+1. [Installation](./install/README.md):
 How to install or build the program.
 
-1. [Quick tour](/quick/README.md):
+1. [Quick tour](./quick/README.md):
 A very early tour, just to introduce a minimal usage of the software.
 
-1. [Main features](/main/README.md):
+1. [Main features](./main/README.md):
 Thorough description of software main features.
 
-1. [UI](/ui.md):
+1. [UI](./ui.md):
 Main tools and typical examples to correct OMR outputs.
 
-1. [Advanced features](/advanced/README.md):
+1. [Specific features](./specific/README.md):
+Specific features just introduced.
+
+1. [Advanced features](./advanced/README.md):
 Features only relevant for an advanced usage of Audiveris.
 
-1. [References](/references.md):
+1. [References](./references.md):
 Not meant to be read from A to Z, but when a specific item needs to be checked.

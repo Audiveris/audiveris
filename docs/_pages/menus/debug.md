@@ -2,7 +2,7 @@
 layout: default
 title: Debug menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 8
 ---
 ## Debug menu
@@ -12,7 +12,8 @@ nav_order: 8
 
 This menu makes a few debug actions conveniently available.
 
-NOTA: The casual user can safely ignore this menu.
+{: .highlight }
+The casual user can safely ignore this menu.
 To make it visible, you must have beforehand selected the `DEBUG` topic in the
 [Advanced Topics](../advanced/topics.md) dialog.
 
