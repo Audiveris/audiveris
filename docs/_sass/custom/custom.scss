@@ -23,18 +23,21 @@ h4,
   text-transform: none;
 }
 
-.nota {
-  color: pink !important;
+/* Reference to a footnote */
+.footnote::before {
+    content: "[";
+    color: blue;
+}
+.footnote::after {
+    content: "]";
+    color: blue;
 }
 
-.nota-bg {
-  background-color: LightYellow !important;
+/* Footnotes */
+.footnotes::before {
+    content: "Footnotes";
+    color: blue;
 }
-
-.warning {
-  color: red !important;
-}
-
-.warning-bg {
-  background-color: LightPink !important;
+.footnotes {
+    border: 1px dotted blue;
 }

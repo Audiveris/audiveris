@@ -28,7 +28,7 @@ Table of contents
 
 ### Use of Plugins
 
-Once plugins are correctly configured, you can call an external program by selecting the desired one
+Once plugins are correctly configured, we can call an external program by selecting the desired one
 in the pulldown `Plugins` menu:
 
 ![](../assets/images/plugins_menu_finale.png)
@@ -44,7 +44,7 @@ providing the path to the exported file as an import argument.
 
 ### Plugins Configuration
 
-You can define one or more plugins, by creating a single XML file, named `plugins.xml`,
+We can define one or more plugins, by creating a single XML file, named `plugins.xml`,
 in [Audiveris configuration folder](../folders/essential.md#config-folder).
 
 At Audiveris launch time, if a `plugins.xml` file is found in the configuration folder, then a

@@ -2,7 +2,7 @@
 layout: default
 title: File menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 1
 ---
 ## File menu

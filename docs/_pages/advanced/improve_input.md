@@ -101,20 +101,17 @@ This document will detail an example using free, open-source software that is co
 
 #### Step-by-step
 
-1. In this example we'll be using the [Icelandic national anthem](https://commons.wikimedia.org/wiki/File:Icelandic_national_anthem_sheet_music.gif) as follows:
-
+1. In this example we'll be using the [Icelandic national anthem](https://commons.wikimedia.org/wiki/File:Icelandic_national_anthem_sheet_music.gif) as follows:  
 ```bash
 wget "https://upload.wikimedia.org/wikipedia/commons/6/6c/Icelandic_national_anthem_sheet_music.gif"
 ```
 
-2. Since _waifu2x-ncnn-vulkan_ can't process gif files, we'll convert the image to a png using ImageMagick's _convert_ executable:
-
+2. Since _waifu2x-ncnn-vulkan_ can't process gif files, we'll convert the image to a png using ImageMagick's _convert_ executable:  
 ```bash
 convert "is~.gif" 00.png
 ```
 
-3. Finally, we'll enlarge the converted png:
-
+3. Finally, we'll enlarge the converted png:  
 ```bash
 waifu2x-ncnn-vulkan -s 4 -i 00.png -o O4.png
 ```

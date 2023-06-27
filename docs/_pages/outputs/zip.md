@@ -35,7 +35,7 @@ It contains the related image of each sheet for which at least a sample is prese
 This allows to display the background context of the sample.
 
 * **BOOK-annotations.zip**:
-This is just an output of Audiveris 5.1, meant for the future page and patch classifiers scheduled
+This is just an output of Audiveris 5.x, meant for the future page and patch classifiers scheduled
 for 6.x versions.
 It provides sheet image and symbol annotations (shape + bounding box) for each recognized inter.
 

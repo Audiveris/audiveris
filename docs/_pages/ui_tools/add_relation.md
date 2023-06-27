@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Relation addition
+title: Relation Addition
 grand_parent: User Edition
 parent: UI Tools
 nav_order: 4
 ---
-## Relation addition
+## Relation Addition
 {: .no_toc }
 
 ---
@@ -23,7 +23,7 @@ For example the note head below exhibits 2 relations:
 
 ![](../assets/images/note_with_relations.png)
 
-You can visually check the relations when you select an Inter.
+We can visually check the relations when we select an Inter.
 The name of each relation is also displayed, provided that current zoom is high enough (>=2).
 
 
@@ -46,7 +46,7 @@ In the example below, a _SlurHead_ relation between slur and note head is mandat
 
 A missing relation can happen when the geometry rules are not matched, perhaps because the gap
 is a bit too wide between slur and note head.   
-In that case, you have to either shift or resize the Inters accordingly or manually set the
+In that case, we have to either shift or resize the Inters accordingly or manually set the
 needed relation.
 
 NOTA, regarding relation automatic search:
@@ -57,27 +57,28 @@ but the head _does not_ need a slur.
 A good practice, when several Inters have to be created manually, is to create the independent
 Inters first and the dependent Inters second.  
 But still, when the geometry is really beyond some specified limits, the needed relation may not be
-automatically created and you'll have to add it manually.
+automatically created and we'll have to add it manually.
 
 * A **non-mandatory relation** is never searched for automatically.
 An example of non-mandatory relation is the case of a direction sentence which doesn't always
 have a chord precisely above or below.  
-For such non-mandatory relations, you have to decide if you set them or not.
+For such non-mandatory relations, we have to decide if we set them or not.
 
 ### Linking Inters
 
-Assuming the slur is not linked to the note head, you need to insert the relation between them.
+Assuming the slur is not linked to the note head, we need to insert the relation between them.
 
-To do so, you can point and drag from the slur to the note head (a thin black vector will
-appear as you move the mouse, see picture below)
+To do so, we can point and drag from the slur to the note head (a thin black vector will
+appear as we move the mouse, see picture below)
 
 ![](../assets/images/linking_slur.png)
 
-Then release the mouse when reaching the targeted head.
+Then we release the mouse when reaching the targeted head.
 
 Audiveris will search among all the inters grabbed at first and at last locations, find the
 missing relation if any between those two collections of inters and set the proper relation.  
 This commits the relation insertion.
 
-NOTA: When linking two elements, say A and B, the direction is irrelevant:
-you can either drag from A to B or drag from B to A, the result will be identical.  
+{: .note}
+When linking two elements, say A and B, the direction is irrelevant:
+we can either drag from A to B or drag from B to A, the result will be identical.  

@@ -20,7 +20,7 @@
 
 title: Audiveris Pages
 author: Hervé Bitteur
-#email: your-email@domain.com
+email: herve.bitteur@audiveris.org
 
 description: >- # this means to ignore newlines until "baseurl:"
   Audiveris documentation
@@ -39,7 +39,8 @@ permalink: /:title/
 # Build settings
 #theme: minima
 #theme: just-the-docs
-remote_theme: pmarsceill/just-the-docs
+#remote_theme: pmarsceill/just-the-docs
+remote_theme: just-the-docs/just-the-docs
 
 
 plugins:
@@ -78,12 +79,29 @@ back_to_top: true
 back_to_top_text: "Back to top"
 
 # Footer content appears at the bottom of every page's main content
-footer_content: "Copyright &copy; Audiveris 2022. Distributed under <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
+footer_content: "Copyright &copy; Audiveris 2023. Distributed under <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil
 #color_scheme: "dark"
 
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+    
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
@@ -103,3 +121,15 @@ color_scheme: nil
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+# Following are Audiveris variables
+# ---------------------------------
+
+# Latest Audiveris version
+audiveris_version: 5.3
+
+# Needed Java version
+java_version: 17
+
+# Tesseract version
+tesseract_version: 5.3.1

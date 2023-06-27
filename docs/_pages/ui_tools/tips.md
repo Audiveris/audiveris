@@ -9,7 +9,7 @@ nav_order: 15
 {: .no_toc }
 
 This section gathers a few things based on concrete user experience.
-These little tricks should save you time and efforts in your edition sessions.
+These little tricks should save us time and efforts in our edition sessions.
 
 ---
 Table of contents
@@ -24,32 +24,32 @@ Table of contents
 In bad scans, often elements are detected as two or more separate glyphs
 -- this is rather frequent for slurs.
 
-In such a case, use a selection frame and try to catch all parts of a suitable glyph before you
+In such a case, we use a selection frame and try to catch all parts of a suitable glyph before we
 define an inter for it:
 
 ![](../assets/images/selection_frame.png)
 
-Make sure not to select parts of other elements (e.g. augmentation dots)!
+We have to make sure not to select parts of other elements (e.g. augmentation dots)!
 
 ### Delete wrong interpretations before defining a new one
 
-Before assigning another interpretation to a glyph / a group of glyphs, make sure to delete
+Before assigning another interpretation to a glyph / a group of glyphs, we make sure to delete
 the previous one first.
 Otherwise, there will be two confusing interpretations in the output file.
 
-NOTA: Audiveris is able to detect when the *exact same* glyph has been assigned two different
+{: .note }
+Audiveris is able to detect when the *exact same* glyph has been assigned two different
 interpretations, and thus remove the old one to just keep the new one.   
 But glyphs that differ by one pixel or more are, by definition, different glyphs!   
-So, when in doubt, don't hesitate to clean up the scene beforehand.
-{: .nota-bg }
+So, when in doubt, we should not hesitate to clean up the scene beforehand.
 
 ### Look for missing / wrongly defined augmentation dots
 
 The most frequent reasons for errors in the rhythm check are missing or wrongly detected
 augmentation dots.
 
-So when all obvious reasons for wrong rhythm are solved and is still in rose, zoom into the image
-and look for augmentation points in the concerned measure.
+So when all obvious reasons for wrong rhythm are solved and is still in rose,
+we can zoom into the image and look for augmentation points in the concerned measure.
 
 ### Wrongly detected grace notes
 
@@ -59,14 +59,14 @@ because they are considered as just ornamental.
 
 ![](../assets/images/wrong_grace_note.png)
 
-In such a case just delete the note and re-define with the correct interpretation
+In such a case we just delete the note and re-define with the correct interpretation
 (from "ornaments" tab in Shape palette)
 
 ### Add triplet to 2nd voice with missing "3"
 
 Sometimes scores that contain two voices use a "common" 3 for the tuplet of both voices.
 
-In such a case you can add the triplet element by drag-n-drop to the 2nd voice
+In such a case we can add the triplet element by drag-n-drop to the 2nd voice
 (the fine red line shows during dragging the staff concerned):
 
 | Lower triplet missing |     | Lower triplet added  |

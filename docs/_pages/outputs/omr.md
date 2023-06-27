@@ -93,10 +93,10 @@ instances (or Stub for short) with a one-to-one relationship between `SheetStub`
 * In a similar manner, a `Score` actually contains **PageRef** instances which refer to `Page`
 instances.
 
-In the following class diagram, physical entities are displayed in blue, and logical entities in
-yellow.
+In the following class diagram, physical entities are displayed in blue,
+and logical entities in yellow.
 
-![](https://github.com/Audiveris/docs/raw/master/images/Book.png)
+![](../assets/images/Book-vs-Sheet.png)
 
 On the left side, the `book.xml` artifact represents the content of the *book.xml* part within an
 Audiveris project file, and is kept in memory.

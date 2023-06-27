@@ -2,7 +2,7 @@
 layout: default
 title: Step menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 4
 ---
 ## Step menu

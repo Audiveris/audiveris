@@ -1,0 +1,123 @@
+.
+├── advanced
+│   ├── README.md
+│   ├── cli.md
+│   ├── improve_input.md
+│   ├── options.md
+│   ├── plugins.md
+│   ├── samples.md
+│   ├── topics.md
+│   └── training.md
+├── assets
+│   └── images
+├── boards
+│   ├── README.md
+│   ├── binarization.md
+│   ├── classifier.md
+│   ├── glyph.md
+│   ├── inter.md
+│   ├── pixel.md
+│   ├── section.md
+│   └── shape.md
+├── folders
+│   ├── README.md
+│   ├── cached.md
+│   ├── essential.md
+│   └── standard.md
+├── handbook.md
+├── install
+│   ├── README.md
+│   ├── binaries.md
+│   ├── java.md
+│   ├── languages.md
+│   └── sources.md
+├── main
+│   ├── README.md
+│   ├── book_parameters.md
+│   ├── book_portions.md
+│   ├── book_sheet.md
+│   ├── display_modes.md
+│   ├── entities.md
+│   ├── entity_colors.md
+│   ├── glyph_inter.md
+│   ├── limitations.md
+│   ├── main_window.md
+│   ├── output_formats.md
+│   ├── pan_zoom.md
+│   ├── pipeline.md
+│   ├── scanning.md
+│   ├── score_page.md
+│   ├── sheet_scale.md
+│   ├── sheet_validity.md
+│   ├── sheets_selection.md
+│   ├── sig.md
+│   ├── split_merge.md
+│   └── voice_colors.md
+├── menus
+│   ├── README.md
+│   ├── book.md
+│   ├── debug.md
+│   ├── file.md
+│   ├── help.md
+│   ├── plugins.md
+│   ├── popup.md
+│   ├── sheet.md
+│   ├── step.md
+│   ├── tools.md
+│   └── view.md
+├── outputs
+│   ├── README.md
+│   ├── log.md
+│   ├── mxl.md
+│   ├── omr.md
+│   ├── pdf.md
+│   └── zip.md
+├── quick
+│   ├── README.md
+│   ├── export.md
+│   ├── launch.md
+│   ├── load.md
+│   ├── play.md
+│   └── transcribe.md
+├── references.md
+├── specific
+│   ├── README.md
+│   ├── bar_repeat.md
+│   ├── beam.md
+│   ├── drums.md
+│   ├── fonts.md
+│   ├── multi_rest.md
+│   ├── octave_shift.md
+│   ├── tablature.md
+│   └── tremolo.md
+├── ui.md
+├── ui_examples
+│   ├── README.md
+│   └── trinitas
+│       └── README.md
+├── ui_foundations
+│   ├── README.md
+│   ├── inspection.md
+│   ├── principles.md
+│   └── selection.md
+├── ui_tools
+│   ├── README.md
+│   ├── add_inter.md
+│   ├── add_relation.md
+│   ├── chords.md
+│   ├── edit_inter.md
+│   ├── inter_editor.md
+│   ├── key.md
+│   ├── measure.md
+│   ├── part.md
+│   ├── remove_inter.md
+│   ├── remove_relation.md
+│   ├── shared_head.md
+│   ├── staff_editor.md
+│   ├── system.md
+│   ├── text.md
+│   ├── time.md
+│   └── tips.md
+└── updates.md
+
+15 directories, 105 files

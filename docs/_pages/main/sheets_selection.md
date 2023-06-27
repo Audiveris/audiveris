@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Sheets selection
+title: Sheets Selection
 grand_parent: Main Features
-parent: Book portions
+parent: Book Portions
 nav_order: 2
 ---
 
-## Sheets selection
+## Sheets Selection
 
 An action launched at sheet level processes only that sheet.    
 An action launched at book level, processes by default all the (valid) sheets of the book.
-And this may be too much when what you want is to work only on a portion of the book
+And this may be too much when what we want is to work only on a portion of the book
 (for example to print or listen to just a movement or a few selected sheets).
 
-You can specify a sheets selection, via pull-down menu `Book | Select sheets` which opens a
+We can specify a sheets selection, via pull-down menu `Book | Select sheets` which opens a
 selection dialog as shown below:
 
 |  Selection  |   Meaning    |
@@ -35,4 +35,10 @@ Remarks:
 - The latest sheets specification is persisted in book `.omr` project file
   when specified via the GUI dialog but not when specified via the CLI in batch.
 
-[^empty_spec]: In Audiveris 5.2, a null specification meant _all sheets_ while an empty specification meant _no sheets_. Starting with Audiveris 5.3, for the sake of consistency with the new "Split and Merge" feature, they now both mean the same thing: _**all sheets**_.
+---
+
+[^empty_spec]:
+    In Audiveris 5.2, a null specification used to mean _all sheets_
+    while an empty specification used to mean _no sheets_.  
+    Starting with Audiveris 5.3, for the sake of consistency with the new "Split and Merge" feature,
+    they now both mean the same thing: _**all sheets**_.

@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Measure merge
+title: Measure Merge
 grand_parent: User Edition
 parent: UI Tools
 nav_order: 9
 ---
-## Measure merge
+## Measure Merge
 {: .no_toc }
 
 A right-click in any measure stack, allows to merge this measure with the following one
@@ -17,4 +17,4 @@ measure stacks into a single one.
 
 TODO: provide a concrete score example.
 
-You can undo/redo this operation.
+We can undo/redo this operation.

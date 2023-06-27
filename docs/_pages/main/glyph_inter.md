@@ -2,7 +2,7 @@
 layout: default
 title: Glyph vs Inter
 grand_parent: Main Features
-parent: Main entities
+parent: Main Entities
 nav_order: 3
 ---
 ### Glyph vs Inter
@@ -26,8 +26,9 @@ These restrictions on Glyph don't apply to glyph interpretations (Inter).
 An interpretation, or **Inter** for short, is precisely meant to formalize any reasonable
 interpretation of a glyph.
 
-There may be several reasonable interpretations for a given glyph and, in many cases, OMR cannot
-immediately decide on the right interpretation among these mutually exclusive interpretations.
+There may be several reasonable interpretations for a given glyph and, in many cases,
+the OMR engine cannot immediately decide on the right interpretation among these mutually
+exclusive interpretations.
 This decision will then be postponed until later down in the OMR process,
 when additional information (such as other Inter instances located nearby) gets available
 and helps clarify the configuration.

@@ -9,18 +9,19 @@ nav_order: 7
 
 Audiveris has the ability to train the underlying Glyph classifier with representative samples.
 
-Note that the program is released with a pre-trained classifier so the casual user can safely ignore
-this training section.
-However, if the score(s) you want to transcribe use some specific music font significantly different
-from the provided examples, you may consider training the classifier to better fit your case.
+Note that the program is released with a pre-trained classifier so the casual user can safely
+ignore this training section.
 
-Make sure you have enabled the `SAMPLES` topic in the `Tools | Advanced Topics...` menu,
+However, if the score(s) we want to transcribe use some specific music font significantly different
+from the provided examples, we may consider training the classifier to better fit our case.
+
+Let's make sure we have enabled the `SAMPLES` topic in the `Tools | Advanced Topics...` menu,
 and restarted the application to take this advanced topic into account in all UI corners.
 
-Then, you will need a bunch of training samples (a sample is basically a glyph and a shape).
+Then, we will need a bunch of training samples (a sample is basically a glyph and a shape).
 This is addressed in the [Samples](samples.md) section before.
 
-Finally, you can launch one or several trainings of the glyph classifier, via the dedicated Trainer
+Finally, we can launch one or several trainings of the glyph classifier, via the dedicated Trainer
 dialog.
 
 ---
@@ -33,7 +34,7 @@ Table of contents
 
 ### Trainer Dialog {#trainer}
 
-This dialog is dedicated to the training of the Audiveris 5.1 basic classifier (a glyph classifier).
+This dialog is dedicated to the training of Audiveris basic classifier (a glyph classifier).
 It is launched via the pulldown menu `Tools | Train classifier...` or, from the global repository,
 by its `Repository | Train classifier...` menu.
 
@@ -49,8 +50,8 @@ Here we can launch and monitor the training of the classifier neural network.
 (which is either the initially-trained one, or a brand new one if `Reset` was hit).
 
 Note that training hyper-parameters cannot be directly modified on this interface.
-If really needed, use the `Tools | Options` menu and search for `BasicClassifier`.
-There you can set amplitude, learningRate, momentum and maxEpochs parameters.
+If really needed, we can use the `Tools | Options` menu and search for `BasicClassifier`.
+There we can set amplitude, learningRate, momentum and maxEpochs parameters.
 
 `Stop` button allows to stop the training before the maxEpochs count has been reached.
 

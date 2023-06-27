@@ -8,9 +8,9 @@ nav_order: 12
 ## Chords
 {: .no_toc }
 
-You should know by now that clicking on a note selects that note rather than its containing
+We should know by now that clicking on a note selects that note rather than its containing
 chord (this is the rule known as "_member over ensemble_").
-However, by selecting one or several notes, you can indirectly select and act on these chords.
+However, by selecting one or several notes, we can indirectly select and act on these chords.
 
 This is made possible via the usual popup menu which can provide a specific `Chords...`
 sub-menu, whose content tightly depends on the chords configuration.
@@ -33,7 +33,7 @@ before opening the popup/Chords menu:
 Notice that the global bounding box (red rectangle) encompasses the bounds of both chords.
 
 Also, the menu begins with information lines about the selected chords.
-And if you hover over these lines, the bounding box is dynamically updated to show just the
+And if we hover over these lines, the bounding box is dynamically updated to show just the
 selected item.
 This is meant to allow a visual check of the selected chords:
 
@@ -41,12 +41,13 @@ This is meant to allow a visual check of the selected chords:
 | --- | --- | --- |
 | ![](../assets/images/chords_both.png) | ![](../assets/images/chords_one.png) | ![](../assets/images/chords_two.png) |
 
-To ease manual dealing with chords, you can make each chord ID visible as in the picture below
+To ease manual dealing with chords, we can make each chord ID visible as in the picture below
 (use pull-down menu `View | Show chord IDs`):
 
 ![](../assets/images/chord_ids.png)
 
-NOTA: The example of Chords menu above shows only a partial list of possible chords actions,
+{: .note}
+The example of Chords menu above shows only a partial list of possible chords actions,
 because the list depends on the current status and configuration of the selected chords.
 
 Here after, we list all the possible items of `Chords...` menu.
@@ -80,7 +81,8 @@ to gather whole heads into one chord.
 
 ### Voice
 
-A voice is defined as a sequence of chords (head chords and rest chords) in the same music part. [^voice_sharing]
+A voice is defined as a sequence of chords (head chords and rest chords) in the same music part.
+[^voice_sharing]
 
 Audiveris algorithm for voice building is already very tricky.
 It tries to reconcile different heuristics, but in some cases the result may not be the one the
@@ -107,11 +109,11 @@ Here is the result:
 
 ![](../assets/images/next_in_voice_after.png)
 
-You can always **undo** such task, as any other UI task described here,
-via `Sheet | Undo` or `Ctrl-Z` standard commands.
+We can always **undo** such task, as any other UI task described here,
+via `Sheet | Undo` or `Ctrl+Z` standard commands.
 
-Also if you want, much later in the process, to cancel this task, you can always get back
-to selecting the same chords and you'll be offered to **cancel** the task.   
+Also if we want, much later in the process, to cancel this task, we can always get back
+to selecting the same chords and we'll be offered to **cancel** the task.   
 Cancelling this action removes the relation (and thus the related guidance).
 
 #### [cancel] Same Voice
@@ -132,8 +134,8 @@ And conversely, "Separate Voice" can be used to "pull" these rests out of the be
 This command imposes the voice algorithm to assign the selected chords to **separate** voices.
 
 Note this is not exactly the reverse of "_next in voice_" command (or weaker "_same voice_" command):
-* Without any command, you let the algorithm decide with no guidance.
-* With a command (whether it's _next_, _same_ or _separate_), you explicitly guide the algorithm.
+* Without any command, we let the algorithm decide with no guidance.
+* With a command (whether it's _next_, _same_ or _separate_), we explicitly guide the algorithm.
 
 #### [cancel] Preferred Voice
 
@@ -151,8 +153,8 @@ establish a voice computing rule across systems.
 the very first measure of a movement.
 
 These are the two cases where this feature can be useful.   
-But except for these very specific cases, you are advised to not use this feature.
-In particular, do not think you could use it to somehow build voice sequences of chords!
+But except for these very specific cases, we are advised to not use this feature.
+In particular, let's not imagine we could use it to somehow build voice sequences of chords!
 
 ### Time
 
@@ -181,6 +183,11 @@ As opposed to "Same Time Slot", this command is used to force time separation be
 chords that the engine has considered as adjacent.
 
 ---
-[^voice_sharing]: There is an on-going debate about the possibility for Audiveris to share [rest-] chords between voices. But for current 5.2 release, a chord can be assigned to exactly one voice.
 
-[^whole_chord]: Current heuristic for whole chords is to gather whole heads if they are aligned vertically and not more than one interline apart.
+[^voice_sharing]:
+    There is an on-going debate about the possibility for Audiveris to share [rest-] chords between voices.
+    But for current {{ site.audiveris_version }} release, a chord can be assigned to exactly one voice.
+
+[^whole_chord]:
+    Current heuristic for whole chords is to gather whole heads if they are aligned vertically
+    and not more than one interline apart.

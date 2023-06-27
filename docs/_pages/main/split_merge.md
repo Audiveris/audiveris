@@ -2,7 +2,7 @@
 layout: default
 title: Split and Merge
 grand_parent: Main Features
-parent: Book portions
+parent: Book Portions
 nav_order: 3
 ---
 
