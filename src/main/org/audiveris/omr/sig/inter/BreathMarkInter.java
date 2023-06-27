@@ -67,17 +67,6 @@ public class BreathMarkInter
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.BREATH_MARK, grade);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//

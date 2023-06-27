@@ -1715,11 +1715,11 @@ public class BeamsBuilder
                 "Maximum ordinate gap between stem and beam");
 
         private final Scale.Fraction maxExtensionToStem = new Scale.Fraction(
-                4.0,
+                1.0,
                 "Maximum beam horizontal extension to stem seed");
 
         private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
-                2.0,
+                0.5,
                 "Maximum beam horizontal extension to spot");
 
         private final Scale.Fraction beltMarginDx = new Scale.Fraction(

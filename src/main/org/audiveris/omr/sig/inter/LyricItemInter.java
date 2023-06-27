@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
@@ -142,15 +141,6 @@ public class LyricItemInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //-------//
     // added //
     //-------//
@@ -250,12 +240,18 @@ public class LyricItemInter
     //----------------------//
     /**
      * Report the reference abscissa of this lyric item to be used for chord link test.
+     * <p>
+     * NOTA: Some words width are very exaggerated by OCR, hence we use a standard abscissa distance
+     * off of word start abscissa.
      *
      * @return the x to use to chord link test
      */
     private double getReferenceAbscissa ()
     {
-        return getLocation().getX() + (getBounds().width * constants.widthRatio.getValue());
+        final Scale scale = sig.getSystem().getSheet().getScale();
+        final int xShift = scale.toPixels(constants.leftShift);
+
+        return getLocation().getX() + xShift;
     }
 
     //-----------------//
@@ -354,7 +350,7 @@ public class LyricItemInter
     {
         final double refX = getReferenceAbscissa();
         final double refY = getLocation().getY();
-        final boolean lookAbove = theStaff.pitchPositionOf(location) >= 0;
+        final boolean lookAbove = theStaff.isPointBelow(location);
 
         final Part thePart = theStaff.getPart();
         final Scale scale = theStaff.getSystem().getSheet().getScale();
@@ -647,9 +643,9 @@ public class LyricItemInter
                 3,
                 "Maximum horizontal distance between a note and its lyric item");
 
-        private final Constant.Ratio widthRatio = new Constant.Ratio(
-                0.5,
-                "Reference abscissa as ratio of item width");
+        private final Scale.Fraction leftShift = new Scale.Fraction(
+                1.0,
+                "Shift of left item abscissa");
     }
 
     //~ Enumerations -------------------------------------------------------------------------------

@@ -25,8 +25,6 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.TimeRational;
-import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
@@ -35,6 +33,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import static org.audiveris.omr.step.OmrStep.RHYTHMS;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +139,8 @@ public class PageRhythm
      */
     private boolean populateTimeSignatures ()
     {
+        final PageRef pageRef = page.getRef();
+
         for (SystemInfo system : page.getSystems()) {
             List<Inter> systemTimes = system.getSig().inters(AbstractTimeInter.class);
 
@@ -152,9 +153,12 @@ public class PageRhythm
 
                     for (Inter inter : stackTimes) {
                         AbstractTimeInter ts = (AbstractTimeInter) inter;
-                        stack.addTimeSignature(ts);
                         systemTimes.remove(ts);
-                        found = true;
+
+                        if (ts.getTimeRational() != null) {
+                            stack.addTimeSignature(ts);
+                            found = true;
+                        }
                     }
 
                     if (found) {
@@ -174,7 +178,7 @@ public class PageRhythm
             final Range range = ranges.get(i);
 
             if (range.ts != null) {
-                TimeRational timeRational = range.ts.getTimeRational();
+                final TimeRational timeRational = range.ts.getTimeRational();
 
                 if (timeRational == null) {
                     logger.info("No timeRational value for {}", range.ts);
@@ -184,61 +188,31 @@ public class PageRhythm
 
                 range.timeRational = timeRational;
                 range.duration = timeRational.getValue();
-            } else if ((i == 0) && !page.isMovementStart()) {
-                // Use time at end of last sheet/page if any
-                SheetStub stub = page.getSheet().getStub();
-                int stubNumber = stub.getNumber();
+            } else if (i == 0) {
+                // Use time at end of previous page(s) if available within the same score
+                PageRef prevPageRef = pageRef.getPrecedingInScore();
 
-                if (stubNumber <= 1) {
-                    continue;
-                }
+                while (prevPageRef != null) {
+                    final TimeRational lastTR = prevPageRef.getLastTimeRational();
 
-                SheetStub prevStub = stub.getBook().getStub(stubNumber - 1);
-
-                if (!prevStub.isValid()) {
-                    continue;
-                }
-
-                PageRef prevPageRef = prevStub.getLastPageRef();
-
-                if (prevPageRef == null) {
-                    continue;
-                }
-
-                TimeRational lastTR = prevPageRef.getLastTimeRational();
-
-                if (lastTR != null) {
-                    // Use last timeRational of previous page
-                    range.timeRational = lastTR.duplicate();
-                    range.duration = lastTR.getValue();
-                    logger.info(
-                            "{} Using last timeRational of previous page: {}",
-                            page,
-                            range.timeRational);
-                } else {
-                    // Fallback using last expectedDuration of previous page
-                    Sheet prevSheet = prevStub.getSheet(); // Perhaps load from disk...
-                    Page prevPage = prevSheet.getLastPage();
-
-                    if (prevPage == null) {
-                        continue;
-                    }
-
-                    SystemInfo lastSystem = prevPage.getLastSystem();
-
-                    if (lastSystem == null) {
-                        continue;
-                    }
-
-                    MeasureStack prevStack = lastSystem.getLastStack();
-
-                    if ((prevStack != null) && (prevStack.getExpectedDuration() != null)) {
-                        range.duration = prevStack.getExpectedDuration();
+                    if (lastTR != null) {
+                        range.timeRational = lastTR.duplicate();
+                        range.duration = lastTR.getValue();
                         logger.info(
-                                "{} Using expected duration of last stack in previous page: {}",
+                                "{} Time value reused from sheet#{}",
                                 page,
-                                range.duration);
+                                prevPageRef.getSheetNumber());
+                        break;
+                    } else if (prevPageRef.getStub().getLatestStep().compareTo(RHYTHMS) < 0) {
+                        logger.info(
+                                "{} Time value not yet available in sheet#{}",
+                                page,
+                                prevPageRef.getSheetNumber());
+                        break;
                     }
+
+                    // No time info in this page, let's look in the page before
+                    prevPageRef = prevPageRef.getPrecedingInScore();
                 }
             }
         }
@@ -252,7 +226,7 @@ public class PageRhythm
         final Range lastRange = ranges.get(ranges.size() - 1);
         lastRange.stopSN = seqNumOf(page.getLastSystem().getLastStack());
 
-        if (lastRange.timeRational != null) {
+        if ((lastRange.timeRational != null) && (lastRange.ts != null)) {
             page.setLastTimeRational(lastRange.timeRational.duplicate());
         }
 
@@ -379,16 +353,20 @@ public class PageRhythm
      */
     private static class Range
     {
+        /** 1-based sequence number of first stack in page. */
+        final int startSN;
 
-        final int startSN; // 1-based sequence number of first stack in page
+        /** 1-based sequence number of last stack in page. */
+        int stopSN;
 
-        int stopSN; // 1-based sequence number of last stack in page
+        /** Time signature found in first stack of range, if any. */
+        AbstractTimeInter ts;
 
-        AbstractTimeInter ts; // Time signature found in first stack of range, if any
+        /** Time rational value, if any. */
+        TimeRational timeRational;
 
-        TimeRational timeRational; // Time rational value, if any
-
-        Rational duration; // Inferred measure duration for the range
+        /** Inferred measure duration for the range. */
+        Rational duration;
 
         Range (int startSN,
                AbstractTimeInter ts)
@@ -409,9 +387,9 @@ public class PageRhythm
             }
 
             if (ts != null) {
-                sb.append(" ts:").append(ts.getTimeRational());
+                sb.append(" tSig:").append(ts.getTimeRational());
             } else if (timeRational != null) {
-                sb.append(" tr:").append(timeRational);
+                sb.append(" tRat:").append(timeRational);
             }
 
             if (duration != null) {

@@ -177,15 +177,6 @@ public class DynamicsInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //---------------//
     // getSoundLevel //
     //---------------//

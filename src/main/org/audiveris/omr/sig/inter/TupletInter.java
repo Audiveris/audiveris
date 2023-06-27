@@ -101,15 +101,6 @@ public class TupletInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //-------//
     // added //
     //-------//

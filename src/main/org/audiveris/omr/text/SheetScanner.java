@@ -47,7 +47,6 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,12 +170,11 @@ public class SheetScanner
             final BufferedImage image = getCleanImage(); // This also sets buffer member
 
             // Perform OCR on whole image
-            final Param<String> textParam = sheet.getStub().getOcrLanguages();
-            final String language = textParam.getValue();
-            logger.debug("scanSheet lan:{} on {}", language, sheet);
+            final String languages = sheet.getStub().getOcrLanguages();
+            logger.debug("scanSheet lan:{} on {}", languages, sheet);
             watch.start("OCR recognize");
 
-            return OcrUtil.scan(image, OCR.LayoutMode.MULTI_BLOCK, language, sheet, sheet.getId());
+            return OcrUtil.scan(image, OCR.LayoutMode.MULTI_BLOCK, languages, sheet, sheet.getId());
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();

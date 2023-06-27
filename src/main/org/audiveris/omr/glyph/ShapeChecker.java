@@ -311,7 +311,13 @@ public class ShapeChecker
                  * We also check that such measure rest candidate is not stuck to a stem,
                  * which can appear when conflicting with a beam hook.
                  */
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+
+                    return false;
+                }
+
                 final int p2 = (int) Math.rint(2 * pp); // Pitch * 2
 
                 if (!checkNoStem(system, glyph)) {
@@ -385,7 +391,11 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    return false;
+                }
+
                 final double pitchAbs = Math.abs(pp);
 
                 // Very strict for percussion
@@ -406,7 +416,10 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be outside staff height
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    return false;
+                }
 
                 return Math.abs(pp) > 4;
             }
@@ -420,8 +433,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be on right side of system header
-                return Math.abs(glyph.getCenter2D().getX()) > system.getFirstStaff()
-                        .getHeaderStop();
+                return Math.abs(glyph.getCenter2D().getX()) > system.getHeaderStop();
             }
         };
 
@@ -433,8 +445,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Percussion clef must be within system header
-                return Math.abs(glyph.getCenter2D().getX()) < system.getFirstStaff()
-                        .getHeaderStop();
+                return Math.abs(glyph.getCenter2D().getX()) < system.getHeaderStop();
             }
         };
 
@@ -446,7 +457,12 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Check reasonable height (Cannot be too tall when close to staff)
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
+
                 double maxHeight = (Math.abs(pp) >= constants.minTitlePitchPosition.getValue())
                         ? constants.maxTitleHeight.getValue()
                         : constants.maxLyricsHeight.getValue();
@@ -471,7 +487,12 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
+
                 double absPos = Math.abs(pp);
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
@@ -591,7 +612,10 @@ public class ShapeChecker
                 final Point2D glyphCenter = glyph.getCenter2D();
 
                 // Pedal marks must be below the staff
-                final double pp = system.estimatedPitch(glyphCenter);
+                final Double pp = system.estimatedPitch(glyphCenter);
+                if (pp == null) {
+                    return false;
+                }
 
                 if (pp <= 4) {
                     return false;
@@ -614,7 +638,10 @@ public class ShapeChecker
                 final Point2D glyphCenter = glyph.getCenter2D();
 
                 // Markers must be above the staff
-                final double pp = system.estimatedPitch(glyphCenter);
+                final Double pp = system.estimatedPitch(glyphCenter);
+                if (pp == null) {
+                    return false;
+                }
 
                 if (pp >= -4) {
                     return false;
@@ -635,7 +662,11 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Tuplets cannot be too far from a staff
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
 
                 if (Math.abs(pp) > constants.maxTupletPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
@@ -696,7 +727,11 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be centered on pitch position 0
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
 
                 if (Math.abs(pp) > 0.5) {
                     eval.failure = new Evaluation.Failure("pitch");
@@ -740,7 +775,7 @@ public class ShapeChecker
                 Point bottom = new Point(bounds.x + (bounds.width / 2), bounds.y + bounds.height);
                 Staff staff = system.getClosestStaff(bottom);
 
-                if (staff != system.getFirstStaff()) {
+                if ((staff != system.getFirstStaff()) || staff.isTablature()) {
                     return false;
                 }
 
@@ -750,17 +785,21 @@ public class ShapeChecker
             }
         };
 
-        new Checker("SimileMarks", ShapeSet.RepeatBars)
+        new Checker("MeasureRepeats", ShapeSet.RepeatBars)
         {
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                // Check these simile marks are located on staff mid line
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                // Check these signs are located on staff mid line
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
 
-                if (Math.abs(pp) > constants.maxSimilePitchPosition.getValue()) {
+                if (Math.abs(pp) > constants.maxMeasureRepeatPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;
@@ -912,10 +951,10 @@ public class ShapeChecker
                 -13.0,
                 "Minimum pitch value for a  segno / coda direction");
 
-        private final Constant.Double maxSimilePitchPosition = new Constant.Double(
+        private final Constant.Double maxMeasureRepeatPitchPosition = new Constant.Double(
                 "PitchPosition",
                 1.0,
-                "Maximum absolute pitch position for a simile mark");
+                "Maximum absolute pitch position for a measure repeat sign");
 
         private final Constant.Double minTitlePitchPosition = new Constant.Double(
                 "PitchPosition",

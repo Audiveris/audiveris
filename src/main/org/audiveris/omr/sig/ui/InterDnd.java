@@ -403,7 +403,7 @@ public class InterDnd
     {
         // Adapt image to current interline
         final int zoomedInterline = (int) Math.rint(zoomRatio * interline);
-        final MusicFont font = MusicFont.getBaseFont(symbol.getFamily(), zoomedInterline);
+        final MusicFont font = MusicFont.getBaseFont(symbol.getMusicFamily(), zoomedInterline);
         glass.setImage(symbol.getDecoratedVersion().buildImage(font, curveStroke));
     }
 }

@@ -284,7 +284,9 @@ public abstract class Voices
 
             for (SystemRef systemRef : pageRef.getSystems()) {
                 for (PartRef partRef : systemRef.getParts()) {
-                    if (partRef.getLogicalId() == logicalId) {
+                    final Integer partRefLogicalId = partRef.getLogicalId();
+
+                    if ((partRefLogicalId != null) && (partRefLogicalId == logicalId)) {
                         final Part part = partRef.getRealPart();
 
                         if (systemRef != firstSystemRef) {

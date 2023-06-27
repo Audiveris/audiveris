@@ -36,8 +36,6 @@ import org.audiveris.omr.sheet.time.TimeColumn;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
-import org.audiveris.omr.sig.inter.AbstractNumberInter;
-import org.audiveris.omr.sig.inter.AbstractNumberInter.NumberInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -71,7 +69,9 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -79,7 +79,6 @@ import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
-import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
@@ -275,11 +274,11 @@ public class InterFactory
 
             return null;
 
-        // Simile marks
+        // Measure repeat signs
         case REPEAT_ONE_BAR:
         case REPEAT_TWO_BARS:
         case REPEAT_FOUR_BARS:
-            return SimileMarkInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+            return MeasureRepeatInter.create(glyph, shape, grade, closestStaff); // Staff is OK
 
         // Clefs
         case G_CLEF:
@@ -325,11 +324,9 @@ public class InterFactory
         case TIME_NINE:
         case TIME_TWELVE:
         case TIME_SIXTEEN:
-            // NOTA: These shapes are generally used for time number as part as a time signature
-            // A time number is located on position -2 or +2 , at beginning of measure.
-            // They can also be used for a measure count located above a multiple rest
-            // or a simile mark.
-            return AbstractNumberInter.create(glyph, shape, grade, closestStaff);
+            // NOTA: These shapes are generally used for a time number or for a measure count.
+            // At this point, we simply return a general-purpose number
+            return NumberInter.create(glyph, shape, grade, closestStaff);
 
         case COMMON_TIME:
         case CUT_TIME:
@@ -387,6 +384,9 @@ public class InterFactory
         case DOUBLE_FLAT:
         {
             // Staff is very questionable!
+            if (closestStaff.isTablature()) {
+                return null;
+            }
             AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
             sig.addVertex(alter);
@@ -472,7 +472,8 @@ public class InterFactory
                     shape,
                     grade,
                     system,
-                    systemStems) : null;
+                    systemStems,
+                    systemHeads) : null;
 
         // Plucked techniques
         case ARPEGGIATO:
@@ -490,20 +491,26 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(ProcessingSwitch.fingerings) ? new FingeringInter(
+            // Check potential link with proper note head
+            return switches.getValue(ProcessingSwitch.fingerings) ? FingeringInter.createValidAdded(
                     glyph,
                     shape,
-                    grade) : null;
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(ProcessingSwitch.pluckings) ? new PluckingInter(
+            // Check potential link with proper note head
+            return switches.getValue(ProcessingSwitch.pluckings) ? PluckingInter.createValidAdded(
                     glyph,
                     shape,
-                    grade) : null;
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Romans
         case ROMAN_I:
@@ -854,11 +861,11 @@ public class InterFactory
         case REPEAT_DOT:
             return new RepeatDotInter(null, GRADE, null, null); // No visit
 
-        // Simile marks
+        // Measure repeat signs
         case REPEAT_ONE_BAR:
         case REPEAT_TWO_BARS:
         case REPEAT_FOUR_BARS:
-            return new SimileMarkInter(shape, GRADE);
+            return new MeasureRepeatInter(shape, GRADE);
 
         // Curves
         case SLUR_ABOVE:
@@ -1077,7 +1084,7 @@ public class InterFactory
         // Wedges
         case CRESCENDO:
         case DIMINUENDO:
-            return new WedgeInter(null, shape, GRADE); // ?
+            return new WedgeInter(null, shape, GRADE);
 
         // Graces
         case GRACE_NOTE:

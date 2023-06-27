@@ -80,7 +80,10 @@ public class MeasuresBuilder
     private final SystemInfo system;
 
     /** Sequence of groups of barlines per staff. */
-    private final Map<Staff, List<Group>> staffMap = new TreeMap<>(Staff.byId);
+    private final Map<Staff, List<Group>> staffGroupsMap = new TreeMap<>(Staff.byId);
+
+    /** Sequence of StaffBarline's per staff. */
+    private final Map<Staff, List<StaffBarlineInter>> staffBarsMap = new TreeMap<>(Staff.byId);
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -164,11 +167,14 @@ public class MeasuresBuilder
     {
         // Determine groups of BarlineInter's for each staff within system
         for (Staff staff : system.getStaves()) {
-            staffMap.put(staff, buildGroups(staff.getBarlines()));
+            staffGroupsMap.put(staff, buildGroups(staff.getBarlines()));
         }
 
         // Enforce consistency within system
         enforceSystemConsistency();
+
+        // Create StaffBarlineInter's out of barline groups
+        buildStaffBarlines();
 
         // Allocate measures in each part
         for (Part part : system.getParts()) {
@@ -183,29 +189,25 @@ public class MeasuresBuilder
     // buildPartMeasures //
     //-------------------//
     /**
-     * Here, we build the sequence of PartBarlines in parallel with the StaffBarlineInter
-     * sequence of each staff within part.
+     * Here, we build the sequence of PartBarlines and measures, based on StaffBarlineInter's.
      *
      * @param part the containing part
      */
     private void buildPartMeasures (Part part)
     {
         final Staff topStaff = part.getFirstStaff();
-        final List<Group> topGroups = staffMap.get(topStaff);
-        final boolean noRightBar = topStaff.getSideBarline(HorizontalSide.RIGHT) == null;
-        final int igMax = noRightBar ? topGroups.size() : (topGroups.size() - 1);
+        final List<StaffBarlineInter> topBars = staffBarsMap.get(topStaff);
         PartBarline leftBarPending = null;
 
-        for (int ig = 0; ig <= igMax; ig++) {
-            Group topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
-            Measure measure = ((topGroup != null) && topGroup.get(0).isStaffEnd(
-                    HorizontalSide.LEFT)) ? null : new Measure(part);
+        for (int i = 0; i < topBars.size(); i++) {
+            final StaffBarlineInter topSb = topBars.get(i);
+            final Measure measure = topSb.isStaffEnd(HorizontalSide.LEFT) ? null
+                    : new Measure(part);
 
             if (measure != null) {
                 part.addMeasure(measure);
 
                 final int im = part.getMeasures().size() - 1;
-
                 while (system.getStacks().size() <= im) {
                     system.addStack(new MeasureStack(system));
                 }
@@ -216,25 +218,22 @@ public class MeasuresBuilder
                 leftBarPending = null;
             }
 
-            if (topGroup != null) {
-                // Logical barline
-                PartBarline partBar = new PartBarline();
+            // PartBarline
+            final PartBarline partBar = new PartBarline();
 
-                for (Staff s : part.getStaves()) {
-                    Group group = staffMap.get(s).get(ig);
-                    partBar.addStaffBarline(new StaffBarlineInter(group));
-                }
+            for (Staff s : part.getStaves()) {
+                partBar.addStaffBarline(staffBarsMap.get(s).get(i));
+            }
 
-                if (measure == null) {
-                    part.setLeftPartBarline(partBar);
-                } else {
-                    measure.setRightPartBarline(partBar);
-                }
+            if (measure == null) {
+                part.setLeftPartBarline(partBar);
+            } else {
+                measure.setRightPartBarline(partBar);
+            }
 
-                if (topGroup.size() > 2) {
-                    // We have a back to back group, and it starts a new measure
-                    leftBarPending = partBar;
-                }
+            if (topSb.isBackToBack()) {
+                // We have a back-to-back configuration, and it starts a new measure
+                leftBarPending = partBar;
             }
 
             if (measure != null) {
@@ -243,6 +242,53 @@ public class MeasuresBuilder
                 measure.setStack(stack);
                 stack.addMeasure(measure);
             }
+        }
+
+        // Ending measure with no barline on right?
+        final StaffBarlineInter lastSb = topBars.get(topBars.size() - 1);
+        if (!lastSb.isStaffEnd(RIGHT)) {
+            final Measure measure = new Measure(part);
+            part.addMeasure(measure);
+            measure.setLeftPartBarline(leftBarPending); // Perhaps null
+
+            final int im = part.getMeasures().size() - 1;
+            while (system.getStacks().size() <= im) {
+                system.addStack(new MeasureStack(system));
+            }
+
+            final MeasureStack stack = system.getStacks().get(im);
+            measure.setStack(stack);
+            stack.addMeasure(measure);
+        }
+    }
+
+    //--------------------//
+    // buildStaffBarlines //
+    //--------------------//
+    /**
+     * From groups of barlines, build StaffBarlineInter's.
+     * <p>
+     * NOTA: Many StaffBarlines will be built from (physical) Barlines.
+     * But some may have already been created manually by the end-user, without any physical Barline
+     */
+    private void buildStaffBarlines ()
+    {
+        final SIGraph sig = system.getSig();
+        final Staff topStaff = system.getFirstStaff();
+        final List<Group> topGroups = staffGroupsMap.get(topStaff);
+
+        for (int ig = 0; ig < topGroups.size(); ig++) {
+            for (Staff staff : system.getStaves()) {
+                final Group group = staffGroupsMap.get(staff).get(ig);
+                final StaffBarlineInter sb = new StaffBarlineInter(group);
+                sb.setStaff(staff);
+                sig.addVertex(sb);
+            }
+        }
+
+        // Populate staffBarsMap from ALL StaffBarlineInter's in sig
+        for (Staff staff : system.getStaves()) {
+            staffBarsMap.put(staff, staff.getStaffBarlines());
         }
     }
 
@@ -322,7 +368,7 @@ public class MeasuresBuilder
         final List<Column> columns = new ArrayList<>();
 
         for (Staff staff : system.getStaves()) {
-            List<Group> groups = staffMap.get(staff);
+            List<Group> groups = staffGroupsMap.get(staff);
 
             GroupLoop:
             for (Group group : groups) {
@@ -446,7 +492,7 @@ public class MeasuresBuilder
             for (Entry<Staff, Group> entry : groups.entrySet()) {
                 Staff staff = entry.getKey();
                 Group group = entry.getValue();
-                staffMap.get(staff).remove(group);
+                staffGroupsMap.get(staff).remove(group);
 
                 for (BarlineInter barline : group) {
                     barline.remove();
@@ -461,8 +507,8 @@ public class MeasuresBuilder
                 return true;
             }
 
-            if (obj instanceof Column) {
-                return compareTo((Column) obj) == 0;
+            if (obj instanceof Column column) {
+                return compareTo(column) == 0;
             }
 
             return false;
@@ -527,7 +573,7 @@ public class MeasuresBuilder
                     barline.setGrade(Grades.intrinsicRatio);
                     barline.freeze();
 
-                    List<Group> staffGroups = staffMap.get(staff);
+                    List<Group> staffGroups = staffGroupsMap.get(staff);
                     staffGroups.add(new Group(Collections.singletonList(barline), system));
                     Collections.sort(staffGroups);
                     staff.addBarline(barline);

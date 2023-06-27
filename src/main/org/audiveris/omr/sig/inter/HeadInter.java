@@ -47,6 +47,9 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.HeadFingeringRelation;
+import org.audiveris.omr.sig.relation.HeadPlayingRelation;
+import org.audiveris.omr.sig.relation.HeadPluckingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -448,6 +451,23 @@ public class HeadInter
         return new Editor(this);
     }
 
+    //--------------//
+    // getFingering //
+    //--------------//
+    /**
+     * Report the fingering, if any, related to this head.
+     *
+     * @return the related fingering, or null
+     */
+    public FingeringInter getFingering ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadFingeringRelation.class)) {
+            return (FingeringInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
     //-----------//
     // getLinker //
     //-----------//
@@ -540,6 +560,40 @@ public class HeadInter
                         new Point(box.x + box.width, box.y),
                         new Point(box.x, box.y + box.height));
             }
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // getPlayingSign //
+    //----------------//
+    /**
+     * Report the playing sign, if any, related to this head.
+     *
+     * @return the related playing sign, or null
+     */
+    public PlayingInter getPlayingSign ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadPlayingRelation.class)) {
+            return (PlayingInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getPlucking //
+    //-------------//
+    /**
+     * Report the plucking, if any, related to this head.
+     *
+     * @return the related plucking, or null
+     */
+    public PluckingInter getPlucking ()
+    {
+        for (Relation rel : sig.getRelations(this, HeadPluckingRelation.class)) {
+            return (PluckingInter) sig.getOppositeInter(this, rel);
         }
 
         return null;
@@ -945,7 +999,9 @@ public class HeadInter
 
                     if (stemChords.isEmpty()) {
                         // Create a chord based on stem
-                        headChord = new HeadChordInter(null);
+                        headChord = shape.isSmallHead() //
+                                ? new SmallChordInter(null)
+                                : new HeadChordInter(null);
                         tasks.add(
                                 new AdditionTask(
                                         theSig,
@@ -1173,7 +1229,7 @@ public class HeadInter
     public static List<Line2D> getNeededLedgerSegments (Point2D headCenter,
                                                         Staff staff)
     {
-        if (staff == null) {
+        if ((staff == null) || staff.isTablature()) {
             return Collections.emptyList();
         }
 
@@ -1247,7 +1303,7 @@ public class HeadInter
     public static Double getSnapOrdinate (Point2D headCenter,
                                           Staff staff)
     {
-        if (staff == null) {
+        if ((staff == null) || staff.isTablature()) {
             return null;
         }
 

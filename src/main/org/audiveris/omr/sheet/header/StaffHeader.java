@@ -63,7 +63,10 @@ public class StaffHeader
     @XmlAttribute(name = "start")
     public final int start;
 
-    /** Abscissa for end of staff header. */
+    /**
+     * Abscissa for end of staff header.
+     * After clef plus key and time if any.
+     */
     @XmlAttribute(name = "stop")
     public int stop;
 

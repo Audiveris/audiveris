@@ -1406,7 +1406,7 @@ public abstract class AbstractChordInter
             this.voice = voice;
 
             // Update the voice entity
-            if ((voice != null) && !isMeasureRest()) {
+            if ((voice != null) && !isMeasureRest() && !(this instanceof SmallChordInter)) {
                 voice.addChord(this);
             }
 

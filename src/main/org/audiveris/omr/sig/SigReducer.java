@@ -55,6 +55,7 @@ import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -77,6 +78,8 @@ import static org.audiveris.omr.sig.relation.Exclusion.ExclusionCause.INCOMPATIB
 import static org.audiveris.omr.sig.relation.Exclusion.ExclusionCause.OVERLAP;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.MeasureRepeatCountRelation;
+import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
@@ -765,7 +768,7 @@ public class SigReducer
     // checkHooksHaveStem //
     //--------------------//
     /**
-     * Perform checks on hooks.
+     * Perform checks on hooks that must have a stem relation on one horizontal side.
      *
      * @return the count of modifications done
      */
@@ -777,13 +780,24 @@ public class SigReducer
         final List<Inter> inters = sig.inters(BeamHookInter.class);
 
         for (Inter inter : inters) {
-            // Check if the hook has a stem relation
-            if (!sig.hasRelation(inter, BeamStemRelation.class)) {
+            BeamPortion sidePortion = null;
+
+            for (Relation rel : sig.getRelations(inter, BeamStemRelation.class)) {
+                final BeamStemRelation bsRel = (BeamStemRelation) rel;
+                final BeamPortion portion = bsRel.getBeamPortion();
+
+                if (portion != BeamPortion.CENTER) {
+                    sidePortion = portion;
+                }
+            }
+
+            if (sidePortion == null) {
                 if (inter.isVip()) {
-                    logger.info("VIP no stem for {}", inter);
+                    logger.info("VIP no side stem for {}", inter);
                 }
 
                 inter.remove();
+                modifs++;
             }
         }
 
@@ -916,6 +930,38 @@ public class SigReducer
         }
 
         return toDelete.size();
+    }
+
+    //--------------------//
+    // checkMeasureCounts //
+    //--------------------//
+    /**
+     * Check all measure counts are linked to multiple-rest or measure repeat sign.
+     *
+     * @return the count of modifications done
+     */
+    private int checkMeasureCounts ()
+    {
+        logger.debug("S#{} checkMeasureCounts", system.getId());
+
+        int modifs = 0;
+        final List<Inter> inters = sig.inters(MeasureCountInter.class);
+
+        for (Inter inter : inters) {
+            if (!sig.hasRelation(
+                    inter,
+                    MultipleRestCountRelation.class,
+                    MeasureRepeatCountRelation.class)) {
+                if (inter.isVip()) {
+                    logger.info("VIP no link for {}", inter);
+                }
+
+                inter.remove();
+                modifs++;
+            }
+        }
+
+        return modifs;
     }
 
     //-------------//
@@ -2073,6 +2119,7 @@ public class SigReducer
             deleted.addAll(contextualizeAndPurge());
 
             modifs += checkIsolatedAlters();
+            modifs += checkMeasureCounts();
             deleted.addAll(contextualizeAndPurge());
 
             return modifs;

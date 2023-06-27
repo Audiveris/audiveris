@@ -79,15 +79,6 @@ public class RepeatDotInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //---------------//
     // checkAbnormal //
     //---------------//
@@ -313,7 +304,11 @@ public class RepeatDotInter
                                       Point2D center,
                                       int profile)
     {
-        final double pp = system.estimatedPitch(center);
+        final Double pp = system.estimatedPitch(center);
+        if (pp == null) {
+            return false;
+        }
+
         final double pitchDif = Math.abs(Math.abs(pp) - 1);
         final double maxDif = RepeatDotBarRelation.getYGapMaximum(profile).getValue();
 

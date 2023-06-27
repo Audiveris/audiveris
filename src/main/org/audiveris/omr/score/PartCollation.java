@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.SheetStub;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +42,19 @@ import java.util.Set;
  * The strategy used to build LogicalPart's out of PartRef's is based on the following assumptions:
  * <ul>
  * <li>For a part of a system to be combined to a part of another system, they must exhibit the
- * same count of staves and the same count of lines in corresponding staves</li>
+ * same staves physical configuration:
+ * <ol>
+ * <li>Same count of staves
+ * <li>Same count of lines in corresponding staves
+ * <li>Same small attribute if any in corresponding staves
+ * </ol>
  * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
  * partA followed by partB in a system, and partB followed by partA in another system.</li>
- * <li>A part with 2 staves, if any, is used as a pivot to align collations.</li>
+ * <li>A part with 2 standard staves, likely to be the piano part if any, is used as a pivot to
+ * align collations.</li>
  * <li>Otherwise, since additional parts appear at the top of a system, rather than at the bottom,
  * we process part collation bottom up.</li>
- * <li>When possible, we use the part names (or abbreviations) to help the collation algorithm,
+ * <li>When available, we use the part names (or abbreviations) to help the collation algorithm,
  * but this is questionable for lack of OCR reliability on part names and abbreviations.
  * </ul>
  *
@@ -57,7 +64,12 @@ public class PartCollation
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(PartCollation.class);
+
+    public static final List<StaffConfig> PIANO_CONFIG = StaffConfig.decodeCsv(
+            constants.pianoStaffConfig.getValue());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -125,10 +137,10 @@ public class PartCollation
         final LogicalPart logical = new LogicalPart(
                 0, // This id indicates a just-created logical
                 partRef.getStaffCount(),
-                partRef.getLineCounts());
+                partRef.getStaffConfigs());
         logical.setName(partRef.getName());
         logical.setAbbreviation(null);
-        logical.setLineCounts(partRef.getLineCounts());
+        logical.setStaffConfigs(partRef.getStaffConfigs());
         logger.debug("Created {} from {}", logical, partRef);
 
         final Record record = new Record(logical);
@@ -172,7 +184,7 @@ public class PartCollation
      */
     private void collate (List<List<PartRef>> sequences)
     {
-        // Two-staff record found, if any
+        // Piano-like part record found, if any
         Record biRecord = null;
 
         // Process each sequence of candidate parts in turn
@@ -195,10 +207,6 @@ public class PartCollation
 
             if (iSeq == 0) {
                 dispatch(sequence, records, +1, manuals);
-
-                if (biIndex != -1) {
-                    biRecord = records.get(biIndex);
-                }
             } else {
                 if ((biRecord != null) && (biIndex != -1)) {
                     // Align on the biRecord
@@ -220,6 +228,10 @@ public class PartCollation
                 } else {
                     dispatch(sequence, records, -1, manuals);
                 }
+            }
+
+            if (biRecord == null) {
+                biRecord = getBiRecord();
             }
         }
 
@@ -250,23 +262,25 @@ public class PartCollation
         final int ic2 = (dir > 0) ? sequence.size() : (-1); // Breaking sequence index value
         int recordIndex = (dir > 0) ? (-1) : records.size(); // Current index in defined records
 
-        CandidateLoop: for (int ic = ic1; ic != ic2; ic += dir) {
+        CandidateLoop:
+        for (int ic = ic1; ic != ic2; ic += dir) {
             final PartRef partRef = sequence.get(ic);
-            final List<Integer> lineCounts = partRef.getLineCounts();
+            final List<StaffConfig> staffConfigs = partRef.getStaffConfigs();
             logger.debug("\nCandidate {}", partRef.toQualifiedString());
 
             if (partRef.isManual()) {
-                continue CandidateLoop; // Candidate part already assigned manually
+                continue; // Candidate part already assigned manually
             }
 
             // Check against defined records
             recordIndex += dir;
-            RecordLoop: for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
+
+            for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
                     && (recordIndex >= 0)); recordIndex += dir) {
                 final Record record = records.get(recordIndex);
 
                 if (manuals.contains(record)) {
-                    continue RecordLoop; // Candidate part must skip this record
+                    continue; // Candidate part must skip this record
                 }
 
                 final LogicalPart logical = record.logical;
@@ -280,22 +294,21 @@ public class PartCollation
 
                 // Check parts are compatible in terms of line counts
                 // For backward compatibility w/ old OMRs, check is made only if line counts exist
-                if (!lineCounts.isEmpty() && !logical.getLineCounts().isEmpty() && !Objects
-                        .deepEquals(logical.getLineCounts(), lineCounts)) {
+                if (!staffConfigs.isEmpty() //
+                        && !logical.getStaffConfigs().isEmpty() //
+                        && !Objects.deepEquals(logical.getStaffConfigs(), staffConfigs)) {
                     logger.debug("    Line counts incompatibility");
                     continue;
                 }
 
                 // Check candidate name
-                // @formatter:off
                 final String name = partRef.getName();
-                if ((name != null)
-                    && !name.equalsIgnoreCase(logical.getName())
-                    && !name.equalsIgnoreCase(logical.getAbbreviation())) {
+                if ((name != null) //
+                        && !name.equalsIgnoreCase(logical.getName()) //
+                        && !name.equalsIgnoreCase(logical.getAbbreviation())) {
                     logger.debug("    Name incompatibility");
                     continue;
                 }
-                // @formatter:on
 
                 logger.debug("    Success");
                 record.partRefs.add(partRef);
@@ -305,14 +318,12 @@ public class PartCollation
                 if (resAbbrev == null) {
                     final String resName = logical.getName();
                     final String affiName = partRef.getName();
-                    // @formatter:off
-                    if ((affiName != null)
-                        && !affiName.equals(resName)
-                        && (resName == null || affiName.length() < logical.getName().length())
-                        && !logicalNames.contains(affiName)) {
+                    if ((affiName != null) //
+                            && !affiName.equals(resName) //
+                            && (resName == null || affiName.length() < logical.getName().length()) //
+                            && !logicalNames.contains(affiName)) {
                         logical.setAbbreviation(affiName);
                     }
-                    // @formatter:on
                 }
 
                 continue CandidateLoop;
@@ -323,7 +334,7 @@ public class PartCollation
             if (!logicalsLocked) {
                 addRecord(dir, partRef, records); // Create a brand new record for this candidate
             } else {
-                logger.warn("  Cannot map {} to any logical", partRef.toQualifiedString());
+                logger.info("  Cannot map {} to any logical", partRef.toQualifiedString());
             }
         }
     }
@@ -347,17 +358,38 @@ public class PartCollation
                 final PageRef page = system.getPage();
                 final SheetStub stub = page.getStub();
 
-                // @formatter:off
-                sb.append("\n   ").append(partRef)
-                        .append(" rank:").append(rank)
-                        .append(" in ").append(stub)
-                        .append(", Page#").append(page.getId())
+                sb.append("\n   ") //
+                        .append(partRef) //
+                        .append(" rank:").append(rank) //
+                        .append(" in ").append(stub) //
+                        .append(", Page#").append(page.getId()) //
                         .append(", System#").append(system.getId());
-                // @formatter:on
             }
         }
 
         logger.info("PartCollation records:{}", sb);
+    }
+
+    //-------------//
+    // getBiRecord //
+    //-------------//
+    /**
+     * Report the (first) record, if any, among the current sequence of records, which could
+     * be the piano part.
+     *
+     * @return the 2-staff piano record found or null
+     */
+    private Record getBiRecord ()
+    {
+        for (Record record : records) {
+            final List<StaffConfig> configs = record.logical.getStaffConfigs();
+
+            if (Objects.deepEquals(configs, PIANO_CONFIG)) {
+                return record;
+            }
+        }
+
+        return null;
     }
 
     //-----------//
@@ -372,8 +404,9 @@ public class PartCollation
     private Record getRecord (int logicalId)
     {
         for (Record record : records) {
-            if (record.logical.getId() == logicalId)
+            if (record.logical.getId() == logicalId) {
                 return record;
+            }
         }
 
         logger.warn("Cannot find logical for id {}", logicalId);
@@ -411,6 +444,18 @@ public class PartCollation
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.String pianoStaffConfig = new Constant.String(
+                "5,5",
+                "Typical staff configuration for the piano part");
+    }
+
     //--------//
     // Record //
     //--------//
@@ -433,12 +478,10 @@ public class PartCollation
         @Override
         public String toString ()
         {
-            // @formatter:off
-            return new StringBuilder(getClass().getSimpleName()).append('{')
-                    .append(logical)
-                    .append(" affs:").append(partRefs.size())
+            return new StringBuilder(getClass().getSimpleName()).append('{') //
+                    .append(logical) //
+                    .append(" affs:").append(partRefs.size())//
                     .append('}').toString();
-            // @formatter:on
         }
     }
 }

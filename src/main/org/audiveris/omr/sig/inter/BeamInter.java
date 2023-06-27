@@ -72,15 +72,4 @@ public class BeamInter
     {
         super(Shape.BEAM, impacts, median, height);
     }
-
-    //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 }

@@ -215,7 +215,7 @@ public class Picture
     //-----------//
     private ByteProcessor binarized (ByteProcessor src)
     {
-        FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
         logger.info("{} {}", "Binarization", desc);
 
         PixelFilter filter = desc.getFilter(src);

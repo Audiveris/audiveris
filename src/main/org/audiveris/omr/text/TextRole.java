@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.regex.Matcher;
 
 /**
  * Class <code>TextRole</code> describes the role of a piece of text (typically a sentence).
@@ -136,7 +137,7 @@ public enum TextRole
         // Is line made entirely of potential chord symbols?
         boolean isAllChords = line.isAllChordNames();
 
-        // Is line mainly in italic?
+        // Is line mainly in italic? (Not very reliable...)
         boolean isMainlyItalic = TextBuilder.isMainlyItalic(line);
 
         Sheet sheet = system.getSheet();
@@ -165,8 +166,6 @@ public enum TextRole
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
         boolean farFromStaff = staffDy >= scale.toPixels(constants.minStaffDy);
 
-        ///boolean lyricCloseAboveStaff = staffDy <= scale.toPixels(constants.maxLyricsDyAbove);
-        //
         // Begins before left side of the part (and stops before staff center abscissa)?
         boolean leftOfStaves = (left.x < system.getLeft()) && (right.x <= staffMidX);
 
@@ -229,9 +228,10 @@ public enum TextRole
             } else if (isAllChords) {
                 return ChordName;
             } else {
-                if (lyricsAllowed && hasVowel ///&& lyricCloseAboveStaff
-                        && (switches.getValue(ProcessingSwitch.lyricsAboveStaff))
-                        && (!isMainlyItalic)) {
+                if (lyricsAllowed //
+                        && hasVowel //
+                        ///&& (!isMainlyItalic) //
+                        && (switches.getValue(ProcessingSwitch.lyricsAboveStaff))) {
                     return Lyrics;
                 } else {
                     return Direction;
@@ -243,13 +243,23 @@ public enum TextRole
         case WITHIN_STAVES: // Name, Lyrics, Direction
 
             if (leftOfStaves) {
-                return PartName;
-            } else if (lyricsAllowed && hasVowel && !isMainlyItalic && (switches.getValue(
-                    ProcessingSwitch.lyrics) || switches.getValue(
-                            ProcessingSwitch.lyricsAboveStaff))
+                if (TextWord.PART_NAME_WORDS != null) {
+                    Matcher matcher = TextWord.PART_NAME_WORDS.matcher(line.getValue());
+
+                    if (matcher.matches()) {
+                        return PartName;
+                    } else {
+                        logger.debug("Abnormal part name: {}", line);
+                    }
+                }
+            } else if (lyricsAllowed //
+                    && hasVowel //
+                    ///&& !isMainlyItalic //
+                    && (switches.getValue(ProcessingSwitch.lyrics) //
+                            || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
                     && ((partPosition == StaffPosition.BELOW_STAVES)
-                            || ((partPosition == StaffPosition.ABOVE_STAVES) && switches.getValue(
-                                    ProcessingSwitch.lyricsAboveStaff)))) {
+                            || ((partPosition == StaffPosition.ABOVE_STAVES) //
+                                    && switches.getValue(ProcessingSwitch.lyricsAboveStaff)))) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -270,9 +280,11 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed && hasVowel && !isMainlyItalic && (switches.getValue(
-                        ProcessingSwitch.lyrics) || switches.getValue(
-                                ProcessingSwitch.lyricsAboveStaff))
+                if (lyricsAllowed //
+                        && hasVowel //
+                        ///&& !isMainlyItalic //
+                        && (switches.getValue(ProcessingSwitch.lyrics) //
+                                || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
                         && (partPosition == StaffPosition.BELOW_STAVES)) {
                     return Lyrics;
                 }

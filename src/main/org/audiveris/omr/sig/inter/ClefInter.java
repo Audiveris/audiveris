@@ -398,6 +398,10 @@ public class ClefInter
                                     Double grade,
                                     Staff staff)
     {
+        if (staff.isTablature()) {
+            return null;
+        }
+
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
@@ -484,6 +488,10 @@ public class ClefInter
                                    Shape shape,
                                    Staff staff)
     {
+        if (staff.isTablature()) {
+            return null;
+        }
+
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:

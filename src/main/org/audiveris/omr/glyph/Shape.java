@@ -973,6 +973,19 @@ public enum Shape
         return ShapeSet.HeadsOvalSmall.contains(this);
     }
 
+    //----------------//
+    // isStemLessHead //
+    //----------------//
+    /**
+     * Check whether the shape is a stem-less head, that is whole or breve.
+     *
+     * @return true if so
+     */
+    public boolean isStemLessHead ()
+    {
+        return ShapeSet.StemLessHeads.contains(this);
+    }
+
     //--------//
     // isText //
     //--------//

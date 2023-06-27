@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.Shape;
 import java.util.Comparator;
 
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -45,15 +46,13 @@ public class FretInter
      * For comparing FretInter instances by their decreasing length.
      */
     public static final Comparator<FretInter> byDecreasingLength = (f1,
-                                                                    f2) -> Integer.compare(
-                                                                            f2.getSymbolString()
-                                                                                    .length(),
-                                                                            f1.getSymbolString()
-                                                                                    .length());
+                                                                    f2) //
+    -> Integer.compare(f2.getSymbolString().length(), f1.getSymbolString().length());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Fret value. */
+    @XmlAttribute
     private Integer value;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -83,15 +82,6 @@ public class FretInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -107,6 +97,16 @@ public class FretInter
     //-----------------//
     @Override
     public String getSymbolString ()
+    {
+        return symbolStringOf(value);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getSymbolString //
+    //-----------------//
+    public static String symbolStringOf (int value)
     {
         return switch (value) {
         case 1 -> "I";
@@ -125,8 +125,6 @@ public class FretInter
         default -> null;
         };
     }
-
-    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // valueOf //

@@ -170,31 +170,31 @@ public class TextBuilder
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //----------------//
-    // adjustFontSize //
-    //----------------//
-    private void adjustFontSize (List<TextLine> lines)
-    {
-        for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
-            TextLine line = it.next();
-
-            for (Iterator<TextWord> itw = line.getWords().iterator(); itw.hasNext();) {
-                TextWord word = itw.next();
-
-                if (!word.isDashed()) {
-                    boolean ok = word.adjustFontSize();
-
-                    if (!ok) {
-                        itw.remove();
-                    }
-                }
-            }
-
-            if (line.getWords().isEmpty()) {
-                it.remove();
-            }
-        }
-    }
+    //    //----------------//
+    //    // adjustFontSize //
+    //    //----------------//
+    //    private void adjustFontSize (List<TextLine> lines)
+    //    {
+    //        for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
+    //            TextLine line = it.next();
+    //
+    //            for (Iterator<TextWord> itw = line.getWords().iterator(); itw.hasNext();) {
+    //                TextWord word = itw.next();
+    //
+    //                if (!word.isDashed()) {
+    //                    boolean ok = word.adjustFontSize();
+    //
+    //                    if (!ok) {
+    //                        itw.remove();
+    //                    }
+    //                }
+    //            }
+    //
+    //            if (line.getWords().isEmpty()) {
+    //                it.remove();
+    //            }
+    //        }
+    //    }
 
     //-------------//
     // adjustLines //
@@ -1089,8 +1089,8 @@ public class TextBuilder
         for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
             final TextLine line = it.next();
             final Point2D origin = line.getBaseline().getP1();
-            boolean inSheetHeader = (system.getId() == 1) && (origin.getY() < system.getFirstStaff()
-                    .getFirstLine().yAt(origin.getX()));
+            boolean inSheetHeader = (system.getId() == 1) //
+                    && (origin.getY() < system.getFirstStaff().getFirstLine().yAt(origin.getX()));
 
             String reason = line.checkValidity(inSheetHeader);
 
@@ -1175,7 +1175,7 @@ public class TextBuilder
         Collections.sort(allLines, TextLine.byOrdinate(skew));
 
         // Precisely adjust font size for words (dashes excepted)
-        adjustFontSize(allLines);
+        ///adjustFontSize(allLines);
 
         return allLines;
     }

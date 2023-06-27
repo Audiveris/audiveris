@@ -67,17 +67,6 @@ public class CaesuraInter
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.CAESURA, grade);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//

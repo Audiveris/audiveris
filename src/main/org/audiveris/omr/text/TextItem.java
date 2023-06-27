@@ -140,7 +140,7 @@ public abstract class TextItem
     // internals //
     //-----------//
     /**
-     * Report a textual description of object internals
+     * Report a textual description of object internals.
      *
      * @return string of internals
      */

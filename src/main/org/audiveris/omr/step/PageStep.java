@@ -47,7 +47,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.sig.inter.SimileMarkInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
@@ -179,7 +179,7 @@ public class PageStep
         forMeasures = new HashSet<>();
         // Inters
         forMeasures.add(BarlineInter.class);
-        forMeasures.add(SimileMarkInter.class);
+        forMeasures.add(MeasureRepeatInter.class);
         forMeasures.add(StaffBarlineInter.class);
         // Tasks
         forMeasures.add(SystemMergeTask.class);

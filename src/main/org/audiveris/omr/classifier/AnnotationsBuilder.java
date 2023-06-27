@@ -484,7 +484,7 @@ public class AnnotationsBuilder
 
             if (above == null) {
                 // No relation, use position WRT related staff
-                if (inter.getStaff() != null) {
+                if ((inter.getStaff() != null) && !inter.getStaff().isTablature()) {
                     above = inter.getStaff().pitchPositionOf(inter.getCenter()) < 0;
                 }
             }
@@ -584,6 +584,10 @@ public class AnnotationsBuilder
         {
             final Rectangle ledgerBox = ledger.getBounds();
             final Staff staff = ledger.getStaff();
+            if (staff.isTablature()) {
+                return false;
+            }
+
             final int ledgerPitch = (int) Math.rint(staff.pitchPositionOf(ledger.getCenter()));
             final List<Inter> heads = Inters.intersectedInters(
                     allHeads,

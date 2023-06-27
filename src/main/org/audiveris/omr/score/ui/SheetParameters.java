@@ -221,9 +221,6 @@ public class SheetParameters
                                  int titleWidth,
                                  int r)
         {
-            //            // Draw the specific/inherit box
-            //            builder.add(selBox, cst.xyw(1, r, 1));
-            //            builder.add(title, cst.xyw(3, r, 1));
             super.defineLayout(builder, cst, 1, r);
 
             builder.add(title, cst.xyw(3, r, 1));

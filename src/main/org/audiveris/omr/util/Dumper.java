@@ -45,12 +45,10 @@ import java.util.Map;
  * A (super)class is considered "relevant" if the static method <code>isClassRelevant(class)</code>
  * returns true. This method can be overridden in a subclass of Dumper to adapt to local needs.
  * <p>
- * A field is considered "relevant" if the following condition if the method
- * <code>isFieldRelevant(field)</code> returns true. Similarly, the behavior of this predicate can
- * be
- * customized by subclassing the Dumper class.
+ * A field is considered "relevant" if the method <code>isFieldRelevant(field)</code> returns true.
+ * Similarly, the behavior of this predicate can be customized by sub-classing the Dumper class.
  * <p>
- * There are several kinds of print outs available through subclassing. Each of them export two
+ * There are several kinds of print outs available through sub-classing. Each of them export two
  * public methods: <code>dump()</code> which prints the result on default output stream, and
  * <code>dumpOf()</code> which simply returns the generated dump string.
  * <ul>
@@ -238,28 +236,28 @@ public class Dumper
     {
         if (value == null) {
             sb.append("null");
-        } else if (value instanceof Collection) {
-            printCollectionValue((Collection) value);
-        } else if (value instanceof Map) {
-            printCollectionValue(((Map) value).entrySet());
-        } else if (value instanceof boolean[]) {
-            sb.append(Arrays.toString((boolean[]) value));
-        } else if (value instanceof byte[]) {
-            sb.append(Arrays.toString((byte[]) value));
-        } else if (value instanceof short[]) {
-            sb.append(Arrays.toString((short[]) value));
-        } else if (value instanceof char[]) {
-            sb.append(Arrays.toString((char[]) value));
-        } else if (value instanceof int[]) {
-            sb.append(Arrays.toString((int[]) value));
-        } else if (value instanceof long[]) {
-            sb.append(Arrays.toString((long[]) value));
-        } else if (value instanceof float[]) {
-            sb.append(Arrays.toString((float[]) value));
-        } else if (value instanceof double[]) {
-            sb.append(Arrays.toString((double[]) value));
-        } else if (value instanceof Line2D) {
-            sb.append(LineUtil.toString((Line2D) value));
+        } else if (value instanceof Collection collection) {
+            printCollectionValue(collection);
+        } else if (value instanceof Map map) {
+            printCollectionValue(map.entrySet());
+        } else if (value instanceof boolean[] bs) {
+            sb.append(Arrays.toString(bs));
+        } else if (value instanceof byte[] bs) {
+            sb.append(Arrays.toString(bs));
+        } else if (value instanceof short[] ses) {
+            sb.append(Arrays.toString(ses));
+        } else if (value instanceof char[] cs) {
+            sb.append(Arrays.toString(cs));
+        } else if (value instanceof int[] is) {
+            sb.append(Arrays.toString(is));
+        } else if (value instanceof long[] ls) {
+            sb.append(Arrays.toString(ls));
+        } else if (value instanceof float[] fs) {
+            sb.append(Arrays.toString(fs));
+        } else if (value instanceof double[] ds) {
+            sb.append(Arrays.toString(ds));
+        } else if (value instanceof Line2D line2D) {
+            sb.append(LineUtil.toString(line2D));
         } else if (value.getClass().isArray()) {
             printArrayValue((Object[]) value);
         } else {

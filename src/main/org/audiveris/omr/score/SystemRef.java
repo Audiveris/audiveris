@@ -129,10 +129,8 @@ public class SystemRef
     @Override
     public String toString ()
     {
-        // @formatter:off
-        return new StringBuilder(getClass().getSimpleName()).append('{')
-            .append(parts.stream().map(p -> p.toString()).collect(Collectors.joining(",")))
-            .append('}').toString();
-        // @formatter:on
+        return new StringBuilder(getClass().getSimpleName()).append('{') //
+                .append(parts.stream().map(p -> p.toString()).collect(Collectors.joining(","))) //
+                .append('}').toString();
     }
 }

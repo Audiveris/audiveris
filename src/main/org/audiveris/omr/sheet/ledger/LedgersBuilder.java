@@ -707,7 +707,7 @@ public class LedgersBuilder
                 "Should we print out the stop watch?");
 
         private final Constant.Ratio minSideRatio = new Constant.Ratio(
-                0.8,
+                0.9, // 0.8 was too low, sometimes resulting in too thick ledger candidates
                 "Minimum ratio of filament length to be actually enlarged");
 
         private final Constant.Double convexityLow = new Constant.Double(
@@ -824,6 +824,9 @@ public class LedgersBuilder
                         Point2D center = fil.getCenter2D();
                         StaffManager mgr = sheet.getStaffManager();
                         Staff staff = mgr.getClosestStaff(center);
+                        if (staff.isTablature()) {
+                            return;
+                        }
                         LedgersBuilder builder = new LedgersBuilder(staff.getSystem());
                         int interline = staff.getSpecificInterline();
                         CheckSuite<StickContext> suite = builder.suites.getSuite(interline);

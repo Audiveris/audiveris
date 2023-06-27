@@ -165,7 +165,7 @@ public class BeamHeadRelation
                 "Supporting coeff for (target) head");
 
         private final Constant.Ratio headSideSupportCoeff = new Constant.Ratio(
-                5.0,
+                1.0,
                 "Supporting coeff for side (target) head");
     }
 }

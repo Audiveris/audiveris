@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -239,6 +240,26 @@ public class SymbolsLinker
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkGraces for {} {}", smallChord, ex.toString(), ex);
+            }
+        }
+    }
+
+    //-------------//
+    // linkNumbers //
+    //-------------//
+    /**
+     * Link and convert all NumberInter's.
+     */
+    private void linkNumbers ()
+    {
+        for (Inter inter : sig.inters(NumberInter.class)) {
+            final NumberInter nb = (NumberInter) inter;
+
+            try {
+                nb.linkAndConvert();
+                nb.remove(); // Even if not linked!
+            } catch (Exception ex) {
+                logger.warn("Error in linkNumbers for {} {}", nb, ex.toString(), ex);
             }
         }
     }
@@ -489,6 +510,7 @@ public class SymbolsLinker
         linkAugmentationDots();
         linkTuplets();
         linkOctaveShifts();
+        linkNumbers();
     }
 
     //-------------------//

@@ -22,8 +22,8 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -53,9 +53,18 @@ public class PartRef
 
     /**
      * The number of lines for each staff in this part.
+     * <p>
+     * Deprecated, replaced by <code>staffConfigs</code>.
      */
+    @Deprecated
     @XmlElement(name = "line-count")
-    private final List<Integer> lineCounts = new ArrayList<>();
+    private List<Integer> OLD_lineCounts;
+
+    /**
+     * The configuration for each staff in this part.
+     */
+    @XmlElement(name = "staff-configuration")
+    private final List<StaffConfig> staffConfigs = new ArrayList<>();
 
     /**
      * The part name, if any.
@@ -85,23 +94,68 @@ public class PartRef
 
     //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Zero-arg constructor needed for JAXB.
+     */
+    @SuppressWarnings(value = "unused")
+    private PartRef ()
+    {
+
+    }
+
+    /**
+     * Creates a PartRef instance.
+     *
+     * @param systemRef soft reference of containing system
+     * @param staves    list of staves in part
+     */
+    public PartRef (SystemRef systemRef,
+                    List<Staff> staves)
+    {
+        this.systemRef = systemRef;
+        computeStaffConfigs(staves);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
 
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
     @SuppressWarnings(value = "unused")
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
         systemRef = (SystemRef) parent;
+
+        if (OLD_lineCounts != null) {
+            for (int count : OLD_lineCounts) {
+                staffConfigs.add(new StaffConfig(count, false));
+            }
+
+            OLD_lineCounts = null;
+        }
+    }
+
+    //---------------------//
+    // computeStaffConfigs //
+    //---------------------//
+    /**
+     * Compute the staff configurations, according to the provided list of staves.
+     *
+     * @param staves the sequence of staves in part
+     */
+    public final void computeStaffConfigs (List<Staff> staves)
+    {
+        staffConfigs.clear();
+
+        for (Staff staff : staves) {
+            staffConfigs.add(staff.getStaffConfig());
+        }
     }
 
     public int getIndex ()
     {
         return systemRef.getParts().indexOf(this);
-    }
-
-    public List<Integer> getLineCounts ()
-    {
-        return lineCounts;
     }
 
     public Integer getLogicalId ()
@@ -120,9 +174,14 @@ public class PartRef
         return systemInfo.getParts().get(getIndex());
     }
 
+    public List<StaffConfig> getStaffConfigs ()
+    {
+        return staffConfigs;
+    }
+
     public int getStaffCount ()
     {
-        return lineCounts.size();
+        return staffConfigs.size();
     }
 
     public SystemRef getSystem ()
@@ -167,13 +226,11 @@ public class PartRef
      */
     public String toQualifiedString ()
     {
-        // @formatter:off
-        return new StringBuilder()
-            .append("Sheet#").append(systemRef.getPage().getSheetNumber())
-            .append(",Page#").append(systemRef.getPage().getId())
-            .append(",System#").append(systemRef.getId())
-            .append(',').append(this).toString();
-        // @formatter:on
+        return new StringBuilder() //
+                .append("Sheet#").append(systemRef.getPage().getSheetNumber()) //
+                .append(",Page#").append(systemRef.getPage().getId()) //
+                .append(",System#").append(systemRef.getId()) //
+                .append(',').append(this).toString();
     }
 
     @Override
@@ -181,7 +238,7 @@ public class PartRef
     {
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append('#').append(getIndex() + 1).append('{');
-        sb.append("lines:[").append(IntUtil.toCsvString(lineCounts)).append(']');
+        sb.append("configs:[").append(StaffConfig.toCsvString(staffConfigs)).append(']');
 
         if (name != null) {
             sb.append(" name:").append(name);

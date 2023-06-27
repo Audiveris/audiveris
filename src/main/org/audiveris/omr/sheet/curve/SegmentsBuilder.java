@@ -264,10 +264,13 @@ public class SegmentsBuilder
             { true, false }) {
                 Point end = arc.getEnd(rev);
                 Staff staff = staffManager.getClosestStaff(end);
-                double dist = staff.distanceTo(end);
 
-                if (dist <= 0) {
-                    continue ArcLoop; // Since end point is within staff height
+                if (!staff.isOneLineStaff()) {
+                    double dist = staff.distanceTo(end);
+
+                    if (dist <= 0) {
+                        continue ArcLoop; // Since end point is within staff height
+                    }
                 }
             }
 

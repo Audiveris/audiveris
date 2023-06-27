@@ -518,14 +518,28 @@ public class Score
         return pageNumbers.indexOf(getPageNumber(page));
     }
 
+    //--------------//
+    // getPageIndex //
+    //--------------//
+    /**
+     * Report index of the provided PageRef in the score sequence of pages.
+     *
+     * @param pageRef the provided PageRef
+     * @return the page index in score, or -1 if not found
+     */
+    public int getPageIndex (PageRef pageRef)
+    {
+        return pageNumbers.indexOf(pageRef.getPageNumber());
+    }
+
     //---------------//
     // getPageNumber //
     //---------------//
     /**
-     * Report the PageNumber that corresponds to the provided Page.
+     * Report the PageNumber if any that corresponds to the provided Page in this score.
      *
      * @param page provided Page
-     * @return Corresponding PageNumber
+     * @return the corresponding PageNumber or null if page is not in this score
      */
     public PageNumber getPageNumber (Page page)
     {
@@ -536,8 +550,6 @@ public class Score
                 return pageNumber;
             }
         }
-
-        logger.error("No page number for " + page);
 
         return null;
     }
@@ -638,6 +650,27 @@ public class Score
         return null;
     }
 
+    //---------------------//
+    // getPrecedingPageRef //
+    //---------------------//
+    /**
+     * Report the pageRef, if any, that precedes the provided pageRef within containing score.
+     *
+     * @param pageRef the provided PageRef
+     * @return the preceding PageRef or null
+     */
+    public PageRef getPrecedingPageRef (PageRef pageRef)
+    {
+        int index = getPageIndex(pageRef);
+
+        if (index > 0) {
+            final PageNumber pageNumber = pageNumbers.get(index - 1);
+            return pageNumber.getPageRef(book); // Perhaps null
+        }
+
+        return null;
+    }
+
     //----------------//
     // getSheetPageId //
     //----------------//
@@ -656,6 +689,20 @@ public class Score
         }
 
         return null;
+    }
+
+    //---------//
+    // getStub //
+    //---------//
+    /**
+     * Report the stub that corresponds to the provided PageNumber.
+     *
+     * @param pageNumber the provided PageNumber
+     * @return the corresponding stub
+     */
+    public SheetStub getStub (PageNumber pageNumber)
+    {
+        return book.getStubs().get(pageNumber.sheetNumber - 1);
     }
 
     //----------//

@@ -165,6 +165,10 @@ public class MultipleRestInter
 
         // If within staff height, we snap ordinate to target pitch 0 (middle line)
         if (staff != null) {
+            if (staff.isTablature()) {
+                return false;
+            }
+
             final Point center = getCenter();
 
             if (staff.contains(center)) {

@@ -1,12 +1,17 @@
 ```diff
--- -------------------------------------------------------------------------------------------------
+--
 -- WARNING
--- Audiveris development is performed on "development" branch, while default "master" branch
--- is reserved for releases.
 --
--- On "development" branch, you will need JDK 17
+-- Audiveris default "master" branch is reserved for releases.
+-- Development is performed on this "development" branch (or on a derived branch)
 --
--- -------------------------------------------------------------------------------------------------
+-- Documentation is being updated, but before it is completed, please note that:
+--
+--    Java 17 is needed
+--
+--    Tesseract OCR is now a 5.x version, hence you should download language data files
+--    from https://github.com/tesseract-ocr/tessdata in their version 4 and above.
+--
 ```
 
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
@@ -40,7 +45,7 @@ Then the remaining mistakes can usually be quickly fixed via manual edition of a
 The core of engine music information (OMR data) is fully documented and made publicly available,
 either directly via XML-based `.omr` project files or via the Java API of this software.   
 Audiveris comes with an integrated exporter to write (a subset of) this OMR data into
-[MusicXML][musicxml] 3.0 format.
+[MusicXML][musicxml] 4.0 format.
 In the future, other exporters are expected to build upon OMR data to support other target formats.
 
 ## Installing binaries (Windows)
@@ -48,9 +53,8 @@ In the future, other exporters are expected to build upon OMR data to support ot
 On GitHub [Releases][releases] page, an Audiveris installer is available for Windows.
 
 It takes care of the whole installation, including needed libraries like Tesseract OCR,
-but assumes that you already have a suitable Java installed.
-* Audiveris 5.2 requires Java version 11
-* Audiveris 5.3 requires Java version 17
+but assumes that you already have a suitable Java installed.  
+Audiveris 5.3 requires Java version 17
 
 You can download them from [Oracle JDKs download site][jdk-downloads].
 
@@ -75,12 +79,13 @@ All libraries, including Tesseract OCR libraries, will get pulled as Gradle depe
 but you will have to download Tesseract language data files.  
 
 And we have to make it clear, because the same issues are posted again and again:
-1. Audiveris needs the **old 3.04 Tesseract language files**,
-new 4.x Tesseract is not suitable for detecting and processing text on music images.
+1. Audiveris 5.3 now uses Tesseract 5.x.
 2. No Tesseract executable needs to be installed, since Tesseract is used via **libraries**.
 3. You can have other Tesseract versions installed, they will not impede Audiveris behavior,
 provided that Audiveris can find its needed Tesseract language files
 (typically via **TESSDATA_PREFIX** environment variable).
+4. Tesseract language files, can be downloaded from [Tesseract download site][lang-downloads].
+Pickup the recent versions compatible with Tesseract 4 and above, not the old 3.x versions.
 
 For further building details, please refer to HandBook [Sources][sources] section.
 
@@ -93,13 +98,14 @@ and the more general [Wiki][audiveris-wiki] set of articles.
 
 All releases are available on [Audiveris Releases][releases] page.
 
-[audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
-[workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow
 [audiveris-eg]:   htps://github.com/Audiveris/audiveris-eg
-[musicxml]:       http://www.musicxml.com/
-[imslp]:          https://imslp.org/
-[handbook]:       https://audiveris.github.io/audiveris/_pages/index-5.2/
+[audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
 [binaries]:       https://audiveris.github.io/audiveris/_pages/install/binaries/
-[sources]:        https://audiveris.github.io/audiveris/_pages/install/sources/
-[releases]:       https://github.com/Audiveris/audiveris/releases
+[handbook]:       https://audiveris.github.io/audiveris/_pages/index-5.2/
+[imslp]:          https://imslp.org/
 [jdk-downloads]:  https://www.oracle.com/java/technologies/downloads/
+[lang-downloads]: https://github.com/tesseract-ocr/tessdata
+[musicxml]:       http://www.musicxml.com/
+[releases]:       https://github.com/Audiveris/audiveris/releases
+[sources]:        https://audiveris.github.io/audiveris/_pages/install/sources/
+[workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow

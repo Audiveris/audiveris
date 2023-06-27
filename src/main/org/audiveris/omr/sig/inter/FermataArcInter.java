@@ -65,17 +65,6 @@ public class FermataArcInter
         super(glyph, glyph.getBounds(), shape, grade);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//

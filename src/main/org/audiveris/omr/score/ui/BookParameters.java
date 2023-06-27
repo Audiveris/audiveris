@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Profiles.InputQuality;
+import org.audiveris.omr.sheet.ScaleBuilder;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -86,6 +87,7 @@ import javax.swing.event.ListSelectionListener;
  * <li>Music font specification</li>
  * <li>Text font specification</li>
  * <li>Input quality specification</li>
+ * <li>Beam thickness</li>
  * <li>Language specification</li>
  * <li>Support for specific features</li>
  * </ul>
@@ -163,6 +165,8 @@ public class BookParameters
         TaggedScopedPanel sheetPanel = null; // Only for multi-sheet book
 
         // Default panel
+        //--------------
+
         final List<XactDataPane> defaultPanes = new ArrayList<>();
 
         if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
@@ -213,13 +217,15 @@ public class BookParameters
                 defaultPanel.getName());
 
         // Book panel?
+        //------------
+
         if (book != null) {
             final List<XactDataPane> bookPanes = new ArrayList<>();
             if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
                 bookPanes.add(
                         new FilterPane(
                                 (FilterPane) defaultPanel.getPane(Tag.Filter),
-                                book.getBinarizationFilter()));
+                                book.getBinarizationFilterParam()));
             }
 
             bookPanes.add(
@@ -227,14 +233,14 @@ public class BookParameters
                             Tag.MusicFamily,
                             MusicFamily.values(),
                             defaultPanel,
-                            book.getMusicFamily()));
+                            book.getMusicFamilyParam()));
 
             bookPanes.add(
                     new EnumPane<>(
                             Tag.TextFamily,
                             TextFamily.values(),
                             defaultPanel,
-                            book.getTextFamily()));
+                            book.getTextFamilyParam()));
 
             bookPanes.add(
                     new EnumPane<>(
@@ -243,10 +249,11 @@ public class BookParameters
                             defaultPanel,
                             Profiles.defaultQualityParam));
 
+            bookPanes.add(new BeamPane(null, book.getBeamSpecificationParam()));
+
             final LangPane bookLangPane = createLangPane(
                     (LangPane) defaultPanel.getPane(Tag.Lang),
                     book.getOcrLanguages());
-
             if (bookLangPane != null) {
                 bookPanes.add(bookLangPane);
             }
@@ -262,6 +269,8 @@ public class BookParameters
             component.addTab(book.getRadix(), null, bookPanel, bookPanel.getName());
 
             // Sheets panels?
+            //---------------
+
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
                     final List<XactDataPane> sheetPanes = new ArrayList<>();
@@ -269,7 +278,7 @@ public class BookParameters
                         sheetPanes.add(
                                 new FilterPane(
                                         (FilterPane) bookPanel.getPane(Tag.Filter),
-                                        s.getBinarizationFilter()));
+                                        s.getBinarizationFilterParam()));
                     }
 
                     sheetPanes.add(
@@ -293,9 +302,14 @@ public class BookParameters
                                     bookPanel,
                                     Profiles.defaultQualityParam));
 
+                    sheetPanes.add(
+                            new BeamPane(
+                                    (BeamPane) bookPanel.getPane(Tag.Beam),
+                                    s.getBeamSpecificationParam()));
+
                     final LangPane sheetLangPane = createLangPane(
                             (LangPane) bookPanel.getPane(Tag.Lang),
-                            s.getOcrLanguages());
+                            s.getOcrLanguagesParam());
 
                     if (sheetLangPane != null) {
                         sheetPanes.add(sheetLangPane);
@@ -533,6 +547,65 @@ public class BookParameters
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //----------//
+    // BeamPane //
+    //----------//
+    /**
+     * Pane to define beam thickness.
+     */
+    private static class BeamPane
+            extends TaggedXactDataPane<Integer>
+    {
+        private final SpinData thickness = new SpinData(
+                new SpinnerNumberModel(10, 0, ScaleBuilder.getMaxInterline(), 1));
+
+        BeamPane (BeamPane parent,
+                  Param<Integer> model)
+        {
+            super(Tag.Beam, resources.getString("BeamPane.title"), parent, model);
+            title.setToolTipText(resources.getString("BeamPane.toolTipText"));
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int titleWidth,
+                                 int r)
+        {
+            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
+            thickness.defineLayout(builder, cst, r);
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (Integer content)
+        {
+            if (content != null) {
+                thickness.spinner.setValue(content);
+            } else {
+                thickness.spinner.setValue(0);
+            }
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            thickness.setEnabled(bool);
+        }
+
+        @Override
+        protected Integer read ()
+        {
+            try {
+                thickness.spinner.commitEdit();
+            } catch (ParseException ignored) {
+            }
+
+            return (int) thickness.spinner.getValue();
+        }
+    }
 
     //----------//
     // EnumPane //
@@ -871,6 +944,11 @@ public class BookParameters
 
         protected final JSpinner spinner;
 
+        SpinData (SpinnerModel model)
+        {
+            this("", "", model);
+        }
+
         SpinData (String label,
                   String tip,
                   SpinnerModel model)
@@ -974,7 +1052,8 @@ public class BookParameters
         MusicFamily,
         TextFamily,
         Quality,
-        Lang;
+        Lang,
+        Beam;
     }
 
     //-------------------//

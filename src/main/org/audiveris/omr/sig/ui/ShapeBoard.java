@@ -49,6 +49,7 @@ import org.audiveris.omr.ui.symbol.MusicFamily;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
 import static org.audiveris.omr.ui.symbol.MusicFont.getPointSize;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.WrapLayout;
 import org.audiveris.omr.ui.view.RubberPanel;
@@ -235,8 +236,11 @@ public class ShapeBoard
     /** Cached list of HeadsAndDot shapes, if any. To trigger board update only when needed. */
     private List<Shape> cachedHeads;
 
-    /** Cached font family, if any. To trigger board symbols update only when needed. */
-    private MusicFamily cachedFamily;
+    /** Cached music font family, if any. To trigger board symbols update only when needed. */
+    private MusicFamily cachedMusicFamily;
+
+    /** Cached text font family, if any. To trigger board symbols update only when needed. */
+    private TextFamily cachedTextFamily;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -377,7 +381,8 @@ public class ShapeBoard
 
         panel.addKeyListener(keyListener);
 
-        cachedFamily = sheet.getStub().getMusicFamily();
+        cachedMusicFamily = sheet.getStub().getMusicFamily();
+        cachedTextFamily = sheet.getStub().getTextFamily();
 
         return panel;
     }
@@ -787,20 +792,22 @@ public class ShapeBoard
     /**
      * Update ShapeBoard content.
      * <ul>
-     * <li>A perhaps new font family for shape buttons.
+     * <li>Perhaps a new music font family or a new text font family
      * <li>Perhaps new filtered shapes according to effective processing switches.
      * </ul>
      */
     @Override
     public void update ()
     {
-        final MusicFamily fontFamily = sheet.getStub().getMusicFamily();
+        final MusicFamily musicFamily = sheet.getStub().getMusicFamily();
+        final TextFamily textFamily = sheet.getStub().getTextFamily();
 
-        if (fontFamily != cachedFamily) {
+        if (musicFamily != cachedMusicFamily || textFamily != cachedTextFamily) {
             // We can update each shape button icon in situ.
             shapeHistory.update();
             updateAllPanels();
-            cachedFamily = fontFamily;
+            cachedMusicFamily = musicFamily;
+            cachedTextFamily = textFamily;
         }
 
         final ShapeSet headSet = ShapeSet.HeadsAndDot;
@@ -1487,6 +1494,7 @@ public class ShapeBoard
             // Update decoSymbol and icon
             decoSymbol = getDecoratedSymbol(decoSymbol.getShape());
             setIcon(decoSymbol.getTinyVersion());
+            repaint();
         }
     }
 
@@ -1586,6 +1594,8 @@ public class ShapeBoard
                     logger.warn("History. No button symbol for {}", shape);
                 }
             }
+
+            panel.repaint();
         }
     }
 }

@@ -160,7 +160,7 @@ public class TremoloStemRelation
     {
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.8,
+                0,
                 "Maximum vertical gap between stem & tremolo");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(

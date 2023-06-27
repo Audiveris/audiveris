@@ -30,6 +30,8 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -437,7 +439,11 @@ public class DotFactory
         }
 
         // Allocate inter
-        final double pp = system.estimatedPitch(dotPt);
+        final Double pp = system.estimatedPitch(dotPt);
+        if (pp == null) {
+            return;
+        }
+
         final double pitch = (pp > 0) ? 1 : (-1);
         final Glyph glyph = dot.getGlyph();
         final Staff staff = system.getClosestStaff(dotPt); // Staff is OK
@@ -480,6 +486,11 @@ public class DotFactory
      */
     private void instantCheckStaccato (Dot dot)
     {
+        final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
+        if (!switches.getValue(ProcessingSwitch.articulations)) {
+            return;
+        }
+
         Glyph glyph = dot.getGlyph();
 
         if (glyph != null) {

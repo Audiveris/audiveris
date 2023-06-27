@@ -27,6 +27,7 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.grid.LineInfo;
@@ -46,7 +47,6 @@ import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
@@ -405,8 +405,10 @@ public class Part
                     dummyMeasure.addInter(dummyTime);
                 }
 
-                // Create dummy measure rest (w/ no precise location)
-                dummyMeasure.addDummyMeasureRest(dummyStaff);
+                if (!measure.getStack().isMultiRest()) {
+                    // Create dummy measure rest (w/ no precise location)
+                    dummyMeasure.addDummyMeasureRest(dummyStaff);
+                }
             }
 
             isFirstMeasure = false;
@@ -744,25 +746,6 @@ public class Part
         return leftBarline;
     }
 
-    //---------------//
-    // getLineCounts //
-    //---------------//
-    /**
-     * Report the line counts of all staves.
-     *
-     * @return list of staff line count
-     */
-    public List<Integer> getLineCounts ()
-    {
-        final List<Integer> lineCounts = new ArrayList<>(staves.size());
-
-        for (Staff staff : staves) {
-            lineCounts.add(staff.getLineCount());
-        }
-
-        return lineCounts;
-    }
-
     //----------------//
     // getLogicalPart //
     //----------------//
@@ -865,7 +848,7 @@ public class Part
      */
     public String getName ()
     {
-        return (name != null) ? name.getValue() : null;
+        return (name != null && !name.isRemoved()) ? name.getValue() : null;
     }
 
     //---------------//
@@ -967,6 +950,25 @@ public class Part
         }
 
         return selectedSlurs;
+    }
+
+    //-----------------//
+    // getStaffConfigs //
+    //-----------------//
+    /**
+     * Report the staves configurations.
+     *
+     * @return list of staff configuration
+     */
+    public List<StaffConfig> getStaffConfigs ()
+    {
+        final List<StaffConfig> staffConfigs = new ArrayList<>(staves.size());
+
+        for (Staff staff : staves) {
+            staffConfigs.add(staff.getStaffConfig());
+        }
+
+        return staffConfigs;
     }
 
     //---------------//
@@ -1167,8 +1169,15 @@ public class Part
         for (Staff staff : below.getStaves()) {
             addStaff(staff);
         }
+        final PartRef ref = getRef();
+        ref.computeStaffConfigs(staves);
 
+        final SystemRef systemRef = system.getRef();
+        final PartRef belowRef = below.getRef();
         system.removePart(below);
+        systemRef.getParts().remove(belowRef);
+
+        system.getSheet().getStub().setModified(true);
     }
 
     //-----------------//
@@ -1321,10 +1330,10 @@ public class Part
     public void setLogicalPart (Integer logicalId,
                                 LogicalPart logicalPart)
     {
-        // Update part id
-        setId(logicalId);
-
         if (logicalId != null) {
+            // Update part id
+            setId(logicalId);
+
             // Update part name accordingly
             final Boolean isFirst = system.isFirstInScore();
             if (isFirst != null && isFirst) {
@@ -1385,7 +1394,7 @@ public class Part
     {
         this.name = name;
 
-        if (name != null) {
+        if (name != null && !name.isRemoved()) {
             // Normalize font info for part name
             for (Inter inter : name.getMembers()) {
                 final WordInter word = (WordInter) inter;
@@ -1401,7 +1410,7 @@ public class Part
         // Update PartRef as well
         final PartRef partRef = getRef();
         if (partRef != null) {
-            partRef.setName(name != null ? name.getValue() : null);
+            partRef.setName((name != null && !name.isRemoved()) ? name.getValue() : null);
         }
     }
 
@@ -1476,8 +1485,7 @@ public class Part
 
             for (LyricLineInter line : lyrics) {
                 final Staff staff = line.getStaff();
-                final double pos = staff.pitchPositionOf(line.getCenter());
-                final boolean isAbove = pos <= 0;
+                final boolean isAbove = staff.isPointAbove(line.getCenter());
 
                 if ((staff != lastStaff) || (isAbove != lastIsAbove)) {
                     lyricNumber = 0;
@@ -1504,6 +1512,7 @@ public class Part
     {
         logger.info("Splitting {} before {}", this, pivotStaff);
 
+        final SystemRef systemRef = system.getRef();
         final int staffIndex = staves.indexOf(pivotStaff);
         final Part partBelow = new Part(system);
 
@@ -1513,13 +1522,19 @@ public class Part
 
         staves.removeAll(partBelow.staves);
 
+        final PartRef ref = getRef();
+        ref.computeStaffConfigs(staves);
+
         for (int im = 0; im < measures.size(); im++) {
             final Measure measure = measures.get(im);
             measure.splitBefore(pivotStaff, partBelow);
         }
 
-        int myIndex = getIndex();
+        final int myIndex = getIndex();
         system.addPart(myIndex + 1, partBelow);
+
+        final PartRef belowRef = new PartRef(systemRef, partBelow.staves);
+        systemRef.getParts().add(myIndex + 1, belowRef);
 
         // Part numbering (to be refined)
         int theId = id + 1;
@@ -1527,6 +1542,8 @@ public class Part
         for (Part part : system.getParts().subList(myIndex + 1, system.getParts().size())) {
             part.setId(theId++);
         }
+
+        system.getSheet().getStub().setModified(true);
     }
 
     //-------------//
@@ -1561,7 +1578,7 @@ public class Part
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append('#').append(id).append('{');
 
-        if (name != null) {
+        if ((name != null) && !name.isRemoved()) {
             sb.append("name:").append(name.getValue());
         }
 
@@ -1573,7 +1590,7 @@ public class Part
         sb.append(staves.stream().map(s -> "" + s.getId()).collect(Collectors.joining(",")));
         sb.append("]");
 
-        sb.append(" lines:[").append(IntUtil.toCsvString(getLineCounts())).append(']');
+        sb.append(" configs:[").append(StaffConfig.toCsvString(getStaffConfigs())).append(']');
 
         sb.append("}");
 

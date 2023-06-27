@@ -27,6 +27,8 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.symbol.TextSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +90,35 @@ public class SymbolSample
     {
         // Build the corresponding runTable
         BufferedImage image = symbol.buildImage(musicFont);
+        ByteProcessor buffer = createBuffer(image);
+        RunTableFactory factory = new RunTableFactory(Orientation.VERTICAL);
+        RunTable runTable = factory.createTable(buffer);
+
+        // Allocate the sample
+        SymbolSample sample = new SymbolSample(symbol.getShape(), interline, runTable);
+
+        return sample;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a <code>SymbolSample</code>.
+     *
+     * @param shape     assigned shape
+     * @param symbol    the font-based symbol
+     * @param textFont  the proper family font
+     * @param interline the related interline value
+     * @return the created SymbolSample
+     */
+    public static SymbolSample create (Shape shape,
+                                       TextSymbol symbol,
+                                       TextFont textFont,
+                                       int interline)
+    {
+        // Build the corresponding runTable
+        BufferedImage image = symbol.buildImage(textFont);
         ByteProcessor buffer = createBuffer(image);
         RunTableFactory factory = new RunTableFactory(Orientation.VERTICAL);
         RunTable runTable = factory.createTable(buffer);

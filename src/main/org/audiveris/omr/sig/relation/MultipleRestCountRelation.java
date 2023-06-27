@@ -48,9 +48,9 @@ public class MultipleRestCountRelation
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final MultipleRestInter rest = (MultipleRestInter) e.getEdgeSource();
-        final MeasureCountInter count = (MeasureCountInter) e.getEdgeTarget();
-
         rest.checkAbnormal();
+
+        final MeasureCountInter count = (MeasureCountInter) e.getEdgeTarget();
         count.checkAbnormal();
     }
 

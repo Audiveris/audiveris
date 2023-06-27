@@ -26,6 +26,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
@@ -56,6 +57,7 @@ import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
+import org.audiveris.omr.util.param.IntegerParam;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
 
@@ -193,6 +195,15 @@ public class SheetStub
     @XmlElement(name = "input-quality")
     @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
     private InputQualityParam inputQuality;
+
+    /**
+     * Specification of beam thickness to use in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book level.
+     */
+    @XmlElement(name = "beam-specification")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private IntegerParam beamSpecification;
 
     /**
      * This string specifies the dominant language(s) to guide OCR on this sheet.
@@ -363,6 +374,10 @@ public class SheetStub
 
         if ((inputQuality != null) && !inputQuality.isSpecific()) {
             inputQuality = null;
+        }
+
+        if ((beamSpecification != null) && !beamSpecification.isSpecific()) {
+            beamSpecification = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
@@ -604,6 +619,27 @@ public class SheetStub
         return assembly;
     }
 
+    //----------------------//
+    // getBeamSpecification //
+    //----------------------//
+    public Integer getBeamSpecification ()
+    {
+        return getBeamSpecificationParam().getValue();
+    }
+
+    //---------------------------//
+    // getBeamSpecificationParam //
+    //---------------------------//
+    public IntegerParam getBeamSpecificationParam ()
+    {
+        if (beamSpecification == null) {
+            beamSpecification = new IntegerParam(this);
+            beamSpecification.setParent(book.getBeamSpecificationParam());
+        }
+
+        return beamSpecification;
+    }
+
     //-----------------------//
     // getBinarizationFilter //
     //-----------------------//
@@ -612,11 +648,24 @@ public class SheetStub
      *
      * @return the filter parameter
      */
-    public FilterParam getBinarizationFilter ()
+    public FilterDescriptor getBinarizationFilter ()
+    {
+        return getBinarizationFilterParam().getValue();
+    }
+
+    //----------------------------//
+    // getBinarizationFilterParam //
+    //----------------------------//
+    /**
+     * Report the binarization filter parameter defined at sheet level.
+     *
+     * @return the filter parameter
+     */
+    public FilterParam getBinarizationFilterParam ()
     {
         if (binarizationFilter == null) {
             binarizationFilter = new FilterParam(this);
-            binarizationFilter.setParent(book.getBinarizationFilter());
+            binarizationFilter.setParent(book.getBinarizationFilterParam());
         }
 
         return binarizationFilter;
@@ -707,7 +756,7 @@ public class SheetStub
     {
         if (inputQuality == null) {
             inputQuality = new InputQualityParam(this);
-            inputQuality.setParent(book.getInputQuality());
+            inputQuality.setParent(book.getInputQualityParam());
         }
 
         return inputQuality;
@@ -765,7 +814,7 @@ public class SheetStub
     }
 
     //----------------//
-    // getMusicFamily //
+    // getMusicFamilyParam //
     //----------------//
     /**
      * Report the music family defined at sheet level.
@@ -789,7 +838,7 @@ public class SheetStub
     {
         if (musicFamily == null) {
             musicFamily = new MusicFamily.MyParam(this);
-            musicFamily.setParent(book.getMusicFamily());
+            musicFamily.setParent(book.getMusicFamilyParam());
         }
 
         return musicFamily;
@@ -848,9 +897,22 @@ public class SheetStub
     /**
      * Report the OCR language(s) specification defined at sheet level if any.
      *
-     * @return the OCR language(s) spec
+     * @return the OCR language(s) specification
      */
-    public Param<String> getOcrLanguages ()
+    public String getOcrLanguages ()
+    {
+        return getOcrLanguagesParam().getValue();
+    }
+
+    //----------------------//
+    // getOcrLanguagesParam //
+    //----------------------//
+    /**
+     * Report the OCR language(s) specification parameter defined at sheet level if any.
+     *
+     * @return the OCR language(s) specification parameter
+     */
+    public Param<String> getOcrLanguagesParam ()
     {
         if (ocrLanguages == null) {
             ocrLanguages = new StringParam(this);
@@ -993,63 +1055,6 @@ public class SheetStub
             return sheet;
         }
     }
-    //
-    //    public Sheet getSheet (SheetStub oldStub)
-    //    {
-    //        // Copy BINARY.png
-    //        final ImageHolder holder = new ImageHolder(ImageKey.BINARY);
-    //        holder.storeData(sheetFolder, oldSheetFolder);
-    //
-    //        if (!oldStub.isDone(OmrStep.LOAD)) {
-    //            // LOAD not yet performed: load from book image file
-    //            try {
-    //                sheet = new Sheet(this, null, false);
-    //            } catch (StepException ignored) {
-    //                logger.info("Could not load sheet for stub {}", this);
-    //            }
-    //        } else {
-    //            // Load from old sheet
-    //            try {
-    //                final Path sheetFile;
-    //                // Copy from the old book file system
-    //                final Book oldBook = oldStub.getBook();
-    //                try {
-    //                    oldBook.getLock().lock();
-    //                    sheetFile = oldBook.openSheetFolder(oldStub.number).resolve(
-    //                            Sheet.getSheetFileName(oldStub.number));
-    //
-    //                    try (InputStream is = Files.newInputStream(
-    //                            sheetFile,
-    //                            StandardOpenOption.READ)) {
-    //                        sheet = Sheet.unmarshal(is);
-    //                    }
-    //
-    //                    sheetFile.getFileSystem().close();
-    //                } finally {
-    //                    oldBook.getLock().unlock();
-    //                }
-    //
-    //                // Complete sheet reload
-    //                sheet.afterReload(this);
-    //                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
-    ////
-    ////                if (OMR.gui != null) {
-    ////                    StubsController.getInstance().markTab(
-    ////                            this, invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
-    ////                }
-    //                logger.info("Loaded {}", sheetFile);
-    //            } catch (IOException |
-    //                     JAXBException ex) {
-    //                logger.warn("Error in loading sheet structure " + ex, ex);
-    //            }
-    //        }
-    //
-    //        return sheet;
-    //    }
-    //
-    //----------//
-    // hasSheet //
-    //----------//
 
     //---------------//
     // getSheetInput //
@@ -1093,7 +1098,7 @@ public class SheetStub
     {
         if (textFamily == null) {
             textFamily = new TextFamily.MyParam(this);
-            textFamily.setParent(book.getTextFamily());
+            textFamily.setParent(book.getTextFamilyParam());
         }
 
         return textFamily;
@@ -1184,20 +1189,28 @@ public class SheetStub
             logger.trace("{} initTransients", this);
             this.book = book;
 
+            if (!isValid()) {
+                doneSteps.removeIf( (s) -> s.compareTo(OmrStep.BINARY) > 0); // Safer for old .omr
+            }
+
             if (binarizationFilter != null) {
-                binarizationFilter.setParent(book.getBinarizationFilter());
+                binarizationFilter.setParent(book.getBinarizationFilterParam());
             }
 
             if (musicFamily != null) {
-                musicFamily.setParent(book.getMusicFamily());
+                musicFamily.setParent(book.getMusicFamilyParam());
             }
 
             if (textFamily != null) {
-                textFamily.setParent(book.getTextFamily());
+                textFamily.setParent(book.getTextFamilyParam());
             }
 
             if (inputQuality != null) {
-                inputQuality.setParent(book.getInputQuality());
+                inputQuality.setParent(book.getInputQualityParam());
+            }
+
+            if (beamSpecification != null) {
+                beamSpecification.setParent(book.getBeamSpecificationParam());
             }
 
             if (ocrLanguages != null) {
@@ -1227,6 +1240,7 @@ public class SheetStub
     {
         invalid = true;
 
+        doneSteps.removeIf( (s) -> s.compareTo(OmrStep.BINARY) > 0);
         pageRefs.clear();
         book.updateScores(this);
         setModified(true);

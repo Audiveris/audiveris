@@ -400,7 +400,7 @@ public class KeyInter
     private Double getSnapOrdinate (int fifths,
                                     ClefKind clefKind)
     {
-        if (staff == null) {
+        if ((staff == null) || staff.isTablature()) {
             return null;
         }
 

@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
-
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
@@ -42,6 +40,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
+import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.SheetStub.SheetInput;
 import org.audiveris.omr.sheet.Versions.CheckResult;
 import org.audiveris.omr.sheet.rhythm.Voices;
@@ -67,6 +66,7 @@ import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
+import org.audiveris.omr.util.param.IntegerParam;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
 
@@ -218,6 +218,15 @@ public class Book
     @XmlElement(name = "input-quality")
     @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
     private InputQualityParam inputQuality;
+
+    /**
+     * Specification of beam thickness for this whole book.
+     * <p>
+     * It can still be overridden at sheet level.
+     */
+    @XmlElement(name = "beam-specification")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private IntegerParam beamSpecification;
 
     /**
      * This string specifies the dominant language(s) for this whole book.
@@ -421,6 +430,10 @@ public class Book
             inputQuality = null;
         }
 
+        if ((beamSpecification != null) && !beamSpecification.isSpecific()) {
+            beamSpecification = null;
+        }
+
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
             ocrLanguages = null;
         }
@@ -560,11 +573,15 @@ public class Book
                     }
 
                     score.addPageNumber(stub.getNumber(), pageRef);
+                    if (stub.hasSheet()) {
+                        final Page page = pageRef.getRealPage();
+                        page.setScore(score);
+                    }
                 }
             }
         }
 
-        logger.debug("Created scores:{}", theScores);
+        logger.info("Created scores: {}", theScores);
     }
 
     //-------------//
@@ -667,15 +684,36 @@ public class Book
         return alias;
     }
 
-    //-----------------------//
-    // getBinarizationFilter //
-    //-----------------------//
+    //----------------------//
+    // getBeamSpecification //
+    //----------------------//
+    public Integer getBeamSpecification ()
+    {
+        return getBeamSpecificationParam().getValue();
+    }
+
+    //---------------------------//
+    // getBeamSpecificationParam //
+    //---------------------------//
+    public IntegerParam getBeamSpecificationParam ()
+    {
+        if (beamSpecification == null) {
+            beamSpecification = new IntegerParam(this);
+            beamSpecification.setParent(Scale.defaultBeamSpecification);
+        }
+
+        return beamSpecification;
+    }
+
+    //----------------------------//
+    // getBinarizationFilterParam //
+    //----------------------------//
     /**
      * Report the binarization filter defined at book level.
      *
      * @return the filter parameter
      */
-    public FilterParam getBinarizationFilter ()
+    public FilterParam getBinarizationFilterParam ()
     {
         if (binarizationFilter == null) {
             binarizationFilter = new FilterParam(this);
@@ -777,15 +815,15 @@ public class Book
         return path;
     }
 
-    //-----------------//
-    // getInputQuality //
-    //-----------------//
+    //----------------------//
+    // getInputQualityParam //
+    //----------------------//
     /**
      * Report the input quality defined at book level.
      *
      * @return the input quality parameter
      */
-    public InputQualityParam getInputQuality ()
+    public InputQualityParam getInputQualityParam ()
     {
         if (inputQuality == null) {
             inputQuality = new InputQualityParam(this);
@@ -836,15 +874,15 @@ public class Book
         return lock;
     }
 
-    //----------------//
-    // getMusicFamily //
-    //----------------//
+    //---------------------//
+    // getMusicFamilyParam //
+    //---------------------//
     /**
      * Report the music font family defined at book level.
      *
      * @return the music font family parameter
      */
-    public MusicFamily.MyParam getMusicFamily ()
+    public MusicFamily.MyParam getMusicFamilyParam ()
     {
         if (musicFamily == null) {
             musicFamily = new MusicFamily.MyParam(this);
@@ -855,7 +893,7 @@ public class Book
     }
 
     //-----------------//
-    // getOcrLanguages //
+    // getOcrLanguagesParam //
     //-----------------//
     /**
      * Report the OCR language(s) specification defined at book level, if any.
@@ -1057,7 +1095,7 @@ public class Book
      * @param pageRef the provided page ref (sheet#, page#)
      * @return the containing score or null if not found
      */
-    private Score getScore (PageRef pageRef)
+    public Score getScore (PageRef pageRef)
     {
         for (Score score : scores) {
             PageRef ref = score.getPageRef(pageRef.getSheetNumber());
@@ -1370,15 +1408,15 @@ public class Book
         return found;
     }
 
-    //---------------//
-    // getTextFamily //
-    //---------------//
+    //--------------------//
+    // getTextFamilyParam //
+    //--------------------//
     /**
      * Report the text font family defined at book level.
      *
      * @return the text font family parameter
      */
-    public TextFamily.MyParam getTextFamily ()
+    public TextFamily.MyParam getTextFamilyParam ()
     {
         if (textFamily == null) {
             textFamily = new TextFamily.MyParam(this);
@@ -1522,6 +1560,11 @@ public class Book
         if (inputQuality != null) {
             inputQuality.setParent(Profiles.defaultQualityParam);
             inputQuality.setScope(this);
+        }
+
+        if (beamSpecification != null) {
+            // [No parent for book beamThickness]
+            beamSpecification.setScope(this);
         }
 
         if (ocrLanguages != null) {

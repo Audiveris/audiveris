@@ -95,8 +95,19 @@ public class ScoreReduction
                     // If not, it will get updated the next time sheet is loaded
                     final SheetStub stub = partRef.getSystem().getPage().getStub();
                     if (stub.hasSheet()) {
-                        final Part part = partRef.getRealPart();
-                        part.setId(logId);
+                        try {
+                            final Part part = partRef.getRealPart();
+                            part.setId(logId);
+                        } catch (Exception ex) {
+                            logger.warn(
+                                    "Error in applyRecords {}\n  {} system#{} {}\n  {}",
+                                    ex.getMessage(),
+                                    stub,
+                                    partRef.getSystem().getId(),
+                                    partRef,
+                                    partRef.getSystem(),
+                                    ex);
+                        }
                     }
                 }
             }

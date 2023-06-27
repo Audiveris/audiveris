@@ -112,6 +112,17 @@ public class TimePairInter
         EnsembleHelper.addMember(this, member);
     }
 
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        setAbnormal(getMembers().size() != 2);
+
+        return isAbnormal();
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -156,7 +167,7 @@ public class TimePairInter
             return (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
 
         case 1:
-            if (staff != null) {
+            if ((staff != null) && !staff.isTablature()) {
                 final TimeNumberInter tni = (TimeNumberInter) members.get(0);
                 final double pp = staff.pitchPositionOf(tni.getCenter());
 
@@ -276,7 +287,8 @@ public class TimePairInter
         bounds = null;
         timeRational = null;
 
-        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
+        checkAbnormal();
+        setGrade(isAbnormal() ? 0 : EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //--------------//

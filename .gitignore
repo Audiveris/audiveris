@@ -42,6 +42,7 @@ data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
 private/*
+schemas/bin/
 schemas/build
 schemas/build/*
 target/*

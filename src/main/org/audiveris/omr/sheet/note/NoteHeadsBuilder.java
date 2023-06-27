@@ -819,24 +819,34 @@ public class NoteHeadsBuilder
         final List<HeadInter> ch = new ArrayList<>(); // Created heads
 
         // Use all staff lines
-        int pitch = -5; // Current pitch
+        final int lineNb = staff.getLineCount();
+        final int minPitch = (lineNb == 1) ? 0 : -5;
+        final int maxPitch = (lineNb == 1) ? 0 : 5;
+        int pitch = minPitch; // Current pitch
         LineAdapter prevAdapter = null;
 
         for (LineInfo line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
-            // Look above line
-            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
+            // Look above line?
+            if (lineNb > 1) {
+                ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
+            }
 
             // Look exactly on line
             ch.addAll(new Scanner(adapter, null, 0, pitch++, useSeeds).lookup());
 
             // For the last line only, look just below line
-            if (pitch == 5) {
+            if ((lineNb > 1) && pitch == maxPitch) {
                 ch.addAll(new Scanner(adapter, null, 1, pitch++, useSeeds).lookup());
             }
 
             prevAdapter = adapter;
+        }
+
+        if (lineNb == 1) {
+            // No ledger on a 1-line staff!
+            return ch;
         }
 
         // Use all ledgers, above staff, then below staff
@@ -1612,36 +1622,33 @@ public class NoteHeadsBuilder
                 return sheetTemplateNotesAll;
             }
 
-            final DrumSet drumSet = DrumSet.getInstance();
-            final Set<DrumInstrument> set = drumSet.byPitch.get(pitch);
             final EnumSet<Shape> allShapes = EnumSet.noneOf(Shape.class);
+            final DrumSet drumSet = DrumSet.getInstance();
+            final int lineCount = staff.getLineCount();
+            final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet = drumSet
+                    .getStaffSet(lineCount);
 
-            if (set == null) {
-                return allShapes; // Nothing on this pitch value
-            }
+            if (staffSet == null) {
+                logger.warn("No DrumSet defined for staff size {}", lineCount);
+            } else {
+                final Map<DrumSet.MotifSign, DrumInstrument> msMap = staffSet.get(pitch);
 
-            for (DrumInstrument inst : set) {
-                // Motif + Sign (not used at template time)
-                final HeadMotif motif = inst.headMotif;
-                List<Shape> shapes = ShapeSet.getMotifSet(motif);
-                allShapes.addAll(shapes);
+                if (msMap == null) {
+                    return allShapes; // Nothing on this pitch value
+                }
+
+                for (DrumInstrument inst : msMap.values()) {
+                    if (inst != null) {
+                        // Motif + Sign (not used at template time)
+                        final HeadMotif motif = inst.headMotif;
+                        final List<Shape> shapes = ShapeSet.getMotifSet(motif);
+                        allShapes.addAll(shapes);
+                    }
+                }
             }
 
             return allShapes;
         }
-        //
-        //        private void dumpShapeList (String kind,
-        //                                    Collection<Shape> coll)
-        //        {
-        //            System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
-        //            for (Shape shape : coll) {
-        //                System.out.println(String.format("    %s", shape));
-        //            }
-        //        }
-        //
-        //--------//
-        // lookup //
-        //--------//
 
         //-----------------//
         // computeYOffsets //
@@ -1906,6 +1913,9 @@ public class NoteHeadsBuilder
             return grade < Grades.minContextualGrade;
         }
 
+        //--------//
+        // lookup //
+        //--------//
         public List<HeadInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();

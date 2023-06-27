@@ -250,6 +250,10 @@ public class GlyphIndex
         // ID generator
         weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
 
+        if (!sheet.getStub().isValid()) {
+            reset();
+        }
+
         // Declared VIP IDs?
         final String vipIds = constants.vipGlyphs.getValue();
 
@@ -258,14 +262,16 @@ public class GlyphIndex
             weakIndex.setVipIds(vipIds);
         }
 
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
+        if (sheet.getStub().isValid()) {
+            for (Iterator<Glyph> it = iterator(); it.hasNext();) {
+                Glyph glyph = it.next();
 
-            if (glyph != null) {
-                glyph.setIndex(this);
+                if (glyph != null) {
+                    glyph.setIndex(this);
 
-                if (isVipId(glyph.getId())) {
-                    glyph.setVip(true);
+                    if (isVipId(glyph.getId())) {
+                        glyph.setVip(true);
+                    }
                 }
             }
         }

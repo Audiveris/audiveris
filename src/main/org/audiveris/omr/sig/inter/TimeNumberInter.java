@@ -90,15 +90,6 @@ public class TimeNumberInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //-----------//
     // getEditor //
     //-----------//
@@ -153,6 +144,10 @@ public class TimeNumberInter
                                           double grade,
                                           Staff staff)
     {
+        if (staff.isTablature()) {
+            return null;
+        }
+
         // Check pitch of item
         Point centroid = glyph.getCentroid();
         double pitch = staff.pitchPositionOf(centroid);

@@ -41,8 +41,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class <code>PageRef</code> represents, within a <code>SheetStub</code>, a soft reference
  * to a page.
  * <p>
- * The hierarchy of Book, SheetStub and PageRef instances always remains in memory,
- * but Sheet and Page instances can be swapped out.
+ * The hierarchy of Book, SheetStub and PageRef (plus SystemRef and PartRef) instances always
+ * remains in memory, but Sheet and Page instances can be swapped out.
  * <p>
  * To this end, a PageRef instance provides enough information to:
  * <ul>
@@ -84,23 +84,17 @@ public class PageRef
     /**
      * This integer value provides the increment on measure IDs brought by the page.
      * <p>
-     * This would be the exact count of measures in the page, if there were no pickup measures,
-     * alternate endings or cautionary measures.
-     * <p>
-     * Knowing this value allows to assign measure IDs in the following page,
-     * without having to load this one.
+     * This is sometimes less than the raw measure count, because of special measures
+     * (pickup, repeat, courtesy) that don't increment measure IDs.
      */
     @XmlAttribute(name = "delta-measure-id")
     private Integer deltaMeasureId;
 
     /**
-     * This time rational value corresponds to the last active time signature in the page.
+     * This time rational value corresponds to the last effective time signature in the page.
      * <p>
      * For example, if the last active time signature is a COMMON time signature, this element will
      * provide a 4/4 value.
-     * <p>
-     * Knowing this value allows to process rhythm and check measures in the following page,
-     * without having to load this one.
      */
     @XmlElement(name = "last-time-rational")
     private TimeRational lastTimeRational;
@@ -202,7 +196,12 @@ public class PageRef
         return false;
     }
 
+    //-------------------//
+    // getDeltaMeasureId //
+    //-------------------//
     /**
+     * Report the progression of measure IDs within this page.
+     *
      * @return the deltaMeasureId
      */
     public Integer getDeltaMeasureId ()
@@ -248,6 +247,24 @@ public class PageRef
     public PageNumber getPageNumber ()
     {
         return new PageNumber(stub.getNumber(), 1 + stub.getPageRefs().indexOf(this));
+    }
+
+    //---------------------//
+    // getPrecedingInScore //
+    //---------------------//
+    /**
+     * Report the preceding PageRef of this one within the score.
+     *
+     * @return the preceding PageRef, or null if none
+     */
+    public PageRef getPrecedingInScore ()
+    {
+        final Score score = stub.getBook().getScore(this);
+        if (score == null) {
+            return null;
+        }
+
+        return score.getPrecedingPageRef(this);
     }
 
     //-------------//
@@ -308,7 +325,7 @@ public class PageRef
     // isMovementStart //
     //-----------------//
     /**
-     * Report whether this page starts a movement.
+     * Report whether this page is explicitly a movement start (due to system indentation).
      *
      * @return true if so
      */

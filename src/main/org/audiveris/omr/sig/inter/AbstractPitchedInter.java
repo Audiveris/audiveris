@@ -189,7 +189,7 @@ public abstract class AbstractPitchedInter
         super.setBounds(bounds);
 
         // Pitch
-        if ((bounds == null) || (staff == null)) {
+        if ((bounds == null) || (staff == null) || staff.isTablature()) {
             setPitch(null);
         } else {
             setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
@@ -218,7 +218,8 @@ public abstract class AbstractPitchedInter
         super.setStaff(staff);
 
         // Pitch?
-        if ((pitch == null) && (staff != null) && (bounds != null) && (shape != null)) {
+        if ((pitch == null) && (staff != null) && !staff.isTablature() && (bounds != null)
+                && (shape != null)) {
             setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
         }
     }

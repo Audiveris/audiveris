@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.2">
+<diagram program="umlet" version="15.0.0">
   <help_text>// Uncomment the following line to change the fontsize:
         // fontsize=14
 
@@ -449,7 +449,7 @@ bg=#aaffaa</panel_attributes>
       <h>30</h>
     </coordinates>
     <panel_attributes>CURVES
-bg=#aaffaa</panel_attributes>
+bg=#ffaaaa</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -952,7 +952,7 @@ bg=#aaffaa</panel_attributes>
       <h>30</h>
     </coordinates>
     <panel_attributes>RHYTHMS
-bg=#aaffaa</panel_attributes>
+bg=#ffaaaa</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -1008,7 +1008,7 @@ bg=#aaffaa</panel_attributes>
       <h>30</h>
     </coordinates>
     <panel_attributes>PAGE
-bg=#aaffaa</panel_attributes>
+bg=#ffaaaa</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

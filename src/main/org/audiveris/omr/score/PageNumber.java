@@ -24,6 +24,11 @@ package org.audiveris.omr.score;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
@@ -40,6 +45,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class PageNumber
         implements Comparable<PageNumber>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(PageNumber.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
@@ -125,7 +134,14 @@ public class PageNumber
     public PageRef getPageRef (Book book)
     {
         final SheetStub stub = book.getStub(sheetNumber);
-        return stub.getPageRefs().get(sheetPageId - 1);
+        final List<PageRef> pageRefs = stub.getPageRefs();
+
+        if (pageRefs.isEmpty()) {
+            logger.info("No page for sheet#{}", sheetNumber);
+            return null;
+        }
+
+        return pageRefs.get(sheetPageId - 1);
     }
 
     //----------//

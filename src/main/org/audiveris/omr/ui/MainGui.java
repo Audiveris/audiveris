@@ -54,12 +54,13 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
 
-import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -452,7 +453,9 @@ public class MainGui
     @Override
     public void notifyLog ()
     {
-        logPane.notifyLog();
+        if (logPane != null) {
+            logPane.notifyLog();
+        }
     }
 
     //---------//

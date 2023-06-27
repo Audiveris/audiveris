@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.TextLine;
 
-import org.bytedeco.tesseract.StringGenericVector;
+import org.bytedeco.tesseract.StringVector;
 import org.bytedeco.tesseract.TessBaseAPI;
 import org.bytedeco.tesseract.global.tesseract;
 
@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Class <code>TesseractOCR</code> is an OCR service built on Google Tesseract engine.
  * <p>
- * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.
+ * It relies on <b>tesseract-ocr</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.
  *
  * @author Hervé Bitteur
  */
@@ -68,9 +68,16 @@ public class TesseractOCR
     /** Latin encoder, to check character validity. (not used yet) */
     private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").newEncoder();
 
+    /** Specific name of folder where Tesseract language files are located. */
+    private static final String TESSDATA = "tessdata";
+
+    /** System environment variable pointing to TESSDATA location. */
+    private static final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
+
     /** Warning message when OCR folder cannot be found. */
     private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-            + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
+            + "Try setting " + TESSDATA_PREFIX + " environment variable to point to " + TESSDATA
+            + " folder.";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -97,12 +104,16 @@ public class TesseractOCR
     //---------------//
     // findOcrFolder //
     //---------------//
+    /**
+     * Look for Tesseract TESSDATA folder, according to environment.
+     *
+     * @return TESSDATA folder found, perhaps null
+     */
     private Path findOcrFolder ()
     {
         // First, try to use TESSDATA_PREFIX environment variable
-        // which might denote a Tesseract installation
-        final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
         final String tessPrefix = System.getenv(TESSDATA_PREFIX);
+        logger.info("{} value: {}", TESSDATA_PREFIX, tessPrefix);
 
         if (tessPrefix != null) {
             Path dir = Paths.get(tessPrefix);
@@ -112,31 +123,27 @@ public class TesseractOCR
             }
         }
 
+        // Second, scan OS typical TESSDATA locations
         if (WellKnowns.WINDOWS) {
-            // Fallback to default directory on Windows
-            final String pf32 = WellKnowns.OS_ARCH.equals("x86") ? "ProgramFiles"
-                    : "ProgramFiles(x86)";
-
-            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
+            return scanOcrLocations(new String[]
+            {
+                    Paths.get(System.getenv("ProgramFiles")).resolve("tesseract-ocr").toString(),
+                    Paths.get(System.getenv("ProgramFiles(x86)")).resolve("tesseract-ocr")
+                            .toString() //
+            });
         } else if (WellKnowns.LINUX) {
-            // Scan common Linux TESSDATA locations
-            final String[] linuxOcrLocations =
+            return scanOcrLocations(new String[]
             {
                     "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
                     "/usr/share", // OpenSUSE
                     "/usr/share/tesseract" // Fedora
-            };
-
-            return scanOcrLocations(linuxOcrLocations);
+            });
         } else if (WellKnowns.MAC_OS_X) {
-            // Scan common Macintosh TESSDATA locations
-            final String[] macOcrLocations =
+            return scanOcrLocations(new String[]
             {
                     "/opt/local/share", // Macports
                     "/usr/local/opt/tesseract/share" // Homebrew
-            };
-
-            return scanOcrLocations(macOcrLocations);
+            });
         }
 
         logger.warn(ocrNotFoundMsg);
@@ -147,6 +154,11 @@ public class TesseractOCR
     //--------------//
     // getLanguages //
     //--------------//
+    /**
+     * Report the set of languages currently available for OCR.
+     *
+     * @return the set of available languages, perhaps empty.
+     */
     @Override
     public Set<String> getLanguages ()
     {
@@ -158,11 +170,11 @@ public class TesseractOCR
                 final TessBaseAPI api = new TessBaseAPI();
 
                 if (api.Init(ocrFolder.toString(), "eng") == 0) {
-                    final StringGenericVector languages = new StringGenericVector();
+                    final StringVector languages = new StringVector();
                     api.GetAvailableLanguagesAsVector(languages);
 
                     while (!languages.empty()) {
-                        set.add(languages.pop_back().string().getString());
+                        set.add(languages.pop_back().getString());
                     }
                 } else {
                     logger.warn("Error in loading Tesseract languages");
@@ -196,11 +208,15 @@ public class TesseractOCR
     /**
      * Map the OCR layout mode to Tesseract segmentation mode.
      *
-     * @param layoutMode the desired OCR layout mode
+     * @param layoutMode the desired OCR layout mode (MULTI_BLOCK or SINGLE_BLOCK)
      * @return the corresponding Tesseract segmentation mode
      */
     private int getMode (LayoutMode layoutMode)
     {
+        if (constants.forceSingleBlock.isSet()) {
+            return tesseract.PSM_SINGLE_BLOCK;
+        }
+
         switch (layoutMode) {
         case MULTI_BLOCK:
             return tesseract.PSM_AUTO;
@@ -288,6 +304,13 @@ public class TesseractOCR
                 }
             }
 
+            // Print raw lines, right out of Tesseract OCR, except " " lines
+            if (lines != null) {
+                for (TextLine textLine : lines) {
+                    logger.debug("raw {}", textLine);
+                }
+            }
+
             return lines;
         } catch (IOException ex) {
             logger.warn("Could not create OCR order", ex);
@@ -303,10 +326,16 @@ public class TesseractOCR
     //------------------//
     // scanOcrLocations //
     //------------------//
-    private Path scanOcrLocations (String[] locations)
+    /**
+     * Scan the provided sequence of locations for a TESSDATA folder.
+     *
+     * @param locations the locations to scan
+     * @return the first suitable location or null
+     */
+    private Path scanOcrLocations (String... locations)
     {
         for (String loc : locations) {
-            final Path path = Paths.get(loc).resolve("tessdata");
+            final Path path = Paths.get(loc).resolve(TESSDATA);
 
             if (Files.exists(path)) {
                 return path;
@@ -341,10 +370,13 @@ public class TesseractOCR
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean useOCR = new Constant.Boolean(
                 true,
                 "Should we use the OCR feature?");
+
+        private final Constant.Boolean forceSingleBlock = new Constant.Boolean(
+                false,
+                "Should we force OCR to use PSM_SINGLE_BLOCK rather than PSM_AUTO?");
 
         private final Constant.Boolean saveImages = new Constant.Boolean(
                 false,
@@ -366,7 +398,6 @@ public class TesseractOCR
     //---------------//
     private static class LazySingleton
     {
-
         static final TesseractOCR INSTANCE = new TesseractOCR();
     }
 }

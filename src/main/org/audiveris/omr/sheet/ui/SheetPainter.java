@@ -840,9 +840,11 @@ public abstract class SheetPainter
                 staff = system.getClosestStaff(center);
             }
 
-            center.setLocation(
-                    center.getX(),
-                    staff.pitchToOrdinate(center.getX(), inter.getPitch()));
+            if (!staff.isTablature()) {
+                center.setLocation(
+                        center.getX(),
+                        staff.pitchToOrdinate(center.getX(), inter.getPitch()));
+            }
 
             final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
 

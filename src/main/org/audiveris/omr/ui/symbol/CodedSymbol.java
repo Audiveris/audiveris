@@ -106,8 +106,8 @@ public class CodedSymbol
     protected Params getParams (MusicFont font)
     {
         // Select the font that corresponds to symbol family and thus its code
-        if (family != font.getMusicFamily()) {
-            font = MusicFont.getMusicFont(family, font.getSize());
+        if (musicFamily != font.getMusicFamily()) {
+            font = MusicFont.getMusicFont(musicFamily, font.getSize());
         }
 
         Params p = new Params();
@@ -163,8 +163,8 @@ public class CodedSymbol
                            int x,
                            int y)
     {
-        logger.trace("CodedSymbol.paintIcon {} family: {}", this, family);
-        final MusicFont font = MusicFont.getBaseFont(family, TINY_INTERLINE);
+        logger.trace("CodedSymbol.paintIcon {} family: {}", this, musicFamily);
+        final MusicFont font = MusicFont.getBaseFont(musicFamily, TINY_INTERLINE);
         final Graphics2D g2 = (Graphics2D) g;
         g.setColor(logger.isDebugEnabled() ? Color.RED : defaultImageColor);
         paint(g2, getParams(font), new Point(x, y), Alignment.TOP_LEFT);

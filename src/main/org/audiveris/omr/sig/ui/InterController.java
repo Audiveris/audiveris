@@ -261,7 +261,7 @@ public class InterController
                 final ByteProcessor buffer = glyph.getBuffer();
                 final List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
                         buffer,
-                        sheet.getStub().getOcrLanguages().getValue(),
+                        sheet.getStub().getOcrLanguages(),
                         glyph.getId());
 
                 // Convert to absolute lines (and the underlying word glyphs)
@@ -925,7 +925,8 @@ public class InterController
             if (constants.useStaffLink.isSet()) {
                 // Try to use link
                 SystemInfo prevSystem = null;
-                StaffLoop: for (Staff stf : staves) {
+                StaffLoop:
+                for (Staff stf : staves) {
                     system = stf.getSystem();
 
                     if (system != prevSystem) {

@@ -543,7 +543,7 @@ public interface Inter
      * <li>For a slur: 1 head + a second head or a connection across system/page break
      * <li>For a tuplet: 3 or 6 chords (approximately)
      * <li>For a fermata: 1 barline or 1 chord
-     * <li>For a measure number: 1 multiple rest
+     * <li>For a measure number: 1 multiple rest or measure repeat sign
      * <li>For an octave shift: 1 chord
      * </ul>
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.

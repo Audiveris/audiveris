@@ -100,6 +100,7 @@ public class TextLine
         this(sheet);
 
         this.words.addAll(words);
+        purgeWords();
 
         for (TextWord word : words) {
             word.setTextLine(this);
@@ -120,6 +121,7 @@ public class TextLine
     {
         if ((words != null) && !words.isEmpty()) {
             this.words.addAll(words);
+            purgeWords();
 
             for (TextWord word : words) {
                 word.setTextLine(this);
@@ -141,9 +143,11 @@ public class TextLine
      */
     public void appendWord (TextWord word)
     {
-        words.add(word);
-        word.setTextLine(this);
-        invalidateCache();
+        if (word.getBounds() != null) {
+            words.add(word);
+            word.setTextLine(this);
+            invalidateCache();
+        }
     }
 
     //---------------//
@@ -726,22 +730,29 @@ public class TextLine
         for (TextWord word : getWords()) {
             // Look for tiny inter-word gap
             if (prevWord != null) {
-                Rectangle prevBounds = prevWord.getBounds();
-                int prevStop = prevBounds.x + prevBounds.width;
-                int gap = word.getBounds().x - prevStop;
+                final Rectangle prevBounds = prevWord.getBounds();
 
-                if (gap < minWordDx) {
-                    toRemove.add(prevWord);
-                    toRemove.add(word);
+                if (prevBounds != null) {
+                    final int prevStop = prevBounds.x + prevBounds.width;
+                    final Rectangle wordBounds = word.getBounds();
 
-                    TextWord bigWord = TextWord.mergeOf(prevWord, word);
+                    if (wordBounds != null) {
+                        final int gap = wordBounds.x - prevStop;
 
-                    if (logger.isDebugEnabled()) {
-                        logger.info("   merged {} & {} into {}", prevWord, word, bigWord);
+                        if (gap < minWordDx) {
+                            toRemove.add(prevWord);
+                            toRemove.add(word);
+
+                            TextWord bigWord = TextWord.mergeOf(prevWord, word);
+
+                            if (logger.isDebugEnabled()) {
+                                logger.info("   merged {} & {} into {}", prevWord, word, bigWord);
+                            }
+
+                            toAdd.add(bigWord);
+                            word = bigWord;
+                        }
                     }
-
-                    toAdd.add(bigWord);
-                    word = bigWord;
                 }
             }
 
@@ -759,6 +770,17 @@ public class TextLine
             addWords(toAdd);
             removeWords(toRemove);
         }
+    }
+
+    //------------//
+    // purgeWords //
+    //------------//
+    /**
+     * Purges words collection of any word with null bounds.
+     */
+    private void purgeWords ()
+    {
+        words.removeIf( (w) -> w.getBounds() == null);
     }
 
     //--------------------//

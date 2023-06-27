@@ -1626,6 +1626,10 @@ public abstract class AbstractInter
         final Point center = GeoUtil.center(box);
 
         if (staff != null) {
+            if (staff.isTablature()) {
+                return false;
+            }
+
             // Snap ordinate on staff middle line
             final double y = staff.pitchToOrdinate(center.x, 0);
             dropLocation.y = (int) Math.rint(y);
