@@ -4,10 +4,15 @@ title: Building from sources
 nav_order: 4
 parent: Installation
 ---
-## Building from sources (Windows, Linux, MacOS)
+## Building from sources (Windows, MacOS, Linux, ArchLinux)
 {: .no_toc }
 
-TBD development vs master branches
+{: .note }
+For GitHub users:
+- Audiveris "*master*" branch is updated only when a new release is published.
+- Instead, Audiveris development happens continuously in "*development*" branch, so checkout and pull
+this *development* branch to get and build the latest version.
+- See workflow details in this dedicated [Wiki article][workflow].
 
 Table of contents
 {: .no_toc .text-delta }
@@ -117,3 +122,4 @@ java -cp "Audiveris/lib/*" Audiveris
 [git]:      https://git-scm.com
 [gradle]:   https://gradle.org
 [jdk]:      http://www.oracle.com/technetwork/java/javase/downloads/index.html
+[workflow]: https://github.com/Audiveris/audiveris/wiki/Git-Workflow

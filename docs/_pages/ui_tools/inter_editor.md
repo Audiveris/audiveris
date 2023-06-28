@@ -134,15 +134,6 @@ Multiple-line editor:
 
 See details in [Octave Shift section](../specific/octave_shift.md#edition)
 
-### Octave shift editor
-
-![](../assets/images/octave_shift_edited.png)
-
-These are the 3 handles available for a simple octave shift.
-
-But more complex actions are possible.   
-Please refer to the dedicated [Octave shift Edition](octave_shift.md#edition) section.
-
 ### Slur editor
 ![](../assets/images/slur_edited.png)
 
