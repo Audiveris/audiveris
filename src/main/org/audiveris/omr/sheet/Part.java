@@ -94,8 +94,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * {@link LogicalPart}.
  * <p>
  * Generally, such LogicalPart corresponds to a separate (physical) Part instance in each
- * system but not always. For example, a singer part may not appear at the very beginning of a
- * score, but only after one or several systems played by the piano part.
+ * system but not always. For example, a singer part may appear only after one or several systems
+ * played by the piano part.
  * <p>
  * We assume that the configuration of staves within the physical Part instances of the same logical
  * LogicalPart do not vary (in number of staves, in number of lines in staves or in relative
@@ -106,8 +106,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * During export to MusicXML, dummy parts (and their contained dummy staves and measures) can be
  * virtually inserted <i>on-the-fly</i> into the structure of page/system/part/measure/staff
  * to ease the handling of logical parts along the pages and score.
- * <p>
- * TODO: include the image of a "merged grand staff".
  *
  * @author Hervé Bitteur
  */
@@ -148,6 +146,10 @@ public class Part
     /**
      * This boolean indicates a <i>merged grand staff</i> part, made of 2 staves
      * not separated by a standard gutter.
+     * <p>
+     * See example:
+     * <br>
+     * <img alt="merged-grand-staff" src="doc-files/merged_grand_staff.png">
      */
     @XmlAttribute(name = "merged-grand-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)

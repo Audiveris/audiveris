@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class <code>LogicalPart</code> describes a part at score or page level.
+ * Class <code>LogicalPart</code> describes a part at score level.
  * <p>
  * It can be "instantiated" in one or several SystemInfo by a (physical)
  * {@link Part} instance.
