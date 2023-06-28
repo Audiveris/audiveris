@@ -24,12 +24,13 @@ package org.audiveris.schema;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
 import org.codehaus.mojo.jaxb2.schemageneration.AbstractXsdGeneratorMojo;
 import org.codehaus.mojo.jaxb2.schemageneration.SchemaGenerationMojo;
+import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocData;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocRenderer;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.NoAuthorJavaDocRenderer;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.SearchableDocumentation;
+import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.SortableLocation;
 import org.codehaus.mojo.jaxb2.shared.FileSystemUtilities;
 import org.codehaus.mojo.jaxb2.shared.filters.Filter;
 import org.codehaus.mojo.jaxb2.shared.filters.pattern.FileFilterAdapter;
@@ -45,8 +46,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocData;
-import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.SortableLocation;
 
 /**
  * Class {@code SchemaAnnotator} annotates a plain XSD schema with JavaDoc content.
@@ -139,7 +138,7 @@ public class SchemaAnnotator
 
     @Override
     protected List<String> getClasspath ()
-            throws MojoExecutionException
+        throws MojoExecutionException
     {
         return Collections.emptyList();
     }
@@ -154,26 +153,26 @@ public class SchemaAnnotator
     // process //
     //---------//
     public final void process ()
-            throws MojoExecutionException,
-                   MojoFailureException
+        throws MojoExecutionException, MojoFailureException
     {
         try {
             // Copy plain XSDs files from the WorkDirectory to the OutputDirectory.
-            final List<Filter<File>> exclusionFilters = PatternFileFilter
-                    .createIncludeFilterList(getLog(), "\\.class");
+            final List<Filter<File>> exclusionFilters = PatternFileFilter.createIncludeFilterList(
+                    getLog(),
+                    "\\.class");
 
             final List<File> toCopy = FileSystemUtilities.resolveRecursively(
                     Arrays.asList(getWorkDirectory()),
-                    exclusionFilters, getLog());
+                    exclusionFilters,
+                    getLog());
 
             for (File current : toCopy) {
                 // Get the path to the current file
-                final String currentPath = FileSystemUtilities.getCanonicalPath(current
-                        .getAbsoluteFile());
-                final File target = new File(getOutputDirectory(),
-                                             FileSystemUtilities.relativize(currentPath,
-                                                                            getWorkDirectory(),
-                                                                            true));
+                final String currentPath = FileSystemUtilities.getCanonicalPath(
+                        current.getAbsoluteFile());
+                final File target = new File(
+                        getOutputDirectory(),
+                        FileSystemUtilities.relativize(currentPath, getWorkDirectory(), true));
 
                 // Copy the file to the same relative structure within the output directory.
                 FileSystemUtilities.createDirectory(target.getParentFile(), false);
@@ -188,11 +187,11 @@ public class SchemaAnnotator
             // 3. [ChangeNamespacePrefixProcessor]:    Change namespace prefixes within XSDs.
             // 4. [ChangeFilenameProcessor]:           Change the fileNames of XSDs.
             //
-//                    // Map the XML Namespaces to their respective XML URIs (and reverse)
-//                    // The keys are the generated 'vanilla' XSD file names.
-//            Map<String, SimpleNamespaceResolver> resolverMap = null;
-//                    final Map<String, SimpleNamespaceResolver> resolverMap = XsdGeneratorHelper
-//                            .getFileNameToResolverMap(getOutputDirectory());
+            //                    // Map the XML Namespaces to their respective XML URIs (and reverse)
+            //                    // The keys are the generated 'vanilla' XSD file names.
+            //            Map<String, SimpleNamespaceResolver> resolverMap = null;
+            //                    final Map<String, SimpleNamespaceResolver> resolverMap = XsdGeneratorHelper
+            //                            .getFileNameToResolverMap(getOutputDirectory());
             getLog().info("XSD post-processing: Adding JavaDoc annotations in generated XSDs.");
 
             // Retrieve all .java files under 'sources' directories
@@ -200,12 +199,14 @@ public class SchemaAnnotator
                     f -> f.isDirectory() || f.getName().endsWith(".java"));
             acceptJavaFilter.initialize(getLog());
             final List<File> javaFiles = FileSystemUtilities.filterFiles(
-                    sources, acceptJavaFilter, getLog());
+                    sources,
+                    acceptJavaFilter,
+                    getLog());
             getLog().info("Java files: " + javaFiles.size());
 
             // Acquire JavaDocs, using the MyJavaDocExtractor
-            final MyJavaDocExtractor extractor = new MyJavaDocExtractor(getLog())
-                    .addSourceFiles(javaFiles);
+            final MyJavaDocExtractor extractor = new MyJavaDocExtractor(getLog()).addSourceFiles(
+                    javaFiles);
             final SearchableDocumentation javaDocs = extractor.process();
             ///dumpDocs(javaDocs);
 
@@ -219,13 +220,11 @@ public class SchemaAnnotator
                     renderer);
 
             ///if (getLog().isDebugEnabled()) {
-            getLog().info("XSD post-processing: " + numProcessedFiles
-                                  + " files processed.");
+            getLog().info("XSD post-processing: " + numProcessedFiles + " files processed.");
             ///}
         } catch (MojoExecutionException e) {
             throw e;
-        } catch (IOException |
-                 IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException e) {
 
             // Find the root exception, and print its stack trace to the Maven Log.
             // These invocation target exceptions tend to produce really deep stack traces,
