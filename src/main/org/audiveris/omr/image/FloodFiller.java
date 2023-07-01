@@ -57,7 +57,8 @@ public class FloodFiller
     /**
      * Flood fill the area from provided (x,y) location by recursively converting
      * pixels from oldColor to newColor.
-     * Simplistic implementation, but sufficient for the time being.
+     * <p>
+     * Method modified to flood fill only vertically or horizontally, not in diagonal.
      *
      * @param x        the abscissa of the pixel to process
      * @param y        the ordinate of the pixel to process
@@ -74,17 +75,17 @@ public class FloodFiller
 
             if ((pix == oldColor) && (pix != newColor)) {
                 image.setRGB(x, y, newColor);
-                fill(x - 1, y - 1, oldColor, newColor);
+                //fill(x - 1, y - 1, oldColor, newColor);
                 fill(x - 1, y, oldColor, newColor);
-                fill(x - 1, y + 1, oldColor, newColor);
+                //fill(x - 1, y + 1, oldColor, newColor);
 
                 fill(x, y - 1, oldColor, newColor);
 
                 fill(x, y + 1, oldColor, newColor);
 
-                fill(x + 1, y - 1, oldColor, newColor);
+                //fill(x + 1, y - 1, oldColor, newColor);
                 fill(x + 1, y, oldColor, newColor);
-                fill(x + 1, y + 1, oldColor, newColor);
+                //fill(x + 1, y + 1, oldColor, newColor);
             }
         }
     }

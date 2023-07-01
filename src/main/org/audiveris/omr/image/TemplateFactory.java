@@ -641,7 +641,7 @@ public class TemplateFactory
         case NOTEHEAD_CROSS_VOID -> slimBox.y + slimBox.height;
         case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
         case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
-            
+
         default -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
         };
         // @formatter:on
