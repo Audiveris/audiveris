@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
+import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
@@ -45,7 +46,6 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
-import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
@@ -61,7 +61,6 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
@@ -370,22 +369,13 @@ public class SymbolsLinker
             {
                 // Map each word with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
-                    WordInter word = (WordInter) wInter;
-                    Point wordCenter = word.getCenter();
-                    MeasureStack stack = system.getStackAt(wordCenter);
+                    final ChordNameInter word = (ChordNameInter) wInter;
+                    final Link link = word.lookupLink(system);
 
-                    if (stack == null) {
-                        logger.info("No stack at {}", word);
+                    if (link == null) {
+                        logger.info("No chord below {}", word);
                     } else {
-                        AbstractChordInter chordBelow = stack.getStandardChordBelow(
-                                wordCenter,
-                                word.getBounds());
-
-                        if (chordBelow != null) {
-                            sig.addEdge(chordBelow, word, new ChordNameRelation());
-                        } else {
-                            logger.info("No chord below {}", word);
-                        }
+                        link.applyTo(wInter);
                     }
                 }
             }

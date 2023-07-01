@@ -522,7 +522,6 @@ public class InterController
                 case Lyrics ->
                 {
                     // Convert to LyricItem words, all within a single LyricLine sentence
-                    final WrappedBoolean cancel = new WrappedBoolean(false);
                     final LyricLineInter line = new LyricLineInter(
                             sentence.getBounds(),
                             sentence.getGrade(),
@@ -556,11 +555,6 @@ public class InterController
                                 seq.add(new LinkTask(sig, link.partner, item, link.relation));
                             }
 
-                            if (cancel.isSet()) {
-                                seq.setCancelled(true);
-                                return;
-                            }
-
                             // Remove the plain word
                             seq.add(new RemovalTask(orgWord));
                         }
@@ -574,37 +568,30 @@ public class InterController
 
                 case ChordName ->
                 {
-                    // Convert to ChordName words, each within its own sentence
-                    final WrappedBoolean cancel = new WrappedBoolean(false);
-
+                    // Convert to ChordName words within the sentence
                     for (Inter inter : sentence.getMembers()) {
                         if (!(inter instanceof ChordNameInter)) {
                             // Add a new ChordNameInter for any original word
-                            WordInter orgWord = (WordInter) inter;
-                            ChordNameInter cn = new ChordNameInter(orgWord);
-                            cn.setManual(true);
-                            cn.setStaff(staff);
+                            final WordInter orgWord = (WordInter) inter;
+                            final ChordNameInter chordName = new ChordNameInter(orgWord);
+                            chordName.setManual(true);
+                            chordName.setStaff(staff);
                             seq.add(
                                     new AdditionTask(
                                             sig,
-                                            cn,
-                                            cn.getBounds(),
+                                            chordName,
+                                            chordName.getBounds(),
                                             Arrays.asList(
                                                     new Link(sentence, new Containment(), false))));
 
-                            if (cancel.isSet()) {
-                                seq.setCancelled(true);
-                                return;
-                            }
-
                             // Remove the original word
                             seq.add(new RemovalTask(orgWord));
-                        }
-                    }
 
-                    if (!seq.getTasks().isEmpty()) {
-                        // Remove the now useless original sentence (and its original relations)
-                        seq.add(new RemovalTask(sentence));
+                            // Look for suitable related head chord
+                            for (Link link : chordName.searchLinks(system)) {
+                                seq.add(new LinkTask(sig, link.partner, chordName, link.relation));
+                            }
+                        }
                     }
                 }
 

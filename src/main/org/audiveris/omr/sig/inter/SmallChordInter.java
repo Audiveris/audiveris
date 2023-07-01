@@ -121,6 +121,9 @@ public class SmallChordInter
 
         for (Relation rel : sig.getRelations(lastChord, ChordGraceRelation.class)) {
             AbstractChordInter stdChord = (AbstractChordInter) sig.getOppositeInter(lastChord, rel);
+            if (stdChord instanceof SmallChordInter) {
+                continue; // Safer
+            }
             return stdChord.getVoice();
         }
 

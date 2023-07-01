@@ -179,8 +179,7 @@ public class LinksStep
 
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             linker.linkOneSentence(sentence);
-                        } else if (task instanceof SentenceRoleTask) {
-                            SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
+                        } else if (task instanceof SentenceRoleTask roleTask) {
                             linker.unlinkOneSentence(
                                     sentence,
                                     (opKind == OpKind.UNDO) ? roleTask.getNewRole()

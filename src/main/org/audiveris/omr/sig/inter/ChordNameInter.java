@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.AUGMENTED;
 import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.AUGMENTED_SEVENTH;
 import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DIMINISHED;
@@ -49,6 +50,7 @@ import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MIN
 import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR_SIXTH;
 import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.SUSPENDED_FOURTH;
 import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.SUSPENDED_SECOND;
+import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -65,8 +67,11 @@ import org.audiveris.omr.util.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -556,6 +561,28 @@ public class ChordNameInter
     }
 
     //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this ChordNameInter and a HeadChord nearby.
+     *
+     * @param system system to be looked up
+     * @return the link found or null
+     */
+    public Link lookupLink (SystemInfo system)
+    {
+        final Point wordCenter = getCenter();
+        final MeasureStack stack = system.getStackAt(wordCenter);
+        final AbstractChordInter chordBelow = stack.getStandardChordBelow(wordCenter, getBounds());
+
+        if (chordBelow == null) {
+            return null;
+        }
+
+        return new Link(chordBelow, new ChordNameRelation(), false);
+    }
+
+    //------------//
     // parseChord //
     //------------//
     /**
@@ -619,6 +646,27 @@ public class ChordNameInter
         logger.debug("No pattern match for chord text {}", value);
 
         return null;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final Link link = lookupLink(system);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordNameRelation.class);
     }
 
     //----------//
