@@ -331,3 +331,16 @@ fileTree("$projectDir/private").include('*.gradle').each { file ->
 test {
     testLogging.showStandardStreams = true
 }
+
+// Utility task to print out head templates
+task(printTemplates, dependsOn: 'classes', type: JavaExec) {
+    description = "Print out head templates with various sizes"
+    mainClass = "org.audiveris.omr.image.TemplateFactory"
+    classpath = sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("cmdLineArgs")) {
+        if (cmdLineArgs) {
+            args(cmdLineArgs.split())
+        }
+    }
+}

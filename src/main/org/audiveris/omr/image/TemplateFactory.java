@@ -317,6 +317,7 @@ public class TemplateFactory
                         pointSize,
                         img,
                         fatBounds) : null;
+
         // Generate the template instance
         final Template tpl = new Template(
                 shape,
@@ -488,6 +489,29 @@ public class TemplateFactory
         }
     }
 
+    //-------------//
+    // adjustHoles //
+    //------------//
+    /**
+     * Correct any hole pixel left over.
+     *
+     * @param img the source image
+     * @param box bounds of symbol relative to image
+     */
+    private static void adjustHoles (BufferedImage img,
+                                     Rectangle box)
+    {
+        final FloodFiller floodFiller = new FloodFiller(img);
+
+        for (int iy = box.y + 1, iyBreak = box.y + box.height - 1; iy < iyBreak; iy++) {
+            for (int ix = box.x + 1, ixBreak = box.x + box.width - 1; ix < ixBreak; ix++) {
+                if (isBackground(img, ix, iy)) {
+                    floodFiller.adjust(ix, iy, HOLE);
+                }
+            }
+        }
+    }
+
     //----------//
     // binarize //
     //----------//
@@ -524,6 +548,7 @@ public class TemplateFactory
     //----------------//
     /**
      * Build the collection of key points to be used for matching tests.
+     * <p>
      * These are the locations where the image distance value will be checked against the recorded
      * template distance value.
      *
@@ -532,10 +557,11 @@ public class TemplateFactory
      * @return the collection of key locations, with their corresponding distance value
      */
     private static List<PixelDistance> buildKeyPoints (BufferedImage img,
-                                                       DistanceTable distances)
+                                                       DistanceTable distances,
+                                                       int pointSize)
     {
         final List<PixelDistance> keyPoints = new ArrayList<>();
-        final int maxDist = constants.maxRawDistanceFromSymbol.getSourceValue();
+        final int maxDist = maxRawDistanceFromSymbol(pointSize);
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
@@ -588,7 +614,7 @@ public class TemplateFactory
         // Compute template distance transform
         final DistanceTable distances = new ChamferDistance.Short().compute(fore);
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             TableUtil.dump(shape + "  distances", distances);
         }
 
@@ -606,9 +632,10 @@ public class TemplateFactory
      * @param img the image to modify
      */
     private static void flagIrrelevantPixels (BufferedImage img,
-                                              DistanceTable distances)
+                                              DistanceTable distances,
+                                              int pointSize)
     {
-        final int maxDist = constants.maxRawDistanceFromSymbol.getValue();
+        final int maxDist = maxRawDistanceFromSymbol(pointSize);
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
@@ -806,13 +833,15 @@ public class TemplateFactory
         final int max;
 
         if ((args == null) || (args.length == 0)) {
-            min = max = constants.defaultDecoratedPointSize.getValue();
+            min = max = constants.defaultPointSize.getValue();
         } else {
             min = Integer.decode(args[0]);
             max = (args.length > 1) ? Integer.decode(args[1]) : min;
         }
 
         logger.info("minPointSize:{} maxPointSize{}", min, max);
+
+        MusicFont.populateAllSymbols();
 
         final TemplateFactory factory = TemplateFactory.getInstance();
 
@@ -835,6 +864,23 @@ public class TemplateFactory
     {
         return constants.maxRawDistanceFromSymbol.getValue()
                 / (double) ChamferDistance.DEFAULT_NORMALIZER;
+    }
+
+    //--------------------------//
+    // maxRawDistanceFromSymbol //
+    //--------------------------//
+    /**
+     * Report the maximum raw distance, adjusted according to provided pointSize,
+     * from symbol foreground for a pixel to be considered.
+     *
+     * @param pointSize font point size
+     * @return the (adjusted) maximum raw distance
+     */
+    private static int maxRawDistanceFromSymbol (int pointSize)
+    {
+        return (int) Math.rint(
+                constants.maxRawDistanceFromSymbol.getValue() //
+                        * ((double) pointSize / constants.defaultPointSize.getValue()));
     }
 
     //-------------------//
@@ -863,19 +909,34 @@ public class TemplateFactory
                                                           Rectangle fatBounds)
     {
         logger.debug("Building template keyPoints for {} {} {}", shape, family, pointSize);
+
         // Distances to foreground
         final DistanceTable distances = computeDistances(img, shape);
 
         // Add holes if any
         if (shapesWithHoles.contains(shape)) {
             addHoles(shape, img, fatBounds); // B=FORE & W=BACK + HOLE pixels
+
+            // Safety check
+            if (img.getRGB(0, 0) == HOLE) {
+                logger.warn(
+                        "*** UNUSABLE template *** for shape {} in family {} pointSize {}",
+                        shape,
+                        family,
+                        pointSize);
+            }
         }
 
-        // Flag non-relevant pixels
-        flagIrrelevantPixels(img, distances); // B=FORE & W=BACK + HOLE pixels + IRRELEVANT pixels
+        // Flag non-relevant pixels: B=FORE & W=BACK + HOLE pixels + IRRELEVANT pixels
+        flagIrrelevantPixels(img, distances, pointSize);
+
+        // Adjust holes if any
+        if (shapesWithHoles.contains(shape)) {
+            adjustHoles(img, fatBounds); // HOLE
+        }
 
         // Generate key points for relevant pixels only (fore, holes or back)
-        return buildKeyPoints(img, distances);
+        return buildKeyPoints(img, distances, pointSize);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -975,10 +1036,10 @@ public class TemplateFactory
                 50,
                 "Magnification ratio of template images for visual check");
 
-        private final Constant.Integer defaultDecoratedPointSize = new Constant.Integer(
+        private final Constant.Integer defaultPointSize = new Constant.Integer(
                 "pointSize",
-                69,
-                "Default point size used to generate decorated images");
+                80,
+                "Default point size");
 
         private final Constant.Integer minCellPerSide = new Constant.Integer(
                 "pixels",
