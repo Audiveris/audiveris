@@ -137,12 +137,9 @@ public class StemInter
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
     protected StemInter ()
     {
-        super(null, null, 0.0);
+        super(null, Shape.STEM, 0.0);
     }
 
     /**

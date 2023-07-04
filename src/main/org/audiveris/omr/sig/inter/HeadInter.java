@@ -1027,7 +1027,9 @@ public class HeadInter
 
             if (!stemFound) {
                 // Head without stem
-                HeadChordInter headChord = new HeadChordInter(null);
+                HeadChordInter headChord = shape.isSmallHead() //
+                        ? new SmallChordInter(null)
+                        : new HeadChordInter(null);
                 tasks.add(
                         new AdditionTask(
                                 theSig,

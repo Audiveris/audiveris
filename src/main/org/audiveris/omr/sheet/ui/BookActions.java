@@ -2565,9 +2565,9 @@ public class BookActions
     // ResetBookTask //
     //---------------//
     /**
-     * Task that reset all valid selected sheets of book to gray or binary.
+     * Task that resets all valid selected sheets of book to gray or binary.
      */
-    private static class ResetBookTask
+    private class ResetBookTask
             extends VoidTask
     {
 
@@ -2588,6 +2588,7 @@ public class BookActions
         {
 
             book.resetTo(step);
+            setBookTranscribable(true);
 
             return null;
         }

@@ -80,7 +80,7 @@ repository or to assign it a correct shape.
 
 To work on the **GLOBAL** repository, we use the `Tools | Browse Global Repository...` pulldown menu.
 It will work on the `samples.zip` and `images.zip` files if any are found in our own `config/train`
-folder (see [Folders] section).
+folder (see [Train folder](../folders/essential.md#train-folder) section).
 
 To work on a **book** repository, we use the `Book | View Book Repository...` pulldown menu.
 We will be able to pick and merge book repositories into the GLOBAL repository later on,
@@ -141,6 +141,3 @@ When we are satisfied with a book repository we can push its content to the glob
 
 We do so from the book repository interface, by selecting the pulldown menu
 `Repository | Push to Global`.
-
-
-[Folders]:  /folders/essential.md

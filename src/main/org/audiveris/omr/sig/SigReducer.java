@@ -290,6 +290,21 @@ public class SigReducer
                 sig.insertExclusion(stem, ih, Exclusion.ExclusionCause.OVERLAP);
             }
 
+            // Mutual head exclusion between shapes with different size (small vs standard)
+            final Set<Inter> smallHeads = new LinkedHashSet<>();
+            final Set<Inter> stdHeads = new LinkedHashSet<>();
+            for (Entry<Shape, Set<Inter>> headEntry : heads.entrySet()) {
+                final Set<Inter> headSet = headEntry.getValue();
+                if (headSet != null) {
+                    if (headEntry.getKey().isSmallHead()) {
+                        smallHeads.addAll(headSet);
+                    } else {
+                        stdHeads.addAll(headSet);
+                    }
+                }
+            }
+            exclude(smallHeads, stdHeads, INCOMPATIBLE);
+
             // Mutual head exclusion between shapes with different DURATION
             // Mutual head support within shapes with same DURATION
             final List<Set<Inter>> allDurSets = new ArrayList<>(durs.values());
@@ -326,15 +341,15 @@ public class SigReducer
             }
 
             // Head/Beam support or exclusion based on size
-            for (Entry<Size, Set<Inter>> entry : beams.entrySet()) {
-                final Size size = entry.getKey();
-                final Set<Inter> beamSet = entry.getValue();
+            for (Entry<Size, Set<Inter>> beamEntry : beams.entrySet()) {
+                final Size beamSize = beamEntry.getKey();
+                final Set<Inter> beamSet = beamEntry.getValue();
 
-                if (size == Size.SMALL) {
+                if (beamSize == Size.SMALL) {
                     // Small beams exclude all but small (oval) heads
                     for (Entry<Shape, Set<Inter>> headEntry : heads.entrySet()) {
                         if (!headEntry.getKey().isSmallHead()) {
-                            final Set<Inter> headSet = entry.getValue();
+                            final Set<Inter> headSet = headEntry.getValue();
 
                             if (headSet != null) {
                                 exclude(beamSet, headSet, INCOMPATIBLE);

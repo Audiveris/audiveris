@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -31,6 +30,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.StaffFilament;
 import org.audiveris.omr.sheet.header.StaffHeader;
@@ -538,7 +538,7 @@ public class Staff
     {
         for (int i = increment;; i += increment) {
             final List<LedgerInter> ledgers = ledgerMap.get(i);
-            if (ledgers == null) {
+            if ((ledgers == null) || ledgers.isEmpty()) {
                 return;
             }
 

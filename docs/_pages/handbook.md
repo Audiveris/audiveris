@@ -93,3 +93,6 @@ Features only relevant for an advanced usage of Audiveris.
 
 1. [References](./references.md):
 Not meant to be read from A to Z, but when a specific item needs to be checked.
+
+1. [Updates](./updates.md):
+History of major software updates.
