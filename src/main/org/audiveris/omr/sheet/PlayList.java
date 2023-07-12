@@ -183,6 +183,7 @@ public class PlayList
                 }
             }
 
+            tgtBook.setDirty(true);
             tgtBook.updateScores(null);
             tgtBook.setVersionValue(oldestVersion.value);
             tgtBook.storeBookInfo(tgtRoot);

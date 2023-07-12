@@ -27,7 +27,9 @@ import org.audiveris.omr.score.PageNumber;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.SystemRef;
+import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -325,6 +327,15 @@ public abstract class Voices
     public static int refineScore (Score score,
                                    List<SheetStub> stubs)
     {
+        // Make sure logical parts are available
+        if (score.getLogicalParts() == null) {
+            logger.info("Retrieving logical parts");
+            final Book theBook = score.getBook();
+            final List<SheetStub> theStubs = theBook.getValidSelectedStubs();
+            new ScoreReduction(score).reduce(theStubs);
+            theBook.setModified(true);
+        }
+
         int modifs = 0;
         SystemInfo prevSystem = null; // Last system of preceding page, if any
 
