@@ -14,5 +14,5 @@ understand correctly.
 We will thus speak of:
 * Physical containment: Book of Sheets,
 * Logical containment: Score of Pages,
-* Interpretations: Glyph and related Inters,
+* Interpretations: Glyphs and related Inters,
 * Relations between Inters: the Symbol Interpretation Graph (SIG).

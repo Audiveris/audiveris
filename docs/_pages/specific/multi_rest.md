@@ -36,20 +36,20 @@ In the example above, we have instances of multiple measure rests, on 5-line and
 Since release 5.3, with no need for a specific processing switch, these multiple rests are detected
 together with the related measure count number.
 
-### Edition
+### Editing
 
 If not detected, we can still assign or drag a multiple rest item from the shape palette
 in its ``Rests`` set:
 
 ![](../assets/images/multiple_rest_shape.png)
 
-A double-click on a multiple rest enters its fairly limited edition status: 
+A double-click on a multiple rest enters its fairly limited editing status: 
 - Vertically, the item remains stuck to the staff mid-line,
 - Horizontally, the mid handle can translate the whole item, while a side handle can resize it.
 
 ![](../assets/images/multiple_rest_edited.png)
 
-As for [bar repeats edition](bar_repeat.md#edition), the measure count item can be assigned
+As for [bar repeats editing](bar_repeat.md#editing), the measure count item can be assigned
 or dragged from the shape palette in its ``Time`` set.
 
 

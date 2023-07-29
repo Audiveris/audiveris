@@ -12,10 +12,10 @@ collectively refer to as "_OMR data_".
 In the advanced chapter, we describe more thoroughly how this OMR data is organized, can be
 persisted on disk (in a `.omr` file) and directly reused by Audiveris or other external programs.
 
-Right now, we are focused only on how to feed a music sequencer with music data it can easily import.  
+Right now, we are focused only on how to feed a music sequencer with music data it can easily import.
 And as of this writing, this is achieved by going through MusicXML-formatted data.
 
-We thus have to export OMR data as MusicXML data.  
+We thus have to export OMR data as MusicXML data.
 This can be done via pulldown menu `Book | Export Book...`:
 
 ![](../assets/images/book_export.png)
@@ -28,9 +28,9 @@ The default policy is to put all output files related to a given input file into
 In our concrete example, the book folder ("chula") will contain the export file ("chula.mxl").
 
 The default base folder location of all "book folders" depends on the operating system.
-For Windows OS, the default base folder is the "Audiveris" sub-folder of user's Documents folder.
+For Windows OS, the default base folder is the "Audiveris" sub-folder of the user's Documents folder.
 
-More details about available output policies and the default base folder are available in
+More details about available output policies and the default base folder are available in the
 [Standard folders](../folders/standard.md) chapter.
 
 Note that this export, from OMR to MusicXML,  is _lossy_, since a large amount of OMR
@@ -39,6 +39,6 @@ A `.omr` file can always be used to regenerate the `.mxl` export, but the revers
 
 {: .note}
 A good advice is to keep these `.omr` files
--- unless you are running out of disk space! :-) --
+-- unless we are running out of disk space! :-) --
 because they represent a valuable source of OMR information,
 suitable for training newer versions of Audiveris (more on this later).

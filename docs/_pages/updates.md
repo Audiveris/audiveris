@@ -27,9 +27,9 @@ Table of contents
 ### 5.3
 
 - User Interface
-  - Edition of staff geometry, at individual line and global staff levels
+  - Editing of staff geometry, at individual line and global staff levels
   - User management of score logical parts, and their mapping to sheet physical parts
-  - User edition of newly supported features (multi-measure rests, octave shifts, etc)
+  - User editing of newly supported features (multi-measure rests, octave shifts, etc)
 - Engine
   - Support for drums unpitched notation
   - Support of several musical font families for better template matching

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Part Merge
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 8
 ---
@@ -26,7 +26,7 @@ portion on image left side:
 
 So, this leads the OMR engine to detect a system with 3 parts.
 
-To fix this, we manually drag n' drop a brace inter from the shape palette to where there should be
+To fix this, we manually drag & drop a brace inter from the shape palette to where there should be
 a brace.
 
 Let's pay attention to hover over a staff of the target system.

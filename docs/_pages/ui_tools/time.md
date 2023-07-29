@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Time Signature
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 11
 ---
@@ -44,10 +44,10 @@ via the `Glyphs...` popup menu.
 This works for the whole signature (or for each signature part, in the case of a pair signature).
 
 We can also drag a chosen time signature from the shape palette and drop it at proper location,
-but this feature is available only for a _whole_ signature, we cannot drag n' drop time parts
+but this feature is available only for a _whole_ signature, we cannot drag & drop time parts
 of a pair.
 
-Moreover, in these two cases (glyph assignment and drag n' drop), please note that the choice is
+Moreover, in these two cases (glyph assignment and drag & drop), please note that the choice is
 _limited to the predefined shapes_ of the palette.
 
 ### Custom time signature

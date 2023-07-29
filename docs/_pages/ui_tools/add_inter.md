@@ -1,14 +1,14 @@
 ---
 layout: default
-title: Inter addition
-grand_parent: User Edition
+title: Inter Addition
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 1
 ---
-## Inter addition
+## Inter Addition
 {: .no_toc }
 
-In Audiveris data model, an Inter instance represents an interpretation, that is a candidate
+In the Audiveris data model, an Inter instance represents an interpretation, that is a candidate
 likely to become a musical symbol in the end.
 
 A manually created Inter is flagged as `MANUAL` and cannot be called into question by the
@@ -17,7 +17,7 @@ OMR engine, it is considered as certain.
 We can manually create an Inter instance from a selected glyph, by "assigning" this glyph the
 desired shape.
 If we have no suitable glyph available, we can still create an Inter from nothing, via a simple
-drag n' drop from the shape palette.
+drag & drop from the shape palette.
 
 In both cases, we may have to specify the target staff for the created inter if the context is not
 clear enough for the engine.
@@ -32,16 +32,16 @@ Table of contents
 
 ### Inter from underlying Glyph
 
-Inter creation from a glyph is the only case where a glyph is used in Audiveris manual edition.
+Inter creation from a glyph is the only case where a glyph is used in Audiveris manual editing.
 
 The set of black pixels of one or several selected glyphs can be transcribed as one inter,
 by specifying the target inter shape.
-The precise location and bounds of the new inter is defined by the underlying set of pixels.
+The precise location and bounds of the new inter are defined by the underlying set of pixels.
 
 {: .note }
-This method of selecting a glyph to "assign" an Inter on it, requires of course that a **suitable
+This method of selecting a glyph to "assign" an Inter to it, requires of course that a **suitable
 glyph** be available.
-In we can't find any such glyph, we'll have to drag n' drop the desired shape from
+In we can't find any such glyph, we'll have to drag & drop the desired shape from
 the shape palette instead.
 
 Also, knowing the target location is not always sufficient to detect the Inter **target staff**.
@@ -62,7 +62,8 @@ a transient glyph built on-the-fly from a multi-glyph selection.
 Chances are we'll find our desired shape in this top 5. If so, we just press the shape button.
 
 {: .note }
-The target shape must be handled by the glyph classifier (based on a neural-network).  
+In order to use this method, the target shape must be handled by the glyph classifier
+(based on a neural-network).  
 This is **NOT** the case for the following shapes:    
     - **Lines** (staff lines, ledgers, barlines, stems, slurs, endings) use ad-hoc methods,  
     - **Beams** use image morphological closing,  
@@ -75,7 +76,7 @@ that is ***without taking the neighborhood into account***.
 This means that:  
     - a dot (augmentation, staccato, ...) will be at best recognized as `DOT_set`,  
     - and a half or whole rest as `HW_REST_set`.  
-For these 2 cases -- and only for them -- the glyph classifier is not precise enough.  
+For these two cases -- and only for them -- the glyph classifier is not precise enough.  
 We'll have to explicitly select a more specific target shape, via the glyph popup menu
 or via the shape palette.
 
@@ -107,16 +108,16 @@ Nothing can be dragged from this catalog, we must first select a shape set:
 
 ![](../assets/images/shape_board.png)
 
-#### Entering shape set
+#### Entering a shape set
 Pressing a shape set button replaces the catalog view by a specific palette dedicated to
 the selected shape set.
-For example, pressing on the clefs set button gives:
+For example, pressing on the ``ClefsAndShifts`` set button gives:
 
 ![](../assets/images/shapes_sub.png)
 
 Within a set, a shape can be:
 
-* Assigned (by left double-click) if a glyph has been selected,
+* Assigned (by a left double-click) if a glyph has been selected,
 * Or dragged and dropped to a target location.
 
 ![](../assets/images/drag-n-drop.png)
@@ -127,8 +128,8 @@ The last staff we have been hovering over is selected as our current target staf
 
 Before we "select" a staff, the dragged shape "ghost" is displayed isolated in dark-gray.
 
-Once a staff has been "selected", a thin vertical red segment goes from shape center to
-the target staff middle line, the shape turns into Inter selected color, additional objects
+Once a staff has been "selected", a thin vertical red segment goes from the shape center to
+the target staff middle line, the shape turns into the Inter selected color, additional objects
 can appear -- such as intermediate ledgers or potential relations with nearby inters --,
 it may get snapped according to staff lines, etc.
 
@@ -137,16 +138,16 @@ it may get snapped according to staff lines, etc.
 | ![](../assets/images/without_staff.png) | ![](../assets/images/with_staff.png) |
 
 We can drop the shape only when a staff target has been selected.
-If not, the drag n' drop action is abandoned.
+If not, the drag & drop action is abandoned.
 
 #### Case of compound shapes
 
-Note the HeadsAndDot set now contains four new shapes located at the end.
+Note the ``HeadsAndDot`` set now contains four new shapes located at the end.
 
 ![](../assets/images/compound_notes.png)
 
 These are quarter notes and half notes, with stem either up or down.
-There are called "compound" because they combine two shapes: head shape and stem shape.
+There are called "compound" because they combine two shapes: a head shape and a stem shape.
 
 They are generally more convenient to insert as a whole, the head can still be snapped on staff line
 or ledger and the stem can still be automatically linked to beams nearby.
@@ -157,13 +158,13 @@ Once dropped, such a compound shape is replaced by two separate Inters
 We can then later edit each "part" separately, for example to modify the stem length.
 And we can add flags to the stem.
 
-#### Exiting shape set
+#### Exiting a shape set
 To leave the specific set palette and go back to the catalog view, we can:
 
-* Press the "triangle-up" sign located on the left side of the set palette,
+* Click on the "triangle-up" sign located on the left side of the set palette,
 
   ![](../assets/images/family_exit.png)
-* Or type the `ESC` key on the keyboard.
+* Or press the `ESC` key on the keyboard.
 
 ### Shape cache
 
@@ -181,40 +182,41 @@ And if we want to add many Inters of the same shape, we can consider using the
 ### Repetitive input
 
 If we have numerous Inters of the **same shape** to add in a row, a convenient way is to switch
-temporarily to the "Repetitive Input" mode.
+temporarily to the "_Repetitive Input_" mode.
 
-We click on the toolbar icon or select menu item `Sheet | Toggle Repetitive Input` or use shortcut
-`Ctrl+Shift+N` and this mode is now set on.
+We click on the toolbar icon or select the menu item `Sheet | Toggle Repetitive Input`
+or use the shortcut `Ctrl+Shift+N` and this mode is now set on.
 
 ![](../assets/images/repetitive_input.png)
 
 From that point on, pressing with the left-button anywhere on the sheet will add a new Inter
 (with the latest shape used) at the designated location.
-We can shift the inter location precisely, then release the mouse when we are satisfied.
+We can shift the Inter location precisely, then release the mouse when we are satisfied.
 
 If we press the left-button again, yet another instance will be created, and so on.
 That's the rule, so let's mind our mouse press actions!
 
-The latest Inter inserted is left in "Inter edition mode" with its edition handle(s) displayed.
-We can press the `Enter` key to finish this edition,
+The latest Inter inserted is left in "Inter editing mode" with its editing handle(s) displayed.
+We can press the `Enter` key to finish this edit,
 or click somewhere else to create another Inter.
 
-This repetitive mode is meant for simple shapes -- like a head, a rest, an accidental, etc --
+This repetitive mode is meant for simple shapes -- like a head, a rest, an accidental, etc. --
 that don't require any further resizing.
 
 But what if we really need to resize the inserted Inter?
-We simply set the repetitive mode off, so that we can press and drag the inter edition handles.
+We simply set the repetitive mode off, so that we can press and drag the inter editing handles.
 Then we set the repetitive mode on again if so desired.
 
-To exit this rather specific mode, we toggle the mode (via toolbar icon or menu item or shortcut).
+To exit this rather specific mode, we toggle the mode
+(via the toolbar icon, the menu item or the shortcut).
 
 ### Relations with other inters
 
-Key relation(s) with the nearby inter(s), if any, will be updated automatically as we create
--- or later edit -- the inter, but only as long as the required geometrical relationships can apply
+Key relation(s) with the nearby Inter(s), if any, will be updated automatically as we create
+-- or later edit -- the Inter, but only as long as the required geometrical relationships can apply
 (for example, as long as an accidental is sufficiently close to a note head on its right side).
 
-If relation constraints are not met, we will have to set the relation manually afterwards.
+If the relation constraints are not met, we will have to set the relation manually afterwards.
 
 ### Shortcuts for inter addition
 
@@ -222,19 +224,19 @@ In order to make long editing sessions easier, there are a few shortcuts to assi
 without having our hands leave the keyboard.
 
 They all work with a sequence of 2 strokes:
-1. First stroke selects a _set_ of shapes.   
+1. The first stroke selects a _set_ of shapes.   
    The selected set content appears in the right column.
-2. Second stroke selects a _shape_ within the current set.  
+2. The second stroke selects a _shape_ within the current set.  
    The selected shape appears first in the shape cache.
 
-Example: Let press `h` (heads) then `b` (black) and we get the `HeadsAndDot` set content displayed
+Example: Let's press `h` (heads) then `b` (black) and we get the `HeadsAndDot` set content displayed
 and the black head shape in the cache.
 
 ![](../assets/images/short-cut-head-black.png)
 
 If we had a glyph selected beforehand, this glyph is assigned the selected shape.
 If not, no glyph gets assigned, but the shape cache now presents our selected shape in first
-position, ready for further use (via double-click, drag n' drop or repetitive input).
+position, ready for further use (via double-click, drag & drop or repetitive input).
 
 ***
 

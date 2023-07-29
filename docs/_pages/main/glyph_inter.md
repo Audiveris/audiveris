@@ -9,7 +9,7 @@ nav_order: 3
 
 #### Glyph
 
-A **Glyph** is nothing more than an immutable set of foreground (black) pixels, precisely located
+A **Glyph** is nothing more than a set of foreground (black) pixels
 in a sheet binary image.
 
 It carries no shape.
@@ -30,7 +30,7 @@ There may be several reasonable interpretations for a given glyph and, in many c
 the OMR engine cannot immediately decide on the right interpretation among these mutually
 exclusive interpretations.
 This decision will then be postponed until later down in the OMR process,
-when additional information (such as other Inter instances located nearby) gets available
+when additional information (such as other Inter instances located nearby) becomes available
 and helps clarify the configuration.
 
 As opposed to a Glyph, an Inter belongs to a system and is often related to a staff.

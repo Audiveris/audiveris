@@ -1,20 +1,21 @@
 ---
 layout: default
-title: Sheets Selection
+title: Sheet Selection
 grand_parent: Main Features
 parent: Book Portions
 nav_order: 2
 ---
 
-## Sheets Selection
+## Sheet Selection
 
-An action launched at sheet level processes only that sheet.    
-An action launched at book level, processes by default all the (valid) sheets of the book.
+An action launched at the sheet level processes only that sheet.    
+An action launched at the book level, processes by default all the (valid) sheets of the book.
 And this may be too much when what we want is to work only on a portion of the book
 (for example to print or listen to just a movement or a few selected sheets).
 
-We can specify a sheets selection, via pull-down menu `Book | Select sheets` which opens a
-selection dialog as shown below:
+We can specify a sheet selection, via the pull-down menu `Book | Select sheets` which opens a
+selection dialog based on sheet IDs as shown below:
+(The highest sheet ID in the current book is recalled)
 
 |  Selection  |   Meaning    |
 | ----------- | ------------ |
@@ -25,15 +26,15 @@ Remarks:
 
 - This is only a _specification_.
   To be really processed, each selected sheet must also be _valid_.
-- A sheets specification must be written in a strict increasing order.
+- A sheet specification must be written in a strict increasing order.
 - Specifications "1,4-10" and "1,4,5,6,7,8,9,10" are equivalent.
 - Since there is a gap in this example (sheets 2 and 3 are not selected), exporting the book
   to disk or plugin will result in at least two separate movements, one for sheet 1 and one
   for sheets 4-10.
 - If the specification string is blank or null, all sheets are selected by default. [^empty_spec]
-- A sheets specification can also be provided in batch via the `-sheets` argument on command line.
-- The latest sheets specification is persisted in book `.omr` project file
-  when specified via the GUI dialog but not when specified via the CLI in batch.
+- A sheet specification can also be provided in batch via the `-sheets` argument on the command line interface.
+- The latest sheet specification is persisted in the book `.omr` project file
+  when specified via the GUI dialog but not when specified via the command line interface in batch.
 
 ---
 

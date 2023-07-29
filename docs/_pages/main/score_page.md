@@ -14,7 +14,7 @@ several systems (played one after the other).
 A system may be left-indented with respect to the other systems in the image, to indicate
 the beginning of a movement.
 A non-indented system is assumed to belong to the same movement as the previous system
-(located just above in current sheet or at the end of the previous sheet).
+(located just above in the current sheet or at the end of the previous sheet).
 
 In Audiveris, this logical containment is modeled as one instance of **Score** per movement
 (since "Score" is the word used by MusicXML), the score containing a sequence of one or several
@@ -53,7 +53,8 @@ In the vast majority of cases, there is exactly one page per sheet.
 The exceptions are as follows:
 1. When an _indented system_ appears anywhere in a sheet,
   it indicates the beginning of a new movement/score.  
-  This sheet, as in the picture above, then contains two pages or more.
+  This sheet, as in the picture above, then contains two pages or more,
+  if the indented system is not the first one in the sheet.
 2. When a sheet is _invalid_ (i.e. containing no music), it contains no page.  
   Moreover, an invalid sheet is considered as a _score break_:
    - It ends the last score in the previous valid sheet, if any.

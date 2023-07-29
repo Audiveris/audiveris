@@ -30,8 +30,8 @@ Table of contents
  (higher numbers may work, to be confirmed).
   Audiveris {{ site.audiveris_version }} runs only on 64-bit architectures.
 
-* Tesseract OCR: Tesseract *libraries* are automatically pulled as Gradle dependencies,
-but you will need Tesseract *language files* for this OCR to work properly.  
+* Tesseract OCR: The Tesseract *libraries* are automatically pulled as Gradle dependencies,
+but you will need the Tesseract *language files* for this OCR to work properly.  
 Please check [OCR languages](./languages.md) section.
 
 * [FreeType library][freetype]: Unix-like platforms (including MacOS) need FreeType in your $PATH
@@ -39,7 +39,7 @@ to handle those specific PDFs that contain vector graphics.
 Fortunately, every known Unix-like OS distribution already contains a package for FreeType.
 
 ### Download, build and run
-To download Audiveris project, use the following command in a directory of your choice:
+To download the Audiveris project, use the following command in a directory of your choice:
 
 ```sh
 git clone https://github.com/Audiveris/audiveris.git
@@ -84,7 +84,7 @@ You can run the software, as GUI tool, via the command:
 gradlew.bat run
 ```
 
-Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scene,
+Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scenes,
 takes care of getting and launching the proper gradle version.
 
 ### Alternative run

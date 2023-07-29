@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Can't Take My Eyes Off of You
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Examples
 nav_order: 2
 ---
@@ -25,7 +25,7 @@ Main UI actions:
 - Customization of drum-set mapping
 - Fix missing rests in original input
 - A few symbols to fix
-- Edition of logical parts
+- Editing of logical parts
 
 ---
 Table of contents
@@ -128,7 +128,7 @@ Measure 3: We observe a missing whole rest at the beginning of measure.
 
 Measure 4: we can see the input lacks 2 quarter rests. 
 This is especially obvious when compared with measure 3.
-- So, we use a drag n' drop to manually insert these missing quarter rests.
+- So, we use a drag & drop to manually insert these missing quarter rests.
 
 Measures 7 and 8: They are identical to measures 3 and 4, they need identical corrections.
 
@@ -228,10 +228,10 @@ That is, for OMR engine we have 4 separate logical parts:
 - Hand Clap
 
 And indeed, if within Audiveris we open the
-[logical parts editor](../../specific/logical_parts.md#edition-of-logical-parts),
+[logical parts editor](../../specific/logical_parts.md#editing-of-logical-parts),
 we get this dialog:
 
-![](./logicals_edition.png)
+![](./logicals_editing.png)
 
 For the OMR engine limited capabilities, there is no way to detect that "D. Set" and "Drumset"
 refer to the same logical part.

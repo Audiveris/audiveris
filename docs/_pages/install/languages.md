@@ -48,16 +48,16 @@ So, these are the language data files that Audiveris requires.
 
 ### Data location
 
-At starting time, Audiveris tries to initialize Tesseract library with a `tessdata` folder:
-  1. It first checks the location defined by `TESSDATA_PREFIX` environment variable.
-  2. If not found there, it tries Tesseract tessdata default location according to the OS,
+At starting time, Audiveris tries to initialize the Tesseract library with a `tessdata` folder:
+  1. It first checks the location defined by the `TESSDATA_PREFIX` environment variable.
+  2. If not found there, it tries the Tesseract tessdata default location according to the OS,
   which for Windows can be for example `"C:\Program Files\tesseract-ocr\tessdata"`.
 
 If in doubt, we recommend the following actions:
 1. Choose or create a specific folder, named ``tessdata`` for clarity.
 2. Download a few language files (at least ``eng.traineddata`` file) from [Tesseract tessdata] page
 to your specific folder.
-3. Define `TESSDATA_PREFIX` environment variable to point to your specific folder.
+3. Define the `TESSDATA_PREFIX` environment variable to point to your specific folder.
 
 For illustration purpose, here is a personal configuration:
 - I have created a ``"tessdata"`` sub-folder in Audiveris user ``config`` folder.
@@ -76,24 +76,24 @@ total 66M
 ```
 
 The About dialog, launched from the ``Help | About`` pulldown menu, displays key information
-about OCR engine version and OCR tessdata folder:
+about the OCR engine version and OCR tessdata folder:
 
 ![](../assets/images/about_ocr.png)
 
 ### Languages selection
 
-At runtime, we can specify which languages should be tried by the OCR software.  
+At runtime, you can specify which languages should be tried by the OCR software.  
 This is done via a language specification string, a plus-separated list of language names:
 
 - The easiest way is to define this language specification interactively.  
-Using the `Book | Set Book Parameters` menu, we can make specifications at global level,
-book level and even individual sheet level.  
-Depending upon the language files present in our local ``tessdata`` folder,
-we will be presented the list of  languages available for selection.
+Using the `Book | Set Book Parameters` menu, you can make specifications
+at the global level, book level and even individual sheet level.  
+Depending upon the language files present in your local ``tessdata`` folder,
+you will be presented with the list of  languages available for selection.
 
 - The default (global) specification is determined by the application constant
 `org.audiveris.omr.text.Language.defaultSpecification`, whose initial value is `deu+eng+fra`.  
-Thus, we can also modify this default directly by changing the constant value:
+Thus, you can also modify this default directly by changing the constant value:
   - either interactively (using `Tools | Options` menu)
   - or in batch (using something like
     `-option org.audiveris.omr.text.Language.defaultSpecification=ita+eng`).  

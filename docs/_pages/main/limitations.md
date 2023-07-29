@@ -12,7 +12,7 @@ These are "known limitations", which should be addressed in future releases.
 
 It is important that the end user be aware of these cases to avoid wasting time on them
 with the current release.
-Apart from these cases, you can fill a bug report or a request for enhancement on
+Apart from these cases, you can file a bug report or a request for enhancement on
 [https://github.com/Audiveris/audiveris/issues](https://github.com/Audiveris/audiveris/issues).
 
 ---
@@ -29,37 +29,37 @@ Table of contents
 
 ![](../assets/images/hybrid_key.png)
 
-In current data model, a key signature is assumed to contain only sharp signs or only flat signs.
-There is yet no room in them for natural signs.
+In the current data model, a key signature is assumed to contain only sharp signs or only flat signs.
+There is no room in them yet for natural signs.
 
-Such natural signs are just "curtesy" signs for the reader, and can be ignored by OMR.
+Such natural signs are just "courtesy" signs for the reader, and can be ignored by OMR.
 
 Note however that, since the current engine expects sharps-only or flats-only signatures,
 the simple presence of natural signs will likely impede correct key recognition.
 In this case, we will have to manually enter the correct key (without the naturals).
 
 Since 5.3, we can manually insert a natural-only key signature, a kind of "cancel key".
-See this possibility detailed in [Naturals section](../ui_tools/key.md#naturals).
+See this possibility detailed in the [Naturals section](../ui_tools/key.md#naturals).
 
 ### Key signature change
 
 ![](../assets/images/curtesy_key.png)
 
-A key signature appears generally at the beginning of a staff, within what Audiveris calls the staff
+A key signature generally appears at the beginning of a staff, within what Audiveris calls the staff
 "header" (a sequence of: clef, optional key signature, optional time signature).
-Generally, the engine correctly handles a key signature in header, simply because it knows
+Generally, the engine correctly handles a key signature in the header, simply because it knows
 precisely where to look.
 
 But later down the staff, a key change may appear.
-And this "new" key is not yet handled by the engine.
+And this new key is not yet handled by the engine.
 
-Such change often appear in a "curtesy measure", located at the end of the staff and containing no
+Such a change often appear in a "courtesy measure", located at the end of the staff and containing no
 music note.
-The purpose of a curtesy measure is simply to warn the human reader that a new key will occur at
+The purpose of a courtesy measure is simply to warn the human reader that a new key will occur at
 the next system start.
 It is thus harmless for the OMR engine to ignore this warning.
 
-Apart from this curtesy case, the user may have to manually enter the missing key change on every
+Apart from this courtesy case, the user may have to manually enter the missing key change on every
 staff.
 
 ### Opposed Stems
@@ -82,18 +82,18 @@ Recognition of chord names can still be impeded by the presence of sharp (``♯`
 characters which Tesseract OCR cannot handle correctly.
 
 As a workaround, we can manually replace them by number (``#``) and lowercase ``b`` characters.
-But the real solution should be brought by training Tesseract OCR on these embedded alteration
+But the real solution should come from the training of Tesseract OCR on these embedded alteration
 signs.
 
-See further description in [Text Chord Name](../ui_tools/text.md#chord-name) section.
+See further description in the [Text Chord Name](../ui_tools/text.md#chord-name) section.
 
 ### Tuplets
 
-Tuplets other than 3 and 6 tuplets are not supported, even manually.
+Tuplets other than triplets and 6-tuplets are not supported, even manually.
 
 ### Roman numeral
 
-This represents chords using Roman numerals.
+Some input files represent chords using Roman numerals.
 
-It is recognized, but not yet exported to MusicXML.
+These are recognized, but not yet exported to MusicXML.
 

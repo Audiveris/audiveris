@@ -16,7 +16,7 @@ Table of contents
 ---
 
 ### Global Book Workflow
-When working on a book, Audiveris V5 OMR engine can process any sheet of the book independently of
+When working on a book, the Audiveris V5 OMR engine can process any sheet of the book independently of
 the others.
 Only the final gathering of sheets results, which comparatively is a very fast action,
 is performed at book level.

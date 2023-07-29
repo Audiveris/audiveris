@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Tips and Tricks
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 15
 ---
@@ -9,7 +9,7 @@ nav_order: 15
 {: .no_toc }
 
 This section gathers a few things based on concrete user experience.
-These little tricks should save us time and efforts in our edition sessions.
+These little tricks should save us time and efforts in our editing sessions.
 
 ---
 Table of contents

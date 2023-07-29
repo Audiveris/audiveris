@@ -75,7 +75,7 @@ Each physical part is prefixed with the name of its corresponding logical part.
     - (blank) since we have yet no name for this logical part
     - PIANO (displayed in small size with a slight vertical offset)
 
-### Edition of logical parts
+### Editing of logical parts
 
 Still via a right-click in the score area, we can open an editor on logical parts:  
 ![](../assets/images/edit_logicals.png)

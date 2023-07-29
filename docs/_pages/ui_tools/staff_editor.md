@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Staff Edition
-grand_parent: User Edition
+title: Staff Editing
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 6
 ---
-## Staff Edition
+## Staff Editing
 {: .no_toc }
 
 During `GRID` step, the OMR engine strives to detect sequences of equally spaced,
@@ -19,10 +19,10 @@ Generally, the engine can interpolate -- or even extrapolate -- the holes found 
 with such broken filaments.
 
 If the engine result is not satisfactory, we can manually correct these staves via staff
-edition, which is provided in two different modes: `Global` mode and `Lines` mode.
+editing, which is provided in two different modes: `Global` mode and `Lines` mode.
 The former operates on the staff as a whole, the latter on any line separately.
 
-To enter staff edition, we make a right-click within a staff area, in the popup menu select the
+To enter staff editing, we make a right-click within a staff area, in the popup menu select the
 `Staff#n...` sub-menu and then either `Edit staff` or `Edit lines` item.
 
 ---
@@ -49,7 +49,7 @@ be considered as parts of the symbol to recognize, here a C clef.
 This was certainly due to a wrong extrapolation of staff lines, which is more visible on the
 right-side picture. The staff lines, as detected, are not evenly spaced near the barline.
 
-To fix this, preferably right after `GRID` step, we enter the staff edition in `lines` mode.
+To fix this, preferably right after `GRID` step, we enter the staff editing in `lines` mode.
 ![](../assets/images/staff_lines_handles.png)
 
 Each line of the staff now exhibits its own sequence of handles, which we can press and drag to modify
@@ -61,7 +61,7 @@ We can notice that the pink sections disappear when they get crossed by a staff 
 
 ![](../assets/images/staff_lines_ok.png)
 
-Clicking outside of any handle completes the edition.  
+Clicking outside of any handle completes the editing.  
 We can always undo/redo the operation.
 
 In short, this mode is meant to finely adjust the vertical location of any line portion.
@@ -70,7 +70,7 @@ If we want to move the staff limits horizontally, then we need to use the `globa
 {: .note }
 The number of handles can vary from one line to the other, as we can see on the picture.
 This number depends on how "wavy" was the line detected by the engine.
-It has no negative impact on the edition capabilities.
+It has no negative impact on the editing capabilities.
 
 ### Global mode
 
@@ -87,7 +87,7 @@ could not detect enough line portions.
 So much that many pink sections are still visible where staff lines should be, and that the staff
 got even truncated on its right side.
 
-To fix this, we enter the staff edition in `global` mode.
+To fix this, we enter the staff editing in `global` mode.
 
 ![](../assets/images/staff_handles.png)
 

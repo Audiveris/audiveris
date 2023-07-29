@@ -20,12 +20,12 @@ Table of contents
 
 ## Intended audience
 
-This handbook is meant for Audiveris end-user.
-To ease the reading for a new comer as for a more advanced user, it is organized
+This handbook is meant for the Audiveris end-user.
+To ease the reading for a newcomer as for a more advanced user, it is organized
 as a progressive sequence of chapters.
 
-It is just a user manual, a true developer documentation is still to be written.
-Some material is already made available, through
+It is just a user manual; a true developer documentation is still to be written.
+Some material is already made available, through the
 Audiveris [Wiki](https://github.com/Audiveris/audiveris/wiki)
 and through the description of [.omr file format](./outputs/omr.md), to ease the software
 learning curve for any potential developer.
@@ -53,17 +53,17 @@ standard MusicXML format.
 * [OMR](https://github.com/Audiveris/audiveris/wiki/Project-Structure) is the
 Audiveris specific format, a documented open source format based on XML.
 * [MusicXML](http://usermanuals.musicxml.com/MusicXML/MusicXML.htm) is  a *de facto* standard.
-Is has been designed for score interchange and is today
+It has been designed for score interchange and is today
 supported as input/output by almost every music notation program.
 
-Not any kind of sheet music can be handled. Audiveris engine has been designed
+Not every kind of sheet music can be handled. Audiveris engine has been designed
 to process scores written in the _Common Western Music Notation_ (CWMN)
 with the following limitations:
 * Handwritten scores aren't supported (only printed scores are),
 * Only common musical symbols are supported.
 
-Because the accuracy of OMR engine is still far from perfection,
-Audiveris application provides a graphical user interface specifically focused
+Because the accuracy of the OMR engine is still far from perfection,
+the Audiveris application provides a graphical user interface specifically focused
 on quick verification and manual correction of the OMR outputs.
 
 External sophisticated music editors, such as MuseScore or Finale, can be used on
@@ -77,7 +77,7 @@ to ease data transfer from Audiveris to these external editors.
 How to install or build the program.
 
 1. [Quick tour](./quick/README.md):
-A very early tour, just to introduce a minimal usage of the software.
+A very brief tour, just to introduce a minimal usage of the software.
 
 1. [Main features](./main/README.md):
 Thorough description of software main features.

@@ -9,9 +9,9 @@ nav_order: 1
 
 In the sheet panel we can choose between 3 display modes, that are effective in the **Data** tab:
 
-* ![](../assets/images/ModePhysical.png) The **_physical_** mode displays in background the sheet
+* ![](../assets/images/ModePhysical.png) The **_physical_** mode displays in the background the sheet
 sections of pixels (pale blue for vertical sections, pale pink for horizontal sections)
-and in foreground the current detected inters colorized according to their recognized shape
+and in the foreground the current detected inters colorized according to their recognized shape
 and quality grade.
 * ![](../assets/images/ModeCombined.png) The **_combined_** mode is a combination of the physical
   and logical layers.  

@@ -42,7 +42,7 @@ See [Drums](../specific/drums.md) chapter for further details.
 
 From any shape palette we can:
 * Assign a shape, via a double-click on proper shape button, to the current glyph.
-* Initiate a drag n' drop action, by pressing and dragging a proper shape button to the desired
+* Initiate a drag & drop action, by pressing and dragging a proper shape button to the desired
 location in sheet.
 
 To leave the current palette and return to the global shape set panel,

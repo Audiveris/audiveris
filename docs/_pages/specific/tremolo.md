@@ -30,5 +30,5 @@ tremolo from the shape palette, using the ``BeamsEtc`` shape set.
 
 ![](../assets/images/tremolo_shapes.png)
 
-Tremolo edition is limited to translations of the item, which will snap on compatible
+Tremolo editing is limited to translations of the item, which will snap on compatible
 chords nearby.

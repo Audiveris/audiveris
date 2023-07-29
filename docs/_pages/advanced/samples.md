@@ -125,7 +125,7 @@ We can now select the shapes of interest.
   panel displays the selected sample in its sheet context.  
   This can be helpful for visual checking.
 
-#### Sample Edition
+#### Sample Editing
 
 The selected sample can be:
 * **Removed** from the repository.  

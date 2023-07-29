@@ -42,7 +42,7 @@ It should correspond to the count of slashes in the repeat sign.
 
 ![](../assets/images/bar_repeat_2.png)
 
-### Edition
+### Editing
 
 If needed, we can manually assign or drag these signs from the shape palette,
 using the three symbols available in ``Barlines`` set.
