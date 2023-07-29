@@ -16,8 +16,10 @@ The Audiveris main window is composed of 3 panels:
 This is the large panel on the left side.  
 - The **Gray** tab, when available, presents the original image using gray values.
 - The **Binary** tab presents the input image binarized into black and white colors.
-- The **Data** tab presents the objects (sections, glyphs and inters) extracted from the image.  
-In this Data tab, staff lines are drawn as thin lines.
+- The **Data** tab presents the objects
+([sections](), [glyphs](./glyph_inter.md#glyph) and
+[inters](./glyph_inter.md#inter)) extracted from the image.
+In this Data tab, the staff lines are drawn as thin lines.
 
 All tabs, except the Data tab, can be manually closed.
 Most can be re-opened via the `Sheet` pulldown menu.
@@ -27,12 +29,12 @@ Most can be re-opened via the `Sheet` pulldown menu.
 The right panel is a vertical set of boards.
 They provide information and editing functions.
 
-Only basic boards are displayed by default, other ones are hidden.
-A right click in this column allows to hide or display any available board.
+Only basic boards are displayed by default, others are hidden.
+A right click in this column allows hiding or displaying any available board.
 
 ### Events
 
 The lower left panel is a log of the main events that occurred so far.
 
 More details are available in the Audiveris log file
-(precise path to the log file is displayed at the top of this events panel)
+(the precise path to the log file is displayed at the top of this events panel)

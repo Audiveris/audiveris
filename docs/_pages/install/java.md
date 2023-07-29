@@ -22,14 +22,14 @@ which is a superset of a JRE.
 
 Make sure to install **Java version {{ site.java_version }}**
 (which is today the latest LTS - Long Term Support - version) for instance from
-[https://www.oracle.com/fr/java/technologies/downloads/](https://www.oracle.com/fr/java/technologies/downloads/)
+[https://www.oracle.com/java/technologies/downloads/](https://www.oracle.com/java/technologies/downloads/)
 
 Audiveris {{ site.audiveris_version}} will not work with older Java versions.  
-It may work with newer versions. This section will be updated as new results get available.
+It may work with newer versions. This section will be updated as new results become available.
 
 ### 64-bit architecture
 
-Latest Audiveris version ({{ site.audiveris_version}})
+The latest Audiveris version ({{ site.audiveris_version}})
 uses Java {{ site.java_version }}.  
 Starting with Java 10, Oracle now provides Java environments only for 64-bit architecture.
 

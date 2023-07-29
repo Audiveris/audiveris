@@ -17,7 +17,7 @@ But handling cases of dozens or hundreds of score images may require more flexib
 - Imagine we have already worked on a long book, transcribing and correcting most of it, just to
   discover that one input sheet would definitely require some image pre-processing or even a new
   scan.   
-  In such case, we would appreciate the ability to insert or replace a few sheets in the book at hand
+  In such a case, we would appreciate the ability to insert or replace a few sheets in the book at hand
   while keeping the other sheets intact, especially the ones already transcribed.
 
 In this chapter, we will discover that Audiveris has now departed from its initial approach of

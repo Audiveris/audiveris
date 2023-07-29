@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Key Signature
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 10
 ---
@@ -36,7 +36,7 @@ For example, let's insert a 2-sharp key:
 
 Note the two sharp signs are located on F and C steps respectively, and they can move only
 horizontally until we release the mouse.  
-Once dropped, we can still set the key into edition mode and shift again the inserted key.
+Once dropped, we can still set the key into editing mode and shift again the inserted key.
 
 ### Naturals
 

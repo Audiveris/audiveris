@@ -42,7 +42,7 @@ Here are two examples of such histograms:
 new in 5.3
 {: .label .label-yellow }
 
-Audiveris OMR engine, in its BEAMS step, makes a pretty good processing of beams
+The Audiveris OMR engine, in its BEAMS step, makes a pretty good processing of beams
 -- when it knows the typical beam thickness in the sheet at hand.
 
 A problem arises if the sheet at hand contains only a couple of beams:
@@ -56,15 +56,15 @@ and processed in the sheet.
 
 #### Manual beam correction
 
-After SCALE step, but before BEAMS step, we can manually modify the beam thickness value
+After the SCALE step, but before the BEAMS step, we can manually modify the beam thickness value
 as computed by the OMR engine.
 
 We can do this using the ``Sheet | Set Scaling Data`` pull-down menu.
 
 Initially, all rows appear in gray, and the data values, if any, are displayed on the right.
 
-* To modify a data, first select the row by checking the box on left, the row turns black.  
-  You can then modify the data value.
+* To modify a data, we first select the row by checking the box on the left; the row turns black.  
+  We can then modify the data value.
 * Deselecting a row resets the data to its initial value.
 * Finally, pressing the `OK` button commits the modified values and closes the dialog.
 
@@ -91,7 +91,7 @@ We can do this using the ``Book | SetBook Parameters`` pull-down menu:
 Here, we have chosen the whole book tab, selected beam specification and entered a thickness value
 as a number of pixels.
 
-Since the specification is made at book level, it applies by default to all sheets in book.
+Since the specification is made at book level, it applies by default to all sheets in the book.
 This is generally a good strategy, since often all sheets in a book share the same scale
 and the same beam thickness.
 
@@ -107,7 +107,7 @@ It can be used at book and/or sheet levels.
     any reload or any processing restart from scratch.
 - Cons:
   - It is only a *specification*, to be used by any subsequent SCALE step.  
-    Hence, to be effectively applied, the SCALE step must be [re-]performed.
+    Hence, to be effectively applied, the SCALE step must be performed (or reperformed).
     
 ##### Batch mode
 
@@ -119,8 +119,8 @@ command line arguments, using an option like:
 As opposed to the interactive mode, this batch specification is *not* stored within the book
 project file.  
 And we must keep in mind the fact that, in batch, this beam thickness specification applies to
-*all* books processed by the current CLI command.
+*all* books processed by the current command entered on the command line interface.
 
 Similarly, we can notice that there is no beam specification available in the ``Default`` tab
-of ``Book Parameters`` dialog.
+of the ``Book Parameters`` dialog.
 Otherwise this hard-coded pixel specification would apply for all books processed from now on...

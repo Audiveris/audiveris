@@ -75,9 +75,9 @@ V 5 |Ch#2347 |Ch#2348 |Ch#2349 |Ch#2350 |Ch#2351 =========|1/2
 This sub-menu appears if current location is within a staff height
 (even beyond staff horizontal limits).
 
-We can edit the whole staff or one of its lines (see [Staff Edition](../ui_tools/staff_editor.md)):
-- **Edit staff**: Manual edition of all staff lines as a whole
-- **Edit lines**: Manual edition of one staff line in isolation
+We can edit the whole staff or one of its lines (see [Staff Editing](../ui_tools/staff_editor.md)):
+- **Edit staff**: Manual editing of all staff lines as a whole
+- **Edit lines**: Manual editing of one staff line in isolation
 
 We can also display vertical projections of whole staff and of staff header,
 provided that ``PLOTS`` advanced topic has been selected.

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: O lux beata Trinitas
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Examples
 nav_order: 1
 ---
@@ -9,7 +9,7 @@ nav_order: 1
 {: .no_toc }
 
 {: .note }
-You will notice that description of user edition is very detailed in this example, perhaps too much.
+You will notice that description of user editing is very detailed in this example, perhaps too much.
 This was done on purpose, so that the session content could be used as introductory material.
 
 The case at hand describes the processing of an old office hymn available on IMSLP site.
@@ -216,7 +216,7 @@ To delete:
 
 Inserting 4/2 signature is more complex, since this is not one of the predefined time signatures:
 1. From the shape palette, we select the "Times" family (the family figured by a 4/4 sign) and
-   from this shape family, we drag n' drop the custom (0/0) time signature in correct location.
+   from this shape family, we drag & drop the custom (0/0) time signature in correct location.
 2. Then in Inter board, we replace the custom 0/0 value by 4/2 value and press `Enter`.
 
 We do this for both common-cut sigs on first measure of sheet #1.
@@ -839,7 +839,7 @@ So a workaround is to actually *shift* this badly located rest to the left, at t
 the measure.   
 To do so, via a double-click, we put the symbol into edit mode, and drag its handle to the left.
 
-| Shift edition | End result |
+| Shift editing | End result |
 | :---: | :---: |
 |![](sheet5_m17_1.png)   | ![](sheet5_m17_2.png)  |
 
@@ -888,7 +888,7 @@ Here below are all the textual elements found in this book
 | _Versus primus._ | _Versusprimus._ | Latin, OCR merged as one word |
 | _Versus secundus._ | _Versus_ secunafus. | Latin, OCR mistake on "secundus" |
 | _Versus tertius._ | _Versus_ tertius. | Latin |
-| © Les Éditions Outremontaises - 2018 | © Les Editions Outremontaises - 2018 | French, OCR took 'É' for 'E'  |
+| © Les Éditions Outremontaises - 2018 | © Les Editings Outremontaises - 2018 | French, OCR took 'É' for 'E'  |
 
 If we except the book title "O lux beata Trinitas" which OCR totally failed to recognize,
 probably because of its exotic font, raw Tesseract OCR results are pretty good.
@@ -902,7 +902,7 @@ not its **font** characteristics (such as font name, italic, bold, etc).
 
 ![](trinitas_word.png)
 
-For manual text edition, text **content** is modified at _word_ level
+For manual text editing, text **content** is modified at _word_ level
 whereas text **role** is modified at _sentence_ level.
 
 In this book, nearly all sentences got their role correctly assigned by the OMR engine heuristics.

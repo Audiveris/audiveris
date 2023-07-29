@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Octave shift
-grand_parent: User Edition
+title: Octave Shift
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 15
 ---
-## Octave shift
+## Octave Shift
 {: .no_toc }
 {: .d-inline-block }
 New in 5.3
@@ -84,7 +84,7 @@ above for `alta`, below for `bassa`.
 
 ### Creation
 
-The easiest way for creating an octave shift is a drag n' drop from `ClefsAndShifts`  family in
+The easiest way for creating an octave shift is a drag & drop from `ClefsAndShifts`  family in
 shape board:
 
 ![](../assets/images/clefs_and_shifts.png)
@@ -112,9 +112,9 @@ the proper button in classifier board.
 3. Note you will be prompted for the precise target staff of the created shift.
 
 In both ways, what you have created is just a small octave shift.
-You can now proceed to its precise edition as described in the next section.
+You can now proceed to its precise editing as described in the next section.
 
-### Edition
+### Editing
 
 The octave shift editor can provide 3 handles: left, middle and right:   
 - All these handles can move the shift vertically between the current staff and the other staff,
@@ -148,10 +148,10 @@ Similar actions are possible, starting from the upper left handle, to extend the
 upwards.   
 Intermediate physical shifts can also be refined vertically.
 
-Finally, clicking outside of any handle ends the current edition.
+Finally, clicking outside of any handle ends the current editing.
 
 NOTA: A logical shift, whether it is made of one or several physical shifts, is managed as one
-entity. This applies for creation, edition and removal actions.
+entity. This applies for creation, editing and removal actions.
 
 And as usual, any of these actions can be undone and redone at will.
 

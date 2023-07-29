@@ -1,7 +1,7 @@
 ---
 layout: default
 title: UI Examples
-parent: User Edition
+parent: User Editing
 nav_order: 3
 has_children: true
 ---

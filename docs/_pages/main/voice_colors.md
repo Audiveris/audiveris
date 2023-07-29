@@ -27,16 +27,16 @@ This results in the following display:
 
 Within any given part, voice numbers (and thus colors) are assigned as follows:
 ![](../assets/images/voice_colors.png)
-* Voices starting on first staff use numbers 1 through 4,
-* Voices starting on second staff use numbers 5 through 8.
+* Voices starting on the first staff use numbers 1 through 4,
+* Voices starting on the second staff use numbers 5 through 8.
 
 #### Shared Heads
 
 Note that some note heads can be _shared_ between two chords.
-In the example at hand, this is the case in last staff, for the starting head of each measure
+In the example above, this is the case in the last staff, for the starting head of each measure
 except the first one.
 
-In such canonical case, the chords involved are the chord below on left and the chord above on right.
+In such canonical case, the chords involved are the chord below on the left and the chord above on the right.
 
 To indicate the **_shared_** aspect of such head, a small diagonal red segment is drawn
 across the head, to indicate a logical split of the shared head.

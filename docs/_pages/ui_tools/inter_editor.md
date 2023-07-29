@@ -120,7 +120,7 @@ then the editor can shift the **whole key** horizontally.
 
 ![](../assets/images/multiple_rest_edited.png)
 
-See details in [Multi-measure rest section](../specific/multi_rest.md#edition)
+See details in [Multi-measure rest section](../specific/multi_rest.md#editing)
 
 ### Octave shift editor
 
@@ -132,7 +132,7 @@ Multiple-line editor:
 
 ![](../assets/images/octave_shift_multiple_edited.png)
 
-See details in [Octave Shift section](../specific/octave_shift.md#edition)
+See details in [Octave Shift section](../specific/octave_shift.md#editing)
 
 ### Slur editor
 ![](../assets/images/slur_edited.png)
@@ -150,7 +150,7 @@ This is the most complex editor:
 
 All the various lines handles in staff are available for individual vertical dragging.
 
-See Staff Edition [Lines mode](staff_editor.md#lines-mode).
+See Staff Editing [Lines mode](staff_editor.md#lines-mode).
 
 ### Staff global editor
 
@@ -163,7 +163,7 @@ Handles are located on the staff middle line but they work for all lines as a wh
 * Non-side handles can be dragged only vertically.
 
 
-See Staff Edition [Global mode](staff_editor.md#global-mode).
+See Staff Editing [Global mode](staff_editor.md#global-mode).
 
 ### Stem/Arpeggiato/Connector editor
 

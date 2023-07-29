@@ -67,7 +67,7 @@ A multi-line (logical) shift is implemented as a vertical sequence of several (p
 The OMR engine may recognize just the value portion of an octave shift, but it is then rather
 easy for the end-user to edit the line portion. 
 
-### Edition
+### Editing
 
 #### Location
 
@@ -91,7 +91,7 @@ At drop time, the last staff is kept as the related staff.
 
 ![](../assets/images/octave_shift_with_staff.png)
 
-#### Single line edition
+#### Single line editing
 
 As usual, a double-click on the shift Inter opens a dedicated editor on it.
 
@@ -114,7 +114,7 @@ in the system above, the initial shift gets separated in two shifts, one for eac
 In these forced cases, the initial one-line shift has evolved to a multiple-line shift.
 And it can continue its evolution.
 
-#### Multiple line edition
+#### Multiple line editing
 
 ![](../assets/images/octave_shift_multiple_edited.png)
 
@@ -131,8 +131,8 @@ and reduce the number of lines, potentially down to a single line shift.
 
 #### End
 
-Clicking outside any handle completes the current edition.
+Clicking outside any handle completes the current editing.
 
 Selecting and deleting any line of a multiple-line shift deletes the whole shift.
 
-Edition can be undone and redone.
+Editing can be undone and redone.

@@ -74,3 +74,4 @@ gradle.properties
 docs/.jekyll-metadata
 docs/Gemfile.lock
 docs/_site/
+docs/pdf/build

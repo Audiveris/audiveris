@@ -21,9 +21,9 @@ The following _foreground_ colors are used for interpretation items in this wind
 * blue: bars, clefs, times, lyrics
 * purple: accidentals, articulations
 * pale blue / pale rose: non recognized elements (vertical sections / horizontal sections)
-* brown: stems, slurs, normal text (no lyrics)
+* brown: stems, slurs, normal text (not lyrics)
 * green: note heads (also small heads and augmentation points), flags, rests
-* red: elements in some abnormal status, typically some needed connection is missing
+* red: elements in some abnormal status; typically some needed connection is missing
 (e.g. black note head without stem)
 
 The colors help the user for a first glance verification that the transcription was successful

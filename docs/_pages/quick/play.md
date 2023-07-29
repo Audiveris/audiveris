@@ -22,5 +22,5 @@ We just have to press the play button to hear the music.
 
 This is the end of our quick tour.
 
-For a more thorough understanding of Audiveris, you can visit the [Main Features](../main/README.md)
+For a more thorough understanding of Audiveris, we can visit the [Main Features](../main/README.md)
 chapter.

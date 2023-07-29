@@ -42,7 +42,7 @@ This can be done via the processing switches in ``Book | Set Book Parameters`` p
 
 ### Insertion 
 
-Regardless of the switches values, we can always manually assign or drag n' drop these
+Regardless of the switches values, we can always manually assign or drag & drop these
 indications from the shape board:
 
 ![](../assets/images/fingering_plucking_sets.png)

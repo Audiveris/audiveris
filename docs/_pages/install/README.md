@@ -8,13 +8,13 @@ has_children: true
 
 For **Windows** only, there is an **installer** available in 64-bit version,
 which takes care of installing all Audiveris binaries.  
-The installer makes installation simple but has the main drawback to be limited to
+The installer makes installation simple but has the main drawback of being limited to
 the last official release, which can be several months old.
 
 For all three major operating systems, that is **Windows**, **Linux** and **MacOS**,
 you have the ability to **download and build** from source material.  
 The main advantage is to benefit from all the bug fixes and improvements that are
-continuously published on Audiveris project site in its "development" branch.
+continuously published on the Audiveris project site in its "development" branch.
 
 {: .warning }
 In both cases, whether you decide to use the installer or to build Audiveris from source,

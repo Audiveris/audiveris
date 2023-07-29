@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Selection
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Foundations
 nav_order: 2
 ---
@@ -31,15 +31,15 @@ To define the current **point**, we either:
 * Press down the left or the right mouse button at the desired location.
 * Or, if the Pixel-Board is displayed, enter numeric values in the X and Y fields.
 
-To define a current **rectangle** -- which also defines current point at rectangle center --,
+To define a current **rectangle** -- which also defines the current point at the rectangle center --,
 we either:
 * Press down the left mouse button at a desired rectangle corner location,
 and keep the `SHIFT` key pressed while dragging the mouse.
 * Or, if the Pixel-Board is displayed, type numeric values in the X, Y, Width and Height fields.
 
 To precisely **shift** the current location:
-* While keeping the `ALT` key pressed, we use one of the 4 arrow keys to move the location (point
-or rectangle) one pixel at a time.
+* While keeping the `ALT` key pressed (`OPTION` key on MacOS), we use one of the 4 arrow keys
+to move the location (point or rectangle) one pixel at a time.
 
 ### Entity selection
 
@@ -51,7 +51,7 @@ There are 3 selections modes available:
 3. ![](../assets/images/kjumpingcube.png) _section_-only based.
 
 To switch from one mode to another, we use the toggle menu item `View | Switch selections`,
-click on the related toolbar icon or press `F11` function key.
+click on the related toolbar icon or press the `F11` function key.
 
 #### Selection means
 
@@ -61,18 +61,18 @@ section entities, according to the current selection mode.
 *   **Pointing to an entity**:   
   A _left_-button mouse click grabs the entities that contain the
     location point.   
-    If several entities are grabbed, only one is chosen to start the new selection.
-    For glyphs, it's the smallest one.
+    If several entities are grabbed, only one is chosen to start the new selection.  
+    For glyphs, it's the smallest one.  
     For inters, it's the member before the ensemble.  
   A _right_-button mouse click opens the popup menu:
-    - with just the pointed entity if previous selection was empty,  
-    - with the previous selection if previous selection was not empty.
+    - with just the pointed entity if the previous selection was empty,  
+    - with the previous selection if the previous selection was not empty.
 
-*   **Using a lasso**: Pressing the `SHIFT` key while dragging with mouse left-button defines a
-  rectangular area.
+*   **Using a lasso**: Pressing the `SHIFT` key while dragging with the mouse left-button defines a
+  rectangular area.  
     All entities fully contained in this area start a new selection.
 
-*   **Adding an entity**: A left click on an entity while pressing the `Ctrl` key (`Option` key for MacOS)
+*   **Adding an entity**: A left click on an entity while pressing the `Ctrl` key (`Command` key for MacOS)
     adds this entity to the current selection, whether the selection was done via point or lasso.
 
 *   **Naming an entity**: Entering the integer ID of a glyph in the Glyph-Board spinner or the ID
@@ -80,22 +80,22 @@ section entities, according to the current selection mode.
 
   - **Pointing outside of any entity**:   
 A left click clears both glyphs and inters selections.  
-A right click opens the popup menu (with the entities selected so far)
+A right click opens the popup menu (with the entities selected so far).
 
-*   **Choosing entity in selection list**: The contextual popup menu, when entities have
-    been selected, offers in `Glyphs` and in `Inters` sub-menus the list of selected entities.
+*   **Choosing an entity in the selection list**: The contextual popup menu, when entities have
+    been selected, offers in the `Glyphs` and `Inters` sub-menus the list of selected entities.
     Simply moving the mouse onto the entity of choice will select this entity.
 
-*   **Choosing relation in relations list**: Via the contextual popup menu, moving to a
+*   **Choosing a relation in the relations list**: Via the contextual popup menu, moving to a
     selected inter displays a sub-menu with all the relations the inter is part of.
     Selecting a relation offers to dump or delete this relation.
 
-*   **Double-click**: A double-click with left mouse button on an Inter (not a Glyph) selects that
-   Inter and puts it in `Edition mode` (see [Inter edition](../ui_tools/edit_inter.md)).
+*   **Double-click**: A double-click with the left mouse button on an Inter (not a Glyph) selects that
+   Inter and puts it in `Editing mode` (see [Inter editing](../ui_tools/edit_inter.md)).
 
 A selected inter may display links to its related inter entities.
 The links appear as short straight lines in light green color
--- together with relation name if zoom is high enough --.
+-- together with the relation name if the zoom is high enough --.
 The images below depict:
 
 1. A tuplet glyph linked to its 3 embraced chords
@@ -148,7 +148,7 @@ For example:
 
 Here, we have pointed on a note head which is part of a head chord.
 We can note the (member) head inter is selected over the (ensemble) chord inter, the involved "_HeadStem_"
-relation is visible between head and stem, the Inter-board focuses on head inter,
+relation is visible between head and stem, the Inter-board focuses on the head inter,
 with the `To Ensemble` button enabled.
 
 ![](../assets/images/ensemble_selected.png)
@@ -172,8 +172,10 @@ the containers related to current mouse location:
 * Time slot,
 * Measure,
 * Staff,
+* Part,
 * System,
 * Page in sheet,
+* Score,
 * Whole image.
 
 Then, each sub-menu leads to possible actions related to the container at hand.

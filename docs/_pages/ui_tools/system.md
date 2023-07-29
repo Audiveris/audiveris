@@ -1,7 +1,7 @@
 ---
 layout: default
 title: System Merge
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 7
 ---
