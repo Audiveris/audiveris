@@ -3,7 +3,7 @@ layout: default
 title: Glyph vs Inter
 grand_parent: Main Features
 parent: Main Entities
-nav_order: 3
+nav_order: 4
 ---
 ### Glyph vs Inter
 

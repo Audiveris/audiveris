@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.3.0">
+<diagram program="umlet" version="15.0.0">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -114,7 +114,7 @@ layer=50</panel_attributes>
       <w>460</w>
       <h>100</h>
     </coordinates>
-    <panel_attributes>Project ZipFIle:  {foo.omr}
+    <panel_attributes>Project ZipFile:  {foo.omr}
 --
 bg=#ccffcc
 bg=#44ff44</panel_attributes>

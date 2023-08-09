@@ -7,6 +7,6 @@ has_children: true
 ---
 # UI Examples
 
-Purpose of this chapter is to present editing sessions on representative scores to be used as concrete examples for Audiveris end user.
+The purpose of this chapter is to present editing sessions on representative scores to be used as concrete examples for the Audiveris user.
 
 We can expect this chapter to grow incrementally, as more and more example sessions get included here.

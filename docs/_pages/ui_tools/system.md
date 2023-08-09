@@ -8,7 +8,7 @@ nav_order: 7
 ## System Merge
 {: .no_toc }
 
-In Audiveris GRID step, detected staves are gathered into systems, based on barlines found on
+In the Audiveris ``GRID`` step, detected staves are gathered into systems, based on barlines found on
 the left side of the staves.
 
 In a poor quality score image, many black pixels may have disappeared, sometimes leading to broken
@@ -21,7 +21,7 @@ detection of systems by the OMR engine.
 | ---| --- | --- |
 | ![](../assets/images/system_broken.png) | ![](../assets/images/system_broken_before.png) |   ![](../assets/images/system_broken_after.png) |
 
-Since 5.2 release, we can manually fix this problem.
+Since the 5.2 release, we can manually fix this problem.
 
 We point at the upper system portion, and via the right-click popup menu, navigate to `System#n ...`
 and click on "_Merge with system below_".

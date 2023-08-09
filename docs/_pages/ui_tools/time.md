@@ -28,7 +28,7 @@ Audiveris OMR is able to handle both whole- and pair- time signatures:
 * A _pair_ time signature is a signature handled as an ensemble of two separate time numbers.
 Not all pairs can be recognized, only the equivalent forms of predefined combos (see above).
 
-The OMR engine can automatically recognize whole and pairs, that is all the examples above except
+The OMR engine can automatically recognize wholes and pairs, that is, all the examples above except
 the custom combo which is reserved for user manual definition.
 
 For say a 2/4 time signature, the engine may recognize the "2" glyph and the "4" glyph leading
@@ -43,8 +43,8 @@ underlying glyph and assign the desired value, either via a double-click in the 
 via the `Glyphs...` popup menu.
 This works for the whole signature (or for each signature part, in the case of a pair signature).
 
-We can also drag a chosen time signature from the shape palette and drop it at proper location,
-but this feature is available only for a _whole_ signature, we cannot drag & drop time parts
+We can also drag a chosen time signature from the shape palette and drop it at the proper location,
+but this feature is available only for a _whole_ signature; we cannot drag & drop time parts
 of a pair.
 
 Moreover, in these two cases (glyph assignment and drag & drop), please note that the choice is
@@ -52,7 +52,7 @@ _limited to the predefined shapes_ of the palette.
 
 ### Custom time signature
 
-Since 5.2 release, the time shape palette provides a `custom` time signature.
+Since the 5.2 release, the time shape palette provides a `custom` time signature.
 This is a fully-customizable combo signature.
 
 To define a precise time signature, the most convenient way is often to drag the `custom` combo
