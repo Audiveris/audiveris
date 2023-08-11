@@ -1,0 +1,48 @@
+name: Build & Test Audiveris
+
+# execute this workflow on every push
+on:
+  - push
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
+      TESSDATA_TAG: 3.04.00
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: zulu
+
+      # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
+      - name: Get cached tessdata files
+        id: cache-tessdata
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.TESSDATA_PREFIX }}
+          key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng-deu
+
+      - name: Install tessdata files
+        if: steps.cache-tessdata.outputs.cache-hit != 'true'
+        run: |
+          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh eng &&
+          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh deu
+
+      - name: Build Audiveris
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: build -x test
+
+      - name: Unit-Test Audiveris
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: test
