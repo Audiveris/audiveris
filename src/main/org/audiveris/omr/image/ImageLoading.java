@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.FileUtil;
@@ -28,22 +31,7 @@ import org.audiveris.omr.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intarsys.cwt.awt.environment.CwtAwtGraphicsContext;
-import de.intarsys.cwt.environment.IGraphicsContext;
-import de.intarsys.pdf.content.CSContent;
-import de.intarsys.pdf.parser.COSLoadException;
-import de.intarsys.pdf.pd.PDDocument;
-import de.intarsys.pdf.pd.PDPage;
-import de.intarsys.pdf.platform.cwt.rendering.CSPlatformRenderer;
-import de.intarsys.pdf.tools.kernel.PDFGeometryTools;
-import de.intarsys.tools.locator.FileLocator;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -71,7 +59,7 @@ import javax.imageio.stream.ImageInputStream;
  * </ol>
  * This class leverages several software pieces, each with its own Loader subclass:
  * <ul>
- * <li><b>JPod</b> for PDF files. This replaces former use of GhostScript sub-process.</li>
+ * <li><b>Apache PDFBox</b> for PDF files. This replaces former use of JPod/GhostScript sub-process.</li>
  * <li><b>ImageIO</b> for all files except PDF.</li>
  * </ul>
  *
@@ -148,37 +136,34 @@ public abstract class ImageLoading
         }
     }
 
-    //---------------//
-    // getJPodLoader //
-    //---------------//
+    //--------------//
+    // getPdfLoader //
+    //--------------//
     /**
-     * Try to use JPod.
+     * Get a Loader for the given input file.
      *
      * @param imgPath the provided (PDF) input file.
-     * @return proper (JPod) loader or null if failed
+     * @return proper (PDF) loader or null if failed
      */
-    private static Loader getJPodLoader (Path imgPath)
+    private static Loader getPdfLoader (Path imgPath)
     {
-        logger.debug("getJPodLoader {}", imgPath);
+        logger.debug("getPdfLoader {}", imgPath);
 
         PDDocument doc = null;
 
         try {
-            FileLocator locator = new FileLocator(imgPath.toFile());
-            doc = PDDocument.createFromLocator(locator);
+            doc = PDDocument.load(imgPath.toFile());
         } catch (IOException ex) {
             logger.warn("Error opening pdf file " + imgPath, ex);
-        } catch (COSLoadException ex) {
-            logger.warn("Invalid pdf file " + imgPath, ex);
         }
 
         if (doc == null) {
             return null;
         }
 
-        int imageCount = doc.getPageTree().getCount();
+        int imageCount = doc.getNumberOfPages();
 
-        return new JPodLoader(doc, imageCount);
+        return new PdfboxLoader(doc, imageCount);
     }
 
     //-----------//
@@ -209,8 +194,8 @@ public abstract class ImageLoading
         Loader loader;
 
         if (extension.equalsIgnoreCase(".pdf")) {
-            // Use JPod
-            loader = getJPodLoader(imgPath);
+            // Load from pdf
+            loader = getPdfLoader(imgPath);
         } else {
             // Try ImageIO
             loader = getImageIOLoader(imgPath);
@@ -306,17 +291,17 @@ public abstract class ImageLoading
         }
     }
 
-    //------------//
-    // JPodLoader //
-    //------------//
-    private static class JPodLoader
+    //--------   ---//
+    // PdfBoxLoader //
+    //-----   ------//
+    private static class PdfboxLoader
             extends AbstractLoader
     {
 
         private final PDDocument doc;
 
-        JPodLoader (PDDocument doc,
-                    int imageCount)
+        PdfboxLoader (PDDocument doc,
+                      int imageCount)
         {
             super(imageCount);
             this.doc = doc;
@@ -337,73 +322,21 @@ public abstract class ImageLoading
             throws IOException
         {
             checkId(id);
+            final int pageIndex = id - 1;
 
-            // desired scale = pdfResolution / default PDF resolution
-            float scale = constants.pdfResolution.getValue() / 72.0f;
-
-            // obtain relevant page parameters
-            PDPage page = doc.getPageTree().getPageAt(id - 1);
-            Rectangle2D rect = page.getCropBox().toNormalizedRectangle();
-            int rotation = page.getRotate();
-            logger.debug("Page #{} rotation: {}°", id, rotation);
-
-            // swap width and height according with the rotation angle
-            AffineTransform pageTransform = new AffineTransform();
-            PDFGeometryTools.adjustTransform(pageTransform, rotation, rect);
-
-            Point2D newDims = new Point2D.Double(rect.getWidth(), rect.getHeight());
-            pageTransform.deltaTransform(newDims, newDims);
-
-            double pageWidth = Math.abs(newDims.getX());
-            double pageHeight = Math.abs(newDims.getY());
-
-            BufferedImage image = new BufferedImage(
-                    (int) (pageWidth * scale),
-                    (int) (pageHeight * scale),
-                    BufferedImage.TYPE_BYTE_GRAY);
-
-            Graphics2D g2 = (Graphics2D) image.getGraphics();
-
-            g2.setRenderingHint(
+            RenderingHints renderingHints = new RenderingHints(null);
+            renderingHints.put(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_OFF);
-            //g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-            //                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-            //g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-            //   		    RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-            //g2.setRenderingHint(RenderingHints.KEY_DITHERING,
-            //		    RenderingHints.VALUE_DITHER_ENABLE);
-            g2.setRenderingHint(
+            renderingHints.put(
                     RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
-            //g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-            //	            RenderingHints.VALUE_STROKE_PURE);
-            //g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-            //		    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            //g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-            //		    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            IGraphicsContext gctx = new CwtAwtGraphicsContext(g2);
-            AffineTransform transform = gctx.getTransform();
-            transform.scale(scale, -scale);
-            transform.translate(0.0, -pageHeight);
-            transform.concatenate(pageTransform);
-
-            gctx.setTransform(transform);
-            gctx.setBackgroundColor(Color.WHITE);
-            gctx.fill(rect);
-
-            CSContent content = page.getContentStream();
-
-            if (content != null) {
-                CSPlatformRenderer renderer = new CSPlatformRenderer(null, gctx);
-                g2.setRenderingHint(
-                        RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_OFF);
-                renderer.process(content, page.getResources());
-            }
-
-            return image;
+            PDFRenderer renderer = new PDFRenderer(doc);
+            renderer.setRenderingHints(renderingHints);
+            return renderer.renderImageWithDPI(pageIndex,
+                                               constants.pdfResolution.getValue(),
+                                               ImageType.GRAY);
         }
     }
 
